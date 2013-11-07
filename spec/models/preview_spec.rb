@@ -2,7 +2,7 @@ require "spec_helper"
 
 
 describe Preview do
-    
+
   describe "next voter to be dialed" do
 
     it "returns priority  not called voter first" do
@@ -11,8 +11,8 @@ describe Preview do
       priority_voter = create(:voter, :status => 'not called', :campaign => campaign, priority: "1")
       caller_session = create(:caller_session)
       campaign.next_voter_in_dial_queue(nil).should == priority_voter
-
     end
+
     it "returns uncalled voter before called voter" do
       campaign = create(:preview)
       caller_session = create(:caller_session)
@@ -23,7 +23,7 @@ describe Preview do
 
     it "returns any scheduled voter within a ten minute window before an uncalled voter" do
       campaign = create(:preview)
-      caller_session = create(:caller_session)      
+      caller_session = create(:caller_session)
       scheduled_voter = create(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
       create(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
       campaign.next_voter_in_dial_queue(nil).should == scheduled_voter
@@ -31,7 +31,7 @@ describe Preview do
 
     it "returns next voter in list if scheduled voter is more than 10 minutes away from call" do
       campaign = create(:preview)
-      caller_session = create(:caller_session)      
+      caller_session = create(:caller_session)
       scheduled_voter = create(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 20.minute.from_now, :campaign => campaign)
       current_voter = create(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
       next_voter = create(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
@@ -57,7 +57,17 @@ describe Preview do
       current_voter = create(:voter, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
       campaign.next_voter_in_dial_queue(current_voter.id).should be_nil
     end
-    
+
+    it 'does not return any voter w/ a phone number in the blocked number list' do
+      blocked = ['1234567890', '0987654321']
+      campaign = create(:preview)
+      campaign.stub(:blocked_numbers){ blocked }
+      voter = create(:voter, :status => 'not called', :campaign => campaign, phone: blocked.first)
+      priority_voter = create(:voter, :status => 'not called', :campaign => campaign, priority: "1", phone: blocked.second)
+      caller_session = create(:caller_session)
+      campaign.next_voter_in_dial_queue(nil).should be_nil
+    end
+
   end
-  
+
 end

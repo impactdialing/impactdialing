@@ -86,7 +86,7 @@ describe PhonesOnlyCallerSession do
       xit "should render twiml for reassigned campaign when voters present" do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
         caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(true)        
+        caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(true)
         caller_session.ready_to_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You have been re-assigned to a campaign.</Say><Redirect>http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?Digits=%2A&amp;event=callin_choice&amp;session_id=#{caller_session.id}</Redirect></Response>")
       end
 
@@ -133,7 +133,7 @@ describe PhonesOnlyCallerSession do
         @voter = create(:voter, campaign: @campaign)
       end
 
-     
+
       it "should set voter in progress" do
         call_attempt = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
@@ -330,16 +330,16 @@ describe PhonesOnlyCallerSession do
         caller_session.gather_response.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/submit_response?question_id=#{@question.id}&amp;question_number=0&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end
     end
-    
+
     describe "run out of phone numbers" do
-      
+
       it "should render hangup twiml" do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "conference_started_phones_only_predictive", voter_in_progress: nil)
         caller_session.campaign_out_of_phone_numbers.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>This campaign has run out of phone numbers.</Say><Hangup/></Response>")
       end
-      
+
     end
-    
+
   end
 
 
@@ -409,7 +409,7 @@ describe PhonesOnlyCallerSession do
         call_attempt = create(:call_attempt, voter: @voter)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
-        caller_session.should_receive(:disconnected?).and_return(false)        
+        caller_session.should_receive(:disconnected?).and_return(false)
         caller_session.submit_response.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/next_question?question_number=1&amp;session_id=#{caller_session.id}</Redirect></Response>")
       end
 
@@ -426,13 +426,13 @@ describe PhonesOnlyCallerSession do
     end
 
     describe "more_questions_to_be_answered" do
-      
+
       it "should move to read_next_question state" do
         call_attempt = create(:call_attempt, voter: @voter)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, script_id: @script.id)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
         RedisQuestion.should_receive(:get_question_to_read).with(@script.id, caller_session.redis_question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
-        RedisPossibleResponse.should_receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])        
+        RedisPossibleResponse.should_receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])
         caller_session.should_receive(:more_questions_to_be_answered?).and_return(true)
         caller_session.next_question.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/submit_response?question_id=#{@question.id}&amp;question_number=0&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end

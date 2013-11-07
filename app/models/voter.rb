@@ -14,7 +14,7 @@ class Voter < ActiveRecord::Base
   belongs_to :voter_list
   belongs_to :campaign
   belongs_to :account
-  has_many :families
+
   has_many :call_attempts
   has_many :custom_voter_field_values, autosave: true
   belongs_to :last_call_attempt, :class_name => "CallAttempt"
@@ -59,6 +59,27 @@ class Voter < ActiveRecord::Base
     in_progress_or_call_back.where(campaign_id: campaign) }
   scope :remaining_voters_for_voter_list, ->(voter_list) { in_progress_or_call_back.where(voter_list_id: voter_list) }
 
+  scope :next_in_priority_or_scheduled_queues, lambda {|blocked_numbers|
+    enabled.without(blocked_numbers).where([
+      '(priority = ? AND status = ?) '+ # priority_voters
+      'OR (scheduled_date BETWEEN ? AND ? AND status = ?)', # scheduled
+      1, Voter::Status::NOTCALLED,
+      10.minutes.ago, 10.minutes.from_now, CallAttempt::Status::SCHEDULED
+    ])
+  }
+
+  scope :next_in_recycled_queue, lambda {|recycle_rate, blocked_numbers, current_voter_id|
+    voter_id = current_voter_id.to_i
+
+    enabled.without(blocked_numbers).
+    last_call_attempt_before_recycle_rate(recycle_rate).
+    to_be_dialed.where([
+      '(skipped_time IS NULL AND voters.id > ?) OR skipped_time IS NOT NULL '+
+      'OR voters.id <> ? OR 1=1',
+      voter_id, voter_id
+    ]).order('last_call_attempt_time, id DESC')
+  }
+
   before_validation :sanitize_phone
 
   cattr_reader :per_page
@@ -85,32 +106,32 @@ class Voter < ActiveRecord::Base
     self.caller_session = nil
     self.caller_id = nil
   end
-    
+
   def end_answered_by_machine
     self.caller_session = nil
-    self.status = campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP    
+    self.status = campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP
     self.call_back = false
   end
-  
+
   def end_unanswered_call(call_status)
     self.status = CallAttempt::Status::MAP[call_status]
     self.call_back = false
   end
-  
-  
+
+
   def disconnect_call(caller_id)
     self.status = CallAttempt::Status::SUCCESS
     self.caller_session = nil
     self.caller_id = caller_id
-  end    
-  
+  end
+
   def schedule_for_later(date)
     scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
     self.status = Status::SCHEDULED
     self.scheduled_date = scheduled_date
     self.call_back = true
   end
-  
+
   def self.upload_fields
     ["phone", "custom_id", "last_name", "first_name", "middle_name", "suffix", "email", "address", "city", "state","zip_code", "country"]
   end
@@ -122,7 +143,7 @@ class Voter < ActiveRecord::Base
     return if fields.empty?
     return fields.first.value
   end
-  
+
   def blocked?
     account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.phone)
   end
@@ -155,7 +176,7 @@ class Voter < ActiveRecord::Base
   end
 
   def unanswered_questions
-    campaign.script.questions.not_answered_by(self)    
+    campaign.script.questions.not_answered_by(self)
   end
 
   def question_not_answered
@@ -165,7 +186,7 @@ class Voter < ActiveRecord::Base
   def skip
     update_attributes(skipped_time: Time.now, status: 'not called')
   end
-  
+
 
   def answer(question, response, recorded_by_caller = nil)
     possible_response = question.possible_responses.where(:keypad => response).first
@@ -181,7 +202,7 @@ class Voter < ActiveRecord::Base
   def answer_recorded_by=(caller_session)
     @caller_session = caller_session
   end
-  
+
   def persist_answers(questions, call_attempt)
      return if questions.nil?
      question_answers = JSON.parse(questions)
@@ -198,7 +219,7 @@ class Voter < ActiveRecord::Base
      end
      update_attributes(:status => Voter::Status::RETRY) if retry_response
    end
-  
+
   def persist_notes(notes_json, call_attempt)
     return if notes_json.nil?
     notes = JSON.parse(notes_json)
@@ -210,7 +231,7 @@ class Voter < ActiveRecord::Base
     rescue Exception => e
       Rails.logger.info "Persisting_Notes_Exception #{e.to_s}"
       Rails.logger.info "Voter #{self.inspect}"
-    end    
+    end
   end
 
   def phone_validatation

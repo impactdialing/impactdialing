@@ -81,6 +81,9 @@ class Campaign < ActiveRecord::Base
     Type::PREDICTIVE == campaign_type
   end
 
+  def blocked_numbers
+    @blocked_numbers ||= account.blocked_numbers.for_campaign(self).pluck(:number)
+  end
 
   def new_campaign
     new_record?

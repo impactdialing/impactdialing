@@ -429,6 +429,51 @@ describe Voter do
       voter = create(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
       Voter.not_avialable_to_be_retried(campaign.recycle_rate).should eq([voter])
     end
+  end
 
+  describe '.next_in_priority_or_scheduled_queues(blocked_numbers)' do
+    let(:campaign){ create(:campaign) }
+
+    it 'loads voters w/ priority=1 and status=Voter::Status::NOTCALLED' do
+      expected = [create(:voter, campaign: campaign, status: Voter::Status::NOTCALLED, priority: true)]
+      create(:voter, campaign: campaign, status: nil, priority: true)
+      create(:voter, campaign: campaign, status: Voter::Status::RETRY, priority: true)
+      actual = Voter.next_in_priority_or_scheduled_queues([])
+      actual.all.should eq expected
+    end
+
+    it 'OR voters scheduled to be called back in the last or next 10 minutes' do
+      expected = [
+        create(:voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 5.minutes.ago),
+        create(:voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 5.minutes.from_now)
+      ]
+      create(:voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 20.minutes.ago)
+      create(:voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 20.minutes.from_now)
+      actual = Voter.next_in_priority_or_scheduled_queues([])
+      actual.all.should eq expected
+    end
+
+    it 'excludes voters w/ phone numbers in the list of blocked numbers' do
+      blocked = ['1234567890', '0987654321']
+      expected = [
+        create(:voter, {
+          campaign: campaign,
+          status: Voter::Status::NOTCALLED,
+          priority: true
+        })
+      ]
+      create(:voter, {
+        campaign: campaign,
+        status: Voter::Status::NOTCALLED,
+        phone: blocked.first
+      })
+      create(:voter, {
+        campaign: campaign,
+        status: Voter::Status::NOTCALLED,
+        phone: blocked.second
+      })
+      actual = Voter.next_in_priority_or_scheduled_queues(blocked).all
+      actual.should eq expected
+    end
   end
 end

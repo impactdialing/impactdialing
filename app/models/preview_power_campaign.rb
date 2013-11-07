@@ -2,17 +2,14 @@ module PreviewPowerCampaign
 
   def next_voter_in_dial_queue(current_voter_id = nil)
     begin
-      voter = all_voters.priority_voters.first
-      voter||= all_voters.scheduled.first
-      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.where("voters.id > #{current_voter_id}").first unless current_voter_id.blank?
-      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.first
-      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id != #{current_voter_id}").first unless current_voter_id.blank?
-      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.first
+      voter = all_voters.next_in_priority_or_scheduled_queues(blocked_numbers).first
+      voter ||= all_voters.next_in_recycled_queue(recycle_rate, blocked_numbers, current_voter_id).first
+
       update_voter_status_to_ready(voter)
     rescue ActiveRecord::StaleObjectError
       retry
     end
-    voter
+    return voter
   end
 
   def redirect_campaign_reassigned(caller_session)
