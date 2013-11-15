@@ -196,18 +196,20 @@ describe CallAttempt do
 
     describe "debit for calls" do
       it "should not debit if call not ended" do
-        account = create(:account)
+        subscription = create(:basic)
+        account = create(:account, subscriptions: [subscription])
         campaign = create(:preview, account: account)
         call_attempt = create(:call_attempt, call_end: (Time.now - 3.minutes), campaign: campaign)
-        account.should_not_receive(:debitable_subscription)        
+        subscription.should_not_receive(:debit)
         call_attempt.debit
       end
 
       it "should not debit if call not connected" do
-        account = create(:account)
+        subscription = create(:basic)
+        account = create(:account, subscriptions: [subscription])
         campaign = create(:preview, account: account)
         call_attempt = create(:call_attempt, connecttime: (Time.now - 3.minutes), campaign: campaign)
-        account.should_not_receive(:debitable_subscription)                
+        subscription.should_not_receive(:debit)
         call_attempt.debit
       end
 
@@ -219,9 +221,9 @@ describe CallAttempt do
         payment = create(:payment, account: account, amount_remaining: 10.0)
         call_attempt = create(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes), campaign: campaign, tDuration: 60)
         account.should_receive(:debitable_subscription).and_return(subscription)
-        subscription.should_receive(:debit)        
+        subscription.should_receive(:debit)
         call_attempt.debit
-        call_attempt.save        
+        call_attempt.save
       end
 
     end
@@ -231,7 +233,7 @@ describe CallAttempt do
         call_attempt = create(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes),  tDuration: 62)
         call_attempt.call_time.should eq(2)
       end
-    end        
+    end
 
   end
 end

@@ -2,7 +2,7 @@ require 'spec_helper'
 
 class SessionOrAttempt
   cattr_accessor :call_not_connected, :call_time
-  attr_accessor :debited
+  attr_accessor :debited, :id
 
   include CallPayment
 
@@ -61,6 +61,18 @@ describe CallPayment do
     end
     it 'sets self.debited to the result of debiting a debitable_subscription' do
       session_or_attempt.debited.should be_false
+      session_or_attempt.debit
+      session_or_attempt.debited.should be_true
+    end
+  end
+
+  context 'a debitable_subscription is not returned' do
+    before do
+      account.stub(:debitable_subscription){ nil }
+      session_or_attempt.debited.should be_false
+    end
+
+    it 'sets SessionOrAttempt#debited to true and returns self' do
       session_or_attempt.debit
       session_or_attempt.debited.should be_true
     end
