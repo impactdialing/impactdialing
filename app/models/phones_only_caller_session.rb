@@ -1,3 +1,6 @@
+##
+# Used when a Campaign is set to phones only.
+#
 class PhonesOnlyCallerSession < CallerSession
 
 

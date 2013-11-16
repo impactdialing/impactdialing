@@ -1,3 +1,6 @@
+##
+# Used when a Campaign is not set to phones only.
+#
 class WebuiCallerSession < CallerSession
   include Rails.application.routes.url_helpers
 

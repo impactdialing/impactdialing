@@ -32,6 +32,10 @@ class CallerSession < ActiveRecord::Base
   delegate :subscription_allows_caller?, :to => :caller
   delegate :funds_available?, :to => :caller
 
+  ##
+  # PHONE: Call in sessions
+  # TWILIO_CLIENT: Web based sessions
+  #
   module CallerType
     TWILIO_CLIENT = "Twilio client"
     PHONE = "Phone"
