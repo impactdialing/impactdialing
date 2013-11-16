@@ -97,4 +97,39 @@ describe TransferAttempt do
       end
     end
 
+  describe "payments" do
+
+    describe "debit for calls" do
+      it "should not debit if call not ended" do
+        subscription = create(:basic)
+        account = create(:account, subscriptions: [subscription])
+        campaign = create(:preview, account: account)
+        transfer_attempt = create(:transfer_attempt, tEndTime: nil, call_end: (Time.now - 3.minutes), campaign: campaign)
+        subscription.should_not_receive(:debit)
+        transfer_attempt.debit
+      end
+
+      it "should not debit if call not connected" do
+        subscription = create(:basic)
+        account = create(:account, subscriptions: [subscription])
+        campaign = create(:preview, account: account)
+        transfer_attempt = create(:transfer_attempt, connecttime: (Time.now - 3.minutes), campaign: campaign)
+        subscription.should_not_receive(:debit)
+        transfer_attempt.debit
+      end
+
+      it "should  debit if call connected " do
+        account = create(:account)
+        subscription = account.current_subscription
+        campaign = create(:campaign, account: account)
+        payment = create(:payment, account: account, amount_remaining: 10.0)
+        transfer_attempt = create(:transfer_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes), campaign: campaign, tDuration: 60)
+        account.should_receive(:debitable_subscription).and_return(subscription)
+        subscription.should_receive(:debit)
+        transfer_attempt.debit
+        transfer_attempt.save
+      end
+    end
+  end
+
 end

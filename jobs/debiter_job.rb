@@ -13,7 +13,7 @@ class DebiterJob
         UserMailer.new.deliver_exception_notification('DebiterJob Exception', e)
       end
     end
-    record.class.import results, on_duplicate_key_update: [:debited, :payment_id]
+    records.first.class.import results, on_duplicate_key_update: [:debited, :payment_id]
   end
 
   def self.perform
@@ -25,6 +25,10 @@ class DebiterJob
 
     CallerSession.debit_not_processed.find_in_batches do |caller_sessions|
       debit(caller_sessions)
+    end
+
+    TransferAttempt.debit_not_processed.find_in_batches do |transfer_attempts|
+      debit(transfer_attempts)
     end
   end
 end
