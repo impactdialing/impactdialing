@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131115234810) do
+ActiveRecord::Schema.define(:version => 20131118175923) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -134,7 +134,7 @@ ActiveRecord::Schema.define(:version => 20131115234810) do
   add_index "call_attempts", ["campaign_id", "wrapup_time"], :name => "index_call_attempts_on_campaign_id_and_wrapup_time"
   add_index "call_attempts", ["campaign_id"], :name => "index_call_attempts_on_campaign_id"
   add_index "call_attempts", ["created_at"], :name => "index_call_attempts_on_created_at"
-  add_index "call_attempts", ["debited", "tEndTime"], :name => "index_call_attempts_debit"
+  add_index "call_attempts", ["debited", "status", "tStartTime", "tEndTime", "tDuration"], :name => "index_call_attempts_debit"
   add_index "call_attempts", ["status", "tPrice", "tStatus", "sid"], :name => "index_sync_calls"
   add_index "call_attempts", ["voter_id"], :name => "index_call_attempts_on_voter_id"
   add_index "call_attempts", ["voter_response_processed", "status"], :name => "index_call_attempts_on_voter_response_processed_and_status"
@@ -198,9 +198,9 @@ ActiveRecord::Schema.define(:version => 20131115234810) do
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
   add_index "caller_sessions", ["campaign_id", "on_call"], :name => "index_callers_on_call_group_by_campaign"
   add_index "caller_sessions", ["campaign_id"], :name => "index_caller_sessions_on_campaign_id"
+  add_index "caller_sessions", ["debited", "caller_type", "tStartTime", "tEndTime", "tDuration"], :name => "index_caller_sessions_debit"
   add_index "caller_sessions", ["sid"], :name => "index_caller_sessions_on_sid"
   add_index "caller_sessions", ["state"], :name => "index_state_caller_sessions"
-  add_index "caller_sessions", ["type", "debited", "caller_type", "tEndTime"], :name => "index_caller_session_debit"
 
   create_table "callers", :force => true do |t|
     t.string   "name"
@@ -443,6 +443,8 @@ ActiveRecord::Schema.define(:version => 20131115234810) do
     t.integer  "tFlags"
     t.boolean  "debited",           :default => false
   end
+
+  add_index "transfer_attempts", ["debited", "status", "tStartTime", "tEndTime", "tDuration"], :name => "index_transfer_attempts_debit"
 
   create_table "transfers", :force => true do |t|
     t.string   "label"
