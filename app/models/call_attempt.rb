@@ -3,7 +3,6 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallAttempt < ActiveRecord::Base
   include Rails.application.routes.url_helpers
-  include CallPayment
   include SidekiqEvents
   belongs_to :voter
   belongs_to :campaign
@@ -24,7 +23,15 @@ class CallAttempt < ActiveRecord::Base
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
   scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS).where('wrapup_time is not null') }
-  scope :debit_not_processed, where(debited: "0").where('tEndTime is not null').where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')")
+
+  scope :undebited, where(debited: false)
+  scope :successful_call, where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')")
+  scope(:with_time_and_duration,
+        where('tStartTime IS NOT NULL').
+        where('tEndTime IS NOT NULL').
+        where('tDuration IS NOT NULL')
+  )
+  scope :debit_pending, undebited.successful_call.with_time_and_duration
 
 
   def self.report_recording_url(url)
@@ -149,14 +156,6 @@ class CallAttempt < ActiveRecord::Base
       without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED])
     result = result.from("call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)") if campaign
     result.sum('ceil(tDuration/60)').to_i
-  end
-
-  def call_not_connected?
-    tStartTime.nil? || tEndTime.nil?
-  end
-
-  def call_time
-  (tDuration.to_f/60).ceil
   end
 
   ##

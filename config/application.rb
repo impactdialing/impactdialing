@@ -34,8 +34,8 @@ module ImpactDialing
 
     # Add additional load paths for your own custom dirs
     config.autoload_paths += %W(#{config.root}/jobs)
+    config.autoload_paths += %W(#{config.root}/app/concerns)
     config.autoload_paths += %W(#{config.root}/app/models/redis)
-    # config.load_paths += %W( #{Rails.root.to_s}/jobs )
 
     # Specify gems that this application depends on and have them installed with rake gems:install
     # config.gem "bj"

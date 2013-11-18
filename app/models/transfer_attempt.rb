@@ -1,7 +1,5 @@
 require Rails.root.join("lib/twilio_lib")
 class TransferAttempt < ActiveRecord::Base
-  include CallPayment
-
   belongs_to :transfer
   belongs_to :caller_session
   belongs_to :call_attempt
@@ -9,17 +7,15 @@ class TransferAttempt < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   scope :within, lambda { |from, to, campaign_id| where(:created_at => from..to).where(campaign_id: campaign_id)}
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
-  scope :debit_not_processed, where(debited: false).
-                              where('tEndTime is not null').
-                              where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')")
 
-  def call_time
-    (tDuration.to_f/60).ceil
-  end
-
-  def call_not_connected?
-    tStartTime.nil? || tEndTime.nil?
-  end
+  scope :undebited, where(debited: false)
+  scope :successful_call, where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')")
+  scope(:with_time_and_duration,
+        where('tStartTime IS NOT NULL').
+        where('tEndTime IS NOT NULL').
+        where('tDuration IS NOT NULL')
+  )
+  scope :debit_pending, undebited.successful_call.with_time_and_duration
 
   def conference
     Twilio::TwiML::Response.new do |r|

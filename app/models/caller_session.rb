@@ -1,37 +1,4 @@
 class CallerSession < ActiveRecord::Base
-  include Rails.application.routes.url_helpers
-  include CallerEvents
-  include CallPayment
-  include SidekiqEvents
-  include CallerTwiml
-
-
-  belongs_to :caller
-  belongs_to :campaign
-
-  scope :on_call, :conditions => {:on_call => true}
-  scope :available, :conditions => {:available_for_call => true, :on_call => true}
-  scope :not_available, :conditions => {:available_for_call => false, :on_call => true}
-  scope :connected_to_voter, where('voter_in_progress is not null')
-  scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
-  scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}
-  scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}
-  scope :debit_not_processed, lambda { where(:debited => "0", :caller_type => CallerType::PHONE).where('tEndTime is not null') }
-  scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
-  scope :first_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at ASC", :limit => 1}  unless caller.nil?}
-  scope :last_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at DESC", :limit => 1}  unless caller.nil?}
-  scope :first_campaign_time, lambda { |campaign| {:select => "created_at", :conditions => ["campaign_id = ?", campaign.id], :order => "created_at ASC", :limit => 1}  unless campaign.nil?}
-  scope :last_campaign_time, lambda { |campaign| {:select => "created_at", :conditions => ["campaign_id = ?", campaign.id], :order => "created_at DESC", :limit => 1}  unless campaign.nil?}
-
-
-  has_one :voter_in_progress, :class_name => 'Voter'
-  has_one :attempt_in_progress, :class_name => 'CallAttempt'
-  has_one :moderator
-  has_many :transfer_attempts
-
-  delegate :subscription_allows_caller?, :to => :caller
-  delegate :funds_available?, :to => :caller
-
   ##
   # PHONE: Call in sessions
   # TWILIO_CLIENT: Web based sessions
@@ -47,6 +14,41 @@ class CallerSession < ActiveRecord::Base
     DONE = "done"
   end
 
+  include Rails.application.routes.url_helpers
+  include CallerEvents
+  include SidekiqEvents
+  include CallerTwiml
+
+  scope :on_call, :conditions => {:on_call => true}
+  scope :available, :conditions => {:available_for_call => true, :on_call => true}
+  scope :not_available, :conditions => {:available_for_call => false, :on_call => true}
+  scope :connected_to_voter, where('voter_in_progress is not null')
+  scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
+  scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}
+  scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}
+  scope :undebited, where(debited: false)
+  scope(:phone_caller, where(caller_type: CallerType::PHONE))
+  scope(:with_time_and_duration,
+        where('tStartTime IS NOT NULL').
+        where('tEndTime IS NOT NULL').
+        where('tDuration IS NOT NULL')
+  )
+  scope :debit_pending, undebited.phone_caller.with_time_and_duration
+  scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
+  scope :first_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at ASC", :limit => 1}  unless caller.nil?}
+  scope :last_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at DESC", :limit => 1}  unless caller.nil?}
+  scope :first_campaign_time, lambda { |campaign| {:select => "created_at", :conditions => ["campaign_id = ?", campaign.id], :order => "created_at ASC", :limit => 1}  unless campaign.nil?}
+  scope :last_campaign_time, lambda { |campaign| {:select => "created_at", :conditions => ["campaign_id = ?", campaign.id], :order => "created_at DESC", :limit => 1}  unless campaign.nil?}
+
+  belongs_to :caller
+  belongs_to :campaign
+  has_one :voter_in_progress, :class_name => 'Voter'
+  has_one :attempt_in_progress, :class_name => 'CallAttempt'
+  has_one :moderator
+  has_many :transfer_attempts
+
+  delegate :subscription_allows_caller?, :to => :caller
+  delegate :funds_available?, :to => :caller
 
   def minutes_used
     return 0 if self.tDuration.blank?
@@ -217,14 +219,6 @@ class CallerSession < ActiveRecord::Base
 
    def self.caller_time(caller, campaign, from, to)
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("caller_type = 'Phone' ").sum('ceil(tDuration/60)').to_i
-   end
-
-   def call_not_connected?
-     tStartTime.nil? || tEndTime.nil? || caller_type == nil || caller_type == CallerType::TWILIO_CLIENT
-   end
-
-   def call_time
-   ((tDuration.to_f)/60).ceil
    end
 
    def start_conference(callerdc=DataCentre::Code::TWILIO)
