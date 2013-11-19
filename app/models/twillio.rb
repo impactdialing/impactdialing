@@ -59,7 +59,4 @@ class Twillio
       caller_session.redirect_caller
     end
   end
-
-
-
 end
