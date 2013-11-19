@@ -8,6 +8,7 @@ Spork.prefork do
 
   require File.expand_path("../../config/environment", __FILE__)
   require 'rspec/rails'
+  require 'webmock/rspec'
   require 'spork/ext/ruby-debug'
 
   # Requires supporting ruby files with custom matchers and macros, etc,
@@ -26,6 +27,8 @@ Spork.prefork do
     config.mock_with :rspec
 
     config.before(:suite) do
+      WebMock.allow_net_connect!
+
       if ENV["STRATEGY"] == 'web'
         DatabaseCleaner.strategy = :truncation
       else

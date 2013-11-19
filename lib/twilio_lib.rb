@@ -49,7 +49,9 @@ class TwilioLib
     req = Net::HTTP::Post.new(url)
     req.basic_auth @http_user, @http_password
     req.set_form_data(params)
-    http.start{http.request(req)}
+    RescueRetryNotify.on SocketError, 5 do
+      http.start{ http.request(req) }
+    end
   end
 
   def amd_params(campaign)
