@@ -3,8 +3,6 @@ require "spec_helper"
 describe CallerSession do
   include Rails.application.routes.url_helpers
 
-
-
   it "lists available caller sessions" do
     caller_session1 = create(:caller_session, on_call: true, available_for_call: false)
     caller_session2 = create(:webui_caller_session, on_call: true, available_for_call: true)
@@ -33,8 +31,6 @@ describe CallerSession do
     session.voter_in_progress.should eq(new_voter)
   end
 
-
-
   describe "Calling in" do
     it "puts the caller on hold" do
       session = create(:caller_session)
@@ -43,13 +39,11 @@ describe CallerSession do
   end
 
   describe "reassigned caller to another campaign" do
-
     it "should be true" do
       caller = create(:caller, :campaign => create(:campaign))
       caller_session = create(:caller_session, campaign: create(:campaign), caller: caller, reassign_campaign: CallerSession::ReassignCampaign::YES)
       caller_session.reassigned_to_another_campaign?.should be_true
     end
-
 
     it "handle reassign the caller_session to campaign should set reassign campaign to DONE" do
       campaign1 = create(:preview)
@@ -83,8 +77,6 @@ describe CallerSession do
       RedisReassignedCallerSession.should_receive(:delete).with(caller_session.id)
       caller_session.handle_reassign_campaign
     end
-
-
   end
 
   describe "monitor" do
@@ -108,7 +100,6 @@ describe CallerSession do
         end
       end.response
     end
-
   end
 
   it "lists attempts between two dates" do
@@ -126,7 +117,6 @@ describe CallerSession do
     just_right = create(:caller_session).tap { |ca| ca.update_attributes(created_at: 8.minutes.ago, tStartTime: 8.minutes.ago, tEndTime: 7.minutes.ago, tDuration: 60) }
     another_just_right = create(:caller_session).tap { |ca| ca.update_attributes(created_at: 8.minutes.from_now, tStartTime: 8.minutes.ago, tEndTime: 7.minutes.ago,  tDuration: 60) }
     CallerSession.time_logged_in(nil,nil,9.minutes.ago, 9.minutes.from_now).should eq(120)
-
   end
 
   describe "disconnected" do
@@ -136,7 +126,6 @@ describe CallerSession do
       caller_session = create(:caller_session, on_call: false, available_for_call: false, attempt_in_progress: call_attempt, campaign: campaign,state: "conference_ended")
       caller_session.disconnected?.should be_true
     end
-
   end
 
   it "should start a call in initial state" do
@@ -145,9 +134,7 @@ describe CallerSession do
   end
 
   describe "initial state" do
-    
     describe "subscription limit exceeded" do
-
       before(:each) do
         @account = create(:account)
         @caller = create(:caller, account: @account)
@@ -155,18 +142,15 @@ describe CallerSession do
         @campaign =  create(:campaign, script: @script)
       end
 
-
       it "should render correct twiml" do
-        caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)        
+        caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.</Say><Hangup/></Response>")
       end
-
     end
 
     describe "Campaign time period exceeded" do
-
       before(:each) do
         @account = create(:account)
         @caller = create(:caller, account: @account)
@@ -176,14 +160,13 @@ describe CallerSession do
 
       it "should render correct twiml" do
         caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        caller_session.should_receive(:funds_not_available?).and_return(false)        
+        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(true)
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
       end
     end
-
- end
+  end
 
   describe "conference_ended" do
     before(:each) do
@@ -192,7 +175,6 @@ describe CallerSession do
       @campaign =  create(:campaign, script: @script)
       @call_attempt = create(:call_attempt)
     end
-
 
     it "should set caller session endtime" do
       caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
@@ -206,8 +188,6 @@ describe CallerSession do
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
       caller_session.conference_ended.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end
-
-
   end
 
   describe "end_running_call" do
@@ -249,11 +229,5 @@ describe CallerSession do
       caller_session2 = create(:caller_session, campaign: campaign, created_at: 4.hours.ago)
       CallerSession.last_campaign_time(campaign).first.created_at.to_s.should eq(caller_session1.created_at.to_s)
     end
-
-
   end
-
-  
-
-
 end

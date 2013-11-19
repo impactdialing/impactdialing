@@ -79,7 +79,6 @@ class CallerSession < ActiveRecord::Base
     conference_ended_twiml
   end
 
-
   def end_caller_session
     begin
       end_session
@@ -94,7 +93,6 @@ class CallerSession < ActiveRecord::Base
     enqueue_call_flow(EndCallerSessionJob, [self.id])
   end
 
-
   def end_session
     self.update_attributes(endtime: Time.now, on_call: false, available_for_call: false)
     RedisPredictiveCampaign.remove(campaign_id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
@@ -105,7 +103,6 @@ class CallerSession < ActiveRecord::Base
     RedisCallerSession.remove_datacentre(self.id)
   end
 
-
   def account_not_activated?
     account.is_activated?
   end
@@ -113,7 +110,6 @@ class CallerSession < ActiveRecord::Base
   def subscription_limit_exceeded?
     !subscription_allows_caller?
   end
-
 
   def funds_not_available?
     !funds_available?
@@ -138,7 +134,6 @@ class CallerSession < ActiveRecord::Base
     else
       Twilio::Call.redirect(sid, continue_conf_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
     end
-
   end
 
   def redirect_caller_out_of_numbers
@@ -162,7 +157,6 @@ class CallerSession < ActiveRecord::Base
     end
   end
 
-
   def join_conference(mute_type)
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
@@ -181,7 +175,6 @@ class CallerSession < ActiveRecord::Base
     self.reassign_campaign == ReassignCampaign::YES
   end
 
-
   def handle_reassign_campaign(callerdc=DataCentre::Code::TWILIO)
     if reassigned_to_another_campaign?
       new_campaign_id = RedisReassignedCallerSession.campaign_id(self.id)
@@ -196,7 +189,6 @@ class CallerSession < ActiveRecord::Base
     end
   end
 
-
   def disconnected?
     on_call == false
   end
@@ -206,31 +198,31 @@ class CallerSession < ActiveRecord::Base
   end
 
   def get_conference_id
-     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-     conferences = Twilio::Conference.list({"FriendlyName" => session_key})
-     confs = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']
-     conference_sid = ""
-     conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
-   end
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    conferences = Twilio::Conference.list({"FriendlyName" => session_key})
+    confs = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']
+    conference_sid = ""
+    conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
+  end
 
-   def self.time_logged_in(caller, campaign, from, to)
-     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('tDuration').to_i
-   end
+  def self.time_logged_in(caller, campaign, from, to)
+    CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('tDuration').to_i
+  end
 
-   def self.caller_time(caller, campaign, from, to)
-     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("caller_type = 'Phone' ").sum('ceil(tDuration/60)').to_i
-   end
+  def self.caller_time(caller, campaign, from, to)
+    CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("caller_type = 'Phone' ").sum('ceil(tDuration/60)').to_i
+  end
 
-   def start_conference(callerdc=DataCentre::Code::TWILIO)
-     RedisCallerSession.set_datacentre(self.id, callerdc)
-     handle_reassign_campaign(callerdc)
-     if Campaign.predictive_campaign?(campaign.type)
-       loaded_caller_session = CallerSession.find(self.id)
-       loaded_caller_session.update_attributes(on_call: true, available_for_call: true)
-       RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, callerdc)
-       RedisOnHoldCaller.add(campaign_id, self.id, callerdc)
-     end
-   end
+  def start_conference(callerdc=DataCentre::Code::TWILIO)
+    RedisCallerSession.set_datacentre(self.id, callerdc)
+    handle_reassign_campaign(callerdc)
+    if Campaign.predictive_campaign?(campaign.type)
+      loaded_caller_session = CallerSession.find(self.id)
+      loaded_caller_session.update_attributes(on_call: true, available_for_call: true)
+      RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, callerdc)
+      RedisOnHoldCaller.add(campaign_id, self.id, callerdc)
+    end
+  end
 
   def assigned_to_lead?
     self.on_call && !self.available_for_call
@@ -248,5 +240,4 @@ class CallerSession < ActiveRecord::Base
   def data_centre
     RedisCallerSession.datacentre(self.id)
   end
-
 end
