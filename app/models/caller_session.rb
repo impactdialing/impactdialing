@@ -127,46 +127,44 @@ class CallerSession < ActiveRecord::Base
     Twilio::Verb.new { |v| v.play "#{DataCentre.call_back_host(data_centre)}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end
 
-  def twilio_redirect(url_method, url_obj_or_id)
-    url = send(url_method, url_obj_or_id, {
+  def phone_provider_redirect(url_method, obj_or_id)
+    url = send(url_method, obj_or_id, {
       :host => DataCentre.call_back_host(data_centre),
       :port => Settings.twilio_callback_port,
       :protocol => "http://",
       session_id: id
     })
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    RescueRetryNotify.on(SocketError, 5) do
-      Twilio::Call.redirect(sid, url)
-    end
+    Providers::Phone::Call.redirect(sid, url)
   end
 
   def redirect_caller
     if caller.is_phones_only?
-      twilio_redirect(:ready_to_call_caller_url, caller_id)
+      phone_provider_redirect(:ready_to_call_caller_url, caller_id)
     else
-      twilio_redirect(:continue_conf_caller_url, caller_id)
+      phone_provider_redirect(:continue_conf_caller_url, caller_id)
     end
   end
 
   def redirect_caller_out_of_numbers
     if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
-      twilio_redirect(:run_out_of_numbers_caller_url, caller_id)
+      phone_provider_redirect(:run_out_of_numbers_caller_url, caller_id)
     end
   end
 
   def redirect_caller_time_period_exceeded
     if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
-      twilio_redirect(:time_period_exceeded_caller_url, caller_id)
+      phone_provider_redirect(:time_period_exceeded_caller_url, caller_id)
     end
   end
 
   def redirect_account_has_no_funds
     if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
-      twilio_redirect(:account_out_of_funds_caller_url, caller)
+      phone_provider_redirect(:account_out_of_funds_caller_url, caller)
     end
   end
 
   def join_conference(mute_type)
+    # below crap should move to poro, see Monitors::CallersController#start <- only place this method is called
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
         v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod =>"GET", :muted => mute_type)
@@ -207,6 +205,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def get_conference_id
+    # Providers::Phone::Conference.list(self)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     conferences = Twilio::Conference.list({"FriendlyName" => session_key})
     confs = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']
