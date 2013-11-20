@@ -20,6 +20,10 @@ FactoryGirl.define do
     "campaign #{n}"
   end
 
+  sequence :sid do |n|
+    "sid#{n}"
+  end
+
   factory :account do
     tos_accepted_date Time.now
     record_calls false
@@ -133,6 +137,7 @@ FactoryGirl.define do
   factory :caller_session do
     campaign
     caller
+    sid { generate(:sid) }
     state 'initial'
     created_at Time.now
   end

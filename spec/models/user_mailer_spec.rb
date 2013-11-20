@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+WebMock.allow_net_connect!
+
 describe UserMailer do
   include ExceptionMethods
 

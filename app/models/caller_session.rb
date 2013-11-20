@@ -127,33 +127,42 @@ class CallerSession < ActiveRecord::Base
     Twilio::Verb.new { |v| v.play "#{DataCentre.call_back_host(data_centre)}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end
 
-  def redirect_caller
+  def twilio_redirect(url_method, url_obj_or_id)
+    url = send(url_method, url_obj_or_id, {
+      :host => DataCentre.call_back_host(data_centre),
+      :port => Settings.twilio_callback_port,
+      :protocol => "http://",
+      session_id: id
+    })
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    RescueRetryNotify.on(SocketError, 5) do
+      Twilio::Call.redirect(sid, url)
+    end
+  end
+
+  def redirect_caller
     if caller.is_phones_only?
-      Twilio::Call.redirect(sid, ready_to_call_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      twilio_redirect(:ready_to_call_caller_url, caller_id)
     else
-      Twilio::Call.redirect(sid, continue_conf_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      twilio_redirect(:continue_conf_caller_url, caller_id)
     end
   end
 
   def redirect_caller_out_of_numbers
     if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
-      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Call.redirect(sid, run_out_of_numbers_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      twilio_redirect(:run_out_of_numbers_caller_url, caller_id)
     end
   end
 
   def redirect_caller_time_period_exceeded
     if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
-      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Call.redirect(sid, time_period_exceeded_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      twilio_redirect(:time_period_exceeded_caller_url, caller_id)
     end
   end
 
   def redirect_account_has_no_funds
     if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
-      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Call.redirect(sid, account_out_of_funds_caller_url(caller, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      twilio_redirect(:account_out_of_funds_caller_url, caller)
     end
   end
 
