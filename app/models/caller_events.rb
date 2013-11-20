@@ -4,9 +4,8 @@ module CallerEvents
   end
 
   module InstanceMethods
-
     def publish_start_calling
-        publish_sync('start_calling', {caller_session_id: id})
+      publish_sync('start_calling', {caller_session_id: id})
     end
 
     def publish_voter_connected(call_id)
@@ -27,7 +26,7 @@ module CallerEvents
       unless caller.is_phones_only?
         event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))
         Pusher[session_key].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
-     end
+      end
     end
 
     def publish_calling_voter
@@ -45,12 +44,10 @@ module CallerEvents
           campaign_name: campaign.name))
       end
     end
-
   end
 
   def self.included(receiver)
     receiver.extend         ClassMethods
     receiver.send :include, InstanceMethods
   end
-
 end
