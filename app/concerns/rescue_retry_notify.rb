@@ -11,7 +11,7 @@ module RescueRetryNotify
       stop = Time.now
       diff = stop - start
       attempts << diff
-      if attempts.size < limit
+      if attempts.size < (limit || 0).to_i
         retry
       else
         msg = "#{attempts.size} attempts made:<br/>#{attempts.join('<br/>')}<br/>"
