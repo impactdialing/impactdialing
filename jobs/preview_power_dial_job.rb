@@ -6,12 +6,12 @@ class PreviewPowerDialJob
   def perform(caller_session_id, voter_id)
     caller_session = CallerSession.find_by_id_cached(caller_session_id)
     if caller_session.funds_not_available?
-      caller_session.redirect_account_has_no_funds
+      Providers::Phone::Call.redirect_for(caller_session, :account_has_no_funds)
       return
     end
 
     if caller_session.time_period_exceeded?
-      caller_session.redirect_caller_time_period_exceeded
+      Providers::Phone::Call.redirect_for(caller_session, :time_period_exceeded)
       return
     end
 
@@ -19,7 +19,7 @@ class PreviewPowerDialJob
     begin
       Twillio.dial(voter, caller_session)
     rescue ActiveRecord::StaleObjectError
-      caller_session.redirect_caller
+      Providers::Phone::Call.redirect_for(caller_session)
     end
   end
 end

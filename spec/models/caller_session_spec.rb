@@ -1,8 +1,9 @@
 require "spec_helper"
 
-WebMock.disable_net_connect!
-
 describe CallerSession do
+  before do
+    WebMock.disable_net_connect!
+  end
   include Rails.application.routes.url_helpers
   it "lists available caller sessions" do
     caller_session1 = create(:caller_session, on_call: true, available_for_call: false)
@@ -229,89 +230,6 @@ describe CallerSession do
       caller_session1 = create(:caller_session, campaign: campaign, created_at: 2.hours.ago)
       caller_session2 = create(:caller_session, campaign: campaign, created_at: 4.hours.ago)
       CallerSession.last_campaign_time(campaign).first.created_at.to_s.should eq(caller_session1.created_at.to_s)
-    end
-  end
-
-  describe 'redirecting callers' do
-    def encode(str)
-      URI.encode_www_form_component(str)
-    end
-    def request_body(url)
-      "CurrentUrl=#{encode(url)}&CurrentMethod=POST"
-    end
-    let(:caller) do
-      create(:caller)
-    end
-    let(:caller_session) do
-      create(:caller_session, {
-        caller: caller
-      })
-    end
-    let(:twilio_url) do
-      "api.twilio.com/2010-04-01/Accounts/#{TWILIO_ACCOUNT}/Calls/#{caller_session.sid}"
-    end
-
-    let(:url_opts) do
-      {
-        :host => DataCentre.call_back_host(caller_session.data_centre),
-        :port => Settings.twilio_callback_port,
-        :protocol => "http://",
-        session_id: caller_session.id
-      }
-    end
-    context 'to call more leads' do
-      context 'caller is phones only' do
-        before do
-          caller.update_attribute(:is_phones_only, true)
-          url = ready_to_call_caller_url(caller_session.caller_id, url_opts)
-          @request = stub_request(:post, "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@#{twilio_url}").
-                      with(:body => request_body(url))
-        end
-
-        it 'redirects caller to ready_to_call_caller_url' do
-          response = caller_session.redirect_caller
-          @request.should have_been_made
-        end
-      end
-
-      context 'caller is not phones only' do
-        before do
-          url = continue_conf_caller_url(caller_session.caller_id, url_opts)
-          @request = stub_request(:post, "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@#{twilio_url}").
-                      with(:body => request_body(url))
-        end
-
-        it 'redirects caller to continue_conf_caller_url' do
-          caller_session.redirect_caller
-          @request.should have_been_made
-        end
-      end
-    end
-
-    context 'when caller is available for call and campaign type is not predictive' do
-      after do
-        @request.should have_been_made
-      end
-      it 'can redirect caller to run_out_of_numbers_caller_url' do
-        url = run_out_of_numbers_caller_url(caller_session.caller_id, url_opts)
-        @request = stub_request(:post, "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@#{twilio_url}").
-                    with(:body => request_body(url))
-        caller_session.redirect_caller_out_of_numbers
-      end
-
-      it 'can redirect caller to time_period_exceeded_caller_url' do
-        url = time_period_exceeded_caller_url(caller_session.caller_id, url_opts)
-        @request = stub_request(:post, "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@#{twilio_url}").
-                    with(:body => request_body(url))
-        caller_session.redirect_caller_time_period_exceeded
-      end
-
-      it 'can redirect caller to account_out_of_funds_caller_url' do
-        url = account_out_of_funds_caller_url(caller_session.caller_id, url_opts)
-        @request = stub_request(:post, "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@#{twilio_url}").
-                    with(:body => request_body(url))
-        caller_session.redirect_account_has_no_funds
-      end
     end
   end
 end

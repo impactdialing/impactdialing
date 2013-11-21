@@ -127,42 +127,6 @@ class CallerSession < ActiveRecord::Base
     Twilio::Verb.new { |v| v.play "#{DataCentre.call_back_host(data_centre)}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end
 
-  def phone_provider_redirect(url_method, obj_or_id)
-    url = send(url_method, obj_or_id, {
-      :host => DataCentre.call_back_host(data_centre),
-      :port => Settings.twilio_callback_port,
-      :protocol => "http://",
-      session_id: id
-    })
-    Providers::Phone::Call.redirect(sid, url)
-  end
-
-  def redirect_caller
-    if caller.is_phones_only?
-      phone_provider_redirect(:ready_to_call_caller_url, caller_id)
-    else
-      phone_provider_redirect(:continue_conf_caller_url, caller_id)
-    end
-  end
-
-  def redirect_caller_out_of_numbers
-    if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
-      phone_provider_redirect(:run_out_of_numbers_caller_url, caller_id)
-    end
-  end
-
-  def redirect_caller_time_period_exceeded
-    if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
-      phone_provider_redirect(:time_period_exceeded_caller_url, caller_id)
-    end
-  end
-
-  def redirect_account_has_no_funds
-    if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
-      phone_provider_redirect(:account_out_of_funds_caller_url, caller)
-    end
-  end
-
   def join_conference(mute_type)
     # below crap should move to poro, see Monitors::CallersController#start <- only place this method is called
     response = Twilio::Verb.new do |v|

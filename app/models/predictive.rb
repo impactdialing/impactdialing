@@ -61,12 +61,16 @@ class Predictive < Campaign
 
   def check_campaign_fit_to_dial
     if !account.funds_available?
-      caller_sessions.available.each {|cs| cs.redirect_account_has_no_funds }
+      caller_sessions.available.each do |cs|
+        Providers::Phone::Call.redirect_for(cs, :account_has_no_funds)
+      end
       return
     end
 
     if time_period_exceeded?
-      caller_sessions.available.each {|cs| cs.redirect_caller_time_period_exceeded}
+      caller_sessions.available.each do |cs|
+        Providers::Phone::Call.redirect_for(cs, :time_period_exceeded)
+      end
       return
     end
   end

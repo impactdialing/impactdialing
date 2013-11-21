@@ -1,7 +1,5 @@
 require 'spec_helper'
 
-WebMock.allow_net_connect!
-
 describe UserMailer do
   include ExceptionMethods
 
@@ -9,6 +7,7 @@ describe UserMailer do
   let(:white_label){ 'stonesphonesdialer' }
 
   before(:each) do
+    WebMock.allow_net_connect!
     @mandrill = double
     @mailer = UserMailer.new
     @mailer.stub(:email_domain).and_return({'email_addresses'=>['email@impactdialing.com', white_labeled_email]})

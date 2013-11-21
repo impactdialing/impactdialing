@@ -56,7 +56,7 @@ class Twillio
     voter.update_attributes(status: CallAttempt::Status::FAILED)
     unless caller_session.nil?
       caller_session.update_attributes(attempt_in_progress: nil, voter_in_progress: nil, on_call: true, available_for_call: true)
-      caller_session.redirect_caller
+      Providers::Phone::Call.redirect_for(caller_session)
     end
   end
 end

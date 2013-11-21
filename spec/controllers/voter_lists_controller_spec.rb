@@ -2,6 +2,10 @@ require "spec_helper"
 
 describe VoterListsController do
 
+  before do
+    WebMock.allow_net_connect!
+  end
+
   describe "API Usage (JSON)" do
     let(:account) { create(:account) }
     before(:each) do
