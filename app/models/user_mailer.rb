@@ -158,7 +158,7 @@ class UserMailer
       :text => content,
       :from_name => 'impactdialing.com',
       :from_email => FROM_EMAIL,
-      :to => [{email: TECH_EMAIL},{email: MICHAEL_EMAIL}]
+      :to => [{email: TECH_EMAIL}]
     })
   end
 
