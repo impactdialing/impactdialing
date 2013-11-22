@@ -5,6 +5,13 @@ module Providers::Phone::Twilio
 
   def self.redirect(call_sid, url)
     connect
-    Twilio::Call.redirect(call_sid, url)
+    xml = Twilio::Call.redirect(call_sid, url)
+    return Response.new(xml)
+  end
+
+  def self.make(from, to, url, params)
+    connect
+    xml = Twilio::Call.make(from, to, url, params)
+    return Response.new(xml)
   end
 end

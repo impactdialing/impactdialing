@@ -14,6 +14,11 @@ describe Providers::Phone::Call do
   let(:twilio_url) do
     "api.twilio.com/2010-04-01/Accounts/#{TWILIO_ACCOUNT}/Calls/#{call_sid}"
   end
+  let(:valid_response) do
+    double('Response', {
+      validate_content!: nil
+    })
+  end
 
   before do
     WebMock.disable_net_connect!
@@ -35,6 +40,7 @@ describe Providers::Phone::Call do
                     :body => "",
                     :headers => {}
                   })
+      Providers::Phone::Twilio::Response.stub(:new){ valid_response }
       Providers::Phone::Call.redirect(call_sid, url, {retry_up_to: 5})
       request.should have_been_made.times(5)
     end
