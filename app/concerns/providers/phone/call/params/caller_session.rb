@@ -42,7 +42,6 @@ class Providers::Phone::Call::Params::CallerSession
     end
   end
 
-
   def time_period_exceeded_url
     if return_url?
       return time_period_exceeded_caller_url(caller, url_options)
