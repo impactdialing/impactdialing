@@ -6,7 +6,7 @@ module Providers::Phone::Call::Params
 
   def self.default_url_options
     return {
-      :host => DataCentre.call_back_host(nil),
+      :host => Settings.twilio_callback_host,
       :port => Settings.twilio_callback_port,
       :protocol => "http://"
     }
