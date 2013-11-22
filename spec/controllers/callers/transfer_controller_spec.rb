@@ -1,20 +1,75 @@
 require "spec_helper"
 
 describe TransferController do
+  def encode(str)
+    URI.encode_www_form_component(str)
+  end
+  def request_body(from, to, url, fallback_url, status_callback)
+    "From=#{from}&To=#{to}&Url=#{encode(url)}&FallbackUrl=#{encode(fallback_url)}&StatusCallback=#{encode(status_callback)}&Timeout=30"
+  end
 
-  it "should dial a number" do
-    script =  create(:script)
-    campaign = create(:predictive, script: script)
-    transfer = create(:transfer, script: script, phone_number: "1234567890", transfer_type: Transfer::Type::WARM)
-    caller_session = create(:caller_session)
-    call_attempt = create(:call_attempt)
-    call = create(:call, call_attempt: call_attempt)
-    voter = create(:voter, phone: "1234567890")
-    Transfer.should_receive(:find).and_return(transfer)
-    transfer.should_receive(:dial).with(caller_session, call_attempt, voter, Transfer::Type::WARM)
-    post :dial, transfer: {id: transfer.id} , caller_session:  caller_session.id, call: call.id, voter: voter.id
-    response.body.should eq("{\"type\":\"warm\"}")
+  before do
+    WebMock.disable_net_connect!
+  end
 
+  describe '#dial' do
+    let(:script){ create(:script) }
+    let(:campaign) do
+      create(:predictive, {
+        script: script
+      })
+    end
+    let(:transfer) do
+      create(:transfer, {
+        script: script,
+        phone_number: "0987654321",
+        transfer_type: Transfer::Type::WARM
+      })
+    end
+    let(:call_attempt) do
+      create(:call_attempt)
+    end
+    let(:call) do
+      create(:call, {
+        call_attempt: call_attempt
+      })
+    end
+    let(:voter) do
+      create(:voter, {
+        phone: '1234567890'
+      })
+    end
+    let(:caller_session) do
+      create(:caller_session, {
+        voter_in_progress: voter
+      })
+    end
+    let(:call_sid){ '123123' }
+    let(:twilio_url) do
+      "api.twilio.com/2010-04-01/Accounts/#{TWILIO_ACCOUNT}/Calls"
+    end
+    let(:fallback_url){ "blah" }
+    let(:valid_twilio_response) do
+      double('Response', {
+        error?: false,
+        call_sid: call_sid
+      })
+    end
+
+    before do
+      throw_away = TransferAttempt.create!
+      url = "http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/transfer/#{throw_away.id + 1}/connect"
+      status_callback = "http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/transfer/#{throw_away.id + 1}/end"
+      stub_request(:post, "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@#{twilio_url}").
+         with(:body => request_body(voter.phone, transfer.phone_number, url, fallback_url, status_callback)).
+         to_return(:status => 200, :body => "", :headers => {})
+      Providers::Phone::Twilio::Response.stub(:new){ valid_twilio_response }
+      post :dial, transfer: {id: transfer.id}, caller_session: caller_session.id, call: call.id, voter: voter.id
+    end
+
+    it "renders json describing the type of transfer" do
+      response.body.should eq("{\"type\":\"warm\"}")
+    end
   end
 
   it "should disconnect and set attempt status as success" do
