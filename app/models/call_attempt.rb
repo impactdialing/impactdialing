@@ -47,6 +47,9 @@ class CallAttempt < ActiveRecord::Base
     ((call_end || Time.now) - connecttime).to_i
   end
 
+  def succeeded?
+    return status == CallAttempt::Status::SUCCESS
+  end
 
   def duration_wrapped_up
     ((wrapup_time || Time.now) - (self.connecttime || Time.now)).to_i
