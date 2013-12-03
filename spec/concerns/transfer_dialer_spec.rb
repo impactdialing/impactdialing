@@ -42,7 +42,7 @@ describe TransferDialer do
   end
   describe '#dial' do
     let(:transfer_dialer) do
-      TransferDialer.new(transfer, caller_session, call, voter)
+      TransferDialer.new(transfer)
     end
     let(:expected_transfer_attempt_attrs) do
       {
@@ -71,27 +71,27 @@ describe TransferDialer do
 
     it 'creates a transfer_attempt' do
       transfer.transfer_attempts.should_receive(:create).with(expected_transfer_attempt_attrs){ transfer_attempt }
-      transfer_dialer.dial
+      transfer_dialer.dial(caller_session, call, voter)
     end
 
     it 'makes the call to connect the transfer' do
       Providers::Phone::Call.should_receive(:make_for).with(transfer, :connect){ success_response }
-      transfer_dialer.dial
+      transfer_dialer.dial(caller_session, call, voter)
     end
 
     it 'updates the new transfer_attempt' do
       transfer_attempt.should_receive(:update_attributes)
-      transfer_dialer.dial
+      transfer_dialer.dial(caller_session, call, voter)
     end
 
     it 'returns a hash {type: transfer_type}' do
-      transfer_dialer.dial.should eq({type: transfer.transfer_type})
+      transfer_dialer.dial(caller_session, call, voter).should eq({type: transfer.transfer_type})
     end
 
     context 'the transfer succeeds' do
       it 'updates the transfer_attempt sid with the call_sid from the response' do
         transfer_attempt.should_receive(:update_attributes).with({sid: success_response.call_sid})
-        transfer_dialer.dial
+        transfer_dialer.dial(caller_session, call, voter)
       end
     end
 
@@ -99,7 +99,7 @@ describe TransferDialer do
       it 'updates the transfer_attempt status with "Call failed"' do
         Providers::Phone::Call.stub(:make){ error_response }
         transfer_attempt.should_receive(:update_attributes).with({status: 'Call failed'})
-        transfer_dialer.dial
+        transfer_dialer.dial(caller_session, call, voter)
       end
     end
   end

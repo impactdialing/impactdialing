@@ -3,25 +3,12 @@ class TransferController < ApplicationController
   skip_before_filter :verify_authenticity_token
 
   def connect
-    transfer_attempt = TransferAttempt.find(params[:id])
-    transfer_attempt.update_attribute(:connecttime, Time.now)
+    transfer_attempt = TransferAttempt.includes(:transfer).find(params[:id])
 
-    if transfer_attempt.call_attempt.status == CallAttempt::Status::SUCCESS
-      render xml: transfer_attempt.hangup
-      return
-    end
-    transfer_attempt.caller_session.publish('transfer_connected', {type: transfer_attempt.transfer_type})
-    transfer_attempt.redirect_callee
-    if transfer_attempt.transfer_type == Transfer::Type::WARM
-      transfer_attempt.redirect_caller
-      transfer_attempt.caller_session.publish("warm_transfer",{})
-    else
-      conference_sid = transfer_attempt.caller_session.get_conference_id
-      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Conference.kick_participant(conference_sid, transfer_attempt.caller_session.sid)
-      transfer_attempt.caller_session.publish("cold_transfer",{})
-    end
-    render xml: transfer_attempt.conference
+    transfer_dialer = TransferDialer.new(transfer_attempt.transfer)
+    xml = transfer_dialer.connect(transfer_attempt)
+
+    render xml: xml
   end
 
   def disconnect
@@ -52,9 +39,11 @@ class TransferController < ApplicationController
     caller_session  = CallerSession.find params[:caller_session]
     call            = Call.find params[:call]
     voter           = Voter.find params[:voter]
-    transfer_dialer = TransferDialer.new(transfer, caller_session, call, voter)
-    json            = {json: transfer_dialer.dial}
-    render json
+
+    transfer_dialer = TransferDialer.new(transfer)
+    json            = transfer_dialer.dial(caller_session, call, voter)
+
+    render json: json
   end
 
 
@@ -77,7 +66,4 @@ class TransferController < ApplicationController
     end.response
     render xml: response
   end
-
-
-
 end

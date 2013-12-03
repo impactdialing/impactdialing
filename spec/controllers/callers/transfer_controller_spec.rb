@@ -1,6 +1,7 @@
 require "spec_helper"
 
 describe TransferController do
+  include Rails.application.routes.url_helpers
   def encode(str)
     URI.encode_www_form_component(str)
   end
@@ -87,18 +88,30 @@ describe TransferController do
   end
 
   it "should connect a call to a conference" do
+    url_opts = {
+      :host => Settings.twilio_callback_host,
+      :port => Settings.twilio_callback_port,
+      :protocol => "http://"
+    }
     campaign =  create(:preview)
-    caller_session = create(:caller_session, campaign: campaign, session_key: "12345")
-    call_attempt = create(:call_attempt)
-    transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-    conferences = double
-    Twilio::Conference.stub(:list).with({"FriendlyName" => caller_session.session_key}).and_return(conferences)
-    conferences.stub(:parsed_response).and_return({"TwilioResponse"=>{"Conferences"=>{"Conference"=>{"Sid"=>"CFadf94e58259b8cdd13b711ad2d079820", "AccountSid"=>"AC422d17e57a30598f8120ee67feae29cd", "FriendlyName"=>"f71489ed2375c77db54ed9112b95d3901d5e48ce", "Status"=>"completed", "DateCreated"=>"Mon, 21 Nov 2011 09:20:54 +0000", "ApiVersion"=>"2010-04-01", "DateUpdated"=>"Mon, 21 Nov 2011 09:22:28 +0000", "Uri"=>"/2010-04-01/Accounts/AC422d17e57a30598f8120ee67feae29cd/Conferences/CFadf94e58259b8cdd13b711ad2d079820", "SubresourceUris"=>{"Participants"=>"/2010-04-01/Accounts/AC422d17e57a30598f8120ee67feae29cd/Conferences/CFadf94e58259b8cdd13b711ad2d079820/Participants"}}, "page"=>"0", "numpages"=>"1", "pagesize"=>"50", "total"=>"1", "start"=>"0", "end"=>"0", "uri"=>"/2010-04-01/Accounts/AC422d17e57a30598f8120ee67feae29cd/Conferences?FriendlyName=f71489ed2375c77db54ed9112b95d3901d5e48ce", "firstpageuri"=>"/2010-04-01/Accounts/AC422d17e57a30598f8120ee67feae29cd/Conferences?FriendlyName=f71489ed2375c77db54ed9112b95d3901d5e48ce&Page=0&PageSize=50", "previouspageuri"=>"", "nextpageuri"=>"", "lastpageuri"=>"/2010-04-01/Accounts/AC422d17e57a30598f8120ee67feae29cd/Conferences?FriendlyName=f71489ed2375c77db54ed9112b95d3901d5e48ce&Page=0&PageSize=50"}}})
-    TransferAttempt.should_receive(:find).with(transfer_attempt.id.to_s).and_return(transfer_attempt)
-    transfer_attempt.should_receive(:redirect_callee)
-    Twilio.should_receive(:connect).with(TWILIO_ACCOUNT, TWILIO_AUTH).twice
-    Twilio::Conference.should_receive(:kick_participant)
+    caller = create(:caller, {campaign: campaign})
+    caller_session = create(:caller_session, campaign: campaign, session_key: "12345", caller: caller)
+    call_attempt = create(:call_attempt, {
+      sid: '123123'
+    })
+    transfer = create(:transfer, {
+      phone_number: '1234567890'
+    })
+    transfer_attempt = create(:transfer_attempt, {
+      caller_session: caller_session,
+      call_attempt: call_attempt,
+      transfer: transfer
+    })
+    Providers::Phone::Call.should_receive(:redirect).with(transfer_attempt.call_attempt.sid, callee_transfer_index_url(url_opts), {:retry_up_to => 5})
+    Providers::Phone::Call.should_receive(:redirect).with(caller_session.sid, pause_caller_url(caller, url_opts.merge(session_id: caller_session.id)), {:retry_up_to => 5})
+
     post :connect, id: transfer_attempt.id
+    transfer_attempt.reload
     transfer_attempt.connecttime.should_not be_nil
   end
 
