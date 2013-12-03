@@ -37,16 +37,6 @@ class TransferAttempt < ActiveRecord::Base
     Twilio::TwiML::Response.new { |r| r.Hangup }.text
   end
 
-  def redirect_callee
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(call_attempt.sid, callee_transfer_index_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", session_key: session_key))
-  end
-
-  def redirect_caller
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(caller_session.sid, caller_transfer_index_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", session_key: session_key, caller_session: caller_session_id))
-  end
-
   def self.aggregate(attempts)
     result = Hash.new
     attempts.each do |attempt|

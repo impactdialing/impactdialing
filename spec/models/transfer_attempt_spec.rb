@@ -32,30 +32,6 @@ describe TransferAttempt do
     end
   end
 
-  describe "redirect callee" do
-    it "should redirect the callee" do
-      caller_session = create(:caller_session)
-      call_attempt = create(:call_attempt, sid: "SID")
-      transfer = create(:transfer, phone_number: "1234567890")
-      transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-      Twilio.should_receive(:connect)
-      Twilio::Call.should_receive(:redirect).with(call_attempt.sid, "http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/transfer/callee")
-      transfer_attempt.redirect_callee
-    end
-  end
-
-  describe "redirect caller" do
-    it "should redirect the caller" do
-      caller_session = create(:caller_session, sid: "SID")
-      call_attempt = create(:call_attempt)
-      transfer = create(:transfer, phone_number: "1234567890")
-      transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-      Twilio.should_receive(:connect)
-      Twilio::Call.should_receive(:redirect).with(caller_session.sid, "http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/transfer/caller?caller_session=#{caller_session.id}")
-      transfer_attempt.redirect_caller
-    end
-  end
-
   describe "attempts within" do
     it "should return attempts within a date range" do
       caller_session = create(:caller_session, sid: "SID")
