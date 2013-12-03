@@ -22,15 +22,21 @@ class TransferController < ApplicationController
   end
 
   def end
+    # Twilio StatusCallback (async after call has completed)
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
     response = case params[:CallStatus] #using the 2010 api
-                 when "no-answer", "busy", "failed"
+                when "no-answer", "busy", "failed"
                   transfer_attempt.caller_session.publish('transfer_busy', {})
-                   transfer_attempt.fail
-                 else
-                   transfer_attempt.hangup
-               end
+                  # transfer_attempt.fail
+                  Twilio::Verb.new do |v|
+                    v.say "The transfered call was not answered "
+                    v.hangup
+                  end.response
+                else
+                  # transfer_attempt.hangup
+                  Twilio::TwiML::Response.new{|r| r.Hangup}.text
+                end
     render :xml => response
   end
 
