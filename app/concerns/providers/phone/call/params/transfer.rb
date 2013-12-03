@@ -27,25 +27,36 @@ class Providers::Phone::Call::Params::Transfer
   end
 
   def url_options
-    opts = {}
-    case type
-    when :caller
-      opts.merge!({caller_session: transfer_attempt.caller_session.id})
-    when :callee
-      opts.merge!({session_key: transfer_attempt.session_key})
-    end
-    return Providers::Phone::Call::Params.default_url_options.merge(opts)
+    return Providers::Phone::Call::Params.default_url_options
+  end
+
+  def caller_url_options
+    return callee_url_options.merge({
+      caller_session: transfer_attempt.caller_session.id
+    })
+  end
+
+  def callee_url_options
+    return url_options.merge({
+      session_key: transfer_attempt.session_key
+    })
   end
 
   def call_sid
-    case type
-    when :callee
-      transfer_attempt.call_attempt.sid
-    when :caller
-      transfer_attempt.caller_session.sid
-    else
-      nil
-    end
+    method_name = "#{type}_call_sid"
+    return send(method_name)
+  end
+
+  def default_call_sid
+    caller_call_sid
+  end
+
+  def caller_call_sid
+    transfer_attempt.caller_session.sid
+  end
+
+  def callee_call_sid
+    transfer_attempt.call_attempt.sid
   end
 
   def url
@@ -62,11 +73,11 @@ class Providers::Phone::Call::Params::Transfer
   end
 
   def callee_url
-    return callee_transfer_index_url(url_options)
+    return callee_transfer_index_url(callee_url_options)
   end
 
   def caller_url
-    return caller_transfer_index_url(url_options)
+    return caller_transfer_index_url(caller_url_options)
   end
 
   def disconnect_url

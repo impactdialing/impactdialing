@@ -72,13 +72,13 @@ describe Providers::Phone::Call::Params::Transfer do
   describe 'returning url_options on type requested' do
     it 'includes :session_key when type == :callee' do
       params = param_class.new(transfer, :callee)
-      params.url_options[:session_key].should eq transfer_attempt.session_key
+      params.callee_url_options[:session_key].should eq transfer_attempt.session_key
     end
 
     it 'includes :session_key and :caller_session' do
       params = param_class.new(transfer, :caller)
-      params.url_options[:session_key].should eq transfer_attempt.session_key
-      params.url_options[:caller_session].should eq caller_session.id
+      params.caller_url_options[:session_key].should eq transfer_attempt.session_key
+      params.caller_url_options[:caller_session].should eq caller_session.id
     end
   end
 end
