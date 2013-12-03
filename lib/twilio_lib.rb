@@ -59,17 +59,9 @@ class TwilioLib
       campaign.hangup_on_amd ? {'IfMachine'=> 'Hangup'} : {}
   end
 
-  def redirect_caller(call_sid, caller, session_id)
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(call_sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", session_id: session_id, event: "start_conf"))
-  end
-
   def redirect_call(call_sid, redirect_url)
     EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls/#{call_sid}.xml").post :head => {'authorization' => [@http_user, @http_password]},:body => {:Url => redirect_url,:Method => "POST" }
   end
-
-
-
 
   def call(http_method, service_method, params = {})
     if service_method=="IncomingPhoneNumbers/Local" && Rails.env =="development"  && !params.has_key?("SmsUrl")
