@@ -37,6 +37,11 @@ class PerMinute < Subscription
     available_minutes > 0
   end
 
+  # Override Subscription#available_minutes.
+  # PerMinute subscriptions do not expire 30 days from start date.
+  def available_minutes
+    return total_allowed_minutes - minutes_utlized
+  end
 
   def debit(call_time)
     if autorecharge_enabled && ((account.available_minutes * 0.09) < autorecharge_trigger)

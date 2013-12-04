@@ -123,12 +123,12 @@ describe PerMinute do
       account.debitable_subscription.minutes_utlized.should eq(6000)
     end
 
-    it "should not deduct from minutes used if alloted minutes does not fall in subscription time range" do
+    it "should deduct from minutes used if alloted minutes does not fall in subscription time range" do
       account.debitable_subscription.update_attributes(minutes_utlized: 10)
       account.debitable_subscription.update_attributes(subscription_start_date: (DateTime.now-40.days))
-      account.debitable_subscription.debit(2.00).should be_false
+      account.debitable_subscription.debit(2.00).should be_true
       account.debitable_subscription.reload
-      account.debitable_subscription.minutes_utlized.should eq(10)
+      account.debitable_subscription.minutes_utlized.should eq(12)
     end
   end
 
@@ -241,4 +241,23 @@ describe PerMinute do
     end
   end
 
+  describe '#available_minutes' do
+    let(:per_minute) do
+      PerMinute.create!(valid_attrs.merge({
+        stripe_customer_id: "123",
+        subscription_start_date: 2.weeks.ago,
+        created_at: 3.months.ago,
+        subscription_end_date: 1.year.from_now,
+        total_allowed_minutes: 500
+      }))
+    end
+    it 'returns the number of unused minutes regardless of #subscription_{start,end}_date' do
+      per_minute.available_minutes.should eq 500
+
+      per_minute.subscription_start_date = 3.months.ago
+      per_minute.save!
+
+      per_minute.available_minutes.should eq 500
+    end
+  end
 end
