@@ -29,5 +29,22 @@ describe Providers::Phone::Call::Params do
       actual = Providers::Phone::Call::Params.for(ar_model, type)
       actual.should eq param_inst
     end
+
+    context 'ar_model.class =~ WebuiCallerSession|PhonesOnlyCallerSession' do
+      let(:web_session){ create(:webui_caller_session) }
+      let(:phone_session){ create(:phones_only_caller_session) }
+
+      after do
+        @actual.should be_instance_of Providers::Phone::Call::Params::CallerSession
+      end
+
+      it "loads Params::CallerSession when ar_model.class == WebuiCallerSession" do
+        @actual = Providers::Phone::Call::Params.for(web_session)
+      end
+
+      it "loads Params::CallerSession when ar_model.class == PhonesOnlyCallerSession" do
+        @actual = Providers::Phone::Call::Params.for(phone_session)
+      end
+    end
   end
 end

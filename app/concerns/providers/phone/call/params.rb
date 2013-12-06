@@ -1,6 +1,11 @@
 module Providers::Phone::Call::Params
   def self.for(obj, type=:default)
-    params = self.const_get("#{obj.class}").new(obj, type)
+    klass = "#{obj.class}"
+    if ['WebuiCallerSession', 'PhonesOnlyCallerSession'].include? klass
+      # todo: move these to configuration obj
+      klass = 'CallerSession'
+    end
+    params = self.const_get(klass).new(obj, type)
     return params
   end
 
