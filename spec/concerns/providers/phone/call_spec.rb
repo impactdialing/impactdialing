@@ -1,19 +1,11 @@
 require 'spec_helper'
 
 describe Providers::Phone::Call do
-  def encode(str)
-    URI.encode_www_form_component(str)
-  end
-  def request_body(url)
-    "CurrentUrl=#{encode(url)}&CurrentMethod=POST"
-  end
+  include TwilioRequests
 
   let(:service_obj){ double }
   let(:call_sid){ '123123' }
   let(:url){ 'http://test.local/somewhere' }
-  let(:twilio_url) do
-    "api.twilio.com/2010-04-01/Accounts/#{TWILIO_ACCOUNT}/Calls/#{call_sid}"
-  end
   let(:valid_response) do
     double('Response', {
       validate_content!: nil
@@ -32,7 +24,7 @@ describe Providers::Phone::Call do
     end
 
     it 'retries specified times on SocketError' do
-      request = stub_request(:post, "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@#{twilio_url}").
+      request = stub_request(:post, twilio_call_url(call_sid)).
                   with(:body => request_body(url)).
                   to_raise(SocketError).times(4).then.
                   to_return({
