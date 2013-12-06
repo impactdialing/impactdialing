@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TwilioResponse>
+    <Conferences page="0" numpages="10" pagesize="50" total="462" start="0" end="49" uri="/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences" firstpageuri="/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences?Page=0&amp;PageSize=50" previouspageuri="" nextpageuri="/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences?Page=1&amp;PageSize=50" lastpageuri="/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences?Page=9&amp;PageSize=50">
+        <Conference>
+            <Sid>CFww834eJSKDJFjs328JF92JSDFwe</Sid>
+            <AccountSid>ASD23JKJDSK23jfdksvv23HDEW</AccountSid>
+            <FriendlyName>Party Line</FriendlyName>
+            <Status>completed</Status>
+            <DateCreated>Wed, 18 Aug 2010 20:20:06 +0000</DateCreated>
+            <ApiVersion>2010-04-01</ApiVersion>
+            <DateUpdated>Wed, 18 Aug 2010 20:24:32 +0000</DateUpdated>
+            <Uri>/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences/CFww834eJSKDJFjs328JF92JSDFwe</Uri>
+            <SubresourceUris>
+                <Participants>/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences/CFww834eJSKDJFjs328JF92JSDFwe/Participants</Participants>
+            </SubresourceUris>
+        </Conference>
+
+        <Conference>
+            <Sid>KWii283jFJSE823ejsjJFNEjwje2dfs</Sid>
+            <AccountSid>ASD23JKJDSK23jfdksvv23HDEW</AccountSid>
+            <FriendlyName>Party Line</FriendlyName>
+            <Status>completed</Status>
+            <DateCreated>Wed, 18 Aug 2010 20:20:06 +0000</DateCreated>
+            <ApiVersion>2010-04-01</ApiVersion>
+            <DateUpdated>Wed, 18 Aug 2010 20:24:32 +0000</DateUpdated>
+            <Uri>/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences/KWii283jFJSE823ejsjJFNEjwje2dfs</Uri>
+            <SubresourceUris>
+                <Participants>/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences/KWii283jFJSE823ejsjJFNEjwje2dfs/Participants</Participants>
+            </SubresourceUris>
+        </Conference>
+    </Conferences>
+</TwilioResponse>

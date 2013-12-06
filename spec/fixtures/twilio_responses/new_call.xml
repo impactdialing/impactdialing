@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TwilioResponse>
+    <Call>
+        <Sid>CFww834eJSKDJFjs328JF92JSDFwe</Sid>
+        <DateCreated>Thu, 19 Aug 2010 00:25:48 +0000</DateCreated>
+        <DateUpdated>Thu, 19 Aug 2010 00:25:48 +0000</DateUpdated>
+        <ParentCallSid/>
+        <AccountSid>ASD23JKJDSK23jfdksvv23HDEW</AccountSid>
+        <To>+14155551212</To>
+        <FormattedTo>(415) 555-1212</FormattedTo>
+        <From>+14158675309</From>
+        <FormattedFrom>(415) 867-5309</FormattedFrom>
+        <PhoneNumberSid></PhoneNumberSid>
+        <Status>queued</Status>
+        <StartTime/>
+        <EndTime/>
+        <Duration/>
+        <Price/>
+        <Direction>outbound-api</Direction>
+        <AnsweredBy/>
+        <ApiVersion>2010-04-01</ApiVersion>
+        <ForwardedFrom/>
+        <CallerName/>
+        <Uri>/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Calls/CFww834eJSKDJFjs328JF92JSDFwe</Uri>
+        <SubresourceUris>
+            <Notifications>/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Calls/CFww834eJSKDJFjs328JF92JSDFwe/Notifications</Notifications>
+            <Recordings>/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Calls/CFww834eJSKDJFjs328JF92JSDFwe/Recordings</Recordings>
+        </SubresourceUris>
+    </Call>
+</TwilioResponse>
