@@ -159,11 +159,11 @@ class CallerController < ApplicationController
   def kick_caller_off_conference
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:caller_session])
-    conference_sid = caller_session.get_conference_id
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Conference.kick_participant(conference_sid, caller_session.sid)
-    Twilio::Call.redirect(caller_session.sid, pause_caller_url(caller, session_id:  caller_session.id, host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port, protocol: "http://"))
+
+    Providers::Phone::Conference.kick(caller_session, {retry_up_to: 5})
+    Providers::Phone::Call.redirect_for(caller_session, :pause)
     caller_session.publish('caller_kicked_off', {})
+
     render nothing: true
   end
 
