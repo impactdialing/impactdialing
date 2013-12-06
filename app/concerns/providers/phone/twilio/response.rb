@@ -5,7 +5,7 @@ class Providers::Phone::Twilio::Response
 
 private
   def validate_content!(content)
-    if content['TwilioResponse'].nil?
+    if content['TwilioResponse'].nil? && content.size > 0
       raise InvalidContent, 'Content must have a TwilioResponse key'
     end
   end
@@ -13,10 +13,16 @@ private
 public
   def initialize(content)
     validate_content!(content)
-    @content = content['TwilioResponse']
+    if content.size > 0
+      @content = content['TwilioResponse']
+    else
+      @content = content
+    end
   end
 
   def success?
+    200 <= status &&
+    status < 400 &&
     content['RestException'].nil?
   end
 
@@ -24,11 +30,20 @@ public
     not success?
   end
 
+  def status
+    (content['Status'] || content.code).to_i
+  end
+
   def call_sid
     content['Call']['Sid']
   end
 
-  def [](key)
-    content[key]
+  def conference
+    content['Conferences']['Conference']
+  end
+
+  def conference_sid
+    return nil if conference.nil?
+    conference.class == Array ? conference.last['Sid'] : conference['Sid']
   end
 end
