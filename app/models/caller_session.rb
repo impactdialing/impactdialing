@@ -168,15 +168,6 @@ class CallerSession < ActiveRecord::Base
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
 
-  def get_conference_id
-    # Providers::Phone::Conference.list(self)
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    conferences = Twilio::Conference.list({"FriendlyName" => session_key})
-    confs = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']
-    conference_sid = ""
-    conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
-  end
-
   def self.time_logged_in(caller, campaign, from, to)
     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('tDuration').to_i
   end
