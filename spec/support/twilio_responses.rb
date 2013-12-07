@@ -23,4 +23,8 @@ module TwilioResponses
   def updated_call_response
     read_file('updated_call.xml')
   end
+
+  def muted_participant_response
+    read_file('muted_participant.xml')
+  end
 end
