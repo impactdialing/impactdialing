@@ -14,6 +14,12 @@ class Moderator < ActiveRecord::Base
     end
   end
 
+  def update_caller_session(caller_session_id)
+    update_attributes({
+      caller_session_id: caller_session_id
+    })
+  end
+
   def stop_monitoring(caller_session)
     conference_sid = get_conference_id(caller_session)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
