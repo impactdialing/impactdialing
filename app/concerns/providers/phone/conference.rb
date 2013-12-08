@@ -15,23 +15,23 @@ module Providers::Phone::Conference
     return response.conference_sid
   end
 
-  def self.list(search_options={}, opts={})
+  def self.call(method, *args)
+    opts = args.pop
     retry_up_to = opts[:retry_up_to]
-    response    = nil
+    response = nil
     RescueRetryNotify.on(SocketError, retry_up_to) do
-      response = service.conference_list(search_options)
+      response = service.send(method, *args)
     end
     return response
   end
 
+  def self.list(search_options={}, opts={})
+    return call(:conference_list, search_options, opts)
+  end
+
   def self.kick(caller_session, opts={})
-    retry_up_to     = opts[:retry_up_to]
     conference_sid  = sid_for(caller_session.session_key)
     call_sid        = caller_session.sid
-    response        = nil
-    RescueRetryNotify.on(SocketError, retry_up_to) do
-      response = service.kick(conference_sid, caller_session.sid)
-    end
-    return response
+    return call(:kick, conference_sid, call_sid, opts)
   end
 end
