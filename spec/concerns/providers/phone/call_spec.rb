@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Providers::Phone::Call do
-  include TwilioRequests
 
   let(:service_obj){ double }
   let(:call_sid){ '123123' }

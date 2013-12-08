@@ -1,8 +1,6 @@
 require "spec_helper"
 
 describe CallerController do
-  include TwilioRequests
-  include TwilioResponses
 
   before do
     WebMock.disable_net_connect!
@@ -94,27 +92,10 @@ describe CallerController do
       })
     end
     before do
-      @conf_list_request = stub_request(:get, twilio_conference_by_name_url(conference_name)).
-        to_return({
-          :status => 200,
-          :body => conference_by_name_response,
-          :headers => {
-            'Content-Type' => 'text/xml'
-          }
-        })
-      @kick_request = stub_request(:delete, twilio_conference_kick_participant_url(conference_sid, call_sid)).
-        to_return({
-          :status => 204
-        })
-      @redirect_request = stub_request(:post, twilio_call_url(call_sid)).
-        with(:body => request_body(pause_caller_url(caller, url_opts))).
-        to_return({
-          :status => 200,
-          :body => updated_call_response,
-          :headers => {
-            'Content-Type' => 'text/xml'
-          }
-        })
+      stub_twilio_conference_by_name_request
+      stub_twilio_kick_participant_request
+      post_body = pause_caller_url(caller, url_opts)
+      stub_twilio_redirect_request(post_body)
       post :kick_caller_off_conference, id: caller.id, caller_session: caller_session.id
     end
     it 'kicks caller off conference' do

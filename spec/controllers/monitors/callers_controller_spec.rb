@@ -1,8 +1,6 @@
 require 'spec_helper'
 
 describe Monitors::CallersController do
-  include TwilioRequests
-  include TwilioResponses
 
   let(:account){ create(:account) }
   let(:admin){ create(:user, account: account) }
@@ -29,21 +27,9 @@ describe Monitors::CallersController do
     end
 
     before do
-      @conf_list_request = stub_request(:get, twilio_conference_by_name_url(conference_name)).
-        to_return({
-          :status => 200,
-          :body => conference_by_name_response,
-          :headers => {
-            'Content-Type' => 'text/xml'
-          }
-        })
-      @mute_participant_request = stub_request(:post, twilio_conference_mute_url(conference_sid, call_sid)).
-        with(:body => twilio_mute_request_body).
-        to_return({
-          :status => 200,
-          :body => muted_participant_response,
-          :headers => {}
-        })
+      stub_twilio_conference_by_name_request
+      stub_twilio_mute_participant_request
+      stub_twilio_unmute_participant_request
     end
 
     it 'should be a success w/ valid params' do
@@ -66,7 +52,7 @@ describe Monitors::CallersController do
     end
     it 'requests the conference_id for CallerSession' do
       put :switch_mode, valid_params
-      @conf_list_request.should have_been_made
+      @conf_by_name_request.should have_been_made
     end
     it 'renders not connected message if caller is not on a call' do
       put :switch_mode, valid_params
