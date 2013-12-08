@@ -15,6 +15,16 @@ module Providers::Phone::Conference
     return response.conference_sid
   end
 
+  def self.toggle_mute_for(name, call_sid, opts={})
+    conference_sid = sid_for(name)
+    opts[:retry_up_to] ||= 5
+    if opts[:mute]
+      return mute(conference_sid, call_sid, opts)
+    else
+      return unmute(conference_sid, call_sid, opts)
+    end
+  end
+
   def self.call(method, *args)
     opts = args.pop
     retry_up_to = opts[:retry_up_to]
@@ -23,6 +33,14 @@ module Providers::Phone::Conference
       response = service.send(method, *args)
     end
     return response
+  end
+
+  def self.mute(conference_sid, call_sid, opts={})
+    return call(:mute_participant, conference_sid, call_sid, opts)
+  end
+
+  def self.unmute(conference_sid, call_sid, opts={})
+    return call(:unmute_participant, conference_sid, call_sid, opts)
   end
 
   def self.list(search_options={}, opts={})

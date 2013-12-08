@@ -20,4 +20,12 @@ module Providers::Phone::Twilio
   def self.kick(conference_sid, call_sid)
     connect{ Twilio::Conference.kick_participant(conference_sid, call_sid) }
   end
+
+  def self.mute_participant(conference_sid, call_sid)
+    connect{ Twilio::Conference.mute_participant(conference_sid, call_sid) }
+  end
+
+  def self.unmute_participant(conference_sid, call_sid)
+    connect{ Twilio::Conference.unmute_participant(conference_sid, call_sid) }
+  end
 end

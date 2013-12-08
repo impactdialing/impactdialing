@@ -92,4 +92,41 @@ describe Providers::Phone::Twilio do
       @response.should be_instance_of Providers::Phone::Twilio::Response
     end
   end
+
+  describe 'muting and unmuting conference participants' do
+    let(:call_sid){ 'callsid-123-abc' }
+    let(:conference_sid){ 'CFww834eJSKDJFjs328JF92JSDFwe' }
+    let(:conference_name){ 'Waiting room' }
+
+    before do
+      stub_twilio_conference_by_name_request
+    end
+    describe '.mute_participant(conference_sid, call_sid)' do
+      before do
+        stub_twilio_mute_participant_request
+        @response = Providers::Phone::Twilio.mute_participant(conference_sid, call_sid)
+      end
+
+      it 'updates Mute property to true for identified call on named conference' do
+        @mute_participant_request.should have_been_made
+      end
+      it 'returns Response instance' do
+        @response.should be_instance_of Providers::Phone::Twilio::Response
+      end
+    end
+
+    describe '.unmute_participant(conference_sid, call_sid)' do
+      before do
+        stub_twilio_unmute_participant_request
+        @response = Providers::Phone::Twilio.unmute_participant(conference_sid, call_sid)
+      end
+
+      it 'updates Mute property to false for identified call on named conference' do
+        @unmute_participant_request.should have_been_made
+      end
+      it 'returns Response instance' do
+        @response.should be_instance_of Providers::Phone::Twilio::Response
+      end
+    end
+  end
 end
