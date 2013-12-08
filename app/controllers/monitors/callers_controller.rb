@@ -23,13 +23,8 @@ module Monitors
     def switch_mode
       caller_session = CallerSession.find(params[:session_id])
       moderator = Moderator.find(params["monitor_session_id"])
-      moderator.update_attributes(caller_session_id: caller_session.id)
-      caller_session.moderator.switch_monitor_mode(params[:type])
-      if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
-        render text: "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.identity_name + "."
-      else
-        render text: "Status: Caller is not connected to a lead."
-      end
+      msg = ModeratedSession.switch_mode(moderator, caller_session, params[:type])
+      render text: msg
     end
 
     def start
