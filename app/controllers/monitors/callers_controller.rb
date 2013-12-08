@@ -26,7 +26,7 @@ module Monitors
       moderator.update_attributes(caller_session_id: caller_session.id)
       caller_session.moderator.switch_monitor_mode(params[:type])
       if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
-        render text: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.identity_name + "."
+        render text: "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.identity_name + "."
       else
         render text: "Status: Caller is not connected to a lead."
       end

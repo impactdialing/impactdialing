@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Monitors::CallersController do
+  # include TwilioRequestStubs
 
   let(:account){ create(:account) }
   let(:admin){ create(:user, account: account) }
@@ -58,17 +59,33 @@ describe Monitors::CallersController do
       put :switch_mode, valid_params
       response.body.should eq "Status: Caller is not connected to a lead."
     end
-    it 'renders a message with monitoring type and caller identity info when caller is on a call' do
-      call_attempt = create(:call_attempt, {
-        caller_session: caller_session,
-        status: 'Call in progress'
-      })
-      voter = create(:voter, {
-        call_attempts: [call_attempt],
-        caller_session: caller_session
-      })
-      put :switch_mode, valid_params
-      # response.body.should eq "Status: Monitoring in eavesdrop mode on #{caller_session.caller.identity_name}."
+
+    context 'a caller is on a call' do
+      before do
+        call_attempt = create(:call_attempt, {
+          caller_session: caller_session,
+          status: 'Call in progress'
+        })
+        create(:voter, {
+          call_attempts: [call_attempt],
+          caller_session: caller_session
+        })
+      end
+
+      it 'renders a message with monitoring type and caller identity info when caller is on a call' do
+        put :switch_mode, valid_params
+        response.body.should eq "Status: Monitoring in eavesdrop mode on #{caller_session.caller.identity_name}."
+      end
+      it 'when params[:type] != "breakin" it adds muted moderator' do
+        put :switch_mode, valid_params
+        @mute_participant_request.should have_been_made
+        @unmute_participant_request.should_not have_been_made
+      end
+      it 'when params[:type] == "breakin" it adds unmuted moderator' do
+        put :switch_mode, valid_params.merge({type: 'breakin'})
+        @unmute_participant_request.should have_been_made
+        @mute_participant_request.should_not have_been_made
+      end
     end
   end
 end
