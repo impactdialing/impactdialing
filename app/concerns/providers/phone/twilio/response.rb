@@ -31,7 +31,12 @@ public
   end
 
   def status
-    (content['Status'] || content.code).to_i
+    s = if content.kind_of? Hash
+          content['Status']
+        elsif content.respond_to? :code
+          content.code
+        end
+    s.to_i
   end
 
   def call_sid

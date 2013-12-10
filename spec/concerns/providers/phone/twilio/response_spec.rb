@@ -33,11 +33,17 @@ describe Providers::Phone::Twilio::Response do
       :size => 0
     })
   end
+  let(:codeless_content) do
+    ''
+  end
   let(:success_response) do
     Providers::Phone::Twilio::Response.new(valid_content)
   end
   let(:bodyless_response) do
     Providers::Phone::Twilio::Response.new(bodyless_content)
+  end
+  let(:codeless_response) do
+    Providers::Phone::Twilio::Response.new(codeless_content)
   end
   let(:error_response) do
     Providers::Phone::Twilio::Response.new(valid_content_with_error)
@@ -87,11 +93,15 @@ describe Providers::Phone::Twilio::Response do
   end
 
   describe '#status' do
-    it 'returns the value of content["Status"]' do
+    it 'returns the value of content["Status"] when content is a Hash' do
       success_response.status.should eq valid_content['TwilioResponse']['Status'].to_i
     end
 
-    it 'returns the value of content.code when content["Status"] is nil' do
+    it 'returns zero when content["Status"] is nil and content is a Hash' do
+      codeless_response.status.should eq 0
+    end
+
+    it 'returns the value of content.code when content is not a Hash' do
       bodyless_response.status.should eq bodyless_content.code.to_i
     end
   end
