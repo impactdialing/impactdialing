@@ -14,7 +14,6 @@ describe Providers::Phone::Twilio::Response do
   let(:valid_content_with_error) do
     {
       'TwilioResponse' => {
-        'Status' => '200',
         'RestException' => 'something went wrong'
       }
     }

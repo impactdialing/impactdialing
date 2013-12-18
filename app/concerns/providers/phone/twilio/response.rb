@@ -21,9 +21,10 @@ public
   end
 
   def success?
-    200 <= status &&
-    status < 400 &&
-    content['RestException'].nil?
+    (200 <= status &&
+         status < 400) ||
+    (content.kind_of?(Hash) &&
+     content['RestException'].nil?)
   end
 
   def error?
