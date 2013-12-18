@@ -108,4 +108,53 @@ describe CallerController do
       response.body.should be_blank
     end
   end
+
+  describe '#pause session_id:, CallSid:, clear_active_transfer:' do
+    let(:caller_session) do
+      create(:webui_caller_session)
+    end
+    let(:session_key){ caller_session.session_key }
+    let(:session_id){ caller_session.id }
+
+    context 'caller arrives here after disconnecting from the lead' do
+      before do
+        RedisCallerSession.active_transfer(session_key).should be_nil
+        post :pause, session_id: session_id
+      end
+      it 'Says: "Please enter your call results."' do
+        response.body.should have_content 'Please enter your call results.'
+      end
+    end
+
+    context 'caller arrives here after dialing a warm transfer' do
+      before do
+        RedisCallerSession.activate_transfer(session_key)
+        RedisCallerSession.active_transfer(session_key).should eq '1'
+        post :pause, session_id: session_id
+      end
+      after do
+        RedisCallerSession.deactivate_transfer(session_key)
+      end
+      it 'Plays silence for 0.5 seconds' do
+        response.body.should include '<Play digits="w"/>'
+      end
+    end
+
+    context 'caller arrives here after leaving a warm transfer' do
+      before do
+        RedisCallerSession.activate_transfer(session_key)
+        RedisCallerSession.active_transfer(session_key).should eq '1'
+        post :pause, session_id: session_id, clear_active_transfer: true
+      end
+      after do
+        RedisCallerSession.deactivate_transfer(session_key)
+      end
+      it 'clears the active transfer flag' do
+        RedisCallerSession.active_transfer(session_key).should be_nil
+      end
+      it 'Plays silence for 0.5 seconds' do
+        response.body.should include '<Play digits="w"/>'
+      end
+    end
+  end
 end

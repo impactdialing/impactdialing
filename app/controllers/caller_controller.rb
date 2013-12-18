@@ -35,8 +35,30 @@ class CallerController < ApplicationController
     render xml: @caller_session.continue_conf
   end
 
+  # This is the Dial:action for most caller TwiML
+  # so expect Caller to hit here for >1 state changes
   def pause
-    render xml: @caller_session.pause
+    pause_for_results = !RedisCallerSession.active_transfer?(@caller_session.session_key)
+    # ^^ Work around; this url can be removed from some Dial:actions
+    # todo: remove pause_url from unnecessary TwiML responses
+
+    if params[:clear_active_transfer].present?
+      RedisCallerSession.deactivate_transfer @caller_session.session_key
+    end
+    if pause_for_results
+      xml = Twilio::TwiML::Response.new do |r|
+        r.Say("Please enter your call results.")
+        r.Pause("length" => 600)
+      end.text
+    else
+      # Caller on warm transfer (RedisCallerSession.active_transfer?).
+      xml = Twilio::TwiML::Response.new do |r|
+        # Wait quietly for .5 seconds
+        # while caller joins transfer conference.
+        r.Play("digits" => "w")
+      end.text
+    end
+    render xml: xml
   end
 
   def run_out_of_numbers
@@ -161,6 +183,11 @@ class CallerController < ApplicationController
     caller_session = caller.caller_sessions.find(params[:caller_session])
 
     Providers::Phone::Conference.kick(caller_session, {retry_up_to: 5})
+    # this redirect probably isn't necessary since the Dial:action url is set to the pause_url in TransfersController#caller
+    # this redirect is only necessary in order to update the Call
+    # and trigger the Dial:action from the caller conference twiml
+    # in transfers#caller
+    # todo: file ticket w/ twilio asking why Dial:action isn't followed after kicking participant
     Providers::Phone::Call.redirect_for(caller_session, :pause)
     caller_session.publish('caller_kicked_off', {})
 

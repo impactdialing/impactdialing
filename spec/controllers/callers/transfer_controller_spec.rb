@@ -53,7 +53,9 @@ describe TransferController do
     let(:valid_twilio_response) do
       double('Response', {
         error?: false,
-        call_sid: call_sid
+        call_sid: call_sid,
+        content: {},
+        success?: true
       })
     end
 
@@ -108,7 +110,8 @@ describe TransferController do
       transfer: transfer
     })
     Providers::Phone::Call.should_receive(:redirect).with(transfer_attempt.call_attempt.sid, callee_transfer_index_url(url_opts), {:retry_up_to => 5})
-    Providers::Phone::Call.should_receive(:redirect).with(caller_session.sid, pause_caller_url(caller, url_opts.merge(session_id: caller_session.id)), {:retry_up_to => 5})
+    # see TransferDialer#connect
+    # Providers::Phone::Call.should_receive(:redirect).with(caller_session.sid, pause_caller_url(caller, url_opts.merge(session_id: caller_session.id)), {:retry_up_to => 5})
 
     post :connect, id: transfer_attempt.id
     transfer_attempt.reload
