@@ -1,6 +1,6 @@
 ImpactDialing::Application.configure do
   #michael
-  TWILIO_APP_SID="AP5f525b112e1f07d06355acde5470dd1d"
+  TWILIO_APP_SID="AP7d39738c833e144064374b12681bf0ba"
   TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   APP_NUMBER="7029797309"
@@ -42,4 +42,7 @@ ImpactDialing::Application.configure do
   config.action_mailer.delivery_method = :test
 
   config.active_support.deprecation = :log
+
+  # http://rdoc.info/github/jnunemaker/httparty/HTTParty/ClassMethods#ssl_ca_file-instance_method
+  Twilio.default_options[:ssl_ca_file] = ENV['SSL_CERT_FILE']
 end
