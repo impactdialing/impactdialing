@@ -2,6 +2,15 @@ class TransferDialer
   attr_reader :transfer, :transfer_attempt, :caller_session, :call, :voter
 
 private
+  def warm_transfer?
+    types = [
+      transfer_attempt.transfer_type,
+      transfer.transfer_type
+    ]
+    types.map!{|str| str.try(:downcase)}
+    types.include? Transfer::Type::WARM
+  end
+
   def transfer_attempt_dialed(response)
     if response.error?
       attempt_attrs = {status: CallAttempt::Status::FAILED}
@@ -9,6 +18,25 @@ private
       attempt_attrs = {sid: response.call_sid}
     end
     transfer_attempt.update_attributes(attempt_attrs)
+  end
+
+  def activate_transfer
+    if warm_transfer?
+      RedisCallerSession.activate_transfer caller_session.session_key
+    end
+  end
+
+  def deactivate_transfer
+    if warm_transfer?
+      RedisCallerSession.deactivate_transfer caller_session.session_key
+    end
+  end
+
+  def update_active_transfer(response)
+    Rails.logger.debug "CallOrder: TransferDialer TwilioResponse: #{response.content}"
+    if response.error?
+      deactivate_transfer
+    end
   end
 
   def transfer_attempt_connected
@@ -48,8 +76,14 @@ public
     @call           = call
     @voter          = voter
     @transfer_attempt = create_transfer_attempt
+    # update redis flag
+    activate_transfer
+    # twilio makes synchronous callback requests so redis flag must be set
+    # before calls are made if the flags are to handle callback requests
     response = Providers::Phone::Call.make_for(transfer, :connect)
+    update_active_transfer(response)
     transfer_attempt_dialed(response)
+
     return {type: transfer.transfer_type}
   end
 
@@ -74,14 +108,17 @@ public
     # Update current callee call with Twilio to transfers#callee, which renders conference xml
     Providers::Phone::Call.redirect_for(transfer, :callee)
     # todo: handle failures of above redirect
-    if transfer_attempt.transfer_type == Transfer::Type::WARM
+    if warm_transfer?
       # Keep the caller on the conference.
       # Update current caller call with Twilio to transfers#caller, which renders conference xml
       Providers::Phone::Call.redirect_for(transfer, :caller)
       # todo: handle failures of above redirect
       caller_session.publish("warm_transfer",{})
     else
-      Providers::Phone::Call.redirect_for(caller_session, :pause)
+      ##
+      # This redirect is unnecessary because Caller#kick_caller_off_conference redirects to pause_caller_url.
+      # Furthermore, the Dial:action for Transfer#caller is pause_caller_url.
+      # Providers::Phone::Call.redirect_for(caller_session, :pause)
       # todo: handle failures of above redirect
       caller_session.publish("cold_transfer",{})
     end
@@ -89,6 +126,7 @@ public
     phone_params = Providers::Phone::Call::Params::Transfer.new(transfer_attempt.transfer, :disconnect)
 
     return Twilio::TwiML::Response.new do |r|
+      # The action url for Dial will be called by Twilio when the dialed party hangs up
       r.Dial :hangupOnStar => 'false', :action => phone_params.url, :record => caller_session.campaign.account.record_calls do |d|
         d.Conference transfer_attempt.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => false
       end

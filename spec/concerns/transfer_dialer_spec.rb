@@ -16,10 +16,12 @@ describe TransferDialer do
   let(:voter) do
     mock_model('Voter')
   end
+  let(:session_key){ 'caller.session_key-abc123' }
   let(:caller_session) do
     mock_model('CallerSession', {
       campaign_id: 3,
-      voter_in_progress: voter
+      voter_in_progress: voter,
+      session_key: session_key
     })
   end
   let(:transfer_attempt) do
@@ -57,12 +59,16 @@ describe TransferDialer do
     let(:success_response) do
       double('Response', {
         error?: false,
-        call_sid: '123'
+        call_sid: '123',
+        content: {},
+        success?: true
       })
     end
     let(:error_response) do
       double('Response', {
-        error?: true
+        error?: true,
+        content: {},
+        success?: false
       })
     end
     before do
@@ -71,6 +77,11 @@ describe TransferDialer do
 
     it 'creates a transfer_attempt' do
       transfer.transfer_attempts.should_receive(:create).with(expected_transfer_attempt_attrs){ transfer_attempt }
+      transfer_dialer.dial(caller_session, call, voter)
+    end
+
+    it 'activates the transfer' do
+      RedisCallerSession.should_receive(:activate_transfer).with(caller_session.session_key)
       transfer_dialer.dial(caller_session, call, voter)
     end
 
@@ -96,8 +107,16 @@ describe TransferDialer do
     end
 
     context 'the transfer fails' do
-      it 'updates the transfer_attempt status with "Call failed"' do
+      before do
         Providers::Phone::Call.stub(:make){ error_response }
+      end
+
+      it 'deactivates the transfer' do
+        RedisCallerSession.should_receive(:deactivate_transfer).with(caller_session.session_key)
+        transfer_dialer.dial(caller_session, call, voter)
+      end
+
+      it 'updates the transfer_attempt status with "Call failed"' do
         transfer_attempt.should_receive(:update_attributes).with({status: 'Call failed'})
         transfer_dialer.dial(caller_session, call, voter)
       end
