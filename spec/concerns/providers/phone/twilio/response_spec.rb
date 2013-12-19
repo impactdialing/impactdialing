@@ -1,6 +1,12 @@
 require 'spec_helper'
 
 describe Providers::Phone::Twilio::Response do
+  def httparty_response(code, body)
+    double('HTTPartyInstance', {
+      code: code,
+      parsed_response: body
+    })
+  end
   let(:valid_content) do
     {
       'TwilioResponse' => {
@@ -23,48 +29,30 @@ describe Providers::Phone::Twilio::Response do
       'UnknownNode' => {}
     }
   end
-  let(:bodyless_content) do
-    double('HTTPARTY RESPONSE', {
-      code: 204,
-      body: '',
-      headers: {},
-      :[] => nil,
-      :size => 0
-    })
-  end
-  let(:codeless_content) do
+  let(:empty_content) do
     ''
   end
   let(:success_response) do
-    Providers::Phone::Twilio::Response.new(valid_content)
+    Providers::Phone::Twilio::Response.new(httparty_response('200', valid_content))
   end
   let(:bodyless_response) do
-    Providers::Phone::Twilio::Response.new(bodyless_content)
-  end
-  let(:codeless_response) do
-    Providers::Phone::Twilio::Response.new(codeless_content)
+    Providers::Phone::Twilio::Response.new(httparty_response('204', empty_content))
   end
   let(:error_response) do
-    Providers::Phone::Twilio::Response.new(valid_content_with_error)
+    Providers::Phone::Twilio::Response.new(httparty_response('400', valid_content_with_error))
   end
   describe 'new instance' do
     it 'sets @content to the value of TwilioResponse node' do
       success_response.content.should eq valid_content['TwilioResponse']
     end
 
-    it 'raises InvalidContent when missing TwilioResponse node' do
-      lambda{
-        Providers::Phone::Twilio::Response.new(invalid_content)
-      }.should raise_error(Providers::Phone::Twilio::Response::InvalidContent)
+    it 'sets @content to the value of response.parsed_response w/out TwilioResponse node' do
+      bodyless_response.content.should be_nil
     end
   end
 
   describe 'testing response success' do
     describe '#success?' do
-      it 'returns true when no RestException node is not found' do
-        success_response.success?.should be_true
-      end
-
       it 'returns true when status is 2xx' do
         bodyless_response.success?.should be_true
       end
@@ -92,16 +80,8 @@ describe Providers::Phone::Twilio::Response do
   end
 
   describe '#status' do
-    it 'returns the value of content["Status"] when content is a Hash' do
+    it 'returns httparty_response.code.to_i' do
       success_response.status.should eq valid_content['TwilioResponse']['Status'].to_i
-    end
-
-    it 'returns zero when content["Status"] is nil and content is a Hash' do
-      codeless_response.status.should eq 0
-    end
-
-    it 'returns the value of content.code when content is not a Hash' do
-      bodyless_response.status.should eq bodyless_content.code.to_i
     end
   end
 end

@@ -1,22 +1,22 @@
+##
+# This provides a thin convenience wrapper to Twilio
+# responses returned from the Twilio gem by webficient:
+# https://github.com/webficient/twilio.
+#
+# The Twilio gem returns an instance HTTParty::Response
+# from requests:
+# https://github.com/jnunemaker/httparty/blob/master/lib/httparty/response.rb
+#
 class Providers::Phone::Twilio::Response
-  class InvalidContent < ArgumentError; end
-
-  attr_reader :content
-
-private
-  def validate_content!(content)
-    if content['TwilioResponse'].nil? && content.size > 0
-      raise InvalidContent, 'Content must have a TwilioResponse key'
-    end
-  end
+  attr_reader :content, :response
 
 public
-  def initialize(content)
-    validate_content!(content)
-    if content.size > 0
-      @content = content['TwilioResponse']
+  def initialize(response)
+    @response = response
+    if response.parsed_response.nil?
+      @content = response.parsed_response
     else
-      @content = content
+      @content = response.parsed_response['TwilioResponse']
     end
   end
 
@@ -32,12 +32,7 @@ public
   end
 
   def status
-    s = if content.kind_of? Hash
-          content['Status']
-        elsif content.respond_to? :code
-          content.code
-        end
-    s.to_i
+    response.code.to_i
   end
 
   def call_sid
