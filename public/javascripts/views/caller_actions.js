@@ -1,7 +1,20 @@
 ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
   initialize: function(){
-    this.setMessage("Status: Not Connected.");
+    this.setMessage("Not Connected.");
+
+    ImpactDialing.Events.on('transfer.starting', function(){
+      $('#hangup_call').hide();
+      $('#kick_transfer').hide();
+    });
+    ImpactDialing.Events.on('transfer.error', function(){
+      $('#hangup_call').show();
+    });
+    ImpactDialing.Events.on('transfer.kicked', function(){
+      $('#kick_transfer').hide();
+    });
+
+    ImpactDialing.Events.bind('channel.subscribed', this.setupChannelHandlers);
   },
 
   render: function() {
@@ -16,9 +29,34 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     "click #submit_and_keep_call": "sendVoterResponse",
     "click #submit_and_stop_call": "sendVoterResponseAndDisconnect",
     "click #skip_voter" : "nextVoter",
-    "click #kick_self_out_of_conference" : "kickCallerOff",
+    "click #kick_caller" : "kickCallerOff",
+    "click #kick_transfer": "kickTransfer"
   },
 
+  setupChannelHandlers: function(){
+    var self = this;
+    ImpactDialing.Channel.bind('warm_transfer', function(){
+      $('#kick_transfer').show();
+      $('#kick_caller').show();
+      $("#submit_and_keep_call").hide();
+      $("#submit_and_stop_call").hide();
+    });
+    ImpactDialing.Channel.bind('cold_transfer', function(){
+      $('#hangup_call').hide();
+      $('#kick_caller').hide();
+      $('#schedule_callback').hide();
+      $('#transfer-calls').hide();
+      $("#submit_and_keep_call").show();
+      $("#submit_and_stop_call").show();
+    });
+    ImpactDialing.Channel.bind('caller_kicked_off', function(){
+      $('#kick_transfer').hide();
+      $('#kick_caller').hide();
+      $("#submit_and_keep_call").show();
+      $("#submit_and_stop_call").show();
+      $('#statusdiv').text("Status: Waiting for call results.");
+    });
+  },
 
   startCalling: function(){
     $('#stop_calling').show();
@@ -28,10 +66,10 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   conferenceStarted: function(){
     this.hideAllActions();
     $('#stop_calling').show();
-    this.setMessage("Status: Ready for calls.");
+    this.setMessage("Ready for calls.");
     var lead_info = this.options.lead_info;
     if(lead_info.get("campaign_out_of_leads") == true){
-      this.setMessage("Status: The campaign has run out of numbers.");
+      this.setMessage("The campaign has run out of numbers.");
       return
     }
     if (lead_info.get("dialer") && lead_info.get("dialer").toLowerCase() == "power") {
@@ -46,17 +84,17 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   callerConnectedDialer: function(){
     this.hideAllActions();
     $("#stop_calling").show();
-    this.setMessage("Status: Dialing.");
+    this.setMessage("Dialing.");
   },
 
   callingVoter: function(){
-    this.setMessage('Status: Call in progress.');
+    this.setMessage('Call in progress.');
     $("#skip_voter").hide();
     $("#call_voter").hide();
   },
 
   voterConnected: function(){
-    this.setMessage("Status: Connected.");
+    this.setMessage("Connected.");
     this.hideAllActions();
     this.showTransferCall();
     this.showScheduler();
@@ -65,47 +103,49 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
   voterConnectedDialer: function(){
     this.hideAllActions();
-    this.setMessage("Status: Connected.")
+    this.setMessage("Connected.")
     this.showTransferCall();
     this.showHangupButton();
     this.showScheduler();
   },
 
   voterDisconected: function(){
-    this.hideAllActions();
-    this.hideTransferCall();
-    if (this.model.get("transfer_type") == 'warm'){
-      this.kickSelfOutOfConferenceShow();
-      this.submitResponseButtonsHide();
-      this.setMessage("Status: Call Transfered.");
-    }else{
-      this.setMessage("Status: Waiting for call results.");
+    if( this.model.get("transfer_type") !== 'warm' ){
+      this.hideAllActions();
+      this.hideTransferCall();
+      this.setMessage("Waiting for call results.");
       this.submitResponseButtonsShow();
     }
   },
 
   sendVoterResponse: function(e) {
-      e.stopPropagation();
-      e.preventDefault();
+    e.stopPropagation();
+    e.preventDefault();
     if(this.options.schedule_callback.validateScheduleDate() == false){
       alert('The Schedule callback date is invalid');
       return false;
     }
     this.hideAllActions();
     this.hideScheduler();
-    this.setMessage("Status: Submitting call results.");
+    this.setMessage("Submitting call results.");
     var self = this;
     var options = {
-      data: {caller_session: self.model.get("session_id") },
+      data: {
+        caller_session: self.model.get("session_id")
+      },
+      success: function(data, status, xhr){
+        self.setMessage('Call results saved.');
+      },
+      error: function(xhr, status, error){
+        self.setMessage('Call results failed to save.');
+        $('#submit_and_keep_call').show();
+        $('#submit_and_stop_call').show();
+      }
     };
 
     $('#voter_responses').attr('action', "/calls/" + self.model.get("call_id") + "/submit_result");
-    $('#voter_responses').submit(function() {
-        $(this).ajaxSubmit(options);
-        return false;
-    });
-    $("#voter_responses").trigger("submit");
-    $("#voter_responses").unbind("submit");
+
+    $('#voter_responses').ajaxSubmit(options);
   },
 
    sendVoterResponseAndDisconnect: function(e) {
@@ -118,7 +158,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
     this.hideAllActions();
     this.hideScheduler();
-    this.setMessage("Status: Submitting call results.");
+    this.setMessage("Submitting call results.");
     var self = this;
     var options = {
       data: {stop_calling: true, caller_session: self.model.get("session_id") },
@@ -139,23 +179,24 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
   transferConferenceEnded: function(){
     this.hideHangupButton();
-    this.kickSelfOutOfConferenceHide();    
+    this.kickSelfOutOfConferenceHide();
+    this.kickTransferHide();
     if (this.model.get("call_id") == this.model.get("transfer_call_id")){
-      $('#transfer_button').html("Transfer");
-      $("#transfer-calls").show();      
+      $('#transfer_button').text("Transfer");
+      $("#transfer-calls").show();
       this.showHangupButton();
-    }    
+    }
   },
 
   callerKickedOff: function(){
     this.kickSelfOutOfConferenceHide();
     this.submitResponseButtonsShow();
-    this.setMessage("Status: Waiting for call results.");
+    this.setMessage("Waiting for call results.");
   },
 
 
   setMessage: function(text) {
-    $("#statusdiv").html(text);
+    $("#statusdiv").text("Status: " + text);
   },
 
   showTransferCall: function(){
@@ -183,11 +224,19 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   },
 
   kickSelfOutOfConferenceHide: function(){
-    $('#kick_self_out_of_conference').hide();
+    $('#kick_caller').hide();
   },
 
   kickSelfOutOfConferenceShow: function(){
-    $('#kick_self_out_of_conference').show();
+    $('#kick_caller').show();
+  },
+
+  kickTransferShow: function(){
+    $('#kick_transfer').show();
+  },
+
+  kickTransferHide: function(){
+    $('#kick_transfer').hide();
   },
 
   submitResponseButtonsShow: function(){
@@ -242,9 +291,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     var self = this;
     $("#hangup_call").hide();
     $("#transfer-calls").hide();
-    if (this.model.get("call_id") == this.model.get("transfer_call_id")){
+    // if (this.model.get("call_id") == this.model.get("transfer_call_id")){
       this.submitResponseButtonsShow();
-    }
+    // }
     $.ajax({
         url : "/calls/" + self.model.get("call_id") + "/hangup",
         type : "POST",
@@ -273,7 +322,6 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     })
   },
 
-
   hideAllActions: function(){
     $("#caller-actions a").hide();
   },
@@ -281,17 +329,12 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   kickCallerOff: function(e){
     e.stopPropagation();
     e.preventDefault();
-    var self = this;
-    $.ajax({
-        url : "/caller/" + self.model.get("caller_id") + "/kick_caller_off_conference",
-        data : {caller_session: self.model.get("session_id") },
-        type : "POST",
-        beforeSend: function(request)
-          {
-            var token = $("meta[name='csrf-token']").attr("content");
-            request.setRequestHeader("X-CSRF-Token", token);
-          },
-    });
+    this.model.kickCaller();
   },
 
-})
+  kickTransfer: function(e){
+    e.stopPropagation();
+    e.preventDefault();
+    this.model.kickTransfer();
+  }
+});

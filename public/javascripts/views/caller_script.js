@@ -29,6 +29,39 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
     "click #transfer_button" : "transferCall"
   },
 
+  initialize: function(){
+    ImpactDialing.Events.bind('transfer.kicked', function(){
+      $('#transfer_form').show();
+      $('#transfer_status').text('Transfer disconnected.');
+    });
+    if( _.isFunction(ImpactDialing.Channel.bind) ){
+      this.setupChannelHandlers();
+    } else {
+      ImpactDialing.Events.bind('channel.subscribed', this.setupChannelHandlers);
+    }
+  },
+
+  setupChannelHandlers: function(){
+    ImpactDialing.Channel.bind('transfer_connected', function(data){
+      var transfer_type = data.type;
+
+      $('#transfer_form').hide();
+      $('#transfer_status').text('Connecting parties...');
+    });
+    ImpactDialing.Channel.bind('warm_transfer', function(){
+      $('#transfer_form').hide();
+      $('#transfer_status').text('Connected: you, lead & transfer.');
+    });
+    ImpactDialing.Channel.bind('cold_transfer', function(){
+      $('#transfer_form').show();
+      $('#transfer_status').text('Connected: lead & transfer.');
+    });
+    ImpactDialing.Channel.bind('caller_kicked_off', function(){
+      $('#transfer_status').text('Disconnected.');
+      $('#transfer-calls').hide();
+    });
+  },
+
   render: function (ele) {
     $(this.el).html(Mustache.to_html($('#caller-campaign-script-transfer-template').html(), ele));
     return this;
@@ -36,20 +69,25 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
 
   transferCall: function(e){
     e.preventDefault();
-    $("#hangup_call").hide();
-    $('#transfer_button').html("Transferring...");
+    ImpactDialing.Events.trigger('transfer.starting');
+    $('#transfer_status').text('Preparing transfer...');
     var options = {
-      data: {voter: this.options.lead_info.get("fields").id, call: this.options.campaign_call.get("call_id"),
-       caller_session: this.options.campaign_call.get("session_id")  }
+      url: "/transfer/dial",
+      data: {
+        voter: this.options.lead_info.get("fields").id,
+        call: this.options.campaign_call.get("call_id"),
+        caller_session: this.options.campaign_call.get("session_id")
+      },
+      success: function(){
+        $('#transfer_status').text('Dialing...');
+        ImpactDialing.Events.trigger('transfer.success');
+      },
+      error: function(){
+        $('#transfer_status').text('There was an error connecting to the transfer. Please try again or contact support.');
+        ImpactDialing.Events.trigger('transfer.error');
+      }
     };
-    $('#transfer_form').attr('action', "/transfer/dial")
-    $('#transfer_form').submit(function() {
-
-        $('#transfer_button').html("Transfered");
-        $(this).ajaxSubmit(options);        
-        return false;
-    });
-    $("#transfer_form").trigger("submit");    
+    $('#transfer_form').ajaxSubmit(options);
   },
 
 });
@@ -58,8 +96,7 @@ ImpactDialing.Views.VoterInfo = Backbone.View.extend({
   render: function (ele) {
     $(this.el).html(Mustache.to_html($('#caller-campaign-script-transfer-template').html(), ele));
     return this;
-  },
-
+  }
 });
 
 
@@ -92,22 +129,26 @@ ImpactDialing.Views.CallerScript = Backbone.View.extend({
 
   render: function () {
     $(this.el).empty();
-    var self = this;
+    var self = this,
+        view;
     _.each(this.parseScriptElements(), function(ele){
-      if(ele["type"] == "text") {
-        $(self.el).append(new ImpactDialing.Views.CallerScriptText().render(ele).el);
-      }else if(ele["type"] == "questions"){
-        $(self.el).append(new ImpactDialing.Views.CallerQuestions().render(ele).el);
-      }else{
-        $(self.el).append(new ImpactDialing.Views.CallerNotes().render(ele).el);
+      if( ele["type"] == "text" ){
+        view = new ImpactDialing.Views.CallerScriptText().render(ele);
+      } else if( ele["type"] == "questions" ){
+        view = new ImpactDialing.Views.CallerQuestions().render(ele);
+      } else {
+        view = new ImpactDialing.Views.CallerNotes().render(ele);
       }
+      $(self.el).append(view.el);
     });
-    if(this.model && !_.isEmpty(this.model.get("transfers"))){
-      this.transfer_section = new ImpactDialing.Views.CallerTransfer({lead_info: this.options.lead_info,
-        campaign_call: this.options.campaign_call});
-      $(self.el).append(this.transfer_section.render(this.model.toJSON()).el);
+    if( this.model && !_.isEmpty(this.model.get("transfers")) ){
+      this.transfer_section = new ImpactDialing.Views.CallerTransfer({
+        lead_info: this.options.lead_info,
+        campaign_call: this.options.campaign_call
+      });
+      view = this.transfer_section.render(this.model.toJSON());
+      $(self.el).append(view.el);
     }
     return this;
-  },
-
+  }
 });

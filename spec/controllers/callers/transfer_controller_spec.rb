@@ -110,25 +110,11 @@ describe TransferController do
       transfer: transfer
     })
     Providers::Phone::Call.should_receive(:redirect).with(transfer_attempt.call_attempt.sid, callee_transfer_index_url(url_opts), {:retry_up_to => 5})
-    # see TransferDialer#connect
-    # Providers::Phone::Call.should_receive(:redirect).with(caller_session.sid, pause_caller_url(caller, url_opts.merge(session_id: caller_session.id)), {:retry_up_to => 5})
+    Providers::Phone::Call.should_receive(:redirect).with(caller_session.sid, pause_caller_url(caller, url_opts.merge(session_id: caller_session.id)), {:retry_up_to => 5})
 
     post :connect, id: transfer_attempt.id
     transfer_attempt.reload
     transfer_attempt.connecttime.should_not be_nil
-  end
-
-  it "should hangup if callee is disconnected" do
-    campaign =  create(:power)
-    caller_session = create(:caller_session, campaign: campaign, session_key: "12345")
-    call_attempt = create(:call_attempt, status: CallAttempt::Status::SUCCESS)
-    transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-    conferences = double
-    Twilio::Conference.stub(:list).with({"FriendlyName" => caller_session.session_key}).and_return(conferences)
-    conferences.stub(:parsed_response).and_return({"TwilioResponse"=>{"Conferences"=>{"Conference"=>{"Sid"=>"CFadf94e58259b8cdd13b711ad2d079820", "AccountSid"=>"AC422d17e57a30598f8120ee67feae29cd", "FriendlyName"=>"f71489ed2375c77db54ed9112b95d3901d5e48ce", "Status"=>"completed", "DateCreated"=>"Mon, 21 Nov 2011 09:20:54 +0000", "ApiVersion"=>"2010-04-01", "DateUpdated"=>"Mon, 21 Nov 2011 09:22:28 +0000", "Uri"=>"/2010-04-01/Accounts/AC422d17e57a30598f8120ee67feae29cd/Conferences/CFadf94e58259b8cdd13b711ad2d079820", "SubresourceUris"=>{"Participants"=>"/2010-04-01/Accounts/AC422d17e57a30598f8120ee67feae29cd/Conferences/CFadf94e58259b8cdd13b711ad2d079820/Participants"}}, "page"=>"0", "numpages"=>"1", "pagesize"=>"50", "total"=>"1", "start"=>"0", "end"=>"0", "uri"=>"/2010-04-01/Accounts/AC422d17e57a30598f8120ee67feae29cd/Conferences?FriendlyName=f71489ed2375c77db54ed9112b95d3901d5e48ce", "firstpageuri"=>"/2010-04-01/Accounts/AC422d17e57a30598f8120ee67feae29cd/Conferences?FriendlyName=f71489ed2375c77db54ed9112b95d3901d5e48ce&Page=0&PageSize=50", "previouspageuri"=>"", "nextpageuri"=>"", "lastpageuri"=>"/2010-04-01/Accounts/AC422d17e57a30598f8120ee67feae29cd/Conferences?FriendlyName=f71489ed2375c77db54ed9112b95d3901d5e48ce&Page=0&PageSize=50"}}})
-
-    post :connect, id: transfer_attempt.id
-    response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
   end
 
   it "should end a successful call" do

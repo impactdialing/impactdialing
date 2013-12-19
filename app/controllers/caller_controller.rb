@@ -1,16 +1,43 @@
 class CallerController < ApplicationController
   include SidekiqEvents
   layout "caller"
-  skip_before_filter :verify_authenticity_token, :only =>[:call_voter, :start_calling, :stop_calling, :token,
-     :end_session, :skip_voter, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
-     :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre, :kick_caller_off_conference]
+  skip_before_filter :verify_authenticity_token, :only =>[
+    :call_voter, :start_calling, :stop_calling, :token,
+    :end_session, :skip_voter, :ready_to_call,
+    :continue_conf, :pause, :run_out_of_numbers,
+    :callin_choice, :read_instruction_options,
+    :conference_started_phones_only_preview,
+    :conference_started_phones_only_power,
+    :conference_started_phones_only_predictive,
+    :gather_response, :submit_response, :next_question,
+    :next_call, :time_period_exceeded,
+    :account_out_of_funds, :datacentre, :kick
+  ]
 
-  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :call_voter, :skip_voter, :stop_calling,
-    :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
-    :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre, :kick_caller_off_conference]
+  before_filter :check_login, :except=>[
+    :login, :feedback, :end_session, :start_calling,
+    :phones_only, :call_voter, :skip_voter, :stop_calling,
+    :ready_to_call, :continue_conf, :pause, :run_out_of_numbers,
+    :callin_choice, :read_instruction_options,
+    :conference_started_phones_only_preview,
+    :conference_started_phones_only_power,
+    :conference_started_phones_only_predictive,
+    :gather_response, :submit_response, :next_question,
+    :next_call, :time_period_exceeded,
+    :account_out_of_funds, :datacentre, :kick
+  ]
 
-  before_filter :find_caller_session , :only => [:pause, :stop_calling, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
-    :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds]
+  before_filter :find_caller_session , :only => [
+    :pause, :stop_calling, :ready_to_call,
+    :continue_conf, :pause, :run_out_of_numbers,
+    :callin_choice, :read_instruction_options,
+    :conference_started_phones_only_preview,
+    :conference_started_phones_only_power,
+    :conference_started_phones_only_predictive,
+    :gather_response, :submit_response, :next_question,
+    :next_call, :time_period_exceeded,
+    :account_out_of_funds
+  ]
 
   before_filter :find_session, :only => [:end_session]
   layout 'caller'
@@ -178,18 +205,24 @@ class CallerController < ApplicationController
     end
   end
 
-  def kick_caller_off_conference
-    caller = Caller.find(params[:id])
-    caller_session = caller.caller_sessions.find(params[:caller_session])
-
-    Providers::Phone::Conference.kick(caller_session, {retry_up_to: 5})
-    # this redirect probably isn't necessary since the Dial:action url is set to the pause_url in TransfersController#caller
-    # this redirect is only necessary in order to update the Call
-    # and trigger the Dial:action from the caller conference twiml
-    # in transfers#caller
-    # todo: file ticket w/ twilio asking why Dial:action isn't followed after kicking participant
-    Providers::Phone::Call.redirect_for(caller_session, :pause)
-    caller_session.publish('caller_kicked_off', {})
+  def kick
+    check_login
+    @caller_session = @caller.caller_sessions.find(params[:caller_session_id])
+    participant_type = params[:participant_type]
+    case participant_type
+    when 'transfer'
+      transfer_attempt = @caller_session.transfer_attempts.last
+      Providers::Phone::Conference.kick(transfer_attempt, {retry_up_to: 5})
+    when 'caller'
+      Providers::Phone::Conference.kick(@caller_session, {retry_up_to: 5})
+      # this redirect probably isn't necessary since the Dial:action url is set to the pause_url in TransfersController#caller
+      # this redirect is only necessary in order to update the Call
+      # and trigger the Dial:action from the caller conference twiml
+      # in transfers#caller
+      # todo: file ticket w/ twilio asking why Dial:action isn't followed after kicking participant
+      Providers::Phone::Call.redirect_for(@caller_session, :pause)
+      @caller_session.publish('caller_kicked_off', {})
+    end
 
     render nothing: true
   end

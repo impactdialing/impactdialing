@@ -42,7 +42,7 @@ ImpactDialing::Application.routes.draw do
       post :call_voter
       post :stop_calling
       post :skip_voter
-      post :kick_caller_off_conference
+      post :kick
       post :time_period_exceeded
       post :account_out_of_funds
     end

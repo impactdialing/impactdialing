@@ -56,20 +56,24 @@ describe CallerController do
     end
   end
 
-  describe "kick_caller_off_conference" do
+  describe "kick id:, caller_session:, participant_type:" do
     let(:account){ create(:account) }
     let(:campaign){ create(:predictive, account: account) }
     let(:caller){ create(:caller, campaign: campaign, account: account) }
     let(:caller_identity){ create(:caller_identity) }
     let(:voter){ create(:voter, campaign: campaign) }
 
+    let(:transfer_attempt) do
+      create(:transfer_attempt)
+    end
     let(:caller_session) do
       create(:webui_caller_session, {
         session_key: caller_identity.session_key,
         caller_type: CallerSession::CallerType::TWILIO_CLIENT,
         caller: caller,
         campaign: campaign,
-        sid: '123abc'
+        sid: '123abc',
+        transfer_attempts: [transfer_attempt]
       })
     end
     let(:url_opts) do
@@ -81,7 +85,6 @@ describe CallerController do
       }
     end
     let(:conference_sid){ 'CFww834eJSKDJFjs328JF92JSDFwe' }
-    let(:call_sid){ caller_session.sid }
     let(:conference_name){ caller_session.session_key }
     let(:valid_response) do
       double('TwilioResponseObject', {
@@ -91,21 +94,49 @@ describe CallerController do
         :conference_sid => conference_sid
       })
     end
+    let(:valid_params) do
+      {
+        id: caller.id,
+        caller_session_id: caller_session.id
+      }
+    end
     before do
+      session[:caller] = caller.id
       stub_twilio_conference_by_name_request
-      stub_twilio_kick_participant_request
-      post_body = pause_caller_url(caller, url_opts)
-      stub_twilio_redirect_request(post_body)
-      post :kick_caller_off_conference, id: caller.id, caller_session: caller_session.id
     end
-    it 'kicks caller off conference' do
-      @kick_request.should have_been_made
+    context 'participant_type: "caller"' do
+      let(:call_sid){ caller_session.sid }
+      before do
+        stub_twilio_kick_participant_request
+        post_body = pause_caller_url(caller, url_opts)
+        stub_twilio_redirect_request(post_body)
+        post :kick, valid_params.merge(participant_type: 'caller')
+      end
+
+      it 'kicks caller off conference' do
+        @kick_request.should have_been_made
+      end
+      it 'redirects caller to pause url' do
+        @redirect_request.should have_been_made
+      end
+      it 'renders nothing' do
+        response.body.should be_blank
+      end
     end
-    it 'redirects caller to pause url' do
-      @redirect_request.should have_been_made
-    end
-    it 'renders nothing' do
-      response.body.should be_blank
+
+    context 'participant_type: "transfer"' do
+      let(:call_sid){ transfer_attempt.sid }
+      before do
+        stub_twilio_kick_participant_request
+        post :kick, valid_params.merge(participant_type: 'transfer')
+      end
+
+      it 'kicks transfer off conference' do
+        @kick_request.should have_been_made
+      end
+      it 'renders nothing' do
+        response.body.should be_blank
+      end
     end
   end
 

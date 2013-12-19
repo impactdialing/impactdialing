@@ -7,6 +7,8 @@ window.ImpactDialing = {
   Collections: {},
   Views: {},
   Routers: {},
+  Events: _.extend({}, Backbone.Events),
+  Channel: {},
   initialize: function() {
   }
 };

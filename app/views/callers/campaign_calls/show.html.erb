@@ -11,99 +11,98 @@
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
-    $(window).bind("beforeunload", function() {
-          if ($("#caller_session").val()) {
-              $.ajax({
-                  url : "/caller/" + $("#caller").val() + "/stop_calling",
-                  data : {session_id : $("#caller_session").val() },
-                  type : "POST",
-                  async : false,
-                  success : function(response) {
-                      $("#start_calling").show();
-                  }
-              });
+    $(window).bind("beforeunload", function(){
+      if( $("#caller_session").val() ){
+        $.ajax({
+          url : "/caller/" + $("#caller").val() + "/stop_calling",
+          data : {session_id : $("#caller_session").val() },
+          type : "POST",
+          async : false,
+          success : function(response) {
+            $("#start_calling").show();
           }
-
-      });
+        });
+      }
+    });
   </script>
 <% end %>
-
-
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
     $(function() {
-        var campaign_call = new ImpactDialing.Models.CampaignCall();
-        campaign_call.set({pusher_key: '<%= Pusher.key %>'});
-        var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
-        campaign_call_view.render();
-      });
+      var campaign_call = new ImpactDialing.Models.CampaignCall();
+      campaign_call.set({pusher_key: '<%= Pusher.key %>'});
+      var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
+      campaign_call_view.render();
+    });
   </script>
 <% end %>
+
 <%= render 'shared/browser_test' %>
+
 <div id="caller-alert">
   <p><strong></strong></p>
 </div>
+
 <div id="container" >
   <form class="sticky sticky-voter-info">
     <fieldset>
-        <legend>Lead information</legend>
-        <div id="voter_info_message" class="rt">
-          <em>When connected, lead information will appear here.</em>
-        </div>
-        <ul id="voter_info" class="clearfix">
-        </ul>
-
+      <legend>Lead information</legend>
+      <div id="voter_info_message" class="rt">
+        <em>When connected, lead information will appear here.</em>
+      </div>
+      <ul id="voter_info" class="clearfix">
+      </ul>
     </fieldset>
   </form>
 </div>
- <script type="javascript/html" id="caller-campaign-script-lead-info-template">
-          {{#fields}}
-            {{#ID_flag}}
-              <li>ID: <b>{{custom_id}}</b></li>
-            {{/ID_flag}}
-            {{#FirstName_flag}}
-              <li>First name: <b>{{first_name}}</b></li>
-            {{/FirstName_flag}}
-            {{#MiddleName_flag}}
-              <li>Middle name: <b>{{middle_name}}</b></li>
-            {{/MiddleName_flag}}
-            {{#LastName_flag}}
-              <li>Last name: <b>{{last_name}}</b></li>
-            {{/LastName_flag}}
-            {{#Suffix_flag}}
-              <li>Suffix: <b>{{suffix}}</b></li>
-            {{/Suffix_flag}}
-            {{#Address_flag}}
-              <li>Address: <b>{{address}}</b></li>
-            {{/Address_flag}}
-            {{#City_flag}}
-              <li>City: <b>{{city}}</b></li>
-            {{/City_flag}}
-            {{#State/Province_flag}}
-              <li>State/Province: <b>{{state}}</b></li>
-            {{/State/Province_flag}}
-            {{#Zip/Postal Code_flag}}
-              <li>Zip/Postal Code: <b>{{zip_code}}</b></li>
-            {{/Zip/Postal Code_flag}}
-            {{#Country_flag}}
-              <li>Country: <b>{{country}}</b></li>
-            {{/Country_flag}}
-            {{#Phone_flag}}
-              <li>Phone: <b>{{phone}}</b></li>
-            {{/Phone_flag}}
-            {{#Email_flag}}
-              <li>Email: <b>{{email}}</b></li>
-            {{/Email_flag}}
-        {{/fields}}
-        {{#custom_lead_info}}
-          <li>{{key}}: <b>{{value}}</b></li>
-        {{/custom_lead_info}}
-    </script>
 
-<form id="voter_responses" method="post" >
+<script type="javascript/html" id="caller-campaign-script-lead-info-template">
+  {{#fields}}
+    {{#ID_flag}}
+      <li>ID: <b>{{custom_id}}</b></li>
+    {{/ID_flag}}
+    {{#FirstName_flag}}
+      <li>First name: <b>{{first_name}}</b></li>
+    {{/FirstName_flag}}
+    {{#MiddleName_flag}}
+      <li>Middle name: <b>{{middle_name}}</b></li>
+    {{/MiddleName_flag}}
+    {{#LastName_flag}}
+      <li>Last name: <b>{{last_name}}</b></li>
+    {{/LastName_flag}}
+    {{#Suffix_flag}}
+      <li>Suffix: <b>{{suffix}}</b></li>
+    {{/Suffix_flag}}
+    {{#Address_flag}}
+      <li>Address: <b>{{address}}</b></li>
+    {{/Address_flag}}
+    {{#City_flag}}
+      <li>City: <b>{{city}}</b></li>
+    {{/City_flag}}
+    {{#State/Province_flag}}
+      <li>State/Province: <b>{{state}}</b></li>
+    {{/State/Province_flag}}
+    {{#Zip/Postal Code_flag}}
+      <li>Zip/Postal Code: <b>{{zip_code}}</b></li>
+    {{/Zip/Postal Code_flag}}
+    {{#Country_flag}}
+      <li>Country: <b>{{country}}</b></li>
+    {{/Country_flag}}
+    {{#Phone_flag}}
+      <li>Phone: <b>{{phone}}</b></li>
+    {{/Phone_flag}}
+    {{#Email_flag}}
+      <li>Email: <b>{{email}}</b></li>
+    {{/Email_flag}}
+  {{/fields}}
+  {{#custom_lead_info}}
+    <li>{{key}}: <b>{{value}}</b></li>
+  {{/custom_lead_info}}
+</script>
 
-</form>
+<form id="voter_responses" method="post" ></form>
+
 <script type="javascript/text" id="caller-campaign-script-text-template">
   <fieldset class="script_element">
     {{{ content }}}
@@ -119,7 +118,6 @@
           <option value="{{id}}">{{value}}</option>
         {{/possible_responses}}
       </select>
-
     </p>
   </fieldset>
 </script>
@@ -134,46 +132,43 @@
 
 <script type="javascript/html" id="caller-campaign-script-transfer-template">
   <fieldset id="transfer-calls">
-      <legend>Transfer</legend>
+    <legend>Transfer</legend>
+    <form id="transfer_form" method="post" action="/transfer/dial">
       <input type="hidden" id="transfer_type" name="transfer_type" >
-      <form id="transfer_form" method="post" action="">
-        <select id="transfer_id" name="transfer[id]">
-          {{#transfers}}
-          <option value="{{id}}">{{label}}-{{phone_number}}</option>
-          {{/transfers}}
-        </select>
-        <div class= "buttons">
-            <button type="submit" id="transfer_button" style="margin-top:10px">Transfer</button>
-        </div>
-      </form>
-    </fieldset>
+      <select id="transfer_id" name="transfer[id]">
+        {{#transfers}}
+        <option value="{{id}}">{{label}}-{{phone_number}}</option>
+        {{/transfers}}
+      </select>
+      <div class= "buttons">
+        <button type="submit" id="transfer_button" style="margin-top:10px">Transfer</button>
+      </div>
+    </form>
+    <p id="transfer_status"></p>
+  </fieldset>
 </script>
 
-<div id="schedule_callback" class="rt" style="font-size : 1em; display:none">
-</div>
+<div id="schedule_callback" class="rt" style="font-size : 1em; display:none"></div>
+
 <script type="javascript/html" id="caller-campaign-schedule-callback-template">
   <%= render :partial => "schedule_callback" %>
 </script>
 
-
-
-
-<div id="caller-actions">
-</div>
+<div id="caller-actions"></div>
 
 <script type="javascript/html" id="caller-campaign-action-template">
   <div id="actions" class="actions">
-    <a id= "call_voter" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Dial</a>
-    <a id= "skip_voter" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Skip</a>
-    <a id= "stop_calling" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Stop calling</a>
-    <a id= "hangup_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Hang up</a>
-    <a id= "kick_self_out_of_conference" href="#caller-campaign-action-template"  class="action secondary caller-action-buttons hide">Hang up</a>
-    <a id= "submit_and_keep_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Submit and keep calling</a>
-    <a id= "submit_and_stop_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide" >Submit and stop calling</a>
+    <a id="call_voter" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Dial</a>
+    <a id="skip_voter" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Skip</a>
+    <a id="stop_calling" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Stop calling</a>
+    <a id="hangup_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Hang up</a>
+    <a id="kick_caller" href="#caller-campaign-action-template"  class="action secondary caller-action-buttons hide">Hang up</a>
+    <a id="kick_transfer" href="#caller-campaign-action-template"  class="action secondary caller-action-buttons hide">Hang up transfer</a>
+    <a id="submit_and_keep_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Submit and keep calling</a>
+    <a id="submit_and_stop_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide" >Submit and stop calling</a>
   </div>
   <div id="statusdiv" style="float:right">Status: Not connected.</div>
 </script>
-
 
 <script type="javascript/html" id="caller-campaign-start-calling-template">
   <div id="callin" style="display:none">
@@ -192,10 +187,4 @@
       </p>
     </div>
  </div>
-
 </script>
-
-
-
-
-
