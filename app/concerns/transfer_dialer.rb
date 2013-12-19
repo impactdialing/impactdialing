@@ -33,7 +33,6 @@ private
   end
 
   def update_active_transfer(response)
-    Rails.logger.debug "CallOrder: TransferDialer TwilioResponse: #{response.content}"
     if response.error?
       deactivate_transfer
     end
@@ -96,11 +95,6 @@ public
 
     transfer_attempt_connected
 
-    if transfer_attempt.call_attempt.succeeded?
-      # Caller or callee have already hung-up.
-      return hangup_xml
-    end
-
     # todo: refactor workflow to queue call redirects and return TwiML faster
 
     # Publish transfer_type
@@ -116,9 +110,9 @@ public
       caller_session.publish("warm_transfer",{})
     else
       ##
-      # This redirect is unnecessary because Caller#kick_caller_off_conference redirects to pause_caller_url.
+      # This redirect is unnecessary because Caller#kick redirects to pause_caller_url.
       # Furthermore, the Dial:action for Transfer#caller is pause_caller_url.
-      # Providers::Phone::Call.redirect_for(caller_session, :pause)
+      Providers::Phone::Call.redirect_for(caller_session, :pause)
       # todo: handle failures of above redirect
       caller_session.publish("cold_transfer",{})
     end
