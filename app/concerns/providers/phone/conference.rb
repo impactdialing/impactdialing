@@ -47,9 +47,9 @@ module Providers::Phone::Conference
     return call(:conference_list, search_options, opts)
   end
 
-  def self.kick(caller_session, opts={})
-    conference_sid  = sid_for(caller_session.session_key)
-    call_sid        = caller_session.sid
+  def self.kick(participant, opts={})
+    conference_sid  = sid_for(participant.session_key)
+    call_sid        = participant.sid
     return call(:kick, conference_sid, call_sid, opts)
   end
 end
