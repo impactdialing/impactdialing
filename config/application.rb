@@ -62,7 +62,17 @@ module ImpactDialing
     config.i18n.default_locale = :en
     config.i18n.fallbacks = [:en]
     config.action_view.javascript_expansions[:jdefaults] = %w(jquery jquery-ui jquery_ujs application)
-    GC::Profiler.enable
+    config.action_view.javascript_expansions[:caller_ui] = [
+      'jquery.form.js', 'flash_detect_min.js', 'browser_detect.js',
+      'date.js', 'underscore-min', 'mustache', 'backbone',
+      'impactdialing', 'models/campaign_call.js',
+      'views/campaign_call.js', 'models/caller_script.js',
+      'models/lead_info.js', 'views/lead_info.js',
+      'views/schedule_callback.js', 'models/caller_session.js',
+      'views/caller_script.js', 'views/start_calling.js',
+      'views/caller_actions.js', 'jquery.stickyscroll.js'
+    ]
 
+    GC::Profiler.enable
   end
 end
