@@ -196,6 +196,7 @@ describe CallerSession do
     it "should end call" do
       caller = create(:caller)
       caller_session = create(:caller_session, caller: caller)
+      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, 'publish_caller_disconnected'])
       caller_session.should_receive(:enqueue_call_flow).with(EndRunningCallJob, [caller_session.sid])
       caller_session.should_receive(:enqueue_call_flow).with(EndCallerSessionJob, [caller_session.id])
       caller_session.end_running_call

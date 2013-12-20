@@ -75,13 +75,13 @@ class CallerSession < ActiveRecord::Base
 
   def conference_ended
     end_caller_session
-    enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])
     conference_ended_twiml
   end
 
   def end_caller_session
     begin
       end_session
+      enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])
     rescue ActiveRecord::StaleObjectError => exception
       RedisCallerSession.add_phantom_callers(self.id)
     end
