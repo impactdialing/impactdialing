@@ -27,7 +27,8 @@ describe TransferDialer do
   let(:transfer_attempt) do
     mock_model('TransferAttempt', {
       caller_session: caller_session,
-      update_attributes: true
+      update_attributes: true,
+      session_key: 'transfer-attempt-session-key'
     })
   end
   let(:transfer_attempts) do
@@ -81,7 +82,7 @@ describe TransferDialer do
     end
 
     it 'activates the transfer' do
-      RedisCallerSession.should_receive(:activate_transfer).with(caller_session.session_key)
+      RedisCallerSession.should_receive(:activate_transfer).with(caller_session.session_key, transfer_attempt.session_key)
       transfer_dialer.dial(caller_session, call, voter)
     end
 
@@ -112,7 +113,7 @@ describe TransferDialer do
       end
 
       it 'deactivates the transfer' do
-        RedisCallerSession.should_receive(:deactivate_transfer).with(caller_session.session_key)
+        RedisCallerSession.should_not_receive(:activate_transfer)
         transfer_dialer.dial(caller_session, call, voter)
       end
 

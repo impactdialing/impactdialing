@@ -142,14 +142,17 @@ describe CallerController do
 
   describe '#pause session_id:, CallSid:, clear_active_transfer:' do
     let(:caller_session) do
-      create(:webui_caller_session)
+      create(:webui_caller_session, {
+        session_key: 'caller-session-key'
+      })
     end
-    let(:session_key){ caller_session.session_key }
+    let(:caller_session_key){ caller_session.session_key }
+    let(:transfer_session_key){ 'transfer-attempt-session-key' }
     let(:session_id){ caller_session.id }
 
     context 'caller arrives here after disconnecting from the lead' do
       before do
-        RedisCallerSession.active_transfer(session_key).should be_nil
+        RedisCallerSession.party_count(transfer_session_key).should eq 0
         post :pause, session_id: session_id
       end
       it 'Says: "Please enter your call results."' do
@@ -159,12 +162,12 @@ describe CallerController do
 
     context 'caller arrives here after dialing a warm transfer' do
       before do
-        RedisCallerSession.activate_transfer(session_key)
-        RedisCallerSession.active_transfer(session_key).should eq '1'
+        RedisCallerSession.activate_transfer(caller_session_key, transfer_session_key)
+        RedisCallerSession.party_count(transfer_session_key).should eq -1
         post :pause, session_id: session_id
       end
       after do
-        RedisCallerSession.deactivate_transfer(session_key)
+        RedisCallerSession.deactivate_transfer(caller_session_key)
       end
       it 'Plays silence for 0.5 seconds' do
         response.body.should include '<Play digits="w"/>'
@@ -173,18 +176,16 @@ describe CallerController do
 
     context 'caller arrives here after leaving a warm transfer' do
       before do
-        RedisCallerSession.activate_transfer(session_key)
-        RedisCallerSession.active_transfer(session_key).should eq '1'
+        RedisCallerSession.activate_transfer(caller_session_key, transfer_session_key)
+        RedisCallerSession.add_party(transfer_session_key)
+        RedisCallerSession.party_count(transfer_session_key).should eq 0
         post :pause, session_id: session_id, clear_active_transfer: true
       end
       after do
-        RedisCallerSession.deactivate_transfer(session_key)
+        RedisCallerSession.deactivate_transfer(caller_session_key)
       end
-      it 'clears the active transfer flag' do
-        RedisCallerSession.active_transfer(session_key).should be_nil
-      end
-      it 'Plays silence for 0.5 seconds' do
-        response.body.should include '<Play digits="w"/>'
+      it 'Says: "Please enter your call results."' do
+        response.body.should have_content 'Please enter your call results.'
       end
     end
   end

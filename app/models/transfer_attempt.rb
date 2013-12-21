@@ -25,6 +25,10 @@ class TransferAttempt < ActiveRecord::Base
     end.text
   end
 
+  def warm_transfer?
+    transfer_type == Transfer::Type::WARM
+  end
+
   def fail
      xml =  Twilio::Verb.new do |v|
        v.say "The transfered call was not answered "

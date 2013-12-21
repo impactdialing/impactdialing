@@ -16,19 +16,20 @@ private
       attempt_attrs = {status: CallAttempt::Status::FAILED}
     else
       attempt_attrs = {sid: response.call_sid}
+      activate_transfer
     end
     transfer_attempt.update_attributes(attempt_attrs)
   end
 
   def activate_transfer
     if warm_transfer?
-      RedisCallerSession.activate_transfer caller_session.session_key
+      RedisCallerSession.activate_transfer(caller_session.session_key, transfer_attempt.session_key)
     end
   end
 
   def deactivate_transfer
     if warm_transfer?
-      RedisCallerSession.deactivate_transfer caller_session.session_key
+      RedisCallerSession.deactivate_transfer(caller_session.session_key)
     end
   end
 
@@ -75,12 +76,9 @@ public
     @call           = call
     @voter          = voter
     @transfer_attempt = create_transfer_attempt
-    # update redis flag
-    activate_transfer
     # twilio makes synchronous callback requests so redis flag must be set
     # before calls are made if the flags are to handle callback requests
     response = Providers::Phone::Call.make_for(transfer, :connect)
-    update_active_transfer(response)
     transfer_attempt_dialed(response)
 
     return {type: transfer.transfer_type}

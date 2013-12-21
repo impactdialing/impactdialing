@@ -38,7 +38,8 @@ class Providers::Phone::Call::Params::Transfer
 
   def callee_url_options
     return url_options.merge({
-      session_key: transfer_attempt.session_key
+      session_key: transfer_attempt.session_key,
+      transfer_type: transfer_attempt.transfer_type
     })
   end
 
