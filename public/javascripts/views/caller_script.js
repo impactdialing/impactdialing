@@ -60,6 +60,10 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
       $('#transfer_status').text('Disconnected.');
       $('#transfer-calls').hide();
     });
+    ImpactDialing.Channel.bind('transfer_conference_ended', function(){
+      $('#transfer_form').show();
+      $('#transfer_status').text('Disconnected.');
+    });
   },
 
   render: function (ele) {
