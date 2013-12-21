@@ -53,6 +53,8 @@ class RedisCallerSession
   def self.pause?(caller_session_key, from_transfer_session_key)
     transfer_session_key = active_transfer_session_key(caller_session_key)
 
+    return true if transfer_session_key.nil?
+
     n = party_count(transfer_session_key)
     if from_transfer_session_key.present?
       if transfer_session_key != from_transfer_session_key

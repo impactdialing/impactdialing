@@ -108,6 +108,11 @@ describe RedisCallerSession do
         subject.pause?(caller_session_key, from_transfer_session_key).should be_true
       end
 
+      it 'returns true when transfer_session_key is nil' do
+        subject.deactivate_transfer(caller_session_key)
+        subject.pause?(caller_session_key, from_transfer_session_key).should be_true
+      end
+
       it 'returns false when party_count(transfer_session_key) is NOT zero' do
         subject.pause?(caller_session_key, from_transfer_session_key).should be_false
         subject.redis.get(party_count_key).should eq "-1"
