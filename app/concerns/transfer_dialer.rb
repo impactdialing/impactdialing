@@ -110,7 +110,9 @@ public
       ##
       # This redirect is unnecessary because Caller#kick redirects to pause_caller_url.
       # Furthermore, the Dial:action for Transfer#caller is pause_caller_url.
-      Providers::Phone::Call.redirect_for(caller_session, :pause)
+      if RedisCallerSession.any_active_transfers?(caller_session.session_key)
+        Providers::Phone::Call.redirect_for(caller_session, :pause)
+      end
       # todo: handle failures of above redirect
       caller_session.publish("cold_transfer",{})
     end
