@@ -121,5 +121,29 @@ describe RedisCallerSession do
         subject.pause?(caller_session_key, from_transfer_session_key).should be_false
       end
     end
+
+    describe '.any_active_transfers?(caller_session_key)' do
+      it 'returns true for freshly activated' do
+        subject.activate_transfer(caller_session_key, transfer_session_key)
+        subject.party_count(transfer_session_key).should eq -1
+        subject.any_active_transfers?(caller_session_key).should be_true
+      end
+
+      it 'returns true for populated' do
+        subject.activate_transfer(caller_session_key, transfer_session_key)
+
+        subject.add_party(transfer_session_key) # => 0
+        subject.add_party(transfer_session_key) # => 1
+        subject.any_active_transfers?(caller_session_key).should be_true
+      end
+
+      it 'returns false when none are found or all are zero' do
+        subject.any_active_transfers?(caller_session_key).should be_false
+
+        subject.activate_transfer(caller_session_key, transfer_session_key)
+        subject.add_party(transfer_session_key) # => 0
+        subject.any_active_transfers?(caller_session_key).should be_false
+      end
+    end
   end
 end

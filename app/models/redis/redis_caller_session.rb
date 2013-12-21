@@ -93,6 +93,11 @@ class RedisCallerSession
     redis.del(active_transfer_key(session_key))
   end
 
+  def self.any_active_transfers?(caller_session_key)
+    transfer_session_key = active_transfer_session_key(caller_session_key)
+    party_count(transfer_session_key) != 0
+  end
+
   def self.activate_transfer(caller_session_key, transfer_session_key)
     if caller_session_key.nil? or transfer_session_key.nil?
       return
@@ -102,7 +107,7 @@ class RedisCallerSession
   end
 
   def self.deactivate_transfer(caller_session_key)
-    Rails.logger.debug "DoublePause: RedisCallerSession.activate_transfer(#{caller_session_key})"
+    Rails.logger.debug "DoublePause: RedisCallerSession.deactivate_transfer(#{caller_session_key})"
     transfer_session_key = active_transfer_session_key(caller_session_key)
     remove_party_count(transfer_session_key)
     remove_active_transfer_session_key(caller_session_key)
