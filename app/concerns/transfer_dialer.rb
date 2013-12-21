@@ -28,9 +28,7 @@ private
   end
 
   def deactivate_transfer
-    if warm_transfer?
-      RedisCallerSession.deactivate_transfer(caller_session.session_key)
-    end
+    RedisCallerSession.deactivate_transfer(caller_session.session_key)
   end
 
   def update_active_transfer(response)
@@ -76,6 +74,8 @@ public
     @call           = call
     @voter          = voter
     @transfer_attempt = create_transfer_attempt
+
+    deactivate_transfer
     # twilio makes synchronous callback requests so redis flag must be set
     # before calls are made if the flags are to handle callback requests
     response = Providers::Phone::Call.make_for(transfer, :connect)
