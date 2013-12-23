@@ -314,12 +314,11 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
         data : {id : self.model.get("caller_id"), voter_id : self.options.lead_info.get("fields").id,
         session_id : self.model.get("session_id") },
         type : "POST",
-        beforeSend: function(request)
-          {
-            var token = $("meta[name='csrf-token']").attr("content");
-            request.setRequestHeader("X-CSRF-Token", token);
-          },
-    })
+        beforeSend: function(request) {
+          var token = $("meta[name='csrf-token']").attr("content");
+          request.setRequestHeader("X-CSRF-Token", token);
+        },
+    });
   },
 
   hideAllActions: function(){
