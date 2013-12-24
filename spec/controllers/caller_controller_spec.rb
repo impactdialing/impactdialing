@@ -9,22 +9,80 @@ describe CallerController do
   let(:account) { create(:account) }
   let(:user) { create(:user, :account => account) }
 
-  describe "preview dial" do
-    let(:campaign) { create(:campaign, start_time: Time.now - 6.hours, end_time: Time.now + 6.hours) }
+  describe "authentication" do
+    let(:campaign) do
+      create(:campaign, {
+        start_time: Time.now - 6.hours,
+        end_time: Time.now + 6.hours
+      })
+    end
 
     before(:each) do
-      @caller = create(:caller, :account => account)
+      @caller = create(:caller, {
+        account: account,
+        campaign: campaign
+      })
       login_as(@caller)
     end
 
     it "logs out" do
-      @caller = create(:caller, :account => account)
-      login_as(@caller)
       post :logout
-      session[:caller].should_not be
+      session[:caller].should be_nil
       response.should redirect_to(caller_login_path)
     end
+  end
 
+  describe "Preview dialer" do
+    let(:campaign) do
+      create(:preview, {
+        start_time: Time.now - 6.hours,
+        end_time: Time.now + 6.hours,
+        account: account
+      })
+    end
+    let(:caller) do
+      create(:caller, {
+        campaign: campaign
+      })
+    end
+    let(:caller_session) do
+      create(:webui_caller_session, {
+        caller: caller
+      })
+    end
+    let(:current_voter) do
+      create(:voter, {
+        campaign: campaign
+      })
+    end
+    let(:next_voter) do
+      create(:voter, {
+        campaign: campaign
+      })
+    end
+    let(:valid_params) do
+      {
+        id: caller.id,
+        session_id: caller_session.id,
+        voter_id: current_voter.id
+      }
+    end
+
+    describe 'POST caller/:id/skip_voter, session_id:, voter_id:' do
+      it 'marks the lead (voter) as skipped' do
+        current_voter.skipped_time.should be_nil
+
+        post :skip_voter, valid_params
+
+        current_voter.reload.skipped_time.should_not be_nil
+      end
+
+      it 'redirects the Caller to continue_conf' do
+        controller.should_receive(:enqueue_call_flow).with(RedirectCallerJob, [caller_session.id])
+
+        post :skip_voter, valid_params
+      end
+    end
   end
 
   describe "start calling" do

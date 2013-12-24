@@ -164,8 +164,10 @@ class CallerController < ApplicationController
     caller_session = caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
+    # Redirect the caller to continue_conf. Caller instance will
+    # then publish event & next voter data to caller's pusher channel.
     enqueue_call_flow(RedirectCallerJob, [caller_session.id])
-    render :nothing => true
+    render nothing: true
   end
 
 
