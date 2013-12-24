@@ -68,6 +68,29 @@ describe Power do
       caller_session = create(:caller_session)
       campaign.next_voter_in_dial_queue(nil).should be_nil
     end
-  end
 
+    it 'never returns the current voter when that voter has been skipped' do
+      campaign = create(:preview)
+      vopt = {
+        campaign: campaign
+      }
+      vone = create(:voter, vopt)
+      vtwo = create(:voter, vopt)
+      vthr = create(:voter, vopt)
+
+      campaign.next_voter_in_dial_queue(nil).should eq vone
+
+      vone.reload.skip
+
+      next_voter = campaign.next_voter_in_dial_queue(vone.id)
+      next_voter.should_not eq vone
+      next_voter.should eq vtwo
+
+      vtwo.reload.skip
+
+      next_voter = campaign.next_voter_in_dial_queue(vtwo.id)
+      next_voter.should_not eq vtwo
+      next_voter.should eq vthr
+    end
+  end
 end

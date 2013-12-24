@@ -476,4 +476,103 @@ describe Voter do
       actual.should eq expected
     end
   end
+
+  describe '.next_recycled_voter(recycle_rate, blocked_numbers, current_voter_id)' do
+    def setup_voters(campaign_opts={}, voter_opts={})
+      @campaign = create(:preview, campaign_opts.merge({
+        recycle_rate: 1
+      }))
+      vopt = voter_opts.merge({
+        campaign: @campaign,
+        enabled: true
+      })
+      create_list(:voter, 10, vopt)
+      Voter.count.should eq 10
+      @voters = @campaign.all_voters
+      last_call_time = 20.hours.ago
+      @voters.order('id ASC').each do |v|
+        v.update_attribute(:last_call_attempt_time, last_call_time)
+        last_call_time += 1.hour
+      end
+    end
+
+    def skip_voters(voters)
+      voters.each{|v| v.update_attribute('skipped_time', 20.minutes.ago) }
+    end
+
+    # context 'not all voters have a last_call_attempt_time' do
+    #   before do
+    #     setup_voters
+    #     @voters[3..6].each do |v|
+    #       v.update_attribute(:last_call_attempt_time, nil)
+    #     end
+    #   end
+
+
+    # end
+
+    context 'current_voter_id is not present' do
+      before do
+        setup_voters
+      end
+      context 'all voters have been skipped' do
+        it 'returns the first voter with the oldest last_call_attempt_time' do
+          skip_voters @voters
+          actual = Voter.next_recycled_voter(@voters, 1, [], nil)
+          expected = @voters.first
+          actual.should eq expected
+        end
+      end
+      context 'one voter has not been skipped' do
+        it 'returns the first unskipped voter' do
+          skip_voters @voters[0..7]
+          expected = @voters[8]
+          actual = Voter.next_recycled_voter(@voters, 1, [], nil)
+          actual.should eq expected
+        end
+      end
+      context 'more than one voter has not been skipped' do
+        it 'returns the first unskipped voter with the oldest last_call_attempt_time' do
+          skip_voters @voters[3..7]
+          expected = @voters[0]
+          actual = Voter.next_recycled_voter(@voters, 1, [], nil)
+          actual.should eq expected
+        end
+      end
+    end
+
+    context 'current_voter_id is present' do
+      before do
+        setup_voters
+        @current_voter = @voters[3]
+      end
+      context 'all voters have been skipped' do
+        it 'returns the first voter to be dialed with id != current_voter_id' do
+          skip_voters @voters
+          expected = @voters[0]
+          actual = Voter.next_recycled_voter(@voters, 1, [], @current_voter.id)
+          actual.should eq expected
+        end
+      end
+      context 'one voter has not been skipped' do
+        it 'returns the unskipped voter with id > current_voter_id' do
+          skip_voters @voters[0..2]
+          skip_voters @voters[4..7]
+          skip_voters [@voters[9]]
+          expected = @voters[8]
+          actual = Voter.next_recycled_voter(@voters, 1, [], @current_voter.id)
+          actual.should eq expected
+        end
+      end
+      context 'more than one voter has not been skipped' do
+        it 'returns the first unskipped voter with id > current_voter_id' do
+          skip_voters @voters[0..2]
+          skip_voters @voters[5..6]
+          expected = @voters[4]
+          actual = Voter.next_recycled_voter(@voters, 1, [], @current_voter.id)
+          actual.should eq expected
+        end
+      end
+    end
+  end
 end

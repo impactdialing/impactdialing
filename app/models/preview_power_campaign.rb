@@ -3,7 +3,7 @@ module PreviewPowerCampaign
   def next_voter_in_dial_queue(current_voter_id = nil)
     begin
       voter = all_voters.next_in_priority_or_scheduled_queues(blocked_numbers).first
-      voter ||= all_voters.next_in_recycled_queue(recycle_rate, blocked_numbers, current_voter_id).first
+      voter ||= Voter.next_recycled_voter(all_voters, recycle_rate, blocked_numbers, current_voter_id)
 
       update_voter_status_to_ready(voter)
     rescue ActiveRecord::StaleObjectError
@@ -19,7 +19,8 @@ module PreviewPowerCampaign
 
   def caller_conference_started_event(current_voter_id)
     next_voter = next_voter_in_dial_queue(current_voter_id)
-    {event: 'conference_started', data: next_voter.nil? ? {campaign_out_of_leads: true} : next_voter.info}
+    info = next_voter.nil? ? {campaign_out_of_leads: true} : next_voter.info
+    {event: 'conference_started', data: info}
   end
 
   def voter_connected_event(call)

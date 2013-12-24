@@ -68,22 +68,35 @@ class Voter < ActiveRecord::Base
     ])
   }
 
-  scope :next_in_recycled_queue, lambda {|recycle_rate, blocked_numbers, current_voter_id|
-    voter_id = current_voter_id.to_i
-
+  scope :next_in_recycled_queue, lambda {|recycle_rate, blocked_numbers|
     enabled.without(blocked_numbers).
     last_call_attempt_before_recycle_rate(recycle_rate).
-    to_be_dialed.where([
-      '(skipped_time IS NULL AND voters.id > ?) OR skipped_time IS NOT NULL '+
-      'OR voters.id <> ? OR 1=1',
-      voter_id, voter_id
-    ]).order('last_call_attempt_time, id DESC')
+    to_be_dialed.order('id')
   }
 
   before_validation :sanitize_phone
 
   cattr_reader :per_page
   @@per_page = 25
+
+  def self.next_recycled_voter(voters, recycle_rate, blocked_numbers, current_voter_id)
+    query = voters.next_in_recycled_queue(recycle_rate, blocked_numbers)
+    not_skipped = query.not_skipped.first
+
+    if not_skipped.nil?
+      if current_voter_id.nil?
+        return query.first
+      else
+        return query.where(["id <> ?", current_voter_id]).first
+      end
+    else
+      if current_voter_id.nil?
+        return not_skipped
+      else
+        return query.not_skipped.where(["id > ?", current_voter_id]).first
+      end
+    end
+  end
 
   def self.sanitize_phone(phonenumber)
     return phonenumber if phonenumber.blank?
