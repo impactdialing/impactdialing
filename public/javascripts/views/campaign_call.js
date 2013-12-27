@@ -1,6 +1,8 @@
 ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
   initialize: function(){
+    var self = this;
+
     this.lead_info = new ImpactDialing.Models.LeadInfo();
     this.caller_script = new ImpactDialing.Models.CallerScript();
     this.script_view  = new ImpactDialing.Views.CallerScript({
@@ -21,6 +23,16 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     this.caller_session = new ImpactDialing.Models.CallerSession();
     this.lead_info_view = new ImpactDialing.Views.LeadInfo({
       model: this.lead_info
+    });
+
+    Backbone.Events.on('voter.skipped', function(data){
+      self.model.unset("call_id");
+      self.lead_info.clear();
+      _.extend(data, {dialer: 'preview'});
+      self.lead_info.set(data);
+      self.renderScript();
+      $("#voter_info").html(self.lead_info_view.render().el);
+      self.caller_actions.conferenceStarted();
     });
 
     this.fetchCallerInfo();

@@ -311,13 +311,23 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     var self = this;
     $.ajax({
         url : "/caller/" + self.model.get("caller_id") + "/skip_voter",
-        data : {id : self.model.get("caller_id"), voter_id : self.options.lead_info.get("fields").id,
-        session_id : self.model.get("session_id") },
+        data : {
+          id: self.model.get("caller_id"),
+          voter_id : self.options.lead_info.get("fields").id,
+          session_id : self.model.get("session_id")
+        },
         type : "POST",
+        dataType: "json",
         beforeSend: function(request) {
           var token = $("meta[name='csrf-token']").attr("content");
           request.setRequestHeader("X-CSRF-Token", token);
         },
+        success: function(data, status, xhr){
+          Backbone.Events.trigger('voter.skipped', data);
+        },
+        error: function(xhr, status, error){
+          // report error to caller
+        }
     });
   },
 
