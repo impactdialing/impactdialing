@@ -124,9 +124,9 @@ describe Preview do
         @current_voter = @voters[3]
       end
       context 'all voters have been skipped' do
-        it 'returns the first voter to be dialed with id != current_voter_id' do
+        it 'returns the voter with id > current_voter_id' do
           skip_voters @voters
-          expected = @voters[0]
+          expected = @voters[4]
           actual = @campaign.next_voter_in_dial_queue(@current_voter.id)
           actual.should eq expected
         end

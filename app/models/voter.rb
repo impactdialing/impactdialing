@@ -84,18 +84,19 @@ class Voter < ActiveRecord::Base
     not_skipped = query.not_skipped.first
 
     if not_skipped.nil?
-      if current_voter_id.nil?
-        return query.first
-      else
-        return query.where(["id <> ?", current_voter_id]).first
+      if current_voter_id.present?
+        voter = query.where(["id > ?", current_voter_id]).first
       end
+      voter ||= query.first
     else
       if current_voter_id.nil?
-        return not_skipped
+        voter = not_skipped
       else
-        return query.not_skipped.where(["id > ?", current_voter_id]).first
+        voter = query.not_skipped.where(["id > ?", current_voter_id]).first
       end
     end
+
+    return voter
   end
 
   def self.sanitize_phone(phonenumber)
