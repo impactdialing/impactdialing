@@ -16,7 +16,7 @@ module CampaignHelper
   end
 
   def voters_remaining_count_for(list)
-    blocked_numbers = list.campaign.account.blocked_numbers.pluck(:number)
+    blocked_numbers = list.campaign.account.blocked_numbers.for_campaign(list.campaign).pluck(:number)
     return Voter.remaining_voters_for_voter_list(list, blocked_numbers).count
   end
 end

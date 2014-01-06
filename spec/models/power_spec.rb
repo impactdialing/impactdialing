@@ -61,8 +61,9 @@ describe Power do
 
     it 'does not return any voter w/ a phone number in the blocked number list' do
       blocked = ['1234567890', '0987654321']
-      campaign = create(:power)
-      campaign.stub(:blocked_numbers){ blocked }
+      account = create(:account)
+      campaign = create(:power, {account: account})
+      account.stub_chain(:blocked_numbers, :for_campaign, :pluck){ blocked }
       voter = create(:voter, :status => 'not called', :campaign => campaign, phone: blocked.first)
       priority_voter = create(:voter, :status => 'not called', :campaign => campaign, priority: "1", phone: blocked.second)
       caller_session = create(:caller_session)
