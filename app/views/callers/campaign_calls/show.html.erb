@@ -30,6 +30,12 @@
 <% content_for :javascripts do %>
   <script type="text/javascript">
     $(function() {
+      // Add some caller data to errorception reports.
+      _errs.meta = {
+        caller_id: $('#caller').val(),
+        session_id: $('#caller_session').val()
+      };
+
       var campaign_call = new ImpactDialing.Models.CampaignCall();
       campaign_call.set({pusher_key: '<%= Pusher.key %>'});
       var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
