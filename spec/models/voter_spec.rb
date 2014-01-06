@@ -105,7 +105,10 @@ describe Voter do
 
   describe 'calculating number of voters left to dial in given voter list' do
     def setup_voters(n=10, voter_opts={})
+      account = create(:account)
+      campaign = create(:power, {account: account})
       vopt = voter_opts.merge({
+        campaign: campaign,
         enabled: true
       })
       create_list(:voter, n, vopt)
@@ -141,6 +144,22 @@ describe Voter do
     context '3 voters in the list were called and scheduled for call backs' do
       it 'returns the size of the voter list minus 3'
       it 'includes the scheduled voters in the count when it is near their scheduled date'
+    end
+
+    context '2 voters in the list have phone numbers that exist on the blocked list' do
+      before do
+        blocked_numbers = []
+        2.times do |i|
+          blocked_numbers << BlockedNumber.create(number: @voters[i].phone, account: @voters[i].campaign.account)
+        end
+        @query = Voter.remaining_voters_for_voter_list(voter_list, blocked_numbers.map(&:number))
+      end
+
+      it 'returns the size of the voter list minus 2' do
+        @voters.first.campaign.account.id.should_not be_nil
+        @voters.first.campaign.account.blocked_numbers.count.should eq 2
+        @query.count.should eq 8
+      end
     end
   end
 

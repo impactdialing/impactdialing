@@ -57,7 +57,11 @@ class Voter < ActiveRecord::Base
   scope :in_progress_or_call_back, where(active: true).where("status NOT IN (?) OR call_back=1", [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED])
   scope :remaining_voters_for_campaign, ->(campaign) { from('voters use index (index_voters_on_campaign_id_and_active_and_status_and_call_back)').
     in_progress_or_call_back.where(campaign_id: campaign) }
-  scope :remaining_voters_for_voter_list, ->(voter_list) { in_progress_or_call_back.where(voter_list_id: voter_list) }
+  scope :remaining_voters_for_voter_list, ->(voter_list, blocked_numbers=[]) {
+    in_progress_or_call_back.
+    without(blocked_numbers).
+    where(voter_list_id: voter_list)
+  }
 
   scope :next_in_priority_or_scheduled_queues, lambda {|blocked_numbers|
     enabled.without(blocked_numbers).where([
