@@ -103,6 +103,47 @@ describe Voter do
     Voter.answered_within_timespan(Time.new(2012, 2, 14, 0), Time.new(2012, 2, 14, 9, 59, 59)).should == []
   end
 
+  describe 'calculating number of voters left to dial in given voter list' do
+    def setup_voters(n=10, voter_opts={})
+      vopt = voter_opts.merge({
+        enabled: true
+      })
+      create_list(:voter, n, vopt)
+      Voter.count.should eq n
+      @voters = Voter.all
+      last_call_time = 20.hours.ago
+    end
+
+    let(:voter_list){ create(:voter_list) }
+
+    before do
+      setup_voters(10, {voter_list_id: voter_list.id})
+      @query = Voter.remaining_voters_for_voter_list(voter_list)
+    end
+
+    context 'no voters in the list have been called' do
+      it 'returns the size of the voter list' do
+        @query.count.should eq 10
+      end
+    end
+
+    context '3 voters in the list were called but the call failed' do
+      before do
+        3.times do |i|
+          @voters[i].update_attribute(:status, 'Call failed')
+        end
+      end
+      it 'returns the size of the voter list minus 3' do
+        @query.count.should eq 7
+      end
+    end
+
+    context '3 voters in the list were called and scheduled for call backs' do
+      it 'returns the size of the voter list minus 3'
+      it 'includes the scheduled voters in the count when it is near their scheduled date'
+    end
+  end
+
   describe "Dialing" do
     let(:campaign) { create(:robo) }
     let(:voter) { create(:voter, :campaign => campaign) }

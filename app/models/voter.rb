@@ -54,7 +54,7 @@ class Voter < ActiveRecord::Base
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from..to)) }
   scope :call_attempts_within, lambda {|from, to| where('call_attempts.created_at' => (from..to)).includes('call_attempts')}
   scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
-  scope :in_progress_or_call_back, where(active: true).where("status NOT IN ('Call in progress','Ringing','Call ready to dial','Call completed with success.') OR call_back=1")
+  scope :in_progress_or_call_back, where(active: true).where("status NOT IN (?) OR call_back=1", [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED])
   scope :remaining_voters_for_campaign, ->(campaign) { from('voters use index (index_voters_on_campaign_id_and_active_and_status_and_call_back)').
     in_progress_or_call_back.where(campaign_id: campaign) }
   scope :remaining_voters_for_voter_list, ->(voter_list) { in_progress_or_call_back.where(voter_list_id: voter_list) }
