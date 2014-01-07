@@ -7,10 +7,19 @@ class Twillio
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     http_response = twilio_lib.make_call(campaign, voter, call_attempt)
     response = JSON.parse(http_response)
+    msg = "Pong: Account[#{campaign.account.id}] Campaign[#{campaign.id}] Twillio.dial => response: #{response}"
+    p msg
+    Rails.logger.debug msg
     if response["status"] == 400
+      msg = "Pong: Account[#{campaign.account.id}] Campaign[#{campaign.id}] Twillio.dial => handling failed call - response.status = #{response['status']}"
+      p msg
+      Rails.logger.debug msg
       handle_failed_call(call_attempt, caller_session, voter)
     else
-     call_attempt.update_attributes(:sid => response["sid"])
+      msg = "Pong: Account[#{campaign.account.id}] Campaign[#{campaign.id}] Twillio.dial => updating call attempt sid: #{response['sid']}"
+      p msg
+      Rails.logger.debug msg
+      call_attempt.update_attributes(:sid => response["sid"])
     end
   end
 
