@@ -179,7 +179,7 @@ class CallAttempt < ActiveRecord::Base
     ABANDONED = "Call abandoned"
     BUSY = "No answer busy signal"
     FAILED = "Call failed"
-    HANGUP = "Hangup or answering machine"
+    HANGUP = "Hangup or answering machine" # Used when answered by machine and there is no recording to play for the message.
     READY = "Call ready to dial"
     CANCELLED = "Call cancelled"
     SCHEDULED = 'Scheduled for later'
