@@ -109,11 +109,10 @@ class Voter < ActiveRecord::Base
       end
       voter ||= query.first
     else
-      if current_voter_id.nil?
-        voter = not_skipped
-      else
+      if current_voter_id.present?
         voter = query.not_skipped.where(["id > ?", current_voter_id]).first
       end
+      voter ||= not_skipped
     end
 
     return voter

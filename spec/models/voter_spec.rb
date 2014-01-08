@@ -560,6 +560,10 @@ describe Voter do
       voters.each{|v| v.update_attribute('skipped_time', 20.minutes.ago) }
     end
 
+    def attempt_calls(voters)
+      voters.each{|v| v.update_attribute('last_call_attempt_time', @campaign.recycle_rate.hours.ago - 1.minute)}
+    end
+
     # context 'not all voters have a last_call_attempt_time' do
     #   before do
     #     setup_voters
@@ -630,6 +634,14 @@ describe Voter do
           skip_voters @voters[5..6]
           expected = @voters[4]
           actual = Voter.next_recycled_voter(@voters, 1, [], @current_voter.id)
+          actual.should eq expected
+        end
+      end
+      context 'all voters have been attempted but none skipped and they are ready to be retried and the voter w/ the largest id was just dialed' do
+        it 'returns the first voter not skipped voter' do
+          attempt_calls(@voters)
+          expected = @voters.first
+          actual = Voter.next_recycled_voter(@voters, @campaign.recycle_rate, [], @voters.last.id)
           actual.should eq expected
         end
       end
