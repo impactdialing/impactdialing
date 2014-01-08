@@ -104,15 +104,36 @@ class Voter < ActiveRecord::Base
     not_skipped = query.not_skipped.first
 
     if not_skipped.nil?
+      msg = "Pong: Voter.next_recycled_voter not skipped is nil"
+      p msg
+      Rails.logger.debug msg
       if current_voter_id.present?
+        msg = "Pong: Voter.next_recycled_voter current_voter_id = #{current_voter_id}"
+        p msg
+        Rails.logger.debug msg
         voter = query.where(["id > ?", current_voter_id]).first
       end
+      msg = "Pong: Voter.next_recycled_voter.where(id > ?) => #{voter.try(:id)}"
+      p msg
+      Rails.logger.debug msg
       voter ||= query.first
+      msg = "Pong: Voter.next_recycled_voter.first => #{voter.try(:id)}"
+      p msg
+      Rails.logger.debug msg
     else
       if current_voter_id.present?
+        msg = "Pong: Voter.next_recycled_voter.first current_voter_id = #{current_voter_id}"
+        p msg
+        Rails.logger.debug msg
         voter = query.not_skipped.where(["id > ?", current_voter_id]).first
+        msg = "Pong: Voter.next_recycled_voter.not_skipped.where(id > ?) => #{voter.try(:id)}"
+        p msg
+        Rails.logger.debug msg
       end
       voter ||= not_skipped
+      msg = "Pong: Voter.next_recycled_voter.not_skipped.first => #{voter.try(:id)}"
+      p msg
+      Rails.logger.debug msg
     end
 
     return voter
