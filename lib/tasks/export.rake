@@ -5,8 +5,11 @@ namespace :export do
   def export_and_save_csv(records, filename, account_id)
     sample = records.first
     if sample.nil?
-      p "Skipping #{records.count} records due to nil sample for file: #{filename}"
-      return
+      sample = records.last
+      if sample.nil?
+        p "Skipping #{records.count} records due to nil sample for file: #{filename} - #{records}"
+        return
+      end
     end
     headers = sample.attributes.keys
 
