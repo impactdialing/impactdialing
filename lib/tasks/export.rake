@@ -50,7 +50,6 @@ namespace :export do
       :all_voters,
       :call_attempts,
       :transfer_attempts,
-      :callers,
       :answers,
       :note_responses,
       :caller_groups
@@ -60,6 +59,10 @@ namespace :export do
         export_and_save_csv(campaign.send(relation_name), filename, account_id)
       end
     end
+
+    callers = account.callers
+    filename = "all-callers.csv"
+    export_and_save_csv(callers, filename, account_id)
 
     filename = "#{base_filename}-scripts.csv"
     scripts = campaigns.map(&:script)
