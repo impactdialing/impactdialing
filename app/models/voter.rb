@@ -59,6 +59,7 @@ class Voter < ActiveRecord::Base
             Voter::Status::RETRY
           ])
   }
+  scope :not_dialed, where('last_call_attempt_time IS NULL').where(status: Status::NOTCALLED)
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
   scope :randomly, order('rand()')
   scope :to_callback, where(:call_back => true)
@@ -101,20 +102,56 @@ class Voter < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
-  def self.next_voter(voters, recycle_rate, blocked_numbers, current_voter_id)
-    query = voters.next_in_recycled_queue(recycle_rate, blocked_numbers)
-    not_skipped = query.not_skipped.first
+  ##
+  # Select the next voter.
+  #
+  # Voters that have not been dialed at all have highest precedence.
+  # The precedence order is:
+  #
+  # - not dialed
+  # - not skipped
+  # - retry
+  #
+  # In all cases, if current_voter_id is provided then best effort is made
+  # to return a voter with an id > current_voter_id, respecting the above
+  # precedence order.
+  #
+  # A voter has not been dialed when the last_call_attempt_time is null and
+  # the status is `Status::NOTCALLED`.
+  #
+  # A voter has not been skipped when the campaign is in Preview mode and
+  # no caller has clicked the Skip button when viewing that voter's info.
+  #
+  # A voter is a retry if it has been dialed but the call was not connected for
+  # whatever reason.
+  #
 
-    if not_skipped.nil?
+  def self.next_voter(voters, recycle_rate, blocked_numbers, current_voter_id)
+    not_dialed_queue = voters.not_dialed.without(blocked_numbers).enabled
+    retry_queue      = voters.next_in_recycled_queue(recycle_rate, blocked_numbers)
+    _not_skipped     = not_dialed_queue.not_skipped.first
+    _not_skipped     ||= retry_queue.not_skipped.first
+
+    if _not_skipped.nil?
       if current_voter_id.present?
-        voter = query.where(["id > ?", current_voter_id]).first
+        voter = not_dialed_queue.where(["id > ?", current_voter_id]).first
       end
-      voter ||= query.first
+      voter ||= not_dialed_queue.first
+
+      if current_voter_id.present?
+        voter ||= retry_queue.where(["id > ?", current_voter_id]).first
+      end
+      voter ||= retry_queue.first
     else
       if current_voter_id.present?
-        voter = query.not_skipped.where(["id > ?", current_voter_id]).first
+        voter = not_dialed_queue.where(["id > ?", current_voter_id]).not_skipped.first
       end
-      voter ||= not_skipped
+      voter ||= not_dialed_queue.not_skipped.first
+
+      if current_voter_id.present?
+        voter ||= retry_queue.where(["id > ?", current_voter_id]).not_skipped.first
+      end
+      voter ||= _not_skipped
     end
 
     return voter

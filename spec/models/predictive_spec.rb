@@ -82,6 +82,34 @@ describe Predictive do
        campaign.choose_voters_to_dial(10).should == [unblocked_voter.id]
      end
 
+     it "always dials numbers that have not been dialed first" do
+       account = create(:account, :activated => true)
+       campaign = create(:predictive, :account => account)
+       create_list(:voter, 40, :campaign => campaign, :status => Voter::Status::NOTCALLED)
+       voters = Voter.all
+       voters[5..10].each{|v| v.update_attribute(:last_call_attempt_time, 30.minutes.ago)}
+       voters[15..25].each{|v| v.update_attribute(:last_call_attempt_time, 30.minutes.ago)}
+       voters[35..39].each{|v| v.update_attribute(:last_call_attempt_time, 30.minutes.ago)}
+
+       actual = campaign.choose_voters_to_dial(20)
+
+       [
+        voters[0..4],
+        voters[11..14],
+        voters[26..34]
+       ].flatten.map(&:id).each do |id|
+         actual.should include(id)
+       end
+
+       [
+        voters[5..10],
+        voters[15..25],
+        voters[35..39]
+       ].flatten.map(&:id).each do |id|
+        actual.should_not include(id)
+       end
+     end
+
      it "does not redial a voter that is in progress" do
        account = create(:account, :activated => true)
        campaign = create(:predictive, :account => account)

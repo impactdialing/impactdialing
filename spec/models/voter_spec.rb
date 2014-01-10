@@ -589,15 +589,31 @@ describe Voter do
       end
       context 'one voter has not been skipped' do
         it 'returns the first unskipped voter' do
-          skip_voters @voters[0..7]
-          expected = @voters[8]
+          skip_voters @voters[0..8]
+          expected = @voters[9]
+          actual = Voter.next_voter(@voters, 1, [], nil)
+          actual.should eq expected
+        end
+      end
+      context 'one voter has not been dialed' do
+        it 'returns the first voter that has not been dialed' do
+          attempt_calls @voters[0..8]
+          expected = @voters[9]
           actual = Voter.next_voter(@voters, 1, [], nil)
           actual.should eq expected
         end
       end
       context 'more than one voter has not been skipped' do
-        it 'returns the first unskipped voter with the oldest last_call_attempt_time' do
+        it 'returns the first unskipped voter' do
           skip_voters @voters[3..7]
+          expected = @voters[0]
+          actual = Voter.next_voter(@voters, 1, [], nil)
+          actual.should eq expected
+        end
+      end
+      context 'more than one voter has not been dialed' do
+        it 'returns the first voter that has not been dialed' do
+          attempt_calls @voters[3..7]
           expected = @voters[0]
           actual = Voter.next_voter(@voters, 1, [], nil)
           actual.should eq expected
@@ -617,6 +633,30 @@ describe Voter do
           actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
           actual.should eq expected
         end
+
+        it 'returns the first voter in the list when current_voter_id = MAX(id)' do
+          @current_voter = @voters[9]
+          skip_voters @voters
+          expected = @voters[0]
+          actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
+          actual.should eq expected
+        end
+      end
+      context 'all voters have been dialed' do
+        it 'returns the voter with id > current_voter_id' do
+          attempt_calls @voters
+          expected = @voters[4]
+          actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
+          actual.should eq expected
+        end
+
+        it 'returns the first voter in the list when current_voter_id = MAX(id)' do
+          @current_voter = @voters[9]
+          attempt_calls @voters
+          expected = @voters[0]
+          actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
+          actual.should eq expected
+        end
       end
       context 'one voter has not been skipped' do
         it 'returns the unskipped voter with id > current_voter_id' do
@@ -628,10 +668,37 @@ describe Voter do
           actual.should eq expected
         end
       end
+      context 'one voter has not been dialed' do
+        it 'returns the voter that has not been dialed with id > current_voter_id' do
+          attempt_calls @voters[0..8]
+          expected = @voters[9]
+          actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
+          actual.should eq expected
+        end
+
+        it 'returns the voter that has not been dialed when current_voter_id < MAX(id) BUT current_voter_id > NOTCALLED(id)' do
+          @current_voter = @voters[8]
+          attempt_calls @voters[0..2]
+          attempt_calls @voters[4..9]
+          expected = @voters[3]
+          expected.update_attribute(:last_call_attempt_time, nil)
+          actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
+          actual.should eq expected
+        end
+      end
       context 'more than one voter has not been skipped' do
         it 'returns the first unskipped voter with id > current_voter_id' do
           skip_voters @voters[0..2]
           skip_voters @voters[5..6]
+          expected = @voters[4]
+          actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
+          actual.should eq expected
+        end
+      end
+      context 'more than one voter has not been dialed' do
+        it 'returns the first voter that has not been dialed with id > current_voter_id' do
+          attempt_calls @voters[0..2]
+          attempt_calls @voters[5..6]
           expected = @voters[4]
           actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
           actual.should eq expected
