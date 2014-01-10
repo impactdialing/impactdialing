@@ -38,9 +38,11 @@ class Voter < ActiveRecord::Base
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
   scope :yet_to_call, enabled.where(:call_back => false).where('status not in (?) and priority is null', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED])
-  scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time is null or last_call_attempt_time < ? ', recycle_rate.hours.ago) }
+  scope :last_call_attempt_before_recycle_rate, lambda {|recycle_rate|
+    where('last_call_attempt_time IS NULL OR last_call_attempt_time < ? ', recycle_rate.hours.ago)
+  }
   scope :avialable_to_be_retried, lambda {|recycle_rate|
-    where('last_call_attempt_time is not null and last_call_attempt_time < ? and status in (?)',
+    where('last_call_attempt_time IS NOT NULL AND last_call_attempt_time < ? AND status in (?)',
           recycle_rate.hours.ago, [
             CallAttempt::Status::BUSY,
             CallAttempt::Status::NOANSWER,
@@ -49,7 +51,7 @@ class Voter < ActiveRecord::Base
           ])
   }
   scope :not_avialable_to_be_retried, lambda {|recycle_rate|
-    where('last_call_attempt_time is not null and last_call_attempt_time >= ? and status in (?)',
+    where('last_call_attempt_time IS NOT NULL AND last_call_attempt_time >= ? AND status in (?)',
           recycle_rate.hours.ago, [
             CallAttempt::Status::BUSY,
             CallAttempt::Status::NOANSWER,
@@ -63,7 +65,7 @@ class Voter < ActiveRecord::Base
   scope :scheduled, enabled.where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :limit, lambda { |n| {:limit => n} }
   scope :without, lambda { |numbers| where('phone not in (?)', numbers << -1) }
-  scope :not_skipped, where('skipped_time is null')
+  scope :not_skipped, where('skipped_time IS NULL')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :answered_within_timespan, lambda { |from, to| where(:result_date => from..to)}
