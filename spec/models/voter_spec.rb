@@ -537,7 +537,7 @@ describe Voter do
     end
   end
 
-  describe '.next_recycled_voter(recycle_rate, blocked_numbers, current_voter_id)' do
+  describe '.next_voter(recycle_rate, blocked_numbers, current_voter_id)' do
     def setup_voters(campaign_opts={}, voter_opts={})
       @campaign = create(:preview, campaign_opts.merge({
         recycle_rate: 1
@@ -582,7 +582,7 @@ describe Voter do
       context 'all voters have been skipped' do
         it 'returns the first voter with the oldest last_call_attempt_time' do
           skip_voters @voters
-          actual = Voter.next_recycled_voter(@voters, 1, [], nil)
+          actual = Voter.next_voter(@voters, 1, [], nil)
           expected = @voters.first
           actual.should eq expected
         end
@@ -591,7 +591,7 @@ describe Voter do
         it 'returns the first unskipped voter' do
           skip_voters @voters[0..7]
           expected = @voters[8]
-          actual = Voter.next_recycled_voter(@voters, 1, [], nil)
+          actual = Voter.next_voter(@voters, 1, [], nil)
           actual.should eq expected
         end
       end
@@ -599,7 +599,7 @@ describe Voter do
         it 'returns the first unskipped voter with the oldest last_call_attempt_time' do
           skip_voters @voters[3..7]
           expected = @voters[0]
-          actual = Voter.next_recycled_voter(@voters, 1, [], nil)
+          actual = Voter.next_voter(@voters, 1, [], nil)
           actual.should eq expected
         end
       end
@@ -614,7 +614,7 @@ describe Voter do
         it 'returns the voter with id > current_voter_id' do
           skip_voters @voters
           expected = @voters[4]
-          actual = Voter.next_recycled_voter(@voters, 1, [], @current_voter.id)
+          actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
           actual.should eq expected
         end
       end
@@ -624,7 +624,7 @@ describe Voter do
           skip_voters @voters[4..7]
           skip_voters [@voters[9]]
           expected = @voters[8]
-          actual = Voter.next_recycled_voter(@voters, 1, [], @current_voter.id)
+          actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
           actual.should eq expected
         end
       end
@@ -633,7 +633,7 @@ describe Voter do
           skip_voters @voters[0..2]
           skip_voters @voters[5..6]
           expected = @voters[4]
-          actual = Voter.next_recycled_voter(@voters, 1, [], @current_voter.id)
+          actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
           actual.should eq expected
         end
       end
@@ -641,7 +641,7 @@ describe Voter do
         it 'returns the first voter not skipped voter' do
           attempt_calls(@voters)
           expected = @voters.first
-          actual = Voter.next_recycled_voter(@voters, @campaign.recycle_rate, [], @voters.last.id)
+          actual = Voter.next_voter(@voters, @campaign.recycle_rate, [], @voters.last.id)
           actual.should eq expected
         end
       end

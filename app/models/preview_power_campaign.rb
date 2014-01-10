@@ -4,7 +4,7 @@ module PreviewPowerCampaign
     do_not_call_numbers = account.blocked_numbers.for_campaign(self).pluck(:number)
     begin
       voter = all_voters.next_in_priority_or_scheduled_queues(do_not_call_numbers).first
-      voter ||= Voter.next_recycled_voter(all_voters, recycle_rate, do_not_call_numbers, current_voter_id)
+      voter ||= Voter.next_voter(all_voters, recycle_rate, do_not_call_numbers, current_voter_id)
 
       update_voter_status_to_ready(voter)
     rescue ActiveRecord::StaleObjectError => e

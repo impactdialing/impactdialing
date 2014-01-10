@@ -99,7 +99,7 @@ class Voter < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
-  def self.next_recycled_voter(voters, recycle_rate, blocked_numbers, current_voter_id)
+  def self.next_voter(voters, recycle_rate, blocked_numbers, current_voter_id)
     query = voters.next_in_recycled_queue(recycle_rate, blocked_numbers)
     not_skipped = query.not_skipped.first
 
