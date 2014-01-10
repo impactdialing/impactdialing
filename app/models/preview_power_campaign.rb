@@ -8,14 +8,8 @@ module PreviewPowerCampaign
 
       update_voter_status_to_ready(voter)
     rescue ActiveRecord::StaleObjectError => e
-      msg = "Pong: Account[#{account.id}] Campaign[#{self.id}] next_voter_in_dial_queue raised ActiveRecord::StaleObjectError: #{e.message}"
-      p msg
-      Rails.logger.debug msg
       retry
     end
-    msg = "Pong: Account[#{account.id}] Campaign[#{self.id}] next_voter_in_dial_queue => #{voter.try(:id)}"
-    p msg
-    Rails.logger.debug msg
     return voter
   end
 
@@ -27,9 +21,6 @@ module PreviewPowerCampaign
   def caller_conference_started_event(current_voter_id)
     next_voter = next_voter_in_dial_queue(current_voter_id)
     info = next_voter.nil? ? {campaign_out_of_leads: true} : next_voter.info
-    msg = "Pong: Account[#{account.id}] Campaign[#{self.id}] caller_conference_started_event => data: #{info}"
-    p msg
-    Rails.logger.debug msg
     {event: 'conference_started', data: info}
   end
 
