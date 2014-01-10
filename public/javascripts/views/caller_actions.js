@@ -33,15 +33,15 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     "click #kick_transfer": "kickTransfer"
   },
 
-  setupChannelHandlers: function(){
+  setupChannelHandlers: function(channel){
     var self = this;
-    ImpactDialing.Channel.bind('warm_transfer', function(){
+    channel.bind('warm_transfer', function(){
       $('#kick_transfer').show();
       $('#kick_caller').show();
       $("#submit_and_keep_call").hide();
       $("#submit_and_stop_call").hide();
     });
-    ImpactDialing.Channel.bind('cold_transfer', function(){
+    channel.bind('cold_transfer', function(){
       $('#hangup_call').hide();
       $('#kick_caller').hide();
       $('#schedule_callback').hide();
@@ -49,7 +49,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
       $("#submit_and_keep_call").show();
       $("#submit_and_stop_call").show();
     });
-    ImpactDialing.Channel.bind('caller_kicked_off', function(){
+    channel.bind('caller_kicked_off', function(){
       $('#kick_transfer').hide();
       $('#kick_caller').hide();
       $("#submit_and_keep_call").show();

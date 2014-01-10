@@ -66,6 +66,7 @@ module ImpactDialing
       'jquery.form.js', 'flash_detect_min.js', 'browser_detect.js',
       'date.js', 'underscore-min', 'mustache', 'backbone',
       'impactdialing', 'models/campaign_call.js',
+      'services/pusher',
       'views/campaign_call.js', 'models/caller_script.js',
       'models/lead_info.js', 'views/lead_info.js',
       'views/schedule_callback.js', 'models/caller_session.js',

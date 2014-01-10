@@ -35,32 +35,32 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
       $('#transfer_status').text('Transfer disconnected.');
     });
     if( _.isFunction(ImpactDialing.Channel.bind) ){
-      this.setupChannelHandlers();
+      this.setupChannelHandlers(ImpactDialing.Channel);
     } else {
       ImpactDialing.Events.bind('channel.subscribed', this.setupChannelHandlers);
     }
   },
 
-  setupChannelHandlers: function(){
-    ImpactDialing.Channel.bind('transfer_connected', function(data){
+  setupChannelHandlers: function(channel){
+    channel.bind('transfer_connected', function(data){
       var transfer_type = data.type;
 
       $('#transfer_form').hide();
       $('#transfer_status').text('Connecting parties...');
     });
-    ImpactDialing.Channel.bind('warm_transfer', function(){
+    channel.bind('warm_transfer', function(){
       $('#transfer_form').hide();
       $('#transfer_status').text('Connected: you, lead & transfer.');
     });
-    ImpactDialing.Channel.bind('cold_transfer', function(){
+    channel.bind('cold_transfer', function(){
       $('#transfer_form').show();
       $('#transfer_status').text('Connected: lead & transfer.');
     });
-    ImpactDialing.Channel.bind('caller_kicked_off', function(){
+    channel.bind('caller_kicked_off', function(){
       $('#transfer_status').text('Disconnected.');
       $('#transfer-calls').hide();
     });
-    ImpactDialing.Channel.bind('transfer_conference_ended', function(){
+    channel.bind('transfer_conference_ended', function(){
       $('#transfer_form').show();
       $('#transfer_status').text('Disconnected.');
     });

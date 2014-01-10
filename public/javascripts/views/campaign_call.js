@@ -3,6 +3,8 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
   initialize: function(){
     var self = this;
 
+    _.bindAll(this, 'updateModelAndInitServices', 'bindPusherEvents');
+
     this.lead_info = new ImpactDialing.Models.LeadInfo();
     this.caller_script = new ImpactDialing.Models.CallerScript();
     this.script_view  = new ImpactDialing.Views.CallerScript({
@@ -69,35 +71,88 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
           var token = $("meta[name='csrf-token']").attr("content");
           request.setRequestHeader("X-CSRF-Token", token);
         },
-      success: function(data){
-        self.model.set(data);
-        self.pusher = new Pusher(self.model.get("pusher_key"));
-        ImpactDialing.Channel = self.pusher.subscribe(self.model.get("session_key"));
-        ImpactDialing.Events.trigger('channel.subscribed');
-        self.channel = ImpactDialing.Channel
-        self.bindPusherEvents();
-        $("#caller-actions").html(self.start_calling_view.render().el);
-        var ios_url = "inapp://capture?campaign_id=" + self.model.get("campaign_id") +"&phone_number="+ self.model.get("phone_number") +
-         "&caller_id=" + self.model.get("caller_id") + "&session_key=" + self.model.get("session_key") + "&token=" + self.model.get("twilio_token");
-        $("#start-calling-mobile").attr("href", ios_url);
-        $("#callin").show();
-        if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
-          $("#start-calling").hide();
-        }
-        if(isNativeApp()){
-         $("#start-calling-mobile").show();
-         $(".webapp-callin-info").hide();
-        }
-        $("#callin-number").html(self.model.get("phone_number"));
-        $("#callin-pin").html(self.model.get("pin"));
-        self.stopCallingOnPageReload()
-        self.setupTwilio();
-        self.trigger('rendered.caller.info', self.model);
-        },
-        error: function(jqXHR, textStatus, errorThrown){
-          self.callerShouldNotDial(jqXHR["responseText"]);
-        }
-      });
+      success: this.updateModelAndInitServices,
+      error: function(jqXHR, textStatus, errorThrown){
+        self.callerShouldNotDial(jqXHR["responseText"]);
+      }
+    });
+  },
+
+  updateModelAndInitServices: function(data){
+    console.log('Views.CampaignCall.updateModelAndInitServices', data);
+    this.model.set(data);
+    this.initServices();
+  },
+
+  renderCallerInfo: function(){
+    $("#caller-actions").html(this.start_calling_view.render().el);
+    var ios_url = "inapp://capture?campaign_id=" +
+                  this.model.get("campaign_id") +
+                  "&phone_number=" +
+                  this.model.get("phone_number") +
+                  "&caller_id=" +
+                  this.model.get("caller_id") +
+                  "&session_key=" +
+                  this.model.get("session_key") +
+                  "&token=" +
+                  this.model.get("twilio_token");
+    $("#start-calling-mobile").attr("href", ios_url);
+    $("#callin").show();
+    if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
+      $("#start-calling").hide();
+    }
+    if (isNativeApp()){
+      $("#start-calling-mobile").show();
+      $(".webapp-callin-info").hide();
+    }
+    $("#callin-number").html(this.model.get("phone_number"));
+    $("#callin-pin").html(this.model.get("pin"));
+    this.stopCallingOnPageReload()
+    this.setupTwilio();
+    self.trigger('rendered.caller.info', self.model);
+  },
+
+  initPusher: function(){
+    var channel     = this.model.get('session_key'),
+        pusherKey   = this.model.get('pusher_key')
+        self        = this;
+
+    ImpactDialing.Events.on('channel.subscribed', this.bindPusherEvents);
+
+    this.pusherService = new ImpactDialing.Services.Pusher(pusherKey, channel);
+
+    this.pusherService.pusher.connection.bind('connected_in', function(delay){
+      var connected_in_msg = $('<b/>').text(' Connecting in ' + delay + ' seconds.');
+      // $('#voter_info_message').append(connected_in_msg);
+      console.log('Pusher.connected_in', delay);
+    });
+
+    this.pusherService.pusher.connection.bind('connecting', function(){
+      console.log('Pusher.connecting', this);
+    });
+
+    this.pusherService.pusher.connection.bind('connected', function(){
+      console.log('Pusher.connected', this);
+
+      self.renderCallerInfo();
+    });
+
+    this.pusherService.pusher.connection.bind('unavailable', function(){
+      console.log('Pusher.unavailable', this);
+    });
+
+    this.pusherService.pusher.connection.bind('failed', function(){
+      console.log('Pusher.failed', this);
+    });
+
+    this.pusherService.pusher.connection.bind('disconnected', function(){
+      console.log('Pusher.disconnected', this);
+    });
+  },
+
+  initServices: function(){
+    this.initPusher();
+    // this.initTwilio();
   },
 
   stopCallingOnPageReload: function(){
@@ -138,9 +193,13 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
   },
 
-  bindPusherEvents: function(){
+  bindPusherEvents: function(channel){
+    console.log('Views.CampaignCall.bindPusherEvents', channel);
     var self = this;
-    this.channel.bind('start_calling', function(data) {
+    /*
+      Channel events
+    */
+    channel.bind('start_calling', function(data) {
       self.model.set("session_id", data.caller_session_id);
       $("#caller-actions").html(self.caller_actions.render().el);
       $("#caller-actions a").hide();
@@ -148,7 +207,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       self.caller_actions.startCalling();
     });
 
-    this.channel.bind('caller_connected_dialer', function(data) {
+    channel.bind('caller_connected_dialer', function(data) {
       self.model.unset("call_id");
       self.lead_info.clear();
       self.lead_info.set(data);
@@ -158,7 +217,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       self.caller_actions.callerConnectedDialer();
     });
 
-    this.channel.bind('conference_started', function(data) {
+    channel.bind('conference_started', function(data) {
       self.model.unset("call_id");
       self.lead_info.clear();
       self.lead_info.set(data);
@@ -168,7 +227,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       self.caller_actions.conferenceStarted();
     });
 
-    this.channel.bind('caller_reassigned', function(data) {
+    channel.bind('caller_reassigned', function(data) {
       self.caller_script.fetch({
         success: function(){
           self.renderScript();
@@ -182,16 +241,16 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       });
     });
 
-    this.channel.bind('calling_voter', function(data) {
+    channel.bind('calling_voter', function(data) {
       self.caller_actions.callingVoter();
     });
 
-    this.channel.bind('voter_connected', function(data) {
+    channel.bind('voter_connected', function(data) {
       self.model.set("call_id", data.call_id);
       self.caller_actions.voterConnected();
     });
 
-    this.channel.bind('voter_connected_dialer', function(data) {
+    channel.bind('voter_connected_dialer', function(data) {
       self.model.set("call_id", data.call_id);
       self.lead_info.clear();
       self.lead_info.set(data.voter)
@@ -201,11 +260,11 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       self.caller_actions.voterConnectedDialer();
     });
 
-    this.channel.bind('voter_disconnected', function(data) {
+    channel.bind('voter_disconnected', function(data) {
       self.caller_actions.voterDisconected();
     });
 
-    this.channel.bind('caller_disconnected', function(data) {
+    channel.bind('caller_disconnected', function(data) {
       var campaign_call = new ImpactDialing.Models.CampaignCall();
       campaign_call.set({pusher_key: data.pusher_key});
       var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
@@ -215,16 +274,16 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       $("#voter_info_message").show();
     });
 
-    this.channel.bind('transfer_busy', function(data) {
+    channel.bind('transfer_busy', function(data) {
       self.caller_actions.showHangupButton();
     });
 
-    this.channel.bind('transfer_connected', function(data) {
+    channel.bind('transfer_connected', function(data) {
       self.model.set("transfer_type", data.type);
       self.model.set("transfer_call_id", self.model.get("call_id"));
     });
 
-    this.channel.bind('transfer_conference_ended', function(data) {
+    channel.bind('transfer_conference_ended', function(data) {
       var transfer_type = self.model.get("transfer_type");
       if( self.model.isKicking('transfer') ){
         ImpactDialing.Events.trigger('transfer.kicked');
@@ -237,15 +296,15 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       self.model.unset("transfer_type");
     });
 
-    this.channel.bind('warm_transfer',function(data){
+    channel.bind('warm_transfer',function(data){
 
     });
 
-    this.channel.bind('cold_transfer',function(data){
+    channel.bind('cold_transfer',function(data){
 
     });
 
-    this.channel.bind('caller_kicked_off',function(data){
+    channel.bind('caller_kicked_off',function(data){
 
     });
   }
