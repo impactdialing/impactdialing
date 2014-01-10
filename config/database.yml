@@ -3,7 +3,7 @@
 development:
     adapter: mysql2
     host: localhost
-    database: impactdialing_prod_dev
+    database: impactdialing_dev
     username: root
     password:
     timeout: 5000
