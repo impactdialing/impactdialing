@@ -47,9 +47,9 @@ heroku_preproduction:
 
 development:
   <<: *default_settings
-  twilio_callback_host: 3cdf12dc.ngrok.com
-  call_end_callback_host: 3cdf12dc.ngrok.com
-  incoming_callback_host: 3cdf12dc.ngrok.com
+  twilio_callback_host: jhid.ngrok.com
+  call_end_callback_host: jhid.ngrok.com
+  incoming_callback_host: jhid.ngrok.com
   recording_env: development
   callin_phone: 8582254595
 
