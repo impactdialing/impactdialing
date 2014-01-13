@@ -50,8 +50,8 @@
     }
 
     if (warning != ''){
-      $('#browserTestContainer').show();
-      $('#browserTest').html(warning);
+      $('#error-info-container').show();
+      $('#error-info').html(warning);
     }
   </script>
 <% end %>
@@ -137,9 +137,10 @@
   </script>
 <% end %>
 
-<div class="callout alert clearfix" id="browserTestContainer" style="display:none">
-  <p id="browserTest"></p>
+<div class="callout alert clearfix" id="error-info-container" style="display:none">
+  <p id="error-info"></p>
 </div>
+
 <noscript>
   <div class="callout alert clearfix">
     <p><%= t('javascript_disabled') %></p>
