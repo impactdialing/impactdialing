@@ -3,7 +3,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
   initialize: function(){
     var self = this;
 
-    _.bindAll(this, 'updateModelAndInitServices', 'bindPusherEvents');
+    _.bindAll(this, 'fetchCallerInfoSuccess', 'bindPusherEvents');
 
     this.lead_info = new ImpactDialing.Models.LeadInfo();
     this.caller_script = new ImpactDialing.Models.CallerScript();
@@ -71,17 +71,29 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
           var token = $("meta[name='csrf-token']").attr("content");
           request.setRequestHeader("X-CSRF-Token", token);
         },
-      success: this.updateModelAndInitServices,
+      success: this.fetchCallerInfoSuccess,
       error: function(jqXHR, textStatus, errorThrown){
         self.callerShouldNotDial(jqXHR["responseText"]);
       }
     });
   },
 
-  updateModelAndInitServices: function(data){
-    console.log('Views.CampaignCall.updateModelAndInitServices', data);
+  fetchCallerInfoSuccess: function(data){
+    var self = this;
+
+    console.log('Views.CampaignCall.fetchCallerInfoSuccess', data);
     this.model.set(data);
     this.initServices();
+
+    var renderAndUnbind = function(){
+      console.log('Pusher.connected - first connect only', this);
+
+      self.renderCallerInfo();
+
+      self.pusherService.pusher.connection.unbind('connected', renderAndUnbind)
+    };
+
+    this.pusherService.pusher.connection.bind('connected', renderAndUnbind);
   },
 
   renderCallerInfo: function(){
@@ -120,34 +132,6 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     ImpactDialing.Events.on('channel.subscribed', this.bindPusherEvents);
 
     this.pusherService = new ImpactDialing.Services.Pusher(pusherKey, channel);
-
-    this.pusherService.pusher.connection.bind('connected_in', function(delay){
-      var connected_in_msg = $('<b/>').text(' Connecting in ' + delay + ' seconds.');
-      // $('#voter_info_message').append(connected_in_msg);
-      console.log('Pusher.connected_in', delay);
-    });
-
-    this.pusherService.pusher.connection.bind('connecting', function(){
-      console.log('Pusher.connecting', this);
-    });
-
-    this.pusherService.pusher.connection.bind('connected', function(){
-      console.log('Pusher.connected', this);
-
-      self.renderCallerInfo();
-    });
-
-    this.pusherService.pusher.connection.bind('unavailable', function(){
-      console.log('Pusher.unavailable', this);
-    });
-
-    this.pusherService.pusher.connection.bind('failed', function(){
-      console.log('Pusher.failed', this);
-    });
-
-    this.pusherService.pusher.connection.bind('disconnected', function(){
-      console.log('Pusher.disconnected', this);
-    });
   },
 
   initServices: function(){
