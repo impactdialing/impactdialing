@@ -49,7 +49,7 @@ module Callers
         campaign_id: @campaign.id,
         account_id: @caller.account_id,
         twilio_token: twilio_capability.generate,
-        phone_number: number_to_phone(Settings.callin_phone, :area_code => true)
+        phone_number: number_to_phone(Settings.callin_phone, :area_code => true),
         caller_session_key: caller_session_key
       }
 

@@ -29,16 +29,62 @@
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
-    $(function() {
-      // Add some caller data to errorception reports.
-      _errs.meta = {
-        caller_id: $('#caller').val(),
-        session_id: $('#caller_session').val()
-      };
+    var _idReportConfig = {},
+        _usersnapconfig = {
+          apiKey: 'ee7280e5-4afa-4854-87a6-b19d6c1cf460',
+          beforeSend: function(obj) {
+            obj.addInfo = _idReportConfig;
+          }
+        };
+    _errs.meta = {};
 
+    var _idResetReportConfig = function(oldData){
+      _errs.meta = {};
+      _idReportConfig = {};
+      // _idSetUserSnapConfig({});
+    };
+
+    var _idSetUserSnapConfig = function(data) {
+      window._usersnapconfig = $.extend(data, {
+        apiKey: 'ee7280e5-4afa-4854-87a6-b19d6c1cf460'
+      });
+    };
+
+    var _idUpdateReportConfig = function(data){
+      // errorception
+      $.extend(_errs.meta, data);
+      _idReportConfig = data;
+    };
+
+    $(function() {
       var campaign_call = new ImpactDialing.Models.CampaignCall();
       campaign_call.set({pusher_key: '<%= Pusher.key %>'});
-      var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
+      var campaign_call_view = new ImpactDialing.Views.CampaignCall({
+        model: campaign_call
+      });
+
+      campaign_call_view.bind('rendered.caller.info', function(caller_info){
+        _idResetReportConfig(_idReportConfig);
+
+        $.extend(_idReportConfig, {
+          caller_id: caller_info.get('caller_id'),
+          caller_session_key: caller_info.get('caller_session_key'),
+          campaign_id: caller_info.get('campaign_id'),
+          phone_number: caller_info.get('phone_number'),
+          account_id: caller_info.get('account_id')
+        });
+
+        _idUpdateReportConfig(_idReportConfig);
+      });
+
+      campaign_call_view.lead_info.on('change', function(lead_info, options){
+        $.extend(_idReportConfig, {
+          lead_info: lead_info.toJSON()
+        });
+
+        _idUpdateReportConfig(_idReportConfig);
+      });
+
       campaign_call_view.render();
     });
   </script>

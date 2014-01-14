@@ -92,6 +92,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         $("#callin-pin").html(self.model.get("pin"));
         self.stopCallingOnPageReload()
         self.setupTwilio();
+        self.trigger('rendered.caller.info', self.model);
         },
         error: function(jqXHR, textStatus, errorThrown){
           self.callerShouldNotDial(jqXHR["responseText"]);
