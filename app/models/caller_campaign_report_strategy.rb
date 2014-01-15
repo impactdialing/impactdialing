@@ -48,6 +48,13 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     end
   end
 
+  def get_transfer_attempts(call_attempts)
+    ids = call_attempts.map{|ca| ca['id'] }
+    @replica_connection.execute(TransferAttempt.where(call_attempt_id: ids).select([:id, :call_attempt_id, :tStartTime, :tEndTime, :tDuration]).to_sql).each(as: :hash).each_with_object({}) do |hash, memo|
+      memo[hash['call_attempt_id']] = hash
+    end
+  end
+
   def get_custom_voter_field_values(voter_ids)
     query = CustomVoterField.where(account_id: @campaign.account_id, name: @selected_custom_voter_fields.try(:compact)).
       joins(:custom_voter_field_values).
@@ -73,6 +80,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
 
 
   def selected_fields(voter, selection = nil)
+    return [['Voter deleted']] if voter.nil?
     return [voter['phone']] unless selection
     selection.select { |field| Voter::UPLOAD_FIELDS.include?(field) }.map { |field| voter[field] }
   end
@@ -100,12 +108,13 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       call_attempt_ids << attempt_numbers[voter['id']][:last_id] if attempt_numbers[voter['id']]
     end
     conn = OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2))
-    attempts = conn.execute(CallAttempt.where(id: call_attempt_ids.compact).to_sql).each(as: :hash)
+    attempts = conn.execute(CallAttempt.where(id: call_attempt_ids.compact).includes(:transfer_attempt).to_sql).each(as: :hash)
     answers = get_answers(call_attempt_ids)
     note_responses = get_note_responses(call_attempt_ids)
     caller_names = get_callers_names(attempts)
+    transfer_attempts = get_transfer_attempts(attempts)
     attempts.each do |a|
-      data[a['voter_id']][-1] = call_attempt_details(a, answers[a['id']], note_responses[a['id']], caller_names, attempt_numbers, @possible_responses)
+      data[a['voter_id']][-1] = call_attempt_details(a, answers[a['id']], note_responses[a['id']], caller_names, attempt_numbers, @possible_responses, transfer_attempts[a['id']])
     end
     data.values.each do |o|
       @csv << o.flatten
@@ -128,12 +137,13 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     note_responses = get_note_responses(attempt_ids)
     caller_names = get_callers_names(attempts)
     attempt_numbers = get_call_attempts_number(voter_ids)
+    transfer_attempts = get_transfer_attempts(attempts)
 
     attempts.each do |attempt|
       voter_id = attempt['voter_id']
       attempt_id = attempt['id']
       data = csv_for(voters[voter_id], voter_field_values[voter_id])
-      data[-1] = call_attempt_details(attempt, answers[attempt_id], note_responses[attempt_id], caller_names, attempt_numbers, @possible_responses)
+      data[-1] = call_attempt_details(attempt, answers[attempt_id], note_responses[attempt_id], caller_names, attempt_numbers, @possible_responses, transfer_attempts[attempt_id])
       @csv << data.flatten
     end
   end
@@ -154,7 +164,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       first_attempt = CallAttempt.for_campaign(@campaign).order('id').first
       @possible_responses = get_possible_responses
-      CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_created_id)').for_campaign(@campaign).order('created_at').includes(:answers, :note_responses).find_in_hashes(:batch_size => 5000, start: start_position(first_attempt), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |attempts|
+      CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_created_id)').for_campaign(@campaign).order('created_at').includes(:answers, :note_responses, :transfer_attempt).find_in_hashes(:batch_size => 5000, start: start_position(first_attempt), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |attempts|
         process_attempts(attempts)
       end
     end
@@ -174,17 +184,17 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       first_attempt = CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('id').first
       @possible_responses = get_possible_responses
-      CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_created_id)').for_campaign(@campaign).between(@from_date, @to_date).order('created_at').includes(:answers, :note_responses).find_in_batches(:batch_size => 5000, start: start_position(first_attempt)) do |attempts|
+      CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_created_id)').for_campaign(@campaign).between(@from_date, @to_date).order('created_at').includes(:answers, :note_responses, :transfer_attempt).find_in_batches(:batch_size => 5000, start: start_position(first_attempt)) do |attempts|
         process_attempts(attempts)
       end
     end
   end
 
-  def call_attempt_details(call_attempt, answers, note_responses, caller_names, attempt_numbers, possible_responses)
+  def call_attempt_details(call_attempt, answers, note_responses, caller_names, attempt_numbers, possible_responses, transfer_attempt)
     if [CallAttempt::Status::RINGING, CallAttempt::Status::READY].include?(call_attempt['status'])
       [nil, "Not Dialed","","","","", [], []]
     else
-      [call_attempt_info(call_attempt, caller_names, attempt_numbers), PossibleResponse.possible_response_text(@question_ids, answers, possible_responses), NoteResponse.response_texts(@note_ids, note_responses)].flatten
+      [call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt), PossibleResponse.possible_response_text(@question_ids, answers, possible_responses), NoteResponse.response_texts(@note_ids, note_responses)].flatten
     end
   end
 

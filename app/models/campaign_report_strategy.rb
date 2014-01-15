@@ -47,16 +47,16 @@ class CampaignReportStrategy
     @csv
   end
 
-  def call_attempt_info(call_attempt, caller_names, attempt_numbers)
+  def call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt)
     out = [
       caller_names[call_attempt['caller_id']],
       CampaignReportStrategy.map_status(call_attempt['status']),
       time_dialed(call_attempt),
       time_answered(call_attempt),
       time_ended(call_attempt),
-      transfer_times(call_attempt, 'tStartTime'),
-      transfer_times(call_attempt, 'tEndTime'),
-      transfer_times(call_attempt, 'tDuration')
+      transfer_times(transfer_attempt, 'tStartTime'),
+      transfer_times(transfer_attempt, 'tEndTime'),
+      transfer_times(transfer_attempt, 'tDuration')
     ]
     if @mode == CampaignReportStrategy::Mode::PER_LEAD
       out << attempt_numbers[call_attempt['voter_id']][:cnt]
@@ -77,12 +77,11 @@ class CampaignReportStrategy
     call_attempt['call_end'].try(:in_time_zone, @campaign.time_zone)
   end
 
-  def transfer_times(call_attempt, attribute)
+  def transfer_times(transfer_attempt, attribute)
     data             = 'N/A'
-    transfer_attempt = transfer_attempt_for(call_attempt)
     if transfer_attempt.present?
-      if transfer_attempt.respond_to? attribute
-        data = transfer_attempt.send(attribute)
+      if transfer_attempt[attribute].present?
+        data = transfer_attempt[attribute]
 
         case attribute
         when /t(End|Start)Time/
@@ -93,15 +92,6 @@ class CampaignReportStrategy
       end
     end
     return data
-  end
-
-  def transfer_attempt_for(call_attempt)
-    id = call_attempt['id']
-
-    if id.present?
-      return TransferAttempt.where(call_attempt_id: id).first
-    end
-    return id
   end
 
   def answers(call_attempt)
