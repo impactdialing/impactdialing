@@ -41,6 +41,18 @@ class ClientController < ApplicationController
     begin
       @user = User.find(session[:user])
       @account = @user.account
+
+      if @account.nil?
+        respond_to do |format|
+          format.html do
+            session[:user] = nil
+            flash_message(:error, 'Please sign in or create an account.')
+            redirect_to login_path
+          end
+          format.json { render json: {message: 'Please sign in, provide an API key or create an account.'} }
+        end
+        return
+      end
     rescue
     end
   end
@@ -87,7 +99,7 @@ class ClientController < ApplicationController
     self.current_user = Account.find_by_api_key(params[:api_key]) unless params[:api_key].empty?
   end
 
-  def check_credit_card_declined    
+  def check_credit_card_declined
     if current_user && !current_user.account.current_subscription.trial? && current_user.account.credit_card_declined?
       billing_link = '<a href="' + white_labeled_billing_link(request.domain) + '">Billing information</a>'
       add_to_balance_link = '<a href="' + white_labeled_add_to_balance_link(request.domain) + '">add to your balance</a>'
