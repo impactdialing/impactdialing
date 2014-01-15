@@ -9,8 +9,10 @@ class ClientController < ApplicationController
 
   def validate_account_presence!(account)
     if account.nil?
+      logger.error("ClientController#validate_account_presence! - Account Not Found.")
       if @user.present?
-        logger.error("ClientController#validate_account_presence! - Account[#{@user.account_id}] Not Found for User[#{@user.id}:#{@user.email}]. Destroying User record.")
+        logger.error("\tfor Account[#{@user.account_id}]")
+        logger.error("\tfor User[#{@user.id}:#{@user.email}]. Destroying User record.")
         @user.destroy
         session[:user] = nil
       end
