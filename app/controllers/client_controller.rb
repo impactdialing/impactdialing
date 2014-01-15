@@ -7,17 +7,41 @@ class ClientController < ApplicationController
   before_filter :check_tos_accepted, :except => [:login, :forgot]
   before_filter :check_credit_card_declined
 
+  def validate_account_presence!(account)
+    if account.nil?
+      if @user.present?
+        logger.error("ClientController#validate_account_presence! - Account[#{@user.account_id}] Not Found for User[#{@user.id}:#{@user.email}]. Destroying User record.")
+        @user.destroy
+        session[:user] = nil
+      end
+
+      respond_to do |format|
+        format.html do
+          flash_message(:error, 'Please sign in or create an account.')
+          redirect_to login_path
+        end
+        format.json { render json: {message: 'Unauthorized request. Please provide a valid API key or create an account.', code: "401", status: "error"} }
+      end
+
+      return false
+    else
+      return true
+    end
+  end
+
   def authenticate_api
     unless params[:api_key].blank?
       @account = Account.find_by_api_key(params[:api_key])
-      return if @account.nil?
+      validate_account_presence!(@account) || return
       @user = @account.users.first
       session[:user] = @user.id
     end
   end
 
   def check_tos_accepted
-    if !@account.terms_and_services_accepted?
+    validate_account_presence!(@account) || return
+
+    if !@account.try(:terms_and_services_accepted?)
       respond_to do |format|
           format.html { redirect_to client_tos_path    }
           format.json { render json: {message: "Please accept the Terms of services before making any request" }, code: "403" }
@@ -41,18 +65,7 @@ class ClientController < ApplicationController
     begin
       @user = User.find(session[:user])
       @account = @user.account
-
-      if @account.nil?
-        respond_to do |format|
-          format.html do
-            session[:user] = nil
-            flash_message(:error, 'Please sign in or create an account.')
-            redirect_to login_path
-          end
-          format.json { render json: {message: 'Please sign in, provide an API key or create an account.'} }
-        end
-        return
-      end
+      validate_account_presence!(@account) || return
     rescue
     end
   end
@@ -100,6 +113,10 @@ class ClientController < ApplicationController
   end
 
   def check_credit_card_declined
+    if current_user.present?
+      validate_account_presence!(current_user.try(:account)) || return
+    end
+
     if current_user && !current_user.account.current_subscription.trial? && current_user.account.credit_card_declined?
       billing_link = '<a href="' + white_labeled_billing_link(request.domain) + '">Billing information</a>'
       add_to_balance_link = '<a href="' + white_labeled_add_to_balance_link(request.domain) + '">add to your balance</a>'

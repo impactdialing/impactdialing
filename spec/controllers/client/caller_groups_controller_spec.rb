@@ -15,7 +15,7 @@ describe Client::CallerGroupsController do
 
     it 'gives an error for an invalid api key' do
       get :index, api_key: 'bad', format: 'json'
-      JSON.parse(response.body).should eq({"status"=>"error", "code"=>"401", "message"=>"Unauthorized"})
+      JSON.parse(response.body).should eq({"status"=>"error", "code"=>"401", "message"=>"Unauthorized request. Please provide a valid API key or create an account."})
     end
   end
 

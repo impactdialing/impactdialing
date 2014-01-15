@@ -47,7 +47,7 @@ class CampaignReportStrategy
     @csv
   end
 
-  def call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt)
+  def call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt={})
     out = [
       caller_names[call_attempt['caller_id']],
       CampaignReportStrategy.map_status(call_attempt['status']),

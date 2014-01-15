@@ -80,7 +80,7 @@ describe Client::CampaignsController do
         predictive_campaign = create(:predictive, :account => account, :active => true)
         inactive_campaign = create(:power, :account => account, :active => false)
         get :index, :api_key=> 'abc12', :format => "json"
-        JSON.parse(response.body).should eq({"status"=>"error", "code"=>"401", "message"=>"Unauthorized"})
+        JSON.parse(response.body).should eq({"status"=>"error", "code"=>"401", "message"=>"Unauthorized request. Please provide a valid API key or create an account."})
       end
 
     end

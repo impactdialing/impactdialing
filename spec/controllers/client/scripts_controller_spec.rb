@@ -44,7 +44,7 @@ describe Client::ScriptsController do
         active_script = create(:script, :account => account, :active => true)
         inactive_script = create(:script, :account => account, :active => false)
         get :index, :api_key=> 'def12', :format => "json"
-        JSON.parse(response.body).should eq({"status"=>"error", "code"=>"401", "message"=>"Unauthorized"})
+        JSON.parse(response.body).should eq({"status"=>"error", "code"=>"401", "message"=>"Unauthorized request. Please provide a valid API key or create an account."})
       end
     end
 
@@ -132,7 +132,7 @@ describe Client::ScriptsController do
 
       it "should show deleted scripts" do
         active_script = create(:script, :account => account, :active => false)
-        get :deleted, :api_key=> account.api_key, :format => "json"        
+        get :deleted, :api_key=> account.api_key, :format => "json"
         JSON.parse(response.body).length.should eq(1)
       end
     end
