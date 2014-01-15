@@ -190,7 +190,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     end
   end
 
-  def call_attempt_details(call_attempt, answers, note_responses, caller_names, attempt_numbers, possible_responses, transfer_attempt)
+  def call_attempt_details(call_attempt, answers, note_responses, caller_names, attempt_numbers, possible_responses, transfer_attempt={})
     if [CallAttempt::Status::RINGING, CallAttempt::Status::READY].include?(call_attempt['status'])
       [nil, "Not Dialed","","","","", [], []]
     else
