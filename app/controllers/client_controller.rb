@@ -13,7 +13,7 @@ class ClientController < ApplicationController
       if @user.present?
         logger.error("\tfor Account[#{@user.account_id}]")
         logger.error("\tfor User[#{@user.id}:#{@user.email}]. Destroying User record.")
-        @user.destroy
+        # @user.destroy
         session[:user] = nil
       end
 
