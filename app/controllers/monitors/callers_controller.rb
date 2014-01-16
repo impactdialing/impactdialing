@@ -40,7 +40,11 @@ module Monitors
     end
 
     def reassignable_campaigns
-      @campaigns = account.campaigns.manual.active.select {|x| !x.time_period_exceeded?}
+      if account.nil?
+        @campaigns = []
+      else
+        @campaigns = account.campaigns.manual.active.select {|x| !x.time_period_exceeded?}
+      end
       respond_with(@campaigns.collect{|c| {id: c.id, name: c.name}})
     end
 
