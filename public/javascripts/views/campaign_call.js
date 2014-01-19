@@ -253,7 +253,11 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     channel.bind('caller_disconnected', function(data) {
       var campaign_call = new ImpactDialing.Models.CampaignCall();
       campaign_call.set({pusher_key: data.pusher_key});
-      var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
+      var campaign_call_view = new ImpactDialing.Views.CampaignCall({
+        model: campaign_call,
+        pusherConnectionMonitor: ImpactDialing.Services.PusherConnectionMonitor,
+        pusherMonitorAfterStatsUpdate: ImpactDialing.Debugger.addData
+      });
       campaign_call_view.render();
       self.lead_info.clear();
       $("#voter_info").html(self.lead_info_view.render().el);
