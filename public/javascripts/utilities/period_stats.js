@@ -1,6 +1,9 @@
 (function() {
   var PeriodStats;
 
+  /*
+    Stats are swept every minute and any older than this.isOldThreshold (6 minutes by default) are removed.
+  */
   PeriodStats = (function() {
     function PeriodStats(options) {
       _.bindAll(this, 'sweep');
