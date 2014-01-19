@@ -39,7 +39,6 @@
       var self = this;
 
       _.delay(this.updatePusherStats, this.updateFrequency);
-      _.delay(this.updateStatus, this.updateFrequency);
       _.delay(this.sweep, this.sweepFrequency);
 
       this.connection.bind('connecting', function(){
