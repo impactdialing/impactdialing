@@ -10,6 +10,7 @@ window.ImpactDialing = {
   Events: _.extend({}, Backbone.Events),
   Channel: {},
   Services: {},
+  Utilities: {},
   initialize: function() {
   }
 };

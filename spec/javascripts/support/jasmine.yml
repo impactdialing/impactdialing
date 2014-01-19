@@ -16,7 +16,9 @@ src_files:
   - public/javascripts/underscore-min.js
   - public/javascripts/backbone.js
   - public/javascripts/impactdialing.js
+  - public/javascripts/utilities/debugger.js
   - public/javascripts/form_helpers/grouped_selects.js
+  - public/javascripts/utilities/period_stats.js
 
 # stylesheets
 #
