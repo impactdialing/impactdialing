@@ -50,8 +50,8 @@
     }
 
     if (warning != ''){
-      $('#error-info-container').show();
-      $('#error-info').html(warning);
+      $('#flash-error-info-container').show();
+      $('#flash-error-info').html(warning);
     }
   </script>
 <% end %>
@@ -76,60 +76,66 @@
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
-    var _idReportConfig = {},
-        _usersnapconfig = {
-          apiKey: 'ee7280e5-4afa-4854-87a6-b19d6c1cf460',
-          beforeSend: function(obj) {
-            obj.addInfo = _idReportConfig;
-          }
-        };
+    ImpactDialing.Debugger = new ImpactDialing.Utilities.Debugger({
+      afterDataAdd: function(data) {
+        _errs.meta = data;
+      }
+    });
+
     _errs.meta = {};
 
-    var _idResetReportConfig = function(oldData){
-      _errs.meta = {};
-      _idReportConfig = {};
-      // _idSetUserSnapConfig({});
+    var _usersnapconfig = {
+      apiKey: 'ee7280e5-4afa-4854-87a6-b19d6c1cf460',
+      beforeSend: function(obj) {
+        obj.addInfo = ImpactDialing.Debugger.debugData;
+      },
+      errorHandler: function(message, code) {
+        var d = {},
+            k = 'usersnap-error-' + code.toString();
+        d[k] = message
+        ImpactDialing.Debugger.addData(d);
+      }
     };
 
-    var _idSetUserSnapConfig = function(data) {
-      window._usersnapconfig = $.extend(data, {
-        apiKey: 'ee7280e5-4afa-4854-87a6-b19d6c1cf460'
-      });
-    };
+    (function() {
+      var s = document.createElement("script");
+      s.type = "text/javascript";
+      s.async = true;
+      s.src = '//api.usersnap.com/beta/'+
+             'ee7280e5-4afa-4854-87a6-b19d6c1cf460.js';
+      var x = document.getElementsByTagName('head')[0];
+      x.appendChild(s);
+    })();
+  </script>
 
-    var _idUpdateReportConfig = function(data){
-      // errorception
-      $.extend(_errs.meta, data);
-      _idReportConfig = data;
-    };
-
+  <script type="text/javascript">
     $(function() {
+      new ImpactDialing.Services.NetworkConnectionMonitor({
+        afterStatsUpdate: ImpactDialing.Debugger.addData
+      });
+
       var campaign_call = new ImpactDialing.Models.CampaignCall();
       campaign_call.set({pusher_key: '<%= Pusher.key %>'});
       var campaign_call_view = new ImpactDialing.Views.CampaignCall({
-        model: campaign_call
+        model: campaign_call,
+        pusherConnectionMonitor: ImpactDialing.Services.PusherConnectionMonitor,
+        pusherMonitorAfterStatsUpdate: ImpactDialing.Debugger.addData
       });
 
       campaign_call_view.bind('rendered.caller.info', function(caller_info){
-        _idResetReportConfig(_idReportConfig);
-
-        $.extend(_idReportConfig, {
+        ImpactDialing.Debugger.addData({
           caller_id: caller_info.get('caller_id'),
           caller_session_key: caller_info.get('caller_session_key'),
           campaign_id: caller_info.get('campaign_id'),
           phone_number: caller_info.get('phone_number'),
           account_id: caller_info.get('account_id')
         });
-
-        _idUpdateReportConfig(_idReportConfig);
       });
 
       campaign_call_view.lead_info.on('change', function(lead_info, options){
-        $.extend(_idReportConfig, {
+        ImpactDialing.Debugger.addData({
           lead_info: lead_info.toJSON()
         });
-
-        _idUpdateReportConfig(_idReportConfig);
       });
 
       campaign_call_view.render();
@@ -137,8 +143,8 @@
   </script>
 <% end %>
 
-<div class="callout alert clearfix" id="error-info-container" style="display:none">
-  <p id="error-info"></p>
+<div class="callout alert clearfix" id="flash-error-info-container" style="display:none">
+  <p id="flash-error-info"></p>
 </div>
 
 <noscript>

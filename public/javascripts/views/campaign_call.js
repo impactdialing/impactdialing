@@ -81,13 +81,10 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
   fetchCallerInfoSuccess: function(data){
     var self = this;
 
-    console.log('Views.CampaignCall.fetchCallerInfoSuccess', data);
     this.model.set(data);
     this.initServices();
 
     var renderAndUnbind = function(){
-      console.log('Pusher.connected - first connect only', this);
-
       self.renderCallerInfo();
 
       self.pusherService.pusher.connection.unbind('connected', renderAndUnbind)
@@ -131,7 +128,13 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
     ImpactDialing.Events.on('channel.subscribed', this.bindPusherEvents);
 
-    this.pusherService = new ImpactDialing.Services.Pusher(pusherKey, channel);
+    this.pusherService = new ImpactDialing.Services.Pusher({
+      service: Pusher,
+      serviceKey: pusherKey,
+      connectionMonitor: this.options.pusherConnectionMonitor,
+      channel: channel,
+      monitorAfterStatsUpdate: this.options.pusherMonitorAfterStatsUpdate
+    });
   },
 
   initServices: function(){
@@ -178,7 +181,6 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
   },
 
   bindPusherEvents: function(channel){
-    console.log('Views.CampaignCall.bindPusherEvents', channel);
     var self = this;
     /*
       Channel events
