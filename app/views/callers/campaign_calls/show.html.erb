@@ -76,6 +76,12 @@
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
+    $(function(){
+      if( window.domLoaded === undefined ){
+        window.domLoaded = new Date().getTime();
+      }
+    });
+
     ImpactDialing.Debugger = new ImpactDialing.Utilities.Debugger({
       afterDataAdd: function(data) {
         _errs.meta = data;
@@ -109,34 +115,40 @@
   </script>
 
   <script type="text/javascript">
+    addCallerInfo = function(caller_info){
+      ImpactDialing.Debugger.addData({
+        caller_id: caller_info.get('caller_id'),
+        caller_session_key: caller_info.get('caller_session_key'),
+        campaign_id: caller_info.get('campaign_id'),
+        phone_number: caller_info.get('phone_number'),
+        account_id: caller_info.get('account_id')
+      });
+    };
+
+    addLeadInfo = function(lead_info, options){
+      ImpactDialing.Debugger.addData({
+        lead_info: lead_info.toJSON()
+      });
+    };
+
     $(function() {
       new ImpactDialing.Services.NetworkConnectionMonitor({
         afterStatsUpdate: ImpactDialing.Debugger.addData
       });
 
-      var campaign_call = new ImpactDialing.Models.CampaignCall();
+      window.campaign_call = new ImpactDialing.Models.CampaignCall();
       campaign_call.set({pusher_key: '<%= Pusher.key %>'});
-      var campaign_call_view = new ImpactDialing.Views.CampaignCall({
+      window.campaign_call_view = new ImpactDialing.Views.CampaignCall({
         model: campaign_call,
         pusherConnectionMonitor: ImpactDialing.Services.PusherConnectionMonitor,
-        pusherMonitorAfterStatsUpdate: ImpactDialing.Debugger.addData
+        pusherMonitorAfterStatsUpdate: ImpactDialing.Debugger.addData,
+        twilioConnectionMonitor: ImpactDialing.Services.TwilioConnectionMonitor,
+        twilioMonitorAfterStatsUpdate: ImpactDialing.Debugger.addData
       });
 
-      campaign_call_view.bind('rendered.caller.info', function(caller_info){
-        ImpactDialing.Debugger.addData({
-          caller_id: caller_info.get('caller_id'),
-          caller_session_key: caller_info.get('caller_session_key'),
-          campaign_id: caller_info.get('campaign_id'),
-          phone_number: caller_info.get('phone_number'),
-          account_id: caller_info.get('account_id')
-        });
-      });
+      campaign_call_view.bind('rendered.caller.info', addCallerInfo);
 
-      campaign_call_view.lead_info.on('change', function(lead_info, options){
-        ImpactDialing.Debugger.addData({
-          lead_info: lead_info.toJSON()
-        });
-      });
+      campaign_call_view.lead_info.on('change', addLeadInfo);
 
       campaign_call_view.render();
     });

@@ -137,9 +137,20 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
   },
 
+  initTwilio: function(){
+    var token = this.model.get('twilio_token');
+
+    this.twilioService = new ImpactDialing.Services.Twilio({
+      token: token,
+      service: Twilio.Device,
+      connectionMonitor: this.options.twilioConnectionMonitor,
+      monitorAfterStatsUpdate: this.options.twilioMonitorAfterStatsUpdate
+    });
+  },
+
   initServices: function(){
     this.initPusher();
-    // this.initTwilio();
+    this.initTwilio();
   },
 
   stopCallingOnPageReload: function(){
@@ -167,10 +178,10 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
    setupTwilio:  function(){
     var self = this;
-    Twilio.Device.setup(this.model.get("twilio_token"), {'debug':true});
+    // Twilio.Device.setup(this.model.get("twilio_token"), {'debug':true});
 
     Twilio.Device.connect(function (conn) {
-        $("#start_calling").hide();
+      $("#start_calling").hide();
     });
     Twilio.Device.ready(function (device) {
       client_ready=true;
