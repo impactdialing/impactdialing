@@ -13,7 +13,13 @@
       this.isOldThreshold = this.fiveMinutes + this.oneMinute;
       this.sweepFrequency = this.oneMinute;
       this.stats          = {};
+      this.times          = {};
+      this.events         = {};
+      this.errors         = {};
+
       this.opts           = options || {};
+
+      _.delay(this.sweep, this.isOldThreshold);
     };
 
     PeriodStats.prototype.time = function(dateObj) {
@@ -29,34 +35,44 @@
       return this;
     };
 
+    PeriodStats.prototype.addEvent = function(eventName) {
+      var t = this.time();
+
+      if( this.events[eventName] === undefined || this.events[eventName] === null ){
+        this.events[eventName] = [];
+      }
+
+      this.events[eventName].push(t);
+    };
+
+    PeriodStats.prototype.addError = function(error) {
+      var t = this.time();
+
+      this.errors[t] = error;
+    };
+
     PeriodStats.prototype.sweep = function() {
       var self = this;
 
-      var deleteOldTimes = function(times) {
-        var isOld = function(v, k) {
+      var deleteOldTimes = function(items) {
+        var isOld = function(v, timestamp) {
           var curTime = self.time(),
-              timeSinceCount = curTime - parseInt(k);
+              timeSinceCount = curTime - parseInt(timestamp);
           return timeSinceCount > self.isOldThreshold;
         }
 
-        var deleteOld = function(v, k) {
-          if( isOld(v, k) ) {
-            delete(times[k]);
+        var deleteOld = function(v, timestamp) {
+          if( isOld(v, timestamp) ) {
+            delete(items[timestamp]);
           }
         }
 
-        _.each(times, deleteOld);
+        _.each(items, deleteOld);
       };
+
       _.each(this.times, deleteOldTimes);
+
       _.delay(this.sweep, this.sweepFrequency);
-
-      return this;
-    };
-
-    PeriodStats.prototype.setClass = function(selector, cssClass){
-      $(selector).removeClass([this.css.good, this.css.warning, this.css.danger].join(' '));
-      $(selector).addClass(cssClass);
-
       return this;
     };
 

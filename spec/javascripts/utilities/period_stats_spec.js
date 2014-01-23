@@ -58,13 +58,44 @@ describe('ImpactDialing.Utilities.PeriodStats', function(){
     });
   });
 
+  describe('periodStats.addError(error) where `error` can be anything', function(){
+    it('updates periodStats.errors object with a timestamp as key and the error as value', function(){
+      var expectedError = {code: 400, message: 'Not authorized'};
+
+      this.periodStats.addError(expectedError);
+
+      var errorKeys = _.keys(this.periodStats.errors),
+          actual = this.periodStats.errors[errorKeys[0]];
+
+      // sanity check
+      expect(errorKeys.length).toEqual(1);
+      console.log('actual = ', actual, 'expected = ', expectedError);
+      expect(actual).toEqual(expectedError);
+    });
+  });
+
+  describe('periodStats.addEvent(event) where `event` is a String and a valid object key', function(){
+    it('updates periodStats.events object with a event as key and array of timestamps as value', function(){
+      var expectedEvent = 'retried',
+          expectedTime = new Date().getTime();
+
+      this.periodStats.addEvent('retried');
+
+      var actual = this.periodStats.events.retried;
+
+      expect(actual).toEqual([expectedTime]);
+    })
+  });
+
   describe('periodStats.sweep()', function(){
-    it('iterates over periodStats.times and deletes entries with timestamp keys older than periodStats.isOldThreshold (five minutes by default)', function(){
+    it('iterates over periodStats[periodStats.statsKeys] and deletes entries with timestamp keys older than periodStats.isOldThreshold (five minutes by default)', function(){
       var tenMinutesAgo = new Date().getTime() - (this.fiveMinutes * 2),
           times = {
             test: {}
           },
-          expected = times;
+          expected = {
+            test: {}
+          };
       times.test[tenMinutesAgo.toString()] = 23;
       times.test[(tenMinutesAgo - 10).toString()] = 32;
       times.test[(tenMinutesAgo - 20).toString()] = 23;
@@ -75,6 +106,7 @@ describe('ImpactDialing.Utilities.PeriodStats', function(){
       times.test[expectedKey] = expectedValue;
       expected.test[expectedKey] = expectedValue;
 
+      this.periodStats.statsKeys = ['times'];
       this.periodStats.times = times;
       this.periodStats.sweep();
 
