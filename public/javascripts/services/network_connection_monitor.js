@@ -21,8 +21,8 @@
 
       _.bindAll(this, 'sweep', 'updateNetworkStats', 'ping');
 
-      this.updateFrequency = this.oneMinute / 4;
-      this.pingFrequency   = this.oneMinute / 3;
+      this.updateFrequency = this.oneMinute / 3;
+      this.pingFrequency   = this.oneMinute / 2;
       this.sweepFrequency  = this.oneMinute;
 
       this.times = {
@@ -57,6 +57,7 @@
       var self = this,
           startTime = this.time();
       var jqxhr = $.get('/pong', function(){
+        // success
       }).fail(function(){
         self.addTime(self.times.failed, startTime);
       }).always(function() {
