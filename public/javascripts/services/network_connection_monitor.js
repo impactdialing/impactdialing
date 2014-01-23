@@ -21,8 +21,7 @@
 
       _.bindAll(this, 'sweep', 'updateNetworkStats', 'ping');
 
-      this.updateFrequency = this.oneMinute / 3;
-      this.pingFrequency   = this.oneMinute / 2;
+      this.pingFrequency   = this.oneMinute;
       this.sweepFrequency  = this.oneMinute;
 
       this.times = {
