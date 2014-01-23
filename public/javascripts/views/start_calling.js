@@ -1,6 +1,7 @@
 ImpactDialing.Views.StartCalling = Backbone.View.extend({
 
   initialize: function(){
+    _.bindAll(this, 'startCalling');
   },
 
   events: {
