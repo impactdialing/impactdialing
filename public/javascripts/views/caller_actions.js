@@ -277,11 +277,13 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
       url : "/caller/" + self.model.get("caller_id") + "/stop_calling",
       data : {session_id : self.model.get("session_id") },
       type : "POST",
-      beforeSend: function(request)
-        {
+      beforeSend: function(request){
             var token = $("meta[name='csrf-token']").attr("content");
             request.setRequestHeader("X-CSRF-Token", token);
-        },
+      },
+      success: function(){
+        window.location.reload();
+      }
     });
   },
 
