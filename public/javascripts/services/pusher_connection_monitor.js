@@ -24,10 +24,7 @@
       this.updateFrequency = this.oneMinute / 4;
       this.sweepFrequency  = this.oneMinute;
 
-      this.times = {
-        connecting: {},
-        unavailable: {}
-      };
+      this.events = {};
 
       this.connection = connection;
       this.monitorConnection();
@@ -36,41 +33,51 @@
     };
 
     PusherConnectionMonitor.prototype.monitorConnection = function() {
-      var self = this;
-
-      _.delay(this.updatePusherStats, this.updateFrequency);
-      _.delay(this.sweep, this.sweepFrequency);
+      var self = this,
+          diff = function(curTime){
+            return [
+              curTime - window.domLoaded,
+              ' ms since DOM load'
+            ];
+          };
 
       this.connection.bind('connecting', function(){
-        // console.log('pusher.connecting');
-        self.addTime(self.times.connecting, self.time());
+        var d = diff(self.time());
+        console.log('pusher.connecting', d[0], d[1]);
+        self.addEvent('connecting');
       });
 
       this.connection.bind('connected', function(){
-        // console.log('pusher.connected');
+        var d = diff(self.time());
+        console.log('pusher.connected', d[0], d[1]);
+        self.addEvent('connected');
       });
 
       this.connection.bind('unavailable', function(){
-        // console.log('pusher.unavailable');
-        self.addTime(self.times.unavailable, self.time());
+        var d = diff(self.time());
+        console.log('pusher.unavailable', d[0], d[1]);
+        self.addEvent('unavailable');
       });
 
       this.connection.bind('failed', function(){
-        // console.log('pusher.failed');
+        var d = diff(self.time());
+        console.log('pusher.failed', d[0], d[1]);
+        self.addEvent('failed');
       });
 
       return this;
     };
 
+    PusherConnectionMonitor.prototype.addEvent = function(eventName){
+      PusherConnectionMonitor.__super__.addEvent.apply(this, arguments);
+
+      this.updatePusherStats();
+    };
+
     PusherConnectionMonitor.prototype.updatePusherStats = function() {
       this.updateStats({
-        pusherConnectionStats: {
-          connecting: this.times.connecting,
-          unavailable: this.times.unavailable
-        }
+        pusherConnectionEvents: this.events
       });
-
-      _.delay(this.updatePusherStats, this.updateFrequency);
 
       return this;
     };
@@ -80,10 +87,10 @@
           fiveMinuteCounts = {},
           pool = [];
 
-      oneMinuteCounts.connecting = this.forPeriod(this.times.connecting, this.oneMinute);
-      oneMinuteCounts.unavailable = this.forPeriod(this.times.unavailable, this.oneMinute);
-      fiveMinuteCounts.connecting = this.forPeriod(this.times.connecting, this.fiveMinutes);
-      fiveMinuteCounts.unavailable = this.forPeriod(this.times.unavailable, this.fiveMinutes);
+      oneMinuteCounts.connecting = this.forPeriod(this.events.connecting, this.oneMinute);
+      oneMinuteCounts.unavailable = this.forPeriod(this.events.unavailable, this.oneMinute);
+      fiveMinuteCounts.connecting = this.forPeriod(this.events.connecting, this.fiveMinutes);
+      fiveMinuteCounts.unavailable = this.forPeriod(this.events.unavailable, this.fiveMinutes);
 
       pool = [
         oneMinuteCounts.connecting.length,
