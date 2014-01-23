@@ -48,7 +48,6 @@
       };
 
       _.delay(this.ping, this.pingFrequency);
-      _.delay(this.updateNetworkStats, this.updateFrequency);
 
       return this;
     };
@@ -66,6 +65,12 @@
       });
     };
 
+    NetworkConnectionMonitor.prototype.addTime = function(times, startTime){
+      NetworkConnectionMonitor.__super__.addTime.apply(this, arguments);
+
+      this.updateNetworkStats();
+    };
+
     NetworkConnectionMonitor.prototype.updateNetworkStats = function() {
       this.updateStats({
         networkConnectionStats: {
@@ -73,8 +78,6 @@
           failed: this.times.failed
         }
       });
-
-      _.delay(this.updateNetworkStats, this.updateFrequency);
 
       return this;
     };
