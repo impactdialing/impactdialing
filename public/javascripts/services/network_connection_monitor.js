@@ -49,7 +49,6 @@
 
       _.delay(this.ping, this.pingFrequency);
       _.delay(this.updateNetworkStats, this.updateFrequency);
-      _.delay(this.sweep, this.sweepFrequency);
 
       return this;
     };
