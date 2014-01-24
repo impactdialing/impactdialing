@@ -121,6 +121,18 @@ deploy user: `impactdialing`
   1. `impactdialing-staging.herokuapp.com whitelabel-domain.com`
 1. Visit `whitelabel-domain.com`
 
+### Test Phone Numbers
+
+Hello no thank you: 971-264-5495
+
+Minute conversation: 971-264-2814
+
+Reject: 971-264-5346
+
+Busy: 971-264-5467
+
+Repeat adnasum: 657-888-9655
+
 ### Trouble
 
 #### Background Jobs
