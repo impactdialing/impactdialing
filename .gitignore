@@ -21,3 +21,5 @@ spec/fixtures/test_tmp/
 dump.rdb
 *.swp
 .pivotalrc
+.env
+.test
