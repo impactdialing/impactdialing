@@ -12,7 +12,7 @@ module Providers::Phone::Call
 
   def self.redirect_for(obj, type=:default)
     params = Params.for(obj, type)
-    redirect(params.call_sid, params.url, {retry_up_to: 5})
+    redirect(params.call_sid, params.url, Providers::Phone.default_options)
   end
 
   def self.make(from, to, url, params, opts={})
@@ -24,6 +24,6 @@ module Providers::Phone::Call
 
   def self.make_for(obj, type=:default)
     params = Params.for(obj, type)
-    make(params.from, params.to, params.url, params.params, {retry_up_to: 5})
+    make(params.from, params.to, params.url, params.params, Providers::Phone.default_options)
   end
 end

@@ -109,9 +109,9 @@ describe TransferController do
       call_attempt: call_attempt,
       transfer: transfer
     })
-    Providers::Phone::Call.should_receive(:redirect).with(transfer_attempt.call_attempt.sid, callee_transfer_index_url(url_opts), {:retry_up_to => 5})
+    Providers::Phone::Call.should_receive(:redirect).with(transfer_attempt.call_attempt.sid, callee_transfer_index_url(url_opts), {retry_up_to: ENV["TWILIO_RETRIES"]})
     RedisCallerSession.stub(:any_active_transfers?).with(caller_session.session_key){ true }
-    Providers::Phone::Call.should_receive(:redirect).with(caller_session.sid, pause_caller_url(caller, url_opts.merge(session_id: caller_session.id)), {:retry_up_to => 5})
+    Providers::Phone::Call.should_receive(:redirect).with(caller_session.sid, pause_caller_url(caller, url_opts.merge(session_id: caller_session.id)), {retry_up_to: ENV["TWILIO_RETRIES"]})
 
     post :connect, id: transfer_attempt.id
     transfer_attempt.reload

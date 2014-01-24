@@ -4,24 +4,21 @@ module Providers::Phone::Conference
   end
 
   def self.by_name(name, opts={})
-    opts[:retry_up_to] ||= 5
-    response = list({'FriendlyName' => name}, opts)
+    response = list({'FriendlyName' => name}, Providers::Phone.options(opts))
     return response
   end
 
   def self.sid_for(name, opts={})
-    opts[:retry_up_to] ||= 5
-    response = by_name(name, opts)
+    response = by_name(name, Providers::Phone.options(opts))
     return response.conference_sid
   end
 
   def self.toggle_mute_for(name, call_sid, opts={})
     conference_sid = sid_for(name)
-    opts[:retry_up_to] ||= 5
     if opts[:mute]
-      return mute(conference_sid, call_sid, opts)
+      return mute(conference_sid, call_sid, Providers::Phone.options(opts))
     else
-      return unmute(conference_sid, call_sid, opts)
+      return unmute(conference_sid, call_sid, Providers::Phone.options(opts))
     end
   end
 

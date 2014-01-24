@@ -213,10 +213,10 @@ class CallerController < ApplicationController
     participant_type = params[:participant_type]
     case participant_type
     when 'transfer'
-      Providers::Phone::Conference.kick(transfer_attempt, {retry_up_to: 5})
+      Providers::Phone::Conference.kick(transfer_attempt, {retry_up_to: ENV["TWILIO_RETRIES"]})
       RedisCallerSession.remove_party(transfer_attempt.session_key)
     when 'caller'
-      Providers::Phone::Conference.kick(@caller_session, {retry_up_to: 5})
+      Providers::Phone::Conference.kick(@caller_session, {retry_up_to: ENV["TWILIO_RETRIES"]})
 
       if transfer_attempt.warm_transfer?
         if RedisCallerSession.party_count(transfer_attempt.session_key) == 3
