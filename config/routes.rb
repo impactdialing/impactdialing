@@ -153,6 +153,7 @@ ImpactDialing::Application.routes.draw do
       end
     end
     resource :account, :only => [:show, :create]
+    resource :account_usage, :only => [:show, :create]
     resources :reports do
       collection do
         get :usage

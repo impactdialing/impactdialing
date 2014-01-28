@@ -1,0 +1,13 @@
+<div role="main">
+  <h2>Account usage</h2>
+  <%= form_tag(client_account_usage_path, method: :post) do %>
+
+    <%= select_tag 'report_type', options_for_select([['By Campaign', 'campaigns'], ['By Caller', 'callers']], params[:report_type]), prompt: 'Select a usage breakdown...' %>
+
+    <%= render :partial => 'shared/date_picker' %>
+
+    <div class="buttons">
+      <button type="submit">Generate</button>
+    </div>
+  <% end %>
+</div>
