@@ -3,6 +3,12 @@ require 'reports'
 class AccountUsageMailer < MandrillMailer
   attr_reader :user, :account
 
+private
+  def format_date(date)
+    date.strftime("%b %e %Y")
+  end
+
+public
   def initialize(user)
     super
     @user    = user
@@ -19,7 +25,7 @@ class AccountUsageMailer < MandrillMailer
     text             = AccountUsageRender.new.by_campaigns(:text, billable_totals, grand_total, campaigns)
 
     send_email({
-      :subject => "Campaign Usage Report: #{from_date} - #{to_date}",
+      :subject => "Campaign Usage Report: #{format_date(from_date)} - #{format_date(to_date)}",
       :html => html,
       :text => text,
       :from_name => 'Impact Dialing',
@@ -42,7 +48,7 @@ class AccountUsageMailer < MandrillMailer
     text             = AccountUsageRender.new.by_callers(:text, billable_minutes, status_totals, grand_total, callers)
 
     send_email({
-      :subject => "Caller Usage Report: #{from_date} - #{to_date}",
+      :subject => "Caller Usage Report: #{format_date(from_date)} - #{format_date(to_date)}",
       :html => html,
       :text => text,
       :from_name => 'Impact Dialing',

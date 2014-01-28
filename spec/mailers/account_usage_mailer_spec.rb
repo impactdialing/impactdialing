@@ -59,6 +59,7 @@ describe AccountUsageMailer do
       build: status_totals
     })
   end
+  let(:date_format){ "%b %e %Y" }
 
   before(:each) do
     WebMock.allow_net_connect!
@@ -80,7 +81,7 @@ describe AccountUsageMailer do
     expected_text = AccountUsageRender.new.by_campaigns(:text, billable_totals, grand_total, campaigns)
 
     @mailer.should_receive(:send_email).with({
-      :subject => "Campaign Usage Report: #{from_date} - #{to_date}",
+      :subject => "Campaign Usage Report: #{from_date.strftime(date_format)} - #{to_date.strftime(date_format)}",
       :html => expected_html,
       :text => expected_text,
       :from_name => 'Impact Dialing',
@@ -104,7 +105,7 @@ describe AccountUsageMailer do
     expected_text = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, grand_total, callers)
 
     @mailer.should_receive(:send_email).with({
-      :subject => "Caller Usage Report: #{from_date} - #{to_date}",
+      :subject => "Caller Usage Report: #{from_date.strftime(date_format)} - #{to_date.strftime(date_format)}",
       :html => expected_html,
       :text => expected_text,
       :from_name => 'Impact Dialing',
