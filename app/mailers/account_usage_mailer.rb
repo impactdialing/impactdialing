@@ -5,7 +5,8 @@ class AccountUsageMailer < MandrillMailer
 
 private
   def format_date(date)
-    date.strftime("%b %e %Y")
+    d = Date.rfc3339(date)
+    d.strftime("%b %e %Y")
   end
 
 public
