@@ -6,8 +6,8 @@ describe AccountUsageMailer do
   let(:white_labeled_email){ 'info@stonesphones.com' }
   let(:white_label){ 'stonesphonesdialer' }
 
-  let(:from_date){ 10.days.ago }
-  let(:to_date){ 2.days.ago }
+  let(:from_date){ '2013-09-10T00:09:09+07:00' }
+  let(:to_date){ '2014-01-28T23:59:59+07:00' }
 
   let(:campaigns){ [] }
   let(:callers){ [] }
@@ -81,7 +81,7 @@ describe AccountUsageMailer do
     expected_text = AccountUsageRender.new.by_campaigns(:text, billable_totals, grand_total, campaigns)
 
     @mailer.should_receive(:send_email).with({
-      :subject => "Campaign Usage Report: #{from_date.strftime(date_format)} - #{to_date.strftime(date_format)}",
+      :subject => "Campaign Usage Report: #{@mailer.send(:format_date, from_date)} - #{@mailer.send(:format_date, to_date)}",
       :html => expected_html,
       :text => expected_text,
       :from_name => 'Impact Dialing',
@@ -105,7 +105,7 @@ describe AccountUsageMailer do
     expected_text = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, grand_total, callers)
 
     @mailer.should_receive(:send_email).with({
-      :subject => "Caller Usage Report: #{from_date.strftime(date_format)} - #{to_date.strftime(date_format)}",
+      :subject => "Caller Usage Report: #{@mailer.send(:format_date, from_date)} - #{@mailer.send(:format_date, to_date)}",
       :html => expected_html,
       :text => expected_text,
       :from_name => 'Impact Dialing',
