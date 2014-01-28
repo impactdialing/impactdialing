@@ -1,0 +1,24 @@
+<%
+  headers = ['Caller', 'Abandoned calls', 'Voicemails / Hangups']
+  names = @callers.map(&:identity_name)
+  longest = 0
+  (headers + names).each{|str| longest = str.size > longest ? str.size : longest}
+  longest += 5
+-%>
+Account usage by caller
+
+<%= 'Caller'.ljust(longest) %> Billable minutes
+
+<% @callers.each do |caller| %>
+<%= caller.identity_name.ljust(longest) %>
+<%= @billable_totals[caller.id] || 0 %>
+<% end %>
+
+
+<%= 'Abandoned calls'.ljust(longest) %> <%= @status_totals[CallAttempt::Status::ABANDONED] %>
+
+
+
+<%= 'Voicemails / Hangups'.ljust(longest) %> <%= @status_totals[CallAttempt::Status::VOICEMAIL] + @status_totals[CallAttempt::Status::HANGUP] %>
+
+Total <%= @grand_total %>
