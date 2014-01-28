@@ -14,12 +14,17 @@
 
     <tr>
       <td>Abandoned calls</td>
-      <td><%= @status_totals[CallAttempt::Status::ABANDONED] %></td>
+      <td><%=
+        @status_totals[CallAttempt::Status::ABANDONED] || 0
+      %></td>
     </tr>
 
     <tr>
       <td>Voicemails / Hangups</td>
-      <td><%= @status_totals[CallAttempt::Status::VOICEMAIL] + @status_totals[CallAttempt::Status::HANGUP] %></td>
+      <td><%=
+        (@status_totals[CallAttempt::Status::VOICEMAIL].to_i || 0) +
+        (@status_totals[CallAttempt::Status::HANGUP].to_i || 0)
+      %></td>
     </tr>
 
     <tr>

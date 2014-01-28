@@ -15,10 +15,11 @@ Account usage by caller
 <% end %>
 
 
-<%= 'Abandoned calls'.ljust(longest) %> <%= @status_totals[CallAttempt::Status::ABANDONED] %>
+<%= 'Abandoned calls'.ljust(longest) %> <%= @status_totals[CallAttempt::Status::ABANDONED] || 0 %>
 
 
 
-<%= 'Voicemails / Hangups'.ljust(longest) %> <%= @status_totals[CallAttempt::Status::VOICEMAIL] + @status_totals[CallAttempt::Status::HANGUP] %>
+<%= 'Voicemails / Hangups'.ljust(longest) %> <%= (@status_totals[CallAttempt::Status::VOICEMAIL].to_i || 0) +
+        (@status_totals[CallAttempt::Status::HANGUP].to_i || 0) %>
 
 Total <%= @grand_total %>
