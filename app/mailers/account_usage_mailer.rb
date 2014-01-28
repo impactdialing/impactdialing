@@ -44,8 +44,8 @@ public
     status_totals    = by_status.build
     grand_total      = billable_minutes.calculate_total(billable_totals.values)
     callers          = account.callers
-    html             = AccountUsageRender.new.by_callers(:html, billable_minutes, status_totals, grand_total, callers)
-    text             = AccountUsageRender.new.by_callers(:text, billable_minutes, status_totals, grand_total, callers)
+    html             = AccountUsageRender.new.by_callers(:html, billable_totals, status_totals, grand_total, callers)
+    text             = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, grand_total, callers)
 
     send_email({
       :subject => "Caller Usage Report: #{format_date(from_date)} - #{format_date(to_date)}",
