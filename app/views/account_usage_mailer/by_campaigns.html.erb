@@ -1,0 +1,19 @@
+<h1>Account usage by campaign</h1>
+<div class="content clearfix">
+  <table>
+    <tr>
+      <th>Campaign</th>
+      <th>Billable minutes</th>
+    </tr>
+    <% @campaigns.each do |campaign| %>
+      <tr>
+        <td><%= campaign.name %></td>
+        <td><%= @billable_totals[campaign.id] || 0 %></td>
+      </tr>
+    <%end%>
+    <tr>
+      <td>Total</td>
+      <td><%= @grand_total %></td>
+    </tr>
+  </table>
+</div>

@@ -1,0 +1,17 @@
+<%
+  headers = ['Campaign']
+  names = @campaigns.map(&:name)
+  longest = 0
+  (headers + names).each{|str| longest = str.size > longest ? str.size : longest}
+  longest += 5
+-%>
+Account usage by campaign
+
+<%= 'Campaign'.ljust(longest) %> Billable minutes
+
+<% @campaigns.each do |campaign| %>
+<%= campaign.name.ljust(longest) %> <%= @billable_totals[campaign.id] || 0 %>
+<%end%>
+
+<%= 'Total'.ljust(longest) %> <%= @grand_total %>
+
