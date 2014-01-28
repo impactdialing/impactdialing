@@ -1,35 +1,41 @@
-<h1>Account usage by caller</h1>
-<div class="content clearfix">
-  <table>
-    <tr>
-      <th>Caller</th>
-      <th>Billable minutes</th>
-    </tr>
-    <% @callers.each do |caller| %>
-      <tr>
-        <td><%= caller.identity_name %></td>
-        <td><%= @billable_totals[caller.id] || 0 %></td>
-      </tr>
-    <%end%>
+<h1 style="color: rgb(102,102,102); font-family: 'Helvetica Neue', Helvetica, Arial; font-size: 100%; font-style: normal; font-variant: normal; font-weight: 200; line-height: 1.4;">Account usage by caller</h1>
+<table style="color: rgb(102,102,102); font-family: 'Helvetica Neue', Helvetica, Arial; font-size: 100%; font-style: normal; font-variant: normal; font-weight: 200; line-height: 1.4;">
+  <tr>
+    <th style="text-align: left;">Caller</th>
+    <th style="text-align: left;">Billable minutes</th>
+  </tr>
+  <%
+    row_style = ' style="background-color: rgb(238,238,238);"'.html_safe
+    n = 0
+  %>
+  <% @callers.each do |caller| %>
 
-    <tr>
-      <td>Abandoned calls</td>
-      <td><%=
-        @status_totals[CallAttempt::Status::ABANDONED] || 0
-      %></td>
+    <tr<%= n % 2 != 0 ? row_style : ''%>>
+      <td><%= caller.identity_name %></td>
+      <td><%= @billable_totals[caller.id] || 0 %></td>
     </tr>
 
-    <tr>
-      <td>Voicemails / Hangups</td>
-      <td><%=
-        (@status_totals[CallAttempt::Status::VOICEMAIL].to_i || 0) +
-        (@status_totals[CallAttempt::Status::HANGUP].to_i || 0)
-      %></td>
-    </tr>
+    <% n += 1 %>
 
-    <tr>
-      <td>Total</td>
-      <td><%= @grand_total %></td>
-    </tr>
-  </table>
-</div>
+  <% end %>
+
+  <tr<%= n % 2 != 0 ? row_style : ''%>>
+    <td>Abandoned calls</td>
+    <td><%=
+      @status_totals[CallAttempt::Status::ABANDONED] || 0
+    %></td>
+  </tr>
+  <% n += 1 %>
+  <tr<%= n % 2 != 0 ? row_style : ''%>>
+    <td>Voicemails / Hangups</td>
+    <td><%=
+      (@status_totals[CallAttempt::Status::VOICEMAIL].to_i || 0) +
+      (@status_totals[CallAttempt::Status::HANGUP].to_i || 0)
+    %></td>
+  </tr>
+  <% n += 1 %>
+  <tr<%= n % 2 != 0 ? row_style : ''%>>
+    <td>Total</td>
+    <td><%= @grand_total %></td>
+  </tr>
+</table>

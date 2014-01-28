@@ -1,19 +1,28 @@
-<h1>Account usage by campaign</h1>
-<div class="content clearfix">
-  <table>
-    <tr>
-      <th>Campaign</th>
-      <th>Billable minutes</th>
+<h1 style="color: rgb(102,102,102); font-family: 'Helvetica Neue', Helvetica, Arial; font-size: 100%; font-style: normal; font-variant: normal; font-weight: 200; line-height: 1.4;">Account usage by campaign</h1>
+<table style="color: rgb(102,102,102); font-family: 'Helvetica Neue', Helvetica, Arial; font-size: 100%; font-style: normal; font-variant: normal; font-weight: 200; line-height: 1.4;">
+  <tr>
+    <th style="text-align: left;">Campaign</th>
+    <th style="text-align: left;">Billable minutes</th>
+  </tr>
+  <%
+    row_style = ' style="background-color: rgb(238,238,238);"'.html_safe
+    n = 0
+  %>
+  <% @campaigns.each do |campaign| %>
+
+    <tr<%= n % 2 != 0 ? row_style : '' %>>
+      <td><%= campaign.name %></td>
+      <td><%= @billable_totals[campaign.id] || 0 %></td>
     </tr>
-    <% @campaigns.each do |campaign| %>
-      <tr>
-        <td><%= campaign.name %></td>
-        <td><%= @billable_totals[campaign.id] || 0 %></td>
-      </tr>
-    <%end%>
-    <tr>
-      <td>Total</td>
-      <td><%= @grand_total %></td>
-    </tr>
-  </table>
-</div>
+
+    <% n += 1 %>
+
+  <% end %>
+
+  <% n += 1 %>
+
+  <tr<%= n % 2 != 0 ? row_style : '' %>>
+    <td>Total</td>
+    <td><%= @grand_total %></td>
+  </tr>
+</table>

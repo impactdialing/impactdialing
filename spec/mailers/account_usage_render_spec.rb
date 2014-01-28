@@ -44,18 +44,18 @@ describe AccountUsageRender do
       it 'renders the html template to a string: views/account_usage_mailer/by_campaigns' do
         t = @template.to_s
 
-        t.should =~ /<h1>Account usage by campaign<\/h1>/
-        t.should =~ /<th>Campaign<\/th>/
-        t.should =~ /<th>Billable minutes<\/th>/
+        t.should =~ /<h1.*>Account usage by campaign<\/h1>/
+        t.should =~ /<th.*>Campaign<\/th>/
+        t.should =~ /<th.*>Billable minutes<\/th>/
 
-        t.should =~ /<td>Campaign 1<\/td>/
-        t.should =~ /<td>#{values.first}<\/td>/
+        t.should =~ /<td.*>Campaign 1<\/td>/
+        t.should =~ /<td.*>#{values.first}<\/td>/
 
-        t.should =~ /<td>Campaign 2<\/td>/
-        t.should =~ /<td>#{values.second}<\/td>/
+        t.should =~ /<td.*>Campaign 2<\/td>/
+        t.should =~ /<td.*>#{values.second}<\/td>/
 
-        t.should =~ /<td>Campaign 3<\/td>/
-        t.should =~ /<td>#{values.third}<\/td>/
+        t.should =~ /<td.*>Campaign 3<\/td>/
+        t.should =~ /<td.*>#{values.third}<\/td>/
       end
     end
 
@@ -123,27 +123,27 @@ describe AccountUsageRender do
       it 'renders the html template to a string: views/account_usage_mailer/by_callers' do
         t = @template.to_s
 
-        t.should =~ /<h1>Account usage by caller<\/h1>/
-        t.should =~ /<th>Caller<\/th>/
-        t.should =~ /<th>Billable minutes<\/th>/
+        t.should =~ /<h1.*>Account usage by caller<\/h1>/
+        t.should =~ /<th.*>Caller<\/th>/
+        t.should =~ /<th.*>Billable minutes<\/th>/
 
-        t.should =~ /<td>Caller 1<\/td>/
-        t.should =~ /<td>#{values.first}<\/td>/
+        t.should =~ /<td.*>Caller 1<\/td>/
+        t.should =~ /<td.*>#{values.first}<\/td>/
 
-        t.should =~ /<td>Caller 2<\/td>/
-        t.should =~ /<td>#{values.second}<\/td>/
+        t.should =~ /<td.*>Caller 2<\/td>/
+        t.should =~ /<td.*>#{values.second}<\/td>/
 
-        t.should =~ /<td>Caller 3<\/td>/
-        t.should =~ /<td>#{values.third}<\/td>/
+        t.should =~ /<td.*>Caller 3<\/td>/
+        t.should =~ /<td.*>#{values.third}<\/td>/
 
-        t.should =~ /<td>Abandoned calls<\/td>/
-        t.should =~ /<td>#{status_values.first}<\/td>/
+        t.should =~ /<td.*>Abandoned calls<\/td>/
+        t.should =~ /<td.*>#{status_values.first}<\/td>/
 
-        t.should =~ /<td>Voicemails \/ Hangups<\/td>/
-        t.should =~ /<td>#{status_values.second + status_values.third}<\/td>/
+        t.should =~ /<td.*>Voicemails \/ Hangups<\/td>/
+        t.should =~ /<td.*>#{status_values.second + status_values.third}<\/td>/
 
-        t.should =~ /<td>Total<\/td>/
-        t.should =~ /<td>#{grand_total}<\/td>/
+        t.should =~ /<td.*>Total<\/td>/
+        t.should =~ /<td.*>#{grand_total}<\/td>/
       end
     end
 
