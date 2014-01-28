@@ -125,18 +125,38 @@ describe 'Customer Reports' do
         click_on 'Reports'
       end
       click_on 'Usage by campaign'
-      page.should have_content 'Account usage by campaign'
+      page.should have_content 'Account usage'
     end
 
-    it 'displays total minute usage per campaign' do
-      # skip first 2 elements because nil is not a caller and doer belongs to other_account
-      callers[2..-1].each do |caller|
-        page.should have_content "#{caller.campaign.name} #{caller_total(caller)}"
+    context 'all is right w/ the world' do
+      it "says: #{I18n.translate('account_usages.create.success')}" do
+        click_on 'Generate'
+        page.should have_content I18n.translate('account_usages.create.success')
       end
     end
 
-    it 'does not display usage for other accounts' do
-      page.should_not have_content "#{doer.campaign.name} #{caller_total(doer)}"
+    context 'a report type was not selected' do
+      it "says: #{I18n.translate('account_usages.create.report_type_required')}" do
+        select 'Select a usage breakdown...'
+        click_on 'Generate'
+        page.should have_content I18n.translate('account_usages.create.report_type_required')
+      end
+    end
+
+    context 'a from date was blank' do
+      it "says: #{I18n.translate('account_usages.create.from_date_required')}" do
+        fill_in "From:", with: ''
+        click_on 'Generate'
+        page.should have_content I18n.translate('account_usages.create.from_date_required')
+      end
+    end
+
+    context 'a to date was blank' do
+      it "says: #{I18n.translate('account_usages.create.to_date_required')}" do
+        fill_in "To:", with: ''
+        click_on 'Generate'
+        page.should have_content I18n.translate('account_usages.create.to_date_required')
+      end
     end
   end
 end

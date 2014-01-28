@@ -4,7 +4,7 @@
   </tr>
   <tr>
     <td>
-      <a href="<%= account_campaigns_usage_client_reports_path(:id => @account.id) %>"
+      <a href="<%= client_account_usage_path(report_type: 'campaigns') %>"
          data-intro="Here, you can view the total usage for each campaign." data-step="8">
         Usage by campaign
       </a>
@@ -12,7 +12,7 @@
   </tr>
   <tr>
     <td>
-      <a href="<%= account_callers_usage_client_reports_path(:id => @account.id) %>"
+      <a href="<%= client_account_usage_path(report_type: 'callers') %>"
          data-intro="And finally, you can view the total usage for each caller." data-step="9">
         Usage by caller
       </a>

@@ -2,11 +2,11 @@
   <legend>Date range:</legend>
   <input name="campaign_id" type="hidden" value="<%= params[:campaign_id]%>"></input>
   <p>
-    <label>From:</label>
+    <label for="from_date">From:</label>
     <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= time_for_date_picker(@campaign, @from_date) %>">
   </p>
   <p>
-    <label>To:</label>
-    <input class="format-m-d-y divider-slash" id="from_date" name="to_date" type="text" value="<%= time_for_date_picker(@campaign, @to_date) %>">
+    <label for="to_date">To:</label>
+    <input class="format-m-d-y divider-slash" id="to_date" name="to_date" type="text" value="<%= time_for_date_picker(@campaign, @to_date) %>">
   </p>
 </fieldset>
