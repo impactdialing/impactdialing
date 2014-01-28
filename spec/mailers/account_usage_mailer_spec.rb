@@ -10,10 +10,12 @@ describe AccountUsageMailer do
   let(:to_date){ 2.days.ago }
 
   let(:campaigns){ [] }
+  let(:callers){ [] }
   let(:account) do
     double('Account', {
       id: 1,
-      all_campaigns: campaigns
+      all_campaigns: campaigns,
+      callers: callers
     })
   end
 
@@ -37,9 +39,24 @@ describe AccountUsageMailer do
       values: values
     })
   end
-  let(:report) do
+  let(:status_totals) do
+    double('Built status report', {
+      :[] => 1
+    })
+  end
+  let(:campaign_report) do
     double('Reports::Customer::ByCampaign', {
       build: billable_totals
+    })
+  end
+  let(:caller_report) do
+    double('Reports::Customer::ByCaller', {
+      build: billable_totals
+    })
+  end
+  let(:status_report) do
+    double('Reports::Customer::ByStatus', {
+      build: status_totals
     })
   end
 
@@ -54,10 +71,10 @@ describe AccountUsageMailer do
       and_return(billable_minutes)
   end
 
-  it 'delivers account-wide campaign usage report as html' do
+  it 'delivers account-wide campaign usage report as multipart text & html' do
     Reports::Customer::ByCampaign.should_receive(:new).
       with(billable_minutes, account).
-      and_return(report)
+      and_return(campaign_report)
 
     expected_html = AccountUsageRender.new.by_campaigns(:html, billable_totals, grand_total, campaigns)
     expected_text = AccountUsageRender.new.by_campaigns(:text, billable_totals, grand_total, campaigns)
@@ -73,5 +90,29 @@ describe AccountUsageMailer do
       :track_clicks => true
     })
     @mailer.by_campaigns(from_date, to_date)
+  end
+
+  it 'delivers account-wide caller usage reports as multipart text & html' do
+    Reports::Customer::ByCaller.should_receive(:new).
+      with(billable_minutes, account).
+      and_return(caller_report)
+    Reports::Customer::ByStatus.should_receive(:new).
+      with(billable_minutes, account).
+      and_return(status_report)
+
+    expected_html = AccountUsageRender.new.by_callers(:html, billable_totals, status_totals, grand_total, callers)
+    expected_text = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, grand_total, callers)
+
+    @mailer.should_receive(:send_email).with({
+      :subject => "Caller Usage Report: #{from_date} - #{to_date}",
+      :html => expected_html,
+      :text => expected_text,
+      :from_name => 'Impact Dialing',
+      :from_email => 'email@impactdialing.com',
+      :to=>[{email: user.email}],
+      :track_opens => true,
+      :track_clicks => true
+    })
+    @mailer.by_callers(from_date, to_date)
   end
 end
