@@ -13,8 +13,12 @@ class VoterListChangeJob
           Voter.where(id: ids).update_all(enabled: enabled)
         end
       rescue Resque::TermException
-        Resque.enqueue(self, voter_list_id, email, domain, callback_url, strategy)
+        requeue(voter_list_id, enabled)
       end
+    end
+
+    def requeue(voter_list_id, enabled)
+      Resque.enqueue(self, voter_list_id, enabled)
     end
 
     def after_perform_scale_down(*args)
