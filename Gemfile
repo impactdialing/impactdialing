@@ -47,8 +47,6 @@ gem 'lograge', '~>0.2.0'
 gem 'cancan', '~>1.6.10'
 gem 'stripe', '~>1.8.4'
 
-
-
 group :development, :test do
   gem 'rspec'
   gem 'rspec-rails'

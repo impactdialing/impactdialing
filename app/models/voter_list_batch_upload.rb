@@ -139,6 +139,7 @@ class VoterListBatchUpload
         new_records[:values] << hash.values
       end
     end
+
     klass.import(existing_records[:columns], existing_records[:values],
                  on_duplicate_key_update: existing_records[:columns],
                  validate: false, timestamps: false) if existing_records[:values].any?
