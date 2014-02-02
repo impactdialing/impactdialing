@@ -24,7 +24,6 @@ class VoterListChangeJob
     end
 
     def handle_exception(voter_list_id, enabled, exception)
-      should_requeue = false
       if exception.kind_of? ActiveRecord::StatementInvalid
         mailer         = ExceptionMailer.new(exception)
         mailer.notify_if_deadlock_detected
