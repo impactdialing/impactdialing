@@ -1,13 +1,24 @@
-rails_root = ENV['RAILS_ROOT'] || File.dirname(__FILE__) + '/../..'
-rails_env = ENV['RAILS_ENV'] || 'development'
-redis_config = YAML.load_file(Rails.root.to_s + "/config/redis.yml")
-if rails_env == 'development' || rails_env == "test"  
-else  
-  Sidekiq.configure_server do |config|
-    config.redis = { :url => redis_config[rails_env]['sidekiq'], :namespace => 'resque' }    
-  end
+redis_config = YAML.load_file(File.join(Rails.root, "/config/redis.yml"))
 
-  Sidekiq.configure_client do |config|
-    config.redis = { :url => redis_config[rails_env]['sidekiq'], :namespace => 'resque'}
+Rails.application.config.after_initialize do
+  ActiveSupport.on_load(:active_record) do
+    Sidekiq.configure_server do |config|
+      config.redis = {
+        :url => redis_config[Rails.env]['sidekiq'],
+        :namespace => 'resque'
+      }
+
+      require 'platform'
+      min_pool_size = Sidekiq.options[:concurrency]
+      Platform::MySQL.disconnect!
+      Platform::MySQL.reconnect!(min_pool_size)
+    end
+
+    Sidekiq.configure_client do |config|
+      config.redis = {
+        :url => redis_config[Rails.env]['sidekiq'],
+        :namespace => 'resque'
+      }
+    end
   end
 end
