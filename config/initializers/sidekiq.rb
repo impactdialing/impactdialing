@@ -10,7 +10,6 @@ Rails.application.config.after_initialize do
 
       require 'platform'
       min_pool_size = Sidekiq.options[:concurrency]
-      Platform::MySQL.disconnect!
       Platform::MySQL.reconnect!(min_pool_size)
     end
 
