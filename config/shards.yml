@@ -12,7 +12,7 @@ octopus:
       host: localhost
       database: impactdialing_test
       username: root
-      password: "123456"
+      password:
       timeout: 5000
       reconnect: true
 
@@ -22,7 +22,7 @@ octopus:
       host: localhost
       database: impactdialing_dev
       username: root
-      password: "123456"
+      password:
       timeout: 5000
       reconnect: true
 
