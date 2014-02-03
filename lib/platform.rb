@@ -1,6 +1,8 @@
 module Platform
   module MySQL
     def self.connect(pool_size)
+      Rails.logger.info "MySQL.connect(#{pool_size || 5})"
+      p "MySQL.connect(#{pool_size || 5})"
       rails_config = Rails.application.config.database_configuration[Rails.env]
       rails_config['pool'] = pool_size || 5
 
@@ -16,6 +18,8 @@ module Platform
     end
 
     def self.disconnect!
+      Rails.logger.info "MySQL.disconnect!"
+      p "MySQL.disconnect!"
       ActiveRecord::Base.connection_pool.disconnect!
     end
 
