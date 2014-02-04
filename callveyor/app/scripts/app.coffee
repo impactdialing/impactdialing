@@ -1,3 +1,3 @@
 'use strict'
 
-angular.module('callveyorApp', [])
+angular.module('callveyorApp', ['ui.bootstrap'])
