@@ -13,6 +13,26 @@
 # end
 # print out
 
+desc "Renew a subscription for one or more account ids"
+task :renew_subscription, [:account_ids] => :environment do |t, args|
+  account_ids = args[:account_ids]
+  account_ids = account_ids.split(':')
+  if account_ids.empty?
+    p "Please provide one or more account IDs."
+    exit
+  end
+
+  account_ids.each do |id|
+    account = Account.find id
+    subscription = account.current_subscription
+    subscription.subscription_start_date = subscription.subscription_start_date + 1.month
+    subscription.subscription_end_date = subscription.subscription_end_date + 1.month
+    subscription.save!
+
+    p "Account ##{id} renewed now good from #{subscription.subscription_start_date} - #{subscription.subscription_end_date}"
+  end
+end
+
 desc "Read phone numbers from csv file and output as array."
 task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_index] => :environment do |t, args|
   require 'csv'
