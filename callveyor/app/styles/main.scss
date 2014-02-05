@@ -1,3 +1,5 @@
+$gray-lighter: lighten(#000, 90%);
+
 .browsehappy {
     margin: 0.2em 0;
     background: #ccc;
@@ -7,8 +9,8 @@
 
 /* Space out content a bit */
 body {
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 120px;
+    padding-bottom: 200px;
 }
 
 /* Everything but the jumbotron gets side spacing for mobile first views */
@@ -83,5 +85,20 @@ body {
     /* Remove the bottom border on the jumbotron for visual effect */
     .jumbotron {
         border-bottom: 0;
+    }
+}
+
+/* Lead info navbar */
+.lead-info {
+    .list-group {
+        margin-bottom: 0;
+        background-color: $gray-lighter;
+
+        .list-group-item {
+            background-color: $gray-lighter;
+            display: inline-block;
+            // padding: 5px 10px;
+            border: none;
+        }
     }
 }
