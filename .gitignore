@@ -6,7 +6,6 @@ simulator/database.yml
 coverage/
 tmp
 .DS_Store
-test/
 lib/*.pid
 *.rails2
 spec/fixtures/test_tmp/
