@@ -28,6 +28,19 @@
     <!-- Site or application content here -->
     <div class="fluid-wrap">
       <div class="container-fluid">
+        <!-- Fixed top nav -->
+        <nav class="navbar navbar-default navbar-fixed-top lead-info"
+             role="navigation">
+          <div class="navbar-header">
+            <button class="btn btn-primary navbar-btn navbar-left" type="button">
+              Start calling
+            </button>
+          </div>
+          <div ng-controller="LeadInfoCtrl" ng-include="'views/lead_info.html'">
+          </div>
+        </nav>
+        <!-- /Fixed top nav -->
+
         <!-- Footer -->
         <footer class="navbar navbar-default">
           <p class="nav navbar-text navbar-left" ng-controller="MetaCtrl">
@@ -72,6 +85,7 @@
     <!-- build:js({.tmp,app}) scripts/scripts.js -->
     <script src="scripts/app.js"></script>
     <script src="scripts/controllers/main.js"></script>
+    <script src="scripts/controllers/lead_info.js"></script>
     <script src="scripts/controllers/meta.js"></script>
     <!-- endbuild -->
 </body>
