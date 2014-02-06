@@ -1,10 +1,9 @@
 'use strict'
 
 angular.module('callveyorApp')
-  .controller 'MetaCtrl', ['$scope', '$filter', ($scope, $filter) ->
+  .controller 'MetaCtrl', ['$scope', 'currentYear', ($scope, currentYear) ->
       console.log 'MetaCtrl'
 
       $scope.meta ||= {}
-      $scope.meta.currentDate = new Date()
-      $scope.meta.currentYear = $filter('date')($scope.meta.currentDate, 'yyyy')
+      $scope.meta.currentYear = currentYear
   ]
