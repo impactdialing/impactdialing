@@ -101,6 +101,18 @@ body {
             border: none;
         }
     }
+    .row {
+        max-height: 250px;
+        overflow-y: scroll;
+        dd {
+            font-weight: bold;
+        }
+        dt {
+            font-weight: normal;
+        }
+    }
+}
+
 .fluid-wrap {
     padding: 0 15px;
 }
