@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title></title>
+    <title>Impact Dialing - Callveyor</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
@@ -40,6 +40,11 @@
           </div>
         </nav>
         <!-- /Fixed top nav -->
+
+        <!-- Call script & survey -->
+        <div ng-controller="CallScriptCtrl" ng-include="'views/call_script.html'">
+        </div>
+        <!-- /Call script & survey -->
 
         <!-- Footer -->
         <footer class="navbar navbar-default">
@@ -87,6 +92,7 @@
     <script src="scripts/controllers/main.js"></script>
     <script src="scripts/controllers/lead_info.js"></script>
     <script src="scripts/controllers/meta.js"></script>
+    <script src="scripts/controllers/call_script.js"></script>
     <!-- endbuild -->
 </body>
 </html>
