@@ -69,7 +69,7 @@ ImpactDialing::Application.routes.draw do
   end
 
 
-  match '/policies', :to => 'home#policies'
+  match '/policies', :to => 'client#policies'
   match '/client/policies', :to => 'client#policies', :as => :client_policies
   match '/client/billing_success', to: 'client#billing_success', as: :client_billing_success
 
