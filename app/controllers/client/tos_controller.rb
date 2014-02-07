@@ -1,8 +1,11 @@
 module Client
   class TosController < ClientController
 
-    skip_before_filter :check_tos_accepted, :only => [:index, :create]
-    skip_before_filter :check_paid, :only => [:index]
+    skip_before_filter :check_login, :only => [:policies]
+    skip_before_filter :authenticate_api, :only => [:policies]
+    skip_before_filter :check_credit_card_declined, :only => [:policies]
+    skip_before_filter :check_tos_accepted, :only => [:index, :create, :policies]
+    skip_before_filter :check_paid, :only => [:index, :policies]
 
     def index
       flash_message(:warning, I18n.t(:updated_tos)) if !@account.account_after_change_in_tos?

@@ -3,7 +3,7 @@ require Rails.root.join("lib/twilio_lib")
 class ClientController < ApplicationController
   protect_from_forgery :except => [:billing_updated, :billing_success]
   before_filter :authenticate_api
-  before_filter :check_login, :except => [:login, :user_add, :forgot]
+  before_filter :check_login, :except => [:login, :user_add, :forgot, :policies]
   before_filter :check_tos_accepted, :except => [:login, :forgot]
   before_filter :check_credit_card_declined
 
@@ -164,6 +164,6 @@ class ClientController < ApplicationController
     end
   end
   def policies
-    render 'home/policies'
+    render 'client/tos/policies'
   end
 end
