@@ -110,7 +110,13 @@ class Campaign < ActiveRecord::Base
     end
   end
 
-
+  def within_recycle_rate?(obj)
+    unless obj.respond_to? :last_call_attempt_time
+      raise ArgumentError, "First and only arg should respond to :last_call_attempt_time"
+    end
+    obj.last_call_attempt_time.nil? ||
+    obj.last_call_attempt_time < recycle_rate.hours.ago
+  end
 
   def set_caller_id_error_msg
       if errors[:caller_id].any?

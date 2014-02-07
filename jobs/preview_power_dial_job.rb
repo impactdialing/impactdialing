@@ -16,10 +16,27 @@ class PreviewPowerDialJob
     end
 
     voter = Voter.find(voter_id)
+
+    campaign = voter.campaign
+    unless campaign.within_recycle_rate?(voter)
+      msg = "PreviewPowerDialJob - RecycleRateError:" +
+            " CallerSession[#{caller_session.id}]" +
+            " Voter[#{voter.id}] Campaign[#{campaign.id}]"
+      Rails.logger.error msg
+    end
+
     begin
       Twillio.dial(voter, caller_session)
+      # if campaign.within_recycle_rate?(voter)
+      #   # Twillio.dial(voter, caller_session)
+      # else
+      #   # tell the caller what happened
+      #   # redirect the caller to trigger an update to the lead info
+      #   # Providers::Phone::Call.redirect_for(caller_session, :voter_banned_by_recycle_rate)
+      # end
     rescue ActiveRecord::StaleObjectError => e
       Providers::Phone::Call.redirect_for(caller_session)
+      # rescue from any exception > tell the caller what happened > redirect
     end
   end
 end

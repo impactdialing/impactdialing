@@ -146,7 +146,7 @@ describe Campaign do
       question1 = create(:question, :text => "hw are u", :script => script)
       question2 = create(:question, :text => "wr r u", :script => script)
       possible_response1 = create(:possible_response, :value => "fine", :question => question1)
-      possible_response2 = create(:possible_response, :value => "super", :question => question1)      
+      possible_response2 = create(:possible_response, :value => "super", :question => question1)
       create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response1, :question => question1, :created_at => now)
       create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question1, :created_at => now)
       create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => question1.possible_responses.first, :question => question1, :created_at => now)
@@ -176,7 +176,7 @@ describe Campaign do
               {:answer=>"[No response]", :number=>0, :percentage=>0},
               {answer: possible_response1.value, number: 1, percentage: 50},
               {answer: possible_response2.value, number: 1, percentage: 50}
-              
+
             ]
           }
         },
@@ -187,7 +187,7 @@ describe Campaign do
               {:answer=>"[No response]", :number=>0, :percentage=>0},
               {answer: possible_response3.value, number: 1, percentage: 50},
               {answer: possible_response4.value, number: 1, percentage: 50}
-              
+
             ]
           }
         }
@@ -314,7 +314,7 @@ describe Campaign do
       @caller_session2 = create(:webui_caller_session, on_call:true, available_for_call: false, campaign_id: @campaign.id)
     end
 
-    it "should return callers logged in" do      
+    it "should return callers logged in" do
       @campaign.callers_status[0].should eq(2)
     end
 
@@ -389,7 +389,38 @@ describe Campaign do
     end
   end
 
+  describe "within_recycle_rate?(obj)" do
+    let(:duck_available) do
+      double('AvailableDuckVoter', {
+        last_call_attempt_time: 4.days.ago
+      })
+    end
+    let(:duck_unavailable) do
+      double('UnavailableDuckVoter', {
+        last_call_attempt_time: 5.seconds.ago
+      })
+    end
+    let(:non_duck) do
+      double('NonDuck')
+    end
+    let(:campaign) do
+      create(:preview, {
+        recycle_rate: 24
+      })
+    end
 
+    it 'returns true iff obj.last_call_attempt_time < Campaign#recycle_rate' do
+      campaign.within_recycle_rate?(duck_available).should be_true
+    end
+
+    it 'returns false otherwise' do
+      campaign.within_recycle_rate?(duck_unavailable).should be_false
+    end
+
+    it 'raises ArgumentError if obj does not respond to last_call_attempt_time' do
+      expect{ campaign.within_recycle_rate?(non_duck) }.to raise_error{ ArgumentError }
+    end
+  end
 end
 
 
