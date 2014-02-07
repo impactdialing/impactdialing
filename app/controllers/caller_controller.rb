@@ -141,6 +141,8 @@ class CallerController < ApplicationController
     if params[:voter_id].nil? || params[:voter_id].empty?
       enqueue_call_flow(CallerPusherJob, [caller_session.id,  "publish_caller_conference_started"])
     else
+      # publish_calling_voter &
+      # queue PreviewPowerDialJob
       caller.calling_voter_preview_power(caller_session, params[:voter_id])
     end
     render :nothing => true
