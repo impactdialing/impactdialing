@@ -137,7 +137,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
         self.setMessage('Call results saved.');
       },
       error: function(xhr, status, error){
-        self.setMessage('Call results failed to save.');
+        self.setMessage('Call results failed to save. Please try again to continue.');
         $('#submit_and_keep_call').show();
         $('#submit_and_stop_call').show();
       }
