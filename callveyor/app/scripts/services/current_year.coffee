@@ -1,4 +1,4 @@
 'use strict'
 
 angular.module('callveyorApp')
-  .value 'currentYear', (new Date()).getFullYear()
+  .constant 'currentYear', (new Date()).getFullYear()
