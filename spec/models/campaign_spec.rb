@@ -390,14 +390,34 @@ describe Campaign do
   end
 
   describe "within_recycle_rate?(obj)" do
-    let(:duck_available) do
-      double('AvailableDuckVoter', {
+    let(:duck_available1) do
+      double('AvailableDuckVoter1', {
         last_call_attempt_time: 4.days.ago
       })
     end
-    let(:duck_unavailable) do
-      double('UnavailableDuckVoter', {
+    let(:duck_available2) do
+      double('AvailableDuckVoter2', {
+        last_call_attempt_time: 25.hours.ago
+      })
+    end
+    let(:duck_available3) do
+      double('AvailableDuckVoter3', {
+        last_call_attempt_time: nil
+      })
+    end
+    let(:duck_in_recycle_rate1) do
+      double('UnavailableDuckVoter1', {
         last_call_attempt_time: 5.seconds.ago
+      })
+    end
+    let(:duck_in_recycle_rate2) do
+      double('UnavailableDuckVoter1', {
+        last_call_attempt_time: 4.hours.ago
+      })
+    end
+    let(:duck_in_recycle_rate3) do
+      double('UnavailableDuckVoter1', {
+        last_call_attempt_time: 23.hours.ago + 59.minutes
       })
     end
     let(:non_duck) do
@@ -409,12 +429,22 @@ describe Campaign do
       })
     end
 
-    it 'returns true iff obj.last_call_attempt_time < Campaign#recycle_rate' do
-      campaign.within_recycle_rate?(duck_available).should be_true
+    it 'returns true iff obj.last_call_attempt_time > Campaign#recycle_rate.hours.ago' do
+      campaign.within_recycle_rate?(duck_in_recycle_rate1).should be_true
+      campaign.within_recycle_rate?(duck_in_recycle_rate2).should be_true
     end
 
-    it 'returns false otherwise' do
-      campaign.within_recycle_rate?(duck_unavailable).should be_false
+    it 'returns true if obj.last_call_attempt_time = Campaign#recycle_rate.hours.ago' do
+      campaign.within_recycle_rate?(duck_in_recycle_rate3).should be_true
+    end
+
+    it 'returns false if obj.last_call_attempt_time < Campaign#recycle_rate.hours.ago' do
+      campaign.within_recycle_rate?(duck_available1).should be_false
+      campaign.within_recycle_rate?(duck_available2).should be_false
+    end
+
+    it 'returns false if obj.last_call_attempt_time.nil?' do
+      campaign.within_recycle_rate?(duck_available3).should be_false
     end
 
     it 'raises ArgumentError if obj does not respond to last_call_attempt_time' do
