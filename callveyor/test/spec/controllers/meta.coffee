@@ -18,8 +18,5 @@ describe 'Controller: MetaCtrl', () ->
   it 'should attach a meta object to the scope', () ->
     expect(scope.meta).toBeDefined()
 
-  it 'should set a currentDate property on meta to new Date()', ->
-    expect(scope.meta.currentDate.constructor).toBe(Date)
-
   it 'should set a currentYear property on meta to YYYY', ->
-    expect(scope.meta.currentYear).toEqual((new Date()).getFullYear().toString())
+    expect(scope.meta.currentYear).toEqual((new Date()).getFullYear())
