@@ -113,3 +113,26 @@ task :dns do
     time_asleep += 30
   end
 end
+
+desc "Generate / append to CHANGELOG.md entries within the start_date and end_date"
+task :changelog, [:after, :before] do |t, args|
+  desired_entries = [
+    'changelog',
+    'closes',
+    'fixes',
+    'completes',
+    'delivers',
+    '#'
+  ]
+  format = 'format:"%cr%n-----------%n%s%+b%n========================================================================"'
+  after = args[:after]
+  before = args[:before]
+  cmd = 'git log'
+  cmd << " --pretty=#{format}"
+  desired_entries.each do |de|
+    cmd << " --grep='#{de}'"
+  end
+  cmd << " --after='#{after}'" unless after.blank?
+  cmd << " --before='#{before}'" unless before.blank?
+  print cmd + "\n"
+end
