@@ -18,7 +18,7 @@ class PreviewPowerDialJob
     voter = Voter.find(voter_id)
 
     campaign = voter.campaign
-    unless campaign.nil? || campaign.within_recycle_rate?(voter)
+    if campaign.present? && campaign.within_recycle_rate?(voter)
       msg = "PreviewPowerDialJob - RecycleRateError:" +
             " CallerSession[#{caller_session.id}]" +
             " Voter[#{voter.id}] Campaign[#{campaign.id}]"
