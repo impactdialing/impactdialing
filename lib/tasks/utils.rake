@@ -33,6 +33,23 @@ task :renew_subscription, [:account_ids] => :environment do |t, args|
   end
 end
 
+desc "sync Voters#enabled w/ VoterList#enabled"
+task :sync_all_voter_lists_to_voter => :environment do |t, args|
+  limit = 100
+  offset = 0
+
+  lists = VoterList.limit(limit).offset(offset)
+
+  until lists.empty?
+    lists.each do |list|
+      list.voters.update_all(enabled: list.enabled)
+    end
+
+    offset += limit
+    lists = VoterList.limit(limit).offset(offset)
+  end
+end
+
 desc "Read phone numbers from csv file and output as array."
 task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_index] => :environment do |t, args|
   require 'csv'
