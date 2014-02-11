@@ -35,6 +35,31 @@ namespace :export do
     # file.close
   end
 
+  def generate_csv(headers, records, &block)
+    CSV.generate({
+      headers: headers,
+      write_headers: true,
+      force_quotes: true
+    }) do |csv|
+      records.each do |record|
+        yield csv, record
+      end
+    end
+  end
+
+  def save_csv(csv_data, subpath, s3=false)
+    if s3
+      path = "_exports/#{subpath}"
+      aws = AmazonS3.new
+      aws.write(path, csv_data)
+    else
+      path = File.join Rails.root, 'tmp', subpath
+      file = File.open(path, 'w+')
+      file << csv_data
+      file.close
+    end
+  end
+
   desc "Export the BlockedNumbers (Do Not Call List) for the given Account ID"
   task :blocked_numbers, [:account_id] => :environment do |t, args|
     account_id      = args[:account_id]
@@ -69,9 +94,19 @@ namespace :export do
 
     s3 = AmazonS3.new
     s3.write(path, export)
-    # file = File.open(File.join(Rails.root, 'tmp', filename), 'w+')
-    # file << export
-    # file.close
+  end
+
+  desc "Export a CSV of the first admin email for all accounts"
+  task :account_emails => :environment do
+    # One liner:
+    ## print '"Account ID", "Email\n"' + Account.all.map{|a| "\"#{a.id}\", \"#{a.users.first.try(:email) || a.users.count}\""}.join("\n") + "\n"
+    admins   = Account.all.map{|a| [a.id, a.users.first.email]}
+    headers  = ['Account ID', 'Email']
+    csv_data = generate_csv(headers, admins) do |csv, record|
+      csv << record
+    end
+
+    save_csv(csv_data, "admin-email-export-test.csv", false)
   end
 
   desc "Export one or more campaigns for the given account"
