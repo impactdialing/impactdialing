@@ -131,7 +131,7 @@ Reject: 971-264-5346
 
 Busy: 971-264-5467
 
-Repeat adnasum: 657-888-9655
+Repeat adnauseum: 657-888-9655
 
 ### Trouble
 
