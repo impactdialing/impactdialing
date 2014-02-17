@@ -58,5 +58,29 @@
     <%= render 'layouts/legal' %>
 
     </footer>
+    <% if logged_in_as_client? %>
+    <script type="text/javascript">
+      var _usersnapconfig = {
+        apiKey: '00d43adb-86c0-47cb-a279-9e90d8695996',
+        emailBox: true,
+        emailBoxValue: '<%= @user.email %>',
+        emailRequired: true,
+        beforeSend: function(obj) {
+          obj.addInfo = {
+            account_id: '<%= @user.account_id %>'
+          }
+        }
+      };
+      (function() {
+        var s = document.createElement("script");
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = '//api.usersnap.com/beta/'+
+                '00d43adb-86c0-47cb-a279-9e90d8695996.js';
+        var x = document.getElementsByTagName('head')[0];
+        x.appendChild(s);
+      })();
+    </script>
+    <% end %>
   </body>
 </html>
