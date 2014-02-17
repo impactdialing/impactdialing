@@ -1,14 +1,28 @@
+require 'uri'
+
 module Platform
   module MySQL
-    def self.connect(pool_size)
-      Rails.logger.info "MySQL.connect(#{pool_size || 5})"
-      p "MySQL.connect(#{pool_size || 5})"
+    def self.connect(pool_size=5)
+      Rails.logger.info "MySQL.connect(#{pool_size})"
+      p "MySQL.connect(#{pool_size})"
       rails_config = Rails.application.config.database_configuration[Rails.env]
-      rails_config['pool'] = pool_size || 5
+      rails_config['pool'] = pool_size
 
       octopus_config = Octopus.config[Rails.env]
       octopus_config.each do |shard_name, shard_config|
-        shard_config['pool'] = pool_size || 5
+        shard_config['pool'] = pool_size
+      end
+
+      database_url = ENV['DATABASE_URL']
+      if database_url
+        pool_query   = "pool=#{pool_size}"
+        database_uri = URI.parse(database_url)
+        if database_uri.query.nil?
+          database_uri.query = pool_query
+        else
+          database_uri.query = database_uri.query + "&#{pool_query}"
+        end
+        ENV['DATABASE_URL'] = database_uri.to_s
       end
 
       shards = ActiveRecord::Base.connection_proxy.instance_variable_get(:@shards)
