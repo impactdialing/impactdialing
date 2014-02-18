@@ -3,7 +3,7 @@
 describe 'Controller: MetaCtrl', () ->
 
   # load the controller's module
-  beforeEach module 'callveyorApp'
+  beforeEach module 'callveyor'
 
   MetaCtrl = {}
   scope = {}

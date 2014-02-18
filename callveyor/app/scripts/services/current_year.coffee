@@ -1,4 +1,4 @@
 'use strict'
 
-angular.module('callveyorApp')
+angular.module('callveyor')
   .constant 'currentYear', (new Date()).getFullYear()
