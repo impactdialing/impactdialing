@@ -3,7 +3,7 @@
 describe 'Service: currentYear', () ->
 
   # load the service's module
-  beforeEach module 'callveyorApp'
+  beforeEach module 'callveyor'
 
   # instantiate service
   currentYear = {}

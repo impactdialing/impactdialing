@@ -1,6 +1,6 @@
 'use strict'
 
-angular.module('callveyorApp')
+angular.module('callveyor')
   .controller 'LeadInfoCtrl', ['$scope', ($scope) ->
     console.log 'LeadInfoCtrl'
 

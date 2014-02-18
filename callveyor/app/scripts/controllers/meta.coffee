@@ -1,6 +1,6 @@
 'use strict'
 
-angular.module('callveyorApp')
+angular.module('callveyor')
   .controller 'MetaCtrl', ['$scope', 'currentYear', ($scope, currentYear) ->
       console.log 'MetaCtrl'
 

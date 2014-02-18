@@ -3,7 +3,7 @@
 describe 'Controller: CallScriptCtrl', () ->
 
   # load the controller's module
-  beforeEach module 'callveyorApp'
+  beforeEach module 'callveyor'
 
   CallscriptCtrl = {}
   scope = {}
