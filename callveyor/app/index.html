@@ -20,35 +20,25 @@
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
   </head>
-  <body ng-app="callveyor">
+  <body data-ng-app="callveyor">
     <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
     <!-- Site or application content here -->
     <div class="fluid-wrap">
-      <div class="container-fluid">
-        <!-- Fixed top nav -->
-        <nav class="navbar navbar-default navbar-fixed-top lead-info"
-             role="navigation">
-          <div class="navbar-header">
-            <button class="btn btn-primary navbar-btn navbar-left" type="button">
-              Start calling
-            </button>
-          </div>
-          <div ng-controller="LeadInfoCtrl" ng-include="'views/lead_info.html'">
-          </div>
-        </nav>
-        <!-- /Fixed top nav -->
+      <div class="container-fluid" data-ng-controller="AppCtrl">
+        <!-- callveyor.dialer ui-view -->
+        <div data-ui-view="dialer"></div>
+        <!-- /callveyor.dialer ui-view -->
 
-        <!-- Call script & survey -->
-        <div ng-controller="CallScriptCtrl" ng-include="'views/call_script.html'">
-        </div>
-        <!-- /Call script & survey -->
+        <!-- callveyor.surveyor ui-view -->
+        <div data-ui-view="surveyor"></div>
+        <!-- /callveyor.surveyor ui-view -->
 
         <!-- Footer -->
         <footer class="navbar navbar-default">
-          <p class="nav navbar-text navbar-left" ng-controller="MetaCtrl">
+          <p class="nav navbar-text navbar-left" data-ng-controller="MetaCtrl">
             &copy; {{meta.currentYear}}
           </p>
           <ul class="nav navbar-nav">
@@ -62,7 +52,9 @@
         </footer>
         <!-- /Footer -->
       </div>
+      <!-- /container-fluid -->
     </div>
+    <!-- /fluid-wrap -->
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
      <script>
@@ -84,17 +76,17 @@
     <!-- bower:js -->
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-    <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
     <script src="bower_components/angular-pusher/angular-pusher.js"></script>
+    <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
     <!-- build:js({.tmp,app}) scripts/scripts.js -->
     <script src="scripts/app.js"></script>
-    <script src="scripts/controllers/lead_info.js"></script>
-    <script src="scripts/controllers/meta.js"></script>
-    <script src="scripts/controllers/call_script.js"></script>
     <script src="scripts/services/current_year.js"></script>
+    <script src="scripts/controllers/meta.js"></script>
+    <script src="scripts/dialer/dialer.js"></script>
+    <script src="scripts/dialer/ready/ready.js"></script>
     <!-- endbuild -->
 </body>
 </html>
