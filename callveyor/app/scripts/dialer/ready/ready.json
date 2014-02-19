@@ -1,0 +1,12 @@
+{
+  "caller": {
+    "session_key": "caller-session-key",
+    "pin": "caller-PIN"
+  },
+  "twilio": {
+    "capability_token": "twilio-capability-token"
+  },
+  "campaign": {
+    "phone_number": "123-456-7890"
+  }
+}
