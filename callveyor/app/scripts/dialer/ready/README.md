@@ -8,10 +8,15 @@ Caller will be able to:
 
 ### Transitions
 
-Only the following transitions are permitted. If a prohibited transition is requested (e.g. via WS event) then a `dialer:ready:transition:error` event should be $broadcast with the offending transition data.
+`Dialer.ready -> Dialer.hold`
 
-Dialer.ready -> Dialer.hold
+Requirements for above transition success:
 
-Dialer.stop  -> Dialer.ready
+- pusher is loaded & connected
+- twilio is loaded & ready
 
-Dialer.error...?
+`Dialer.stop -> Dialer.ready`
+
+Requirements for above transition success:
+
+- caller is connected

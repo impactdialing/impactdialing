@@ -3,7 +3,8 @@
 dialer = angular.module('callveyor.dialer', [
   'doowb.angular-pusher',
   'ui.router',
-  'callveyor.dialer.ready'
+  'callveyor.dialer.ready',
+  'callveyor.dialer.hold'
 ])
 
 dialer.config(['$stateProvider', 'PusherServiceProvider', ($stateProvider, PusherServiceProvider) ->
@@ -18,6 +19,7 @@ dialer.config(['$stateProvider', 'PusherServiceProvider', ($stateProvider, Pushe
 
 dialer.controller('DialerCtrl', ['$scope', '$state', ($scope, $state) ->
   console.log 'DialerCtrl', $scope
+  console.log 'Known states', $state.get()
   $scope.dialer = {}
   $state.go('dialer.ready')
 ])
