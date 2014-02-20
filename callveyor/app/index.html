@@ -35,26 +35,28 @@
         <!-- callveyor.surveyor ui-view -->
         <div data-ui-view="surveyor"></div>
         <!-- /callveyor.surveyor ui-view -->
-
-        <!-- Footer -->
-        <footer class="navbar navbar-default">
-          <p class="nav navbar-text navbar-left" data-ng-controller="MetaCtrl">
-            &copy; {{meta.currentYear}}
-          </p>
-          <ul class="nav navbar-nav">
-            <li>
-              <a href="#">Privacy</a>
-            </li>
-            <li>
-              <a href="#">Terms</a>
-            </li>
-          </ul>
-        </footer>
-        <!-- /Footer -->
       </div>
       <!-- /container-fluid -->
     </div>
     <!-- /fluid-wrap -->
+
+    <!-- Footer -->
+    <footer class="navbar navbar-default navbar-fixed-bottom">
+      <div class="container-fluid">
+        <p class="nav navbar-text" data-ng-controller="MetaCtrl">
+          &copy; {{meta.currentYear}}
+        </p>
+        <ul class="nav navbar-nav">
+          <li>
+            <a href="#">Privacy</a>
+          </li>
+          <li>
+            <a href="#">Terms</a>
+          </li>
+        </ul>
+      </div>
+    </footer>
+    <!-- /Footer -->
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
      <script>
