@@ -1,0 +1,40 @@
+<div class="contact">
+  <button class="btn btn-block btn-default"
+          data-ng-click="contact._meta.collapse = !contact._meta.collapse">
+    Contact info
+  </button>
+  <div collapse="contact._meta.collapse">
+    <!-- system fields -->
+    <dl class="dl-horizontal">
+      <dt data-ng-hide="!contact.fields.custom_id">ID</dt>
+      <dd data-ng-hide="!contact.fields.custom_id">{{contact.fields.custom_id}}</dd>
+      <dt data-ng-hide="!contact.fields.first_name">First name</dt>
+      <dd data-ng-hide="!contact.fields.first_name">{{contact.fields.first_name}}</dd>
+      <dt data-ng-hide="!contact.fields.middle_name">Middle name</dt>
+      <dd data-ng-hide="!contact.fields.middle_name">{{contact.fields.middle_name}}</dd>
+      <dt data-ng-hide="!contact.fields.last_name">Last name</dt>
+      <dd data-ng-hide="!contact.fields.last_name">{{contact.fields.last_name}}</dd>
+      <dt data-ng-hide="!contact.fields.suffix">Suffix</dt>
+      <dd data-ng-hide="!contact.fields.suffix">{{contact.fields.suffix}}</dd>
+      <dt data-ng-hide="!contact.fields.address">Address</dt>
+      <dd data-ng-hide="!contact.fields.address">{{contact.fields.address}}</dd>
+      <dt data-ng-hide="!contact.fields.city">City</dt>
+      <dd data-ng-hide="!contact.fields.city">{{contact.fields.city}}</dd>
+      <dt data-ng-hide="!contact.fields.state">State</dt>
+      <dd data-ng-hide="!contact.fields.state">{{contact.fields.state}}</dd>
+      <dt data-ng-hide="!contact.fields.zip_code">Zip / Postal code</dt>
+      <dd data-ng-hide="!contact.fields.zip_code">{{contact.fields.zip_code}}</dd>
+      <dt data-ng-hide="!contact.fields.country">Country</dt>
+      <dd data-ng-hide="!contact.fields.country">{{contact.fields.country}}</dd>
+      <dt data-ng-hide="!contact.fields.phone">Phone</dt>
+      <dd data-ng-hide="!contact.fields.phone">{{contact.fields.phone}}</dd>
+      <dt data-ng-hide="!contact.fields.email">Email</dt>
+      <dd data-ng-hide="!contact.fields.email">{{contact.fields.email}}</dd>
+    </dl>
+    <!-- custom fields -->
+    <dl class="dl-horizontal">
+      <dt data-ng-repeat-start="(field, value) in contact.custom_fields">{{field}}</dt>
+      <dd data-ng-repeat-end>{{value}}</dd>
+    </dl>
+  </div>
+</div>

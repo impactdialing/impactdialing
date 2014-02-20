@@ -9,8 +9,8 @@ $gray-lighter: lighten(#000, 90%);
 
 /* Space out content a bit */
 body {
-    padding-top: 120px;
-    padding-bottom: 200px;
+    padding-top: 50px;
+    padding-bottom: 50px;
 }
 
 /* Everything but the jumbotron gets side spacing for mobile first views */
@@ -88,31 +88,46 @@ body {
     }
 }
 
-/* Lead info navbar */
-.lead-info {
-    .list-group {
-        margin-bottom: 0;
-        background-color: $gray-lighter;
-
-        .list-group-item {
-            background-color: $gray-lighter;
-            display: inline-block;
-            // padding: 5px 10px;
-            border: none;
-        }
-    }
-    .row {
-        max-height: 250px;
-        overflow-y: scroll;
-        dd {
-            font-weight: bold;
-        }
-        dt {
-            font-weight: normal;
-        }
-    }
-}
-
 .fluid-wrap {
     padding: 0 15px;
+}
+
+.contact {
+    position: fixed;
+    top: 60px;
+    width: 30%;
+    max-height: 600px;
+    overflow-y: scroll;
+}
+.script {
+    max-height: 600px;
+    overflow-y: scroll;
+}
+
+@media (max-width: 767px) {
+    .contact {
+        width:auto;
+    }
+}
+@media (max-width: 979px) {
+    .contact {
+        position:static;
+        width: auto;
+    }
+}
+@media (max-height: 900px) {
+    .script {
+        max-height: 790px;
+    }
+    .contact {
+        max-height: 780px;
+    }
+}
+@media (max-height: 700px) {
+    .script {
+        max-height: 590px;
+    }
+    .contact {
+        max-height: 580px;
+    }
 }
