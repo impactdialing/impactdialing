@@ -28,7 +28,7 @@ hold.controller('callFlowButtonsCtrl.hold', [
 
     $scope.dialer.hold.stopCalling = ->
       console.log 'stopCalling clicked'
-      # $state.go('dialer.ready')
+      $state.go('dialer.stop')
 ])
 
 hold.controller('callStatusCtrl.hold', [

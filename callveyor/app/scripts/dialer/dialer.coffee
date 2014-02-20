@@ -4,7 +4,8 @@ dialer = angular.module('callveyor.dialer', [
   'doowb.angular-pusher',
   'ui.router',
   'callveyor.dialer.ready',
-  'callveyor.dialer.hold'
+  'callveyor.dialer.hold',
+  'callveyor.dialer.stop'
 ])
 
 dialer.config(['$stateProvider', 'PusherServiceProvider', ($stateProvider, PusherServiceProvider) ->
