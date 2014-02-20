@@ -1,10 +1,17 @@
 <!-- Fixed top nav -->
-<nav class="navbar navbar-default navbar-fixed-top lead-info" role="navigation">
-  <!-- callFlowButtons ui-view -->
-  <div class="navbar-header" data-ui-view="callFlowButtons"></div>
-  <!-- callFlowButtons ui-view -->
-  <!-- contactInfo ui-view -->
-  <div data-ui-view="contactInfo"></div>
-  <!-- /contactInfo ui-view -->
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container-fluid">
+    <!-- callFlowButtons ui-view -->
+    <div class="navbar-left" data-ui-view="callFlowButtons"></div>
+    <!-- /callFlowButtons ui-view -->
+    <!-- callStatus ui-view -->
+    <div class="navbar-right" data-ui-view="callStatus">
+      <p class="navbar-text">Loading...</p>
+    </div>
+    <!-- /callStatus ui-view -->
+    <!-- contactInfo ui-view -->
+    <div data-ui-view="contactInfo"></div>
+    <!-- /contactInfo ui-view -->
+  </div>
 </nav>
 <!-- /Fixed top nav -->
