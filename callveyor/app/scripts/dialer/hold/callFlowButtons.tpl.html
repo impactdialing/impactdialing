@@ -1,0 +1,16 @@
+<button class="btn btn-primary navbar-btn"
+        data-ng-click="dialer.hold.stopCalling()">
+  Stop calling
+</button>
+<button class="btn btn-primary navbar-btn"
+        data-ng-click="dialer.hold.dial()"
+        data-ng-cloak
+        data-ng-hide="dialer.meta.campaign.type != 'Preview'">
+  Dial
+</button>
+<button class="btn btn-primary navbar-btn"
+        data-ng-click="dialer.hold.skip()"
+        data-ng-cloak
+        data-ng-hide="dialer.meta.campaign.type != 'Preview'">
+  Skip
+</button>
