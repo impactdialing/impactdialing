@@ -22,3 +22,29 @@ WS events that may trigger this transition:
 
 - *Predictive:* `voter_connected_dialer`
 - *Preview & Power:* `voter_connected`
+
+### contactInfo view
+
+Handles display of contact info.
+
+Contact info will be displayed in these states:
+
+- Preview, Power & Predictive
+  - onCall
+  - wrapUp
+
+- Power, Preview
+  - hold/dialing
+
+Contact info will be loaded primarily via WS events:
+
+- Preview, Power, Predictive
+  - caller_reassigned
+
+- Predictive
+  - voter_connected_dialer
+
+- Preview, Power
+  - conference_started
+
+Contact info will also be loaded via Preview#skip but how best to emit this data, via WS or synchronous http request?

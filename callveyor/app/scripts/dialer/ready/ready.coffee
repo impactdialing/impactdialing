@@ -5,7 +5,8 @@ ready = angular.module('callveyor.dialer.ready', [])
 ready.config(['$stateProvider', ($stateProvider) ->
   $stateProvider.state('dialer.ready', {
     resolve:
-      info: ($http) -> $http.get('/scripts/dialer/ready/ready.json')
+      caller: ($http) -> $http.get('/scripts/dialer/ready/ready.json')
+      contact: ($http) -> $http.get('/scripts/dialer/contact/info.json')
     views:
       callFlowButtons:
         templateUrl: '/scripts/dialer/ready/callFlowButtons.tpl.html'
@@ -13,12 +14,18 @@ ready.config(['$stateProvider', ($stateProvider) ->
       callStatus:
         templateUrl: '/scripts/dialer/ready/callStatus.tpl.html'
         controller: 'callStatusCtrl.ready'
+      contact:
+        templateUrl: '/scripts/dialer/ready/contactInfo.tpl.html'
+        controller: 'ContactInfoCtrl'
+      script:
+        templateUrl: '/scripts/dialer/script/form.tpl.html'
+        controller: 'ScriptCtrl'
   })
 ])
 
 ready.controller('callFlowButtonsCtrl.ready', [
-  '$scope', '$state', 'info',
-  ($scope,   $state,   info) ->
+  '$scope', '$state', 'caller',
+  ($scope,   $state,   caller) ->
     console.log 'ready.callFlowButtonsCtrl', $scope
     $scope.dialer.ready ||= {}
     angular.extend($scope.dialer.ready, {
@@ -26,8 +33,8 @@ ready.controller('callFlowButtonsCtrl.ready', [
     })
 
     $scope.dialer.ready.startCalling = ->
-      console.log 'startCalling clicked', info.data
-      p = $state.go('dialer.hold', info.data)
+      console.log 'startCalling clicked', caller.data
+      p = $state.go('dialer.hold', caller.data)
       s = (r) -> console.log 'success', r.stack, r.message
       e = (r) -> console.log 'error', r.stack, r.message
       c = (r) -> console.log 'notify', r.stack, r.message
@@ -35,9 +42,9 @@ ready.controller('callFlowButtonsCtrl.ready', [
 ])
 
 ready.controller('callStatusCtrl.ready', [
-  '$scope', 'info',
-  ($scope, info) ->
+  '$scope', 'caller',
+  ($scope, caller) ->
     console.log 'ready.callStatusCtrl', $scope
     $scope.dialer.meta ||= {}
-    angular.extend($scope.dialer.meta, info.data)
+    angular.extend($scope.dialer.meta, caller.data)
 ])

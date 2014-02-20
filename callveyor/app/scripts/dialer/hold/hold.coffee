@@ -6,6 +6,8 @@ hold.config([
   '$stateProvider'
   ($stateProvider) ->
     $stateProvider.state('dialer.hold', {
+      resolve:
+        contact: ($http) -> $http.get('/scripts/dialer/contact/info.json')
       views:
         callFlowButtons:
           templateUrl: "/scripts/dialer/hold/callFlowButtons.tpl.html"
@@ -13,6 +15,12 @@ hold.config([
         callStatus:
           templateUrl: '/scripts/dialer/hold/callStatus.tpl.html'
           controller: 'callStatusCtrl.hold'
+        contact:
+          templateUrl: '/scripts/dialer/contact/info.tpl.html'
+          controller: 'ContactInfoCtrl'
+        script:
+          templateUrl: '/scripts/dialer/script/form.tpl.html'
+          controller: 'ScriptCtrl'
     })
 ])
 
