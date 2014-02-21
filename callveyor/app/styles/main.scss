@@ -115,12 +115,28 @@ body {
         width: auto;
     }
 }
-@media (max-height: 900px) {
+@media (max-height: 1100px) {
     .script {
-        max-height: 790px;
+        max-height: 960px;
     }
     .contact {
-        max-height: 780px;
+        max-height: 960px;
+    }
+}
+@media (max-height: 1000px) {
+    .script {
+        max-height: 760px;
+    }
+    .contact {
+        max-height: 760px;
+    }
+}
+@media (max-height: 900px) {
+    .script {
+        max-height: 660px;
+    }
+    .contact {
+        max-height: 660px;
     }
 }
 @media (max-height: 700px) {
