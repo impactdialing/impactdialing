@@ -108,7 +108,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     $("#start-calling-mobile").attr("href", ios_url);
     $("#callin").show();
     if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
-      $("#start-calling").hide();
+      $("#start_calling").hide();
     }
     if (isNativeApp()){
       $("#start-calling-mobile").show();
@@ -138,6 +138,10 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
   },
 
   initTwilio: function(){
+    if( !FlashDetect.installed || !flash_supported() || !browser_supported() ){
+      $('#start_calling').hide()
+      return;
+    }
     var token = this.model.get('twilio_token');
 
     this.twilioService = new ImpactDialing.Services.Twilio({
