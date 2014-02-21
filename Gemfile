@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 ruby '2.0.0'
 
-gem 'rails', '~> 3.2.13'
+gem 'rails', '~> 3.2.17'
 gem 'unicorn'
 gem 'will_paginate', '~> 3.0.4'
 gem 'mysql2', '~> 0.3.13'
@@ -55,6 +55,7 @@ group :development, :test do
   gem 'rspec-instafail', '~>0.2.4'
   gem 'pry'
   gem 'jasmine'
+  gem 'compass'
 end
 
 group :development do
