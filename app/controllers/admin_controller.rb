@@ -65,7 +65,8 @@ class AdminController < ApplicationController
   def report
     set_report_date_range
     if request.post?
-      Resque.enqueue(AdminReportJob, @from_date, @to_date)
+      flash.now[:notice] = ["Your #{report_type} report (#{@from_date.strftime('%m-%d-%Y')} - #{@to_date.strftime('%m-%d-%Y')}) has been added to the queue. You should receive it via email when complete."]
+      Resque.enqueue(AdminReportJob, @from_date, @to_date, report_type)
     end
   end
 
@@ -115,9 +116,13 @@ class AdminController < ApplicationController
   end
 
   private
-  def authenticate
-    authenticate_or_request_with_http_basic(self.class.controller_path) do |user_name, password|
-      user_name == USER_NAME && password == PASSWORD
+    def authenticate
+      authenticate_or_request_with_http_basic(self.class.controller_path) do |user_name, password|
+        user_name == USER_NAME && password == PASSWORD
+      end
     end
-  end
+
+    def report_type
+      params[:report_type] == 'all' ? 'All' : 'Enterprise'
+    end
 end

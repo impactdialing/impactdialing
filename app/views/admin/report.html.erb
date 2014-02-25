@@ -1,17 +1,36 @@
-<h1>Admin Reporting</h1>
+<div role="main">
+  <h1>Admin Reporting</h1>
 
-Report Date Range:
-<%= form_tag ("/admin/report") do %>
-  <table>
-    <tr>
-      <td>From:</td>
-      <td><input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= @from_date.strftime("%m/%d/%Y") %>"></td>
-    </tr>
-    <tr>
-      <td>
-        To:</td>
-      <td><input class="format-m-d-y divider-slash" id="from_date" name="to_date" type="text" value="<%= @to_date.strftime("%m/%d/%Y") %>"></td>
-    </tr>
-  </table>
-  <button type="submit">Enqueue resque job to calcualte result</button>
-<% end %>
+  <p>Select the type of usage report you'd like to receive along w/ the date range.</p>
+
+  <%= form_tag ("/admin/report") do %>
+    <table>
+      <tr>
+        <td>
+          <label for="report_type">Type:</label>
+        </td>
+        <td>
+          <select id="report_type">
+            <option value="enterprise">Manual / Enterprise Accounts</option>
+            <option value="all">All Accounts</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="from_date">From:</label>
+        </td>
+        <td>
+          <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= @from_date.strftime("%m/%d/%Y") %>">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="to_date">To:</label>
+        </td>
+        <td><input class="format-m-d-y divider-slash" id="to_date" name="to_date" type="text" value="<%= @to_date.strftime("%m/%d/%Y") %>"></td>
+      </tr>
+    </table>
+    <button type="submit">Build &amp; email report</button>
+  <% end %>
+</div>

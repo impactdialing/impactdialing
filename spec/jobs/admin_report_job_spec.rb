@@ -12,7 +12,7 @@ describe AdminReportJob do
   end
 
   after do
-    AdminReportJob.perform(from, to)
+    AdminReportJob.perform(from, to, 'Enterprise')
   end
 
   it 'instantiates a Reports::BillableMinutes obj with start & end dates' do
