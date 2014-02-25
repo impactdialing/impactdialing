@@ -1,5 +1,6 @@
-<h1><%= @caller.name %> Usage</h1>
 <div role="main">
+  <h1><%= "Usage Report" %></h1>
+  <h2>for <%= @caller.identity_name %></h2>
   <%= form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
     <%= select_tag 'campaign_id', options_for_select(@campaigns_data, selected: @campaign.try(:id)), prompt: 'Total' %>
     <%= render :partial => 'shared/switch_campaign' %>
