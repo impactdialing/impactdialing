@@ -63,6 +63,13 @@ module.exports = function (grunt) {
         hostname: 'localhost',
         livereload: 35729
       },
+      // proxies: [
+      //   {
+      //     context: '/api',
+      //     host: 'localhost',
+      //     port: 5000
+      //   }
+      // ],
       livereload: {
         options: {
           open: true,
