@@ -1,0 +1,48 @@
+{
+  "account_id":875,
+  "active":true,
+  "created_at":"2014-02-19T19:04:10Z",
+  "id":2403,
+  "name":"SB Com Mtg Recruitment",
+  "updated_at":"2014-02-19T19:04:10Z",
+  "voter_fields":"[\"Phone\",\"LastName\",\"FirstName\"]",
+  "notes":[],
+  "transfers":[],
+  "script_texts":[
+    {
+      "content":"Hi is _____ there?  This is _______ with Freedom Indiana.  I\u2019m calling to invite you to one last event, a celebration of our work this year!  Did you hear what happened with HJR-3 in the Senate last week?\r\n\r\n[If yes]  So you know we not only kept HJR-3 off the ballot this year but we convinced the legislature to remove the part of HJR-3 that banned civil unions.\r\n\r\n[If no] On Thursday last week, the Senate declined to amend HJR-3 and put the second sentence back in, the part that would have banned civil unions for gay and lesbian couples.  That means that HJR-3 won\u2019t be on the ballot this year and we have two more years to stop this amendment once and for all.  Isn\u2019t that great?\r\n\r\nCommunity Celebration Ask\r\nWe\u2019ve all done such amazing work to make this happen.  We\u2019re hosting a community celebration on Thursday to celebrate our amazing success and thank the volunteers like you who made it all possible.  We\u2019ll also be talking about how to continue the momentum we\u2019ve created here in ______[city].\r\n\r\nWe\u2019ll be celebrating at the ____________________________[location] at ___pm.  Can you join us on Thursday?\r\n\r\n[If no] I understand.  Well, thank you so much for what you\u2019ve contributed to this campaign.  If you would like to get in touch with me with any questions or comments about what comes next, you can reach me at __________________________.  Thank you for your work!\r\n\r\n[If yes] Great!  This is going to be a potluck-style celebration.  Can you bring a dish to share with the group?  Thank you so much for everything you\u2019ve contributed so far and we\u2019ll see you on Thursday!\r\n\r\n----------------------------------------------------------------------------------------------------------------------------\r\n\r\nMessage Script\r\n\r\nHi, this is _______________ with Freedom Indiana.  I\u2019m calling to thank you for everything you\u2019ve contributed to defeating HJR-3 and to invite you to our Community Celebration on Thursday at 7:00 pm at the Unitarian Universalist church located at 5310 Old Mill Road.\r\n\r\nAt this celebration we\u2019ll be celebrating our amazing success and thanking everyone who made it possible.  We\u2019ll also be discussing the next steps for Fort Wayne to keep our momentum going.  This will be a potluck event so please bring a dish to share if you can.   If you have any questions, feel free to call me at 260-251-9283.  We hope to see you there!",
+      "id":3262,
+      "script_id":2403,
+      "script_order":1
+    }
+  ],
+  "questions":[
+    {
+      "id":6384,
+      "text":"Are they attending the meeting?",
+      "script_order":2,
+      "external_id_field":null,
+      "script_id":2403,
+      "possible_responses":[
+        {
+          "external_id_field":null,
+          "id":31798,
+          "keypad":null,
+          "possible_response_order":1,
+          "question_id":6384,
+          "retry":false,
+          "value":"Yes"
+        },
+        {
+          "external_id_field":null,
+          "id":31799,
+          "keypad":null,
+          "possible_response_order":2,
+          "question_id":6384,
+          "retry":false,
+          "value":"No"
+        }
+      ]
+    }
+  ]
+}

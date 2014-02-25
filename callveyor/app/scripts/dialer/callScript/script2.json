@@ -1,0 +1,145 @@
+{
+  "account_id":121,
+  "active":true,
+  "created_at":"2012-05-07T20:19:35Z",
+  "id":562,
+  "name":"GALLATIN (BCR) COLD",
+  "updated_at":"2012-07-07T00:28:48Z",
+  "voter_fields":"[\"Phone\",\"LastName\",\"FirstName\",\"Address\",\"City\",\"State/Province\",\"Zip/Postal Code\"]",
+  "notes":[
+    {
+      "id":508,
+      "note":"SET INFO;",
+      "script_id":562,
+      "script_order":null
+    }
+  ],
+  "transfers":[],
+  "script_texts":[
+    {
+      "content":"         ******************STORM DATE MAY 1ST***********************ZIP CODE 37066*************HIT AGAIN WITH HIGH WINDS ON 7/6********************************\r\n\r\nHELLO, MAY I SPEAK TO___HI MY NAME IS __-HOPE I DIDNT CATCH YOU AT A BAD TIME? I'M CALLING WITH BEST CHOICE ROOFING.\r\n\r\n THE REASON FOR  MY CALL IS WE  WERE DOING A ROOF OR TWO OUT THERE BY (name of their street) RECENTLY,  AND ..... AS I UNDERSTAND IT YOU MAY HAVE ROOF DAMAGE FROM THESE RECENT WIND AND HAIL STORMS OR POSSIBLY ITS JUST AN OLDER ROOF??? ...SAY IT QUESTIONINGLY...... LET THEM ANSWER THAT ( OR WAIT 2 SECONDS )        \r\n\r\n\r\n WELL WHAT I WANTED TO SEE IS IF YOU WOULD BE INTERESTED IN HAVING US STOP BY AND TAKE A LOOK. OF COURSE ITS FREE, THERE'S NO OBLIGATION AND IT ONLY TAKES ABOUT 15 MINUTES FOR US TO DO THE INSPECTION AND LET YOU KNOW EXACTLY WHAT YOUR SITUATION IS. WE ARE GOING TO BE IN THE THE AREA OVER THE NEXT WEEK, AND I JUST WANTED TO SEE WHAT WOULD BE A GOOD TIME FOR US TO STOP BY?\r\n\r\n                                        ----------------------------------QUALIFY------------------------------------------\r\n\r\n                                   HOW OLD IS YOUR ROOF?   HAVE YOU DONE RECENT REPAIRS?\r\n      \r\n   HAVE YOU NOTICED ANY STORM DAMAGE, MISSING SHINGLES, HAIL DINGS ON YOUR CARS OR SIDING?\r\n\r\n                                       HAVE YOU SEEN YOUR NEIGHBORS GETTING NEW ROOFS?\r\n\r\n                                    ****************************REBUTTLES************************************\r\n\r\n OUR SENIOR CLAIMS MANAGERS ARE EXPERIENCED AND TRAINED TO LOCATE, IDENTIFY, FILE, AND PROCESS INSURANCE CLAIMS\r\n           \r\n  WE CANT DO ANYTHING UNLESS YOUR INSURANCE COMPANY APPROVES IT,WE CANT SELL YOU A ROOF...EITHER YOU NEED ONE OR YOU DONT\r\n\r\n WOULD IT HELP IF I TOLD YOU THAT YOU COULD QUALIFY FOR A REBATEOF UP TO 500 DOLLARS? WE WOULD BE HAPPY TO  HAVE A SENIOR CLAIMS MANAGER STOP BY AND LET YOU KNOW IF YOU QUALIFY.\r\n   \r\nIM SURE YOU REALIZE THAT IF YOU HAVE HAIL OR WIND DAMAGE IT IS A VALID HOME-OWNERS CLAIM. HOW ABOUT KEEPING AN OPEN MIND, LET US COME OUT THERE AND TAKE A LOOK, ITS FREE, THERE IS NO OBLIGATION AND IT IT ONLY TAKES 15-20 MINUTES.\r\n  \r\n NINETY PERCENT OF OUR CUSTOMERS END UP WITH LITTLE TO NO OUT OF POCKET EXPENSE\r\n            \r\n\r\n          ******************** CLOSE STRONG-CLOSE HARD-CLOSE STRONGER-CLOSE HARDER-CLOSE STRONG**********************\r\n\r\n\r\nONCE AGAIN MY NAME IS___ AND THEY WILL HAVE A BEST CHOICE ROOFING ID AND IT WILL SAY BCR ON THE SIDE OF THETRUCK. IF YOU WANT YOU CAN CHECK US OUT AT BESTCHOICEROOFING.COM. THANKS FOR EVERYTHING,  AND WE WILL SEE YOU AT_(TIME)____ ON ____(DATE)____-  THANK YOU VERY MUCH, I HOPE  WE CAN HELP...\r\n\r\n PLEASE INCLUDE AS MUCH INFORMATION FOR THE SALESMAN AS POSSIBLE, NOT ANYTHING IRRELEVANT. BUT ANYTHING THAT WILL HELP THE                  SENIOR CLAIMS MAN.  CLOSE THE DEAL. CONFIRM DAMAGE AND BE DESCRIPTIVE!!\r\n\r\n\r\n",
+      "id":818,
+      "script_id":562,
+      "script_order":null
+    }
+  ],
+  "questions":[
+    {
+      "id":866,
+      "text":"RESULT?",
+      "script_order":null,
+      "external_id_field":null,
+      "script_id":562,
+      "possible_responses":[
+        {
+          "external_id_field":null,
+          "id":4383,
+          "keypad":1,
+          "possible_response_order":1,
+          "question_id":866,
+          "retry":true,
+          "value":"No response"
+        },
+        {
+          "external_id_field":null,
+          "id":4393,
+          "keypad":11,
+          "possible_response_order":2,
+          "question_id":866,
+          "retry":false,
+          "value":"SPANISH SPEAKING"
+        },
+        {
+          "external_id_field":null,
+          "id":4392,
+          "keypad":10,
+          "possible_response_order":3,
+          "question_id":866,
+          "retry":false,
+          "value":"WRONG NUMBER"
+        },
+        {
+          "external_id_field":null,
+          "id":4391,
+          "keypad":9,
+          "possible_response_order":4,
+          "question_id":866,
+          "retry":true,
+          "value":"CALL BACK"
+        },
+        {
+          "external_id_field":null,
+          "id":4390,
+          "keypad":8,
+          "possible_response_order":5,
+          "question_id":866,
+          "retry":false,
+          "value":"SET APPOINTMENT"
+        },
+        {
+          "external_id_field":null,
+          "id":4389,
+          "keypad":7,
+          "possible_response_order":6,
+          "question_id":866,
+          "retry":false,
+          "value":"DUPLICATE"
+        },
+        {
+          "external_id_field":null,
+          "id":4388,
+          "keypad":6,
+          "possible_response_order":7,
+          "question_id":866,
+          "retry":false,
+          "value":"RENTERS"
+        },
+        {
+          "external_id_field":null,
+          "id":4387,
+          "keypad":5,
+          "possible_response_order":8,
+          "question_id":866,
+          "retry":false,
+          "value":"DNC"
+        },
+        {
+          "external_id_field":null,
+          "id":4386,
+          "keypad":4,
+          "possible_response_order":9,
+          "question_id":866,
+          "retry":false,
+          "value":"NOT INTERESTED"
+        },
+        {
+          "external_id_field":null,
+          "id":4385,
+          "keypad":3,
+          "possible_response_order":10,
+          "question_id":866,
+          "retry":false,
+          "value":"DISCONNECT"
+        },
+        {
+          "external_id_field":null,
+          "id":4384,
+          "keypad":2,
+          "possible_response_order":11,
+          "question_id":866,
+          "retry":true,
+          "value":"VOICEMAIL"
+        },
+        {
+          "external_id_field":null,
+          "id":4394,
+          "keypad":null,
+          "possible_response_order":12,
+          "question_id":866,
+          "retry":false,
+          "value":"[No response]"
+        }
+      ]
+    }
+  ]
+}
