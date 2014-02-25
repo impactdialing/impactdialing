@@ -41,6 +41,16 @@ public
     return calculate_total(counts)
   end
 
+  def total_undebited_for(ids, with='campaigns')
+    method = "with_#{with}"
+    group_by = with == 'campaigns' ? 'campaign_id' : 'caller_id'
+
+    counts = relations(with).map do |relation|
+      sum( from_to( undebited( send(method, relation, ids) ) ) )
+    end
+    return calculate_total(counts)
+  end
+
   def group_total_for(ids, with='campaigns')
     grouped = groups(ids, with)
     return calculate_group_total(grouped)
@@ -91,6 +101,10 @@ public
 
   def from_to(relation)
     relation.where(["#{relation.table_name}.created_at > ? AND #{relation.table_name}.created_at < ?", @from_date, @to_date])
+  end
+
+  def undebited(relation)
+    relation.where(["#{relation.table_name}.debited = ?", false])
   end
 
   def group(relation, group_by)

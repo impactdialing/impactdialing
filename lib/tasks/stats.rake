@@ -1,12 +1,18 @@
 desc "Run Admin Report"
-task :admin_report, [:start_date, :end_date] => [:environment] do |t, args|
+task :admin_report, [:start_date, :end_date, :type] => [:environment] do |t, args|
   require 'reports'
 
   start_date = Time.zone.parse(args[:start_date]).utc.beginning_of_day
   end_date = Time.zone.parse(args[:end_date]).utc.end_of_day
+  type = args[:type] || 'All'
 
   billable_minutes = Reports::BillableMinutes.new(start_date, end_date)
-  report = Reports::Admin::EnterpriseByAccount.new(billable_minutes)
+  if type == 'All'
+    p 'running all by account'
+    report = Reports::Admin::AllByAccount.new(billable_minutes)
+  else
+    report = Reports::Admin::EnterpriseByAccount.new(billable_minutes)
+  end
   print report.build
   print "\n"
 end
