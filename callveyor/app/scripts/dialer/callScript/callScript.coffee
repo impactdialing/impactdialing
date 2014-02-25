@@ -7,12 +7,11 @@ callScript.config(['$stateProvider', ($stateProvider) ->
 ])
 
 callScript.controller('SurveyFormCtrl', [
-  '$scope', '$filter'
-  ($scope,   $filter) ->
+  '$scope', '$filter', '$state'
+  ($scope,   $filter,   $state) ->
     console.log 'SurveyFormCtrl', $scope.dialer.callScript
 
     normalizeObj = (object, type) ->
-      console.log 'normalizeObj', object, type
       obj = {
         id: object.id
         order: object.script_order
@@ -30,14 +29,10 @@ callScript.controller('SurveyFormCtrl', [
           obj.type = 'question'
           obj.content = object.text
           obj.possibleResponses = object.possible_responses
-        else
-          console.log 'not normalizing', type
-          # todo: handle error or fail quietly when normalizing survey
       obj
 
     normalizedSurvey = []
     normalizeSurvey  = (arr, type) ->
-      console.log 'normalizeSurvey', arr, type
       switch type
         when 'notes', 'script_texts', 'questions'
           angular.forEach(arr, (obj) ->
@@ -47,34 +42,26 @@ callScript.controller('SurveyFormCtrl', [
     angular.forEach($scope.dialer.callScript, (obj, type) ->
       normalizeSurvey(obj, type)
     )
-    $scope.dialer.survey = $filter('orderBy')(normalizedSurvey, 'order')
-])
 
-callScript.directive('idSurveyForm', [
-  ->
-    # templates = {
-    #   wrap: '<div class="well">'
-    #   per: '</div>'
-    #   scriptText: '<pre>{{text}}</pre>'
-    #   note: '<label for="note_{{id}}">Don\'t forget to use some notes!</label><input id="note_{{id}}" class="form-control">'
-    #   question: '<label for="question_{{id}}">{{text}}</label><select id="question_{{id}}" class="form-control"><option data-ng-repeat="possible_responses" value="{{id}}">{{text}}</option></select>'
-    # }
-
-    # linkFn = (scope, element, attrs) ->
-    #   console.log 'idSurveyForm linkFn', scope.dialer.survey
-    #   tpl = ''
-    #   angular.forEach(scope.dialer.survey, (obj) ->
-    #     tpl += templates.wrap
-    #     tpl += templates[obj.type]
-    #     tpl += templates.per
-    #   )
-      # scope.rootDirectory = 'images/';
-      # element.html(tpl).show();
-      # $compile(element.contents())(scope);
-
-    console.log 'idSurveyForm'
-    {
-      transclude: true
-      controller: 'SurveyFormCtrl'
+    # Public API
+    survey = {
+      form: $filter('orderBy')(normalizedSurvey, 'order')
+      responses: {
+        notes: {}
+        answers: {}
+      }
+      save: (andContinue) ->
+        # p = $http.post('/survey/responses')
+        # s = (r) -> console.log 'success', r.stack, r.message
+        # e = (r) -> console.log 'error', r.stack, r.message
+        # c = (r) -> console.log 'notify', r.stack, r.message
+        # p.then(s,e,c)
+        andContinue = confirm("Pretend it saved!\nOk to continue calling.\nCancel to stop calling.")
+        if andContinue
+          $state.go('dialer.hold')
+        else
+          $state.go('dialer.stop')
     }
+
+    $scope.dialer.survey = survey
 ])
