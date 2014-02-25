@@ -10,7 +10,7 @@ Account Usage Report (<%= @from_date.strftime('%d-%m-%Y') %> - <%= @to_date.strf
 <%= 'Account ID'.ljust(longest) %> <%= 'Account Type'.ljust(longest) %> <%= 'Total Minutes'.ljust(longest) %> <%= 'Undebited Minutes'.ljust(longest) %> <%= 'Email' %>
 
 <% @accounts.each do |account| %>
-<%= account.id.to_s.ljust(longest) %> <%= account.subscription_name.ljust(longest) %> <%= (@billable_totals[account.id] || 0).to_s.ljust(longest) %> <%= (@undebited_totals[account.id] || 0).to_s.ljust(longest) %> <%= account.users.where('email is not null').first.email %>
+<%= account.id.to_s.ljust(longest) %> <%= (account.current_subscription.type.try(:to_s) || 'Unknown...').ljust(longest) %> <%= (@billable_totals[account.id] || 0).to_s.ljust(longest) %> <%= (@undebited_totals[account.id] || 0).to_s.ljust(longest) %> <%= account.users.where('email is not null').first.email %>
 <% end %>
 
 Billable Total (all accounts) <%= @grand_total %>
