@@ -11,6 +11,9 @@ ready.config(['$stateProvider', ($stateProvider) ->
       callFlowButtons:
         templateUrl: '/scripts/dialer/ready/callFlowButtons.tpl.html'
         controller: 'callFlowButtonsCtrl.ready'
+      callInPhone:
+        templateUrl: '/scripts/dialer/ready/callInPhone.tpl.html'
+        controller: 'callInPhoneCtrl.ready'
       callStatus:
         templateUrl: '/scripts/dialer/ready/callStatus.tpl.html'
         controller: 'callStatusCtrl.ready'
@@ -39,6 +42,14 @@ ready.controller('callFlowButtonsCtrl.ready', [
       e = (r) -> console.log 'error', r.stack, r.message
       c = (r) -> console.log 'notify', r.stack, r.message
       p.then(s,e,c)
+])
+
+ready.controller('callInPhoneCtrl.ready', [
+  '$scope', 'caller',
+  ($scope, caller) ->
+    console.log 'ready.callStatusCtrl', $scope
+    $scope.dialer.meta ||= {}
+    angular.extend($scope.dialer.meta, caller.data)
 ])
 
 ready.controller('callStatusCtrl.ready', [
