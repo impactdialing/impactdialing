@@ -151,6 +151,12 @@ Then remove it with:
 Resque::Plugins::Loner::Helpers.mark_loner_as_unqueued(:queue_name, {class: 'ClassOfPertinentJob', args: []})
 ```
 
+##### Phantom callers
+
+Sometimes caller sessions will remain registered long after the caller has disconnected. There is a job that should clean up these 'Phantom callers' but it currently will fail quietly sporadically.
+
+Clean up phantom sessions by locating the session id at `/admin/state` then open up a rails console and call `end_session` on the 'phantom' CallerSession instance.
+
 ### Contributing
 
 Master is mainline development and should always be ready to deploy.
