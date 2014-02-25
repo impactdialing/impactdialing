@@ -1,11 +1,13 @@
 <div class="contact">
-  <button class="btn btn-block btn-default"
-          data-ng-click="contact._meta.collapse = !contact._meta.collapse">
-    Contact info
-  </button>
-  <div collapse="contact._meta.collapse">
+  <div>
+    <button class="btn btn-block btn-default"
+            data-ng-click="contact._meta.collapse = !contact._meta.collapse">
+      Contact info
+    </button>
+  </div>
+  <div collapse="contact._meta.collapse" class="row content-box">
     <!-- system fields -->
-    <dl class="dl-horizontal">
+    <dl class="dl-horizontal col-xs-6 col-sm-12">
       <dt data-ng-hide="!contact.fields.custom_id">ID</dt>
       <dd data-ng-hide="!contact.fields.custom_id">{{contact.fields.custom_id}}</dd>
       <dt data-ng-hide="!contact.fields.first_name">First name</dt>
@@ -32,7 +34,7 @@
       <dd data-ng-hide="!contact.fields.email">{{contact.fields.email}}</dd>
     </dl>
     <!-- custom fields -->
-    <dl class="dl-horizontal">
+    <dl class="dl-horizontal col-xs-6 col-sm-12">
       <dt data-ng-repeat-start="(field, value) in contact.custom_fields">{{field}}</dt>
       <dd data-ng-repeat-end>{{value}}</dd>
     </dl>
