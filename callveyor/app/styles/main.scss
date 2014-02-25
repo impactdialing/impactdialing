@@ -7,143 +7,82 @@ $gray-lighter: lighten(#000, 90%);
     padding: 0.2em 0;
 }
 
-/* Space out content a bit */
+/* Status messages */
+.call-status {
+    font-size: 18px;
+}
+.call-in-phone {
+    margin-top: auto;
+}
+
+/* Spacing for header */
 body {
-    padding-top: 50px;
-    padding-bottom: 50px;
+    padding-top: 60px;
 }
-
-/* Everything but the jumbotron gets side spacing for mobile first views */
-.header,
-.marketing,
-.footer {
-    padding-left: 15px;
-    padding-right: 15px;
-}
-
-/* Custom page header */
-.header {
-    border-bottom: 1px solid #e5e5e5;
-}
-
-/* Make the masthead heading the same height as the navigation */
-.header h3 {
-    margin-top: 0;
-    margin-bottom: 0;
-    line-height: 40px;
-    padding-bottom: 19px;
-}
-
-/* Custom page footer */
-.footer {
-    padding-top: 19px;
-    color: #777;
-    border-top: 1px solid #e5e5e5;
-}
-
-.container-narrow > hr {
-    margin: 30px 0;
-}
-
-/* Main marketing message and sign up button */
-.jumbotron {
-    text-align: center;
-    border-bottom: 1px solid #e5e5e5;
-}
-
-.jumbotron .btn {
-    font-size: 21px;
-    padding: 14px 24px;
-}
-
-/* Supporting marketing content */
-.marketing {
-    margin: 40px 0;
-}
-
-.marketing p + h4 {
-    margin-top: 28px;
-}
-
-/* Responsive: Portrait tablets and up */
-@media screen and (min-width: 768px) {
-    .container {
-        max-width: 730px;
+@media (max-width: 768px) {
+    body {
+        padding-top: 110px;
     }
-
-    /* Remove the padding we set earlier */
-    .header,
-    .marketing,
-    .footer {
-        padding-left: 0;
-        padding-right: 0;
+}
+@media (max-width: 640px) {
+    body {
+        padding-top: 90px;
     }
-    /* Space out the masthead */
-    .header {
-        margin-bottom: 30px;
+    .call-in-phone {
+        margin-top: 20px;
     }
-    /* Remove the bottom border on the jumbotron for visual effect */
-    .jumbotron {
-        border-bottom: 0;
+    .call-in-phone:empty {
+        display: none;
     }
 }
 
+/* Prevent 3 pieces of footer content from stacking */
+footer .container-fluid {
+    p, ul, li {
+        display: inline-block;
+    }
+}
+@media (max-width: 768px) {
+    footer .container-fluid {
+        p:first-child {
+            padding-right: 25px;
+        }
+    }
+}
+
+/* Wrapper for .container.fluid */
 .fluid-wrap {
     padding: 0 15px;
 }
 
-.contact {
-    position: fixed;
-    top: 60px;
-    width: 30%;
+/* Scrollable content boxes */
+.content-box {
     max-height: 600px;
     overflow-y: scroll;
 }
-.script {
-    max-height: 600px;
-    overflow-y: scroll;
-}
-
-@media (max-width: 767px) {
-    .contact {
-        width:auto;
-    }
-}
-@media (max-width: 979px) {
-    .contact {
-        position:static;
-        width: auto;
-    }
+@media (max-width: 768px) {
+  .content-box {
+      max-height: 180px;
+      overflow-y: auto;
+  }
 }
 @media (max-height: 1100px) {
-    .script {
-        max-height: 960px;
-    }
-    .contact {
+    .content-box {
         max-height: 960px;
     }
 }
 @media (max-height: 1000px) {
-    .script {
-        max-height: 760px;
-    }
-    .contact {
+    .content-box {
         max-height: 760px;
     }
 }
 @media (max-height: 900px) {
-    .script {
-        max-height: 660px;
-    }
-    .contact {
+    .content-box {
         max-height: 660px;
     }
 }
 @media (max-height: 700px) {
-    .script {
+    .content-box {
         max-height: 590px;
-    }
-    .contact {
-        max-height: 580px;
     }
 }
