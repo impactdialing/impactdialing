@@ -1,0 +1,22 @@
+<div class="row script content-box">
+  <div class="col-xs-12">
+    <!-- <form role="form" data-id-survey-form> -->
+    <form role="form" data-ng-controller="SurveyFormCtrl">
+      <div class="well" data-ng-repeat="item in dialer.survey">
+        <pre data-ng-if="item.type == 'scriptText'">{{item.content}}</pre>
+
+        <label data-ng-if="item.type != 'scriptText'"
+               for="item_{{item.id}}">{{item.content}}</label>
+
+        <input id="item_{{item.id}}" class="form-control"
+               data-ng-if="item.type == 'note'">
+
+        <select id="item_{{item.id}}" class="form-control"
+                data-ng-if="item.type == 'question'">
+          <option data-ng-repeat="response in item.possibleResponses"
+                  value="{{response.id}}">{{response.value}}</option>
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
