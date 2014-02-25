@@ -2,7 +2,7 @@
   headers = ['Account ID', 'Account Type', 'Total Minutes', 'Undebited Minutes', 'Email']
   names = (@accounts.map(&:id) + @accounts.map(&:subscription_name) + @billable_totals.values + @undebited_totals.values).flatten
   longest = 0
-  (headers + names).each{|str| longest = str.size > longest ? str.size : longest}
+  (headers + names).each{|str| longest = (str.try(:size)||0) > longest ? (str.try(:size)||0) : longest}
   longest += 5
 -%>
 Account Usage Report (<%= @from_date.strftime('%d-%m-%Y') %> - <%= @to_date.strftime('%d-%m-%Y') %>)
