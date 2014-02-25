@@ -1,0 +1,16 @@
+<%
+  headers = ['Account ID', 'Account Type', 'Total Minutes', 'Undebited Minutes', 'Email']
+  names = (@accounts.map(&:id) + @accounts.map(&:subscription_name) + @billable_totals.values + @undebited_totals.values).flatten
+  longest = 0
+  (headers + names).each{|str| longest = str.size > longest ? str.size : longest}
+  longest += 5
+-%>
+Account Usage Report (<%= @from_date.strftime('%d-%m-%Y') %> - <%= @to_date.strftime('%d-%m-%Y') %>)
+
+<%= 'Account ID'.ljust(longest) %> <%= 'Account Type'.ljust(longest) %> <%= 'Total Minutes'.ljust(longest) %> <%= 'Undebited Minutes'.ljust(longest) %>
+
+<% @accounts.each do |account| %>
+<%= account.id.ljust(longest) %> <%= account.subscription_name.ljust(longest) %> <%= (@billable_totals[account.id] || 0).ljust(longest) %> <%= @undebited_totals[account.id] || 0 %>
+<% end %>
+
+Billable Total (all accounts) <%= @grand_total %>

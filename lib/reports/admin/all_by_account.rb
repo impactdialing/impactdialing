@@ -9,7 +9,11 @@ module Reports::Admin
     end
 
     def build
-      output = []
+      accounts = []
+      billable_totals = {}
+      undebited_totals = {}
+      grand_total = 0
+
       p "Found #{account_ids.size} accounts"
       account_ids.each do |account_id|
         account = Account.using(:simulator_slave).find(account_id)
@@ -17,18 +21,17 @@ module Reports::Admin
         account_campaign_ids = campaign_ids(account_id)
         p "Found #{account_campaign_ids.size} campaigns"
         if account_campaign_ids.any?
-          total = @billable_minutes.total_for(account_campaign_ids)
-          undebited = @billable_minutes.total_undebited_for(account_campaign_ids)
-          output << [
-            account_id,
-            account.subscription_name,
-            total,
-            undebited,
-            account_email(account_id)
-          ].join("\t\t")
+          total                        = @billable_minutes.total_for(account_campaign_ids)
+          undebited                    = @billable_minutes.total_undebited_for(account_campaign_ids)
+          billable_totals[account_id]  = total
+          undebited_totals[account_id] = undebited
+          grand_total                 += total
+
+          accounts << account
         end
       end
-      return "#{@columns.join("\t")}\n#{output.join("\n")}"
+      from, to = billable_minutes.from_date, billable_minutes.to_date
+      return AccountUsageRender.new.by_account(:text, from, to, billable_totals, undebited_totals, grand_total, accounts)
     end
 
   private
