@@ -1,14 +1,14 @@
 'use strict'
 
-surveyForm = angular.module('callveyor.dialer.survey', [])
+surveyForm = angular.module('callveyor.dialer.survey', ['angularSpinner'])
 
 surveyForm.config(['$stateProvider', ($stateProvider) ->
 
 ])
 
 surveyForm.controller('SurveyFormCtrl', [
-  '$scope', '$filter', '$state', '$http', '$timeout'
-  ($scope,   $filter,   $state,   $http,   $timeout) ->
+  '$scope', '$filter', '$state', '$http', 'usSpinnerService', '$timeout'
+  ($scope,   $filter,   $state,   $http,   usSpinnerService,   $timeout) ->
     console.log 'SurveyFormCtrl', $scope.dialer
     # Init public
     survey = {}
@@ -64,9 +64,16 @@ surveyForm.controller('SurveyFormCtrl', [
       notes: {}
       answers: {}
     }
+    survey.saving = false
     survey.hideButtons = -> !$state.is('dialer.wrap')
     survey.save = ($event, andContinue) ->
       console.log 'survey.save clicked', $event
+      if survey.saving
+        console.log 'Save in progress. Button press is no-op.'
+        return
+      usSpinnerService.spin('ajax-spinner')
+      angular.element($event.target).parent().children().prop('disabled', true)
+      survey.saving = true
 
       # p = $http.post('/survey/responses')
       # s = (r) -> console.log 'success', r.stack, r.message
@@ -85,6 +92,9 @@ surveyForm.controller('SurveyFormCtrl', [
         else
           $state.go('dialer.stop')
         # Pretend success
+        usSpinnerService.stop('ajax-spinner')
+        angular.element($event.target).parent().children().prop('disabled', false)
+        survey.saving = false
         reset()
       $timeout(fakeSave, 3000)
 
