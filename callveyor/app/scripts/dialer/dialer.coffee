@@ -3,6 +3,7 @@
 dialer = angular.module('callveyor.dialer', [
   'doowb.angular-pusher',
   'ui.router',
+  'angularSpinner',
   'callveyor.dialer.ready',
   'callveyor.dialer.hold',
   'callveyor.dialer.active',
@@ -22,9 +23,22 @@ dialer.config(['$stateProvider', 'PusherServiceProvider', ($stateProvider, Pushe
   })
 ])
 
-dialer.controller('DialerCtrl', ['$scope', '$state', ($scope, $state) ->
-  console.log 'DialerCtrl', $scope
-  console.log 'Known states', $state.get()
-  $scope.dialer = {}
-  $state.go('dialer.ready')
+dialer.controller('DialerCtrl', [
+  '$rootScope', '$scope', '$state', 'usSpinnerService',
+  ($rootScope,   $scope,   $state,   usSpinnerService) ->
+    console.log 'DialerCtrl', $scope
+    console.log 'Known states', $state.get()
+
+    # Disable buttons and display spinner whenever
+    # a state transition starts.
+    # Enable buttons and hide spinner whenever
+    # a state transition completes, regardless of outcome.
+    transitionInProgress = -> usSpinnerService.spin('global-spinner')
+    transitionComplete = -> usSpinnerService.stop('global-spinner')
+    $rootScope.$on('$stateChangeStart', transitionInProgress)
+    $rootScope.$on('$stateChangeSuccess', transitionComplete)
+    $rootScope.$on('$stateChangeError', transitionComplete)
+
+    $scope.dialer = {}
+    $state.go('dialer.ready')
 ])
