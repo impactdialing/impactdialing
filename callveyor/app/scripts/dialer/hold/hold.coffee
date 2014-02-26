@@ -17,8 +17,8 @@ hold.config([
 ])
 
 hold.controller('HoldCtrl.buttons', [
-  '$scope', '$state', '$timeout'
-  ($scope,   $state,   $timeout) ->
+  '$scope', '$state', '$timeout', 'usSpinnerService',
+  ($scope,   $state,   $timeout,   usSpinnerService) ->
     console.log 'HoldCtrl.buttons', $scope
     hold ||= {}
     $scope.dialer.hold ||= hold
@@ -30,6 +30,7 @@ hold.controller('HoldCtrl.buttons', [
     hold.dial = ->
       # update status > 'Dialing...'
       @callStatusText = 'Dialing...'
+      usSpinnerService.spin('global-spinner')
       fakeDial = ->
         p = $state.go('dialer.active')
         s = (r) -> console.log 'success', r.stack, r.message

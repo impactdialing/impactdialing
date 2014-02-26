@@ -1,6 +1,6 @@
 'use strict'
 
-surveyForm = angular.module('callveyor.dialer.survey', ['angularSpinner'])
+surveyForm = angular.module('callveyor.dialer.survey', [])
 
 surveyForm.config(['$stateProvider', ($stateProvider) ->
 
@@ -71,7 +71,7 @@ surveyForm.controller('SurveyFormCtrl', [
       if survey.saving
         console.log 'Save in progress. Button press is no-op.'
         return
-      usSpinnerService.spin('ajax-spinner')
+      usSpinnerService.spin('global-spinner')
       angular.element($event.target).parent().children().prop('disabled', true)
       survey.saving = true
 
@@ -92,7 +92,7 @@ surveyForm.controller('SurveyFormCtrl', [
         else
           $state.go('dialer.stop')
         # Pretend success
-        usSpinnerService.stop('ajax-spinner')
+        usSpinnerService.stop('global-spinner')
         angular.element($event.target).parent().children().prop('disabled', false)
         survey.saving = false
         reset()
