@@ -3,9 +3,8 @@ module Reports::Admin
     attr_reader :billable_minutes
 
   public
-    def initialize(billable_minutes)
+    def initialize(billable_minutes, include_undebited)
       @billable_minutes = billable_minutes
-      @columns = ['Account ID', 'Account Type', 'Total Minutes', 'Undebited Minutes', "\tEmail"]
     end
 
     def build
@@ -22,9 +21,11 @@ module Reports::Admin
         p "Found #{account_campaign_ids.size} campaigns"
         if account_campaign_ids.any?
           total                        = @billable_minutes.total_for(account_campaign_ids)
-          undebited                    = @billable_minutes.total_undebited_for(account_campaign_ids)
           billable_totals[account_id]  = total
-          undebited_totals[account_id] = undebited
+          if include_undebited
+            undebited                    = @billable_minutes.total_undebited_for(account_campaign_ids)
+            undebited_totals[account_id] = undebited
+          end
           grand_total                 += total
 
           accounts << account

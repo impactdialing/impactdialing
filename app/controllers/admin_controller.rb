@@ -66,7 +66,7 @@ class AdminController < ApplicationController
     set_report_date_range
     if request.post?
       flash.now[:notice] = ["Your #{report_type} report (#{@from_date.strftime('%m-%d-%Y')} - #{@to_date.strftime('%m-%d-%Y')}) has been added to the queue. You should receive it via email when complete."]
-      Resque.enqueue(AdminReportJob, @from_date, @to_date, report_type)
+      Resque.enqueue(AdminReportJob, @from_date, @to_date, report_type, reports_include_undebited)
     end
   end
 
@@ -124,5 +124,9 @@ class AdminController < ApplicationController
 
     def report_type
       params[:report_type] == 'all' ? 'All' : 'Enterprise'
+    end
+
+    def reports_include_undebited
+      !!params[:include_undebited]
     end
 end

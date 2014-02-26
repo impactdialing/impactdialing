@@ -32,13 +32,14 @@ class AccountUsageRender < AbstractController::Base
   end
 
   def by_account(content_type, from_date, to_date, billable_totals, undebited_totals, grand_total, accounts)
-    @from_date        = from_date
-    @to_date          = to_date
-    @billable_totals  = billable_totals
-    @undebited_totals = undebited_totals
-    @grand_total      = grand_total
-    @accounts         = accounts
-    opts              = {
+    @from_date         = from_date
+    @to_date           = to_date
+    @billable_totals   = billable_totals
+    @undebited_totals  = undebited_totals
+    @include_undebited = !@undebited_totals.empty?
+    @grand_total       = grand_total
+    @accounts          = accounts
+    opts               = {
       template: "account_usage_mailer/by_account.#{content_type}",
       formate:  content_type
     }

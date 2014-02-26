@@ -1,16 +1,29 @@
 <%
-  headers = ['Account ID', 'Account Type', 'Total Minutes', 'Undebited Minutes', 'Email']
-  names = (@accounts.map(&:id) + @accounts.map(&:subscription_name) + @billable_totals.values + @undebited_totals.values).flatten
-  longest = 0
-  (headers + names).each{|str| longest = (str.try(:size)||0) > longest ? (str.try(:size)||0) : longest}
-  longest += 5
+  headers = ['Account ID', 'Account Type', 'Billable Minutes']
+  names = [@accounts.map(&:id).map(&:to_s), @accounts.map(&:subscription_name) + ['No current subscription'], @billable_totals.values.map(&:to_s)]
+  longest = [0,0,0]
+  if @include_undebited
+    headers << 'Undebited Minutes'
+    names << @undebited_totals.values.map(&:to_s)
+    longest << 0
+  end
+  [headers,names].each do |items|
+    items.each do |str,i|
+      next if str.blank?
+      l = longest[i]
+      l = str.size > l ? str.size : l
+      longest[i] = l
+    end
+  end
+  # padding
+  longest.map{|l| l += 5}
 -%>
-Account Usage Report (<%= @from_date.strftime('%d-%m-%Y') %> - <%= @to_date.strftime('%d-%m-%Y') %>)
+Account Usage Report (<%= @from_date.strftime('%m-%d-%Y') %> - <%= @to_date.strftime('%m-%d-%Y') %>)
 
-<%= 'Account ID'.ljust(longest) %> <%= 'Account Type'.ljust(longest) %> <%= 'Total Minutes'.ljust(longest) %><%= ' Undebited Minutes'.ljust(longest) unless @undebited_totals.empty? %><%= 'Email' %>
+<%= 'Account ID'.ljust(longest[0]) %> <%= 'Account Type'.ljust(longest[1]) %> <%= 'Total Minutes'.ljust(longest[2]) %><%= ' Undebited Minutes'.ljust(longest[3]) if @include_undebited %><%= 'Email' %>
 
 <% @accounts.each do |account| %>
-<%= account.id.to_s.ljust(longest) %> <%= (account.current_subscription.type.try(:to_s) || 'Unknown...').ljust(longest) %> <%= (@billable_totals[account.id] || 0).to_s.ljust(longest) %><%= ' ' + (@undebited_totals[account.id] || 0).to_s.ljust(longest) unless @undebited_totals.empty? %> <%= account.users.where('email is not null').first.email %>
+<%= account.id.to_s.ljust(longest[0]) %> <%= (account.current_subscription.try(:type).try(:to_s) || 'No current subscription').ljust(longest[1]) %> <%= (@billable_totals[account.id] || 0).to_s.ljust(longest[2]) %><%= ' ' + (@undebited_totals[account.id] || 0).to_s.ljust(longest[3]) if @include_undebited %> <%= account.users.first.try(:email) || 'No users' %>
 <% end %>
 
-Billable Total (all accounts) <%= @grand_total %>
+Billable Total (all accounts) <%= number_with_delimiter(@grand_total) %> minutes
