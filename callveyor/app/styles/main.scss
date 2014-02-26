@@ -86,3 +86,16 @@ footer .container-fluid {
         max-height: 590px;
     }
 }
+
+.veil {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height:100%;
+    width:100%;
+    cursor: not-allowed;
+    filter: alpha(opacity=60);
+    opacity: 0.6;
+    background: #000000;
+    z-index: 1;
+}
