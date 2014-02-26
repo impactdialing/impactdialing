@@ -9,26 +9,19 @@ hold.config([
       views:
         callFlowButtons:
           templateUrl: "/scripts/dialer/hold/callFlowButtons.tpl.html"
-          controller: 'HoldCtrl'
+          controller: 'HoldCtrl.buttons'
         callStatus:
           templateUrl: '/scripts/dialer/hold/callStatus.tpl.html'
-          controller: 'HoldCtrl'
+          controller: 'HoldCtrl.status'
     })
 ])
 
-hold.controller('HoldCtrl', [
+hold.controller('HoldCtrl.buttons', [
   '$scope', '$state', '$timeout'
   ($scope,   $state,   $timeout) ->
-    console.log 'callFlowButtonsCtrl.hold', $scope
+    console.log 'HoldCtrl.buttons', $scope
     hold ||= {}
-
-    hold.callStatusText = switch $scope.dialer.meta.campaign.type
-                            when 'Power', 'Predictive'
-                              'Dialing...'
-                            when 'Preview'
-                              'Waiting to dial...'
-                            else
-                              'Oops! Please Report this problem.'
+    $scope.dialer.hold ||= hold
 
     hold.stopCalling = ->
       console.log 'stopCalling clicked'
@@ -53,5 +46,23 @@ hold.controller('HoldCtrl', [
       # POST /skip
       # then -> update contact
       # error -> update status > 'Error + explain, maybe try again'
-    $scope.dialer.hold = hold
+    angular.extend($scope.dialer.hold, hold)
+])
+
+hold.controller('HoldCtrl.status', [
+  '$scope',
+  ($scope) ->
+    console.log 'HoldCtrl', $scope
+    hold ||= {}
+    $scope.dialer.hold ||= hold
+
+    hold.callStatusText = switch $scope.dialer.meta.campaign.type
+                            when 'Power', 'Predictive'
+                              'Dialing...'
+                            when 'Preview'
+                              'Waiting to dial...'
+                            else
+                              'Oops! Please Report this problem.'
+
+    angular.extend($scope.dialer.hold, hold)
 ])
