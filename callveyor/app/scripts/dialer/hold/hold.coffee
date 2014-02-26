@@ -6,50 +6,52 @@ hold.config([
   '$stateProvider'
   ($stateProvider) ->
     $stateProvider.state('dialer.hold', {
-      resolve:
-        contact: ($http) -> $http.get('/scripts/dialer/contact/info.json')
-        script: ($http) -> $http.get('/scripts/dialer/callScript/script.json')
       views:
         callFlowButtons:
           templateUrl: "/scripts/dialer/hold/callFlowButtons.tpl.html"
-          controller: 'callFlowButtonsCtrl.hold'
+          controller: 'HoldCtrl'
         callStatus:
           templateUrl: '/scripts/dialer/hold/callStatus.tpl.html'
-          controller: 'callStatusCtrl.hold'
-        contact:
-          templateUrl: '/scripts/dialer/contact/info.tpl.html'
-          controller: 'ContactInfoCtrl'
-        script:
-          templateUrl: '/scripts/dialer/callScript/form.tpl.html'
-          controller: 'CallScriptLoadCtrl'
+          controller: 'HoldCtrl'
     })
 ])
 
-hold.controller('callFlowButtonsCtrl.hold', [
-  '$scope', '$state',
-  ($scope,   $state) ->
+hold.controller('HoldCtrl', [
+  '$scope', '$state', '$timeout'
+  ($scope,   $state,   $timeout) ->
     console.log 'callFlowButtonsCtrl.hold', $scope
-    $scope.dialer.hold ||= {}
+    hold ||= {}
 
-    $scope.dialer.hold.isNotPreview = ->
-      console.log 'dialer.hold.isNotPreview', $scope.dialer.meta.campaign
-      $scope.dialer.meta.campaign.type != 'Preview'
+    hold.callStatusText = switch $scope.dialer.meta.campaign.type
+                            when 'Power', 'Predictive'
+                              'Dialing...'
+                            when 'Preview'
+                              'Waiting to dial...'
+                            else
+                              'Oops! Please Report this problem.'
 
-    $scope.dialer.hold.stopCalling = ->
+    hold.stopCalling = ->
       console.log 'stopCalling clicked'
       $state.go('dialer.stop')
-])
 
-hold.controller('callStatusCtrl.hold', [
-  '$scope',
-  ($scope) ->
-    console.log 'hold.callStatusCtrl', $scope
-    $scope.dialer.hold ||= {}
-    $scope.dialer.hold.callStatusText = switch $scope.dialer.meta.campaign.type
-                                            when 'Power', 'Predictive'
-                                              'Dialing...'
-                                            when 'Preview'
-                                              'Waiting to dial...'
-                                            else
-                                              'Oops! Please Report this problem.'
+    hold.dial = ->
+      # update status > 'Dialing...'
+      @callStatusText = 'Dialing...'
+      fakeDial = ->
+        p = $state.go('dialer.active')
+        s = (r) -> console.log 'success', r.stack, r.message
+        e = (r) -> console.log 'error', r.stack, r.message
+        c = (r) -> console.log 'notify', r.stack, r.message
+        p.then(s,e,c)
+      $timeout(fakeDial, 3000)
+      # POST /dial
+      # then -> to 'active'
+      # error -> update status > 'Error + explain, maybe try again'
+
+    hold.skip = ->
+      # update status > 'Skipping...'
+      # POST /skip
+      # then -> update contact
+      # error -> update status > 'Error + explain, maybe try again'
+    $scope.dialer.hold = hold
 ])
