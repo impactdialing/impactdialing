@@ -28,9 +28,23 @@
     <!-- Site or application content here -->
     <div class="fluid-wrap">
       <div class="container-fluid" data-ng-controller="AppCtrl">
-        <!-- callveyor.dialer ui-view -->
+        <!-- dialer ui-view -->
         <div data-ui-view="dialer"></div>
-        <!-- /callveyor.dialer ui-view -->
+        <!-- /dialer ui-view -->
+        <div class="row">
+          <div class="col-sm-5" data-ng-controller="ContactCtrl">
+            <!-- contactInfo ui-view -->
+            <div class="contact" data-id-contact></div>
+            <!-- /contactInfo ui-view -->
+          </div>
+
+          <!-- survey -->
+          <div class="col-sm-7" data-ng-controller="SurveyFormCtrl">
+            <div class="row script content-box" data-id-survey></div>
+          </div>
+          <!-- /survey -->
+        </div>
+
       </div>
       <!-- /container-fluid -->
     </div>
@@ -84,10 +98,13 @@
     <script src="scripts/services/current_year.js"></script>
     <script src="scripts/controllers/meta.js"></script>
     <script src="scripts/dialer/dialer.js"></script>
+    <script src="scripts/dialer/contact/contact.js"></script>
+    <script src="scripts/dialer/survey/survey.js"></script>
     <script src="scripts/dialer/ready/ready.js"></script>
     <script src="scripts/dialer/hold/hold.js"></script>
+    <script src="scripts/dialer/active/active.js"></script>
+    <script src="scripts/dialer/wrap/wrap.js"></script>
     <script src="scripts/dialer/stop/stop.js"></script>
-    <script src="scripts/dialer/callScript/callScript.js"></script>
     <!-- endbuild -->
 </body>
 </html>

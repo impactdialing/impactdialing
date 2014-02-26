@@ -5,8 +5,11 @@ dialer = angular.module('callveyor.dialer', [
   'ui.router',
   'callveyor.dialer.ready',
   'callveyor.dialer.hold',
+  'callveyor.dialer.active',
+  'callveyor.dialer.wrap',
   'callveyor.dialer.stop',
-  'callveyor.dialer.callScript'
+  'callveyor.dialer.survey',
+  'callveyor.contact'
 ])
 
 dialer.config(['$stateProvider', 'PusherServiceProvider', ($stateProvider, PusherServiceProvider) ->
@@ -24,14 +27,4 @@ dialer.controller('DialerCtrl', ['$scope', '$state', ($scope, $state) ->
   console.log 'Known states', $state.get()
   $scope.dialer = {}
   $state.go('dialer.ready')
-])
-
-dialer.controller('ContactInfoCtrl', [
-  '$scope', '$state', 'contact'
-  ($scope,   $state,   contact) ->
-    console.log 'ContactInfoCtrl', contact
-    $scope.contact ||= {}
-    $scope.contact._meta ||= {}
-    $scope.contact._meta.collapse = false
-    angular.extend($scope.contact, contact.data)
 ])

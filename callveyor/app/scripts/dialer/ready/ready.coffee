@@ -6,8 +6,6 @@ ready.config(['$stateProvider', ($stateProvider) ->
   $stateProvider.state('dialer.ready', {
     resolve:
       caller: ($http) -> $http.get('/scripts/dialer/ready/ready.json')
-      contact: ($http) -> $http.get('/scripts/dialer/contact/info.json')
-      script: ($http) -> $http.get('/scripts/dialer/callScript/script.json')
     views:
       callFlowButtons:
         templateUrl: '/scripts/dialer/ready/callFlowButtons.tpl.html'
@@ -18,12 +16,6 @@ ready.config(['$stateProvider', ($stateProvider) ->
       callStatus:
         templateUrl: '/scripts/dialer/ready/callStatus.tpl.html'
         controller: 'callStatusCtrl.ready'
-      contact:
-        templateUrl: '/scripts/dialer/ready/contactInfo.tpl.html'
-        controller: 'ContactInfoCtrl'
-      script:
-        templateUrl: '/scripts/dialer/callScript/form.tpl.html'
-        controller: 'CallScriptLoadCtrl'
   })
 ])
 
@@ -48,7 +40,7 @@ ready.controller('callFlowButtonsCtrl.ready', [
 ready.controller('callInPhoneCtrl.ready', [
   '$scope', 'caller',
   ($scope, caller) ->
-    console.log 'ready.callStatusCtrl', $scope
+    console.log 'ready.callInPhoneCtrl', $scope.dialer
     $scope.dialer.meta ||= {}
     angular.extend($scope.dialer.meta, caller.data)
 ])
@@ -56,7 +48,7 @@ ready.controller('callInPhoneCtrl.ready', [
 ready.controller('callStatusCtrl.ready', [
   '$scope', 'caller',
   ($scope, caller) ->
-    console.log 'ready.callStatusCtrl', $scope
+    console.log 'ready.callStatusCtrl', $scope.dialer
     $scope.dialer.meta ||= {}
     angular.extend($scope.dialer.meta, caller.data)
 ])
