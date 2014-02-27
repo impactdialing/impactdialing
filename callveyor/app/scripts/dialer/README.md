@@ -1,21 +1,27 @@
 ## Dialer
 
-### States, Events & Transitions
+### States
 
-States
+#### Primary Call States
 
 - init (page, scripts, data, etc are loading)
 - ready (caller is logged-in)
-- dialing (start calling was clicked [TwilioJS], Dial was clicked [Preview ONLY] or Transfer was clicked)
-- on-hold (caller is connected either via browser or phone and enjoying music)
-- on-call (caller is talking to dialed party)
+- hold (caller is connected either via browser or phone and enjoying music)
+- ringing
+- active (call answered)
     - on-warm-transfer (caller is talking to 2 dialed parties)
-- wrap-up (caller is doing any post-call work and is not available for calls)
+- pause (caller is doing any post-call work and is not available for calls)
+- no answer
+- error
 
-Events
+#### Transfer Call States
 
-- dial error (start calling, Dial btn or Transfer)
-- dial success
+- ready
+- ringing
+- active (warm transfers only)
+- complete (cold transfers only)
+- no answer
+- error
 
 ### Pseudo-code
 

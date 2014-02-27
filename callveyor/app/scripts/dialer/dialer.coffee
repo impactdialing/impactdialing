@@ -39,6 +39,11 @@ dialer.controller('DialerCtrl', [
     $rootScope.$on('$stateChangeSuccess', transitionComplete)
     $rootScope.$on('$stateChangeError', transitionComplete)
 
-    $scope.dialer = {}
+    dialer = {
+      _meta: {
+        collapseTransfers: true
+      }
+    }
+    $scope.dialer = dialer
     $state.go('dialer.ready')
 ])
