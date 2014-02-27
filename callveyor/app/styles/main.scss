@@ -99,3 +99,12 @@ footer .container-fluid {
     background: #000000;
     z-index: 1;
 }
+
+.label-info {
+    color: lighten(#000, 30%);
+}
+
+nav.navbar-fixed-top div.border-top-thin {
+    margin-top: 3px;
+    border-top: solid 1px #999;
+}
