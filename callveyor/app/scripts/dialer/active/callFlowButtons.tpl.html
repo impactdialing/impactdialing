@@ -1,8 +1,23 @@
-<button class="btn btn-primary navbar-btn"
-        data-ng-click="dialer.active.hangup()">
-  Hangup
-</button>
-<button class="btn btn-primary navbar-btn"
-        data-ng-click="dialer._meta.collapseTransfers = !dialer._meta.collapseTransfers">
-  Transfer
-</button>
+<ul class="nav navbar-nav">
+  <li>
+    <button class="btn btn-primary navbar-btn"
+            data-ng-click="dialer.active.hangup()">
+      Hangup
+    </button>
+  </li>
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle">Transfer <b class="caret"></b></a>
+    <ul class="dropdown-menu">
+      <li>
+        <a href="#" data-ng-click="dialer._meta.collapseTransfers = false">
+          John Doe (+1 555 321 5678) <span class="label label-danger">warm</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-ng-click="dialer._meta.collapseTransfers = false">
+          Rep. Dennis (+1 555 123 9876) <span class="label label-info">cold</span>
+        </a>
+      </li>
+    </ul>
+  </li>
+</ul>

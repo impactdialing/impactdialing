@@ -2,11 +2,14 @@
 <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container-fluid">
     <div class="row">
-      <div class="col-xs-12">
+      <div class="col-xs-4">
         <!-- callFlowButtons ui-view -->
         <div class="navbar-left" data-ui-view="callFlowButtons"></div>
         <!-- /callFlowButtons ui-view -->
-
+      </div>
+      <div>
+      </div>
+      <div class="col-xs-4">
         <!-- callStatus ui-view -->
         <div class="navbar-right status">
           <span data-us-spinner="{length:0,top:10,left:-25,color:'#456587'}" data-spinner-key="global-spinner"></span>
@@ -17,15 +20,19 @@
         <!-- /callStatus ui-view -->
       </div>
     </div>
-    <div class="row" collapse="dialer._meta.collapseTransfers">
-      <div class="col-xs-12">
-        <hr>
+    <div class="row border-top-thin" collapse="dialer._meta.collapseTransfers">
+      <div class="col-xs-4">
         <div class="navbar-left">
-          <button class="btn btn-primary navbar-btn">Hangup</button>
+          <button class="btn btn-primary navbar-btn">Dial</button>
         </div>
+      </div>
+      <div class="col-xs-4">
+        <span class="navbar-text">Rep. Dennis (+1-555-123-9876) <span class="label label-info">cold</span></span>
+      </div>
+      <div class="col-xs-4">
         <div class="navbar-right status">
           <span data-us-spinner="{length:0,top:10,left:-25,color:'#456587'}" data-spinner-key="global-spinner"></span>
-          <span class="label label-info navbar-text">Transfer on call</span>
+          <span class="label label-info navbar-text">Ready</span>
         </div>
       </div>
     </div>
