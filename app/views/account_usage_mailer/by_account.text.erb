@@ -8,7 +8,7 @@
     longest << 0
   end
   [headers,names].each do |items|
-    items.each do |str,i|
+    items.each_with_index do |str,i|
       next if str.blank?
       l = longest[i]
       l = str.size > l ? str.size : l

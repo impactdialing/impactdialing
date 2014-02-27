@@ -1,10 +1,11 @@
 module Reports::Admin
   class AllByAccount
-    attr_reader :billable_minutes
+    attr_reader :billable_minutes, :include_undebited
 
   public
     def initialize(billable_minutes, include_undebited)
       @billable_minutes = billable_minutes
+      @include_undebited = include_undebited
     end
 
     def build
