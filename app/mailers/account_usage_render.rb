@@ -8,6 +8,30 @@ class AccountUsageRender < AbstractController::Base
   self.view_paths = "app/views"
   layout "email"
 
+private
+  def tt_longest(headers, values)
+    longest = []
+    headers.size.times{ longest << 0 }
+    values.map! do |n|
+      n.sort_by do |x|
+        x.blank? ? 0 : x.size
+      end.last
+    end
+
+    [headers,values].each do |items|
+      items.each_with_index do |str,i|
+        next if str.blank?
+        l = longest[i]
+        l = str.size > l ? str.size : l
+        longest[i] = l
+      end
+    end
+    # padding
+    @longest = longest.map{|l| l += 5}
+  end
+
+public
+
   def by_campaigns(content_type, billable_totals, grand_total, campaigns)
     @billable_totals = billable_totals
     @grand_total     = grand_total
@@ -39,6 +63,14 @@ class AccountUsageRender < AbstractController::Base
     @include_undebited = !@undebited_totals.empty?
     @grand_total       = grand_total
     @accounts          = accounts
+
+    headers = ['Account ID', 'Account Type', 'Billable Minutes']
+    values  = [accounts.map(&:id).map(&:to_s), accounts.map(&:subscription_name) + ['No current subscription'], billable_totals.values.map(&:to_s)]
+    if @include_undebited
+      headers << 'Undebited Minutes'
+      values << undebited_totals.values.map(&:to_s)
+    end
+    @longest           = tt_longest(headers, values)
     opts               = {
       template: "account_usage_mailer/by_account.#{content_type}",
       formate:  content_type
