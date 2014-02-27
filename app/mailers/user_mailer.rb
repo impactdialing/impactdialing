@@ -70,8 +70,7 @@ class UserMailer < MandrillMailer
         :html => content,
         :from_name => "Admin",
         :from_email => FROM_EMAIL,
-        # :to => [{email: SALES_EMAIL}, {email: TECH_EMAIL}]
-        :to => [{email: TECH_EMAIL}]
+        :to => [{email: SALES_EMAIL}, {email: TECH_EMAIL}]
     })
   end
 
