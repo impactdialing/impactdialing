@@ -1,13 +1,27 @@
 ## callveyor
 
-Uses callveyor.dialer and callveyor.surveyor modules.
+### Components
+
+- dialer
+- survey
+
+Dialer
+
+    Responsible for managing call flow and loading/displaying contact info.
+    Every call state should map to a defined state in the dialer.
+
+Survey
+
+    Responsible for display, collection and persistance of call results.
 
 ## Coding guidelines
 
 - 3rd party libraries must be loaded asynchronously and be wrapped as an angular service
 - structure & organization follow the guidelines of ngbp (https://github.com/ngbp/ngbp)
 
-## State params
+## AngularJS Notes
+
+### $state params
 
 States are defined during the config phase. ui-router expects state params to be communicated via URL.
 

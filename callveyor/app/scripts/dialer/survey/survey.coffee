@@ -13,7 +13,7 @@ surveyForm.controller('SurveyFormCtrl', [
     # Init public
     survey = {}
 
-    surveyFormData = $http.get('/scripts/dialer/survey/script.json')
+    surveyFormData = $http.get('/scripts/dialer/survey/script3.json')
 
     e = (r) -> console.log 'survey load error', r.stack, r.message
     c = (r) -> console.log 'survey load notify', r.stack, r.message
