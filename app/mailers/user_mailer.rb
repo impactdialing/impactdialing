@@ -67,7 +67,7 @@ class UserMailer < MandrillMailer
     send_email({
         :subject => "Admin report. From: #{from}, To: #{to}",
         :text => content,
-        #:html => content,
+        :html => content,
         :from_name => "Admin",
         :from_email => FROM_EMAIL,
         # :to => [{email: SALES_EMAIL}, {email: TECH_EMAIL}]

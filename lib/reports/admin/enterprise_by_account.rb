@@ -31,7 +31,7 @@ module Reports::Admin
         end
       end
       from, to = billable_minutes.from_date, billable_minutes.to_date
-      return AccountUsageRender.new.by_account(:text, from, to, billable_totals, undebited_totals, grand_total, accounts)
+      return AccountUsageRender.new.by_account(:html, from, to, billable_totals, undebited_totals, grand_total, accounts)
     end
 
   private

@@ -1,0 +1,48 @@
+<h1 style="color: rgb(102,102,102); font-family: 'Helvetica Neue', Helvetica, Arial; font-style: normal; font-variant: normal;">Account Usage Report (<%= @from_date.strftime('%m-%d-%Y') %> - <%= @to_date.strftime('%m-%d-%Y') %>)</h1>
+<table style="width: 100%; color: rgb(102,102,102); font-family: 'Helvetica Neue', Helvetica, Arial; font-size: 100%; font-style: normal; font-variant: normal; font-weight: 200; line-height: 1.4;">
+  <tr style="background-color: rgb(238,238,238);">
+    <th style="text-align: left;">Account ID</th>
+    <th style="text-align: left;">Account Type</th>
+    <th style="text-align: left;">Total Minutes</th>
+    <% if @include_undebited %>
+    <th style="text-align: left;">Undebited Minutes</th>
+    <% end %>
+    <th style="text-align: left;">Email</th>
+  </tr>
+  <%
+    row_style = ' style="background-color: rgb(238,238,238);"'.html_safe
+    n = 0
+  %>
+  <% @accounts.each do |account| %>
+
+    <tr<%= n % 2 != 0 ? row_style : '' %>>
+      <td><%= account.id %></td>
+      <td>
+        <%= account.current_subscription.try(:type) ||
+            'No current subscription' %>
+      </td>
+      <td>
+        <%= number_with_delimiter(@billable_totals[account.id]) %>
+      </td>
+      <% if @include_undebited %>
+      <td>
+        <%= number_with_delimiter(@undebited_totals[account.id]) %>
+      </td>
+      <% end %>
+      <td>
+        <%= account.users.first.try(:email) ||
+            'No users' %>
+      </td>
+    </tr>
+
+    <% n += 1 %>
+
+  <% end %>
+
+  <% n += 1 %>
+
+  <tr<%= n % 2 != 0 ? row_style : '' %>>
+    <td>Total Billable Minutes</td>
+    <td><%= number_with_delimiter(@grand_total) %></td>
+  </tr>
+</table>
