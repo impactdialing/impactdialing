@@ -31,8 +31,8 @@ class DebitJob
     CALL_TIME_CLASSES.each do |klass_name, limit|
       klass = klass_name.constantize
       call_times = klass.debit_pending.includes({campaign: :account}).limit(limit)
-      Rails.logger.error "DebitJob: processing #{klass_name} #{call_times.count}"
-      batch_process(klass, call_times)
+      Rails.logger.error "DebitJob: processing #{klass_name} #{call_times.count} - #{call_times.first.id} thru #{call_times.last.id}"
+      # batch_process(klass, call_times)
     end
   end
 end

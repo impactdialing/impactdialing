@@ -1,3 +1,10 @@
+debit_money:
+  cron: "* * * * *"
+  class: DebitJob
+  queue: background_worker
+  args:
+  description: "This job debits minutes from Account#debitable_subscription."
+
 alert:
   cron: "*/2 * * * *"
   class: AlertJob
