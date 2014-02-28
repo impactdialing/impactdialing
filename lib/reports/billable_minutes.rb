@@ -33,7 +33,6 @@ public
 
   def total_for(ids, with='campaigns')
     method = "with_#{with}"
-    group_by = with == 'campaigns' ? 'campaign_id' : 'caller_id'
 
     counts = relations(with).map do |relation|
       sum( from_to( send(method, relation, ids) ) )
@@ -43,7 +42,6 @@ public
 
   def total_undebited_for(ids, with='campaigns')
     method = "with_#{with}"
-    group_by = with == 'campaigns' ? 'campaign_id' : 'caller_id'
 
     counts = relations(with).map do |relation|
       sum( from_to( undebited( send(method, relation, ids) ) ) )
@@ -104,7 +102,9 @@ public
   end
 
   def undebited(relation)
-    relation.where(["#{relation.table_name}.debited = ?", false])
+    relation.where(["#{relation.table_name}.debited = ?", false]).
+    where("#{relation.table_name}.tDuration IS NOT NULL")
+    # ^ we can't bill if no duration was saved.
   end
 
   def group(relation, group_by)
