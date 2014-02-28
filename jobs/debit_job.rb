@@ -13,14 +13,14 @@ class DebitJob
   def self.batch_process(klass, call_times)
     results = []
     call_times.each do |call_time|
-      begin
+      # begin
         account = call_time.campaign.account
         subscription = account.debitable_subscription
         debit = Debit.new(call_time, account, subscription)
         results << debit.process
-      rescue Exception => e
-        UserMailer.new.deliver_exception_notification('DebitJob Exception', e)
-      end
+      # rescue Exception => e
+      #   UserMailer.new.deliver_exception_notification('DebitJob Exception', e)
+      # end
     end
     klass.import results, on_duplicate_key_update: [:debited]
   end
