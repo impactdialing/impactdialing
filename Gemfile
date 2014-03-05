@@ -50,7 +50,7 @@ gem 'stripe', '~>1.8.4'
 group :development, :test do
   gem 'rspec'
   gem 'rspec-rails'
-  gem 'debugger', '~>1.6.0'
+  gem 'debugger'
   gem 'hirb', '~>0.7.1'
   gem 'rspec-instafail', '~>0.2.4'
   gem 'pry'
