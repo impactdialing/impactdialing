@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131118175923) do
+ActiveRecord::Schema.define(:version => 20140307003952) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -77,6 +77,18 @@ ActiveRecord::Schema.define(:version => 20131118175923) do
     t.string   "drivers_license_state"
     t.string   "checking_account_type"
   end
+
+  create_table "billing_subscriptions", :force => true do |t|
+    t.integer  "account_id",               :null => false
+    t.string   "provider_subscription_id"
+    t.string   "provider_status"
+    t.string   "plan",                     :null => false
+    t.datetime "created_at",               :null => false
+    t.datetime "updated_at",               :null => false
+  end
+
+  add_index "billing_subscriptions", ["account_id"], :name => "index_billing_subscriptions_on_account_id"
+  add_index "billing_subscriptions", ["provider_subscription_id"], :name => "index_billing_subscriptions_on_provider_subscription_id"
 
   create_table "blocked_numbers", :force => true do |t|
     t.string   "number"
@@ -350,6 +362,19 @@ ActiveRecord::Schema.define(:version => 20131118175923) do
     t.integer "script_order"
     t.string  "external_id_field"
   end
+
+  create_table "quotas", :force => true do |t|
+    t.integer  "account_id",                         :null => false
+    t.integer  "minutes_used",    :default => 0,     :null => false
+    t.integer  "minutes_pending", :default => 0,     :null => false
+    t.integer  "minutes_allowed", :default => 0,     :null => false
+    t.integer  "callers_allowed", :default => 0,     :null => false
+    t.boolean  "disable_calling", :default => false, :null => false
+    t.datetime "created_at",                         :null => false
+    t.datetime "updated_at",                         :null => false
+  end
+
+  add_index "quotas", ["account_id"], :name => "index_quotas_on_account_id"
 
   create_table "recordings", :force => true do |t|
     t.integer  "account_id"
