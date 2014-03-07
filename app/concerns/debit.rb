@@ -1,37 +1,18 @@
 class Debit
-  attr_reader :account, :call_time, :subscription
+  attr_reader :call_time, :quota
 
-  def initialize(call_time, account, subscription=nil)
+  def initialize(call_time, quota)
     @call_time = call_time
-    @account = account
-    @subscription = subscription
+    @quota     = quota
   end
 
   def process
-    if skip_debit?
-      call_time.debited = true
-      alert_if_missing_subscription
-    else
-      call_time.debited = subscription.debit(minutes)
-    end
+    call_time.debited = quota.debit(minutes)
     return call_time
   end
 
 private
-
-  def skip_debit?
-    subscription.nil?
-  end
-
   def minutes
     (call_time.tDuration.to_f/60).ceil
-  end
-
-  def alert_if_missing_subscription
-    if subscription.nil?
-      subject = "nil debitable subscription"
-      msg = "Account[#{account.id}]\n#{call_time.class}[#{call_time.id}]\nMinutes: #{minutes}"
-      UserMailer.new.alert_email(subject, msg)
-    end
   end
 end

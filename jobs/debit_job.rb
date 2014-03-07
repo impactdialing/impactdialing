@@ -14,20 +14,20 @@ class DebitJob
     results = []
     call_times.each do |call_time|
       account = call_time.campaign.account
-      subscription = account.debitable_subscription
+      quota = account.quota
       # debug
-      before = [subscription.minutes_utlized, subscription.available_minutes]
+      before = [quota.minutes_used, quota.minutes_available]
 
-      debit = Debit.new(call_time, account, subscription)
+      debit = Debit.new(call_time, quota)
       results << debit.process
 
       # debug
-      after = [subscription.minutes_utlized, subscription.available_minutes]
+      after = [quota.minutes_used, quota.minutes_available]
       # debug
       unless call_time.debited
         m = (call_time.tDuration/60.0).ceil
         d = call_time.debited
-        Rails.logger.error "DebitJob: Account[#{account.id}] Sub[#{subscription.id}] #{klass}[#{call_time.id}] Before[#{before[0]}:#{before[1]}] After[#{after[0]}:#{after[1]}] CallTimeMinutes[#{m}] CallTimeDebited[#{d}]"
+        Rails.logger.error "DebitJob: Account[#{account.id}] Sub[#{quota.id}] #{klass}[#{call_time.id}] Before[#{before[0]}:#{before[1]}] After[#{after[0]}:#{after[1]}] CallTimeMinutes[#{m}] CallTimeDebited[#{d}]"
       end
     end
     import_result = klass.import results, on_duplicate_key_update: [:debited]
