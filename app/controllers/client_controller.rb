@@ -115,11 +115,12 @@ class ClientController < ApplicationController
   end
 
   def check_credit_card_declined
+    Rails.logger.info "Deprecated! This method is cruft from recurly"
     if current_user.present?
       validate_account_presence!(current_user.try(:account)) || return
     end
 
-    if current_user && !current_user.account.current_subscription.trial? && current_user.account.credit_card_declined?
+    if current_user && !current_user.account.billing_subscription.trial? && current_user.account.credit_card_declined?
       billing_link = '<a href="' + white_labeled_billing_link(request.domain) + '">Billing information</a>'
       add_to_balance_link = '<a href="' + white_labeled_add_to_balance_link(request.domain) + '">add to your balance</a>'
       configure_auto_recharge_link = '<a href="' + white_labeled_configure_auto_recharge_link(request.domain) + '">re-enable auto-recharge</a>'

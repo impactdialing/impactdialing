@@ -38,8 +38,12 @@ class Caller < ActiveRecord::Base
     is_phones_only?  ? name : username
   end
 
+  def ability
+    @ability ||= Ability.new(account)
+  end
+
   def check_subscription_for_caller_groups
-    if !account.current_subscription.caller_groups_enabled?
+    unless ability.can? :manage, CallerGroup
       errors.add(:base, 'Your subscription does not allow managing caller groups.')
     end
   end

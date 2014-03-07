@@ -19,6 +19,9 @@ class CallerSession < ActiveRecord::Base
   include SidekiqEvents
   include CallerTwiml
 
+  scope :on_call_in_campaigns, lambda{|campaign_ids|
+    on_call.where(campaign_id: campaign_ids)
+  }
   scope :on_call, :conditions => {:on_call => true}
   scope :available, :conditions => {:available_for_call => true, :on_call => true}
   scope :not_available, :conditions => {:available_for_call => false, :on_call => true}
@@ -49,6 +52,17 @@ class CallerSession < ActiveRecord::Base
 
   delegate :subscription_allows_caller?, :to => :caller
   delegate :funds_available?, :to => :caller
+
+private
+  def _account
+    @_account ||= campaign.try(:account)
+  end
+
+  def ability
+    Ability.new(_account)
+  end
+
+public
 
   def minutes_used
     return 0 if self.tDuration.blank?
@@ -109,7 +123,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def subscription_limit_exceeded?
-    !subscription_allows_caller?
+    ability.cannot? :start_calling, self
   end
 
   def funds_not_available?

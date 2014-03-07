@@ -1,39 +1,57 @@
 class Ability
   include CanCan::Ability
 
-  def initialize(account)
-    can :add_transfer, Script if !account.current_subscription.transfer_types.empty?
-    can :manage_caller_groups, Account if account.current_subscription.caller_groups_enabled?
-    can :view_campaign_reports, Account if account.current_subscription.campaign_reports_enabled?
-    can :view_caller_reports, Account if account.current_subscription.caller_reports_enabled?
-    can :view_dashboard, Account if account.current_subscription.dashboard_enabled?
-    can :record_calls, Account if account.current_subscription.call_recording_enabled?
+  attr_reader :account
 
-    # Define abilities for the passed in user here. For example:
-    #
-    #   user ||= User.new # guest user (not logged in)
-    #   if user.admin?
-    #     can :manage, :all
-    #   else
-    #     can :read, :all
-    #   end
-    #
-    # The first argument to `can` is the action you are giving the user
-    # permission to do.
-    # If you pass :manage it will apply to every action. Other common actions
-    # here are :read, :create, :update and :destroy.
-    #
-    # The second argument is the resource the user can perform the action on.
-    # If you pass :all it will apply to every resource. Otherwise pass a Ruby
-    # class of the resource.
-    #
-    # The third argument is an optional hash of conditions to further filter the
-    # objects.
-    # For example, here the user can only update published articles.
-    #
-    #   can :update, Article, :published => true
-    #
-    # See the wiki for details:
-    # https://github.com/ryanb/cancan/wiki/Defining-Abilities
+  def initialize(account)
+    @account = account
+    apply_feature_permissions
+    apply_quota_permissions
+  end
+
+  def apply_quota_permissions
+    plan  = account.billing_subscription.plan
+    quota = account.quota
+
+    case plan
+    when 'Enterprise', 'PerMinute'
+      can :start_calling, CallerSession
+    when 'Business', 'Pro', 'Basic', 'Trial'
+      if quota.caller_seats_available?
+        can :start_calling, CallerSession
+      end
+    else
+      # Allow nothing
+      cannot :manage, :all
+    end
+  end
+
+  def apply_feature_permissions
+    plan = account.billing_subscription.plan
+
+    case plan
+    when 'Enterprise', 'PerMinute', 'Business', 'Trial'
+      can :add_transfer, Script
+      can :manage, CallerGroup
+      can :view_campaign_reports, Account
+      can :view_caller_reports, Account
+      can :view_dashboard, Account
+      can :record_calls, Account
+      can :manage, [Preview, Power, Predictive]
+    when 'Pro'
+      can :add_transfer, Script
+      can :manage, CallerGroup
+      can :view_campaign_reports, Account
+      can :view_caller_reports, Account
+      can :view_dashboard, Account
+      can :manage, [Preview, Power, Predictive]
+    when 'Basic'
+      # Allow nothing
+      can :manage, [Preview, Power]
+    else
+      # Allow nothing
+      cannot :manage, :all
+      can :read, :all
+    end
   end
 end

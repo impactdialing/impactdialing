@@ -89,6 +89,10 @@ class Campaign < ActiveRecord::Base
     new_record?
   end
 
+  def ability
+    @ability ||= Ability.new(account)
+  end
+
   def campaign_types
     account.current_subscription.campaign_types
   end
@@ -98,10 +102,9 @@ class Campaign < ActiveRecord::Base
   end
 
   def campaign_type_based_on_subscription
-    if !account.subscriptions.nil? && !campaign_types.include?(type)
+    unless ability.can? :manage, type.constantize # Type cast for cancan
       errors.add(:base, 'Your subscription does not allow this mode of Dialing.')
     end
-
   end
 
   def no_caller_assigned_on_deletion

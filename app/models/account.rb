@@ -1,4 +1,8 @@
+# todo: remove credit_card_declined attribute
 class Account < ActiveRecord::Base
+  TRIAL_MINUTES_ALLOWED   = 50
+  TRIAL_NUMBER_OF_CALLERS = 5
+
   include SubscriptionInfo
 
   has_many :users
@@ -6,32 +10,50 @@ class Account < ActiveRecord::Base
   has_many :all_campaigns, :class_name => 'Campaign'
   has_many :recordings
   has_many :custom_voter_fields
-  has_one :billing_account
+
+  # todo: remove has_many :subscriptions cruft
   has_many :subscriptions
+  has_one :billing_subscription, class_name: 'Billing::Subscription'
+  has_one :quota
+
   has_many :scripts
   has_many :callers
   has_many :voter_lists
   has_many :voters
-  has_many :families
   has_many :blocked_numbers
   has_many :moderators
-  has_many :payments
   has_many :questions, :through => :scripts
   has_many :script_texts, :through => :scripts
   has_many :notes, :through => :scripts
   has_many :possible_responses, :through => :scripts, :source => :questions
   has_many :caller_groups
 
-  attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date, :credit_card_declined
+  attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date
 
   before_create :assign_api_key
-  after_create :create_trial_subscription
+  after_create :setup_trial!
   validate :check_subscription_type_for_call_recording, on: :update
 
+  delegate :minutes_available?, to: :quota
 
+private
+  def ability
+    Ability.new(self)
+  end
 
+  def setup_trial!
+    create_quota!({
+      minutes_allowed: TRIAL_MINUTES_ALLOWED,
+      callers_allowed: TRIAL_NUMBER_OF_CALLERS
+    })
+    create_billing_subscription!({
+      plan: 'Trial'
+    })
+  end
+
+public
   def check_subscription_type_for_call_recording
-    if !subscriptions.nil? && record_calls && !current_subscription.call_recording_enabled?
+    if record_calls && ability.cannot?(:record_calls, self)
       errors.add(:base, 'Your subscription does not allow call recordings.')
     end
   end
@@ -44,19 +66,15 @@ class Account < ActiveRecord::Base
     })
   end
 
+  # todo: remove #zero_all_subscription_minutes
   def zero_all_subscription_minutes!
+    Rails.logger.debug('Deprecated!')
     if available_minutes > 0
       current_subscriptions.each do |s|
         return s unless s.zero_minutes!
       end
     end
     return true
-  end
-
-  def current_balance
-    self.payments.where("amount_remaining>0").inject(0) do |sum, payment|
-      sum + payment.amount_remaining
-    end
   end
 
   def administrators
@@ -88,11 +106,18 @@ class Account < ActiveRecord::Base
   end
 
   def callers_in_progress
-    CallerSession.where("campaign_id in (?) and on_call=1", self.campaigns.map {|c| c.id})
+    caller_seats_taken
+  end
+
+  def _campaign_ids
+    @_campaign_ids ||= Campaign.where(account_id: id).pluck('id').uniq
+  end
+  def caller_seats_taken
+    return CallerSession.on_call_in_campaigns(_campaign_ids).count
   end
 
   def funds_available?
-    current_subscription.can_dial?
+    minutes_available?
   end
 
   def enable_api!
@@ -105,11 +130,6 @@ class Account < ActiveRecord::Base
 
   def api_is_enabled?
     !api_key.empty?
-  end
-
-
-  def new_billing_account
-    BillingAccount.create(:account => self)
   end
 
   def paid?
@@ -136,32 +156,6 @@ class Account < ActiveRecord::Base
     custom_voter_fields
   end
 
-  def create_chargify_customer_id
-    return self.chargify_customer_id if !self.chargify_customer_id.nil?
-    user = User.find_by_account_id(self.id)
-    customer = Chargify::Customer.create(
-      :first_name   => user.fname,
-      :last_name    => user.lname,
-      :email        => user.email,
-      :organization => user.orgname
-    )
-    self.chargify_customer_id=customer.id
-    self.save
-    self.chargify_customer_id
-  end
-
-
-  def check_autorecharge(amount_remaining)
-    if autorecharge_enabled? && autorecharge_trigger >= amount_remaining
-      begin
-        new_payment = Payment.charge_recurly_account(self, self.autorecharge_amount, "Auto-recharge")
-        return new_payment
-      rescue ActiveRecord::StaleObjectError
-        # pretty much do nothing
-      end
-    end
-  end
-
   def variable_abandonment?
     abandonment == 'variable'
   end
@@ -185,12 +179,4 @@ class Account < ActiveRecord::Base
   def generate_api_key
     secure_digest(Time.now, (1..10).map{ rand.to_s })
   end
-
-  def create_trial_subscription
-    Trial.create(minutes_utlized: 0, total_allowed_minutes: 50.00, subscription_start_date: DateTime.now,
-      number_of_callers: 5, status: Subscription::Status::TRIAL, account_id: self.id, created_at: DateTime.now-1.minute,
-      subscription_end_date: DateTime.now+30.days)
-  end
-
-
 end
