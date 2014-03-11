@@ -79,7 +79,7 @@ en:
       full_title: "Impact Dialing, LLC"
       phone: "(503) 836-3626"
       email: "support@impactdialing.com"
-      billing_link: "/client/subscriptions"
+      billing_link: "/client/billing"
       add_to_balance_link: "/client/add_to_balance"
       configure_auto_recharge_link: "/client/recharge"
 

@@ -71,7 +71,10 @@ ImpactDialing::Application.routes.draw do
 
   match '/policies', :to => 'client#policies'
   match '/client/policies', :to => 'client#policies', :as => :client_policies
-  match '/client/billing_success', to: 'client#billing_success', as: :client_billing_success
+
+  # Webhooks
+  post 'webhooks/billing/stripe', :to => 'client/billing/events#stripe'
+  # /Webhooks
 
   namespace 'api' do
     resources :leads
@@ -94,6 +97,11 @@ ImpactDialing::Application.routes.draw do
 
   namespace 'client' do
     resource :session, :only => [:create, :destroy]
+    namespace 'billing' do
+      root to: 'subscription#show', as: :home
+      resource :credit_card, :only => [:show, :update, :destroy, :create], :controller => 'credit_card'
+      resource :subscription, :only => [:show, :update]
+    end
     resources :subscriptions do
       member do
         put :update_callers

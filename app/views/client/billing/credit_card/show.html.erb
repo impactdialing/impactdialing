@@ -1,0 +1,72 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "https://js.stripe.com/v1/" %>
+  <%= javascript_include_tag  '/javascripts/client/billing/credit_card.js' %>
+  <script type="text/javascript">
+    Stripe.setPublishableKey("<%= STRIPE_PUBLISHABLE_KEY  %>");
+  </script>
+<% end %>
+
+<%= content_for :stylesheets do %>
+  <style type="text/css">
+    .ui-datepicker-calendar {
+      display: none;
+    }
+  </style>
+<% end %>
+
+<div class="callout alert clearfix" style="display:none;" id="payment-flash">
+  <p><strong class="payment-errors"></strong></p>
+</div>
+<%= form_for @credit_card, {
+      url: client_billing_credit_card_path,
+      html: {id: "payment-form"}
+    } do |f| %>
+  <%= field_set_tag 'Card information' do %>
+    <p>
+      <label for="pan">Card number</label>
+      <input type="text" data-stripe="number" class="field" style="width:220px;" value="<%= @credit_card.last4 %>" id="pan" />
+    </p>
+    <p>
+      <label for="cvc">CVC</label>
+      <input type="text" data-stripe="cvc"  class="field" style="width:40px;" id="cvc"/>
+    </p>
+    <p>
+      <label for="expiration_date">
+        Expiration date
+      </label>
+      <input type="text" class="field" style="width: 60px;" id="expiration_date">
+      <input type="hidden" data-stripe="exp_month">
+      <input type="hidden" data-stripe="exp_year">
+    </p>
+  <% end %>
+  <%= field_set_tag 'Invoicing' do %>
+    <p>
+      <% if @account.users.count == 1 %>
+        Invoices will be emailed to <%= @user.email %>.
+        <input type="hidden" name="invoice_recipient_id" value="<%= @user.id %>">
+      <% else %>
+        <label for="invoice_recipient_id">
+          Who should we send invoices to?
+        </label>
+        <select id="invoice_recipient_id" name="invoice_recipient_id">
+          <%= options_from_collection_for_select(@account.users, 'id', 'email', @invoice_recipient.id) %>
+        </select>
+      <% end %>
+    </p>
+  <% end %>
+  <div class="buttons">
+    <button type="submit" id="update-payment-info">
+      Update payment information
+    </button>
+  </div>
+<% end %>
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+    $(function($) {
+      $("input[data-stripe='exp_month']").val("<%= @credit_card.exp_month %>");
+      $("input[data-stripe='exp_year']").val("<%= @credit_card.exp_year %>");
+      var creditCard = new CreditCard();
+    });
+ </script>
+<% end %>

@@ -14,6 +14,7 @@ class Account < ActiveRecord::Base
   # todo: remove has_many :subscriptions cruft
   has_many :subscriptions
   has_one :billing_subscription, class_name: 'Billing::Subscription'
+  has_one :billing_credit_card, class_name: 'Billing::CreditCard'
   has_one :quota
 
   has_many :scripts
@@ -52,6 +53,13 @@ private
   end
 
 public
+  def billing_provider_customer_created!(provider_id)
+    Rails.logger.debug 'StripeEvent: updating account provider ident with: ' + provider_id
+    self.billing_provider_customer_id = provider_id
+    self.billing_provider             = 'stripe'
+    save!
+  end
+
   def check_subscription_type_for_call_recording
     if record_calls && ability.cannot?(:record_calls, self)
       errors.add(:base, 'Your subscription does not allow call recordings.')

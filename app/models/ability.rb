@@ -1,18 +1,38 @@
 class Ability
   include CanCan::Ability
 
-  attr_reader :account
+  attr_reader :account, :plan, :quota, :minutes_available
 
   def initialize(account)
-    @account = account
+    @account           = account
+    @quota             = account.quota
+    @minutes_available = @quota.try(:minutes_available) || 0
+    @plan              = account.billing_subscription.try(:plan) || ''
+
     apply_feature_permissions
     apply_quota_permissions
+    apply_plan_permissions
+  end
+
+  def apply_plan_permissions
+    if account.billing_provider_customer_id.present?
+      can :make_payment, Billing::Subscription
+
+      # No sense allowing plan changes or adding of minutes
+      # when payment can't be made.
+      if plan == 'PerMinute'
+        can :add_minutes, Billing::Subscription
+      end
+      if plan != 'PerMinute' || minutes_available.zero?
+        can :change_plans, Billing::Subscription
+      end
+    end
+    if plan != 'Trial'
+      can :cancel_subscription, Billing::Subscription
+    end
   end
 
   def apply_quota_permissions
-    plan  = account.billing_subscription.plan
-    quota = account.quota
-
     case plan
     when 'Enterprise', 'PerMinute'
       can :start_calling, CallerSession
