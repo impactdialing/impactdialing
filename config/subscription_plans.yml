@@ -1,0 +1,15 @@
+basic:
+  minutes_per_quantity: 1000
+  price_per_quantity: 49.00
+
+pro:
+  minutes_per_quantity: 2500
+  price_per_quantity: 99.00
+
+business:
+  minutes_per_quantity: 6000
+  price_per_quantity: 199.00
+
+per_minute:
+  minutes_per_quantity: 1
+  price_per_quantity: 0.09

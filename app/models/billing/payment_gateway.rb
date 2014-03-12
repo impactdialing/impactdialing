@@ -18,7 +18,12 @@ class Billing::PaymentGateway
 
   def card
     return nil if customer_id.nil?
-    customer.cards.retrieve(customer.default_card)
+    @card ||= customer.cards.retrieve(customer.default_card)
+  end
+
+  def subscription
+    return nil if customer_id.nil?
+    @subscription ||= customer.subscriptions.data.first
   end
 
   def create_customer_with_card(email, token)
@@ -32,30 +37,34 @@ class Billing::PaymentGateway
     return customer
   end
 
-  def create_customer_charge(token, email, amount)
-    Stripe::Charge.create(amount: amount, currency: "usd", customer: customer_id)
+  def update_subscription(plan, quantity, prorate=false)
+    customer.update_subscription({
+      plan: plan,
+      quantity: quantity,
+      prorate: prorate
+    })
   end
 
-  def update_subscription_plan(params)
-    customer.update_subscription(params)
+  def create_charge(usd_paid)
+    Stripe::Charge.create({
+      amount: usd_paid.to_i*100,
+      currency: "usd",
+      customer: customer.id
+    })
   end
 
-  def recharge
-    Stripe::Charge.create(amount: amount_paid.to_i*100, currency: "usd", customer: customer_id)
-  end
-
-  def invoice_customer
-    begin
-      invoice = Stripe::Invoice.create(customer: customer_id)
-      invoice.pay
-    rescue
-    end
+  def create_and_pay_invoice
+    invoice = Stripe::Invoice.create(customer: customer_id)
+    invoice.pay
   end
 
   def cancel_subscription
-    if per_agent?
-      stripe_customer = Stripe::Customer.retrieve(customer_id)
-      stripe_customer.cancel_subscription
+    if subscription.present?
+      customer.cancel_subscription
     end
+  end
+
+  def create_customer_charge(token, email, amount)
+    Stripe::Charge.create(amount: amount, currency: "usd", customer: customer_id)
   end
 end
