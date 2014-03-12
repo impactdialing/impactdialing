@@ -11,31 +11,33 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140307003952) do
+ActiveRecord::Schema.define(:version => 20140310233830) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "domain_name"
-    t.boolean  "activated",                   :default => false
-    t.boolean  "record_calls",                :default => false
+    t.boolean  "activated",                    :default => false
+    t.boolean  "record_calls",                 :default => false
     t.string   "recurly_account_code"
     t.string   "subscription_name"
     t.integer  "subscription_count"
-    t.boolean  "subscription_active",         :default => false
+    t.boolean  "subscription_active",          :default => false
     t.string   "recurly_subscription_uuid"
-    t.boolean  "autorecharge_enabled",        :default => false
+    t.boolean  "autorecharge_enabled",         :default => false
     t.float    "autorecharge_trigger"
     t.float    "autorecharge_amount"
-    t.integer  "lock_version",                :default => 0
+    t.integer  "lock_version",                 :default => 0
     t.string   "status"
     t.string   "abandonment"
     t.text     "caller_password"
     t.text     "caller_hashed_password_salt"
-    t.string   "api_key",                     :default => ""
+    t.string   "api_key",                      :default => ""
     t.datetime "tos_accepted_date"
-    t.boolean  "credit_card_declined",        :default => false
+    t.boolean  "credit_card_declined",         :default => false
+    t.string   "billing_provider_customer_id"
+    t.string   "billing_provider"
   end
 
   create_table "answers", :force => true do |t|
@@ -78,17 +80,46 @@ ActiveRecord::Schema.define(:version => 20140307003952) do
     t.string   "checking_account_type"
   end
 
+  create_table "billing_credit_cards", :force => true do |t|
+    t.integer  "account_id",  :null => false
+    t.string   "exp_month",   :null => false
+    t.string   "exp_year",    :null => false
+    t.string   "last4",       :null => false
+    t.string   "provider_id", :null => false
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
+
+  add_index "billing_credit_cards", ["account_id"], :name => "index_billing_credit_cards_on_account_id"
+
+  create_table "billing_stripe_events", :force => true do |t|
+    t.string   "provider_id",         :null => false
+    t.date     "provider_created_at"
+    t.string   "name"
+    t.string   "request"
+    t.integer  "pending_webhooks"
+    t.text     "data"
+    t.datetime "processed"
+    t.boolean  "livemode"
+    t.datetime "created_at",          :null => false
+    t.datetime "updated_at",          :null => false
+  end
+
+  add_index "billing_stripe_events", ["provider_id"], :name => "index_billing_stripe_events_on_provider_id"
+
   create_table "billing_subscriptions", :force => true do |t|
-    t.integer  "account_id",               :null => false
-    t.string   "provider_subscription_id"
+    t.integer  "account_id",      :null => false
+    t.string   "provider_id"
     t.string   "provider_status"
-    t.string   "plan",                     :null => false
-    t.datetime "created_at",               :null => false
-    t.datetime "updated_at",               :null => false
+    t.string   "status"
+    t.string   "plan",            :null => false
+    t.text     "settings"
+    t.datetime "created_at",      :null => false
+    t.datetime "updated_at",      :null => false
   end
 
   add_index "billing_subscriptions", ["account_id"], :name => "index_billing_subscriptions_on_account_id"
-  add_index "billing_subscriptions", ["provider_subscription_id"], :name => "index_billing_subscriptions_on_provider_subscription_id"
+  add_index "billing_subscriptions", ["provider_id"], :name => "index_billing_subscriptions_on_provider_id"
 
   create_table "blocked_numbers", :force => true do |t|
     t.string   "number"
