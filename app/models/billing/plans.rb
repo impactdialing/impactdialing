@@ -43,6 +43,11 @@ public
     @config = SUBSCRIPTION_PLANS
   end
 
+  def find(plan_id)
+    attrs = @config[plan_id]
+    Plan.new(plan_id, attrs)
+  end
+
   def list
     ['trial'] + @config.keys + ['enterprise']
   end
@@ -52,30 +57,31 @@ public
   # is the most valueable plan. Returns true if old_plan
   # is of lesser value than new_plan.
   #
-  def is_upgrade?(old_plan, new_plan)
-    new_n = list.index(new_plan)
-    old_n = list.index(old_plan)
+  def is_upgrade?(old_plan_id, new_plan_id)
+    new_n = list.index(new_plan_id)
+    old_n = list.index(old_plan_id)
     return new_n.present? && old_n.present? && new_n > old_n
   end
 
-  def is_trial?(plan)
-    return plan == 'trial'
+  def is_trial?(plan_id)
+    return plan_id == 'trial'
   end
 
   ##
   # Returns true if plan is `per_minute` and amount_paid is
   # some whole number greater than zero.
   #
-  def buying_minutes?(plan)
-    return plan == 'per_minute'
+  def buying_minutes?(plan_id)
+    return plan_id == 'per_minute'
   end
 
   ##
   # Returns true if the given plan matches any
   # of the plans in +RECURRING_PLANS+.
   #
-  def recurring?(plan)
-    return RECURRING_PLANS.include?(plan)
+  def recurring?(plan_id)
+    plan = find(plan_id)
+    return plan.presence.recurring?
   end
 
   ##
@@ -104,5 +110,23 @@ public
 
     return true if msg.blank?
     raise InvalidPlanTransition.new(old_plan, new_plan, opts, msg)
+  end
+end
+
+##
+# Convenient wrapper of yaml loaded plan objects.
+#
+class Billing::Plans::Plan
+  attr_reader :id, :minutes_per_quantity, :price_per_quantity
+  # hash = {'price_per' => 199, 'quantity_per' => 1}
+  def initialize(id, hash)
+    hash ||= {}
+    @id                   = id
+    @minutes_per_quantity = hash['minutes_per_quantity']
+    @price_per_quantity   = hash['price_per_quantity']
+  end
+
+  def recurring?
+    return Billing::Plans::RECURRING_PLANS.include?(id)
   end
 end

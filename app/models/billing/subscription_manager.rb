@@ -66,14 +66,27 @@ public
   end
 
   def update!(new_plan, opts={})
-    old_plan = record.plan
-    plans.validate_transition!(old_plan, new_plan, opts)
+    old_plan          = record.plan
+    minutes_available = quota.minutes_available?
+    plans.validate_transition!(old_plan, new_plan, minutes_available, opts)
 
     # plans are either recurring or buying minutes.
-    if plans.recurring?(new_plan)
-      return upgrade_or_downgrade!(new_plan, opts[:callers_allowed])
-    else
-      return buy_minutes!(opts[:amount_paid])
+    provider_object = if plans.recurring?(new_plan)
+                        upgrade_or_downgrade!(new_plan, opts[:callers_allowed])
+                      else
+                        buy_minutes!(opts[:amount_paid])
+                      end
+
+    if provider_object.present?
+      opts.merge!({
+        prorate: prorate?(new_plan, opts[:callers_allowed]),
+        old_plan_id: old_plan
+      })
+
+      ActiveRecord::Base.transaction do
+        record.plan_changed!(new_plan, provider_object, opts)
+        quota.plan_changed!(new_plan, provider_object, opts)
+      end
     end
   end
 end

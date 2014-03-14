@@ -93,9 +93,6 @@ describe Billing::Plans do
           plans.validate_transition!('per_minute', 'per_minute', true, {amount_paid: 0})
         }.to raise_error{ Billing::Plans::InvalidPlanTransition }
       end
-      it 'valid_minutes_purchase?("per_minute", 0.5) should be false' do
-        plans.valid_minutes_purchase?('per_minute', 0.5).should be_false
-      end
     end
 
     context 'returns true when given valid arguments and' do
@@ -118,6 +115,21 @@ describe Billing::Plans do
       it 'adding minutes to a per minute plan' do
         actual = plans.validate_transition!('per_minute', 'per_minute', true, {amount_paid: 4})
         actual.should be_true
+      end
+    end
+  end
+
+  describe '#find(plan_id)' do
+    it 'returns an instance of Billing::Plans::Plan' do
+      plan = plans.find('basic')
+      plan.should be_instance_of Billing::Plans::Plan
+    end
+    it 'loads plan config from @config' do
+      ['basic', 'pro', 'business', 'per_minute'].each do |plan_id|
+        plan = plans.find(plan_id)
+        plan.id.should eq plan_id
+        plan.minutes_per_quantity.should eq SUBSCRIPTION_PLANS[plan_id]['minutes_per_quantity']
+        plan.price_per_quantity.should eq SUBSCRIPTION_PLANS[plan_id]['price_per_quantity']
       end
     end
   end

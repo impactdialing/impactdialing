@@ -14,12 +14,15 @@ describe Billing::SubscriptionManager do
 
     let(:subscription) do
       mock_model(Billing::Subscription, {
-        plan: 'trial'
+        plan: 'trial',
+        plan_changed!: nil
       })
     end
     let(:quota) do
       mock_model(Quota, {
-        callers_allowed: callers_allowed
+        callers_allowed: callers_allowed,
+        minutes_available?: true,
+        plan_changed!: nil
       })
     end
     let(:payment_gateway) do
@@ -46,7 +49,7 @@ describe Billing::SubscriptionManager do
     end
 
     it 'tells `plans` to validate the transition' do
-      plans.should_receive(:validate_transition!).with(old_plan, new_plan, opts)
+      plans.should_receive(:validate_transition!).with(old_plan, new_plan, quota.minutes_available?, opts)
       manager.update!(new_plan, opts)
     end
     context 'plans.recurring? => true' do
