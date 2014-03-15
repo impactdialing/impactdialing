@@ -43,13 +43,21 @@ public
     @config = SUBSCRIPTION_PLANS
   end
 
+  def self.ids
+    self.new.ids
+  end
+
   def find(plan_id)
     attrs = @config[plan_id]
     Plan.new(plan_id, attrs)
   end
 
+  def ids
+    @config.keys
+  end
+
   def list
-    ['trial'] + @config.keys + ['enterprise']
+    ['trial'] + ids + ['enterprise']
   end
 
   ##
