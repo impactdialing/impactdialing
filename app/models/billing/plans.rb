@@ -29,7 +29,7 @@ public
   # opt to be some Float > 0.
   #
   class InvalidPlanTransition < ArgumentError
-    attr_reader :plan, :opts, :record
+    attr_reader :old_plan, :new_plan, :opts, :message
 
     def initialize(old_plan, new_plan, opts, msg)
       @old_plan = old_plan
