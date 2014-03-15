@@ -48,7 +48,7 @@ private
       callers_allowed: TRIAL_NUMBER_OF_CALLERS
     })
     create_billing_subscription!({
-      plan: 'Trial'
+      plan: 'trial'
     })
   end
 

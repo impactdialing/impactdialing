@@ -20,23 +20,23 @@ class Ability
 
       # No sense allowing plan changes or adding of minutes
       # when payment can't be made.
-      if plan == 'PerMinute'
+      if plan == 'per_minute'
         can :add_minutes, Billing::Subscription
       end
-      if plan != 'PerMinute' || minutes_available.zero?
+      if plan != 'per_minute' || minutes_available.zero?
         can :change_plans, Billing::Subscription
       end
     end
-    if plan != 'Trial'
+    if plan != 'trial' && plan != 'per_minute'
       can :cancel_subscription, Billing::Subscription
     end
   end
 
   def apply_quota_permissions
     case plan
-    when 'Enterprise', 'PerMinute'
+    when 'enterprise', 'per_minute'
       can :start_calling, CallerSession
-    when 'Business', 'Pro', 'Basic', 'Trial'
+    when 'business', 'pro', 'basic', 'trial'
       if quota.caller_seats_available?
         can :start_calling, CallerSession
       end
@@ -50,7 +50,7 @@ class Ability
     plan = account.billing_subscription.plan
 
     case plan
-    when 'Enterprise', 'PerMinute', 'Business', 'Trial'
+    when 'enterprise', 'per_minute', 'business', 'trial'
       can :add_transfer, Script
       can :manage, CallerGroup
       can :view_campaign_reports, Account
@@ -58,14 +58,14 @@ class Ability
       can :view_dashboard, Account
       can :record_calls, Account
       can :manage, [Preview, Power, Predictive]
-    when 'Pro'
+    when 'pro'
       can :add_transfer, Script
       can :manage, CallerGroup
       can :view_campaign_reports, Account
       can :view_caller_reports, Account
       can :view_dashboard, Account
       can :manage, [Preview, Power, Predictive]
-    when 'Basic'
+    when 'basic'
       # Allow nothing
       can :manage, [Preview, Power]
     else
