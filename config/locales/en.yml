@@ -72,6 +72,12 @@ en:
   stripe:
     invalid_request_error: "There was an error processing your payment. Verify your payment info is up to date and try again. Please contact support if this problem continues."
     api_error: "We hit a temporary glitch processing your payment. Try again. Please contact support if this problem continues."
+  billing:
+    plans:
+      transition_errors:
+        amount_paid: "Please enter the amount of USD dollar amount of minutes to purchase."
+        minutes_available: "Please use all of your purchased minutes before moving to a regularly recurring subscription."
+        callers_allowed: "Please enter a number of callers greater than zero."
   white_labeling:
 
     impactdialing:

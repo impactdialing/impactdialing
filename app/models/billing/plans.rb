@@ -109,12 +109,12 @@ public
     msg = ""
     if recurring?(new_plan) && !valid_recurring?(old_plan, new_plan, minutes_available, opts[:callers_allowed])
       if opts[:callers_allowed].blank? || opts[:callers_allowed].to_i <= 0
-        msg = "Please enter a number of callers greater than zero."
+        msg = I18n.t('billing.plans.transition_errors.callers_allowed')
       elsif buying_minutes?(old_plan) && minutes_available
-        msg = "Please use all of your purchased minutes before moving to a regularly recurring subscription."
+        msg = I18n.t('billing.plans.transition_errors.minutes_available')
       end
     elsif buying_minutes?(new_plan) && !valid_minutes_purchase?(new_plan, opts[:amount_paid])
-      msg = "Please enter the amount of USD dollar amount of minutes to purchase."
+      msg = I18n.t('billing.plans.transition_errors.amount_paid')
     end
 
     return true if msg.blank?
