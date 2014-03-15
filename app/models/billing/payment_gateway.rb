@@ -37,9 +37,9 @@ class Billing::PaymentGateway
     return customer
   end
 
-  def update_subscription(plan, quantity, prorate=false)
+  def update_subscription(plan_id, quantity, prorate=false)
     customer.update_subscription({
-      plan: plan,
+      plan: stripe_plan_id(plan_id),
       quantity: quantity,
       prorate: prorate
     })
@@ -56,6 +56,10 @@ class Billing::PaymentGateway
   def create_and_pay_invoice
     invoice = Stripe::Invoice.create(customer: customer_id)
     invoice.pay
+  end
+
+  def stripe_plan_id(plan)
+    "ImpactDialing-#{plan.camelize}"
   end
 
   def cancel_subscription
