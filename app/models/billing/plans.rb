@@ -80,7 +80,8 @@ public
   # some whole number greater than zero.
   #
   def buying_minutes?(plan_id)
-    return plan_id == 'per_minute'
+    plan = find(plan_id)
+    return plan.presence.per_minute?
   end
 
   ##
@@ -136,5 +137,9 @@ class Billing::Plans::Plan
 
   def recurring?
     return Billing::Plans::RECURRING_PLANS.include?(id)
+  end
+
+  def per_minute?
+    id == 'per_minute'
   end
 end
