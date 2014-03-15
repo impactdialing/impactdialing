@@ -34,7 +34,11 @@ public
       @credit_card = @account.build_billing_credit_card
     end
     payment_gateway    = Billing::PaymentGateway.new(@account.billing_provider_customer_id)
-    @invoice_recipient = @account.users.find_by_email(payment_gateway.customer.email)
+    if payment_gateway.customer.present?
+      @invoice_recipient = @account.users.find_by_email(payment_gateway.customer.email)
+    else
+      @invoice_recipient = @account.users.first
+    end
   end
 
   def create
@@ -47,8 +51,5 @@ public
     credit_card.update_or_create_customer_and_card(email, token)
     flash_message(:notice, I18n.t('subscriptions.update_billing.success'))
     redirect_to client_billing_subscription_path
-  end
-
-  def destroy
   end
 end
