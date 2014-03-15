@@ -17,10 +17,10 @@ end
 
 def fill_in_expiration
   # verify jquery datepicker is working
-  page.execute_script('$("#subscription_expiration_date").datepicker("show")')
+  page.execute_script('$("#expiration_date").datepicker("show")')
   page.execute_script('$("select[data-handler=\"selectMonth\"]").val("0")')
   page.execute_script('$("select[data-handler=\"selectYear\"]").val("2020")')
-  page.execute_script('$("#subscription_expiration_date").datepicker("hide")')
+  page.execute_script('$("#expiration_date").datepicker("hide")')
   page.find_field('Expiration date').value.should eq "01/2020"
 end
 
@@ -45,7 +45,7 @@ end
 
 def go_to_update_billing
   go_to_billing
-  click_on 'Update billing info'
+  click_on 'Update card'
 end
 
 def expect_monthly_cost_eq(expected_cost)
@@ -140,6 +140,7 @@ describe 'Account profile' do
       it 'performs live update of monthly cost as plan and caller inputs change' do
         add_valid_payment_info
         go_to_upgrade
+        enter_n_callers 1
         select_plan 'Basic'
         expect_monthly_cost_eq cost
         enter_n_callers callers
@@ -158,6 +159,7 @@ describe 'Account profile' do
         add_valid_payment_info
         go_to_upgrade
         select_plan 'Pro'
+        enter_n_callers 1
         expect_monthly_cost_eq cost
 
         enter_n_callers callers
@@ -196,8 +198,8 @@ describe 'Account profile' do
         end
 
         it 'displays activerecord.errors.models.subscription.attributes.amount_paid.not_a_number' do
-          error = I18n.t('activerecord.errors.models.subscription.attributes.amount_paid.not_a_number')
-          page.should have_content "Add to balance #{error}"
+          error = I18n.t('billing.plans.transition_errors.amount_paid')
+          page.should have_content error
         end
       end
     end
@@ -213,6 +215,7 @@ describe 'Account profile' do
       it 'performs live update of monthly cost as plan and caller inputs change' do
         go_to_upgrade
         select_plan 'Basic'
+        enter_n_callers 1
         expect_monthly_cost_eq 49
         click_on 'Upgrade'
         page.should have_content I18n.t('subscriptions.upgrade.success')
@@ -220,6 +223,7 @@ describe 'Account profile' do
     end
 
     describe 'Adding time to PerMinute' do
+      let(:minutes_purchased){ (500 / 0.09).to_i }
       before do
         add_valid_payment_info
         go_to_upgrade
@@ -227,18 +231,42 @@ describe 'Account profile' do
         fill_in 'Add to balance:', with: 500
         click_on 'Upgrade'
         page.should have_content I18n.t('subscriptions.upgrade.success')
+        user.account.quota.reload.minutes_available.should eq minutes_purchased
       end
 
-      it 'moves available minutes to newest subscription' do
+      it 'Manually add funds' do
         go_to_billing
-        click_on 'Add to your balance'
         fill_in 'Amount to add', with: 500
         click_on 'Add funds'
 
-        page.should have_content I18n.t('subscriptions.add_funds.success')
-        # ugh, db assertions...
-        user.account.current_subscriptions.second.available_minutes.should eq 0
-        user.account.available_minutes.should eq user.account.current_subscription.available_minutes
+        page.should have_content I18n.t('subscriptions.upgrade.success')
+        page.should have_content "Minutes left: #{minutes_purchased * 2}"
+      end
+
+      it 'Can be configured to automatically add funds' do
+        go_to_billing
+        choose 'On'
+        fill_in 'If Minutes left falls below', with: 100
+        fill_in 'Then Add funds, spending', with: 45
+        click_on 'Save'
+
+        page.should have_content I18n.t('subscriptions.autorecharge.update')
+        page.should have_content "$45 (500 minutes) will be automatically added when there are less than 100 Minutes left."
+      end
+
+      it 'Can have automatic fund additions disabled' do
+        go_to_billing
+        choose 'On'
+        fill_in 'If Minutes left falls below', with: 100
+        fill_in 'Then Add funds, spending', with: 45
+        click_on 'Save'
+        page.should have_content I18n.t('subscriptions.autorecharge.update')
+        page.should have_content "$45 (500 minutes) will be automatically added when there are less than 100 Minutes left."
+
+        choose 'Off'
+        click_on 'Save'
+        page.should have_content I18n.t('subscriptions.autorecharge.update')
+        page.should_not have_content "$45 (500 minutes) will be automatically added when there are less than 100 Minutes left."
       end
     end
   end

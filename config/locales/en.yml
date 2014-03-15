@@ -62,6 +62,9 @@ en:
       from_date_required: 'Please enter a from date.'
       to_date_required: 'Please enter a to date.'
   subscriptions:
+    autorecharge:
+      update: "Autorecharge settings saved."
+      invalid_settings: "Numbers entered must be greater than zero."
     upgrade:
       success: 'Subscription plan updated successfully.'
       payment_info_required: 'Please fill out your payment information before upgrading.'
@@ -69,6 +72,7 @@ en:
       success: 'Billing info updated successfully.'
     add_funds:
       success: 'The amount has been added to your balance.'
+    nothing_to_do: 'No changes detected.'
   stripe:
     invalid_request_error: "There was an error processing your payment. Verify your payment info is up to date and try again. Please contact support if this problem continues."
     api_error: "We hit a temporary glitch processing your payment. Try again. Please contact support if this problem continues."

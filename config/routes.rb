@@ -99,8 +99,8 @@ ImpactDialing::Application.routes.draw do
     resource :session, :only => [:create, :destroy]
     namespace 'billing' do
       root to: 'subscription#show', as: :home
-      resource :credit_card, :only => [:show, :update, :destroy, :create], :controller => 'credit_card'
-      resource :subscription, :only => [:show, :update]
+      resource :credit_card, :only => [:show, :update, :create], :controller => 'credit_card'
+      resource :subscription, :only => [:show, :update, :edit], :controller => 'subscription'
     end
     resources :subscriptions do
       member do
