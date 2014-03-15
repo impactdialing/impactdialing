@@ -34,13 +34,10 @@ class Billing::SubscriptionManager
   # Downgrades and decreases in plan quotas are not prorated.
   #
   def prorate?(new_plan, callers_allowed=0)
-    old_plan = record.plan
-    return false if plans.is_trial?(old_plan)
-    plans.recurring?(new_plan) &&
-    ( plans.is_upgrade?(old_plan, new_plan) ||
-     quota.callers_allowed < callers_allowed )
-
-    return plans.is_upgrade?(old_plan, new_plan) || old_plan == new_plan
+    old_plan        = record.plan
+    return !plans.is_trial?(old_plan) &&
+            plans.is_upgrade?(old_plan, new_plan) ||
+            old_plan == new_plan
   end
 
   def upgrade_or_downgrade!(plan, callers_allowed)
@@ -68,6 +65,7 @@ public
   def update!(new_plan, opts={})
     old_plan          = record.plan
     minutes_available = quota.minutes_available?
+
     plans.validate_transition!(old_plan, new_plan, minutes_available, opts)
 
     # plans are either recurring or buying minutes.
