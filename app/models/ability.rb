@@ -23,9 +23,7 @@ class Ability
       if plan == 'per_minute'
         can :add_minutes, Billing::Subscription
       end
-      if plan != 'per_minute' || minutes_available.zero?
-        can :change_plans, Billing::Subscription
-      end
+      can :change_plans, Billing::Subscription
     end
     if plan != 'trial' && plan != 'per_minute'
       can :cancel_subscription, Billing::Subscription

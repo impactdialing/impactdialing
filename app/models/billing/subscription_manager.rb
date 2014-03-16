@@ -51,7 +51,12 @@ class Billing::SubscriptionManager
     return subscription
   end
 
+  def cancel_recurring_subscription!
+    payment_gateway.cancel_subscription
+  end
+
   def buy_minutes!(amount_paid)
+    cancel_recurring_subscription!
     return payment_gateway.create_charge(amount_paid)
   end
 
