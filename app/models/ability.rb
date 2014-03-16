@@ -33,10 +33,14 @@ class Ability
   def apply_quota_permissions
     case plan
     when 'enterprise', 'per_minute'
-      can :start_calling, CallerSession
+      can :start_calling, Caller
+      can :dial, Caller
     when 'business', 'pro', 'basic', 'trial'
       if quota.caller_seats_available?
-        can :start_calling, CallerSession
+        can :start_calling, Caller
+      end
+      if quota.minutes_available?
+        can :dial, Caller
       end
     else
       # Allow nothing
@@ -64,7 +68,6 @@ class Ability
       can :view_dashboard, Account
       can :manage, [Preview, Power, Predictive]
     when 'basic'
-      # Allow nothing
       can :manage, [Preview, Power]
     else
       # Allow nothing

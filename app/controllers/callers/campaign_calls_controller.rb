@@ -3,6 +3,12 @@ module Callers
     include ActionView::Helpers::NumberHelper
     respond_to :json, :html
 
+private
+    def current_ability
+      @current_ability ||= Ability.new(@caller.account)
+    end
+
+public
     def show
     end
 
@@ -14,7 +20,7 @@ module Callers
     def token
       @campaign = @caller.campaign
 
-      unless @caller.account.current_subscription.can_dial?
+      unless can? :dial, @caller
         render :json => "Your account is not funded. Please contact your account administrator.", :status => 422
         return
       end
