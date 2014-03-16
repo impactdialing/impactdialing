@@ -40,8 +40,6 @@ class CallerController < ApplicationController
   ]
 
   before_filter :find_session, :only => [:end_session]
-  layout 'caller'
-
 
   def start_calling
     caller = Caller.find(params[:caller_id])
