@@ -89,7 +89,7 @@ describe CallerController do
   describe "start calling" do
     it "should start a new caller conference" do
       account = create(:account)
-      campaign = create(:predictive, account: account)
+      campaign = create(:predictive, account: account, start_time: Time.now.beginning_of_day, end_time: Time.now.end_of_day)
       caller = create(:caller, campaign: campaign, account: account)
       caller_identity = create(:caller_identity)
       caller_session = create(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller, campaign: campaign)
