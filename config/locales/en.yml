@@ -80,7 +80,6 @@ en:
     plans:
       transition_errors:
         amount_paid: "Please enter the amount of USD dollar amount of minutes to purchase."
-        minutes_available: "Please use all of your purchased minutes before moving to a regularly recurring subscription."
         callers_allowed: "Please enter a number of callers greater than zero."
   white_labeling:
 

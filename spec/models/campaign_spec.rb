@@ -1,6 +1,5 @@
 require "spec_helper"
 
-
 describe Campaign do
 
   describe "voter" do
@@ -26,7 +25,28 @@ describe Campaign do
     it {campaign.should validate_presence_of :name}
     it {campaign.should validate_presence_of :script}
     it {campaign.should validate_presence_of :type}
-    it {campaign.should ensure_inclusion_of(:type).in_array(['Preview', 'Power', 'Predictive'])}
+    it {
+      # this breaks w/ NameError for some reason
+      # campaign.should ensure_inclusion_of(:type).in_array(['Preview', 'Power', 'Predictive'])
+      # => NameError: wrong constant name shouldamatchersteststring
+      # => seems to do w/ the special :type attr but odd that it passed previously
+      # => because this also breaks w/ NameError but different message
+      # campaign.type = 'Blah'
+      # campaign.should have(1).error_on(:type)
+      # => NameError: uninitialized constant Blah
+      # looks like an edge-case in shoulda
+      campaign.type = 'Account'
+      campaign.should have(1).error_on(:type)
+      campaign.type = 'Campaign'
+      campaign.should have(1).error_on(:type)
+      campaign.type = 'Preview'
+      campaign.should have(0).errors_on(:type)
+      campaign.type = 'Power'
+      campaign.should have(0).errors_on(:type)
+      campaign.type = 'Predictive'
+      campaign.should have(0).errors_on(:type)
+
+    }
     it {campaign.should validate_presence_of :recycle_rate}
     it {campaign.should validate_numericality_of :recycle_rate}
     it {campaign.should validate_presence_of :time_zone}

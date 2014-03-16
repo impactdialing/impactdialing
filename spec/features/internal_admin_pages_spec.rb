@@ -102,21 +102,10 @@ describe 'Internal Admin pages' do
 
     describe 'when disaster strikes' do
       let(:account){ User.last.account }
-      let(:subscription){ account.current_subscription }
+      let(:subscription){ account.billing_subscription }
 
-      describe 'old or new subscription fails to save' do
-        it 'display msg that upgrade failed' do
-          User.connection.execute("UPDATE subscriptions set number_of_callers=0 where id='#{subscription.id}';")
-          within(main_table_css) do
-            within(last_row) do
-              click_on 'set account to manual'
-            end
-          end
-
-          msg = "Upgrade to Enterprise failed "
-          page.should have_content msg
-          page.should have_content User.last.email
-        end
+      describe 'cancelling current subscription fails' do
+        it 'display msg that upgrade failed'
       end
     end
   end

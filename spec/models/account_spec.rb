@@ -15,7 +15,7 @@ describe Account do
       account.api_key.should_not be_blank
     end
     it 'creates a billing_subscription w/ plan of Trial' do
-      account.billing_subscription.plan.should eq 'Trial'
+      account.billing_subscription.plan.should eq 'trial'
     end
     it 'creates account_quotas w/ allowed minutes of 50 and number of callers at 5' do
       account.quota.minutes_allowed.should eq 50

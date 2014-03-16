@@ -102,9 +102,11 @@ class Campaign < ActiveRecord::Base
   end
 
   def campaign_type_based_on_subscription
-    unless ability.can? :manage, type.constantize # Type cast for cancan
+    ttype = type.blank? ? nil : type.constantize # Type cast for cancan
+    unless ability.can? :manage, ttype
       errors.add(:base, 'Your subscription does not allow this mode of Dialing.')
     end
+    type.to_s
   end
 
   def no_caller_assigned_on_deletion

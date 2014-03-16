@@ -101,6 +101,13 @@ Spork.prefork do
     click_on 'Log in'
   end
 
+  def caller_login_as(caller)
+    visit '/caller/login'
+    fill_in 'Username', with: caller.username
+    fill_in 'Password', with: caller.password
+    click_on 'Log in'
+  end
+
   def fixture_path
     Rails.root.join('spec/fixtures/').to_s
   end
