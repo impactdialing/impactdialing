@@ -25,15 +25,11 @@
           <% end %></td>
       <td><%= account.domain_name %> </td>
       <td>
-        <% if account.manual_subscription? %>
-          Enterprise (manual)
-        <% else %>
-          <%= link_to("set account to manual", "/admin/set_account_to_manual/#{account.id}", method: :put) %>
-        <% end %>
+        <%= admin_switch_account_to_manual_link(account) %>
       </td>
       <td><a href="/admin/abandonment/<%= account.id %>">Toggle Abandonment(<%= account.abandonment_value%>)</a></td>
       <td>
     </tr>
   <% end %>
-    <p><%= page_entries_info @accounts %> <%= will_paginate @accounts %></p>
+  <p><%= page_entries_info @accounts %> <%= will_paginate @accounts %></p>
 </table>

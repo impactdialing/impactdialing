@@ -37,12 +37,15 @@ class Billing::SubscriptionManager
     old_plan        = record.plan
     return !plans.is_trial?(old_plan) &&
             plans.is_upgrade?(old_plan, new_plan) ||
-            old_plan == new_plan
+            (old_plan == new_plan && !plans.buying_minutes?(new_plan))
   end
 
-  def upgrade_or_downgrade!(plan, callers_allowed)
-    subscription = payment_gateway.update_subscription(plan, callers_allowed, prorate?(plan))
-    if prorate?(plan)
+  def update_recurring_subscription!(new_plan, callers_allowed)
+    return nil unless plans.recurring?(new_plan)
+
+    prorate      = prorate?(new_plan)
+    subscription = payment_gateway.update_subscription(new_plan, callers_allowed, prorate)
+    if prorate
       payment_gateway.create_and_pay_invoice
     end
     return subscription
@@ -66,14 +69,11 @@ public
     old_plan          = record.plan
     minutes_available = quota.minutes_available?
 
-    plans.validate_transition!(old_plan, new_plan, minutes_available, opts)
+    plans.validate_transition!(old_plan, new_plan, opts)
 
     # plans are either recurring or buying minutes.
-    provider_object = if plans.recurring?(new_plan)
-                        upgrade_or_downgrade!(new_plan, opts[:callers_allowed])
-                      else
-                        buy_minutes!(opts[:amount_paid])
-                      end
+    provider_object = update_recurring_subscription!(new_plan, opts[:callers_allowed])
+    provider_object ||= buy_minutes!(opts[:amount_paid])
 
     if provider_object.present?
       opts.merge!({

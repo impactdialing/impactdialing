@@ -99,8 +99,15 @@ class AdminController < ApplicationController
   end
 
   def set_account_to_manual
-    account = Account.find(params[:id])
-    Enterprise.upgrade(account)
+    account         = Account.find(params[:id])
+    subscription    = account.billing_subscription
+    quota           = account.quota
+    customer_id     = account.billing_provider_customer_id
+    payment_gateway = Billing::PaymentGateway.new(customer_id)
+
+    payment_gateway.cancel_subscription
+    subscription.plan_changed!('enterprise')
+    quota.plan_changed!('enterprise')
     redirect_to :back, notice: ["Account##{account.id} successfully upgraded to Enterprise."]
   end
 

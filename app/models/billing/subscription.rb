@@ -71,10 +71,10 @@ public
   # upgrades/downgrades, when callers are added/removed to recurring plans
   # and when minutes are added to per minute plans.
   #
-  def plan_changed!(new_plan, provider_object, opts={})
+  def plan_changed!(new_plan, provider_object=nil, opts={})
     plan  = plans.find(new_plan)
 
-    new_attrs = if plan.recurring?
+    new_attrs = if plan.presence.recurring?
                   {
                     plan: new_plan,
                     provider_id: provider_object.id,

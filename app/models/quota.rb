@@ -183,11 +183,11 @@ class Quota < ActiveRecord::Base
   # upgrades/downgrades, when callers are added/removed to recurring plans
   # and when minutes are added to per minute plans.
   #
-  def plan_changed!(new_plan_id, provider_object, opts={})
+  def plan_changed!(new_plan_id, provider_object=nil, opts={})
     plan        = plans.find(new_plan_id)
     old_plan_id = opts[:old_plan_id]
 
-    if plan.recurring?
+    if plan.presence.recurring?
       change_plans_or_callers(plan, provider_object, opts)
       # minutes_pending is primarily for tracking overage on pay as you go plans.
       # For now, let's just reset it and log.
@@ -197,7 +197,9 @@ class Quota < ActiveRecord::Base
       if plans.is_upgrade?(old_plan_id, new_plan_id)
         zero_minutes_and_callers
       end
-      add_minutes(plan, provider_object, opts)
+      if plan.per_minute?
+        add_minutes(plan, provider_object, opts)
+      end
     end
 
     save!

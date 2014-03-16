@@ -8,16 +8,19 @@ class Billing::Plans
   RECURRING_PLANS = ['basic', 'pro', 'business']
 
 private
-  def valid_recurring?(old_plan, new_plan, minutes_available, callers_allowed=nil)
+  def valid_recurring?(new_plan, callers_allowed=nil)
     recurring?(new_plan) &&
-    callers_allowed.present? &&
-    callers_allowed.to_i > 0 &&
-    (recurring?(old_plan) || !minutes_available)
+    present_and_positive?(callers_allowed)
   end
-  def valid_minutes_purchase?(plan, amount_paid=nil)
-    buying_minutes?(plan) &&
-    amount_paid.present? &&
-    amount_paid.to_i > 0
+  def valid_minutes_purchase?(new_plan, amount_paid=nil)
+    buying_minutes?(new_plan) &&
+    present_and_positive?(amount_paid)
+  end
+  def blank_or_not_positive?(var)
+    var.blank? || var.to_i <= 0
+  end
+  def present_and_positive?(var)
+    !blank_or_not_positive?(var)
   end
 
 public
@@ -62,17 +65,26 @@ public
 
   ##
   # Relies on the order of the keys and that the last key
-  # is the most valueable plan. Returns true if old_plan
+  # is the most valuable plan. Returns true if old_plan
   # is of lesser value than new_plan.
   #
   def is_upgrade?(old_plan_id, new_plan_id)
     new_n = list.index(new_plan_id)
     old_n = list.index(old_plan_id)
-    return new_n.present? && old_n.present? && new_n > old_n
+    return is_enterprise?(new_plan_id) ||
+          (new_n.present? && old_n.present? && new_n > old_n)
   end
 
   def is_trial?(plan_id)
     return plan_id == 'trial'
+  end
+
+  def is_enterprise?(plan_id)
+    self.class.is_enterprise?(plan_id)
+  end
+
+  def self.is_enterprise?(plan_id)
+    return plan_id == 'enterprise'
   end
 
   ##
@@ -105,19 +117,15 @@ public
   # opts is a hash where valid keys are :callers_allowed & :amount_paid and valid
   # values are positive integer or float values (both will be treated as Integer).
   #
-  def validate_transition!(old_plan, new_plan, minutes_available, opts={})
-    msg = ""
-    if recurring?(new_plan) && !valid_recurring?(old_plan, new_plan, minutes_available, opts[:callers_allowed])
-      if opts[:callers_allowed].blank? || opts[:callers_allowed].to_i <= 0
-        msg = I18n.t('billing.plans.transition_errors.callers_allowed')
-      elsif buying_minutes?(old_plan) && minutes_available
-        msg = I18n.t('billing.plans.transition_errors.minutes_available')
-      end
-    elsif buying_minutes?(new_plan) && !valid_minutes_purchase?(new_plan, opts[:amount_paid])
-      msg = I18n.t('billing.plans.transition_errors.amount_paid')
-    end
+  def validate_transition!(old_plan, new_plan, opts={})
+    msg = if recurring?(new_plan) && !valid_recurring?(new_plan, opts[:callers_allowed])
+            'billing.plans.transition_errors.callers_allowed'
+          elsif buying_minutes?(new_plan) && !valid_minutes_purchase?(new_plan, opts[:amount_paid])
+            'billing.plans.transition_errors.amount_paid'
+          end
 
     return true if msg.blank?
+    msg = I18n.t(msg)
     raise InvalidPlanTransition.new(old_plan, new_plan, opts, msg)
   end
 end
@@ -137,6 +145,10 @@ class Billing::Plans::Plan
 
   def recurring?
     return Billing::Plans::RECURRING_PLANS.include?(id)
+  end
+
+  def enterprise?
+    Plans.is_enterprise?(id)
   end
 
   def per_minute?

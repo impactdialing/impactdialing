@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Billing::SubscriptionManager do
-  describe '#update!(new_plan, opts)' do
+  describe '#update!(new_plan, opts)', lint: true do
     let(:customer_id){ 'cus_243fij0wije' }
     let(:old_plan){ 'trial' }
     let(:new_plan){ 'basic' }
@@ -29,7 +29,8 @@ describe Billing::SubscriptionManager do
       double('PaymentGatewayFake', {
         update_subscription: double('StripeSubscription'),
         create_charge: double('StripeCharge'),
-        create_and_pay_invoice: double('StripeInvoice')
+        create_and_pay_invoice: double('StripeInvoice'),
+        cancel_subscription: nil
       })
     end
     let(:plans) do
@@ -49,7 +50,7 @@ describe Billing::SubscriptionManager do
     end
 
     it 'tells `plans` to validate the transition' do
-      plans.should_receive(:validate_transition!).with(old_plan, new_plan, quota.minutes_available?, opts)
+      plans.should_receive(:validate_transition!).with(old_plan, new_plan, opts)
       manager.update!(new_plan, opts)
     end
     context 'plans.recurring? => true' do
