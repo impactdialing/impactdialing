@@ -1,4 +1,18 @@
 module CampaignHelper
+  def options_for_select_campaign_type(campaign)
+    options = []
+    if can? :manage, Preview
+      options << Campaign::Type::PREVIEW
+    end
+    if can? :manage, Power
+      options << Campaign::Type::POWER
+    end
+    if can? :manage, Predictive
+      options << Campaign::Type::PREDICTIVE
+    end
+    options.map!{|o| [o,o]}
+    options_for_select options, campaign.type
+  end
 
   def am_pm_hour_select(field_name)
     select_tag(field_name,options_for_select([
