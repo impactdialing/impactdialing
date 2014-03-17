@@ -45,11 +45,14 @@ class Billing::PaymentGateway
     })
   end
 
-  def create_charge(usd_paid)
+  def create_charge(usd_paid, autorecharge=false)
     Stripe::Charge.create({
       amount: usd_paid.to_i*100,
       currency: "usd",
-      customer: customer.id
+      customer: customer.id,
+      metadata: {
+        autorecharge: autorecharge
+      }
     })
   end
 
@@ -66,9 +69,5 @@ class Billing::PaymentGateway
     if subscription.present?
       customer.cancel_subscription
     end
-  end
-
-  def create_customer_charge(token, email, amount)
-    Stripe::Charge.create(amount: amount, currency: "usd", customer: customer_id)
   end
 end
