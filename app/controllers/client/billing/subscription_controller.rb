@@ -58,7 +58,10 @@ private
     manager.update!(plan, {
       callers_allowed: callers_allowed,
       amount_paid: amount_paid
-    })
+    }) do |provider_object, opts|
+      subscription.plan_changed!(plan, provider_object, opts)
+      quota.plan_changed!(plan, provider_object, opts)
+    end
   end
 
 public

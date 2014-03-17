@@ -70,7 +70,7 @@ public
     @plans           = Billing::Plans.new
   end
 
-  def update!(new_plan, opts={})
+  def update!(new_plan, opts={}, &block)
     old_plan          = record.plan
     minutes_available = quota.minutes_available?
 
@@ -86,9 +86,10 @@ public
         old_plan_id: old_plan
       })
 
-      ActiveRecord::Base.transaction do
-        record.plan_changed!(new_plan, provider_object, opts)
-        quota.plan_changed!(new_plan, provider_object, opts)
+      if block_given?
+        ActiveRecord::Base.transaction do
+          yield(provider_object, opts)
+        end
       end
     end
   end
