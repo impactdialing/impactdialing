@@ -12,7 +12,7 @@ class Billing::Subscription < ActiveRecord::Base
   # must be one of 'per_minute', 'enterprise', 'business', 'basic' or 'pro'
 private
   def autorecharge_defaults
-    {enabled: 0, trigger: 0, amount: 0}
+    {enabled: 0, trigger: 0, amount: 0, pending: 0}
   end
 
   def sane_autorecharge_settings
@@ -44,16 +44,29 @@ public
     autorecharge_settings[:enabled].to_i > 0
   end
 
+  def autorecharge_pending?
+    autorecharge_pending.to_i > 0
+  end
+
   def autorecharge_settings
     settings[:autorecharge] || autorecharge_defaults
   end
 
   def autorecharge_amount
-    (autorecharge_settings[:amount] || 0).to_i
+    autorecharge_settings[:amount].to_i
   end
 
   def autorecharge_trigger
-    (autorecharge_settings[:trigger] || 0).to_i
+    autorecharge_settings[:trigger].to_i
+  end
+
+  def autorecharge_pending
+    autorecharge_settings[:pending].to_i
+  end
+
+  def autorecharge_pending!
+    new_settings = autorecharge_settings.merge({pending: 1})
+    update_autorecharge_settings!(new_settings)
   end
 
   def autorecharge_minutes

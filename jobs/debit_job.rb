@@ -18,7 +18,7 @@ class DebitJob
       # debug
       before = [quota.minutes_used, quota.minutes_available]
 
-      debit = Debit.new(call_time, quota)
+      debit = Debit.new(call_time, quota, account)
       results << debit.process
 
       # debug
