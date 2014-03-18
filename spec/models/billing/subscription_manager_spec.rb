@@ -50,7 +50,7 @@ describe Billing::SubscriptionManager do
     end
 
     it 'tells `plans` to validate the transition' do
-      plans.should_receive(:validate_transition!).with(old_plan, new_plan, opts)
+      plans.should_receive(:validate_transition!).with(old_plan, new_plan, quota.minutes_available?, opts)
       manager.update!(new_plan, opts)
     end
     context 'plans.recurring? => true' do

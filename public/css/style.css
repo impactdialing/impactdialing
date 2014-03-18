@@ -856,7 +856,16 @@ margin-bottom : 1.5em; }
 .alert {
 padding-left : 60px;
 background : rgb(225,242,254) url(../img/icon-alert.png) no-repeat 20px 20px;
-border : 1px solid rgb(199,224,241); }
+border : 1px solid rgb(199,224,241);
+}
+
+.notice {
+  float: right;
+  max-width: 44%;
+  display: inline-block;
+  background-color: rgb(225,242,254);
+  border : 1px solid rgb(199,224,241);
+}
 
 /* col */
 

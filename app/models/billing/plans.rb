@@ -46,6 +46,14 @@ public
     @config = SUBSCRIPTION_PLANS
   end
 
+  def self.permitted_ids_for(plan_id, minutes_available)
+    this = self.new
+    plan = this.find(plan_id)
+    ids.reject do |id|
+      !this.valid_transition?(false, plan_id, id, minutes_available, {callers_allowed: 1, amount_paid: 3})
+    end
+  end
+
   def self.ids
     self.new.ids
   end
@@ -117,16 +125,26 @@ public
   # opts is a hash where valid keys are :callers_allowed & :amount_paid and valid
   # values are positive integer or float values (both will be treated as Integer).
   #
-  def validate_transition!(old_plan, new_plan, opts={})
+  def validate_transition!(old_plan, new_plan, minutes_available, opts={})
+    msg = valid_transition?(true, old_plan, new_plan, minutes_available, opts)
+    msg = I18n.t(msg)
+    raise InvalidPlanTransition.new(old_plan, new_plan, opts, msg)
+  end
+
+  def valid_transition?(return_msg, old_plan, new_plan, minutes_available, opts={})
     msg = if recurring?(new_plan) && !valid_recurring?(new_plan, opts[:callers_allowed])
             'billing.plans.transition_errors.callers_allowed'
-          elsif buying_minutes?(new_plan) && !valid_minutes_purchase?(new_plan, opts[:amount_paid])
-            'billing.plans.transition_errors.amount_paid'
+          elsif buying_minutes?(new_plan)
+            if recurring?(old_plan) && minutes_available
+              'billing.plans.transition_errors.minutes_available'
+            elsif !valid_minutes_purchase?(new_plan, opts[:amount_paid])
+              'billing.plans.transition_errors.amount_paid'
+            end
           end
 
     return true if msg.blank?
-    msg = I18n.t(msg)
-    raise InvalidPlanTransition.new(old_plan, new_plan, opts, msg)
+    return msg if return_msg
+    return false
   end
 end
 

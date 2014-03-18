@@ -74,7 +74,7 @@ public
     old_plan          = record.plan
     minutes_available = quota.minutes_available?
 
-    plans.validate_transition!(old_plan, new_plan, opts)
+    plans.validate_transition!(old_plan, new_plan, minutes_available, opts)
 
     # plans are either recurring or buying minutes.
     provider_object = update_recurring_subscription!(new_plan, opts[:callers_allowed])

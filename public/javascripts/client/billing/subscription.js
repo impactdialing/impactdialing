@@ -46,8 +46,6 @@ Subscriptions.prototype.calculatedTotalMonthlyCost = function(){
   }
 
   if( $("#subscription_type").val() != "per_minute" ){
-    console.log('callers: ', $('#number_of_callers').val())
-    console.log('plan: ', $('#subscription_type').val())
     value = (plans[$("#subscription_type").val()] * $("#number_of_callers").val());
     if( $('#number_of_callers').val()< 1 ){
       var msg = "You need to have at least 1 caller.";

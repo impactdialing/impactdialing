@@ -15,13 +15,23 @@
     } do |f| %>
   <fieldset>
     <legend>Plan</legend>
-    <p>
-      <label for="subscription_type">Select plan:</label>
-      <select name="plan" id="subscription_type" data-value="<%= @subscription.plan %>">
-        <%= options_for_select subscription_type_options_for_select,
-                               @subscription.plan %>
-      </select>
-    </p>
+    <div>
+      <% if @subscription.plan == 'trial' || cannot?(:add_minutes, @subscription) %>
+          <p class="callout notice clearfix">
+            You will be able to change between Basic, Pro and Business plans as well as from Per minute to Basic, Pro or Business at anytime from here. Changes between Basic, Business and Pro are prorated. Changes from Per minute to Basic, Business or Pro are not prorated but you will retain the previously purchased minutes until the end of the new billing cycle.
+          </p>
+          <p class="callout notice clearfix">
+            To switch to a Per minute plan from the Basic, Pro or Business plans before consuming all minutes available please contact support. To clarify: if you sign-up for a Basic plan and decide the Per minute plan is a better fit we will have to perform that switch ourselves.
+          </p>
+      <% end %>
+      <p>
+        <label for="subscription_type">Select plan:</label>
+        <select name="plan" id="subscription_type" data-value="<%= @subscription.plan %>">
+          <%= options_for_select subscription_type_options_for_select(@subscription, @quota.minutes_available),
+                                 @subscription.plan %>
+        </select>
+      </p>
+    </div>
     <div id="num_of_callers_section">
       <label for="number_of_callers">Number of callers:</label>
       <input type="text"  class="field" style="width:50px" name="caller_seats" id="number_of_callers" value="<%= @quota.callers_allowed %>" data-value="<%= @quota.callers_allowed %>"/>

@@ -1,6 +1,7 @@
 module Client::Billing::SubscriptionHelper
-  def subscription_type_options_for_select
-    return ::Billing::Plans.ids.map do |type|
+  def subscription_type_options_for_select(subscription, minutes_available)
+    ids = ::Billing::Plans.permitted_ids_for(subscription.plan, minutes_available)
+    return ids.map do |type|
       [subscription_human_type(type), type]
     end
   end

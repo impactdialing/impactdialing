@@ -65,24 +65,21 @@ describe Billing::Plans do
     context 'raises InvalidPlanTransition when' do
       it 'transitioning to a recurring plan w/out a valid number of callers' do
         expect{
-          plans.validate_transition!('basic', 'pro', true, {})
+          plans.validate_transition!('basic', 'pro', false, {})
         }.to raise_error{ Billing::Plans::InvalidPlanTransition }
         expect{
-          plans.validate_transition!('pro', 'business', true, {callers_allowed: -1})
+          plans.validate_transition!('pro', 'business', false, {callers_allowed: -1})
         }.to raise_error{ Billing::Plans::InvalidPlanTransition }
         expect{
-          plans.validate_transition!('pro', 'business', true, {callers_allowed: 0.5})
+          plans.validate_transition!('pro', 'business', false, {callers_allowed: 0.5})
         }.to raise_error{ Billing::Plans::InvalidPlanTransition }
         expect{
-          plans.validate_transition!('pro', 'business', true, {callers_allowed: 0})
+          plans.validate_transition!('pro', 'business', false, {callers_allowed: 0})
         }.to raise_error{ Billing::Plans::InvalidPlanTransition }
       end
-      it 'transitioning to a recurring plan from a per minute plan w/out a valid number of callers' do
+      it 'transitioning to a per minute plan from a recurring plan when minutes are available' do
         expect{
-          plans.validate_transition!('per_minute', 'business', true, {callers_allowed: 2})
-        }.to raise_error{ Billing::Plans::InvalidPlanTransition }
-        expect{
-          plans.validate_transition!('per_minute', 'pro', true, {callers_allowed: 2})
+          plans.validate_transition!('pro', 'per_minute', true, {amount_paid: 3})
         }.to raise_error{ Billing::Plans::InvalidPlanTransition }
       end
       it 'transitioning to a per minute plan w/out a valid number of USD' do
@@ -97,27 +94,27 @@ describe Billing::Plans do
 
     context 'returns true when given valid arguments and' do
       it 'transitioning to a recurring plan from another recurring plan' do
-        actual = plans.validate_transition!('trial', 'basic', {callers_allowed: 1})
+        actual = plans.validate_transition!('trial', 'basic', true, {callers_allowed: 1})
         actual.should be_true
       end
-      it 'transitioning to a per minute plan from a recurring plan' do
-        actual = plans.validate_transition!('pro', 'per_minute', {amount_paid: 3})
+      it 'transitioning to a per minute plan from a recurring plan when NO minutes are available' do
+        actual = plans.validate_transition!('pro', 'per_minute', false, {amount_paid: 3})
         actual.should be_true
       end
       it 'transitioning to a recurring plan from a per minute plan' do
-        actual = plans.validate_transition!('per_minute', 'pro', {callers_allowed: 2})
+        actual = plans.validate_transition!('per_minute', 'pro', true, {callers_allowed: 2})
         actual.should be_true
       end
       it 'adding callers to a recurring plan' do
-        actual = plans.validate_transition!('basic', 'basic', {callers_allowed: 5})
+        actual = plans.validate_transition!('basic', 'basic', true, {callers_allowed: 5})
         actual.should be_true
       end
       it 'removing callers from a recurring plan' do
-        actual = plans.validate_transition!('pro', 'pro', {callers_allowed: 3})
+        actual = plans.validate_transition!('pro', 'pro', true, {callers_allowed: 3})
         actual.should be_true
       end
       it 'adding minutes to a per minute plan' do
-        actual = plans.validate_transition!('per_minute', 'per_minute', {amount_paid: 4})
+        actual = plans.validate_transition!('per_minute', 'per_minute', true, {amount_paid: 4})
         actual.should be_true
       end
     end
