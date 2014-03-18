@@ -23,7 +23,7 @@ class Billing::Jobs::AutoRecharge
     manager     = ::Billing::SubscriptionManager.new(customer_id, subscription, quota)
     manager.update!(plan_id, {
       amount_paid: amount,
-      autorecharge: true
+      autorecharge: 1
     }) do |provider_object, opts|
       subscription.autorecharge_pending!
       quota.plan_changed!(plan_id, provider_object, opts)

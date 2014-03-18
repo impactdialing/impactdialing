@@ -45,7 +45,7 @@ class Billing::PaymentGateway
     })
   end
 
-  def create_charge(usd_paid, autorecharge=false)
+  def create_charge(usd_paid, autorecharge=0)
     Stripe::Charge.create({
       amount: usd_paid.to_i*100,
       currency: "usd",

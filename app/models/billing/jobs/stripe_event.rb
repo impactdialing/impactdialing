@@ -154,7 +154,7 @@ class Billing::Jobs::StripeEvent
 
   def self.update_per_minute_quota!(quota, plan, amount, autorecharge)
     # quietly ignore manual recharges
-    return true unless autorecharge
+    return true unless autorecharge.to_i > 0
 
     subscription = quota.account.billing_subscription
 
@@ -168,7 +168,7 @@ class Billing::Jobs::StripeEvent
     stripe_obj_type = stripe_event.data[:object][:object]
     autorecharge    = stripe_event.data[:object][:metadata][:autorecharge]
 
-    unless autorecharge
+    unless autorecharge.to_i > 0
       finish_job(stripe_event)
       return
     end

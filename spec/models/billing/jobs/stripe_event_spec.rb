@@ -83,7 +83,7 @@ describe Billing::Jobs::StripeEvent do
           object: 'charge',
           amount: amount,
           metadata: {
-            autorecharge: true
+            autorecharge: "1"
           }
         }
       }
@@ -110,7 +110,7 @@ describe Billing::Jobs::StripeEvent do
 
     context 'when not triggered by autorecharge' do
       before do
-        event_data[:object][:metadata][:autorecharge] = false
+        event_data[:object][:metadata][:autorecharge] = "0"
       end
       after do
         subject.perform(stripe_event_id)
@@ -131,7 +131,7 @@ describe Billing::Jobs::StripeEvent do
           object: 'charge',
           amount: amount,
           metadata: {
-            autorecharge: true
+            autorecharge: "1"
           }
         }
       }
@@ -161,7 +161,7 @@ describe Billing::Jobs::StripeEvent do
 
     context 'when not triggered by autorecharge' do
       before do
-        event_data[:object][:metadata][:autorecharge] = false
+        event_data[:object][:metadata][:autorecharge] = "0"
       end
       it 'delivers nothing' do
         BillingMailer.should_not_receive(:new)
