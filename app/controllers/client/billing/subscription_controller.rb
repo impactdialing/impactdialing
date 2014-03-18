@@ -3,13 +3,25 @@
 #
 class Client::Billing::SubscriptionController < ClientController
 
-  rescue_from Stripe::InvalidRequestError, with: :log_flash_render_edit
+  rescue_from Stripe::InvalidRequestError, with: :stripe_invalid_request_error
+  rescue_from Stripe::APIConnectionError, with: :stripe_api_connection_error
   rescue_from ::Billing::Plans::InvalidPlanTransition, with: :flash_render_edit
 
 private
-  def log_flash_render_edit(exception)
+  def flash_i18n_now(flash_key, i18n_key)
+    flash.now[flash_key] = [I18n.t(i18n_key)]
+  end
+  def log_exception(exception)
     Rails.logger.error("RescuedException: #{exception.class} -- #{exception.message}")
-    flash.now[:error] = [I18n.t('stripe.invalid_request_error')]
+  end
+  def stripe_invalid_request_error(exception)
+    log_exception(exception)
+    flash_i18n_now(:error, 'stripe.invalid_request_error')
+    render :edit
+  end
+  def stripe_api_connection_error(exception)
+    log_exception(exception)
+    flash_i18n_now(:error, 'stripe.api_error')
     render :edit
   end
 
