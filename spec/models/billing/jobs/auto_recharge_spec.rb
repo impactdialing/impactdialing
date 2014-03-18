@@ -17,7 +17,7 @@ describe Billing::Jobs::AutoRecharge do
   end
   let(:quota) do
     double('Quota', {
-      available_minutes: 200
+      minutes_available: 200
     })
   end
   let(:account) do
@@ -48,9 +48,9 @@ describe Billing::Jobs::AutoRecharge do
     end
   end
 
-  context 'quota.available_minutes < autorecharge_trigger && not autorecharge_pending?' do
+  context 'quota.minutes_available < autorecharge_trigger && not autorecharge_pending?' do
     before do
-      quota.stub(:available_minutes){ subscription.autorecharge_trigger - 4 }
+      quota.stub(:minutes_available){ subscription.autorecharge_trigger - 4 }
     end
     after do
       subject.perform(account_id)
@@ -59,12 +59,12 @@ describe Billing::Jobs::AutoRecharge do
       subscription_manager.should_receive(:update!).with('per_minute', {amount_paid: amount, autorecharge: anything})
     end
   end
-  context 'quota.available_minutes < autorecharge_trigger || autorecharge_pending?' do
+  context 'quota.minutes_available < autorecharge_trigger || autorecharge_pending?' do
     it_behaves_like 'no recharge needed'
   end
   context 'subscription.plan != per_minute' do
     before do
-      quota.stub(:available_minutes){ subscription.autorecharge_trigger - 4 }
+      quota.stub(:minutes_available){ subscription.autorecharge_trigger - 4 }
       subscription.stub(:plan){ 'business' }
     end
     it_behaves_like 'no recharge needed'

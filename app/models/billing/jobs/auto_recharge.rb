@@ -15,8 +15,8 @@ class Billing::Jobs::AutoRecharge
     amount            = subscription.autorecharge_amount
     payment_pending   = subscription.autorecharge_pending?
     quota             = account.quota
-    available_minutes = quota.available_minutes
-    recharge_needed   = available_minutes < trigger && (not payment_pending)
+    minutes_available = quota.minutes_available
+    recharge_needed   = minutes_available < trigger && (not payment_pending)
 
     return unless recharge_needed
 
@@ -26,7 +26,7 @@ class Billing::Jobs::AutoRecharge
       autorecharge: true
     }) do |provider_object, opts|
       subscription.autorecharge_pending!
-      quota.plan_changed!(new_plan, provider_object, opts)
+      quota.plan_changed!(plan_id, provider_object, opts)
     end
   end
 
