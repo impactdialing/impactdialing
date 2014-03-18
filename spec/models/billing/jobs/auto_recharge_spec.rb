@@ -56,7 +56,7 @@ describe Billing::Jobs::AutoRecharge do
       subject.perform(account_id)
     end
     it 'tells billing_subscription_manager update!(plan_id, {amount_paid: amount})' do
-      subscription_manager.should_receive(:update!).with('per_minute', {amount_paid: amount})
+      subscription_manager.should_receive(:update!).with('per_minute', {amount_paid: amount, autorecharge: anything})
     end
   end
   context 'quota.available_minutes < autorecharge_trigger || autorecharge_pending?' do

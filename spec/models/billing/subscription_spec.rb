@@ -66,5 +66,60 @@ describe Billing::Subscription do
         subscription.reload.autorecharge_pending.should eql 1
       end
     end
+
+    describe '#is_renewal?(start_period, end_period)' do
+      let(:subscription){ Billing::Subscription.new }
+      let(:start_period){ Time.at(10.minutes.ago) }
+      let(:end_period){ Time.at(start_period + 1.month) }
+
+      context 'start_period > self.provider_start_period and end_period > self.provider_end_period' do
+        before do
+          subscription.provider_start_period = Time.at(start_period - 1.month)
+          subscription.provider_end_period   = Time.at(end_period - 1.month)
+        end
+
+        it 'returns true' do
+          subscription.is_renewal?(start_period, end_period).should be_true
+        end
+      end
+
+      context 'start_period <= self.provider_start_period or end_period <= self.provider_end_period' do
+        before do
+          subscription.provider_start_period = start_period
+          subscription.provider_end_period   = end_period
+        end
+        it 'returns false' do
+          subscription.is_renewal?(start_period, end_period).should be_false
+        end
+      end
+    end
+
+    describe '#renewed!(start_period, end_period)' do
+      let(:account){ create(:account) }
+      let(:subscription){ account.billing_subscription }
+      let(:start_period){ Time.at(10.minutes.ago) }
+      let(:end_period){ Time.at(start_period + 1.month) }
+
+      it 'sets provider_start_period to start_period' do
+        subscription.renewed!(start_period, end_period)
+        actual = Time.at(subscription.reload.provider_start_period).utc
+        expected = start_period.utc
+        actual.should be_within(1).of(expected)
+      end
+      it 'sets provider_end_period to end_period' do
+        subscription.renewed!(start_period, end_period)
+        actual = Time.at(subscription.reload.provider_end_period).utc
+        expected = end_period.utc
+        actual.should be_within(1).of(expected)
+      end
+      context 'when invalid' do
+        it 'raises ActiveRecord::RecordInvalid' do
+          subscription.plan = nil
+          expect {
+            subscription.renewed!(start_period, end_period)
+          }.to raise_error(ActiveRecord::RecordInvalid)
+        end
+      end
+    end
   end
 end

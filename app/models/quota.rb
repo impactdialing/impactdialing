@@ -75,6 +75,7 @@ class Quota < ActiveRecord::Base
     end
     used    += minutes_used
     pending += minutes_pending
+
     return update_attributes({
       minutes_used: used,
       minutes_pending: pending
@@ -83,7 +84,15 @@ class Quota < ActiveRecord::Base
 
   def zero_minutes_and_callers
     self.callers_allowed = 0
+    zero_minutes
+  end
+
+  def zero_minutes
     self.minutes_allowed = 0
+    zero_usage_minutes
+  end
+
+  def zero_usage_minutes
     self.minutes_used    = 0
     self.minutes_pending = 0
   end
@@ -160,8 +169,7 @@ class Quota < ActiveRecord::Base
     quantity * plan.minutes_per_quantity * left_total_ratio
   end
 
-  def add_minutes(plan, provider_object, opts={})
-    amount               = provider_object.amount # in cents
+  def add_minutes(plan, amount)
     price                = (plan.price_per_quantity * 100) # convert dollars to cents
     minutes_purchased    = (amount / price).to_i
 
@@ -198,10 +206,21 @@ class Quota < ActiveRecord::Base
         zero_minutes_and_callers
       end
       if plan.per_minute?
-        add_minutes(plan, provider_object, opts)
+        amount = provider_object.amount # in cents
+        add_minutes(plan, amount)
       end
     end
 
     save!
+  end
+
+  ##
+  # Reset quota allowances.
+  # Applicable to recurring plans only (see +Billing::Plans::RECURRING_PLANS+).
+  #
+  def reset(plan)
+    zero_usage_minutes
+    self.minutes_allowed = quantity * plan.minutes_per_quantity
+    self.callers_allowed = quantity
   end
 end

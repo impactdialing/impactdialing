@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140310233830) do
+ActiveRecord::Schema.define(:version => 20140317213512) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -108,14 +108,16 @@ ActiveRecord::Schema.define(:version => 20140310233830) do
   add_index "billing_stripe_events", ["provider_id"], :name => "index_billing_stripe_events_on_provider_id"
 
   create_table "billing_subscriptions", :force => true do |t|
-    t.integer  "account_id",      :null => false
+    t.integer  "account_id",            :null => false
     t.string   "provider_id"
     t.string   "provider_status"
     t.string   "status"
-    t.string   "plan",            :null => false
+    t.string   "plan",                  :null => false
     t.text     "settings"
-    t.datetime "created_at",      :null => false
-    t.datetime "updated_at",      :null => false
+    t.datetime "created_at",            :null => false
+    t.datetime "updated_at",            :null => false
+    t.datetime "provider_start_period"
+    t.datetime "provider_end_period"
   end
 
   add_index "billing_subscriptions", ["account_id"], :name => "index_billing_subscriptions_on_account_id"

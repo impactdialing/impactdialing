@@ -48,6 +48,13 @@ public
     autorecharge_pending.to_i > 0
   end
 
+  def is_renewal?(start_period, end_period)
+    # Bypass any minor time diffs between us and Stripe.
+    required_diff = 25.days
+    (provider_start_period - start_period).abs > required_diff &&
+    (provider_end_period - end_period).abs > required_diff
+  end
+
   def autorecharge_settings
     settings[:autorecharge] || autorecharge_defaults
   end
@@ -64,17 +71,23 @@ public
     autorecharge_settings[:pending].to_i
   end
 
+  def autorecharge_minutes
+    current_plan.calculate_purchased_minutes(autorecharge_amount)
+  end
+
   def autorecharge_pending!
     new_settings = autorecharge_settings.merge({pending: 1})
     update_autorecharge_settings!(new_settings)
   end
 
-  def autorecharge_minutes
-    current_plan.calculate_purchased_minutes(autorecharge_amount)
-  end
-
   def update_autorecharge_settings!(new_settings)
     self.settings[:autorecharge] = new_settings
+    save!
+  end
+
+  def renewed!(start_period, end_period)
+    self.provider_start_period = start_period
+    self.provider_end_period   = end_period
     save!
   end
 
