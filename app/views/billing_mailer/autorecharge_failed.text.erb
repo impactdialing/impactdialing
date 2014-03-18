@@ -1,0 +1,9 @@
+Oh no! We tried and failed to automatically purchase <%= @minutes_attempted %> minutes for your account. Most likely this is because the card we have on file being declined.
+
+This automatic attempt was made because the autorecharge settings on your account are set to purchase <%= @minutes_attempted %> for <%= number_to_currency(@amount) %> when your account has less than <%= @trigger %> minutes remaining.
+
+Autorecharge is now disabled. Please login to update the payment info and re-enable autorecharge or manually add funds.
+
+Your account currently has <%= 'minute'.pluralize(@minutes_available) %> remaining. When these reach zero then callers will not be able to dial.
+
+Don't hesitate to get a hold of us at <%= SUPPORT_EMAIL %> with any questions or concerns.

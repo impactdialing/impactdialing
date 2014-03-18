@@ -80,14 +80,30 @@ public
     update_autorecharge_settings!(new_settings)
   end
 
+  def autorecharge_paid!
+    new_settings = autorecharge_settings.merge({pending: 0})
+    update_autorecharge_settings!(new_settings)
+  end
+
+  def autorecharge_disable!
+    new_settings = autorecharge_settings.merge({enabled: 0, pending: 0})
+    update_autorecharge_settings!(new_settings)
+  end
+
   def update_autorecharge_settings!(new_settings)
     self.settings[:autorecharge] = new_settings
     save!
   end
 
-  def renewed!(start_period, end_period)
+  def cache_provider_status!(status)
+    self.provider_status = status
+    save!
+  end
+
+  def renewed!(start_period, end_period, status)
     self.provider_start_period = start_period
     self.provider_end_period   = end_period
+    self.provider_status       = status
     save!
   end
 

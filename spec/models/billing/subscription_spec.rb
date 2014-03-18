@@ -94,20 +94,21 @@ describe Billing::Subscription do
       end
     end
 
-    describe '#renewed!(start_period, end_period)' do
+    describe '#renewed!(start_period, end_period, status)' do
       let(:account){ create(:account) }
       let(:subscription){ account.billing_subscription }
       let(:start_period){ Time.at(10.minutes.ago) }
       let(:end_period){ Time.at(start_period + 1.month) }
+      let(:status){ 'active' }
 
       it 'sets provider_start_period to start_period' do
-        subscription.renewed!(start_period, end_period)
+        subscription.renewed!(start_period, end_period, status)
         actual = Time.at(subscription.reload.provider_start_period).utc
         expected = start_period.utc
         actual.should be_within(1).of(expected)
       end
       it 'sets provider_end_period to end_period' do
-        subscription.renewed!(start_period, end_period)
+        subscription.renewed!(start_period, end_period, status)
         actual = Time.at(subscription.reload.provider_end_period).utc
         expected = end_period.utc
         actual.should be_within(1).of(expected)
@@ -116,7 +117,26 @@ describe Billing::Subscription do
         it 'raises ActiveRecord::RecordInvalid' do
           subscription.plan = nil
           expect {
-            subscription.renewed!(start_period, end_period)
+            subscription.renewed!(start_period, end_period, status)
+          }.to raise_error(ActiveRecord::RecordInvalid)
+        end
+      end
+    end
+
+    describe '#cache_provider_status!(status)' do
+      let(:account){ create(:account) }
+      let(:subscription){ account.billing_subscription }
+      let(:status){ 'past_due' }
+
+      it 'sets provider_status to status' do
+        subscription.cache_provider_status!(status)
+        subscription.provider_status.should eq status
+      end
+      context 'when invalid' do
+        it 'raises ActiveRecord::RecordInvalid' do
+          subscription.plan = nil
+          expect {
+            subscription.cache_provider_status!(status)
           }.to raise_error(ActiveRecord::RecordInvalid)
         end
       end
