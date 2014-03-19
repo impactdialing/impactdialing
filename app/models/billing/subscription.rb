@@ -37,7 +37,7 @@ public
   end
 
   def canceled?
-    return status == 'Canceled'
+    return provider_status == 'canceled'
   end
 
   def autorecharge_active?
@@ -140,6 +140,12 @@ public
       cache_provider_details(nil, nil, nil, nil)
     end
 
+    save!
+  end
+
+  def plan_cancelled!(provider_object)
+    cache_provider_details(provider_object.id, provider_object.current_period_start, provider_object.current_period_end, provider_object.status)
+    update_autorecharge_settings(autorecharge_defaults)
     save!
   end
 end

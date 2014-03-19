@@ -76,6 +76,15 @@ private
     end
   end
 
+  def cancel!
+    customer_id = account.billing_provider_customer_id
+    manager     = ::Billing::SubscriptionManager.new(customer_id, subscription, quota)
+    manager.cancel! do |provider_object, opts|
+      subscription.plan_cancelled!(provider_object)
+      quota.plan_cancelled!
+    end
+  end
+
 public
   def show
     subscription
@@ -93,6 +102,12 @@ public
     else
       flash_message(:notice, I18n.t('subscriptions.nothing_to_do'))
     end
+    redirect_to client_billing_subscription_path
+  end
+
+  def cancel
+    cancel!
+    flash_message(:notice, I18n.t('subscriptions.cancelled'))
     redirect_to client_billing_subscription_path
   end
 

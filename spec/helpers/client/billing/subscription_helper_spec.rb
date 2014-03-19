@@ -64,8 +64,7 @@ describe Client::Billing::SubscriptionHelper do
 
         actual[0].should eq 'Cancel subscription'
         actual[1].should eq({
-          action: 'cancel',
-          id: subscription.id
+          action: 'cancel'
         })
         actual[2].should eq({
           method: 'put',

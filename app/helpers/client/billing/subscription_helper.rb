@@ -33,8 +33,7 @@ module Client::Billing::SubscriptionHelper
     if can? :cancel_subscription, subscription
       button << 'Cancel subscription'
       button << {
-        action: 'cancel',
-        id: subscription.id
+        action: 'cancel'
       }
       button << {
         method: 'put',

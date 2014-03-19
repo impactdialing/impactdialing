@@ -1,7 +1,10 @@
 <h1>Billing</h1>
 <% if @subscription.canceled? %>
   <p>
-    You have cancelled your Subscription.
+    You have cancelled your subscription.
+  </p>
+  <p>
+    Looking to re-subscribe? Yay! Get in touch at <a href="mailto:<%= SUPPORT_EMAIL %>"><%= SUPPORT_EMAIL %></a>.
   </p>
 <% else %>
   <p>

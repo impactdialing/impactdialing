@@ -235,6 +235,11 @@ class Quota < ActiveRecord::Base
     save!
   end
 
+  def plan_cancelled!
+    zero_minutes_and_callers
+    save!
+  end
+
   ##
   # Reset quota allowances.
   # Applicable to recurring plans only (see +Billing::Plans::RECURRING_PLANS+).

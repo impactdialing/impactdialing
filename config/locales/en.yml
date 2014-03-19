@@ -66,6 +66,7 @@ en:
     add_funds:
       success: 'The amount has been added to your balance.'
     nothing_to_do: 'It looks like you submitted details that match your current plan so we did not change anything.'
+    cancelled: 'Subscription cancelled successfully. Administrators can still login but with limited features.'
   stripe:
     invalid_request_error: "There was an error processing your payment. Verify your payment info is up to date and try again. Please contact support if this problem continues."
     api_error: "We hit a temporary glitch processing your payment. Try again. Please contact support if this problem continues."

@@ -231,7 +231,7 @@ describe 'Account profile' do
       end
     end
 
-    describe 'Change from PerMinute (100 minutes available) to Pro w/ 1 caller' do
+    describe 'Change from PerMinute (100 minutes available) to Pro w/ 1 caller', selenium: true do
       let(:amount){ 9 }
       let(:cost){ 0.09 }
       let(:available_per_minute){ (amount / cost).to_i }
@@ -320,6 +320,30 @@ describe 'Account profile' do
         click_on 'Save'
         page.should have_content I18n.t('subscriptions.autorecharge.update')
         page.should_not have_content "$45 (500 minutes) will be automatically added when there are less than 100 Minutes left."
+      end
+    end
+
+    describe 'cancelling a recurring subscription', webkit: true do
+      let(:account){ user.account }
+      before do
+        add_valid_payment_info
+        go_to_upgrade
+        select_plan 'Pro'
+        enter_n_callers 1
+        click_on 'Upgrade'
+        page.should have_content "Minutes left: 2500"
+        go_to_billing
+        click_on 'Cancel subscription'
+        # should work to handle alerts/confirms on selenium, but not currently
+        # a = page.driver.browser.switch_to.alert
+        # a.accept  # can also be a.dismiss
+      end
+      it 'displays flash notice when successful' do
+        page.should have_content I18n.t('subscriptions.cancelled')
+        page.should have_content "You have cancelled your subscription."
+      end
+      it 'hides all billing related stuff, requiring customers to contact support to re-subscribe' do
+        # page.should have_content "You have cancelled your subscription."
       end
     end
   end

@@ -62,6 +62,14 @@ class Billing::SubscriptionManager
     return payment_gateway.create_charge(amount_paid)
   end
 
+  def run_callbacks(provider_object, opts, &block)
+    if block_given?
+      ActiveRecord::Base.transaction do
+        yield(provider_object, opts)
+      end
+    end
+  end
+
 public
 
   def initialize(customer_id, record, quota)
@@ -88,11 +96,12 @@ public
         old_plan_id: old_plan
       })
 
-      if block_given?
-        ActiveRecord::Base.transaction do
-          yield(provider_object, opts)
-        end
-      end
+      run_callbacks(provider_object, opts, &block)
     end
+  end
+
+  def cancel!(&block)
+    subscription = payment_gateway.cancel_subscription
+    run_callbacks(subscription, {}, &block)
   end
 end
