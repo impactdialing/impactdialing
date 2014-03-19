@@ -133,6 +133,36 @@ describe Quota do
     end
   end
 
+  describe '#prorated_minutes' do
+    let(:account) do
+      create(:account)
+    end
+    let(:quota) do
+      account.quota
+    end
+    let(:basic_plan) do
+      double('Billing::Plan', {
+        id: 'basic',
+        minutes_per_quantity: 1000,
+        price_per_quantity: 49.0
+      })
+    end
+    let(:provider_object) do
+      double('ProviderSubscription', {
+        quantity: 1,
+        amount: 49.0,
+        current_period_start: 2.weeks.ago,
+        current_period_end: 2.weeks.from_now
+      })
+    end
+    it 'returns computed minutes based on std prorate formula' do
+      quantity = 1
+      actual = quota.prorated_minutes(basic_plan, provider_object, quantity)
+      expected = 1000 / 2
+      actual.should be_within(10).of(expected)
+    end
+  end
+
   context 'changing plan features / options' do
     let(:account) do
       create(:account)
@@ -206,7 +236,7 @@ describe Quota do
           quota.callers_allowed.should eq provider_object.quantity
         end
         it 'does not touch minutes_allowed' do
-          quota.minutes_allowed.should eq prorated_minutes(provider_object, 1000) + allowed
+          quota.minutes_allowed.should eq allowed
         end
         it 'does not touch minutes_used' do
           quota.minutes_used.should eq used
@@ -335,7 +365,8 @@ describe Quota do
         let(:opts) do
           {
             callers_allowed: callers_allowed,
-            old_plan_id: 'basic'
+            old_plan_id: 'basic',
+            prorate: true
           }
         end
         before do
@@ -452,8 +483,8 @@ describe Quota do
           it 'sets callers_allowed = provider_object.quantity' do
             quota.callers_allowed.should eq provider_object.quantity
           end
-          it 'sets minutes_allowed = prorated(provider_object.quantity * 2500)' do
-            quota.minutes_allowed.should eq prorated_minutes(provider_object, 2500) + 6000
+          it 'does not touche minutes_allowed' do
+            quota.minutes_allowed.should eq 6000
           end
           it 'does not touch minutes_used' do
             quota.minutes_used.should eq 2345
@@ -502,7 +533,8 @@ describe Quota do
         let(:opts) do
           {
             callers_allowed: callers_allowed + 2,
-            old_plan_id: 'pro'
+            old_plan_id: 'pro',
+            prorate: true
           }
         end
         before do
@@ -533,7 +565,8 @@ describe Quota do
         let(:opts) do
           {
             callers_allowed: callers_allowed - 2,
-            old_plan_id: 'pro'
+            old_plan_id: 'pro',
+            prorate: true
           }
         end
         before do
@@ -564,7 +597,8 @@ describe Quota do
         let(:opts) do
           {
             callers_allowed: callers_allowed + 3,
-            old_plan_id: 'business'
+            old_plan_id: 'business',
+            prorate: true
           }
         end
         before do

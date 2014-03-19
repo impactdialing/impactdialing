@@ -110,7 +110,6 @@ class Billing::Jobs::StripeEvent
         credit_card.exp_month   = card.exp_month
         credit_card.exp_year    = card.exp_year
         credit_card.last4       = card.last4
-        Rails.logger.debug "Jobs::StripeEvent: updating #{credit_card.id} #{credit_card.errors.full_messages.join('; ')}"
       else
         credit_card = account.build_billing_credit_card({
           provider_id: card.id,
@@ -118,7 +117,6 @@ class Billing::Jobs::StripeEvent
           exp_year: card.exp_year,
           last4: card.last4
         })
-        Rails.logger.debug "Jobs::StripeEvent: created #{credit_card.id} #{credit_card.errors.full_messages.join('; ')}"
       end
 
       credit_card.save!
@@ -130,7 +128,6 @@ class Billing::Jobs::StripeEvent
     account         = Account.find_by_billing_provider_customer_id(customer_id)
     credit_card     = account.billing_credit_card
     if credit_card.present? && credit_card.provider_id == stripe_event.data[:object][:id]
-      Rails.logger.debug "Jobs::StripeEvent: destroying: #{credit_card.provider_id} == #{stripe_event.data[:object][:id]}"
       credit_card.destroy
     end
   end

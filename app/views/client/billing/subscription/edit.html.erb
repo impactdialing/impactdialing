@@ -16,12 +16,12 @@
   <fieldset>
     <legend>Plan</legend>
     <div>
-      <% if @subscription.plan == 'trial' || cannot?(:add_minutes, @subscription) %>
+      <% if @subscription.plan == 'trial' || @subscription.plan != 'per_minute' %>
           <p class="callout notice clearfix">
             You will be able to change between Basic, Pro and Business plans as well as from Per minute to Basic, Pro or Business at anytime from here. Changes between Basic, Business and Pro are prorated. Changes from Per minute to Basic, Business or Pro are not prorated but you will retain the previously purchased minutes until the end of the new billing cycle.
           </p>
           <p class="callout notice clearfix">
-            To switch to a Per minute plan from the Basic, Pro or Business plans before consuming all minutes available please contact support. To clarify: if you sign-up for a Basic plan and decide the Per minute plan is a better fit we will have to perform that switch ourselves.
+            If you sign-up for a Basic, Pro or Business plan and later decide the Per minute plan is a better fit please contact us at <a href="mailto:<%= SUPPORT_EMAIL %>"><%= SUPPORT_EMAIL %></a> and we'll be happy to get you setup.
           </p>
       <% end %>
       <p>

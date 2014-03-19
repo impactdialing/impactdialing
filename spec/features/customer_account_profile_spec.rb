@@ -133,7 +133,7 @@ describe 'Account profile' do
       end
     end
 
-    describe 'Upgrade to Basic plan' do
+    describe 'Upgrade from Trial to Basic plan' do
       let(:cost){ 49 }
       let(:callers){ 2 }
 
@@ -151,7 +151,7 @@ describe 'Account profile' do
       end
     end
 
-    describe 'Upgrade to Pro plan' do
+    describe 'Upgrade from Trial to Pro plan' do
       let(:cost){ 99 }
       let(:callers){ 2 }
 
@@ -172,32 +172,39 @@ describe 'Account profile' do
 
     describe 'Upgrade from Trial to Per minute' do
       let(:cost){ 0.09 }
-      let(:minutes){ 500 }
+      let(:amount){ 9 }
+      let(:minutes){ amount / cost }
 
       before do
         add_valid_payment_info
         go_to_upgrade
         select_plan 'Per minute'
+        fill_in 'Add to balance:', with: amount
+        click_on 'Upgrade'
       end
 
       it 'adds user designated amount of funds to the account' do
-        fill_in 'Add to balance:', with: 500
-        click_on 'Upgrade'
         page.should have_content I18n.t('subscriptions.upgrade.success')
+      end
+
+      it 'updates the account quota so only the purchased minutes are available, trial minutes are not' do
+        page.should have_content "Minutes left: #{minutes.to_i}"
       end
 
       describe 'with blank Add to balance field' do
         let(:cost){ 0.09 }
-        let(:minutes){ 500 }
+        let(:amount){ 9 }
+        let(:minutes){ amount / cost }
 
         before do
           add_valid_payment_info
           go_to_upgrade
           select_plan 'Per minute'
+          fill_in 'Add to balance:', with: 0
           click_on 'Upgrade'
         end
 
-        it 'displays activerecord.errors.models.subscription.attributes.amount_paid.not_a_number' do
+        it 'displays billing.plans.transition_errors.amount_paid' do
           error = I18n.t('billing.plans.transition_errors.amount_paid')
           page.should have_content error
         end
@@ -209,7 +216,9 @@ describe 'Account profile' do
         add_valid_payment_info
         go_to_upgrade
         select_plan 'Pro'
+        enter_n_callers 1
         click_on 'Upgrade'
+        page.should have_content "Minutes left: 2500"
         page.should have_content I18n.t('subscriptions.upgrade.success')
       end
       it 'performs live update of monthly cost as plan and caller inputs change' do
@@ -222,23 +231,67 @@ describe 'Account profile' do
       end
     end
 
+    describe 'Change from PerMinute (100 minutes available) to Pro w/ 1 caller' do
+      let(:amount){ 9 }
+      let(:cost){ 0.09 }
+      let(:available_per_minute){ (amount / cost).to_i }
+      let(:minutes_from_recurring){ 2500 }
+      let(:account){ user.account }
+      let(:quota){ account.quota }
+      let(:subscription){ account.billing_subscription }
+      let(:customer) do
+        Stripe::Customer.create({
+          card: {
+            number: '4242424242424242',
+            exp_month: Date.today.month,
+            exp_year: Date.today.year + 1
+          },
+          email: user.email
+        })
+      end
+
+      before do
+        account.billing_provider_customer_id = customer.id
+        account.save!
+        manager = Billing::SubscriptionManager.new(account.billing_provider_customer_id, subscription, quota)
+        manager.update!('per_minute', {amount_paid: amount}) do |provider_object, opts|
+          subscription.plan_changed!('per_minute', provider_object, opts)
+          quota.plan_changed!('per_minute', provider_object, opts)
+        end
+        quota.minutes_available.should eq available_per_minute
+        subscription.plan.should eq 'per_minute'
+      end
+
+      it 'will add remaining minutes from PerMinute purchase to total minutes of the selected recurring plan' do
+        go_to_upgrade
+        select_plan 'Pro'
+        enter_n_callers 1
+        click_on 'Upgrade'
+        page.should have_content "Minutes left: #{available_per_minute + minutes_from_recurring}"
+      end
+      context '10 days into Pro billing cycle' do
+        # it_behaves_like 'customer keeps remaining minutes'
+      end
+
+    end
+
     describe 'Adding time to PerMinute' do
-      let(:minutes_purchased){ (500 / 0.09).to_i }
+      let(:amount){ 9 }
+      let(:minutes_purchased){ (amount / 0.09).to_i }
       before do
         add_valid_payment_info
         go_to_upgrade
         select_plan 'Per minute'
-        fill_in 'Add to balance:', with: 500
+        fill_in 'Add to balance:', with: amount
         click_on 'Upgrade'
         page.should have_content I18n.t('subscriptions.upgrade.success')
-        user.account.quota.reload.minutes_available.should eq minutes_purchased
+        page.should have_content "Minutes left: #{minutes_purchased}"
       end
 
       it 'Manually add funds' do
         go_to_billing
-        fill_in 'Amount to add', with: 500
+        fill_in 'Amount to add', with: 9
         click_on 'Add funds'
-
         page.should have_content I18n.t('subscriptions.upgrade.success')
         page.should have_content "Minutes left: #{minutes_purchased * 2}"
       end

@@ -10,7 +10,8 @@ describe Client::Billing::SubscriptionHelper do
   end
   let(:subscription) do
     double('Billing::Subscription', {
-      id: 1
+      id: 1,
+      plan: 'basic'
     })
   end
 
@@ -20,13 +21,13 @@ describe Client::Billing::SubscriptionHelper do
     controller.stub(:current_user){ account }
     Ability.stub(:new){ ability }
   end
-  describe '#subscription_type_options_for_select' do
-    it 'maps the Billing::Plans.ids collection of display,value pairs for select options' do
-      Billing::Plans.stub(:ids){ ["basic", "pro", "business"] }
+  describe '#subscription_type_options_for_select(subscription, minutes_available)' do
+    it 'maps Billing::Plans.permitted_ids_for collection of display,value pairs to select options' do
+      Billing::Plans.stub(:permitted_ids_for){ ["basic", "pro", "business"] }
       expected = [
         ["Basic", "basic"], ["Pro", "pro"], ["Business", "business"]
       ]
-      helper.subscription_type_options_for_select.should eq expected
+      helper.subscription_type_options_for_select(subscription, true).should eq expected
     end
   end
 

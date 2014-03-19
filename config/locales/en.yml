@@ -4,15 +4,8 @@
 en:
   activerecord:
     attributes:
-      subscription:
-        amount_paid: 'Add to balance'
     errors:
       models:
-        subscription:
-          attributes:
-            amount_paid:
-              greater_than: 'Please enter the amount of funds to add to your balance.'
-              not_a_number: 'Please enter the amount of funds to add to your balance.'
   caller_id_blank: "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign."
   # inviting a new administrators
   admin_invite_subject: "Set your password for %{title}"
@@ -72,7 +65,7 @@ en:
       success: 'Billing info updated successfully.'
     add_funds:
       success: 'The amount has been added to your balance.'
-    nothing_to_do: 'No changes detected.'
+    nothing_to_do: 'It looks like you submitted details that match your current plan so we did not change anything.'
   stripe:
     invalid_request_error: "There was an error processing your payment. Verify your payment info is up to date and try again. Please contact support if this problem continues."
     api_error: "We hit a temporary glitch processing your payment. Try again. Please contact support if this problem continues."

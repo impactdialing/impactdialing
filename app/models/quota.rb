@@ -110,6 +110,8 @@ class Quota < ActiveRecord::Base
 
     if plans.is_upgrade?(old_plan_id, plan.id)
       upgrade_plans(plan, provider_object, opts)
+    elsif old_plan_id != plan.id
+      downgrade_plans(plan, provider_object, opts)
     end
     if quantity != callers_allowed
       change_callers(plan, provider_object, opts)
@@ -117,16 +119,26 @@ class Quota < ActiveRecord::Base
   end
 
   def upgrade_plans(plan, provider_object, opts)
-    old_plan_id = opts[:old_plan_id]
-    quantity    = provider_object.quantity
-
-    self.minutes_allowed =  if old_plan_id != 'trial'
+    old_plan_id          = opts[:old_plan_id]
+    prorate              = opts[:prorate]
+    quantity             = provider_object.quantity
+    self.minutes_allowed = if prorate
                               prorated_minutes(plan, provider_object, opts, quantity)
                             else
                               quantity * plan.minutes_per_quantity
                             end
     self.callers_allowed = quantity
     self.minutes_used    = 0
+  end
+
+  def downgrade_plans(plan, provider_object, opts)
+    quantity             = provider_object.quantity
+    old_plan_id          = opts[:old_plan_id]
+    self.callers_allowed = quantity
+
+    if old_plan_id == 'per_minute'
+      self.minutes_allowed += (quantity * plan.minutes_per_quantity)
+    end
   end
 
   ##
@@ -169,13 +181,21 @@ class Quota < ActiveRecord::Base
     (quantity * plan.minutes_per_quantity * left_total_ratio).to_i
   end
 
-  def add_minutes(plan, amount)
+  def overwrite_minutes?(old_plan_id, new_plan)
+    new_plan.per_minute? && old_plan_id != new_plan.id
+  end
+
+  def add_minutes(plan, old_plan_id, amount)
     price                = (plan.price_per_quantity * 100) # convert dollars to cents
     minutes_purchased    = (amount / price).to_i
 
     self.callers_allowed = 0
     self.minutes_used    = 0
-    self.minutes_allowed = minutes_available + minutes_purchased
+    self.minutes_allowed =  if overwrite_minutes?(old_plan_id, plan)
+                              minutes_purchased
+                            else
+                              minutes_available + minutes_purchased
+                            end
 
     if self.minutes_allowed < 0
       self.minutes_pending = self.minutes_allowed.abs
@@ -208,7 +228,7 @@ class Quota < ActiveRecord::Base
       # end
       if plan.per_minute?
         amount = provider_object.amount # in cents
-        add_minutes(plan, amount)
+        add_minutes(plan, old_plan_id, amount)
       end
     end
 
