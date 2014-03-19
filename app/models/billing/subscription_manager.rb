@@ -35,9 +35,11 @@ class Billing::SubscriptionManager
   #
   def prorate?(new_plan, callers_allowed=0)
     old_plan        = record.plan
-    return !plans.is_trial?(old_plan) &&
-            plans.is_upgrade?(old_plan, new_plan) ||
-            (old_plan == new_plan && !plans.buying_minutes?(new_plan))
+    return false if plans.is_trial?(old_plan)
+    return false if plans.buying_minutes?(old_plan)
+    return false if plans.buying_minutes?(new_plan)
+    return plans.is_upgrade?(old_plan, new_plan) ||
+           callers_allowed.to_i > quota.callers_allowed
   end
 
   def update_recurring_subscription!(new_plan, callers_allowed)
