@@ -163,10 +163,10 @@ class Quota < ActiveRecord::Base
     now              = Time.now
     cycle_start      = provider_object.current_period_start
     cycle_end        = provider_object.current_period_end
-    cycle_days_left  = (cycle_end - now).ceil.to_f
-    cycle_days_total = (cycle_end - cycle_start).ceil.to_f
+    cycle_days_left  = (cycle_end.to_i - now.to_i).to_f
+    cycle_days_total = (cycle_end.to_i - cycle_start.to_i).to_f
     left_total_ratio = ((cycle_days_left / cycle_days_total) * 100).to_i / 100.0
-    quantity * plan.minutes_per_quantity * left_total_ratio
+    (quantity * plan.minutes_per_quantity * left_total_ratio).to_i
   end
 
   def add_minutes(plan, amount)
