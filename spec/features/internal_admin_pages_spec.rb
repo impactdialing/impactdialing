@@ -49,38 +49,8 @@ describe 'Internal Admin pages' do
   let(:last_row){ 'tr:last-of-type' }
   let(:last_cell){ 'td:last-of-type' }
 
-  describe 'Upgrade a user to Enterprise (Manual)' do
+  describe 'Managing Users & Accounts' do
     let(:main_table_css){ 'table' }
-
-    def set_account_to_manual
-      visit '/admin/users'
-      account = User.last.account
-      within(main_table_css) do
-        within(last_row) do
-          click_on 'set account to manual'
-        end
-      end
-
-      page.should have_content "Account##{account.id} successfully upgraded to Enterprise."
-      within(main_table_css) do
-        within(last_row) do
-          page.should have_content 'Enterprise (manual)'
-        end
-      end
-    end
-
-    def expect_current_subscription_to_eq type, minutes
-      within(main_table_css) do
-        within(last_row) do
-          click_on User.last.email
-        end
-      end
-      click_on 'Account'
-      click_on 'Billing'
-
-      page.should have_content "Your current plan is #{type}."
-      page.should have_content "Minutes left: #{minutes}"
-    end
 
     before do
       create_list(:user, 3)
@@ -88,24 +58,89 @@ describe 'Internal Admin pages' do
       visit '/admin/users'
     end
 
-    it 'click "set account to manual" for the desired user row' do
-      set_account_to_manual
+    describe 'Upgrade an account to Enterprise (Manual)' do
+      def set_account_to_manual
+        visit '/admin/users'
+        account = User.last.account
+        within(main_table_css) do
+          within(last_row) do
+            click_on 'set account to manual'
+          end
+        end
+
+        page.should have_content "Account##{account.id} successfully upgraded to Enterprise."
+        within(main_table_css) do
+          within(last_row) do
+            page.should have_content 'Enterprise (manual)'
+          end
+        end
+      end
+
+      def expect_current_subscription_to_eq type, minutes
+        within(main_table_css) do
+          within(last_row) do
+            click_on User.last.email
+          end
+        end
+        click_on 'Account'
+        click_on 'Billing'
+
+        page.should have_content "Your current plan is #{type}."
+        page.should have_content "Minutes left: #{minutes}"
+      end
+
+      it 'click "set account to manual" for the desired user row' do
+        set_account_to_manual
+      end
+
+      it 'subscriptions/index displays Enterprise and 0 minutes available' do
+        expect_current_subscription_to_eq 'Trial', 50
+
+        set_account_to_manual
+
+        expect_current_subscription_to_eq 'Enterprise', 0
+      end
     end
 
-    it 'subscriptions/index displays Enterprise and 0 minutes available' do
-      expect_current_subscription_to_eq 'Trial', 50
+    describe 'Toggle dialer access for an account' do
+      def deny_dialer_access
+        account = User.last.account
+        within(main_table_css) do
+          within(last_row) do
+            click_on "Deny Dialer Access"
+          end
+        end
 
-      set_account_to_manual
+        page.should have_content "Dialer disabled for Account##{account.id}."
+        within(main_table_css) do
+          within(last_row) do
+            page.should have_content 'Allow Dialer Access'
+          end
+        end
+      end
 
-      expect_current_subscription_to_eq 'Enterprise', 0
-    end
+      def allow_dialer_access
+        account = User.last.account
+        deny_dialer_access
+        within(main_table_css) do
+          within(last_row) do
+            click_on 'Allow Dialer Access'
+          end
+        end
 
-    describe 'when disaster strikes' do
-      let(:account){ User.last.account }
-      let(:subscription){ account.billing_subscription }
+        page.should have_content "Dialer enabled for Account##{account.id}."
+        within(main_table_css) do
+          within(last_row) do
+            page.should have_content 'Deny Dialer Access'
+          end
+        end
+      end
 
-      describe 'cancelling current subscription fails' do
-        it 'display msg that upgrade failed'
+      it 'click "Deny Dialer Access"' do
+        deny_dialer_access
+      end
+      it 'click "Allow Dialer Access"' do
+        allow_dialer_access
       end
     end
   end

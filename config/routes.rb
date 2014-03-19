@@ -279,6 +279,7 @@ ImpactDialing::Application.routes.draw do
   get 'admin/caller_sessions/:id', :to => 'admin#caller_sessions', :as => :admin_caller_sessions
   post 'admin/twilio_limit', :to => 'admin#twilio_limit'
   put 'admin/set_account_to_manual/:id', :to => 'admin#set_account_to_manual'
+  put 'admin/toggle_calling/:id', :to => 'admin#toggle_calling'
 
 
   resource :call_attempts, :only => :create

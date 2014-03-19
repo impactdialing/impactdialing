@@ -27,6 +27,9 @@
       <td>
         <%= admin_switch_account_to_manual_link(account) %>
       </td>
+      <td>
+        <%= admin_toggle_dialer_access_link(account) %>
+      </td>
       <td><a href="/admin/abandonment/<%= account.id %>">Toggle Abandonment(<%= account.abandonment_value%>)</a></td>
       <td>
     </tr>

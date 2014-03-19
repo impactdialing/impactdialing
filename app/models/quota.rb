@@ -97,6 +97,11 @@ class Quota < ActiveRecord::Base
     self.minutes_pending = 0
   end
 
+  def toggle_calling!
+    self.disable_calling = !disable_calling?
+    save!
+  end
+
   ##
   #
   #

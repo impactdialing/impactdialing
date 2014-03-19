@@ -111,6 +111,14 @@ class AdminController < ApplicationController
     redirect_to :back, notice: ["Account##{account.id} successfully upgraded to Enterprise."]
   end
 
+  def toggle_calling
+    account = Account.find(params[:id])
+    quota   = account.quota
+    quota.toggle_calling!
+    word = quota.disable_calling? ? 'disabled' : 'enabled'
+    redirect_to :back, notice: ["Dialer #{word} for Account##{account.id}."]
+  end
+
   def login
     session[:user]=params[:id]
     redirect_to :controller => "client", :action => "index"
