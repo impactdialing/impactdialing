@@ -2,10 +2,11 @@ module AdminHelper
   def admin_switch_account_to_manual_link(account)
     plan_id = account.billing_subscription.plan
     if Billing::Plans.is_enterprise?(plan_id)
-      "Enterprise (manual)"
+      text = 'set account to trial'
     else
-      link_to("set account to manual", "/admin/set_account_to_manual/#{account.id}", method: :put)
+      text = 'set account to enterprise'
     end
+    link_to(text, "/admin/toggle_enterprise_trial/#{account.id}", method: :put)
   end
 
   def admin_toggle_dialer_access_link(account)

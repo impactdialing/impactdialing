@@ -42,6 +42,7 @@ private
     Ability.new(self)
   end
 
+public
   def setup_trial!
     create_quota!({
       minutes_allowed: TRIAL_MINUTES_ALLOWED,
@@ -52,7 +53,6 @@ private
     })
   end
 
-public
   def billing_provider_customer_created!(provider_id)
     Rails.logger.debug 'StripeEvent: updating account provider ident with: ' + provider_id
     self.billing_provider_customer_id = provider_id

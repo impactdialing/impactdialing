@@ -58,20 +58,36 @@ describe 'Internal Admin pages' do
       visit '/admin/users'
     end
 
-    describe 'Upgrade an account to Enterprise (Manual)' do
+    describe 'Toggle accounts between Trial & Enterprise (Manual)' do
       def set_account_to_manual
         visit '/admin/users'
         account = User.last.account
         within(main_table_css) do
           within(last_row) do
-            click_on 'set account to manual'
+            click_on 'set account to enterprise'
           end
         end
 
         page.should have_content "Account##{account.id} successfully upgraded to Enterprise."
         within(main_table_css) do
           within(last_row) do
-            page.should have_content 'Enterprise (manual)'
+            page.should have_content 'set account to trial'
+          end
+        end
+      end
+
+      def set_account_to_trial
+        account = User.last.account
+        set_account_to_manual
+        within(main_table_css) do
+          within(last_row) do
+            click_on 'set account to trial'
+          end
+        end
+        page.should have_content "Account##{account.id} successfully downgraded to Trial."
+        within(main_table_css) do
+          within(last_row) do
+            page.should have_content 'set account to enterprise'
           end
         end
       end
@@ -89,16 +105,15 @@ describe 'Internal Admin pages' do
         page.should have_content "Minutes left: #{minutes}"
       end
 
-      it 'click "set account to manual" for the desired user row' do
+      it 'click "set account to enterprise" for the desired account row' do
+        expect_current_subscription_to_eq 'Trial', 50
         set_account_to_manual
+        expect_current_subscription_to_eq 'Enterprise', 0
       end
 
-      it 'subscriptions/index displays Enterprise and 0 minutes available' do
+      it 'click "set account to trial" for the desired account row' do
+        set_account_to_trial
         expect_current_subscription_to_eq 'Trial', 50
-
-        set_account_to_manual
-
-        expect_current_subscription_to_eq 'Enterprise', 0
       end
     end
 

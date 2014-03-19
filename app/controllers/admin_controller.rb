@@ -98,17 +98,31 @@ class AdminController < ApplicationController
     end
   end
 
-  def set_account_to_manual
-    account         = Account.find(params[:id])
-    subscription    = account.billing_subscription
-    quota           = account.quota
-    customer_id     = account.billing_provider_customer_id
-    payment_gateway = Billing::PaymentGateway.new(customer_id)
+  def toggle_enterprise_trial
+    account      = Account.find(params[:id])
+    subscription = account.billing_subscription
+    quota        = account.quota
 
-    payment_gateway.cancel_subscription
-    subscription.plan_changed!('enterprise')
-    quota.plan_changed!('enterprise')
-    redirect_to :back, notice: ["Account##{account.id} successfully upgraded to Enterprise."]
+    if subscription.enterprise?
+      ActiveRecord::Base.transaction do
+        subscription.destroy
+        quota.destroy
+        account.setup_trial!
+      end
+      msg = 'downgraded to Trial'
+    else
+      customer_id     = account.billing_provider_customer_id
+      payment_gateway = Billing::PaymentGateway.new(customer_id)
+
+      payment_gateway.cancel_subscription
+      ActiveRecord::Base.transaction do
+        subscription.plan_changed!('enterprise')
+        quota.plan_cancelled!
+        quota.plan_changed!('enterprise')
+      end
+      msg = 'upgraded to Enterprise'
+    end
+    redirect_to :back, notice: ["Account##{account.id} successfully #{msg}."]
   end
 
   def toggle_calling

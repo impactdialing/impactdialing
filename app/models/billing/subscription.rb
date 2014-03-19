@@ -33,7 +33,11 @@ public
   end
 
   def trial?
-    return plans.is_trial?(plan.underscore)
+    return plans.is_trial?(plan)
+  end
+
+  def enterprise?
+    return plans.is_enterprise?(plan)
   end
 
   def canceled?
