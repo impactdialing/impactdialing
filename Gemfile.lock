@@ -66,6 +66,9 @@ GEM
       rack (>= 1.0.0)
       rack-test (>= 0.5.4)
       xpath (~> 2.0)
+    capybara-webkit (1.1.1)
+      capybara (>= 2.0.2, < 2.2.0)
+      json
     celluloid (0.14.1)
       timers (>= 1.0.0)
     childprocess (0.5.1)
@@ -394,6 +397,7 @@ DEPENDENCIES
   capistrano-multiconfig
   capistrano_colors
   capybara
+  capybara-webkit
   cocoon (~> 1.0.22)
   compass
   database_cleaner
@@ -439,7 +443,6 @@ DEPENDENCIES
   rspec
   rspec-instafail (~> 0.2.4)
   rspec-rails
-  selenium-webdriver
   settingslogic (~> 2.0.9)
   shoulda
   showoff-io

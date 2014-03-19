@@ -83,5 +83,5 @@ group :test do
   gem 'launchy'
   gem 'timecop'
   gem 'webmock'
-  gem 'selenium-webdriver'
+  gem 'capybara-webkit'
 end
