@@ -127,6 +127,8 @@ public
   #
   def validate_transition!(old_plan, new_plan, minutes_available, opts={})
     msg = valid_transition?(true, old_plan, new_plan, minutes_available, opts)
+    return true if msg.kind_of? TrueClass
+
     msg = I18n.t(msg)
     raise InvalidPlanTransition.new(old_plan, new_plan, opts, msg)
   end
