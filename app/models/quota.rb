@@ -199,12 +199,13 @@ class Quota < ActiveRecord::Base
       change_plans_or_callers(plan, provider_object, opts)
       # minutes_pending is primarily for tracking overage on pay as you go plans.
       # For now, let's just reset it and log.
-      Rails.logger.error("Account[#{account.id}] Plan[#{new_plan_id}] MinutesPending[#{self.minutes_pending}] MinutesUsed[#{self.minutes_used}] MinutesAllowed[#{self.minutes_allowed}] Resetting Quota#minutes_pending due to change in plans or callers.")
+      Rails.logger.info("Account[#{account.id}] Plan[#{new_plan_id}] MinutesPending[#{self.minutes_pending}] MinutesUsed[#{self.minutes_used}] MinutesAllowed[#{self.minutes_allowed}] Resetting Quota#minutes_pending due to change in plans or callers.")
       self.minutes_pending = 0
     else
-      if plans.is_upgrade?(old_plan_id, new_plan_id)
-        zero_minutes_and_callers
-      end
+      # not going to support customer self-service changes from recurring to per minute as of Mar 18 2014
+      # if plans.is_upgrade?(old_plan_id, new_plan_id)
+      #   zero_minutes_and_callers
+      # end
       if plan.per_minute?
         amount = provider_object.amount # in cents
         add_minutes(plan, amount)
