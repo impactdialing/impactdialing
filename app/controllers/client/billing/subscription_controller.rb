@@ -61,7 +61,7 @@ private
   def any_plan_changes?
     plan != subscription.plan ||
     callers_allowed.try(:to_i) != quota.callers_allowed ||
-    (amount_paid || 0).to_i > 0
+    amount_paid.present?
   end
 
   def update_plan!
