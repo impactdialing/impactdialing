@@ -90,14 +90,29 @@ public
     update_autorecharge_settings!(new_settings)
   end
 
-  def update_autorecharge_settings!(new_settings)
+  def update_autorecharge_settings(new_settings)
     self.settings[:autorecharge] = new_settings
+  end
+
+  def update_autorecharge_settings!(new_settings)
+    update_autorecharge_settings(new_settings)
     save!
   end
 
   def cache_provider_status!(status)
     self.provider_status = status
     save!
+  end
+
+  def cache_provider_details(provider_id, start_period, end_period, status)
+    self.provider_start_period = start_period
+    self.provider_end_period   = end_period
+    self.provider_status       = status
+    self.provider_id           = provider_id
+  end
+
+  def update_plan(new_plan)
+    self.plan = new_plan
   end
 
   def renewed!(start_period, end_period, status)
@@ -116,21 +131,16 @@ public
   def plan_changed!(new_plan, provider_object=nil, opts={})
     plan  = plans.find(new_plan)
 
-    new_attrs = if plan.presence.recurring?
-                  {
-                    plan: new_plan,
-                    provider_id: provider_object.id,
-                    provider_status: provider_object.status
-                  }
-                else
-                  {
-                    plan: new_plan,
-                    provider_id: nil,
-                    provider_status: nil
-                  }
-                end
+    update_plan(new_plan)
 
-    update_attributes!(new_attrs)
+    if plan.presence.recurring?
+      cache_provider_details(provider_object.id, provider_object.current_period_start, provider_object.current_period_end, provider_object.status)
+      update_autorecharge_settings(autorecharge_defaults)
+    else
+      cache_provider_details(nil, nil, nil, nil)
+    end
+
+    save!
   end
 end
 
