@@ -9,9 +9,18 @@ class Ability
     @minutes_available = @quota.try(:minutes_available) || 0
     @plan              = account.billing_subscription.try(:plan) || ''
 
+    apply_plan_permissions
     apply_feature_permissions
     apply_quota_permissions
-    apply_plan_permissions
+  end
+
+  def subscription_active_and_calling_not_disabled?
+    account.billing_subscription.active? &&
+    calling_not_disabled?
+  end
+
+  def calling_not_disabled?
+    not quota.disable_calling?
   end
 
   def apply_plan_permissions
@@ -32,14 +41,19 @@ class Ability
 
   def apply_quota_permissions
     case plan
-    when 'enterprise', 'per_minute'
-      can :start_calling, Caller
-      can :dial, Caller
-    when 'business', 'pro', 'basic', 'trial'
-      if quota.caller_seats_available?
+    when 'enterprise'
+      if calling_not_disabled?
         can :start_calling, Caller
+        can :dial, Caller
       end
-      if quota.minutes_available?
+    when 'per_minute'
+      if quota.minutes_available? && subscription_active_and_calling_not_disabled?
+        can :start_calling, Caller
+        can :dial, Caller
+      end
+    when 'business', 'pro', 'basic', 'trial'
+      if quota.caller_seats_available? && quota.minutes_available? && subscription_active_and_calling_not_disabled?
+        can :start_calling, Caller
         can :dial, Caller
       end
     else
@@ -49,8 +63,6 @@ class Ability
   end
 
   def apply_feature_permissions
-    plan = account.billing_subscription.plan
-
     case plan
     when 'enterprise', 'per_minute', 'business', 'trial'
       can :add_transfer, Script

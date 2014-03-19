@@ -40,6 +40,10 @@ public
     return provider_status == 'canceled'
   end
 
+  def active?
+    return trial? || provider_status == 'active'
+  end
+
   def autorecharge_active?
     autorecharge_settings[:enabled].to_i > 0
   end
