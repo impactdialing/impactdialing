@@ -32,7 +32,9 @@ class Ability
       if plan == 'per_minute'
         can :add_minutes, Billing::Subscription
       end
-      can :change_plans, Billing::Subscription
+      if plan != 'enterprise'
+        can :change_plans, Billing::Subscription
+      end
     end
     if plan != 'trial' && plan != 'per_minute' && plan != 'enterprise'
       can :cancel_subscription, Billing::Subscription
