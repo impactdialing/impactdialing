@@ -153,12 +153,6 @@ describe Ability do
           end
           it_behaves_like 'dialer access denied'
         end
-        context 'subscription not active' do
-          before do
-            subscribe 'per_minute', 'past_due'
-          end
-          it_behaves_like 'dialer access denied'
-        end
         context 'calling is disabled' do
           before do
             toggle_calling :off

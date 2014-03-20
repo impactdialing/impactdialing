@@ -41,12 +41,27 @@ public
     return plans.is_enterprise?(plan)
   end
 
+  def per_minute?
+    return plans.is_per_minute?(plan)
+  end
+
   def canceled?
     return provider_status == 'canceled'
   end
 
+  ##
+  #
+  # Returns true if +provider_status+ == 'active' or
+  # one of +trial?+, +enterprise?+, or +per_minute?+
+  # return true.
+  #
+  # Trial, Per minute & Enterprise accounts are considered as always
+  # active because they:
+  # - never expire
+  # - have no corresponding plan in stripe, so provider_status will be nil
+  #
   def active?
-    return trial? || provider_status == 'active'
+    return trial? || enterprise? || per_minute? || provider_status == 'active'
   end
 
   def autorecharge_active?

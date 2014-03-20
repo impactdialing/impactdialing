@@ -88,15 +88,22 @@ public
   end
 
   def is_trial?(plan_id)
-    return plan_id == 'trial'
+    plan = Plan.new(plan_id)
+    return plan.presence.trial?
   end
 
   def is_enterprise?(plan_id)
     self.class.is_enterprise?(plan_id)
   end
 
+  def is_per_minute?(plan_id)
+    plan = Plan.new(plan_id)
+    return plan.presence.per_minute?
+  end
+
   def self.is_enterprise?(plan_id)
-    return plan_id == 'enterprise'
+    plan = Plan.new(plan_id)
+    return plan.presence.enterprise?
   end
 
   ##
@@ -104,8 +111,7 @@ public
   # some whole number greater than zero.
   #
   def buying_minutes?(plan_id)
-    plan = find(plan_id)
-    return plan.presence.per_minute?
+    return is_per_minute?(plan_id)
   end
 
   ##
@@ -160,8 +166,8 @@ end
 class Billing::Plans::Plan
   attr_reader :id, :minutes_per_quantity, :price_per_quantity
   # hash = {'price_per' => 199, 'quantity_per' => 1}
-  def initialize(id, hash)
-    hash ||= {}
+  def initialize(id, hash={})
+    hash                  ||= {}
     @id                   = id
     @minutes_per_quantity = hash['minutes_per_quantity']
     @price_per_quantity   = hash['price_per_quantity']
@@ -171,8 +177,12 @@ class Billing::Plans::Plan
     return Billing::Plans::RECURRING_PLANS.include?(id)
   end
 
+  def trial?
+    id == 'trial'
+  end
+
   def enterprise?
-    Plans.is_enterprise?(id)
+    id == 'enterprise'
   end
 
   def per_minute?
