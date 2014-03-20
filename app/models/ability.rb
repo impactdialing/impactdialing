@@ -14,13 +14,12 @@ class Ability
     apply_quota_permissions
   end
 
-  def subscription_active_and_calling_not_disabled?
-    account.billing_subscription.active? &&
-    calling_not_disabled?
+  def subscription_active?
+    account.billing_subscription.active?
   end
 
-  def calling_not_disabled?
-    not quota.disable_calling?
+  def calling_disabled?
+    quota.disable_calling?
   end
 
   def apply_plan_permissions
@@ -42,21 +41,25 @@ class Ability
   end
 
   def apply_quota_permissions
+    return if calling_disabled?
+
+    can :access_dialer, Caller
+
     case plan
     when 'enterprise'
-      if calling_not_disabled?
-        can :start_calling, Caller
-        can :dial, Caller
-      end
+      can :start_calling, Caller
+      can :take_seat, Caller
     when 'per_minute'
-      if quota.minutes_available? && subscription_active_and_calling_not_disabled?
+      can :take_seat, Caller
+      if quota.minutes_available? && subscription_active?
         can :start_calling, Caller
-        can :dial, Caller
       end
     when 'business', 'pro', 'basic', 'trial'
-      if quota.caller_seats_available? && quota.minutes_available? && subscription_active_and_calling_not_disabled?
+      if quota.caller_seats_available? && subscription_active?
+        can :take_seat, Caller
+      end
+      if quota.minutes_available? && subscription_active?
         can :start_calling, Caller
-        can :dial, Caller
       end
     else
       # Allow nothing

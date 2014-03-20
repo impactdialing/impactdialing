@@ -125,7 +125,6 @@ public
   end
 
   def funds_available?
-    ability.can?(:dial, Caller) &&
     ability.can?(:start_calling, Caller)
   end
 

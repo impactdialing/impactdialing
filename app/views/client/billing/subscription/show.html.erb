@@ -16,6 +16,12 @@
     Minutes left:  <b><%= @quota.minutes_available %></b>
   </p>
 
+  <% if @subscription.plan != 'enterprise' && @subscription.plan != 'per_minute' %>
+    <p>
+      Caller seats: <b><%= @quota.callers_allowed %></b>
+    </p>
+  <% end %>
+
   <p>Card on file: <b><%= credit_card_on_file(@credit_card) %></b></p>
 
   <% if @subscription.autorecharge_active? %>

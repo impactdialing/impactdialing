@@ -123,7 +123,7 @@ public
   end
 
   def subscription_limit_exceeded?
-    ability.cannot? :start_calling, caller
+    ability.cannot? :take_seat, caller
   end
 
   def funds_not_available?

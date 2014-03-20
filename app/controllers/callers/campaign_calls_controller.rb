@@ -20,7 +20,7 @@ public
     def token
       @campaign = @caller.campaign
 
-      unless can? :dial, @caller
+      unless can? :start_calling, @caller
         render :json => "Your account is not funded. Please contact your account administrator.", :status => 422
         return
       end

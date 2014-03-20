@@ -110,17 +110,42 @@ describe Ability do
       it 'cannot start calling' do
         ability.should_not be_able_to :start_calling, Caller
       end
-      it 'cannot dial' do
-        ability.should_not be_able_to :dial, Caller
+      it 'cannot access dialer' do
+        ability.should_not be_able_to :access_dialer, Caller
+      end
+      it 'cannot take seat' do
+        ability.should_not be_able_to :take_seat, Caller
       end
     end
     shared_examples_for 'dialer access granted' do
       let(:ability){ Ability.new(account) }
-      it 'can start calling' do
+      it 'can access dialer' do
+        ability.should be_able_to :access_dialer, Caller
+      end
+    end
+    # acct is funded if minutes are available
+    shared_examples_for 'account is funded' do
+      let(:ability){ Ability.new(account) }
+      it 'can access dialer' do
         ability.should be_able_to :start_calling, Caller
       end
-      it 'can dial' do
-        ability.should be_able_to :dial, Caller
+    end
+    shared_examples_for 'account is not funded' do
+      let(:ability){ Ability.new(account) }
+      it 'can access dialer' do
+        ability.should_not be_able_to :start_calling, Caller
+      end
+    end
+    shared_examples_for 'caller seats available' do
+      let(:ability){ Ability.new(account) }
+      it 'can take a seat' do
+        ability.should be_able_to :take_seat, Caller
+      end
+    end
+    shared_examples_for 'no caller seats available' do
+      let(:ability){ Ability.new(account) }
+      it 'cannot take a seat' do
+        ability.should_not be_able_to :take_seat, Caller
       end
     end
     context 'enterprise' do
@@ -128,6 +153,8 @@ describe Ability do
         subscribe 'enterprise'
       end
       it_behaves_like 'dialer access granted'
+      it_behaves_like 'account is funded'
+      it_behaves_like 'caller seats available'
       context 'calling is disabled' do
         before do
           toggle_calling :off
@@ -145,13 +172,15 @@ describe Ability do
           toggle_calling :on
         end
         it_behaves_like 'dialer access granted'
+        it_behaves_like 'account is funded'
+        it_behaves_like 'caller seats available'
       end
       context 'no minutes available or subscription is not active or calling is disabled' do
         context 'no minutes' do
           before do
             use_all_minutes
           end
-          it_behaves_like 'dialer access denied'
+          it_behaves_like 'account is not funded'
         end
         context 'calling is disabled' do
           before do
@@ -166,20 +195,36 @@ describe Ability do
         before do
           subscribe plan_id
         end
-        context 'caller seats and minutes are available and subscription is active and calling is not disabled' do
+        context 'calling is disabled' do
+          before do
+            toggle_calling :off
+          end
+          it_behaves_like 'dialer access denied'
+        end
+        context 'caller seats and minutes are available and subscription is active' do
           it_behaves_like 'dialer access granted'
+          it_behaves_like 'account is funded'
+          it_behaves_like 'caller seats available'
         end
         context 'no seats available' do
           before do
             take_all_seats
           end
-          it_behaves_like 'dialer access denied'
+          it_behaves_like 'no caller seats available'
         end
         context 'no minutes available' do
           before do
             use_all_minutes
           end
-          it_behaves_like 'dialer access denied'
+          it_behaves_like 'account is not funded'
+        end
+        unless plan_id == 'trial'
+          context 'subscription is not active' do
+            before do
+              subscribe plan_id, 'unpaid'
+            end
+            it_behaves_like 'account is not funded'
+          end
         end
       end
     end
