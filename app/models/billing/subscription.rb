@@ -5,6 +5,7 @@ class Billing::Subscription < ActiveRecord::Base
   belongs_to :account
 
   validates_presence_of :account, :plan
+  validates_inclusion_of :plan, in: ::Billing::Plans.list
 
   validate :sane_autorecharge_settings
 

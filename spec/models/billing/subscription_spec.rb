@@ -6,6 +6,25 @@ describe Billing::Subscription do
   end
   let(:subscription){ Billing::Subscription.new }
 
+  describe 'validations' do
+    context ':plan' do
+      let(:valid_plans) do
+        ['trial', 'basic', 'pro', 'business', 'per_minute', 'enterprise']
+      end
+      before do
+        ::Billing::Plans.stub(:list){ valid_plans }
+      end
+      it 'must be present' do
+        subscription.should have(2).errors_on :plan
+      end
+      it 'must be included in ::Billing::Plans.list' do
+        subscription.plan = 'borg'
+        subscription.should have(1).error_on :plan
+        subscription.errors[:plan].first.should eq "is not included in the list"
+      end
+    end
+  end
+
   describe ':settings' do
     it 'is serialized as HashWithIndifferentAccess' do
       subscription.settings.should be_kind_of HashWithIndifferentAccess

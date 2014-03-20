@@ -67,6 +67,10 @@ public
     @config.keys
   end
 
+  def self.list
+    self.new.list
+  end
+
   def list
     ['trial'] + ids + ['enterprise']
   end
