@@ -125,7 +125,24 @@ public
   end
 
   def funds_available?
-    minutes_available?
+    ability.can?(:dial, Caller) &&
+    ability.can?(:start_calling, Caller)
+  end
+
+  # Only when moving to Basic - legacy hacked enforcement of feature policies
+  def to_basic!
+    update_attributes!(record_calls: false)
+    campaigns.by_type(Campaign::Type::PREDICTIVE).each do |campaign|
+      campaign.update_attributes!(type: Campaign::Type::PREVIEW)
+    end
+    scripts.each do |script|
+      script.transfers.each { |transfer| transfer.delete }
+    end
+  end
+
+  # Only when moving to Pro - legacy hacked enforcement of feature policies
+  def to_pro!
+    update_attributes!(record_calls: false)
   end
 
   def enable_api!

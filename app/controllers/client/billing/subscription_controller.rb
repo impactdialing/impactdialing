@@ -73,6 +73,9 @@ private
     }) do |provider_object, opts|
       subscription.plan_changed!(plan, provider_object, opts)
       quota.plan_changed!(plan, provider_object, opts)
+      # Following is only when plan == 'basic' - legacy hacked enforcement of feature policies
+      @account.to_basic! if plan == 'basic'
+      @account.to_pro! if plan == 'pro'
     end
   end
 
