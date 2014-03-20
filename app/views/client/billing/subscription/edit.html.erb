@@ -6,6 +6,8 @@
 <div class="callout alert clearfix" style="display:none" id="payment-flash">
 </div>
 
+<p id="callers-warning" style="display:none;" class="callout alert"></p>
+
 <%= form_for @subscription, {
       url: client_billing_subscription_path,
       method: "PUT",
@@ -34,11 +36,10 @@
     </div>
     <div id="num_of_callers_section">
       <label for="number_of_callers">Number of callers:</label>
-      <input type="text"  class="field" style="width:50px" name="caller_seats" id="number_of_callers" value="<%= @quota.callers_allowed %>" data-value="<%= @quota.callers_allowed %>"/>
+      <input type="text"  class="field" style="width:50px" name="caller_seats" id="number_of_callers" value="<%= @quota.callers_allowed.zero? ? 1 : @quota.callers_allowed %>" data-value="<%= @quota.callers_allowed %>"/>
       <p id="cost-subscription" style="display:none;">
         $<span id="monthly-cost"></span> per month
       </p>
-      <p id="callers-warning" style="display:none;" class="callout alert"></p>
     </div>
 
     <p id="add_to_balance" style="display:none">
