@@ -84,7 +84,7 @@ describe Ability do
         ability.should_not be_able_to :add_minutes, subscription
       end
     end
-    context 'plan is not trial and plan is not per minute' do
+    context 'plan is not trial and plan is not per minute and plan is not enterprise' do
       it 'can cancel subscription' do
         ['basic', 'pro', 'business'].each do |id|
           subscribe id
@@ -93,9 +93,9 @@ describe Ability do
         end
       end
     end
-    context 'plan is trial or per minute' do
+    context 'plan is trial, per minute or enterprise' do
       it 'cannot cancel subscription' do
-        ['trial', 'per_minute'].each do |id|
+        ['trial', 'per_minute', 'enterprise'].each do |id|
           subscribe id
           ability = Ability.new(account)
           ability.should_not be_able_to :cancel_subscription, subscription

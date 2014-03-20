@@ -34,7 +34,7 @@ class Ability
       end
       can :change_plans, Billing::Subscription
     end
-    if plan != 'trial' && plan != 'per_minute'
+    if plan != 'trial' && plan != 'per_minute' && plan != 'enterprise'
       can :cancel_subscription, Billing::Subscription
     end
   end
