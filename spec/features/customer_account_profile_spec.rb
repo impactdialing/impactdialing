@@ -342,9 +342,6 @@ describe 'Account profile' do
         page.should have_content I18n.t('subscriptions.cancelled')
         page.should have_content "You have cancelled your subscription."
       end
-      it 'hides all billing related stuff, requiring customers to contact support to re-subscribe' do
-        # page.should have_content "You have cancelled your subscription."
-      end
     end
   end
 end
