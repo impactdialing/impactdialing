@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140317213512) do
+ActiveRecord::Schema.define(:version => 20140319233852) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -111,7 +111,6 @@ ActiveRecord::Schema.define(:version => 20140317213512) do
     t.integer  "account_id",            :null => false
     t.string   "provider_id"
     t.string   "provider_status"
-    t.string   "status"
     t.string   "plan",                  :null => false
     t.text     "settings"
     t.datetime "created_at",            :null => false
