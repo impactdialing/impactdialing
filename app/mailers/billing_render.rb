@@ -14,7 +14,7 @@ public
 
   def autorecharge_failed(content_type, account)
     quota              = account.quota
-    subscription       = account.subscription
+    subscription       = account.billing_subscription
     @minutes_attempted = subscription.autorecharge_minutes
     @amount            = subscription.autorecharge_amount
     @trigger           = subscription.autorecharge_trigger
