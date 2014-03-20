@@ -58,7 +58,7 @@ class Quota < ActiveRecord::Base
   def caller_seats_available?
     # todo: Verify there are no phantom callers
     # Perform seat check auth/z
-    return callers_allowed > account.caller_seats_taken
+    return callers_allowed >= account.caller_seats_taken
   end
 
   ##
