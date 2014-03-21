@@ -105,7 +105,7 @@ namespace :billing_v2 do
         next
       end
 
-      if subscription.stripe_customer_id.present?
+      if (not Rails.env.heroku_staging?) && subscription.stripe_customer_id.present?
         payment_gateway = Billing::PaymentGateway.new(subscription.stripe_customer_id)
         customer        = payment_gateway.customer
       end
