@@ -57,11 +57,11 @@ class Predictive < Campaign
                  limit(limit_voters).pluck(:id)
 
     if not_dialed.size > 0
-      return not_dialed
+      voters = not_dialed
+    else
+      voters = all_voters.last_call_attempt_before_recycle_rate(recycle_rate).
+                to_be_dialed.without(blocked).limit(limit_voters).pluck(:id)
     end
-
-    voters = all_voters.last_call_attempt_before_recycle_rate(recycle_rate).
-             to_be_dialed.without(blocked).limit(limit_voters).pluck(:id)
 
     set_voter_status_to_read_for_dial!(voters)
     check_campaign_out_of_numbers(voters)
