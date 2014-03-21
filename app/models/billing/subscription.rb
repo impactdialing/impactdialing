@@ -73,6 +73,8 @@ public
   end
 
   def is_renewal?(start_period, end_period)
+    return false if provider_start_period.blank? || provider_end_period.blank?
+
     # Bypass any minor time diffs between us and Stripe.
     required_diff = 25.days
     (provider_start_period - start_period).abs > required_diff &&
@@ -158,6 +160,7 @@ public
     update_plan(new_plan)
 
     if plan.presence.recurring?
+      raise "dateless provider_object: #{provider_object}" if provider_object.current_period_start.blank? || provider_object.current_period_end.blank?
       cache_provider_details(provider_object.id, provider_object.current_period_start, provider_object.current_period_end, provider_object.status)
       update_autorecharge_settings(autorecharge_defaults)
     else
