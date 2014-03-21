@@ -131,8 +131,8 @@ public
   end
 
   def cache_provider_details(provider_id, start_period, end_period, status)
-    raise ArgumentError if provider_id.present? && (start_period.blank? || end_period.blank?)
-
+    start_period               = start_period.blank? ? nil : Time.at(start_period)
+    end_period                 = end_period.blank? ? nil : Time.at(end_period)
     self.provider_start_period = start_period
     self.provider_end_period   = end_period
     self.provider_status       = status
@@ -144,6 +144,8 @@ public
   end
 
   def renewed!(start_period, end_period, status)
+    start_period               = start_period.blank? ? nil : Time.at(start_period)
+    end_period                 = end_period.blank? ? nil : Time.at(end_period)
     self.provider_start_period = start_period
     self.provider_end_period   = end_period
     self.provider_status       = status
