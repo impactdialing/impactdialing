@@ -9,6 +9,9 @@ class Ability
     @minutes_available = @quota.try(:minutes_available) || 0
     @plan              = account.billing_subscription.try(:plan) || ''
 
+    return if @quota.disable_access?
+    can :access_site, account
+
     apply_plan_permissions
     apply_feature_permissions
     apply_quota_permissions

@@ -9,6 +9,10 @@ class ClientController < ApplicationController
   def check_access_flags
     return true if account.nil?
 
+    if cannot?(:access_site, account)
+      render :account_disabled and return
+    end
+
     if cannot?(:access_dialer, Caller)
       flash.now[:error] = ['Calling has been disabled for this account. Please contact support for assistance.']
     end

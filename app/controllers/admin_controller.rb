@@ -129,8 +129,16 @@ class AdminController < ApplicationController
     account = Account.find(params[:id])
     quota   = account.quota
     quota.toggle_calling!
-    word = quota.disable_calling? ? 'disabled' : 'enabled'
-    redirect_to :back, notice: ["Dialer #{word} for Account##{account.id}."]
+    word = quota.disable_calling? ? 'denied' : 'allowed'
+    redirect_to :back, notice: ["Dialer access #{word} for Account##{account.id}."]
+  end
+
+  def toggle_access
+    account = Account.find(params[:id])
+    quota   = account.quota
+    quota.toggle_access!
+    word = quota.disable_access? ? 'denied' : 'allowed'
+    redirect_to :back, notice: ["Admin & dialer access #{word} for Account##{account.id}."]
   end
 
   def login

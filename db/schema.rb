@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140319233852) do
+ActiveRecord::Schema.define(:version => 20140321032526) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -404,6 +404,7 @@ ActiveRecord::Schema.define(:version => 20140319233852) do
     t.boolean  "disable_calling", :default => false, :null => false
     t.datetime "created_at",                         :null => false
     t.datetime "updated_at",                         :null => false
+    t.boolean  "disable_access"
   end
 
   add_index "quotas", ["account_id"], :name => "index_quotas_on_account_id"

@@ -280,6 +280,7 @@ ImpactDialing::Application.routes.draw do
   post 'admin/twilio_limit', :to => 'admin#twilio_limit'
   put 'admin/toggle_enterprise_trial/:id', :to => 'admin#toggle_enterprise_trial'
   put 'admin/toggle_calling/:id', :to => 'admin#toggle_calling'
+  put 'admin/toggle_access/:id', :to => 'admin#toggle_access'
 
 
   resource :call_attempts, :only => :create

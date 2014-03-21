@@ -102,6 +102,11 @@ class Quota < ActiveRecord::Base
     save!
   end
 
+  def toggle_access!
+    self.disable_access = !disable_access?
+    save!
+  end
+
   ##
   #
   #

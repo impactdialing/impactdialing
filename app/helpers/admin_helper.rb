@@ -11,11 +11,23 @@ module AdminHelper
 
   def admin_toggle_dialer_access_link(account)
     quota = account.quota
+    return 'All access denied' if quota.disable_access?
+
     if quota.disable_calling?
       text = 'Allow Dialer Access'
     else
       text = 'Deny Dialer Access'
     end
     link_to text, "/admin/toggle_calling/#{account.id}", method: :put
+  end
+
+  def admin_toggle_all_access_link(account)
+    quota = account.quota
+    if quota.disable_access?
+      text = 'Allow All Access'
+    else
+      text = 'Deny All Access'
+    end
+    link_to text, "/admin/toggle_access/#{account.id}", method: :put
   end
 end
