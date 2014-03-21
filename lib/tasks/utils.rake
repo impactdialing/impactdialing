@@ -162,7 +162,7 @@ namespace :billing_v2 do
     print "\n\nMigrated a total of #{Account.count} accounts.\n"
     subscribers.each do |k,v|
       print "#{v.size} subscribed to #{k.to_s.humanize}\n"
-      print "\tAccount IDS: #{v.map{|d| d[:account_id]}.join('", "')}\n"
+      print "\tAccount IDS: #{v.map{|d| d[:account_id]}.join(',')}\n"
     end
     print "\n**NOTE** accounts on unknown plans were not touched.\n"
     print "\nAnd now for the gory deets (TSV):\n\n"
