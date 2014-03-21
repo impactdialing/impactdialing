@@ -5,8 +5,8 @@ class DebitJob
   @queue = :background_worker
 
   CALL_TIME_CLASSES = {
-    'CallerSession' => 2000,
-    'CallAttempt' => 1000,
+    'CallerSession' => 1000,
+    'CallAttempt' => 3000,
     'TransferAttempt' => 500
   }
 
