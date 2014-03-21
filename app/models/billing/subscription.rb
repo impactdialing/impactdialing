@@ -75,10 +75,7 @@ public
   def is_renewal?(start_period, end_period)
     return false if provider_start_period.blank? || provider_end_period.blank?
 
-    # Bypass any minor time diffs between us and Stripe.
-    required_diff = 25.days
-    (provider_start_period - start_period).abs > required_diff &&
-    (provider_end_period - end_period).abs > required_diff
+    provider_start_period != start_period && provider_end_period != end_period
   end
 
   def autorecharge_settings

@@ -132,13 +132,13 @@ describe Billing::Subscription do
 
   describe '#is_renewal?(start_period, end_period)' do
     let(:subscription){ Billing::Subscription.new }
-    let(:start_period){ Time.at(10.minutes.ago) }
-    let(:end_period){ Time.at(start_period + 1.month) }
+    let(:start_period){ 10.minutes.ago.to_i }
+    let(:end_period){ (start_period + 1.month).to_i }
 
-    context 'start_period > self.provider_start_period and end_period > self.provider_end_period' do
+    context 'start_period != self.provider_start_period and end_period != self.provider_end_period' do
       before do
-        subscription.provider_start_period = Time.at(start_period - 1.month)
-        subscription.provider_end_period   = Time.at(end_period - 1.month)
+        subscription.provider_start_period = (start_period - 1.month).to_i
+        subscription.provider_end_period   = (end_period - 1.month).to_i
       end
 
       it 'returns true' do
@@ -146,7 +146,7 @@ describe Billing::Subscription do
       end
     end
 
-    context 'start_period <= self.provider_start_period or end_period <= self.provider_end_period' do
+    context 'start_period != self.provider_start_period or end_period != self.provider_end_period' do
       before do
         subscription.provider_start_period = start_period
         subscription.provider_end_period   = end_period

@@ -13,7 +13,8 @@ describe Debit do
   let(:subscription) do
     double('Billing::Subscription', {
       autorecharge_trigger: 100,
-      autorecharge_pending?: false
+      autorecharge_pending?: false,
+      autorecharge_active?: false
     })
   end
   let(:quota) do
@@ -45,6 +46,7 @@ describe Debit do
 
     context 'recharge_needed? => true' do
       before do
+        subscription.stub(:autorecharge_active?){ true }
         quota.stub(:minutes_available){ subscription.autorecharge_trigger - 1 }
         @debit = Debit.new(call_time, quota, account)
       end

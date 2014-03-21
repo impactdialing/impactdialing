@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140321054954) do
+ActiveRecord::Schema.define(:version => 20140321100319) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -115,8 +115,8 @@ ActiveRecord::Schema.define(:version => 20140321054954) do
     t.text     "settings"
     t.datetime "created_at",            :null => false
     t.datetime "updated_at",            :null => false
-    t.datetime "provider_start_period"
-    t.datetime "provider_end_period"
+    t.integer  "provider_start_period"
+    t.integer  "provider_end_period"
   end
 
   add_index "billing_subscriptions", ["account_id"], :name => "index_billing_subscriptions_on_account_id"
