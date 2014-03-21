@@ -131,6 +131,8 @@ public
   end
 
   def cache_provider_details(provider_id, start_period, end_period, status)
+    raise ArgumentError if provider_id.present? && (start_period.blank? || end_period.blank?)
+
     self.provider_start_period = start_period
     self.provider_end_period   = end_period
     self.provider_status       = status
@@ -160,7 +162,6 @@ public
     update_plan(new_plan)
 
     if plan.presence.recurring?
-      raise "dateless provider_object: #{provider_object}" if provider_object.current_period_start.blank? || provider_object.current_period_end.blank?
       cache_provider_details(provider_object.id, provider_object.current_period_start, provider_object.current_period_end, provider_object.status)
       update_autorecharge_settings(autorecharge_defaults)
     else
