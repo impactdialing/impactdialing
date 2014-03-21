@@ -38,6 +38,12 @@ module CallerTwiml
       end.text
     end
 
+    def calling_is_disabled_twiml
+      Twilio::TwiML::Response.new do |response|
+        response.Say("Calling has been disabled for this account. Please contact your account admin for assistance.")
+        response.Hangup
+      end.text
+    end
 
     def time_period_exceeded_twiml
       Twilio::TwiML::Response.new do |r|
