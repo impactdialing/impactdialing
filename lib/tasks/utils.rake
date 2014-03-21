@@ -44,7 +44,9 @@ namespace :billing_v2 do
       }
     }
     create_subscription_attrs = -> (account, subscription, plan, customer) {
-      customer_subscription = customer.subscriptions.data.first
+      if customer.present?
+        customer_subscription = customer.subscriptions.data.first
+      end
       a                     = {
         plan: plan
       }
