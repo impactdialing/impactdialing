@@ -13,7 +13,7 @@
   </p>
 
   <p>
-    Minutes left:  <b><%= @quota.minutes_available %></b>
+    Minutes left:  <b><%= @quota.minutes_available %> of <%= @quota.minutes_allowed %></b>
   </p>
 
   <% if @subscription.plan != 'enterprise' && @subscription.plan != 'per_minute' %>
