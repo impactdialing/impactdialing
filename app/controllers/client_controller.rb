@@ -1,18 +1,25 @@
 require Rails.root.join("lib/twilio_lib")
 
 class ClientController < ApplicationController
-  protect_from_forgery :except => [:billing_updated, :billing_success]
   before_filter :authenticate_api
   before_filter :check_login, :except => [:login, :user_add, :forgot, :policies]
   before_filter :check_tos_accepted, :except => [:login, :forgot]
-  before_filter :check_credit_card_declined
+  before_filter :check_access_flags, :except => [:login, :user_add, :forgot, :policies]
+
+  def check_access_flags
+    return true if account.nil?
+
+    if cannot?(:access_dialer, Caller)
+      flash.now[:error] = ['Calling has been disabled for this account. Please contact support for assistance.']
+    end
+  end
 
   def validate_account_presence!(account)
     if account.nil?
       logger.error("ClientController#validate_account_presence! - Account Not Found.")
       if @user.present?
         logger.error("\tfor Account[#{@user.account_id}]")
-        logger.error("\tfor User[#{@user.id}:#{@user.email}]. Destroying User record.")
+        logger.error("\tfor User[#{@user.id}:#{@user.email}].")
         # @user.destroy
         session[:user] = nil
       end
