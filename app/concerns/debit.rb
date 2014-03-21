@@ -1,14 +1,15 @@
 class Debit
-  attr_reader :call_time, :quota, :account, :available_minutes, :trigger, :payment_pending
+  attr_reader :call_time, :quota, :account, :available_minutes, :trigger, :payment_pending, :autorecharge_active
 
   def initialize(call_time, quota, account)
-    @call_time         = call_time
-    @quota             = quota
-    @account           = account
-    @available_minutes = quota.minutes_available
-    @subscription      = account.billing_subscription
-    @trigger           = @subscription.autorecharge_trigger
-    @payment_pending   = @subscription.autorecharge_pending?
+    @call_time           = call_time
+    @quota               = quota
+    @account             = account
+    @available_minutes   = quota.minutes_available
+    @subscription        = account.billing_subscription
+    @autorecharge_active = @subscription.autorecharge_active?
+    @trigger             = @subscription.autorecharge_trigger
+    @payment_pending     = @subscription.autorecharge_pending?
   end
 
   def process
@@ -25,6 +26,6 @@ private
   end
 
   def recharge_needed?
-    available_minutes < trigger && (not payment_pending)
+    autorecharge_active && (available_minutes < trigger) && (not payment_pending)
   end
 end
