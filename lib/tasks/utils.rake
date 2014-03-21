@@ -25,10 +25,18 @@ namespace :billing_v2 do
     print "\nRunning with dry run: #{dry_run}\n"
 
     # helpers to build attr hashes
-    create_card_attrs = -> (account, customer) {
-      return {} if customer.nil?
-      customer_card = customer.cards.data.first
-      return {} if customer_card.nil?
+    create_card_attrs = -> (account, customer, subscription) {
+      if Rails.env.heroku_staging? && subscription.cc_last4.present? && subscription.exp_month.present? && subscription.exp_year.present?
+        return {
+          last4: subscription.cc_last4,
+          exp_month: subscription.exp_month,
+          exp_year: subscription.exp_year
+        }
+      else
+        return {} if customer.nil?
+        customer_card = customer.cards.data.first
+        return {} if customer_card.nil?
+      end
       {
         last4: customer_card.last4,
         exp_month: customer_card.exp_month,
@@ -44,12 +52,20 @@ namespace :billing_v2 do
       }
     }
     create_subscription_attrs = -> (account, subscription, plan, customer) {
+      a = {
+        plan: plan
+      }
+      if Rails.env.heroku_staging? && subscription.subscription_start_date.present? && subscription.subscription_end_date.present?
+        a.merge!({
+          provider_start_period: subscription.subscription_start_date,
+          provider_end_period: subscription.subscription_end_date
+        })
+        return a
+      end
+
       if customer.present?
         customer_subscription = customer.subscriptions.data.first
       end
-      a                     = {
-        plan: plan
-      }
       if customer.present? && customer_subscription.present?
         a.merge!({
           provider_id: customer_subscription.id,
@@ -110,7 +126,7 @@ namespace :billing_v2 do
         account_id: account.id,
         quota: create_quota_attrs.call(account, subscription),
         subscription: create_subscription_attrs.call(account, subscription, plan, customer),
-        card: create_card_attrs.call(account, customer),
+        card: create_card_attrs.call(account, customer, subscription),
         billing_provider_customer_id: subscription.stripe_customer_id
       }
 
