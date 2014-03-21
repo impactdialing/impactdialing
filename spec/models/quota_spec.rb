@@ -133,6 +133,116 @@ describe Quota do
     end
   end
 
+  describe '#add_minutes' do
+    let(:account) do
+      create(:account)
+    end
+    let(:quota) do
+      account.quota
+    end
+    let(:plan) do
+      double('Billing::Plan', {
+        id: 'per_minute',
+        minutes_per_quantity: 1,
+        price_per_quantity: 0.09,
+        per_minute?: true
+      })
+    end
+
+    context 'adding minutes to an existing per minute plan' do
+
+      context 'w/ some minutes not used and none pending' do
+        let(:minutes_available){ 10 }
+        let(:amount){ 100 }
+        let(:minutes_purchased){ (amount / 9).to_i }
+
+        before do
+          quota.minutes_allowed = 20
+          quota.minutes_used    = 10
+          quota.minutes_pending = 0
+          quota.save!
+          quota.add_minutes(plan, 'per_minute', amount)
+        end
+
+        it 'sets minutes_allowed to the minutes purchased + minutes_available' do
+          quota.minutes_allowed.should eq minutes_purchased + minutes_available
+        end
+        it 'sets minutes_used to zero' do
+          quota.minutes_used.should eq 0
+        end
+        it 'sets minutes_pending to zero' do
+          quota.minutes_pending.should eq 0
+        end
+      end
+      context 'w/ all minutes used' do
+        let(:amount){ 200 }
+        let(:minutes_purchased){ (amount / 9).to_i }
+
+        before do
+          quota.minutes_allowed = 100
+          quota.minutes_used = 100
+          quota.minutes_pending = 0
+          quota.save!
+          quota.add_minutes(plan, 'per_minute', amount)
+        end
+
+        it 'sets minutes_allowed to the minutes purchased' do
+          quota.minutes_allowed.should eq minutes_purchased
+        end
+        it 'sets minutes_used to zero' do
+          quota.minutes_used.should eq 0
+        end
+        it 'sets minutes_pending to zero' do
+          quota.minutes_pending.should eq 0
+        end
+      end
+      context 'w/ all minutes used and minutes_pending' do
+        context 'minutes_pending > minutes_purchased' do
+          let(:minutes_pending){ 22 }
+          let(:amount){ 100 }
+          let(:minutes_purchased){ (amount / 9).to_i }
+          before do
+            quota.minutes_pending = minutes_pending
+            quota.minutes_allowed = 100
+            quota.minutes_used    = 100
+            quota.save!
+            quota.add_minutes(plan, 'per_minute', amount)
+          end
+          it 'sets minutes_allowed to minutes_purchased' do
+            quota.minutes_allowed.should eq minutes_purchased
+          end
+          it 'sets minutes_pending to (minutes_pending - minutes_purchased)' do
+            quota.minutes_pending.should eq (minutes_pending - minutes_purchased)
+          end
+          it 'sets minutes_used to minutes_purchased' do
+            quota.minutes_used.should eq minutes_purchased
+          end
+        end
+        context 'minutes_pending < minutes_purchased' do
+          let(:minutes_pending){ 20 }
+          let(:amount){ 200 }
+          let(:minutes_purchased){ (amount / 9).to_i }
+          before do
+            quota.minutes_pending = minutes_pending
+            quota.minutes_allowed = 100
+            quota.minutes_used    = 100
+            quota.save!
+            quota.add_minutes(plan, 'per_minute', amount)
+          end
+          it 'sets minutes_allowed to minutes_purchased' do
+            quota.minutes_allowed.should eq minutes_purchased
+          end
+          it 'sets minutes_used to minutes_pending' do
+            quota.minutes_used.should eq minutes_pending
+          end
+          it 'sets minutes_pending to 0' do
+            quota.minutes_pending.should eq 0
+          end
+        end
+      end
+    end
+  end
+
   describe '#prorated_minutes' do
     let(:account) do
       create(:account)
@@ -483,7 +593,7 @@ describe Quota do
           it 'sets callers_allowed = provider_object.quantity' do
             quota.callers_allowed.should eq provider_object.quantity
           end
-          it 'does not touche minutes_allowed' do
+          it 'does not touch minutes_allowed' do
             quota.minutes_allowed.should eq 6000
           end
           it 'does not touch minutes_used' do
@@ -493,37 +603,6 @@ describe Quota do
         context 'eventually (once provider event is received and processed)' do
           it 'sets minutes_allowed = provider_object.quantity * 2500'
           it 'sets minutes_used = 0'
-        end
-      end
-      context 'Pro -> PerMinute' do
-        let(:callers_allowed){ 1 }
-        let(:amount_paid){ 100 * 100 } # cents
-        let(:opts) do
-          {
-            amount_paid: amount_paid,
-            old_plan_id: 'pro'
-          }
-        end
-        before do
-          provider_object.stub(:quantity){ nil }
-          provider_object.stub(:current_period_start){ nil }
-          provider_object.stub(:current_period_end){ nil }
-          provider_object.stub(:amount){ amount_paid }
-          quota.update_attributes!({
-            callers_allowed: callers_allowed,
-            minutes_allowed: 1000,
-            minutes_used: 234
-          })
-          quota.plan_changed!('per_minute', provider_object, opts)
-        end
-        it 'sets minutes_allowed = (provider_object.amount / 9 - priced at $0.09 /minute)' do
-          quota.minutes_allowed.should eq (provider_object.amount / 9).to_i
-        end
-        it 'sets callers_allowed = 0 - not relevant to per_minute plans' do
-          quota.callers_allowed.should eq be_zero
-        end
-        it 'sets minutes_used = 0' do
-          quota.minutes_used.should be_zero
         end
       end
       context 'Pro -> Business +2 callers (upgrade & add callers 17 days into billing cycle)' do
@@ -620,37 +699,6 @@ describe Quota do
         end
         it 'sets minutes_used to zero' do
           quota.minutes_used.should eq used
-        end
-      end
-      context 'Basic -> PerMinute' do
-        let(:callers_allowed){ 1 }
-        let(:amount_paid){ 100 * 100 } # cents
-        let(:opts) do
-          {
-            amount_paid: amount_paid,
-            old_plan_id: 'basic'
-          }
-        end
-        before do
-          provider_object.stub(:quantity){ nil }
-          provider_object.stub(:current_period_start){ nil }
-          provider_object.stub(:current_period_end){ nil }
-          provider_object.stub(:amount){ amount_paid }
-          quota.update_attributes!({
-            callers_allowed: callers_allowed,
-            minutes_allowed: 1000,
-            minutes_used: 234
-          })
-          quota.plan_changed!('per_minute', provider_object, opts)
-        end
-        it 'sets minutes_allowed = (provider_object.amount / 9 - priced at $0.09 /minute)' do
-          quota.minutes_allowed.should eq (provider_object.amount / 9).to_i
-        end
-        it 'sets callers_allowed = 0 - not relevant to per_minute plans' do
-          quota.callers_allowed.should eq be_zero
-        end
-        it 'sets minutes_used = 0' do
-          quota.minutes_used.should be_zero
         end
       end
     end

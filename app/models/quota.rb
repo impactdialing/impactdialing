@@ -191,27 +191,42 @@ class Quota < ActiveRecord::Base
     (quantity * plan.minutes_per_quantity * left_total_ratio).to_i
   end
 
+  ##
+  # Returns true when adding minutes to an existing per minute plan.
+  # Returns false when downgrading to a recurring plan.
+  #
   def overwrite_minutes?(old_plan_id, new_plan)
-    new_plan.per_minute? && old_plan_id != new_plan.id
+    new_plan.per_minute?
   end
 
+# if pending > purchased
+#   pending -= purchased
+#   used     = purchased
+#   allowed  = purchased
+# else
+#   allowed = purchased
+#   used    = pending
+#   pending = 0
+# end
   def add_minutes(plan, old_plan_id, amount)
     price                = (plan.price_per_quantity * 100) # convert dollars to cents
     minutes_purchased    = (amount / price).to_i
 
     self.callers_allowed = 0
-    self.minutes_used    = 0
-    self.minutes_allowed =  if overwrite_minutes?(old_plan_id, plan)
-                              minutes_purchased
-                            else
-                              minutes_available + minutes_purchased
-                            end
-
-    if self.minutes_allowed < 0
-      self.minutes_pending = self.minutes_allowed.abs
-      self.minutes_allowed = 0
-    else
+    if minutes_available? && plan.id == old_plan_id
+      self.minutes_allowed = minutes_available + minutes_purchased
       self.minutes_pending = 0
+      self.minutes_used = 0
+    else
+      self.minutes_allowed = minutes_purchased
+
+      if minutes_pending > minutes_purchased
+        self.minutes_used     = minutes_purchased
+        self.minutes_pending -= minutes_purchased
+      else
+        self.minutes_used    = minutes_pending
+        self.minutes_pending = 0
+      end
     end
   end
 
