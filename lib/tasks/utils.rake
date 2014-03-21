@@ -30,7 +30,8 @@ namespace :billing_v2 do
         return {
           last4: subscription.cc_last4,
           exp_month: subscription.exp_month,
-          exp_year: subscription.exp_year
+          exp_year: subscription.exp_year,
+          provider_id: 'placeholder'
         }
       else
         return {} if customer.nil?
