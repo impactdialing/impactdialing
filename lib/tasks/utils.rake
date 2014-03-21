@@ -130,7 +130,7 @@ namespace :billing_v2 do
         billing_provider_customer_id: subscription.stripe_customer_id
       }
 
-      unless subscribers[plan.intern].present? && subscribers[plan.intern].kind_of?(Array)
+      unless subscribers[plan.intern].kind_of?(Array)
         subscribers[:unknown] << details
         next
       end
