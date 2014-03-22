@@ -15,24 +15,11 @@ class DebitJob
     call_times.each do |call_time|
       account = call_time.campaign.account
       quota = account.quota
-      # debug
-      before = [quota.minutes_used, quota.minutes_available]
 
       debit = Debit.new(call_time, quota, account)
       results << debit.process
-
-      # debug
-      after = [quota.minutes_used, quota.minutes_available]
-      # debug
-      unless call_time.debited
-        m = (call_time.tDuration/60.0).ceil
-        d = call_time.debited
-        Rails.logger.error "DebitJob: Account[#{account.id}] Sub[#{quota.id}] #{klass}[#{call_time.id}] Before[#{before[0]}:#{before[1]}] After[#{after[0]}:#{after[1]}] CallTimeMinutes[#{m}] CallTimeDebited[#{d}]"
-      end
     end
     import_result = klass.import results, on_duplicate_key_update: [:debited]
-    # debug
-    Rails.logger.error "DebitJob: Inserts[#{import_result.num_inserts}] Failed[#{import_result.failed_instances.size}]"
   end
 
   def self.perform
@@ -41,7 +28,6 @@ class DebitJob
     CALL_TIME_CLASSES.each do |klass_name, limit|
       klass = klass_name.constantize
       call_times = klass.debit_pending.includes({campaign: :account}).limit(limit)
-      Rails.logger.error "DebitJob: processing #{klass_name} #{call_times.count} - #{call_times.first.try(:id)} thru #{call_times.last.try(:id)}"
       batch_process(klass, call_times)
     end
   end
