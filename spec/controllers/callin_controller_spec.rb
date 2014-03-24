@@ -2,9 +2,9 @@ require "spec_helper"
 
 describe CallinController do
   describe 'Caller Calling In' do
-    let(:account) { create(:account, :activated => true, :subscription_name => "Manual") }
+    let(:account) { create(:account, :activated => true) }
     let(:campaign) { create(:predictive, :account => account, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))}
-    
+
     it "prompts for PIN for a caller " do
       post :create
       resp = Twilio::Verb.new do |v|
@@ -22,12 +22,12 @@ describe CallinController do
       campaign = create(:campaign)
       caller = create(:caller, :account => account, :campaign => campaign)
       caller_identity = create(:caller_identity, :caller => caller, :session_key => 'key' , pin: pin)
-      caller_session = create(:webui_caller_session, caller: caller, campaign: campaign)      
+      caller_session = create(:webui_caller_session, caller: caller, campaign: campaign)
       CallerIdentity.should_receive(:find_by_pin).and_return(caller_identity)
       caller_identity.should_receive(:caller).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)
       CallerSession.should_receive(:find_by_id_cached).with(caller_session.id).and_return(caller_session)
-      RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)      
+      RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)
       caller_session.should_receive(:start_conf).and_return("")
       post :identify, Digits: pin
     end

@@ -11,7 +11,6 @@ class User < ActiveRecord::Base
   has_many :campaigns, :conditions => {:active => true}, :through => :account
   has_many :recordings, :through => :account
   has_many :custom_voter_fields, :through => :account
-  has_one :billing_account, :through => :account
   has_many :scripts, :through => :account
   has_many :callers, :through => :account
   has_many :blocked_numbers, :through => :account

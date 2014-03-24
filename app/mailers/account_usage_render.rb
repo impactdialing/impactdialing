@@ -65,7 +65,7 @@ public
     @accounts          = accounts
 
     headers = ['Account ID', 'Account Type', 'Billable Minutes']
-    values  = [accounts.map(&:id).map(&:to_s), accounts.map(&:subscription_name) + ['No current subscription'], billable_totals.values.map(&:to_s)]
+    values  = [accounts.map(&:id).map(&:to_s), accounts.map(&:billing_subscription).map(&:plan).map(&:humanize) + ['No current subscription'], billable_totals.values.map(&:to_s)]
     if @include_undebited
       headers << 'Undebited Minutes'
       values << undebited_totals.values.map(&:to_s)

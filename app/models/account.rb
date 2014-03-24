@@ -3,16 +3,12 @@ class Account < ActiveRecord::Base
   TRIAL_MINUTES_ALLOWED   = 50
   TRIAL_NUMBER_OF_CALLERS = 5
 
-  include SubscriptionInfo
-
   has_many :users
   has_many :campaigns, :conditions => {:active => true}
   has_many :all_campaigns, :class_name => 'Campaign'
   has_many :recordings
   has_many :custom_voter_fields
 
-  # todo: remove has_many :subscriptions cruft
-  has_many :subscriptions
   has_one :billing_subscription, class_name: 'Billing::Subscription'
   has_one :billing_credit_card, class_name: 'Billing::CreditCard'
   has_one :quota
@@ -29,7 +25,7 @@ class Account < ActiveRecord::Base
   has_many :possible_responses, :through => :scripts, :source => :questions
   has_many :caller_groups
 
-  attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date
+  attr_accessible :api_key, :domain_name, :abandonment, :activated, :record_calls, :status, :tos_accepted_date
 
   before_create :assign_api_key
   after_create :setup_trial!
@@ -64,25 +60,6 @@ public
     if record_calls && ability.cannot?(:record_calls, self)
       errors.add(:base, 'Your subscription does not allow call recordings.')
     end
-  end
-
-  def upgraded_to_enterprise
-    update_attributes({
-      activated: true,
-      card_verified: true,
-      subscription_name: "Manual"
-    })
-  end
-
-  # todo: remove #zero_all_subscription_minutes
-  def zero_all_subscription_minutes!
-    Rails.logger.debug('Deprecated!')
-    if available_minutes > 0
-      current_subscriptions.each do |s|
-        return s unless s.zero_minutes!
-      end
-    end
-    return true
   end
 
   def administrators
@@ -155,13 +132,6 @@ public
   def api_is_enabled?
     !api_key.empty?
   end
-
-  def paid?
-    Rails.logger.debug('Deprecated! Call #activated? instead.')
-    Rails.logger.debug("Called from #{caller[1]}")
-    activated?
-  end
-
 
   def toggle_call_recording!
     self.record_calls = !self.record_calls

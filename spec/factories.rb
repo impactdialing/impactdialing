@@ -40,9 +40,6 @@ FactoryGirl.define do
     email 'michael@impactdialing.com'
   end
 
-  factory :billing_account do
-  end
-
   factory :script do
     name 'a script'
     created_at Time.now
@@ -239,36 +236,9 @@ FactoryGirl.define do
     state 'initial'
   end
 
-  factory :payment do
-  end
-
   factory :caller_group do
     name 'Caller group'
     campaign
     account
-  end
-
-  factory :basic do
-    type "Basic"
-    number_of_callers 1
-    subscription_start_date 5.days.ago
-    subscription_end_date 10.days.from_now
-  end
-
-  factory :per_minute do
-    type "PerMinute"
-    amount_paid 25
-  end
-
-  factory :trial do
-    type "Trial"
-    subscription_start_date 5.days.ago
-    subscription_end_date 10.days.from_now
-  end
-
-  factory :enterprise do
-    type "Enterprise"
-    subscription_start_date 5.days.ago
-    subscription_end_date 10.days.from_now
   end
 end
