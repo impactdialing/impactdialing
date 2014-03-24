@@ -264,7 +264,7 @@ describe Billing::Jobs::StripeEvent do
     end
     before do
       stripe_event.stub(:data){ event_data }
-      stripe_event.stub(:name){ 'invoice.payment_failed' }
+      stripe_event.stub(:name){ 'customer.subscription.updated' }
       BillingMailer.stub(:new){ mailer }
     end
     after do
@@ -274,13 +274,28 @@ describe Billing::Jobs::StripeEvent do
       before do
         subscription.stub(:is_renewal?){ true }
       end
-      it 'delivers BillingMailer.autorenewal_failed' do
-        mailer.should_receive(:autorenewal_failed)
+
+      context 'with event object status of unpaid or past_due' do
+        before do
+          event_data[:object][:status] = 'past_due'
+        end
+        it 'delivers BillingMailer.autorenewal_failed' do
+          mailer.should_receive(:autorenewal_failed)
+        end
+        it 'tells subscription cache_provider_status!(status)' do
+          subscription.should_receive(:cache_provider_status!).with(event_data[:object][:status])
+        end
+        it_behaves_like 'processing completed'
       end
-      it 'tells subscription cache_provider_status!(status)' do
-        subscription.should_receive(:cache_provider_status!).with(event_data[:object][:lines][:data][0][:status])
+      context 'with event object status other than unpaid or past_due' do
+        it 'does not deliver BillingMailer.autorenewal_failed' do
+          mailer.should_not_receive(:autorenewal_failed)
+        end
+        it 'tells subscription cache_provider_status!(status)' do
+          subscription.should_receive(:cache_provider_status!).with(event_data[:object][:status])
+        end
+        it_behaves_like 'processing completed'
       end
-      it_behaves_like 'processing completed'
     end
 
     context 'when not triggered by autorenewal' do
@@ -290,8 +305,8 @@ describe Billing::Jobs::StripeEvent do
       it 'delivers nothing' do
         mailer.should_not_receive(:autorenewal_failed)
       end
-      it 'tells subscription nothing' do
-        subscription.should_not_receive(:cache_provider_status!)
+      it 'tells subscription cache_provider_status!(status)' do
+        subscription.should_receive(:cache_provider_status!).with(event_data[:object][:status])
       end
       it_behaves_like 'processing completed'
     end

@@ -65,9 +65,9 @@ class Billing::Jobs::StripeEvent
       finish_job(stripe_event) do
         update_quota_and_subscription!(stripe_event)
       end
-    when 'invoice.payment_failed'
-      # only handle recurring subscriptions for now
-      invoice_payment_failed!(stripe_event)
+    when 'customer.subscription.updated'
+      # handle status update and notifications when status changes
+      subscription_updated!(stripe_event)
     else
       # quietly ignore events we don't handle currently
       # queue for removal in e.g. 24 hours?
@@ -187,29 +187,23 @@ class Billing::Jobs::StripeEvent
     quota.save!
   end
 
-  def self.invoice_payment_failed!(stripe_event)
-    invoice             = stripe_event.data[:object]
-    customer_id         = invoice[:customer]
+  def self.subscription_updated!(stripe_event)
+    stripe_subscription = stripe_event.data[:object]
+    customer_id         = stripe_subscription[:customer]
     account             = Account.find_by_billing_provider_customer_id(customer_id)
     subscription        = account.billing_subscription
-    stripe_subscription = invoice[:lines][:data][0]
+    quota               = account.quota
     start_period        = stripe_subscription[:period][:start]
     end_period          = stripe_subscription[:period][:end]
     autorenewal         = subscription.is_renewal?(start_period, end_period)
 
-    unless autorenewal
-      finish_job(stripe_event)
-      return
+    if ['unpaid', 'past_due'].include?(stripe_subscription[:status])
+      BillingMailer.new(account).autorenewal_failed
     end
 
-    BillingMailer.new(account).autorenewal_failed
     finish_job(stripe_event) do
-      update_provider_status!(subscription, stripe_subscription[:status])
+      subscription.cache_provider_status!(stripe_subscription[:status])
     end
-  end
-
-  def self.update_provider_status!(subscription, status)
-    subscription.cache_provider_status!(status)
   end
 
   def self.update_quota_and_subscription!(stripe_event)
