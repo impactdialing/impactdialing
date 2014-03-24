@@ -273,6 +273,33 @@ describe Quota do
     end
   end
 
+  describe '#renewed(plan)' do
+    let(:plan){ Billing::Plans.new.find 'pro' }
+    let(:quota) do
+      Quota.new({
+        callers_allowed: 2,
+        minutes_used: 1200,
+        minutes_allowed: 5000,
+        minutes_pending: 12
+      })
+    end
+    before do
+      quota.renewed(plan)
+    end
+    it 'sets minutes_used to zero' do
+      quota.minutes_used.should eq 0
+    end
+    it 'sets minutes_pending to zero' do
+      quota.minutes_pending.should eq 0
+    end
+    it 'sets does not touch minutes_allowed' do
+      quota.minutes_allowed.should eq 5000
+    end
+    it 'does not touch callers_allowed' do
+      quota.callers_allowed.should eq 2
+    end
+  end
+
   context 'changing plan features / options' do
     let(:account) do
       create(:account)

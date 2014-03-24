@@ -183,7 +183,7 @@ class Billing::Jobs::StripeEvent
     # quietly ignore manual recharges
     return true unless autorenewal
 
-    quota.reset(plan)
+    quota.renewed(plan)
     quota.save!
   end
 
@@ -212,10 +212,6 @@ class Billing::Jobs::StripeEvent
     subscription.cache_provider_status!(status)
   end
 
-  def self.update_subscription!(subscription, start_period, end_period, status)
-    subscription.renewed!(start_period, end_period, status)
-  end
-
   def self.update_quota_and_subscription!(stripe_event)
     customer_id = stripe_event.data[:object][:customer]
     account     = Account.find_by_billing_provider_customer_id(customer_id)
@@ -227,13 +223,12 @@ class Billing::Jobs::StripeEvent
     stripe_subscription = invoice[:lines][:data][0]
     start_period        = stripe_subscription[:period][:start]
     end_period          = stripe_subscription[:period][:end]
-    status              = stripe_subscription[:status]
     subscription        = account.billing_subscription
     autorenewal         = subscription.is_renewal?(start_period, end_period)
 
     return unless autorenewal
 
-    update_subscription!(subscription, start_period, end_period, status)
+    subscription.renewed!(start_period, end_period, 'active')
     update_quota!(stripe_event, autorenewal)
   end
 

@@ -269,9 +269,7 @@ class Quota < ActiveRecord::Base
   # Reset quota allowances.
   # Applicable to recurring plans only (see +Billing::Plans::RECURRING_PLANS+).
   #
-  def reset(plan)
+  def renewed(plan)
     zero_usage_minutes
-    self.minutes_allowed = quantity * plan.minutes_per_quantity
-    self.callers_allowed = quantity
   end
 end

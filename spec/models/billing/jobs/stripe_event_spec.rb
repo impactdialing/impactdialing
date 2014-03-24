@@ -32,7 +32,7 @@ describe Billing::Jobs::StripeEvent do
     double('Quota', {
       save!: nil,
       add_minutes: nil,
-      reset: nil
+      renewed: nil
     })
   end
   let(:subscription) do
@@ -186,8 +186,7 @@ describe Billing::Jobs::StripeEvent do
                 period: {
                   :start => nil,
                   :end => nil
-                },
-                status: 'active'
+                }
               }
             ]
           }
@@ -216,11 +215,11 @@ describe Billing::Jobs::StripeEvent do
         subscription.should_receive(:renewed!).with(
           start_period,
           end_period,
-          event_data[:object][:lines][:data][0][:status]
+          'active'
         )
       end
       it 'tells quota to reset and save!' do
-        quota.should_receive(:reset).with(plan)
+        quota.should_receive(:renewed).with(plan)
         quota.should_receive(:save!)
       end
       it_behaves_like 'processing completed'
@@ -237,30 +236,24 @@ describe Billing::Jobs::StripeEvent do
         subscription.should_not_receive(:renewed!)
       end
       it 'does not tell quota to reset' do
-        quota.should_not_receive(:reset)
+        quota.should_not_receive(:renewed)
       end
       it_behaves_like 'processing completed'
     end
   end
 
-  context 'invoice.payment_failed' do
+  context 'customer.subscription.updated' do
     let(:event_data) do
       {
         object: {
           customer: stripe_customer_id,
-          object: 'invoice',
-          lines: {
-            data: [
-              {
-                type: 'subscription',
-                period: {
-                  :start => nil,
-                  :end => nil
-                },
-                status: 'past_due'
-              }
-            ]
-          }
+          object: 'subscription',
+          type: 'subscription',
+          period: {
+            :start => nil,
+            :end => nil
+          },
+          status: 'active'
         }
       }
     end
