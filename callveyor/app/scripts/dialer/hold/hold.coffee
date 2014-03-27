@@ -17,12 +17,12 @@ hold.config([
 ])
 
 hold.controller('HoldCtrl.buttons', [
-  '$scope', '$state', '$timeout', 'usSpinnerService',
-  ($scope,   $state,   $timeout,   usSpinnerService) ->
+  '$scope', '$state', '$timeout', 'caller', 'usSpinnerService',
+  ($scope,   $state,   $timeout,   caller,   usSpinnerService) ->
     console.log 'HoldCtrl.buttons', $scope
-    hold ||= {}
-    $scope.dialer.hold ||= hold
 
+    hold = {}
+    hold.campaign = caller.data.campaign
     hold.stopCalling = ->
       console.log 'stopCalling clicked'
       $state.go('dialer.stop')
@@ -37,7 +37,7 @@ hold.controller('HoldCtrl.buttons', [
         e = (r) -> console.log 'error', r.stack, r.message
         c = (r) -> console.log 'notify', r.stack, r.message
         p.then(s,e,c)
-      $timeout(fakeDial, 3000)
+      $timeout(fakeDial, 500)
       # POST /dial
       # then -> to 'active'
       # error -> update status > 'Error + explain, maybe try again'
@@ -47,17 +47,16 @@ hold.controller('HoldCtrl.buttons', [
       # POST /skip
       # then -> update contact
       # error -> update status > 'Error + explain, maybe try again'
-    angular.extend($scope.dialer.hold, hold)
+    $scope.hold = hold
 ])
 
 hold.controller('HoldCtrl.status', [
-  '$scope',
-  ($scope) ->
-    console.log 'HoldCtrl', $scope
-    hold ||= {}
-    $scope.dialer.hold ||= hold
+  '$scope', 'caller'
+  ($scope,   caller) ->
+    console.log 'HoldCtrl', caller
 
-    hold.callStatusText = switch $scope.dialer.meta.campaign.type
+    hold = {}
+    hold.callStatusText = switch caller.data.campaign.type
                             when 'Power', 'Predictive'
                               'Dialing...'
                             when 'Preview'
@@ -65,5 +64,5 @@ hold.controller('HoldCtrl.status', [
                             else
                               'Oops! Please Report this problem.'
 
-    angular.extend($scope.dialer.hold, hold)
+    $scope.hold = hold
 ])
