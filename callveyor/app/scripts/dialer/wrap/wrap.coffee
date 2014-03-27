@@ -31,5 +31,5 @@ wrap.controller('WrapCtrl', [
       # e = (r) -> console.log 'error', r.stack, r.message
       # c = (r) -> console.log 'notify', r.stack, r.message
       # p.then(s,e,c)
-    $scope.dialer.wrap = wrap
+    $scope.wrap = wrap
 ])

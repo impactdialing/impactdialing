@@ -20,7 +20,6 @@ stop.controller('callFlowButtonsCtrl.stop', [
   '$scope', '$state',
   ($scope,   $state) ->
     console.log 'callFlowButtonsCtrl.stop', $scope
-    $scope.dialer.stop ||= {}
     $state.go('dialer.ready')
     # disconnect caller
 ])
@@ -29,6 +28,7 @@ stop.controller('callStatusCtrl.stop', [
   '$scope',
   ($scope) ->
     console.log 'stop.callStatusCtrl', $scope
-    $scope.dialer.stop ||= {}
-    $scope.dialer.stop.callStatusText = 'Stopping...'
+    stop = {}
+    stop.callStatusText = 'Stopping...'
+    $scope.stop = stop
 ])
