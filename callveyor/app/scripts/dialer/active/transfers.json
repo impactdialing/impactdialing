@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "transfer_type": "warm",
+    "label": "John Dogget",
+    "phone_number": "+1 555 321 5839"
+  },
+  {
+    "id": 2,
+    "transfer_type": "cold",
+    "label": "Monica Suarez",
+    "phone_number": "+1 323 433 4284"
+  }
+]

@@ -4,10 +4,15 @@
     <div class="row">
       <div class="col-xs-4">
         <!-- callFlowButtons ui-view -->
-        <div class="navbar-left" data-ui-view="callFlowButtons"></div>
+        <div class="navbar-left">
+          <ul class="nav navbar-nav">
+            <li data-ui-view="callFlowButtons"></li>
+            <li class="dropdown" data-ui-view="callFlowDropdown"></li>
+          </ul>
+        </div>
         <!-- /callFlowButtons ui-view -->
       </div>
-      <div>
+      <div class="col-xs-4">
       </div>
       <div class="col-xs-4">
         <!-- callStatus ui-view -->
@@ -20,22 +25,7 @@
         <!-- /callStatus ui-view -->
       </div>
     </div>
-    <div class="row border-top-thin" collapse="dialer._meta.collapseTransfers">
-      <div class="col-xs-4">
-        <div class="navbar-left">
-          <button class="btn btn-primary navbar-btn">Dial</button>
-        </div>
-      </div>
-      <div class="col-xs-4">
-        <span class="navbar-text">Rep. Dennis (+1-555-123-9876) <span class="label label-info">cold</span></span>
-      </div>
-      <div class="col-xs-4">
-        <div class="navbar-right status">
-          <span data-us-spinner="{length:0,top:10,left:-25,color:'#456587'}" data-spinner-key="global-spinner"></span>
-          <span class="label label-info navbar-text">Ready</span>
-        </div>
-      </div>
-    </div>
+    <div class="row border-top-thin" data-ui-view="transferContainer"></div>
   </div>
 </nav>
 <!-- /Fixed top nav -->

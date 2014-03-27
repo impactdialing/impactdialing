@@ -1,0 +1,8 @@
+<a href="#" class="dropdown-toggle">Transfer <b class="caret"></b></a>
+<ul class="dropdown-menu">
+  <li data-ng-repeat="target in transfer.list">
+    <a href="#" data-ng-click="transfer.select(target.id)">
+      {{target.label}} ({{target.phone_number}}) <span class="label label-{{target.transfer_type == 'warm' ? 'danger' : 'info'}}">{{target.transfer_type}}</span>
+    </a>
+  </li>
+</ul>
