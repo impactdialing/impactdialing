@@ -43,13 +43,11 @@ transfer.config(['$stateProvider', ($stateProvider) ->
 ])
 
 transfer.controller('TransferPanelCtrl', [
-  '$scope', '$cacheFactory',
-  ($scope,   $cacheFactory) ->
+  '$rootScope', '$scope', '$cacheFactory',
+  ($rootScope,   $scope,   $cacheFactory) ->
     console.log 'TransferPanelCtrl'
 
-    transfer = {}
-    transfer.callStatus = 'Ready to dial...'
-    $scope.transfer = transfer
+    $rootScope.transferStatus = 'Ready to dial...'
 ])
 
 transfer.controller('TransferInfoCtrl', [
@@ -63,22 +61,26 @@ transfer.controller('TransferInfoCtrl', [
 ])
 
 transfer.controller('TransferButtonCtrl.selected', [
-  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory', 'idDialerService', 'usSpinnerService',
-  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory,   idDialerService,  usSpinnerService) ->
+  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory', 'idDialerService', 'usSpinnerService', 'caller'
+  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory,   idDialerService,  usSpinnerService,    caller) ->
     console.log 'TransferButtonCtrl.selected', $cacheFactory.get('transfer').info()
 
     transfer = {}
     transfer.cache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
+    transfer_type = transfer.cache.get('selected').transfer_type
+    isWarmTransfer = -> transfer_type == 'warm'
 
     transfer.dial = ->
-      console.log 'dial'
-      @callStatusText = 'Dialing...'
+      console.log 'dial', $scope
+      $rootScope.transferStatus = 'Dialing...'
       usSpinnerService.spin('transfer-spinner')
       p = idDialerService.dial()
       s = (o) ->
         console.log 'dial success', o
-        $state.go('dialer.active.transfer.conference') # triggered from pusher event for warm transfers
-        # $state.go('dialer.wrap') # triggered from pusher event for cold transfers
+        if isWarmTransfer()
+          $state.go('dialer.active.transfer.conference') # triggered from pusher event for warm transfers
+        else
+          $state.go('dialer.wrap')
       e = (r) -> console.log 'error', r
       c = (r) -> console.log 'notify', r
       p.then(s,e,c)
@@ -103,6 +105,7 @@ transfer.controller('TransferButtonCtrl.conference', [
     transfer = {}
     transfer.cache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
     usSpinnerService.stop('transfer-spinner')
+    $rootScope.transferStatus = 'Transfer on call'
     transfer.hangup = ->
       console.log 'transfer.hangup'
       p = $state.go('dialer.active')
