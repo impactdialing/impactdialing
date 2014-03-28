@@ -54,8 +54,8 @@ transfer.controller('TransferInfoCtrl', [
 ])
 
 transfer.controller('TransferButtonCtrl.selected', [
-  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory',
-  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory) ->
+  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory', 'idDialerService',
+  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory    idDialerService) ->
     console.log 'TransferButtonCtrl.selected', $cacheFactory.get('transfer').info()
 
     transfer = {}
@@ -69,13 +69,14 @@ transfer.controller('TransferButtonCtrl.selected', [
       console.log 'dial'
       @callStatusText = 'Dialing...'
       usSpinnerService.spin('transfer-spinner')
-      fakeDial = ->
-        p = $state.go('dialer.active')
-        s = (r) -> console.log 'success', r.stack, r.message
-        e = (r) -> console.log 'error', r.stack, r.message
-        c = (r) -> console.log 'notify', r.stack, r.message
-        p.then(s,e,c)
-      $timeout(fakeDial, 500)
+      p = idDialerService.dial()
+      s = (o) ->
+        console.log 'dial success', o
+        $state.go('dialer.active.transfer.conference') # triggered from pusher event for warm transfers
+        # $state.go('dialer.wrap') # triggered from pusher event for cold transfers
+      e = (r) -> console.log 'error', r
+      c = (r) -> console.log 'notify', r
+      p.then(s,e,c)
 
     transfer.cancel = ->
       console.log 'cancel'
