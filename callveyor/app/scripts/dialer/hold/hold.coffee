@@ -17,8 +17,8 @@ hold.config([
 ])
 
 hold.controller('HoldCtrl.buttons', [
-  '$scope', '$state', '$timeout', 'caller', 'usSpinnerService',
-  ($scope,   $state,   $timeout,   caller,   usSpinnerService) ->
+  '$scope', '$state', '$timeout', 'caller', 'idDialerService', 'usSpinnerService',
+  ($scope,   $state,   $timeout,   caller,   idDialerService,   usSpinnerService) ->
     console.log 'HoldCtrl.buttons', $scope
 
     hold = {}
@@ -31,13 +31,13 @@ hold.controller('HoldCtrl.buttons', [
       # update status > 'Dialing...'
       @callStatusText = 'Dialing...'
       usSpinnerService.spin('global-spinner')
-      fakeDial = ->
-        p = $state.go('dialer.active')
-        s = (r) -> console.log 'success', r.stack, r.message
-        e = (r) -> console.log 'error', r.stack, r.message
-        c = (r) -> console.log 'notify', r.stack, r.message
-        p.then(s,e,c)
-      $timeout(fakeDial, 500)
+      p = idDialerService.dial()
+      s = (o) ->
+        console.log 'dial success', o
+        $state.go('dialer.active') # really will be triggered from pusher event
+      e = (r) -> console.log 'error', r
+      c = (r) -> console.log 'notify', r
+      p.then(s,e,c)
       # POST /dial
       # then -> to 'active'
       # error -> update status > 'Error + explain, maybe try again'
