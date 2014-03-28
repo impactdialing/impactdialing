@@ -193,8 +193,8 @@ class Billing::Jobs::StripeEvent
     account             = Account.find_by_billing_provider_customer_id(customer_id)
     subscription        = account.billing_subscription
     quota               = account.quota
-    start_period        = stripe_subscription[:period][:start]
-    end_period          = stripe_subscription[:period][:end]
+    start_period        = stripe_subscription[:current_period_start]
+    end_period          = stripe_subscription[:current_period_end]
     autorenewal         = subscription.is_renewal?(start_period, end_period)
 
     if ['unpaid', 'past_due'].include?(stripe_subscription[:status])
