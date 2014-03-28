@@ -1,1 +1,1 @@
-<span class="navbar-text">{{transfer.label}} ({{transfer.phone_number}}) <span class="label label-info">{{transfer.type}}</span></span>
+<span class="navbar-text">{{transfer.label}} ({{transfer.phone_number}}) <span class="label label-{{transfer.transfer_type == 'warm' ? 'danger' : 'info'}}">{{transfer.transfer_type}}</span></span>

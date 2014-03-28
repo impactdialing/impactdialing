@@ -31,6 +31,15 @@ transfer.config(['$stateProvider', ($stateProvider) ->
         templateUrl: '/scripts/dialer/active/transfer/info.tpl.html'
         controller: 'TransferInfoCtrl'
   })
+  $stateProvider.state('dialer.active.transfer.conference', {
+    views:
+      transferInfo:
+        templateUrl: '/scripts/dialer/active/transfer/info.tpl.html'
+        controller: 'TransferInfoCtrl'
+      transferButtons:
+        templateUrl: '/scripts/dialer/active/transfer/conference/buttons.tpl.html'
+        controller: 'TransferButtonCtrl.conference'
+  })
 ])
 
 transfer.controller('TransferPanelCtrl', [
@@ -54,17 +63,13 @@ transfer.controller('TransferInfoCtrl', [
 ])
 
 transfer.controller('TransferButtonCtrl.selected', [
-  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory', 'idDialerService',
-  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory    idDialerService) ->
+  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory', 'idDialerService', 'usSpinnerService',
+  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory,   idDialerService,  usSpinnerService) ->
     console.log 'TransferButtonCtrl.selected', $cacheFactory.get('transfer').info()
 
     transfer = {}
-    transfer.callStatus = 'Ready'
     transfer.cache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
-    selected = transfer.cache.get('selected')
-    transfer.type = selected.transfer_type
-    transfer.label = selected.label
-    transfer.phone_number = selected.phone_number
+
     transfer.dial = ->
       console.log 'dial'
       @callStatusText = 'Dialing...'
@@ -87,5 +92,24 @@ transfer.controller('TransferButtonCtrl.selected', [
     console.log 'collapse before', $rootScope.rootTransferCollapse
     $rootScope.rootTransferCollapse = false
     console.log 'collapse before', $rootScope.rootTransferCollapse
+    $scope.transfer = transfer
+])
+
+transfer.controller('TransferButtonCtrl.conference', [
+  '$rootScope', '$scope', '$state', '$cacheFactory', 'idDialerService', 'usSpinnerService'
+  ($rootScope,   $scope,   $state,   $cacheFactory,   idDialerService,   usSpinnerService) ->
+    console.log 'TransferButtonCtrl.conference'
+
+    transfer = {}
+    transfer.cache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
+    usSpinnerService.stop('transfer-spinner')
+    transfer.hangup = ->
+      console.log 'transfer.hangup'
+      p = $state.go('dialer.active')
+      s = (o) -> console.log 'success', o
+      e = (r) -> console.log 'error', e
+      c = (n) -> console.log 'notify', n
+      p.then(s,e,c)
+
     $scope.transfer = transfer
 ])
