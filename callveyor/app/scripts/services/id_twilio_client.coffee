@@ -5,7 +5,7 @@ twilio = angular.module('idTwilio', [
 ])
 
 twilio.provider('idTwilioService', ->
-  _scriptUrl = "//static.twilio.com/libs/twiliojs/1.1/twilio.min.js"
+  _scriptUrl = "//static.twilio.com/libs/twiliojs/1.1/twilio.js"
   _scriptId = 'TwilioJS'
   _capabilityToken = ''
   _initOptions = {}
@@ -19,14 +19,14 @@ twilio.provider('idTwilioService', ->
     @
 
   @$get = [
-    '$q', '$window', 'idScriptLoader'
-    ($q,   $window,   idScriptLoader) ->
+    '$q', '$window', '$timeout', 'idScriptLoader'
+    ($q,   $window,   $timeout,   idScriptLoader) ->
       console.log 'TwilioService $get', idScriptLoader
 
       deferred = $q.defer()
 
       scriptLoaded = (callback) ->
-        _Twilio = new $window.Twilio.Device.setup(token, {
+        _Twilio = new $window.Twilio.Device.setup('123', {
           'debug':true
         })
         $timeout(-> deferred.resolve(_Twilio))
@@ -35,6 +35,6 @@ twilio.provider('idTwilioService', ->
 
       deferred.promise
   ]
-  # return 'this' so angular knows $get is defined.
+  # return 'this' not $get
   @
 )
