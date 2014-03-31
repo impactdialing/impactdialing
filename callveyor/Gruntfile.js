@@ -7,6 +7,10 @@
 // use this if you want to recursively match all subfolders:
 // 'test/spec/**/*.js'
 
+var mountFolder = function (connect, dir) {
+    return connect.static(require('path').resolve(dir));
+};
+
 module.exports = function (grunt) {
 
   // Load grunt tasks automatically
@@ -63,20 +67,23 @@ module.exports = function (grunt) {
         hostname: 'localhost',
         livereload: 35729
       },
-      // proxies: [
-      //   {
-      //     context: '/api',
-      //     host: 'localhost',
-      //     port: 5000
-      //   }
-      // ],
+      proxies: [
+        {
+          context: '/call_center/api/token.json',
+          host: 'localhost',
+          port: 5000
+        }
+      ],
       livereload: {
         options: {
           open: true,
-          base: [
-            '.tmp',
-            '<%= yeoman.app %>'
-          ]
+          middleware: function(connect) {
+            return [
+              require('grunt-connect-proxy/lib/utils').proxyRequest,
+              mountFolder(connect, '.tmp'),
+              mountFolder(connect, 'app')
+            ]
+          }
         }
       },
       test: {
@@ -387,6 +394,7 @@ module.exports = function (grunt) {
     grunt.task.run([
       'clean:server',
       'bower-install',
+      'configureProxies',
       'concurrent:server',
       'autoprefixer',
       'connect:livereload',
