@@ -18,13 +18,13 @@ ready.config(['$stateProvider', ($stateProvider) ->
 ])
 
 ready.controller('callFlowButtonsCtrl.ready', [
-  '$scope', '$state', 'token',
-  ($scope,   $state,   token) ->
+  '$scope', '$state', 'callStation',
+  ($scope,   $state,   callStation) ->
     console.log 'ready.callFlowButtonsCtrl', $scope
     ready = {}
     ready.startCallingText = "Requires a mic and snappy internet."
     ready.startCalling = ->
-      console.log 'startCalling clicked', token.data
+      console.log 'startCalling clicked', callStation.data
       p = $state.go('dialer.hold')
       s = (r) -> console.log 'success', r.stack, r.message
       e = (r) -> console.log 'error', r.stack, r.message
@@ -34,15 +34,15 @@ ready.controller('callFlowButtonsCtrl.ready', [
 ])
 
 ready.controller('callInPhoneCtrl.ready', [
-  '$scope', 'token',
-  ($scope, token) ->
+  '$scope', 'callStation',
+  ($scope, callStation) ->
     console.log 'ready.callInPhoneCtrl', $scope.dialer
-    ready = token.data
+    ready = callStation.data
     $scope.ready = ready
 ])
 
 ready.controller('callStatusCtrl.ready', [
-  '$scope', 'token',
-  ($scope, token) ->
+  '$scope', 'callStation',
+  ($scope, callStation) ->
     console.log 'ready.callStatusCtrl', $scope.dialer
 ])
