@@ -69,7 +69,7 @@ ImpactDialing::Application.routes.draw do
 
   # new api rough draft
   post 'call_center/api/call_station', :to => 'callers/campaign_calls#call_station'
-  get 'call_center/api/twilio_token', :to => 'callers/campaign_calls#twilio_token'
+  get 'call_center/api/service_tokens', :to => 'callers/campaign_calls#service_tokens'
   get 'call_center/api/script', :to => 'callers/campaign_calls#script'
     # include :id in path for back compat. remove later...
   post 'call_center/api/:id/start_calling', :to => 'caller#start_calling'
