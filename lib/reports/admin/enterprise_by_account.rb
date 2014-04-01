@@ -17,8 +17,9 @@ module Reports::Admin
       p "Found #{account_ids.size} accounts"
       account_ids.each do |account_id|
         account = Account.using(:simulator_slave).find(account_id)
+        subscription = account.billing_subscription
 
-        next unless account.manual_subscription?
+        next unless subscription.enterprise?
 
         account_campaign_ids = campaign_ids(account_id)
         p "Found #{account_campaign_ids.size} campaigns"
