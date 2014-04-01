@@ -19,13 +19,13 @@ dialer.config([
       abstract: true
       templateUrl: '/scripts/dialer/dialer.tpl.html'
       resolve:
-        token: ($http) -> $http.get('/call_center/api/token.json')
+        callStation: ($http) -> $http.post('/call_center/api/call_station.json')
       controller: 'DialerCtrl'
     })
 ])
 
 dialer.controller('DialerCtrl', [
-  '$state', 'token',
-  ($state,   token) ->
-    console.log 'DialerCtrl', token
+  '$state', 'callStation',
+  ($state,   callStation) ->
+    console.log 'DialerCtrl', callStation
 ])

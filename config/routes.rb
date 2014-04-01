@@ -47,7 +47,6 @@ ImpactDialing::Application.routes.draw do
       post :time_period_exceeded
       post :account_out_of_funds
     end
-
   end
 
 
@@ -68,6 +67,18 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
+  # new api rough draft
+  post 'call_center/api/call_station', :to => 'callers/campaign_calls#call_station'
+  get 'call_center/api/twilio_token', :to => 'callers/campaign_calls#twilio_token'
+  get 'call_center/api/script', :to => 'callers/campaign_calls#script'
+    # include :id in path for back compat. remove later...
+  post 'call_center/api/:id/start_calling', :to => 'caller#start_calling'
+  post 'call_center/api/:id/submit_response', :to => 'caller#submit_response'
+  post 'call_center/api/:id/call_voter', :to => 'caller#call_voter'
+  post 'call_center/api/:id/stop_calling', :to => 'caller#stop_calling'
+  post 'call_center/api/:id/skip_voter', :to => 'caller#skip_voter'
+  post 'call_center/api/:id/kick', :to => 'caller#kick'
+  # /new api rough draft
 
   match '/policies', :to => 'client#policies'
   match '/client/policies', :to => 'client#policies', :as => :client_policies

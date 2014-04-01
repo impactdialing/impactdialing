@@ -17,15 +17,12 @@ hold.config([
 ])
 
 hold.controller('HoldCtrl.buttons', [
-  '$scope', '$state', '$timeout', 'token', 'idDialerService', 'usSpinnerService',
-  ($scope,   $state,   $timeout,   token,   idDialerService,   usSpinnerService) ->
+  '$scope', '$state', '$timeout', 'callStation', 'idDialerService', 'usSpinnerService',
+  ($scope,   $state,   $timeout,   callStation,   idDialerService,   usSpinnerService) ->
     console.log 'HoldCtrl.buttons', $scope
 
     hold = {}
-    hold.campaign = {
-      id: token.data.campaign_id
-      type: token.data.campaign_type
-    }
+    hold.campaign = callStation.data.campaign
     hold.stopCalling = ->
       console.log 'stopCalling clicked'
       $state.go('dialer.stop')
@@ -54,12 +51,12 @@ hold.controller('HoldCtrl.buttons', [
 ])
 
 hold.controller('HoldCtrl.status', [
-  '$scope', 'token'
-  ($scope,   token) ->
-    console.log 'HoldCtrl', token
+  '$scope', 'callStation'
+  ($scope,   callStation) ->
+    console.log 'HoldCtrl', callStation
 
     hold = {}
-    hold.callStatusText = switch token.data.campaign_type
+    hold.callStatusText = switch callStation.data.campaign.type
                             when 'Power', 'Predictive'
                               'Dialing...'
                             when 'Preview'

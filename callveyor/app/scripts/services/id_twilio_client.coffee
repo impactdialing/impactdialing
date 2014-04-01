@@ -7,7 +7,7 @@ twilio = angular.module('idTwilio', [
 twilio.provider('idTwilioService', ->
   _scriptUrl = "//static.twilio.com/libs/twiliojs/1.1/twilio.js"
   _scriptId = 'TwilioJS'
-  _tokenUrl = '/call_center/api/token.json'
+  _tokenUrl = '/call_center/api/twilio_token.json'
   _initOptions = {}
 
   @setOptions = (opts) ->
