@@ -10,19 +10,22 @@ dialer = angular.module('callveyor.dialer', [
   'callveyor.contact'
 ])
 
-dialer.config(['$stateProvider', 'PusherServiceProvider', ($stateProvider, PusherServiceProvider) ->
-  PusherServiceProvider
-  $stateProvider.state('dialer', {
-    abstract: true
-    templateUrl: '/scripts/dialer/dialer.tpl.html'
-    resolve:
-      caller: ($http) -> $http.get('/scripts/dialer/ready/ready.json')
-    controller: 'DialerCtrl'
-  })
+dialer.config([
+  '$stateProvider', 'idTwilioServiceProvider', 'PusherServiceProvider',
+  ($stateProvider,   idTwilioServiceProvider,   PusherServiceProvider) ->
+    idTwilioServiceProvider
+    PusherServiceProvider
+    $stateProvider.state('dialer', {
+      abstract: true
+      templateUrl: '/scripts/dialer/dialer.tpl.html'
+      resolve:
+        token: ($http) -> $http.get('/call_center/api/token.json')
+      controller: 'DialerCtrl'
+    })
 ])
 
 dialer.controller('DialerCtrl', [
-  '$state', 'caller',
-  ($state,   caller) ->
-    console.log 'DialerCtrl', caller
+  '$state', 'token',
+  ($state,   token) ->
+    console.log 'DialerCtrl', token
 ])
