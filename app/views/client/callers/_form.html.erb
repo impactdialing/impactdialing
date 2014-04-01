@@ -7,9 +7,9 @@
   <% else %>
     <%= render :partial => 'web_ui_caller', :locals => {:f => f} %>
   <% end %>
-  <% if can? :manage_caller_groups, @account %>
+  <% if can? :manage, CallerGroup %>
     <p data-intro="If you'd like to assign your caller to a campaign through a caller group, do so here." data-step="3">
-      <%= f.label :caller_group %>
+      <%= f.label :caller_group, nil, {for: 'caller_caller_group_id'} %>
       <%= f.select :caller_group_id,
                    options_from_collection_for_select(@caller_groups, :id, :name, @caller.caller_group_id),
                    {:include_blank => '(None)'},
