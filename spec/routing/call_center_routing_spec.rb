@@ -1,8 +1,12 @@
 require 'spec_helper'
 
 describe 'routes for CallCenter (draft)' do
-  it 'POST /call_center/api/token => campaign_calls#token' do
-    {post: '/call_center/api/token'}.should route_to(controller: 'callers/campaign_calls', action: 'token')
+  it 'GET /call_center/api/twilio_token => campaign_calls#twilio_token' do
+    {get: '/call_center/api/twilio_token'}.should route_to(controller: 'callers/campaign_calls', action: 'twilio_token')
+  end
+
+  it 'POST /call_center/api/call_station => campaign_calls#call_station' do
+    {post: '/call_center/api/call_station'}.should route_to(controller: 'callers/campaign_calls', action: 'call_station')
   end
 
   it 'GET /call_center/api/script => campaign_calls#script' do

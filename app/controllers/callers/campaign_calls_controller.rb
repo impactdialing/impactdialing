@@ -70,11 +70,16 @@ public
     end
 
     # draft new api - eventually moving to grape abstraction
-    def twilio_token
+    def service_tokens
       twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       twilio_capability.allow_client_outgoing(TWILIO_APP_SID)
 
-      render json: {twilio_token: twilio_capability.generate}
+      render json: {
+        tokens: {
+          twilio: twilio_capability.generate,
+          pusher: Pusher.key
+        }
+      }
     end
 
     # draft new api - eventually moving to grape abstraction
