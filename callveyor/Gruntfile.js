@@ -69,7 +69,7 @@ module.exports = function (grunt) {
       },
       proxies: [
         {
-          context: '/call_center/api/token.json',
+          context: '/call_center/api',
           host: 'localhost',
           port: 5000
         }
