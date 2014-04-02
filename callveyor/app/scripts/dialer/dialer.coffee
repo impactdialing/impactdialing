@@ -10,14 +10,9 @@ dialer = angular.module('callveyor.dialer', [
   'callveyor.contact'
 ])
 
-dialer.constant
-
 dialer.config([
-  '$stateProvider', 'idTwilioServiceProvider', 'PusherServiceProvider',
-  ($stateProvider,  idTwilioServiceProvider,   PusherServiceProvider) ->
-    idTwilioServiceProvider.setScriptUrl('//static.twilio.com/libs/twiliojs/1.1/twilio.js')
-    PusherServiceProvider.setPusherUrl('//d3dy5gmtp8yhk7.cloudfront.net/2.1/pusher.min.js')
-
+  '$stateProvider',
+  ($stateProvider) ->
     $stateProvider.state('dialer', {
       abstract: true
       templateUrl: '/scripts/dialer/dialer.tpl.html'
@@ -28,8 +23,9 @@ dialer.config([
 ])
 
 dialer.controller('DialerCtrl', [
-  '$state', 'Pusher', 'callStation',
-  ($state,   Pusher,   callStation) ->
-    console.log 'DialerCtrl', callStation
-
+  'callStation',
+  (callStation) ->
+    console.log 'DialerCtrl'
+    # Only purpose of this controller is to make sure callStation
+    # is resolved before loading any child states.
 ])

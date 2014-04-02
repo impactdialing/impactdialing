@@ -28,7 +28,38 @@ module.exports = function (grunt) {
       app: require('./bower.json').appPath || 'app',
       dist: 'dist'
     },
-
+    // per-env constants
+    ngconstant: {
+      options: {
+        name: 'config',
+        dest: 'app/scripts/config.js',
+        constants: {
+          package: grunt.file.readJSON('package.json'),
+          apiver: 0.1
+        }
+      },
+      dev: {
+        constants: {
+          serviceTokens: {
+            pusher: '1e93714ff1e5907aa618'
+          }
+        }
+      },
+      dist: {
+        constants: {
+          serviceTokens: {
+            pusher: '6f37f3288a3762e60f94'
+          }
+        }
+      },
+      test: {
+        constants: {
+          serviceTokens: {
+            pusher: 'blah'
+          }
+        }
+      }
+    },
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       coffee: {
@@ -395,6 +426,7 @@ module.exports = function (grunt) {
       'clean:server',
       'bower-install',
       'configureProxies',
+      'ngconstant:dev',
       'concurrent:server',
       'autoprefixer',
       'connect:livereload',
@@ -409,6 +441,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'clean:server',
+    'ngconstant:test',
     'concurrent:test',
     'autoprefixer',
     'connect:test',
@@ -418,6 +451,7 @@ module.exports = function (grunt) {
   grunt.registerTask('build', [
     'clean:dist',
     'bower-install',
+    'ngconstant:dist',
     'useminPrepare',
     'concurrent:dist',
     'autoprefixer',
