@@ -29,7 +29,13 @@
     <div class="fluid-wrap">
       <div class="container-fluid" data-ng-controller="AppCtrl">
         <!-- dialer ui-view -->
-        <div data-ui-view></div>
+        <div data-ui-view>
+          <p class="alert"
+             data-ng-show="flash.notice || flash.warning || flash.error || flash.success"
+             data-ng-class="{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}">
+            {{flash.notice || flash.warning || flash.error || flash.success}}
+          </p>
+        </div>
         <!-- /dialer ui-view -->
         <div class="row">
           <!-- survey -->
@@ -101,6 +107,7 @@
     <script src="scripts/services/id_twilio_client.js"></script>
     <script src="scripts/services/current_year.js"></script>
     <script src="scripts/services/id_dialer.js"></script>
+    <script src="scripts/services/id_flash.js"></script>
     <script src="scripts/controllers/meta.js"></script>
     <script src="scripts/dialer/dialer.js"></script>
     <script src="scripts/dialer/contact/contact.js"></script>
