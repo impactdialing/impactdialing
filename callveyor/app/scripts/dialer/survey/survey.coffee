@@ -2,9 +2,7 @@
 
 surveyForm = angular.module('callveyor.dialer.survey', [])
 
-surveyForm.config(['$stateProvider', ($stateProvider) ->
-
-])
+# surveyForm.config([])
 
 surveyForm.factory('SurveyFormFieldsFactory', [
   '$http', '$filter',
