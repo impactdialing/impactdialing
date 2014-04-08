@@ -33,10 +33,14 @@ twilio.provider('idTwilioService', ->
       deferred = $q.defer()
 
       scriptLoaded = (token) ->
-        _Twilio = new $window.Twilio.Device.setup(twilioToken, {
+        _Twilio = $window.Twilio
+        new _Twilio.Device.setup(twilioToken, {
           'debug':true
         })
-        $timeout(-> deferred.resolve(_Twilio))
+        $timeout(->
+          console.log 'resolving Twilio', _Twilio
+          deferred.resolve(_Twilio)
+        )
 
       tokensFetched = (token) ->
         twilioToken = token.data.twilio_token
@@ -45,10 +49,7 @@ twilio.provider('idTwilioService', ->
       tokensFetchError = (e) ->
         console.log 'tokensFetchError', e
 
-      tokensFetchNotify = (r) ->
-        console.log 'tokensFetchNotify', r
-
-      tokens.then(tokensFetched, tokensFetchError, tokensFetchNotify)
+      tokens.then(tokensFetched, tokensFetchError)
 
       deferred.promise
   ]
