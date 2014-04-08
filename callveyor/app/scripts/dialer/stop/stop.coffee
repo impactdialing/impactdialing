@@ -17,11 +17,18 @@ stop.config([
 ])
 
 stop.controller('callFlowButtonsCtrl.stop', [
-  '$scope', '$state',
-  ($scope,   $state) ->
+  '$scope', '$state', '$cacheFactory', 'idTwilioService'
+  ($scope,   $state,   $cacheFactory,   idTwilioService) ->
     console.log 'callFlowButtonsCtrl.stop', $scope
-    $state.go('dialer.ready')
-    # disconnect caller
+
+    _twilioCache = $cacheFactory.get('Twilio')
+    connection = _twilioCache.get('connection')
+
+    disconnect = (Twilio) ->
+      Twilio.Device.disconnect(-> $state.go('dialer.ready'))
+      connection.disconnect()
+
+    idTwilioService.then(disconnect)
 ])
 
 stop.controller('callStatusCtrl.stop', [
