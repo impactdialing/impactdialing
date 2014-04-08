@@ -10,13 +10,13 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
-    <!-- build:css styles/vendor.css -->
+    <!-- build:css /callveyor/styles/vendor.css -->
     <link rel="stylesheet" href="styles/bootstrap.css">
     <link rel="stylesheet" href="styles/bootstrap-theme.css">
     <!-- bower:css -->
     <!-- endbower -->
     <!-- endbuild -->
-    <!-- build:css({.tmp,app}) styles/main.css -->
+    <!-- build:css({.tmp,app}) /callveyor/styles/main.css -->
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
   </head>
@@ -85,11 +85,13 @@
     </script>
 
     <!--[if lt IE 9]>
+    <!-- build:js /callveyor/scripts/ie-lt-9.js -->
     <script src="bower_components/es5-shim/es5-shim.js"></script>
     <script src="bower_components/json3/lib/json3.min.js"></script>
+    <!-- endbuild -->
     <![endif]-->
 
-    <!-- build:js scripts/vendor.js -->
+    <!-- build:js /callveyor/scripts/vendor.js -->
     <!-- bower:js -->
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
@@ -100,7 +102,7 @@
     <!-- endbower -->
     <!-- endbuild -->
 
-    <!-- build:js({.tmp,app}) scripts/scripts.js -->
+    <!-- build:js({.tmp,app}) /callveyor/scripts/scripts.js -->
     <script src="scripts/config.js"></script>
     <script src="scripts/app.js"></script>
     <script src="scripts/services/id_script_loader.js"></script>
