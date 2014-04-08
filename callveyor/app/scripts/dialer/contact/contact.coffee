@@ -43,6 +43,6 @@ contact.controller('ContactCtrl', [
 contact.directive('idContact', ->
   {
     restrict: 'A'
-    templateUrl: '/scripts/dialer/contact/info.tpl.html'
+    templateUrl: '/callveyor/dialer/contact/info.tpl.html'
   }
 )

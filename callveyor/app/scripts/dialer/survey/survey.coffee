@@ -116,6 +116,6 @@ surveyForm.controller('SurveyFormCtrl', [
 surveyForm.directive('idSurvey', ->
   {
     restrict: 'A'
-    templateUrl: '/scripts/dialer/survey/survey.tpl.html'
+    templateUrl: '/callveyor/dialer/survey/survey.tpl.html'
   }
 )

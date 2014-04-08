@@ -8,10 +8,10 @@ hold.config([
     $stateProvider.state('dialer.hold', {
       views:
         callFlowButtons:
-          templateUrl: "/scripts/dialer/hold/callFlowButtons.tpl.html"
+          templateUrl: "/callveyor/dialer/hold/callFlowButtons.tpl.html"
           controller: 'HoldCtrl.buttons'
         callStatus:
-          templateUrl: '/scripts/dialer/hold/callStatus.tpl.html'
+          templateUrl: '/callveyor/dialer/hold/callStatus.tpl.html'
           controller: 'HoldCtrl.status'
     })
 ])

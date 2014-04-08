@@ -8,10 +8,10 @@ stop.config([
     $stateProvider.state('dialer.stop', {
       views:
         callFlowButtons:
-          templateUrl: "/scripts/dialer/stop/callFlowButtons.tpl.html"
+          templateUrl: "/callveyor/dialer/stop/callFlowButtons.tpl.html"
           controller: 'callFlowButtonsCtrl.stop'
         callStatus:
-          templateUrl: '/scripts/dialer/stop/callStatus.tpl.html'
+          templateUrl: '/callveyor/dialer/stop/callStatus.tpl.html'
           controller: 'callStatusCtrl.stop'
     })
 ])
