@@ -80,13 +80,16 @@ callveyor.factory('pusherConnectionHandlerFactory', [
 ])
 
 callveyor.controller('AppCtrl', [
-  '$rootScope', '$scope', '$state', '$http', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idTwilioService', 'idFlashService',
-  ($rootScope,   $scope,   $state,   $http,   $timeout, usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idTwilioService,   idFlashService) ->
+  '$rootScope', '$scope', '$state', '$http', '$timeout', 'usSpinnerService',
+  'PusherService', 'pusherConnectionHandlerFactory', 'idTwilioService',
+  'idFlashService'
+  ($rootScope,   $scope,   $state,   $http,   $timeout, usSpinnerService,
+   PusherService,   pusherConnectionHandlerFactory,   idTwilioService,
+   idFlashService) ->
     console.log 'MainCtrl', PusherService
 
     idFlashService.scope = $scope
-    flash = idFlashService
-    $scope.flash = flash
+    $scope.flash = idFlashService
 
     transitionInProgress = -> usSpinnerService.spin('global-spinner')
     transitionComplete = -> usSpinnerService.stop('global-spinner')
@@ -94,10 +97,12 @@ callveyor.controller('AppCtrl', [
     $rootScope.$on('$stateChangeSuccess', transitionComplete)
     $rootScope.$on('$stateChangeError', transitionComplete)
 
-    PusherService.then(pusherConnectionHandlerFactory.success, pusherConnectionHandlerFactory.error, pusherConnectionHandlerFactory.notify)
+    PusherService.then(pusherConnectionHandlerFactory.success,
+                       pusherConnectionHandlerFactory.error,
+                       pusherConnectionHandlerFactory.notify)
 
-    d = -> PusherService.then((pusher) -> pusher.disconnect())
-    r = -> PusherService.then((pusher) -> pusher.connect())
-    $timeout(d, 10000)
-    $timeout(r, 20000)
+    # d = -> PusherService.then((pusher) -> pusher.disconnect())
+    # r = -> PusherService.then((pusher) -> pusher.connect())
+    # $timeout(d, 10000)
+    # $timeout(r, 20000)
 ])
