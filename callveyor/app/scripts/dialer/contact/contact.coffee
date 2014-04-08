@@ -3,9 +3,11 @@
 contact = angular.module('callveyor.contact', [])
 
 contact.controller('ContactCtrl', [
-  '$scope', '$rootScope', '$state', '$http'
-  ($scope,   $rootScope,   $state,   $http) ->
-    console.log 'ContactCtrl', contact
+  '$rootScope', '$scope', '$state', '$http', '$cacheFactory'
+  ($rootScope,   $scope,   $state,   $http,   $cacheFactory) ->
+    console.log 'ContactCtrl'
+
+    contact = {}
 
     reset = ->
       contact = {
@@ -14,22 +16,25 @@ contact.controller('ContactCtrl', [
         }
       }
 
-    update = (payload) ->
-      contact.data = payload.data
-
     handleStateChange = (event, toState, toParams, fromState, fromParams) ->
       console.log 'handleStateChange', toState, fromState
       switch toState.name
-        when 'dialer.hold'
-          info = $http.get('/scripts/dialer/contact/info.json')
-
-          e = (r) -> console.log 'survey load error', r.stack, r.message
-          n = (r) -> console.log 'survey load notify', r.stack, r.message
-
-          info.then(update, e, n)
         when 'dialer.stop'
           contact.data = {}
 
+    updateFromCache = ->
+      callStationCache = $cacheFactory.get('callStation')
+      if callStationCache?
+        callStation = callStationCache.get('data')
+      else
+        callStation = {campaign: {}}
+      if callStation.campaign.type != 'Predictive'
+        # show preview of contact being dialed for Preview & Power modes
+        contactCache = $cacheFactory.get('contact')
+        if contactCache?
+          contact.data = contactCache.get('data')
+
+    $rootScope.$on('contact:changed', updateFromCache)
     $rootScope.$on('$stateChangeSuccess', handleStateChange)
 
     $scope.contact = contact
