@@ -6,13 +6,13 @@ ready.config(['$stateProvider', ($stateProvider) ->
   $stateProvider.state('dialer.ready', {
     views:
       callFlowButtons:
-        templateUrl: '/scripts/dialer/ready/callFlowButtons.tpl.html'
+        templateUrl: '/callveyor/dialer/ready/callFlowButtons.tpl.html'
         controller: 'callFlowButtonsCtrl.ready'
       callInPhone:
-        templateUrl: '/scripts/dialer/ready/callInPhone.tpl.html'
+        templateUrl: '/callveyor/dialer/ready/callInPhone.tpl.html'
         controller: 'callInPhoneCtrl.ready'
       callStatus:
-        templateUrl: '/scripts/dialer/ready/callStatus.tpl.html'
+        templateUrl: '/callveyor/dialer/ready/callStatus.tpl.html'
         controller: 'callStatusCtrl.ready'
   })
 ])

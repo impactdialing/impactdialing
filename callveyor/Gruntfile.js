@@ -100,10 +100,20 @@ module.exports = function (grunt) {
         livereload: 35729
       },
       proxies: [
+        // proxy REST end-points to dev rails server
         {
           context: '/call_center/api',
           host: 'localhost',
           port: 5000
+        },
+        // rewrite asset requests to use dev path
+        {
+          context: '/callveyor',
+          host: 'localhost',
+          port: 9000,
+          rewrite: {
+            '^/callveyor': '/scripts'
+          }
         }
       ],
       livereload: {
@@ -326,6 +336,31 @@ module.exports = function (grunt) {
       }
     },
 
+    // Compile angular templates into javascript for faster loading
+    // and wrap them an angular module, storing them in $templateCache.
+    // Templates are still available via ajax calls.
+    // /callveyor/dialer/ready/callInPhone.tpl.html
+    ngtemplates: {
+      callveyor: {
+        module: 'callveyor.dialer',
+        standalone: false,
+        dest: 'dialer-templates.js',
+        cwd: 'app/scripts',
+        src: 'dialer/**/*.tpl.html',
+        options: {
+          prefix: '/callveyor',
+          url: function(url) {
+            return url.replace('callveyor', 'scripts');
+          },
+          htmlmin: {
+            collapseBooleanAttributes:      true,
+            collapseWhitespace:             true
+          },
+          usemin: '<%= yeoman.dist %>/callveyor/scripts/scripts.js'
+        }
+      }
+    },
+
     // Replace Google CDN references
     // cdnify: {
     //   dist: {
@@ -457,6 +492,7 @@ module.exports = function (grunt) {
     'useminPrepare',
     'concurrent:dist',
     'autoprefixer',
+    'ngtemplates',
     'concat',
     'ngmin',
     'copy:dist',

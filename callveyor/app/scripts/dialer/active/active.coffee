@@ -10,16 +10,16 @@ active.config(['$stateProvider', ($stateProvider) ->
       transfers: ($http) -> $http.get('/scripts/dialer/active/transfers.json')
     views:
       callFlowButtons:
-        templateUrl: '/scripts/dialer/active/callFlowButtons.tpl.html'
+        templateUrl: '/callveyor/dialer/active/callFlowButtons.tpl.html'
         controller: 'ActiveButtonCtrl'
       callStatus:
-        templateUrl: '/scripts/dialer/active/callStatus.tpl.html'
+        templateUrl: '/callveyor/dialer/active/callStatus.tpl.html'
         controller: 'ActiveStatusCtrl'
       callFlowDropdown:
-        templateUrl: '/scripts/dialer/active/transfer/dropdown.tpl.html'
+        templateUrl: '/callveyor/dialer/active/transfer/dropdown.tpl.html'
         controller: 'TransferListCtrl'
       transferContainer:
-        templateUrl: '/scripts/dialer/active/transfer/container.tpl.html'
+        templateUrl: '/callveyor/dialer/active/transfer/container.tpl.html'
         controller: 'TransferContainerCtrl'
   })
 ])
