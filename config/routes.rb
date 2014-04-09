@@ -67,10 +67,13 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
+  # new customer facing end-point
+  get '/app', :to => 'callers/station#show'
+  # /new customer facing end-point
   # new api rough draft
-  post 'call_center/api/call_station', :to => 'callers/campaign_calls#call_station'
-  get 'call_center/api/twilio_token', :to => 'callers/campaign_calls#twilio_token'
-  get 'call_center/api/script', :to => 'callers/campaign_calls#script'
+  post 'call_center/api/call_station', :to => 'callers/station#create'
+  get 'call_center/api/twilio_token', :to => 'callers/station#twilio_token'
+  get 'call_center/api/survey_fields', :to => 'callers/station#script'
     # include :id in path for back compat. remove later...
   post 'call_center/api/:id/start_calling', :to => 'caller#start_calling'
   post 'call_center/api/:id/submit_response', :to => 'caller#submit_response'
