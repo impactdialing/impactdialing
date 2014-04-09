@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'Internal Admin pages' do
+describe 'Internal Admin pages', admin: true do
   let(:admin) do
     create(:user)
   end

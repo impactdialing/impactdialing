@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'Customer Reports' do
+describe 'Customer Reports', admin: true do
   def caller_session_attrs(caller)
     {
       caller: caller,

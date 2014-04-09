@@ -32,7 +32,7 @@ Spork.prefork do
     config.before(:suite) do
       WebMock.allow_net_connect!
 
-      if ENV["STRATEGY"] == 'web'
+      if ENV['RAILS_ENV'] == 'e2e'
         DatabaseCleaner.strategy = :truncation
       else
         DatabaseCleaner.strategy = :transaction
@@ -56,7 +56,7 @@ Spork.prefork do
     # If you're not using ActiveRecord, or you'd prefer not to run each of your
     # examples within a transaction, remove the following line or assign false
     # instead of true.
-    if ENV["STRATEGY"] == 'web'
+    if ENV['RAILS_ENV'] == 'e2e'
       config.use_transactional_fixtures = false
     else
       config.use_transactional_fixtures = true

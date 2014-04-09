@@ -12,7 +12,7 @@ def within_nth_caller_cell(row_n, cell_n, &block)
   end
 end
 
-describe 'Client Web Dashboard (/client/index)' do
+describe 'Client Web Dashboard (/client/index)', admin: true do
   let(:user) do
     create(:user)
   end

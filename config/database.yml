@@ -19,6 +19,13 @@ test:
   username: root
   password:
 
+e2e:
+  adapter: mysql2
+  host: localhost
+  database: impactdialing_e2e
+  username: root
+  password:
+
 production2:
     adapter: sqlite3
     database: production2.db
@@ -44,4 +51,3 @@ heroku_staging:
     timeout: 5000
     reconnect: true
     pool: 10
-
