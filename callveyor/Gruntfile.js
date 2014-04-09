@@ -318,7 +318,10 @@ module.exports = function (grunt) {
           expand: true,
           cwd: '<%= yeoman.dist %>/callveyor',
           src: ['index.html'],
-          dest: '<%= yeoman.htmlDist %>'
+          dest: '<%= yeoman.htmlDist %>',
+          rename: function(dest, src) {
+            return dest + 'show.html.erb';
+          }
         }]
       }
     },
