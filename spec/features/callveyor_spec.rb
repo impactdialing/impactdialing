@@ -1,7 +1,7 @@
 require 'spec_helper'
 include JSHelpers
 
-describe 'Calling leads on a Preview campaign', js: true do
+describe 'Calling leads on a Preview campaign', caller: true, e2e: true do
   let(:account){ create(:account) }
   let(:campaign) do
     create(:preview, {
@@ -16,6 +16,7 @@ describe 'Calling leads on a Preview campaign', js: true do
   end
   before do
     caller_login_as(caller)
+    visit '/'
   end
 
   it 'page does not have account not funded error' do

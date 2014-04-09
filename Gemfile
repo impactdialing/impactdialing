@@ -47,7 +47,7 @@ gem 'lograge', '~>0.2.0'
 gem 'cancan', '~>1.6.10'
 gem 'stripe', '~>1.8.4'
 
-group :development, :test do
+group :development, :test, :e2e do
   gem 'rspec'
   gem 'rspec-rails'
   gem 'debugger'
@@ -72,7 +72,7 @@ group :development do
   gem 'binding_of_caller'
 end
 
-group :test do
+group :test, :e2e do
   gem 'factory_girl_rails'
   gem 'shoulda'
   gem 'simplecov'

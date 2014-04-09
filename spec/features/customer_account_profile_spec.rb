@@ -54,7 +54,7 @@ def expect_monthly_cost_eq(expected_cost)
   end
 end
 
-describe 'Account profile' do
+describe 'Account profile', admin: true do
   let(:user){ create(:user) }
   before do
     web_login_as(user)

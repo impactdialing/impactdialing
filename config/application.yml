@@ -55,7 +55,14 @@ development:
 
 test:
   <<: *default_settings
-  twilio_callback_host: id.localtunnel.net
-  call_end_callback_host: id.localtunnel.net
-  incoming_callback_host: id.localtunnel.net
+  twilio_callback_host: jhid.ngrok.com
+  call_end_callback_host: jhid.ngrok.com
+  incoming_callback_host: jhid.ngrok.com
+  recording_env: test
+
+e2e:
+  <<: *default_settings
+  twilio_callback_host: jhid.ngrok.com
+  call_end_callback_host: jhid.ngrok.com
+  incoming_callback_host: jhid.ngrok.com
   recording_env: test

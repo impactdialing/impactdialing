@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-feature 'a user signs in' do
+feature 'a user signs in', admin: true do
   scenario 'with valid credentials' do
     user = create :user
     visit '/client/login'
