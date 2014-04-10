@@ -6,6 +6,26 @@ module.exports = function(config) {
     // base path, that will be used to resolve files and exclude
     basePath: '',
 
+    preprocessors: {
+      '**/*.tpl.html': ['ng-html2js']
+    },
+
+    ngHtml2JsPreprocessor: {
+      // strip this from the file path
+      stripPrefix: 'callveyor/',
+      // prepend this to the
+      prependPrefix: 'scripts/',
+
+      // or define a custom transform function
+      // cacheIdFromPath: function(filepath) {
+      //   return cacheId;
+      // },
+
+      // setting this option will create only a single module that contains templates
+      // from all the files, so you can load them all with module('foo')
+      moduleName: 'karma-ng-templates'
+    },
+
     // testing framework to use (jasmine/mocha/qunit/...)
     frameworks: ['jasmine'],
 
@@ -15,11 +35,14 @@ module.exports = function(config) {
       'app/bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
       'app/bower_components/angular-ui-router/release/angular-ui-router.js',
       'app/bower_components/angular-pusher/angular-pusher.js',
+      'app/bower_components/angular-spinner/angular-spinner.js',
+      'app/bower_components/spin.js/spin.js',
       'app/bower_components/angular-mocks/angular-mocks.js',
-      'app/scripts/*.coffee',
-      'app/scripts/**/*.coffee',
-      'test/mock/**/*.coffee',
-      'test/spec/**/*.coffee'
+      'app/scripts/config.js',
+      '.tmp/scripts/*.js',
+      '.tmp/scripts/**/*.js',
+      // 'test/mock/**/*.coffee',
+      '.tmp/spec/**/*.js'
     ],
 
     // list of files / patterns to exclude
@@ -45,7 +68,7 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: ['Chrome'],
+    browsers: ['Chrome', 'Firefox', 'Safari'],
 
 
     // Continuous Integration mode
