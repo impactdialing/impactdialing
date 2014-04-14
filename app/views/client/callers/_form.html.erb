@@ -17,7 +17,7 @@
     </p>
   <% end %>
   <p id='campaigns' data-intro="If your caller isn't in a caller group, assign them directly to a campaign. If you change this while your callers are making calls, they will be reassigned after they finish their current call." data-step="4">
-    <label>Campaign</label>
+    <label for="caller_campaign_id">Campaign</label>
     <%= f.select("campaign_id", @campaigns.try(:collect){|c| [ c.name, c.id ]}) %>
   </p>
   <%= f.hidden_field :active %>

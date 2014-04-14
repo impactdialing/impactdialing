@@ -25,7 +25,7 @@ describe 'Caller Group Management', rack: true do
       campaign: campaign
     })
     visit "/client/callers/#{caller.id}/edit"
-    save_and_open_page
+
     select "#{group.name}", from: 'Caller group'
   end
 end
