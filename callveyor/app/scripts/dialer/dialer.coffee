@@ -6,7 +6,7 @@ dialer = angular.module('callveyor.dialer', [
   'callveyor.dialer.active',
   'callveyor.dialer.wrap',
   'callveyor.dialer.stop',
-  'callveyor.dialer.survey',
+  'survey',
   'callveyor.contact'
 ])
 

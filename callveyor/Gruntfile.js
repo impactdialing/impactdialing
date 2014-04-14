@@ -78,6 +78,9 @@ module.exports = function (grunt) {
       gruntfile: {
         files: ['Gruntfile.js']
       },
+      ngtemplates: {
+        files: ['<%= yeoman.app %>/scripts/**/*.tpl.html']
+      },
       livereload: {
         options: {
           livereload: '<%= connect.options.livereload %>'
@@ -347,9 +350,32 @@ module.exports = function (grunt) {
       callveyor: {
         module: 'callveyor.dialer',
         standalone: false,
-        dest: 'dialer-templates.js',
+        dest: 'app/scripts/dialer-templates.js',
         cwd: 'app/scripts',
         src: 'dialer/**/*.tpl.html',
+        options: {
+          prefix: '/callveyor',
+          url: function(url) {
+            return url.replace('callveyor', 'scripts');
+          },
+          htmlmin: {
+            collapseBooleanAttributes:      true,
+            collapseWhitespace:             true
+          },
+          usemin: '<%= yeoman.dist %>/callveyor/scripts/scripts.js'
+        }
+      },
+      /*
+      TODO:
+      put survey-templates.js somewhere useful for tests
+      update callveyor section to include scripts/survey
+      */
+      survey: {
+        module: 'surveyTemplates',
+        standalone: true,
+        dest: 'app/scripts/survey-templates.js',
+        cwd: 'app/scripts',
+        src: 'survey/**/*.tpl.html',
         options: {
           prefix: '/callveyor',
           url: function(url) {
@@ -482,6 +508,7 @@ module.exports = function (grunt) {
     'clean:server',
     'ngconstant:test',
     'concurrent:test',
+    'ngtemplates',
     'autoprefixer',
     'connect:test',
     'karma'
