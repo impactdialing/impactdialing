@@ -136,7 +136,10 @@ class CallerController < ApplicationController
   def call_voter
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
-    if params[:voter_id].nil? || params[:voter_id].empty?
+    if params[:voter_id].present?
+      voter = Voter.find params[:voter_id]
+    end
+    if params[:voter_id].blank? || (params[:voter_id].present? && caller.campaign.within_recycle_rate?(voter))
       enqueue_call_flow(CallerPusherJob, [caller_session.id,  "publish_caller_conference_started"])
     else
       # publish_calling_voter &
