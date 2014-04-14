@@ -7,24 +7,26 @@ module.exports = function(config) {
     basePath: '',
 
     preprocessors: {
-      '**/*.tpl.html': ['ng-html2js']
+      'app/scripts/**/*.coffee': 'coffee',
+      'test/spec/**/*.coffee': 'coffee'
+      // 'scripts/**/*.tpl.html': ['ng-html2js']
     },
 
-    ngHtml2JsPreprocessor: {
-      // strip this from the file path
-      stripPrefix: 'callveyor/',
-      // prepend this to the
-      prependPrefix: 'scripts/',
-
-      // or define a custom transform function
-      // cacheIdFromPath: function(filepath) {
-      //   return cacheId;
-      // },
-
-      // setting this option will create only a single module that contains templates
-      // from all the files, so you can load them all with module('foo')
-      moduleName: 'karma-ng-templates'
-    },
+    // ngHtml2JsPreprocessor: {
+    //   // strip this from the file path
+    //   stripPrefix: '/callveyor',
+    //   // prepend this to the
+    //   prependPrefix: '/scripts',
+    //
+    //   // or define a custom transform function
+    //   // cacheIdFromPath: function(filepath) {
+    //   //   return cacheId;
+    //   // },
+    //
+    //   // setting this option will create only a single module that contains templates
+    //   // from all the files, so you can load them all with module('foo')
+    //   moduleName: 'templates'
+    // },
 
     // testing framework to use (jasmine/mocha/qunit/...)
     frameworks: ['jasmine'],
@@ -38,9 +40,14 @@ module.exports = function(config) {
       'app/bower_components/angular-spinner/angular-spinner.js',
       'app/bower_components/spin.js/spin.js',
       'app/bower_components/angular-mocks/angular-mocks.js',
-      'app/scripts/config.js',
       '.tmp/scripts/*.js',
       '.tmp/scripts/**/*.js',
+      'app/scripts/config.js',
+      {pattern: 'app/scripts/**/*.tpl.html', served: true, included: false},
+      {pattern: 'app/scripts/**/*.coffee', included: false, served: false},
+      {pattern: 'test/spec/**/*.coffee', included: false, served: false},
+      'app/scripts/survey-templates.js',
+      // 'app/scripts/dialer-templates.js',
       // 'test/mock/**/*.coffee',
       '.tmp/spec/**/*.js'
     ],
@@ -51,12 +58,9 @@ module.exports = function(config) {
     // web server port
     port: 8080,
 
-    // level of logging
     // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_DEBUG,
 
-
-    // enable / disable watching file and executing tests whenever any file changes
     autoWatch: true,
 
 
@@ -68,7 +72,8 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: ['Chrome', 'Firefox', 'Safari'],
+    // browsers: ['Chrome', 'Firefox', 'Safari'],
+    browsers: ['Firefox'],
 
 
     // Continuous Integration mode
