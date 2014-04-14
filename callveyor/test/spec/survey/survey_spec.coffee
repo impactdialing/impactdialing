@@ -6,6 +6,8 @@ describe 'survey module', ->
     $compiler = ''
     $httpBackend = ''
     surveyTemplate = ''
+    scope = ''
+    element = ''
 
     # Load module under test
     beforeEach module 'survey'
@@ -19,12 +21,20 @@ describe 'survey module', ->
       $httpBackend = _$httpBackend_
       $httpBackend.whenGET('/call_center/api/survey_fields.json').respond({})
       @tpl = '<div data-id-survey></div>'
-      @scope = _$rootScope_
-      @element = $compile(@tpl)(@scope)
-      @scope.$digest()
+      scope = _$rootScope_
+      element = $compile(@tpl)(scope)
+      scope.$digest()
     ))
 
-    it('shows buttons when survey.hideButtons = false', ->
-      console.log '@element = ', @element
-      expect(@element.html() || '').toContain('Save &amp; stop calling')
+    it('shows 2 buttons when survey.hideButtons = false', ->
+      console.log 'element = ', element
+      expect(element.find('button').length).toEqual(2)
+      expect(element.html()).toContain('Save &amp; stop calling')
+      expect(element.html()).toContain('Save &amp; continue')
+    )
+
+    it('hides buttons when survey.hideButtons = true', ->
+      scope.hideButtons = true
+      scope.$digest()
+      expect(element.find('button').length).toEqual(2)
     )
