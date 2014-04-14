@@ -1,5 +1,5 @@
 namespace :calls do
-  desc "Report Calls logged with Twilio that have no record on our system"
+  desc "List Twilio Calls to a given number."
   task :list_to, [:to, :start_time, :end_time] => [:environment] do |t, args|
     def p(c)
       print "#{c}\n"
