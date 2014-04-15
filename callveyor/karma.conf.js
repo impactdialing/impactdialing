@@ -40,16 +40,12 @@ module.exports = function(config) {
       'app/bower_components/angular-spinner/angular-spinner.js',
       'app/bower_components/spin.js/spin.js',
       'app/bower_components/angular-mocks/angular-mocks.js',
-      '.tmp/scripts/*.js',
-      '.tmp/scripts/**/*.js',
-      'app/scripts/config.js',
       {pattern: 'app/scripts/**/*.tpl.html', served: true, included: false},
-      {pattern: 'app/scripts/**/*.coffee', included: false, served: false},
-      {pattern: 'test/spec/**/*.coffee', included: false, served: false},
+      'app/scripts/config.js',
+      'app/scripts/*.coffee',
+      'app/scripts/**/*.coffee',
+      'test/spec/**/*.coffee',
       'app/scripts/survey-templates.js',
-      // 'app/scripts/dialer-templates.js',
-      // 'test/mock/**/*.coffee',
-      '.tmp/spec/**/*.js'
     ],
 
     // list of files / patterns to exclude
