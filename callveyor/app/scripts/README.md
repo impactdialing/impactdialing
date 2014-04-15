@@ -45,3 +45,28 @@ Ideally, when using nested views it would be possible to call `$state.go('my.sta
 Currently, this means that dynamically selecting a template at run time via `templateUrl` as a fn does not work unless state is being tracked in the URL.
 
 Bottom line: while $state is functional w/out providing a `url` property, $stateParams is not.
+
+### Unit testing Directives
+
+Scenario: there is a directive to test and the controller this directive depends on sets some object to $scope.
+
+```
+survey.controller('SurveyFormCtrl', ($scope) ->
+  survey = {}
+  survey.hideStuff = true
+  ...
+  $scope.survey = survey
+)
+survey.directive('idSurvey', ->
+  {
+    restrict: 'A'
+    templateUrl: '/callveyor/survey/survey.tpl.html'
+    controller: 'SurveyFormCtrl'
+  }
+)
+```
+
+Note `$scope.survey = survey` above. When unit testing this directive any changes
+to the `$scope.survey` object from the test itself will be overridden when the controller runs.
+Instead, use `$scope.survey ||= survey` or refactor potential problem properties off of the `survey`
+object and put them directly on `$scope`.
