@@ -436,7 +436,7 @@ module.exports = function (grunt) {
         'compass:server'
       ],
       test: [
-        'coffee',
+        'coffee:dist',
         'compass'
       ],
       dist: [
