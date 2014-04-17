@@ -135,15 +135,21 @@ class CallerController < ApplicationController
 
   def call_voter
     caller = Caller.find(params[:id])
+    campaign = caller.campaign
     caller_session = caller.caller_sessions.find(params[:session_id])
+
+    Rails.logger.error "RecycleRate Caller#call_voter #{campaign.try(:type) || 'Campaign'}[#{campaign.try(:id)}] CallerSession[#{caller_session.id}] Voter[#{params[:voter_id]}]"
+
     if params[:voter_id].present?
       voter = Voter.find params[:voter_id]
     end
-    if params[:voter_id].blank? || (params[:voter_id].present? && caller.campaign.within_recycle_rate?(voter))
+    if params[:voter_id].blank? || (params[:voter_id].present? && campaign.within_recycle_rate?(voter))
+      Rails.logger.error "RecycleRate Caller#call_voter #{campaign.try(:type) || 'Campaign'}[#{campaign.try(:id)}] CallerSession[#{caller_session.id}] Voter[#{params[:voter_id]}] - queueing conference_started"
       enqueue_call_flow(CallerPusherJob, [caller_session.id,  "publish_caller_conference_started"])
     else
       # publish_calling_voter &
       # queue PreviewPowerDialJob
+      Rails.logger.error "RecycleRate Caller#call_voter #{campaign.try(:type) || 'Campaign'}[#{campaign.try(:id)}] CallerSession[#{caller_session.id}] Voter[#{params[:voter_id]}] - queueing calling_voter & PreviewPowerDialJob"
       caller.calling_voter_preview_power(caller_session, params[:voter_id])
     end
     render :nothing => true

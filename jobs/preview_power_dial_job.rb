@@ -19,10 +19,10 @@ class PreviewPowerDialJob
 
     campaign = voter.campaign
 
-    Rails.logger.error "RecycleRate PreviewPowerDialJob CallerSession[#{caller_session_id}] Voter[#{voter_id}] #{campaign.try(:type) || 'Campaign'}[#{campaign.try(:id)}]"
+    Rails.logger.error "JID-#{jid} RecycleRate PreviewPowerDialJob CallerSession[#{caller_session_id}] Voter[#{voter_id}] #{campaign.try(:type) || 'Campaign'}[#{campaign.try(:id)}]"
 
     if campaign.present? && campaign.within_recycle_rate?(voter)
-      msg = "PreviewPowerDialJob - RecycleRateError:" +
+      msg = "JID-#{jid} PreviewPowerDialJob - RecycleRateError:" +
             " CallerSession[#{caller_session.id}]" +
             " Voter[#{voter.id}] Campaign[#{campaign.id}]"
       Rails.logger.error msg
