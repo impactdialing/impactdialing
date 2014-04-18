@@ -1,18 +1,18 @@
 'use strict'
 
-surveyForm = angular.module('callveyor.dialer.survey', [])
+surveyForm = angular.module('survey', [
+  'ui.router',
+  'angularSpinner'
+])
 
 # surveyForm.config([])
 
 surveyForm.factory('SurveyFormFieldsFactory', [
   '$http', '$filter',
   ($http,   $filter) ->
-    console.log 'SurveyFormFieldsFactory'
-
     fields = {
       data: {}
       prepareSurveyForm: (payload) ->
-        console.log 'prepareSurveyForm', payload
         selectNonEmpty = (val) -> val?
 
         normalizeObj = (object, type) ->
@@ -55,9 +55,12 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 ])
 
 surveyForm.controller('SurveyFormCtrl', [
-  '$scope', '$filter', '$state', '$http', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory'
-  ($scope,   $filter,   $state,   $http,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory) ->
-    console.log 'SurveyFormCtrl', $scope.dialer
+  '$rootScope', '$scope', '$filter', '$state', '$http', '$cacheFactory', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory'
+  ($rootScope,   $scope,   $filter,   $state,   $http,   $cacheFactory,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory) ->
+    callStationCache = $cacheFactory.get('callStation')
+    if callStationCache?
+      callStation = callStationCache.get('data')
+      caller = callStation.caller
     # Init public
     survey = {}
 
@@ -68,54 +71,73 @@ surveyForm.controller('SurveyFormCtrl', [
       survey.form = SurveyFormFieldsFactory.data
 
     SurveyFormFieldsFactory.fetch().then(prepForm, e, c)
-    console.log 'SurveyFormFieldsFactory returning...', SurveyFormFieldsFactory.data
 
+    handleStateChange = (event, toState, toParams, fromState, fromParams) ->
+      switch toState.name
+        when 'dialer.wrap'
+          survey.hideButtons = false
+        else
+          surve.hideButtons = true
 
     # Public API
     survey.responses = {
       notes: {}
-      answers: {}
+      question: {}
     }
     survey.saving = false
-    survey.hideButtons = -> !$state.is('dialer.wrap')
+    survey.hideButtons = true
+
     survey.save = ($event, andContinue) ->
-      console.log 'survey.save clicked', $event
-      if survey.saving
-        console.log 'Save in progress. Button press is no-op.'
-        return
+      return if survey.saving
+
       usSpinnerService.spin('global-spinner')
-      angular.element($event.target).parent().children().prop('disabled', true)
       survey.saving = true
 
-      # p = $http.post('/survey/responses')
-      # s = (r) -> console.log 'success', r.stack, r.message
-      # e = (r) -> console.log 'error', r.stack, r.message
-      # c = (r) -> console.log 'notify', r.stack, r.message
-      # p.then(s,e,c)
+      action = 'submit_result'
+      action += '_and_stop' unless andContinue
+
+      success = (resp) ->
+        console.log 'success', resp
+        reset()
+      error = (resp) ->
+        console.log 'error', resp
+      notify = (resp) ->
+        console.log 'notify', resp
+      always = (resp) ->
+        console.log 'always', resp
+        survey.saving = false
+        usSpinnerService.stop('global-spinner')
+
+      # make a request, get a promise
+      console.log 'making request'
+      $http.post("/call_center/api/#{caller.id}/#{action}", survey.responses)
+      .then(success, error, notify).finally(always)
+
       reset = ->
         survey.responses = {
           notes: {}
-          answers: {}
+          question: {}
         }
 
-      fakeSave = ->
-        if andContinue
-          $state.go('dialer.hold')
-        else
-          $state.go('dialer.stop')
-        # Pretend success
-        usSpinnerService.stop('global-spinner')
-        angular.element($event.target).parent().children().prop('disabled', false)
-        survey.saving = false
-        reset()
-      $timeout(fakeSave, 3000)
+      # fakeSave = ->
+      #   if andContinue
+      #     $state.go('dialer.hold')
+      #   else
+      #     $state.go('dialer.stop')
+      #   # Pretend success
+      #   usSpinnerService.stop('global-spinner')
+      #   # angular.element($event.target).parent().children().prop('disabled', false)
+      #   survey.saving = false
+      #   reset()
+      # $timeout(fakeSave, 3000)
 
-    $scope.survey = survey
+    $scope.survey ||= survey
 ])
 
 surveyForm.directive('idSurvey', ->
   {
     restrict: 'A'
-    templateUrl: '/callveyor/dialer/survey/survey.tpl.html'
+    templateUrl: '/callveyor/survey/survey.tpl.html'
+    controller: 'SurveyFormCtrl'
   }
 )
