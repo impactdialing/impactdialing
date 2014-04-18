@@ -5,41 +5,46 @@ class CallsController < ApplicationController
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
   before_filter :find_call, :only => [:hangup, :call_ended]
 
-    
-    
+
+
   def incoming
-    if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human? 
+    if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human?
       call_attempt = @call.call_attempt
       call_attempt.connect_caller_to_lead(DataCentre.code(params[:callee_dc]))
     end
     render xml: @call.incoming_call
-  end  
-  
-  def call_ended    
+  end
+
+  def call_ended
     render xml:  @call.call_ended(params['campaign_type'])
   end
-  
+
   def submit_result
     @call.wrapup_and_continue
     render nothing: true
   end
-  
+
   def submit_result_and_stop
     @call.wrapup_and_stop
     render nothing: true
   end
-  
+
   def hangup
     @call.hungup
     render nothing: true
   end
-  
+
   def disconnected
-    render xml: @call.disconnected    
+    render xml: @call.disconnected
   end
-  
+
   private
-    
+  ##
+  # Used to initialize @parsed_params to empty Hash for submit_result &
+  # submit_result_and_stop.
+  # Used to init @parsed_params to populated Hash for Twilio callbacks
+  # (:destroy, :incoming, :call_ended, :disconnected)
+  #
   def parse_params
     pms = underscore_params
     @parsed_params = Call.column_names.inject({}) do |result, key|
@@ -58,13 +63,13 @@ class CallsController < ApplicationController
   end
 
   def find_call
-    @call = (Call.find_by_id(params["id"]) || Call.find_by_call_sid(params['CallSid'])) 
+    @call = (Call.find_by_id(params["id"]) || Call.find_by_call_sid(params['CallSid']))
   end
-  
+
   def find_and_update_answers_and_notes_and_scheduled_date
-    find_call    
-    unless @call.nil?      
-      @parsed_params["questions"]  = params[:question].try(:to_json) 
+    find_call
+    unless @call.nil?
+      @parsed_params["questions"]  = params[:question].try(:to_json)
       @parsed_params["notes"] = params[:notes].try(:to_json)
       RedisCall.set_request_params(@call.id, @parsed_params)
       unless params[:scheduled_date].blank?
@@ -73,14 +78,14 @@ class CallsController < ApplicationController
       end
     end
   end
-  
+
 
   def find_and_update_call
     find_call
-    unless @call.nil?    
+    unless @call.nil?
       RedisCall.set_request_params(@call.id, @parsed_params)
     end
   end
-  
-  
+
+
 end

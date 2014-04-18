@@ -76,7 +76,8 @@ ImpactDialing::Application.routes.draw do
   get 'call_center/api/survey_fields', :to => 'callers/station#script'
     # include :id in path for back compat. remove later...
   post 'call_center/api/:id/start_calling', :to => 'caller#start_calling'
-  post 'call_center/api/:id/submit_response', :to => 'caller#submit_response'
+  post 'call_center/api/:id/submit_result', :to => 'calls#submit_result'
+  post 'call_center/api/:id/submit_result_and_stop', :to => 'calls#submit_result_and_stop'
   post 'call_center/api/:id/call_voter', :to => 'caller#call_voter'
   post 'call_center/api/:id/stop_calling', :to => 'caller#stop_calling'
   post 'call_center/api/:id/skip_voter', :to => 'caller#skip_voter'

@@ -1,4 +1,4 @@
-<div class="col-xs-12" data-ng-controller="SurveyFormCtrl">
+<div class="col-xs-12">
   <div class="veil" ng-show="survey.saving"></div>
   <form role="form">
     <div class="well" data-ng-repeat="item in survey.form">
@@ -13,19 +13,21 @@
 
       <select id="item_{{item.id}}" class="form-control"
               data-ng-if="item.type == 'question'"
-              data-ng-model="survey.responses.answers[item.id]">
+              data-ng-model="survey.responses.question[item.id]">
         <option data-ng-repeat="response in item.possibleResponses"
                 value="{{response.id}}">{{response.value}}</option>
       </select>
     </div>
     <div class="btn-group"
-         data-ng-hide="survey.hideButtons()">
+         data-ng-hide="survey.hideButtons">
       <button class="btn btn-primary"
-              data-ng-click="survey.save($event, false)">
+              data-ng-click="survey.save($event, false); survey.saving = true"
+              data-ng-disabled="survey.saving">
               Save &amp; stop calling
       </button>
       <button class="btn btn-primary"
-              data-ng-click="survey.save($event, true)">
+              data-ng-click="survey.save($event, true); survey.saving = true;"
+              data-ng-disabled="survey.saving">
               Save &amp; continue
       </button>
     </div>
