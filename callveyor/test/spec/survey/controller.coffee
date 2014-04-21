@@ -7,17 +7,19 @@ describe 'survey controller', ->
   usSpinnerService = ''
   SurveyFormFieldsFactory = ''
   cSCache = ''
+  idFlashFactory = ''
 
   caller = {id: 3}
 
   beforeEach(module('survey'))
 
-  beforeEach(inject((_$rootScope_, _$controller_, _$httpBackend_, _$cacheFactory_, _usSpinnerService_, _SurveyFormFieldsFactory_) ->
+  beforeEach(inject((_$rootScope_, _$controller_, _$httpBackend_, _$cacheFactory_, _usSpinnerService_, _SurveyFormFieldsFactory_, _idFlashFactory_) ->
     $rootScope = _$rootScope_
     $controller = _$controller_
     $scope = $rootScope
     $httpBackend = _$httpBackend_
     $cacheFactory = _$cacheFactory_
+    idFlashFactory = _idFlashFactory_
     cSCache = $cacheFactory('callStation')
     cSCache.put('data', {caller})
 
@@ -47,8 +49,11 @@ describe 'survey controller', ->
     beforeEach ->
       $httpBackend.whenPOST("/call_center/api/#{caller.id}/submit_result").respond(200, {})
       $httpBackend.whenPOST("/call_center/api/#{caller.id}/submit_result_and_stop").respond(200, {})
-      usSpinnerService.spin = jasmine.createSpy('-usSpinnerService-spin Spy-')
-      usSpinnerService.stop = jasmine.createSpy('-usSpinnerService-stop Spy-')
+      usSpinnerService.spin = jasmine.createSpy('-usSpinnerService.spin Spy-')
+      usSpinnerService.stop = jasmine.createSpy('-usSpinnerService.stop Spy-')
+
+      @notes = {"42": 367}
+      @quesiton = {"73": 91}
 
     it 'is a no-op if survey.saving is true', ->
       $scope.$apply('survey.saving = true')
@@ -64,7 +69,6 @@ describe 'survey controller', ->
       $scope.survey.save({})
       expect($scope.survey.saving).toBeTruthy()
 
-
     describe 'request completes', ->
       it 'stops the global spinner', ->
         $scope.survey.save({}, true)
@@ -78,16 +82,33 @@ describe 'survey controller', ->
 
     describe 'request is success', ->
       it 'resets survey.responses', ->
-        $scope.survey.responses.notes = {"42": 367}
-        $scope.survey.responses.question = {"73": 91}
+        $scope.survey.responses.notes = @notes
+        $scope.survey.responses.question = @question
         $scope.survey.save({}, true)
         $httpBackend.flush()
         expect($scope.survey.responses).toEqual({notes: {}, question: {}})
 
     describe 'request is error', ->
-      it 'preserves survey.responses'
-      it 'displays some message to the user'
-      it 'enables buttons somehow'
+      beforeEach ->
+        $httpBackend.flush()
+        $httpBackend.expectPOST("/call_center/api/#{caller.id}/submit_result").respond(400, {})
+
+      it 'preserves survey.responses', ->
+        $scope.survey.responses.notes = @notes
+        $scope.survey.responses.question = @question
+        $scope.survey.save({}, true)
+        $httpBackend.flush()
+        expect($scope.survey.responses.notes).toEqual(@notes)
+        expect($scope.survey.responses.question).toEqual(@question)
+      it 'displays a message to the user', ->
+        idFlashFactory.now = jasmine.createSpy('-idFlashFactory.now spy-')
+        $scope.survey.save({}, true)
+        $httpBackend.flush()
+        expect(idFlashFactory.now).toHaveBeenCalledWith('error', "Survey results failed to save. Please try again and contact support if this problem persists.")
+      it 'sets survey.saving to false', ->
+        $scope.survey.save({}, true)
+        $httpBackend.flush()
+        expect($scope.survey.saving).toBeFalsy()
 
       describe 'andContinue=true', ->
         it 'transitions $state to dialer.hold... OR does it?'
