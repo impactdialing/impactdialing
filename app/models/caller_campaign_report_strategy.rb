@@ -3,7 +3,7 @@ require 'octopus'
 class CallerCampaignReportStrategy < CampaignReportStrategy
 
   def csv_header
-    header_fields = [manipulate_header_fields, @selected_custom_voter_fields, "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration" ]
+    header_fields = [manipulate_header_fields, @selected_custom_voter_fields, "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)"]
     header_fields << "Attempts" if @mode == CampaignReportStrategy::Mode::PER_LEAD
     header_fields.concat(["Recording", Question.question_texts(@question_ids) , Note.note_texts(@note_ids)])
     header_fields.flatten.compact

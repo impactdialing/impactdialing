@@ -54,6 +54,7 @@ class CampaignReportStrategy
       time_dialed(call_attempt),
       time_answered(call_attempt),
       time_ended(call_attempt),
+      call_time_duration(call_attempt),
       transfer_times(transfer_attempt, 'tStartTime'),
       transfer_times(transfer_attempt, 'tEndTime'),
       transfer_times(transfer_attempt, 'tDuration')
@@ -75,6 +76,10 @@ class CampaignReportStrategy
 
   def time_ended(call_attempt)
     call_attempt['call_end'].try(:in_time_zone, @campaign.time_zone)
+  end
+
+  def call_time_duration(call_attempt)
+    call_attempt['tDuration']
   end
 
   def transfer_times(transfer_attempt, attribute)
