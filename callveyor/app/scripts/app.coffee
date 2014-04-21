@@ -6,6 +6,7 @@ callveyor = angular.module('callveyor', [
   'ui.router',
   'doowb.angular-pusher',
   'idTwilio',
+  'idFlash',
   'angularSpinner',
   'callveyor.dialer'
 ])
@@ -19,25 +20,25 @@ callveyor.config([
 ])
 
 callveyor.factory('pusherConnectionHandlerFactory', [
-  '$state', 'usSpinnerService', 'idFlashService',
-  ($state,   usSpinnerService,   idFlashService) ->
+  '$state', 'usSpinnerService', 'idFlashFactory',
+  ($state,   usSpinnerService,   idFlashFactory) ->
     console.log 'pusherConnectionHandler'
 
     pusherError = (wtf) ->
       console.log 'pusherError', wtf
-      idFlashService.now('error', 'Something went wrong. We have been notified and will begin troubleshooting ASAP.')
+      idFlashFactory.now('error', 'Something went wrong. We have been notified and will begin troubleshooting ASAP.')
 
     reConnecting = (wtf) ->
       console.log 'temporaryConnectionFailure', wtf
-      idFlashService.now('warning', 'Your browser has lost its connection. Reconnecting...')
+      idFlashFactory.now('warning', 'Your browser has lost its connection. Reconnecting...')
 
     connectionFailure = (wtf) ->
       console.log 'connectionFailure', wtf
-      idFlashService.now('warning', 'Your browser could not re-connect.')
+      idFlashFactory.now('warning', 'Your browser could not re-connect.')
 
     connectingIn = (delay) ->
       console.log 'connectingIn', delay
-      idFlashService.now('warning', "Your browser could not re-connect. Connecting in #{delay} seconds.")
+      idFlashFactory.now('warning', "Your browser could not re-connect. Connecting in #{delay} seconds.")
 
     browserNotSupported = (wtf) ->
       console.log 'browserNotSupported', wtf
@@ -47,7 +48,7 @@ callveyor.factory('pusherConnectionHandlerFactory', [
       success: (pusher) ->
         connecting = ->
           console.log 'pusher-connecting'
-          idFlashService.now('notice', 'Establishing real-time connection...')
+          idFlashFactory.now('notice', 'Establishing real-time connection...')
           pusher.connection.unbind('connecting', connecting)
           pusher.connection.bind('connecting', reConnecting)
           usSpinnerService.spin('global-spinner')
@@ -62,7 +63,7 @@ callveyor.factory('pusherConnectionHandlerFactory', [
         runTimeConnectedHandler = (obj) ->
           console.log 'runTimeConnectedHandler', obj
           usSpinnerService.stop('global-spinner')
-          idFlashService.now('success', 'Connected!', 4000)
+          idFlashFactory.now('success', 'Connected!', 4000)
 
         pusher.connection.bind('connecting_in', connectingIn)
         pusher.connection.bind('connecting', connecting)
@@ -80,14 +81,14 @@ callveyor.factory('pusherConnectionHandlerFactory', [
 callveyor.controller('AppCtrl', [
   '$rootScope', '$scope', '$state', '$http', '$timeout', 'usSpinnerService',
   'PusherService', 'pusherConnectionHandlerFactory', 'idTwilioService',
-  'idFlashService'
+  'idFlashFactory'
   ($rootScope,   $scope,   $state,   $http,   $timeout, usSpinnerService,
    PusherService,   pusherConnectionHandlerFactory,   idTwilioService,
-   idFlashService) ->
+   idFlashFactory) ->
     console.log 'MainCtrl', PusherService
 
-    idFlashService.scope = $scope
-    $scope.flash = idFlashService
+    idFlashFactory.scope = $scope
+    $scope.flash = idFlashFactory
 
     transitionInProgress = -> usSpinnerService.spin('global-spinner')
     transitionComplete = -> usSpinnerService.stop('global-spinner')
