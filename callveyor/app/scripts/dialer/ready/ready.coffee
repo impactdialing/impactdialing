@@ -18,8 +18,8 @@ ready.config(['$stateProvider', ($stateProvider) ->
 ])
 
 ready.controller('callFlowButtonsCtrl.ready', [
-  '$scope', '$state', '$cacheFactory', 'callStation', 'idTwilioService', 'idFlashService'
-  ($scope,   $state,   $cacheFactory,   callStation,   idTwilioService,   idFlashService) ->
+  '$scope', '$state', '$cacheFactory', 'callStation', 'idTwilioService', 'idFlashFactory'
+  ($scope,   $state,   $cacheFactory,   callStation,   idTwilioService,   idFlashFactory) ->
     console.log 'ready.callFlowButtonsCtrl', $scope
 
     _twilioCache = $cacheFactory.get('Twilio') || $cacheFactory('Twilio')
@@ -48,7 +48,7 @@ ready.controller('callFlowButtonsCtrl.ready', [
 
       errorHandler = (error) ->
         console.log 'twilio connection error', error
-        idFlashService.now('error', 'Browser phone could not connect to the call center. Please dial-in to continue.')
+        idFlashFactory.now('error', 'Browser phone could not connect to the call center. Please dial-in to continue.')
 
       bindAndConnect = (twilio) ->
         console.log twilio
@@ -60,7 +60,7 @@ ready.controller('callFlowButtonsCtrl.ready', [
 
       setupError = (err) ->
         console.log 'idTwilioService error', err
-        idFlashService.now('error', 'Browser phone setup failed. Please dial-in to continue.')
+        idFlashFactory.now('error', 'Browser phone setup failed. Please dial-in to continue.')
 
       idTwilioService.then(bindAndConnect, setupError)
 

@@ -1,12 +1,10 @@
 'use strict'
 
-callveyor = angular.module('callveyor')
+userMessages = angular.module('idFlash', [])
 
-callveyor.factory('idFlashService', [
+userMessages.factory('idFlashFactory', [
   '$timeout',
   ($timeout) ->
-    console.log 'flash factory'
-
     flash = {
       _validKeys: ['success', 'notice', 'warning', 'error']
       clear: ->
