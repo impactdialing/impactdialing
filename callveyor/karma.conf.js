@@ -8,7 +8,7 @@ module.exports = function(config) {
 
     preprocessors: {
       'app/scripts/**/*.coffee': 'coffee',
-      'test/spec/**/*.coffee': 'coffee'
+      // 'test/spec/**/*.coffee': 'coffee'
       // 'scripts/**/*.tpl.html': ['ng-html2js']
     },
 
@@ -44,7 +44,7 @@ module.exports = function(config) {
       'app/scripts/config.js',
       'app/scripts/*.coffee',
       'app/scripts/**/*.coffee',
-      'test/spec/**/*.coffee',
+      // 'test/spec/**/*.coffee',
       'app/scripts/survey-templates.js',
     ],
 
