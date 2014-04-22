@@ -67,10 +67,10 @@ module.exports = function (grunt) {
         files: ['<%= yeoman.app %>/scripts/**/*.{coffee,litcoffee,coffee.md}'],
         tasks: ['newer:coffee:dist']
       },
-      coffeeTest: {
-        files: ['test/spec/**/*.{coffee,litcoffee,coffee.md}'],
-        tasks: ['newer:coffee:test', 'karma']
-      },
+      // coffeeTest: {
+      //   files: ['test/spec/**/*.{coffee,litcoffee,coffee.md}'],
+      //   tasks: ['newer:coffee:test', 'karma']
+      // },
       compass: {
         files: ['<%= yeoman.app %>/styles/**/*.{scss,sass}'],
         tasks: ['compass:server', 'autoprefixer']
@@ -208,7 +208,7 @@ module.exports = function (grunt) {
         files: [{
           expand: true,
           cwd: '<%= yeoman.app %>/scripts',
-          src: '**/*.coffee',
+          src: ['**/*.coffee', '!**/*_spec.coffee'],
           dest: '.tmp/scripts',
           ext: '.js'
         }]
