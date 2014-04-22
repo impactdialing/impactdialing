@@ -58,10 +58,6 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 surveyForm.controller('SurveyFormCtrl', [
   '$rootScope', '$scope', '$filter', '$state', '$http', '$cacheFactory', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory'
   ($rootScope,   $scope,   $filter,   $state,   $http,   $cacheFactory,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory) ->
-    callStationCache = $cacheFactory.get('callStation')
-    if callStationCache?
-      callStation = callStationCache.get('data')
-      caller = callStation.caller
     # Init public
     survey = {}
 
@@ -78,50 +74,65 @@ surveyForm.controller('SurveyFormCtrl', [
         when 'dialer.wrap'
           survey.hideButtons = false
         else
-          surve.hideButtons = true
+          survey.hideButtons = true
+
+    $rootScope.$on('$stateChangeSuccess', handleStateChange)
 
     # Public API
     survey.responses = {
       notes: {}
       question: {}
     }
-    survey.saving = false
+    survey.disable = false
     survey.hideButtons = true
+    survey.requestInProgress = false
 
     survey.save = ($event, andContinue) ->
-      return if survey.saving
+      if survey.requestInProgress
+        console.log 'survey.requestInProgress', survey.requestInProgress
+        return
+
+      callCache = $cacheFactory.get('call')
+      if callCache?
+        call_id = callCache.get('id')
+      else
+        # submit error report somewhere
+        idFlashFactory.now('error', 'You found a bug! Please Report problem and we will have you up and running ASAP.')
 
       usSpinnerService.spin('global-spinner')
-      survey.saving = true
 
       action = 'submit_result'
       action += '_and_stop' unless andContinue
 
       success = (resp) ->
         reset()
+        $rootScope.$broadcast('survey:save:success')
+        idFlashFactory.now('success', 'Results have been saved. Waiting for next contact from server...', 7000)
       error = (resp) ->
-        console.log 'error', resp
+        # console.log 'error', resp
         msg = 'Survey results failed to save.'
         switch resp.status
           when 400 # bad request, try again and contact support
-            msg += ' The browser sent a bad request.'
+            msg += ' The browser sent a bad request. Please try again and Report problem if error continues.'
           when 408, 504 # server/gatewa timeout, try again and contact support
             msg += ' The browser took too long sending the data. Verify the internet connection before trying again and Report problem if the error continues.'
           when 500 # server error, try again and contact support
             msg += ' Server is having some trouble. We are looking into it and will update account holders soon. Please Report problem then Stop calling.'
           when 503 # server unavailable/in maintenance, wait a minute, try again and contact support
-            msg += ' Server undergoing minor maintenance. Please try again in a minute or so and Report problem if the error continues.'
+            msg += ' Server is undergoing minor maintenance. Please try again in a minute or so and Report problem if the error continues.'
           else
             msg += ' Please try again and Report problem if the error continues.'
         idFlashFactory.now('error', msg)
       notify = (resp) ->
         console.log 'notify', resp
       always = (resp) ->
-        survey.saving = false
+        survey.disable = false
+        survey.requestInProgress = false
         usSpinnerService.stop('global-spinner')
 
       # make a request, get a promise
-      $http.post("/call_center/api/#{caller.id}/#{action}", survey.responses)
+      survey.requestInProgress = true
+      $http.post("/call_center/api/#{call_id}/#{action}", survey.responses)
       .then(success, error, notify).finally(always)
 
       reset = ->
@@ -129,18 +140,6 @@ surveyForm.controller('SurveyFormCtrl', [
           notes: {}
           question: {}
         }
-
-      # fakeSave = ->
-      #   if andContinue
-      #     $state.go('dialer.hold')
-      #   else
-      #     $state.go('dialer.stop')
-      #   # Pretend success
-      #   usSpinnerService.stop('global-spinner')
-      #   # angular.element($event.target).parent().children().prop('disabled', false)
-      #   survey.saving = false
-      #   reset()
-      # $timeout(fakeSave, 3000)
 
     $scope.survey ||= survey
 ])
