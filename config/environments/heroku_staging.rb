@@ -1,24 +1,18 @@
 ImpactDialing::Application.configure do
-  MANDRILL_API_KEY="336ba63b-680e-4260-a27b-64afd5d58831"
-  TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
-  TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
-  TWILIO_APP_SID="AP9a7f90ed206c430587a5c534c02a558f"
-  APP_NUMBER="6502626881"
-
-  # TWILIO_ACCOUNT="AC8214b5932e8b89f2c8c630d582f1f42c"
-  # TWILIO_AUTH="638089b9f24ef21eb1710e12bc508fa9"
-  # TWILIO_APP_SID="AP70733f2b5c43898e634abe07e4d69f6b"
-  # APP_NUMBER="3212802381"
-
-  PORT = 80
-  PUSHER_APP_ID="6964"
-  PUSHER_KEY="6f37f3288a3762e60f94"
-  PUSHER_SECRET="b9a1cfc2c1ab4b64ad03"
-  MONITOR_TWILIO_APP_SID="AP06c5b96cedaf433b9fe0e6d865aab104"
-  TWILIO_ERROR = "http://status-impactdialing.heroku.com/twilio/error_staging"
-  HOLD_MUSIC_URL = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
-  STRIPE_PUBLISHABLE_KEY = "pk_test_OGBGxKyv3UcfukHlpo8jZtr7"
-  STRIPE_SECRET_KEY = "sk_test_eBD6QzdzN5XMrhblpVSMDDYN"
+  MANDRILL_API_KEY       = "6sqVrFQDJNeZJ-qzsNltcw"
+  TWILIO_ACCOUNT         = "AC422d17e57a30598f8120ee67feae29cd"
+  TWILIO_AUTH            = "897298ab9f34357f651895a7011e1631"
+  TWILIO_APP_SID         = "AP9a7f90ed206c430587a5c534c02a558f"
+  APP_NUMBER             = "6502626881"
+  PORT                   = 80
+  PUSHER_APP_ID          = "6964"
+  PUSHER_KEY             = "6f37f3288a3762e60f94"
+  PUSHER_SECRET          = "b9a1cfc2c1ab4b64ad03"
+  MONITOR_TWILIO_APP_SID = "AP06c5b96cedaf433b9fe0e6d865aab104"
+  TWILIO_ERROR           = "http://status-impactdialing.heroku.com/twilio/error_staging"
+  HOLD_MUSIC_URL         = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
+  STRIPE_PUBLISHABLE_KEY = "pk_test_C7afhsETXQncQqcBQ2Hr2f0M"
+  STRIPE_SECRET_KEY      = "sk_test_EHZciy2zvJc6UelOAMdFX6wX"
   # Settings specified here will take precedence over those in config/environment.rb
 
   # The production environment is meant for finished, "live" apps.
