@@ -7,6 +7,12 @@ $gray-lighter: lighten(#000, 90%);
     padding: 0.2em 0;
 }
 
+/* Font sizes */
+.small-text {
+    font-size: 11px;
+    font-weight: bold;
+}
+
 /* Status messages */
 .status {
     font-size: 120%;
