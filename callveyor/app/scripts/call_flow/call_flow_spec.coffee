@@ -17,12 +17,16 @@ describe 'callveyor.call_flow', ->
     ###
     # In short, the fn passed to ng-mocks `module` must return a fn.
     # Which is counter to all examples everywhere.
+
+    # todo: move test state defs to helper
     ->
       $stateProvider.state('dialer', {})
       $stateProvider.state('dialer.ready', {})
       $stateProvider.state('dialer.hold', {})
       $stateProvider.state('dialer.stop', {})
       $stateProvider.state('dialer.active', {})
+      $stateProvider.state('dialer.active.transfer', {})
+      $stateProvider.state('dialer.active.transfer.conference', {})
       $stateProvider.state('dialer.wrap', {})
   )
 
@@ -47,7 +51,8 @@ describe 'callveyor.call_flow', ->
     describe 'survey.save.success', ->
       it 'transitions to dialer.hold', ->
         service.survey.save.success()
-        $timeout(-> expect($state.is('dialer.hold')).toBeTruthy())
+        $rootScope.$apply()
+        expect($state.is('dialer.hold')).toBeTruthy()
 
     describe 'startCalling(data)', ->
       it 'updates the callStation.caller.session_id cache w/ data.caller_session_id', ->
@@ -80,7 +85,8 @@ describe 'callveyor.call_flow', ->
 
         it 'transitions to dialer.stop', ->
           service.conferenceStarted(contact)
-          $timeout(-> expect($state.is('dialer.hold')).toBeTruthy())
+          $rootScope.$apply()
+          expect($state.is('dialer.stop')).toBeTruthy()
 
       describe 'when the campaign is not out of leads', ->
         beforeEach ->
@@ -102,7 +108,8 @@ describe 'callveyor.call_flow', ->
 
         it 'transitions to dialer.hold', ->
           service.conferenceStarted(contact)
-          $timeout(-> expect($state.is('dialer.hold')).toBeTruthy())
+          $rootScope.$apply()
+          expect($state.is('dialer.hold')).toBeTruthy()
 
         describe 'in Power mode', ->
           caller = ''
@@ -150,7 +157,8 @@ describe 'callveyor.call_flow', ->
 
       it 'transitions to dialer.active', ->
         service.voterConnected(data)
-        $timeout(-> expect($state.is('dialer.active')).toBeTruthy())
+        $rootScope.$apply()
+        expect($state.is('dialer.active')).toBeTruthy()
 
     describe 'voterConnectedDialer(data)', ->
       contactCache = ''
@@ -172,31 +180,130 @@ describe 'callveyor.call_flow', ->
 
       it 'transitions to dialer.active', ->
         service.voterConnectedDialer(data)
-        $timeout(-> expect($state.is('dialer.active')).toBeTruthy())
+        $rootScope.$apply()
+        expect($state.is('dialer.active')).toBeTruthy()
 
     describe 'voterDisconnected', ->
       it 'transitions to dialer.wrap', ->
         service.voterDisconnected()
-        $timeout(-> expect($state.is('dialer.wrap')).toBeTruthy())
+        $rootScope.$apply()
+        expect($state.is('dialer.wrap')).toBeTruthy()
 
     describe 'callerDisconnected', ->
       describe 'when $state is dialer.active', ->
         beforeEach ->
-          # must run expectations in $timeout to ensure transition has completed
           $state.go('dialer.active')
+          $rootScope.$apply()
 
         it 'displays a warning to the user', ->
-          $timeout ->
-            service.callerDisconnected()
-            expect(idFlashFactory.now).toHaveBeenCalledWith('warning', jasmine.any(String))
+          # console.log '$state.current', $state.current
+          service.callerDisconnected()
+          self.expect(idFlashFactory.now).toHaveBeenCalledWith('warning', jasmine.any(String))
 
         it 'transitions to dialer.wrap', ->
-          $timeout ->
-            service.callerDisconnected()
-            $timeout(-> expect($state.is('dialer.wrap')).toBeTruthy())
+          service.callerDisconnected()
+          $rootScope.$apply()
+          expect($state.is('dialer.wrap')).toBeTruthy()
 
       describe 'when $state is NOT dialer.active', ->
         it 'transitions to dialer.ready', ->
           expect($state.is('dialer.active')).toBeFalsy()
           service.callerDisconnected()
-          $timeout(-> expect($state.is('dialer.ready')).toBeTruthy())
+          $rootScope.$apply()
+          expect($state.is('dialer.ready')).toBeTruthy()
+
+    describe 'transferBusy', ->
+      it 'displays a notice to the user'
+
+    describe 'transferConnected(data)', ->
+      transferCache = ''
+      data = {call_id: 42, type: 'blah'}
+
+      beforeEach ->
+        transferCache = $cacheFactory.get('transfer')
+
+      it 'stores "id" on "transfer" cache with data.call_id', ->
+        service.transferConnected(data)
+        cache = $cacheFactory.get('transfer')
+        expect(cache.get('id')).toEqual(data.call_id)
+
+      it 'stores "type" on "transfer" cache with data.type', ->
+        service.transferConnected(data)
+        cache = $cacheFactory.get('transfer')
+        expect(cache.get('type')).toEqual(data.type)
+
+      it 'displays a notice to the user, reporting the transfer is about to connect that self-destructs in some seconds', ->
+        service.transferConnected(data)
+        expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String), jasmine.any(Number))
+
+    describe 'warmTransfer (caller redirect just requested)', ->
+      it 'displays a notice to the user, reporting they are about to connect that self-destructs in some seconds', ->
+        service.warmTransfer()
+        expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String), jasmine.any(Number))
+      it 'transitions to dialer.active.transfer.conference', ->
+        # console.log $state.current
+        service.warmTransfer()
+        $rootScope.$apply()
+        expect($state.is('dialer.active.transfer.conference')).toBeTruthy()
+
+    describe 'coldTransfer (caller redirect may have just been requested)', ->
+      it 'displays a notice to the user, reporting transfer is complete that self-destructs in some seconds', ->
+        service.coldTransfer()
+        expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String), jasmine.any(Number))
+
+      it 'transitions to dialer.wrap', ->
+        service.coldTransfer()
+        $rootScope.$apply()
+        expect($state.is('dialer.wrap')).toBeTruthy()
+
+    describe 'transferConferenceEnded', ->
+      transferCache = {}
+
+      describe 'warm transfer', ->
+        beforeEach ->
+          transferCache = $cacheFactory.get('transfer')
+          transferCache.put('type', 'warm')
+
+        describe 'contact (voter) is still connected', ->
+          beforeEach ->
+            $state.go('dialer.active.transfer.conference')
+            $rootScope.$apply()
+
+          it 'displays a notice to the user, reporting the transfer party has left that self-destructs in some seconds', ->
+            service.transferConferenceEnded()
+            expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String), jasmine.any(Number))
+
+          it 'transitions to dialer.active', ->
+            service.transferConferenceEnded()
+            $rootScope.$apply()
+            expect($state.is('dialer.active')).toBeTruthy()
+
+        describe 'contact (voter) is not connected', ->
+          beforeEach ->
+            service.voterDisconnected()
+            $rootScope.$apply()
+
+          it 'displays a notice to the user, reporting that both the transfer party and voter have left the conference and that self-destructs in some seconds', ->
+            service.transferConferenceEnded()
+            $rootScope.$apply()
+            expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String), jasmine.any(Number))
+
+      describe 'cold transfer', ->
+        beforeEach ->
+          transferCache = $cacheFactory.get('transfer')
+          transferCache.put('type', 'cold')
+
+        it 'does nothing', ->
+          for event in ['dialer.active.transfer.conference', 'dialer.wrap']
+            $state.go(event)
+            $rootScope.$apply()
+            stateChangeSpy = jasmine.createSpy('-$state change spy-')
+            bound = $rootScope.$on('$stateChangeStart', stateChangeSpy)
+            service.transferConferenceEnded()
+            $rootScope.$apply()
+            expect(idFlashFactory.now).not.toHaveBeenCalled()
+            expect(stateChangeSpy).not.toHaveBeenCalled()
+            bound()
+
+    describe 'callerKickedOff', ->
+      it 'transitions to dialer.wrap'
