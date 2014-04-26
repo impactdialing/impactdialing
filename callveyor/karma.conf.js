@@ -34,15 +34,16 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'app/bower_components/angular/angular.js',
+      'app/bower_components/angular-mocks/angular-mocks.js',
       'app/bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
       'app/bower_components/angular-ui-router/release/angular-ui-router.js',
       'app/bower_components/angular-pusher/angular-pusher.js',
       'app/bower_components/angular-spinner/angular-spinner.js',
       'app/bower_components/spin.js/spin.js',
-      'app/bower_components/angular-mocks/angular-mocks.js',
       {pattern: 'app/scripts/**/*.tpl.html', served: true, included: false},
       'app/scripts/config.js',
       'app/scripts/*.coffee',
+      'app/scripts/dialer/*.coffee',
       'app/scripts/**/*.coffee',
       // 'test/spec/**/*.coffee',
       'app/scripts/survey-templates.js',
@@ -68,8 +69,8 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    // browsers: ['Chrome', 'Firefox', 'Safari'],
-    browsers: ['Firefox'],
+    browsers: ['Chrome', 'Firefox', 'Safari'],
+    // browsers: ['Firefox'],
 
 
     // Continuous Integration mode
