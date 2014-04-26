@@ -12,6 +12,8 @@ callveyor = angular.module('callveyor', [
   'callveyor.dialer'
 ])
 
+callveyor.constant 'currentYear', (new Date()).getFullYear()
+
 callveyor.config([
   'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider',
   (serviceTokens,   idTwilioServiceProvider,   PusherServiceProvider) ->
@@ -20,11 +22,17 @@ callveyor.config([
     PusherServiceProvider.setToken(serviceTokens.pusher)
 ])
 
-callveyor.controller('AppCtrl', [
-  '$rootScope', '$scope', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory'
-  ($rootScope,   $scope,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory) ->
-    console.log 'MainCtrl', PusherService
+callveyor.controller('MetaCtrl', [
+  '$scope', 'currentYear',
+  ($scope, currentYear) ->
+    # todo: de-register the $watch on $scope.meta.currentYear
+    $scope.meta ||= {}
+    $scope.meta.currentYear = currentYear
+])
 
+callveyor.controller('AppCtrl', [
+  '$rootScope', '$scope', '$cacheFactory', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory'
+  ($rootScope,   $scope,   $cacheFactory,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory) ->
     idFlashFactory.scope = $scope
     $scope.flash = idFlashFactory
 
@@ -35,6 +43,5 @@ callveyor.controller('AppCtrl', [
     $rootScope.$on('$stateChangeError', transitionComplete)
 
     PusherService.then(pusherConnectionHandlerFactory.success,
-                       pusherConnectionHandlerFactory.loadError,
-                       pusherConnectionHandlerFactory.notify)
+                       pusherConnectionHandlerFactory.loadError)
 ])
