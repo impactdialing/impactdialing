@@ -236,25 +236,25 @@ describe 'callveyor.call_flow', ->
         service.transferConnected(data)
         expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String), jasmine.any(Number))
 
-    describe 'warmTransfer (caller redirect just requested)', ->
-      it 'displays a notice to the user, reporting they are about to connect that self-destructs in some seconds', ->
-        service.warmTransfer()
-        expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String), jasmine.any(Number))
+    describe 'contactJoinedTransferConference (contact just joined conference)', ->
+      describe 'when cold transfer', ->
+        transferCache = {}
+
+        beforeEach ->
+          transferCache = $cacheFactory.get('transfer')
+          transferCache.put('type', 'cold')
+
+        it 'transitions to dialer.wrap', ->
+          service.contactJoinedTransferConference()
+          $rootScope.$apply()
+          expect($state.is('dialer.wrap')).toBeTruthy()
+
+    describe 'callerJoinedTransferConference (caller just joined conference)', ->
       it 'transitions to dialer.active.transfer.conference', ->
         # console.log $state.current
-        service.warmTransfer()
+        service.callerJoinedTransferConference()
         $rootScope.$apply()
         expect($state.is('dialer.active.transfer.conference')).toBeTruthy()
-
-    describe 'coldTransfer (caller redirect may have just been requested)', ->
-      it 'displays a notice to the user, reporting transfer is complete that self-destructs in some seconds', ->
-        service.coldTransfer()
-        expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String), jasmine.any(Number))
-
-      it 'transitions to dialer.wrap', ->
-        service.coldTransfer()
-        $rootScope.$apply()
-        expect($state.is('dialer.wrap')).toBeTruthy()
 
     describe 'transferConferenceEnded', ->
       transferCache = {}
@@ -306,4 +306,7 @@ describe 'callveyor.call_flow', ->
             bound()
 
     describe 'callerKickedOff', ->
-      it 'transitions to dialer.wrap'
+      it 'transitions to dialer.wrapnnn', ->
+        service.callerKickedOff()
+        $rootScope.$apply()
+        expect($state.is('dialer.wrap')).toBeTruthy()

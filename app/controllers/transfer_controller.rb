@@ -60,14 +60,18 @@ class TransferController < ApplicationController
 
   def callee
     logger.debug "DoublePause: Transfer#callee SessionKey: #{params[:session_key]}"
+
+    caller_session = CallerSession.find_by_session_key(params[:session_key])
+
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
-        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => true, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
+        v.conference(caller_session.session_key, :startConferenceOnEnter => true, :endConferenceOnExit => true, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
       end
     end.response
     if params[:transfer_type] == 'warm'
       RedisCallerSession.add_party(params[:session_key])
     end
+    caller_session.publish("contact_joined_transfer_conference",{})
     render xml: response
   end
 
@@ -81,6 +85,7 @@ class TransferController < ApplicationController
       end
     end.response
     RedisCallerSession.add_party(params[:session_key])
+    caller_session.publish("caller_joined_transfer_conference",{})
     render xml: response
   end
 end

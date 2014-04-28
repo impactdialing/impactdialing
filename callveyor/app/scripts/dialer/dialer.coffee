@@ -25,14 +25,6 @@ dialer.config([
     })
 ])
 
-dialer.constant('validTransitions', {
-  'dialer.ready': ['dialer.hold'],
-  'dialer.hold': ['dialer.active'],
-  'dialer.active': ['dialer.wrap', 'dialer.stop', 'dialer.active.transfer.selected', 'dialer.active.transfer.reselected', 'dialer.active.transfer.conference'],
-  'dialer.wrap': ['dialer.hold', 'dialer.stop'],
-  'dialer.stop': ['dialer.ready']
-})
-
 dialer.controller('DialerCtrl', [
   '$rootScope', '$cacheFactory', 'Pusher', 'idCallFlow', 'callStation',
   ($rootScope,   $cacheFactory,   Pusher,   idCallFlow,   callStation) ->
@@ -56,7 +48,7 @@ dialer.controller('DialerCtrl', [
     Pusher.subscribe(channel, 'transfer_busy', idCallFlow.transferBusy)
     Pusher.subscribe(channel, 'transfer_connected', idCallFlow.transferConnected)
     Pusher.subscribe(channel, 'transfer_conference_ended', idCallFlow.transferConferenceEnded)
-    Pusher.subscribe(channel, 'warm_transfer', idCallFlow.warmTransfer)
-    Pusher.subscribe(channel, 'cold_transfer', idCallFlow.coldTransfer)
+    Pusher.subscribe(channel, 'contact_joined_transfer_conference', idCallFlow.contactJoinedTransferConference)
+    Pusher.subscribe(channel, 'caller_joined_transfer_conference', idCallFlow.callerJoinedTransferConference)
     Pusher.subscribe(channel, 'caller_kicked_off', idCallFlow.callerKickedOff)
 ])
