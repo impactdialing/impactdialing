@@ -3,6 +3,7 @@
 dialer = angular.module('callveyor.dialer', [
   'ui.router',
   'doowb.angular-pusher',
+  'transitionGateway',
   'callveyor.dialer.ready',
   'callveyor.dialer.hold',
   'callveyor.dialer.active',
@@ -26,11 +27,14 @@ dialer.config([
 ])
 
 dialer.controller('DialerCtrl', [
-  '$rootScope', '$cacheFactory', 'Pusher', 'idCallFlow', 'callStation',
-  ($rootScope,   $cacheFactory,   Pusher,   idCallFlow,   callStation) ->
+  '$rootScope', '$cacheFactory', 'Pusher', 'idCallFlow', 'transitionValidator', 'callStation',
+  ($rootScope,   $cacheFactory,   Pusher,   idCallFlow,   transitionValidator,   callStation) ->
     callStationCache = $cacheFactory('callStation')
     callStationCache.put('data', callStation.data)
     channel = callStation.data.caller.session_key
+
+    # Enforce state transition rules
+    transitionValidator.start()
 
     ## Bind app call flow handlers
     $rootScope.$on('survey:save:success', idCallFlow.survey.save.success)

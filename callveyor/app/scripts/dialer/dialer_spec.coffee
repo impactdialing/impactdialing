@@ -28,17 +28,17 @@ describe 'callveyor.dialer module', ->
   )
 
   describe 'DialerCtrl', ->
-    $rootScope    = ''
-    $scope        = $rootScope
-    $state        = ''
-    $cacheFactory = ''
-    $httpBackend  = ''
-    $controller   = ''
-    Pusher        = ''
-    idCallFlow    = ''
+    $rootScope          = ''
+    $scope              = $rootScope
+    $state              = ''
+    $cacheFactory       = ''
+    $httpBackend        = ''
+    $controller         = ''
+    idCallFlow          = ''
+    transitionValidator = ''
 
     beforeEach(inject(
-      (_$rootScope_, _$state_, _$cacheFactory_, _$httpBackend_, _$controller_, _Pusher_, _idCallFlow_) ->
+      (_$rootScope_, _$state_, _$cacheFactory_, _$httpBackend_, _$controller_, _idCallFlow_, _transitionValidator_) ->
         $rootScope                     = _$rootScope_
         $scope                         = $rootScope
         $state                         = _$state_
@@ -46,9 +46,26 @@ describe 'callveyor.dialer module', ->
         $httpBackend                   = _$httpBackend_
         $controller                    = _$controller_
         idCallFlow                     = _idCallFlow_
+        transitionValidator            = _transitionValidator_
+        transitionValidator.start      = jasmine.createSpy('-transitionValidator.start spy-')
         idCallFlow.survey.save.success = jasmine.createSpy('-survey:save:success spy-')
         FakePusher.subscribe           = jasmine.createSpy('-Pusher.subscribe spy-')
-        Pusher                         = _Pusher_
+
+        $httpBackend.whenPOST('/call_center/api/call_station.json').respond(callStation)
+        tplUrls = [
+          '/scripts/dialer/dialer.tpl.html',
+          '/callveyor/dialer/ready/callFlowButtons.tpl.html',
+          '/callveyor/dialer/ready/callInPhone.tpl.html',
+          '/callveyor/dialer/ready/callStatus.tpl.html',
+          '/callveyor/dialer/hold/callFlowButtons.tpl.html',
+          '/callveyor/dialer/hold/callStatus.tpl.html'
+        ]
+        for url in tplUrls
+          $httpBackend.whenGET(url).respond('<div ui-view>
+                                              <div ui-view="callFlowButtons"></div>
+                                              <div ui-view="callInPhone"></div>
+                                              <div ui-view="callStatus"></div>
+                                            </div>')
 
         $controller('DialerCtrl', {$scope, callStation})
     ))
@@ -63,5 +80,7 @@ describe 'callveyor.dialer module', ->
 
     it "subscribes appropriate idCallFlow handler to corresponding event on the callStation.data.caller.session_key channel", ->
       for event in pusherEvents
-        console.log 'event', event, camelCase(event)
         expect(FakePusher.subscribe).toHaveBeenCalledWith(callStation.data.caller.session_key, event, idCallFlow[camelCase(event)])
+
+    it 'starts the transitionValidator', ->
+      expect(transitionValidator.start).toHaveBeenCalled()
