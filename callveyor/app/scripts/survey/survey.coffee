@@ -89,7 +89,7 @@ surveyForm.controller('SurveyFormCtrl', [
 
     survey.save = ($event, andContinue) ->
       if survey.requestInProgress
-        console.log 'survey.requestInProgress', survey.requestInProgress
+        # console.log 'survey.requestInProgress', survey.requestInProgress
         return
 
       callCache = $cacheFactory.get('call')

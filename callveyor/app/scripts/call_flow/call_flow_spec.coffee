@@ -306,7 +306,7 @@ describe 'callveyor.call_flow', ->
             bound()
 
     describe 'callerKickedOff', ->
-      it 'transitions to dialer.wrapnnn', ->
+      it 'transitions to dialer.wrap', ->
         service.callerKickedOff()
         $rootScope.$apply()
         expect($state.is('dialer.wrap')).toBeTruthy()
