@@ -20,14 +20,21 @@ mod.constant('validTransitions', {
 mod.factory('transitionValidator', [
   '$rootScope', 'validTransitions',
   ($rootScope,   validTransitions) ->
-    reviewTransition = (eventObj, toState, toParams, fromState, fromParams) ->
-      toName   = toState.name
-      fromName = fromState.name || 'root'
+    {
+      reviewTransition: (eventObj, toState, toParams, fromState, fromParams) ->
+        toName   = toState.name
+        fromName = fromState.name || 'root'
 
-      entry = validTransitions[fromName]
+        entry = validTransitions[fromName]
 
-      if !entry? || entry.indexOf(toName) == -1
-        eventObj.preventDefault()
+        if !entry? || entry.indexOf(toName) == -1
+          eventObj.preventDefault()
 
-    $rootScope.$on('$stateChangeStart', reviewTransition)
+      start: ->
+        if angular.isFunction(@stop)
+          @stop()
+        @stop = $rootScope.$on('$stateChangeStart', @reviewTransition)
+
+      stop: ->
+    }
 ])
