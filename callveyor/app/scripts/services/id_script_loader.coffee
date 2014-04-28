@@ -13,6 +13,7 @@ scriptLoader.factory('idScriptLoader', [
       scriptTag.async = true
       scriptTag.id = scriptId
       scriptTag.src = scriptUrl
+      # For IE...
       scriptTag.onreadystatechange = ->
         if @readyState == 'complete'
           callback()
@@ -20,8 +21,6 @@ scriptLoader.factory('idScriptLoader', [
       scriptTag.onload = callback
 
       bodyTag = $document.find('body')[0]
-      console.log 'scriptTag', scriptTag
-      console.log 'bodyTag', bodyTag
       bodyTag.appendChild(scriptTag)
 
     scriptLoader

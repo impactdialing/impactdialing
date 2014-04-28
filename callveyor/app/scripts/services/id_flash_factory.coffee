@@ -17,7 +17,7 @@ userMessages.factory('idFlashFactory', [
         @clear()
         for k in @_validKeys
           if key == k
-            console.log 'match', key, k
+            # console.log 'match', key, k
             @[k] = msg
             $timeout(-> flash.scope.$apply())
         if autoRemoveSeconds > 0

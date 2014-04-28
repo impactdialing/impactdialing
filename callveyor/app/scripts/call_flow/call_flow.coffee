@@ -330,7 +330,7 @@ mod.factory('idCallFlow', [
         # Purpose: notify client that the contact has been served the conf twiml.
         #
         contactJoinedTransferConference: ->
-          console.log 'contactJoinedTransferConference'
+          # console.log 'contactJoinedTransferConference'
           if not isWarmTransfer()
             # idFlashFactory.now('notice', 'Transfer & Contact connected.', 3000)
             $state.go('dialer.wrap')
@@ -343,7 +343,7 @@ mod.factory('idCallFlow', [
         # Purpose: notify client that the caller has been served the conf twiml.
         #
         callerJoinedTransferConference: ->
-          console.log 'callerJoinedTransferConference'
+          # console.log 'callerJoinedTransferConference'
           # idFlashFactory.now('notice', 'Transfer, Contact & you connected.', 3000)
           $state.go('dialer.active.transfer.conference')
 
