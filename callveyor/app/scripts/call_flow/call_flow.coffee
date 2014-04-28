@@ -23,6 +23,8 @@ mod.factory('idCallFlow', [
       callCache     = $cacheFactory.get('call') || $cacheFactory('call')
       transferCache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
 
+      isWarmTransfer = -> /warm/i.test(transferCache.get('type'))
+
       handlers = {
         ##########################################
         # Handlers for events originating in-app #
@@ -320,7 +322,30 @@ mod.factory('idCallFlow', [
           # console.log 'transfer_connected', data
           transferCache.put('id', data.call_id)
           transferCache.put('type', data.type)
-          idFlashFactory.now('notice', 'Connecting transfer...', 3000)
+          idFlashFactory.now('notice', 'Transfer connected.', 3000)
+
+        ##
+        # contact_joined_transfer_conference
+        #
+        # Purpose: notify client that the contact has been served the conf twiml.
+        #
+        contactJoinedTransferConference: ->
+          console.log 'contactJoinedTransferConference'
+          if not isWarmTransfer()
+            # idFlashFactory.now('notice', 'Transfer & Contact connected.', 3000)
+            $state.go('dialer.wrap')
+          # else
+          #   idFlashFactory.now('notice', 'Transfer & Contact connected.', 3000)
+
+        ##
+        # caller_joined_transfer_conference
+        #
+        # Purpose: notify client that the caller has been served the conf twiml.
+        #
+        callerJoinedTransferConference: ->
+          console.log 'callerJoinedTransferConference'
+          # idFlashFactory.now('notice', 'Transfer, Contact & you connected.', 3000)
+          $state.go('dialer.active.transfer.conference')
 
         ##
         # transfer_conference_ended
@@ -341,12 +366,10 @@ mod.factory('idCallFlow', [
         ###
         transferConferenceEnded: ->
           # console.log 'transfer_conference_ended'
-          transferType = transferCache.get('type')
-          if /cold/i.test(transferType)
-            return
+          return if not isWarmTransfer()
 
           if $state.is('dialer.active.transfer.conference')
-            idFlashFactory.now('notice', 'The transfer party has disconnected.', 3000)
+            idFlashFactory.now('notice', 'Transfer disconnected.', 3000)
             $state.go('dialer.active')
           else if $state.is('dialer.wrap')
             idFlashFactory.now('notice', 'All other parties have already disconnected.', 3000)
@@ -365,9 +388,9 @@ mod.factory('idCallFlow', [
         - update caller action buttons
         ###
         warmTransfer: ->
-          # console.log 'warm_transfer'
-          idFlashFactory.now('notice', 'Joining conference...', 3000)
-          $state.go('dialer.active.transfer.conference')
+          console.log 'warm_transfer deprecated'
+          # idFlashFactory.now('notice', 'Joining conference...', 3000)
+          # $state.go('dialer.active.transfer.conference')
 
         ##
         # cold_transfer
@@ -386,9 +409,9 @@ mod.factory('idCallFlow', [
         - update caller action buttons
         ###
         coldTransfer: ->
-          # console.log 'cold_transfer'
-          idFlashFactory.now('notice', 'Transfer complete.', 3000)
-          $state.go('dialer.wrap')
+          console.log 'cold_transfer deprecated'
+          # idFlashFactory.now('notice', 'Transfer complete.', 3000)
+          # $state.go('dialer.wrap')
 
         ##
         # caller_kicked_off
@@ -406,6 +429,7 @@ mod.factory('idCallFlow', [
         ###
         callerKickedOff: ->
           # console.log 'caller_kicked_off'
+          $state.go('dialer.wrap')
       }
 
       handlers
