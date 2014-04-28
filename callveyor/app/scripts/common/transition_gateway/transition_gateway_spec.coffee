@@ -38,6 +38,7 @@ describe 'transitionGateway module', ->
         $state = _$state_
         $rootScope = _$rootScope_
         transitionValidator = _transitionValidator_
+        transitionValidator.start()
     ))
 
     it 'allows transitions where fromState.name matches a key and toState.name is included in the corresponding array value', ->
@@ -58,3 +59,11 @@ describe 'transitionGateway module', ->
       $rootScope.$apply()
       expect($state.is('mod.state2')).toBeFalsy()
       expect($state.is('mod')).toBeTruthy()
+
+    it 'binds only once to $stateChangeStart', ->
+      transitionValidator.stop()
+      transitionValidator.reviewTransition = jasmine.createSpy('-reviewTransition spy-')
+      transitionValidator.start()
+      transitionValidator.start()
+      $state.go('blah')
+      expect(transitionValidator.reviewTransition.calls.count()).toEqual(1)
