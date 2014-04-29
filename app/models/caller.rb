@@ -29,7 +29,7 @@ class Caller < ActiveRecord::Base
   delegate :subscription_allows_caller?, :to => :account
   delegate :funds_available?, :to => :account
   delegate :as_time_zone, :to=> :campaign
-  before_save { |caller| caller.username = username.downcase  unless username.nil?}
+  before_validation { |caller| caller.username = username.downcase  unless username.nil?}
 
   cattr_reader :per_page
   @@per_page = 25
@@ -44,7 +44,7 @@ class Caller < ActiveRecord::Base
 
   def check_subscription_for_caller_groups
     return true if caller_group_id.blank?
-    
+
     unless ability.can? :manage, CallerGroup
       errors.add(:base, 'Your subscription does not allow managing caller groups.')
     end

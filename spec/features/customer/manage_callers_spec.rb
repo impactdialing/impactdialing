@@ -25,13 +25,4 @@ describe 'Caller Management' do
       page.should have_content 'someguy'
     end
   end
-
-  context 'Pro subscriptions' do
-  end
-
-  context 'Business subscriptions' do
-  end
-
-  context 'Enterprise subscriptions' do
-  end
 end
