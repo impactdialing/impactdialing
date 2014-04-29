@@ -1,6 +1,8 @@
 'use strict'
 
-hold = angular.module('callveyor.dialer.hold', [])
+hold = angular.module('callveyor.dialer.hold', [
+  'ui.router'
+])
 
 hold.config([
   '$stateProvider'
@@ -17,10 +19,8 @@ hold.config([
 ])
 
 hold.controller('HoldCtrl.buttons', [
-  '$scope', '$state', '$timeout', 'callStation', 'idDialerService', 'usSpinnerService',
-  ($scope,   $state,   $timeout,   callStation,   idDialerService,   usSpinnerService) ->
-    console.log 'HoldCtrl.buttons', $scope
-
+  '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService',
+  ($scope,   $state,   $timeout,   $cacheFactory,   callStation,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService) ->
     hold = {}
     hold.campaign = callStation.data.campaign
     hold.stopCalling = ->
@@ -29,32 +29,27 @@ hold.controller('HoldCtrl.buttons', [
 
     hold.dial = ->
       # update status > 'Dialing...'
-      @callStatusText = 'Dialing...'
-      usSpinnerService.spin('global-spinner')
-      p = idDialerService.dial()
-      s = (o) ->
-        console.log 'dial success', o
-        $state.go('dialer.active') # really will be triggered from pusher event
-      e = (r) -> console.log 'error', r
-      c = (r) -> console.log 'notify', r
-      p.then(s,e,c)
-      # POST /dial
-      # then -> to 'active'
-      # error -> update status > 'Error + explain, maybe try again'
+      hold.callStatusText = 'Dialing...'
+      $scope.transitionInProgress = true
+      contactCache = $cacheFactory.get('contact').get('data')
+      caller_id = callStation.data.caller.id
+      params = {
+        session_id: callStation.data.caller.session_id,
+        voter_id: contactCache.fields.id
+      }
+      idHttpDialerFactory.dial(caller_id, params)
 
     hold.skip = ->
       # update status > 'Skipping...'
       # POST /skip
       # then -> update contact
       # error -> update status > 'Error + explain, maybe try again'
-    $scope.hold = hold
+    $scope.hold ||= hold
 ])
 
 hold.controller('HoldCtrl.status', [
   '$scope', 'callStation'
   ($scope,   callStation) ->
-    console.log 'HoldCtrl', callStation
-
     hold = {}
     hold.callStatusText = switch callStation.data.campaign.type
                             when 'Power', 'Predictive'
@@ -62,7 +57,7 @@ hold.controller('HoldCtrl.status', [
                             when 'Preview'
                               'Waiting to dial...'
                             else
-                              'Oops! Please Report this problem.'
+                              console.log 'Report this problem.'
 
     $scope.hold = hold
 ])

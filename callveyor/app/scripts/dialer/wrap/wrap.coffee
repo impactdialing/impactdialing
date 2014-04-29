@@ -8,9 +8,6 @@ wrap.config(['$stateProvider', ($stateProvider) ->
       callStatus:
         templateUrl: '/scripts/dialer/wrap/callStatus.tpl.html'
         controller: 'WrapCtrl'
-      surveyButtons:
-        templateUrl: '/scripts/dialer/wrap/surveyButtons.tpl.html'
-        controller: 'WrapCtrl'
   })
 ])
 

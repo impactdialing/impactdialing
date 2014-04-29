@@ -61,8 +61,8 @@ transfer.controller('TransferInfoCtrl', [
 ])
 
 transfer.controller('TransferButtonCtrl.selected', [
-  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory', 'idDialerService', 'usSpinnerService', 'caller'
-  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory,   idDialerService,  usSpinnerService,    caller) ->
+  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory', 'idHttpDialerFactory', 'usSpinnerService', 'caller'
+  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory,   idHttpDialerFactory,  usSpinnerService,    caller) ->
     console.log 'TransferButtonCtrl.selected', $cacheFactory.get('transfer').info()
 
     transfer = {}
@@ -74,7 +74,7 @@ transfer.controller('TransferButtonCtrl.selected', [
       console.log 'dial', $scope
       $rootScope.transferStatus = 'Dialing...'
       usSpinnerService.spin('transfer-spinner')
-      p = idDialerService.dial()
+      p = idHttpDialerFactory.dial()
       s = (o) ->
         console.log 'dial success', o
         if isWarmTransfer()
@@ -98,8 +98,8 @@ transfer.controller('TransferButtonCtrl.selected', [
 ])
 
 transfer.controller('TransferButtonCtrl.conference', [
-  '$rootScope', '$scope', '$state', '$cacheFactory', 'idDialerService', 'usSpinnerService'
-  ($rootScope,   $scope,   $state,   $cacheFactory,   idDialerService,   usSpinnerService) ->
+  '$rootScope', '$scope', '$state', '$cacheFactory', 'idHttpDialerFactory', 'usSpinnerService'
+  ($rootScope,   $scope,   $state,   $cacheFactory,   idHttpDialerFactory,   usSpinnerService) ->
     console.log 'TransferButtonCtrl.conference'
 
     transfer = {}
