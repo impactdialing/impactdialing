@@ -31,8 +31,8 @@ callveyor.controller('MetaCtrl', [
 ])
 
 callveyor.controller('AppCtrl', [
-  '$rootScope', '$scope', '$cacheFactory', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory'
-  ($rootScope,   $scope,   $cacheFactory,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory) ->
+  '$rootScope', '$scope', '$state', '$cacheFactory', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory'
+  ($rootScope,   $scope,   $state,   $cacheFactory,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory) ->
     idFlashFactory.scope = $scope
     $scope.flash = idFlashFactory
 
@@ -41,6 +41,14 @@ callveyor.controller('AppCtrl', [
     $rootScope.$on('$stateChangeStart', transitionStart)
     $rootScope.$on('$stateChangeSuccess', transitionComplete)
     $rootScope.$on('$stateChangeError', transitionComplete)
+    # handle pusher app-specific events
+    markPusherReady = -> $state.go('dialer.ready')
+    abortAllAndNotifyUser = ->
+      # todo: implement
+      console.log 'Unsupported browser...'
+
+    $rootScope.$on('pusher:ready', markPusherReady)
+    $rootScope.$on('pusher:bad_browser', abortAllAndNotifyUser)
 
     PusherService.then(pusherConnectionHandlerFactory.success,
                        pusherConnectionHandlerFactory.loadError)

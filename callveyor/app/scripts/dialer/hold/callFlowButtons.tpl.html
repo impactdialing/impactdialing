@@ -1,14 +1,17 @@
 <button class="btn btn-primary navbar-btn"
-        data-ng-click="hold.stopCalling()">
+        data-ng-click="hold.stopCalling()"
+        data-ng-disabled="transitionInProgress">
   Stop calling
 </button>
 <button class="btn btn-primary navbar-btn"
         data-ng-click="hold.dial()"
-        data-ng-if="hold.campaign.type == 'Preview'">
+        data-ng-if="hold.campaign.type == 'Preview'"
+        data-ng-disabled="transitionInProgress">
   Dial
 </button>
 <button class="btn btn-primary navbar-btn"
         data-ng-click="hold.skip()"
-        data-ng-if="hold.campaign.type == 'Preview'">
+        data-ng-if="hold.campaign.type == 'Preview'"
+        data-ng-disabled="transitionInProgress">
   Skip
 </button>

@@ -37,6 +37,7 @@ ready.controller('callFlowButtonsCtrl.ready', [
     ready.startCallingText = "Requires a mic and snappy internet."
     ready.startCalling = ->
       console.log 'startCalling clicked', callStation.data
+      $scope.transitionInProgress = true
       connectHandler = (connection) ->
         p = $state.go('dialer.hold')
         s = (r) -> console.log 'success', r.stack, r.message
@@ -48,7 +49,8 @@ ready.controller('callFlowButtonsCtrl.ready', [
 
       errorHandler = (error) ->
         console.log 'twilio connection error', error
-        idFlashFactory.now('error', 'Browser phone could not connect to the call center. Please dial-in to continue.')
+        idFlashFactory.now('error', 'Browser phone could not connect to the call center. Please dial-in to continue.', 5000)
+        $state.go('dialer.ready')
 
       bindAndConnect = (twilio) ->
         console.log twilio
@@ -60,7 +62,7 @@ ready.controller('callFlowButtonsCtrl.ready', [
 
       setupError = (err) ->
         console.log 'idTwilioService error', err
-        idFlashFactory.now('error', 'Browser phone setup failed. Please dial-in to continue.')
+        idFlashFactory.now('error', 'Browser phone setup failed. Please dial-in to continue.', 5000)
 
       idTwilioService.then(bindAndConnect, setupError)
 
