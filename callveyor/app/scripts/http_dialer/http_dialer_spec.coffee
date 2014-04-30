@@ -49,18 +49,7 @@ describe 'callveyor.http_dialer', ->
         $httpBackend.flush()
         expect(yay).toHaveBeenCalled()
 
-      it 'stops the global-spinner', ->
-        factory.dial(caller.id, params)
-        $httpBackend.flush()
-        expect(usSpinnerService.stop).toHaveBeenCalled()
-
     describe 'POST is a failure', ->
-      it 'stops the global-spinner', ->
-        $httpBackend.expectPOST(dialerUrl).respond(403)
-        factory.dial(caller.id, params)
-        $httpBackend.flush()
-        expect(usSpinnerService.stop).toHaveBeenCalled()
-
       describe 'retry is falsy', ->
         it 'broadcasts "http_dialer:error"', ->
           $httpBackend.expectPOST(dialerUrl).respond(408)
@@ -111,18 +100,12 @@ describe 'callveyor.http_dialer', ->
               it 'broadcasts "http_dialer:success', ->
                 expect(successSpy).toHaveBeenCalled()
 
-              it 'stops the global-spinner', ->
-                expect(usSpinnerService.stop).toHaveBeenCalled()
-
             describe 'retry POST is a failure', ->
               it 'broadcasts "http_dialer:error"', ->
                 $httpBackend.expectPOST(dialerUrl).respond(statusCode)
                 $httpBackend.flush()
                 $httpBackend.verifyNoOutstandingExpectation()
                 expect(errorSpy).toHaveBeenCalled()
-
-              it 'stops the global-spinner', ->
-                expect(usSpinnerService.stop).toHaveBeenCalled()
 
         describe 'BUT HTTP response code is other than 408, 500 or 504', ->
           it 'broadcasts "http_dialer:error"', ->
