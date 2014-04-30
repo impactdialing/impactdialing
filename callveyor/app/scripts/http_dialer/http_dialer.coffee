@@ -24,7 +24,7 @@ mod.factory('idHttpDialerFactory', [
         else
           $rootScope.$broadcast('http_dialer:error')
       always = ->
-        usSpinnerService.stop('global-spinner')
+        # usSpinnerService.stop('global-spinner')
 
       promise.then(success, error).finally(always)
 
