@@ -61,11 +61,22 @@ surveyForm.controller('SurveyFormCtrl', [
     # Init public
     survey = {}
 
+    # :tmp: to maintain back compat
+    # todo: move transfer data out of survey related modules to dialer
+    cacheTransferList = (payload) ->
+      transferCache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
+      transferCache.put('list', payload.data.transfers)
+    # :endtmp:
+
     e = (r) -> console.log 'survey load error', r.stack, r.message
     c = (r) -> console.log 'survey load notify', r.stack, r.message
     prepForm = (payload) ->
       SurveyFormFieldsFactory.prepareSurveyForm(payload)
       survey.form = SurveyFormFieldsFactory.data
+      # :tmp:
+      cacheTransferList(payload)
+      # :endtmp:
+
 
     SurveyFormFieldsFactory.fetch().then(prepForm, e, c)
 
@@ -107,7 +118,7 @@ surveyForm.controller('SurveyFormCtrl', [
       success = (resp) ->
         reset()
         $rootScope.$broadcast('survey:save:success')
-        idFlashFactory.now('success', 'Results have been saved. Waiting for next contact from server...', 7000)
+        idFlashFactory.now('success', 'Results saved.', 4000)
       error = (resp) ->
         # console.log 'error', resp
         msg = 'Survey results failed to save.'

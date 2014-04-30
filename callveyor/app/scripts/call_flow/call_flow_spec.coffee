@@ -49,10 +49,7 @@ describe 'callveyor.call_flow', ->
       expect(cache).toBeDefined()
 
     describe 'survey.save.success', ->
-      it 'transitions to dialer.hold', ->
-        service.survey.save.success()
-        $rootScope.$apply()
-        expect($state.is('dialer.hold')).toBeTruthy()
+      it 'may not do anything'
 
     describe 'startCalling(data)', ->
       it 'updates the callStation.caller.session_id cache w/ data.caller_session_id', ->

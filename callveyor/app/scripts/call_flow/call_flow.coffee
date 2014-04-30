@@ -18,8 +18,8 @@ mod = angular.module('callveyor.call_flow', [
 ])
 
 mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$cacheFactory', 'idHttpDialerFactory', 'idFlashFactory'
-    ($rootScope,   $state,   $cacheFactory,   idHttpDialerFactory,   idFlashFactory) ->
+    '$rootScope', '$state', '$cacheFactory', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService',
+    ($rootScope,   $state,   $cacheFactory,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService) ->
       callCache     = $cacheFactory.get('call') || $cacheFactory('call')
       transferCache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
 
@@ -35,12 +35,11 @@ mod.factory('idCallFlow', [
         # When this event is $broadcast from the survey module, transition to dialer.hold.
         survey: {
           save: {
-            success: ->
-              promise = $state.go('dialer.hold')
-              error = (obj) ->
-                # send err info to stats collector (e.g. errorception)
-                # console.log 'error transitioning to dialer.hold on survey:save:success'
-              promise.then(undefined,error)
+            # let pusher events drive $state change, rather than survey save success
+            # success: (eventObj, data) ->
+            done: (eventObj, data) ->
+              if data.andContinue
+                usSpinnerService.spin('global-spinner')
           }
         }
 
@@ -60,7 +59,7 @@ mod.factory('idCallFlow', [
         startCalling: (data) ->
           callStationCache = $cacheFactory.get('callStation')
           callStation = callStationCache.get('data')
-          # console.log 'start_calling', callStation
+          console.log 'start_calling', callStation
           caller = callStation.caller
           caller.session_id = data.caller_session_id
 
@@ -104,7 +103,7 @@ mod.factory('idCallFlow', [
           contactCache     = $cacheFactory.get('contact') || $cacheFactory('contact')
           callStation      = callStationCache.get('data')
 
-          # console.log 'conference_started (preview & power only)', contact, callStation
+          console.log 'conference_started (preview & power only)', contact, callStation
 
           if contact.campaign_out_of_leads
             idFlashFactory.now('warning', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.', 20000)
@@ -199,7 +198,7 @@ mod.factory('idCallFlow', [
         - update caller action buttons
         ###
         callingVoter: ->
-          # console.log 'calling_voter'
+          console.log 'calling_voter'
 
         ##
         # voter_connected
@@ -216,7 +215,7 @@ mod.factory('idCallFlow', [
         - update caller action buttons
         ###
         voterConnected: (data) ->
-          # console.log 'voter_connected', data
+          console.log 'voter_connected', data
           callCache.put('id', data.call_id)
           $state.go('dialer.active')
         ##
@@ -260,7 +259,7 @@ mod.factory('idCallFlow', [
         - update caller action buttons
         ###
         voterDisconnected: ->
-          # console.log 'voter_disconnected'
+          console.log 'voter_disconnected'
           $state.go('dialer.wrap')
         ##
         # caller_disconnected
@@ -274,12 +273,17 @@ mod.factory('idCallFlow', [
         #
         # No parameters.
         callerDisconnected: ->
-          # console.log 'caller_disconnected', $state.is('dialer.active'), $state.current
+          console.log 'caller_disconnected'
           if $state.is('dialer.active')
+            console.log '$state is dialer.active'
             idFlashFactory.now('warning', 'The browser lost its voice connection. Please save any responses and Report problem if needed.')
             $state.go('dialer.wrap')
           else
-            $state.go('dialer.ready')
+            console.log '$state is NOT dialer.active'
+            p = $state.go('dialer.ready')
+            s = -> console.log 'dialer.ready transition success'
+            e = (e) -> console.log 'dialer.ready transition error', e
+            p.then(s,e)
         ##
         # transfer_busy
         #
