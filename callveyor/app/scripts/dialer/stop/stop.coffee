@@ -1,6 +1,8 @@
 'use strict'
 
-stop = angular.module('callveyor.dialer.stop', [])
+stop = angular.module('callveyor.dialer.stop', [
+  'ui.router'
+])
 
 stop.config([
   '$stateProvider'
@@ -9,29 +11,29 @@ stop.config([
       views:
         callFlowButtons:
           templateUrl: "/callveyor/dialer/stop/callFlowButtons.tpl.html"
-          controller: 'callFlowButtonsCtrl.stop'
+          controller: 'StopCtrl.buttons'
         callStatus:
           templateUrl: '/callveyor/dialer/stop/callStatus.tpl.html'
-          controller: 'callStatusCtrl.stop'
+          controller: 'StopCtrl.status'
     })
 ])
 
-stop.controller('callFlowButtonsCtrl.stop', [
-  '$scope', '$state', '$cacheFactory', 'idTwilioService'
-  ($scope,   $state,   $cacheFactory,   idTwilioService) ->
-    console.log 'callFlowButtonsCtrl.stop', $scope
-
+stop.controller('StopCtrl.buttons', [
+  '$scope', '$state', '$cacheFactory', '$http', 'idTwilioService', 'callStation',
+  ($scope,   $state,   $cacheFactory,   $http,   idTwilioService,   callStation) ->
     _twilioCache = $cacheFactory.get('Twilio')
-    connection = _twilioCache.get('connection')
+    connection   = _twilioCache.get('connection')
+    caller_id    = callStation.data.caller.id
+    stopPromise  = $http.post("/call_center/api/#{caller_id}/stop_calling")
 
-    disconnect = (Twilio) ->
-      Twilio.Device.disconnect(-> $state.go('dialer.ready'))
+    always = ->
       connection.disconnect()
+      $state.go('dialer.ready')
 
-    idTwilioService.then(disconnect)
+    stopPromise.finally(always)
 ])
 
-stop.controller('callStatusCtrl.stop', [
+stop.controller('StopCtrl.status', [
   '$scope',
   ($scope) ->
     console.log 'stop.callStatusCtrl', $scope
