@@ -10,6 +10,9 @@ mod.factory('idHttpDialerFactory', [
   ($rootScope,   $timeout,   $http,   idFlashFactory,   usSpinnerService) ->
     dialer = {}
     dialer.dial = (caller_id, params, retry) ->
+      unless caller_id? and params.session_id? and params.voter_id?
+        throw new Error("idHttpDialerFactory.dial(#{caller_id}, #{params.session_id}, #{params.voter_id}) called with invalid arguments. caller_id, params.session_id and params.voter_id are all required")
+
       usSpinnerService.spin('global-spinner')
       promise = $http.post("/call_center/api/#{caller_id}/call_voter", params)
 
@@ -23,10 +26,8 @@ mod.factory('idHttpDialerFactory', [
           dialer.dial(caller_id, params, false)
         else
           $rootScope.$broadcast('http_dialer:error')
-      always = ->
-        # usSpinnerService.stop('global-spinner')
 
-      promise.then(success, error).finally(always)
+      promise.then(success, error)
 
     dialer
 ])
