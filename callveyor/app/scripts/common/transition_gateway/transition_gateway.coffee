@@ -1,5 +1,6 @@
 ##
 # This module can be used to enforce a particular $state based workflow.
+# Override the `validTransitions` constant to customize workflow enforcement.
 #
 mod = angular.module('transitionGateway', [
   'ui.router'
@@ -13,7 +14,7 @@ mod.constant('validTransitions', {
   'dialer.active.transfer.selected': ['dialer.active', 'dialer.wrap'],
   'dialer.active.transfer.reselected': ['dialer.active', 'dialer.wrap'],
   'dialer.active.transfer.conference': ['dialer.active', 'dialer.wrap'],
-  'dialer.wrap': ['dialer.hold', 'dialer.stop'],
+  'dialer.wrap': ['dialer.hold', 'dialer.stop', 'dialer.ready'],
   'dialer.stop': ['dialer.ready']
 })
 
