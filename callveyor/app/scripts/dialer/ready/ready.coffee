@@ -1,29 +1,29 @@
 'use strict'
 
-ready = angular.module('callveyor.dialer.ready', [])
+ready = angular.module('callveyor.dialer.ready', [
+  'ui.router',
+  'idTwilioConnectionHandlers',
+  'idFlash'
+])
 
 ready.config(['$stateProvider', ($stateProvider) ->
   $stateProvider.state('dialer.ready', {
     views:
       callFlowButtons:
         templateUrl: '/callveyor/dialer/ready/callFlowButtons.tpl.html'
-        controller: 'callFlowButtonsCtrl.ready'
+        controller: 'ReadyCtrl.buttons'
       callInPhone:
         templateUrl: '/callveyor/dialer/ready/callInPhone.tpl.html'
-        controller: 'callInPhoneCtrl.ready'
+        controller: 'ReadyCtrl.phone'
       callStatus:
         templateUrl: '/callveyor/dialer/ready/callStatus.tpl.html'
-        controller: 'callStatusCtrl.ready'
+        controller: 'ReadyCtrl.status'
   })
 ])
 
-ready.controller('callFlowButtonsCtrl.ready', [
-  '$scope', '$state', '$cacheFactory', 'callStation', 'idTwilioService', 'idFlashFactory'
-  ($scope,   $state,   $cacheFactory,   callStation,   idTwilioService,   idFlashFactory) ->
-    console.log 'ready.callFlowButtonsCtrl', $scope
-
-    _twilioCache = $cacheFactory.get('Twilio') || $cacheFactory('Twilio')
-
+ready.controller('ReadyCtrl.buttons', [
+  '$scope', '$state', '$cacheFactory', 'callStation', 'idTwilioConnectionFactory', 'idFlashFactory'
+  ($scope,   $state,   $cacheFactory,   callStation,   idTwilioConnectionFactory,   idFlashFactory) ->
     config = callStation.data
 
     twilioParams = {
@@ -38,38 +38,12 @@ ready.controller('callFlowButtonsCtrl.ready', [
     ready.startCalling = ->
       console.log 'startCalling clicked', callStation.data
       $scope.transitionInProgress = true
-      connectHandler = (connection) ->
-        p = $state.go('dialer.hold')
-        s = (r) -> console.log 'success', r.stack, r.message
-        e = (r) -> console.log 'error', r.stack, r.message
-        c = (r) -> console.log 'notify', r.stack, r.message
-        p.then(s,e,c)
-      readyHandler = (device) ->
-        console.log 'twilio connection ready', device
-
-      errorHandler = (error) ->
-        console.log 'twilio connection error', error
-        idFlashFactory.now('error', 'Browser phone could not connect to the call center. Please dial-in to continue.', 5000)
-        $state.go('dialer.ready')
-
-      bindAndConnect = (twilio) ->
-        console.log twilio
-        twilio.Device.connect(connectHandler)
-        twilio.Device.ready(readyHandler)
-        twilio.Device.error(errorHandler)
-        connection = twilio.Device.connect(twilioParams)
-        _twilioCache.put('connection', connection)
-
-      setupError = (err) ->
-        console.log 'idTwilioService error', err
-        idFlashFactory.now('error', 'Browser phone setup failed. Please dial-in to continue.', 5000)
-
-      idTwilioService.then(bindAndConnect, setupError)
+      idTwilioConnectionFactory.connect(twilioParams)
 
     $scope.ready = ready
 ])
 
-ready.controller('callInPhoneCtrl.ready', [
+ready.controller('ReadyCtrl.phone', [
   '$scope', 'callStation',
   ($scope, callStation) ->
     console.log 'ready.callInPhoneCtrl', $scope.dialer
@@ -77,7 +51,7 @@ ready.controller('callInPhoneCtrl.ready', [
     $scope.ready = ready
 ])
 
-ready.controller('callStatusCtrl.ready', [
+ready.controller('ReadyCtrl.status', [
   '$scope', 'callStation',
   ($scope, callStation) ->
     console.log 'ready.callStatusCtrl', $scope.dialer

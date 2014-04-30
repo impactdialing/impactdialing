@@ -44,11 +44,9 @@ describe 'dialer.stop', ->
         $state.go             = jasmine.createSpy('-$state.go spy-')
 
         twilioFake.connection = {
-          disconnect: jasmine.createSpy('-twilioFake.connection spy-')
+          disconnect: jasmine.createSpy('-twilioFake.connection.disconnect spy-')
         }
         $cacheFactory('Twilio').put('connection', twilioFake.connection)
-
-        # flashFake.now         = jasmine.createSpy('-idFlashFactory.now spy-')
 
         $controller('StopCtrl.buttons', {$scope, callStation})
     ))
@@ -60,6 +58,7 @@ describe 'dialer.stop', ->
       $httpBackend.verifyNoOutstandingExpectation()
 
     it 'always calls connection.disconnect() on $cacheFactory.get("Twilio").get("connection")', ->
+      $httpBackend.flush()
       expect(twilioFake.connection.disconnect).toHaveBeenCalled()
 
     it 'always transitions to dialer.ready', ->
