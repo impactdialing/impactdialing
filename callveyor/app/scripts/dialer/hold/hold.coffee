@@ -29,15 +29,17 @@ hold.controller('HoldCtrl.buttons', [
 
     hold.dial = ->
       # update status > 'Dialing...'
-      hold.callStatusText = 'Dialing...'
+      params            = {}
+      contactCache      = $cacheFactory.get('contact')
+      contact           = (contactCache.get('data') || {}).fields
+      caller            = callStation.data.caller || {}
+      params.session_id = caller.session_id
+      params.voter_id   = contact.id
+
+      idHttpDialerFactory.dial(caller.id, params)
+
       $scope.transitionInProgress = true
-      contactCache = $cacheFactory.get('contact').get('data')
-      caller_id = callStation.data.caller.id
-      params = {
-        session_id: callStation.data.caller.session_id,
-        voter_id: contactCache.fields.id
-      }
-      idHttpDialerFactory.dial(caller_id, params)
+      hold.callStatusText         = 'Dialing...'
 
     hold.skip = ->
       # update status > 'Skipping...'

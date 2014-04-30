@@ -46,6 +46,7 @@ describe 'dialer.hold', ->
         $cacheFactory   = _$cacheFactory_
         $state.go       = jasmine.createSpy('-$state.go spy-')
         dialerFake.dial = jasmine.createSpy('-idHttpDialerFactory.dial spy-')
+        flashFake.now   = jasmine.createSpy('-idFlashFactory.now spy-')
 
         $controller('HoldCtrl.buttons', {$scope, callStation})
     ))
@@ -59,24 +60,25 @@ describe 'dialer.hold', ->
         expect($state.go).toHaveBeenCalledWith('dialer.stop')
 
     describe '$scope.hold.dial()', ->
-      beforeEach ->
-        $cacheFactory('contact').put('data', contact.data)
+      describe '$cacheFactory("contact") exists and has "data"', ->
+        beforeEach ->
+          $cacheFactory('contact').put('data', contact.data)
 
-      it 'updates status message', ->
-        curStatus = $scope.hold.callStatusText
-        $scope.hold.dial()
-        expect($scope.hold.callStatusText).not.toEqual(curStatus)
+        it 'updates status message', ->
+          curStatus = $scope.hold.callStatusText
+          $scope.hold.dial()
+          expect($scope.hold.callStatusText).not.toEqual(curStatus)
 
-      it 'sets $scope.transitionInProgress to true', ->
-        expect($scope.transitionInProgress).toBeFalsy()
-        $scope.hold.dial()
-        expect($scope.transitionInProgress).toBeTruthy()
+        it 'sets $scope.transitionInProgress to true', ->
+          expect($scope.transitionInProgress).toBeFalsy()
+          $scope.hold.dial()
+          expect($scope.transitionInProgress).toBeTruthy()
 
-      it 'calls idHttpDialerFactory.dial(caller_id, {session_id: Num, voter_id: Num})', ->
-        caller_id = callStation.data.caller.id
-        params = {
-          voter_id: contact.data.fields.id
-          session_id: callStation.data.caller.session_id
-        }
-        $scope.hold.dial()
-        expect(dialerFake.dial).toHaveBeenCalledWith(caller_id, params)
+        it 'calls idHttpDialerFactory.dial(caller_id, {session_id: Num, voter_id: Num})', ->
+          caller_id = callStation.data.caller.id
+          params = {
+            voter_id: contact.data.fields.id
+            session_id: callStation.data.caller.session_id
+          }
+          $scope.hold.dial()
+          expect(dialerFake.dial).toHaveBeenCalledWith(caller_id, params)
