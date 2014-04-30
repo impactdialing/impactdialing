@@ -27,6 +27,12 @@ describe 'callveyor.http_dialer', ->
     usSpinnerService.stop = jasmine.createSpy('-usSpinnerService.stop spy-')
 
   describe 'dial(caller_id, params, retry)', ->
+    describe 'when called with invalid or undefined caller_id, params.session_id or params.voter_id', ->
+      it 'throws an Error', ->
+        expect(-> factory.dial(1, {session_id: 3})).toThrowError()
+        expect(-> factory.dial(undefined, {session_id: 3, voter_id: 1})).toThrowError()
+        expect(-> factory.dial(1, {voter_id: 1})).toThrowError()
+
     beforeEach ->
       $httpBackend.whenPOST(dialerUrl).respond({})
     it 'spins the global-spinner', ->
