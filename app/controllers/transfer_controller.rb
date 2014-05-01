@@ -28,6 +28,10 @@ class TransferController < ApplicationController
   def end
     # Twilio StatusCallback (async after call has completed)
     transfer_attempt = TransferAttempt.find(params[:id])
+    transfer_dialer = TransferDialer.new(transfer_attempt.transfer)
+
+    transfer_dialer.deactivate_transfer(transfer_attempt.caller_session.session_key)
+
     transfer_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
     response = case params[:CallStatus] #using the 2010 api
                 when "no-answer", "busy", "failed"
