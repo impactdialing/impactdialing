@@ -65,7 +65,12 @@ surveyForm.controller('SurveyFormCtrl', [
     # todo: move transfer data out of survey related modules to dialer
     cacheTransferList = (payload) ->
       transferCache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
-      transferCache.put('list', payload.data.transfers)
+      list          = payload.data.transfers
+      coldOnly      = (transfer) -> transfer_type == 'cold'
+
+      $filter('filter')(list, coldOnly)
+
+      transferCache.put('list', list)
     # :endtmp:
 
     e = (r) -> console.log 'survey load error', r.stack, r.message
