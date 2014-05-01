@@ -35,7 +35,8 @@ describe 'idTwilioConnectionHandlers', ->
     idFlashFactory = $injector.get('idFlashFactory')
 
     idFlashFactory.now = jasmine.createSpy('-idFlashFactory.now spy-')
-    $state.go          = jasmine.createSpy('-$state.go spy-')
+    $state.go          = jasmine.createSpy('-$state.go spy-').and.returnValue($state)
+    $state.catch       = jasmine.createSpy('-$statePromise.catch spy-')
 
   describe 'connected(connection)', ->
     it 'stores connection in $cacheFactory("Twilio").put("connection")', ->

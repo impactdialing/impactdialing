@@ -36,12 +36,7 @@ hold.controller('HoldCtrl.buttons', [
       params.session_id = caller.session_id
       params.voter_id   = contact.id
 
-      promise = idHttpDialerFactory.dialContact(caller.id, params)
-      dialErr = (errObj) ->
-        $scope.transitionInProgress = false
-        hold.callStatusText = 'Error skipping.'
-        usSpinnerService.stop('global-spinner')
-      promise.catch(dialErr)
+      idHttpDialerFactory.dialContact(caller.id, params)
 
       $scope.transitionInProgress = true
       hold.callStatusText         = 'Dialing...'

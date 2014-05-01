@@ -1,6 +1,7 @@
 mod = angular.module('idTwilioConnectionHandlers', [
   'ui.router',
   'idFlash',
+  'idTransition',
   'idTwilio'
 ])
 
