@@ -1,2 +1,6 @@
-<button class="btn btn-primary navbar-btn" data-ng-click="transfer.dial()">Dial</button>
-<button class="btn btn-primary navbar-btn" data-ng-click="transfer.cancel()">Cancel</button>
+<button class="btn btn-primary navbar-btn"
+        data-ng-click="transfer.dial()"
+        data-ng-disabled="transitionInProgress">Dial</button>
+<button class="btn btn-primary navbar-btn"
+        data-ng-click="transfer.cancel()"
+        data-ng-disabled="transitionInProgress">Cancel</button>

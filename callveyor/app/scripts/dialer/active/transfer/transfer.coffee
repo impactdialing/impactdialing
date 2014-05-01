@@ -74,13 +74,9 @@ transfer.controller('TransferButtonCtrl.selected', [
 
     transfer.dial = ->
       console.log 'dial', $scope
-      $rootScope.transferStatus = 'Dialing...'
+      $rootScope.transferStatus       = 'Dialing...'
+      $rootScope.transitionInProgress = true
       usSpinnerService.spin('transfer-spinner')
-      # {
-      #   voter: this.options.lead_info.get("fields").id,
-      #   call: this.options.campaign_call.get("call_id"),
-      #   caller_session: this.options.campaign_call.get("session_id")
-      # }
       params                = {}
       contactCache          = $cacheFactory.get('contact')
       callCache             = $cacheFactory.get('call')
@@ -92,15 +88,9 @@ transfer.controller('TransferButtonCtrl.selected', [
       params.transfer       = {id: selected.id}
 
       p = idHttpDialerFactory.dialTransfer(params)
-      s = (o) ->
-        console.log 'dial success', o
-        # if isWarmTransfer()
-        #   $state.go('dialer.active.transfer.conference') # triggered from pusher event for warm transfers
-        # else
-        #   $state.go('dialer.wrap')
+      s = (o) -> console.log 'dial success', o
       e = (r) -> console.log 'error', r
-      c = (r) -> console.log 'notify', r
-      p.then(s,e,c)
+      p.then(s,e)
 
     transfer.cancel = ->
       console.log 'cancel'
