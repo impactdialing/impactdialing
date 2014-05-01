@@ -67,7 +67,11 @@ class CallerController < ApplicationController
     # todo: remove pause_url from unnecessary TwiML responses
     logger.debug "DoublePause: Caller#pause - #{params}"
     if RedisCallerSession.pause?(@caller_session.session_key, params[:transfer_session_key])
+
+      @caller_session.publish('caller_wrapup_voice_hit', {})
+
       logger.debug "DoublePause: Caller#pause - pausing for results"
+
       xml = Twilio::TwiML::Response.new do |r|
         r.Say("Please enter your call results.")
         r.Pause("length" => 600)
