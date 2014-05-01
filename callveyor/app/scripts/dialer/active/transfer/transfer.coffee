@@ -74,9 +74,6 @@ transfer.controller('TransferButtonCtrl.selected', [
 
     transfer.dial = ->
       console.log 'dial', $scope
-      $rootScope.transferStatus       = 'Dialing...'
-      $rootScope.transitionInProgress = true
-      usSpinnerService.spin('transfer-spinner')
       params                = {}
       contactCache          = $cacheFactory.get('contact')
       callCache             = $cacheFactory.get('call')
@@ -88,8 +85,18 @@ transfer.controller('TransferButtonCtrl.selected', [
       params.transfer       = {id: selected.id}
 
       p = idHttpDialerFactory.dialTransfer(params)
-      s = (o) -> console.log 'dial success', o
-      e = (r) -> console.log 'error', r
+
+      $rootScope.transferStatus       = 'Dialing...'
+      $rootScope.transitionInProgress = true
+      usSpinnerService.spin('transfer-spinner')
+
+      s = (o) ->
+        $rootScope.transferStatus = 'Ringing...'
+        console.log 'dial success', o
+      e = (r) ->
+        $rootScope.transferStatus = 'Error dialing.'
+        console.log 'report this problem', r
+
       p.then(s,e)
 
     transfer.cancel = ->
