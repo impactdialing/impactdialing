@@ -38,6 +38,7 @@ dialer.controller('DialerCtrl', [
 
     ## Bind app call flow handlers
     $rootScope.$on('survey:save:success', idCallFlow.survey.save.success)
+    $rootScope.$on('survey:save:done', idCallFlow.survey.save.done)
 
     ## Bind Pusher call flow handlers
     Pusher.subscribe(channel, 'start_calling', idCallFlow.startCalling)
