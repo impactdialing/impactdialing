@@ -18,18 +18,12 @@ mod = angular.module('callveyor.call_flow', [
 ])
 
 mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$cacheFactory', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService',
-    ($rootScope,   $state,   $cacheFactory,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService) ->
+    '$rootScope', '$state', '$cacheFactory', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented'
+    ($rootScope,   $state,   $cacheFactory,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented) ->
       callCache     = $cacheFactory.get('call') || $cacheFactory('call')
       transferCache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
 
       isWarmTransfer = -> /warm/i.test(transferCache.get('type'))
-
-
-      transitionPrevented = (e) ->
-        console.log e
-        $rootScope.transitionInProgress = false
-        usSpinnerService.stop('global-spinner')
 
       handlers = {
         ##########################################
@@ -114,14 +108,14 @@ mod.factory('idCallFlow', [
           if contact.campaign_out_of_leads
             idFlashFactory.now('warning', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.', 20000)
             p = $state.go('dialer.stop')
-            p.catch(transitionPrevented)
+            p.catch(idTransitionPrevented)
             return
 
           contactCache.put('data', contact)
           $rootScope.$broadcast('contact:changed')
 
           p = $state.go('dialer.hold')
-          p.catch(transitionPrevented)
+          p.catch(idTransitionPrevented)
 
           if callStation.campaign.type == 'Power'
             caller = callStation.caller
@@ -226,7 +220,7 @@ mod.factory('idCallFlow', [
           console.log 'voter_connected', data
           callCache.put('id', data.call_id)
           p = $state.go('dialer.active')
-          p.catch(transitionPrevented)
+          p.catch(idTransitionPrevented)
         ##
         # voter_connected_dialer
         #
@@ -253,7 +247,7 @@ mod.factory('idCallFlow', [
           contactCache.put('data', data.voter)
           callCache.put('id', data.call_id)
           p = $state.go('dialer.active')
-          p.catch(transitionPrevented)
+          p.catch(idTransitionPrevented)
         ##
         # voter_disconnected
         #
@@ -273,7 +267,7 @@ mod.factory('idCallFlow', [
           unless isWarmTransfer()
             console.log 'transitioning', transferCache.get('type')
             p = $state.go('dialer.wrap')
-            p.catch(transitionPrevented)
+            p.catch(idTransitionPrevented)
           else
             console.log 'skipping transition'
         ##
@@ -293,11 +287,11 @@ mod.factory('idCallFlow', [
             console.log '$state is dialer.active'
             idFlashFactory.now('warning', 'The browser lost its voice connection. Please save any responses and Report problem if needed.')
             p = $state.go('dialer.wrap')
-            p.catch(transitionPrevented)
+            p.catch(idTransitionPrevented)
           else
             console.log '$state is NOT dialer.active'
             p = $state.go('dialer.ready')
-            p.catch(transitionPrevented)
+            p.catch(idTransitionPrevented)
         ##
         # transfer_busy
         #
@@ -353,7 +347,7 @@ mod.factory('idCallFlow', [
           if not isWarmTransfer()
             # idFlashFactory.now('notice', 'Transfer & Contact connected.', 3000)
             p = $state.go('dialer.wrap')
-            p.catch(transitionPrevented)
+            p.catch(idTransitionPrevented)
           # else
           #   idFlashFactory.now('notice', 'Transfer & Contact connected.', 3000)
 
@@ -366,7 +360,7 @@ mod.factory('idCallFlow', [
           console.log 'callerJoinedTransferConference'
           # idFlashFactory.now('notice', 'Transfer, Contact & you connected.', 3000)
           p = $state.go('dialer.active.transfer.conference')
-          p.catch(transitionPrevented)
+          p.catch(idTransitionPrevented)
 
         ##
         # transfer_conference_ended
@@ -394,7 +388,7 @@ mod.factory('idCallFlow', [
           if $state.is('dialer.active.transfer.conference')
             idFlashFactory.now('notice', 'Transfer disconnected.', 3000)
             p = $state.go('dialer.active')
-            p.catch(transitionPrevented)
+            p.catch(idTransitionPrevented)
           else if $state.is('dialer.wrap')
             idFlashFactory.now('notice', 'All other parties have already disconnected.', 3000)
 
@@ -454,12 +448,12 @@ mod.factory('idCallFlow', [
         callerKickedOff: ->
           # console.log 'caller_kicked_off'
           p = $state.go('dialer.wrap')
-          p.catch(transitionPrevented)
+          p.catch(idTransitionPrevented)
 
         callerWrapupVoiceHit: ->
           console.log 'caller:wrapup:start'
           p = $state.go('dialer.wrap')
-          p.catch(transitionPrevented)
+          p.catch(idTransitionPrevented)
       }
 
       handlers
