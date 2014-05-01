@@ -144,12 +144,13 @@ mod.factory('idCallFlow', [
         - update caller action buttons
         ###
         callerConnectedDialer: ->
-          contactCache = $cacheFactory.get('contact') || $cacheFactory('contact')
           console.log 'caller_connected_dialer (predictive only)'
-          contactCache.put('data', {})
-          $rootScope.$broadcast('contact:changed')
+          transitionSuccess = ->
+            contactCache = $cacheFactory.get('contact') || $cacheFactory('contact')
+            contactCache.put('data', {})
+            $rootScope.$broadcast('contact:changed')
           p = $state.go('dialer.hold')
-          p.catch(idTransitionPrevented)
+          p.then(transitionSuccess, idTransitionPrevented)
         ##
         # caller_reassigned
         #
@@ -245,13 +246,15 @@ mod.factory('idCallFlow', [
         - update caller action buttons
         ###
         voterConnectedDialer: (data) ->
-          contactCache = $cacheFactory.get('contact') || $cacheFactory('contact')
           console.log 'voter_connected_dialer', data
-          contactCache.put('data', data.voter)
-          $rootScope.$broadcast('contact:changed')
-          callCache.put('id', data.call_id)
+          transitionSuccess = ->
+            contactCache = $cacheFactory.get('contact') || $cacheFactory('contact')
+            contactCache.put('data', data.voter)
+            $rootScope.$broadcast('contact:changed')
+            callCache.put('id', data.call_id)
+
           p = $state.go('dialer.active')
-          p.catch(idTransitionPrevented)
+          p.then(transitionSuccess, idTransitionPrevented)
         ##
         # voter_disconnected
         #
