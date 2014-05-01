@@ -434,6 +434,10 @@ mod.factory('idCallFlow', [
         callerKickedOff: ->
           # console.log 'caller_kicked_off'
           $state.go('dialer.wrap')
+
+        callerWrapupVoiceHit: ->
+          console.log 'caller:wrapup:start'
+          $state.go('dialer.wrap')
       }
 
       handlers
