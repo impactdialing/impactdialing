@@ -8,8 +8,6 @@ active = angular.module('callveyor.dialer.active', [
 
 active.config(['$stateProvider', ($stateProvider) ->
   $stateProvider.state('dialer.active', {
-    resolve:
-      transfers: ($http) -> $http.get('/scripts/dialer/active/transfers.json')
     views:
       callFlowButtons:
         templateUrl: '/callveyor/dialer/active/callFlowButtons.tpl.html'
@@ -27,8 +25,8 @@ active.config(['$stateProvider', ($stateProvider) ->
 ])
 active.controller('ActiveCtrl.status', [->])
 active.controller('ActiveCtrl.buttons', [
-  '$scope', '$state', '$http', '$cacheFactory', 'idFlashFactory', 'transfers'
-  ($scope,   $state,   $http,   $cacheFactory,   idFlashFactory,   transfers) ->
+  '$scope', '$state', '$http', '$cacheFactory', 'idFlashFactory',
+  ($scope,   $state,   $http,   $cacheFactory,   idFlashFactory) ->
     console.log 'ActiveCtrl', $scope.dialer
     active = {}
 
@@ -41,8 +39,8 @@ active.controller('ActiveCtrl.buttons', [
       #   console.log 'report this problem'
       #   return
 
-      call_id                     = callCache.get('id')
-      stopPromise                 = $http.post("/call_center/api/#{call_id}/hangup")
+      call_id     = callCache.get('id')
+      stopPromise = $http.post("/call_center/api/#{call_id}/hangup")
 
       success = ->
         e = (obj) ->

@@ -36,7 +36,7 @@ hold.controller('HoldCtrl.buttons', [
       params.session_id = caller.session_id
       params.voter_id   = contact.id
 
-      idHttpDialerFactory.dial(caller.id, params)
+      idHttpDialerFactory.dialContact(caller.id, params)
 
       $scope.transitionInProgress = true
       hold.callStatusText         = 'Dialing...'

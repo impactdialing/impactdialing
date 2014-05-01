@@ -61,26 +61,43 @@ transfer.controller('TransferInfoCtrl', [
 ])
 
 transfer.controller('TransferButtonCtrl.selected', [
-  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory', 'idHttpDialerFactory', 'usSpinnerService', 'caller'
-  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory,   idHttpDialerFactory,  usSpinnerService,    caller) ->
+  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory', 'idHttpDialerFactory', 'usSpinnerService', 'callStation'
+  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory,   idHttpDialerFactory,   usSpinnerService,   callStation) ->
     console.log 'TransferButtonCtrl.selected', $cacheFactory.get('transfer').info()
 
-    transfer = {}
+    transfer       = {}
     transfer.cache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
-    transfer_type = transfer.cache.get('selected').transfer_type
+    selected       = transfer.cache.get('selected')
+    transfer_type  = selected.transfer_type
+
     isWarmTransfer = -> transfer_type == 'warm'
 
     transfer.dial = ->
       console.log 'dial', $scope
       $rootScope.transferStatus = 'Dialing...'
       usSpinnerService.spin('transfer-spinner')
-      p = idHttpDialerFactory.dial()
+      # {
+      #   voter: this.options.lead_info.get("fields").id,
+      #   call: this.options.campaign_call.get("call_id"),
+      #   caller_session: this.options.campaign_call.get("session_id")
+      # }
+      params                = {}
+      contactCache          = $cacheFactory.get('contact')
+      callCache             = $cacheFactory.get('call')
+      contact               = (contactCache.get('data') || {}).fields
+      caller                = callStation.data.caller || {}
+      params.voter          = contact.id
+      params.call           = callCache.get('id')
+      params.caller_session = caller.session_id
+      params.transfer       = {id: selected.id}
+
+      p = idHttpDialerFactory.dialTransfer(params)
       s = (o) ->
         console.log 'dial success', o
-        if isWarmTransfer()
-          $state.go('dialer.active.transfer.conference') # triggered from pusher event for warm transfers
-        else
-          $state.go('dialer.wrap')
+        # if isWarmTransfer()
+        #   $state.go('dialer.active.transfer.conference') # triggered from pusher event for warm transfers
+        # else
+        #   $state.go('dialer.wrap')
       e = (r) -> console.log 'error', r
       c = (r) -> console.log 'notify', r
       p.then(s,e,c)
@@ -90,10 +107,7 @@ transfer.controller('TransferButtonCtrl.selected', [
       @cache.remove('selected')
       $state.go('dialer.active')
 
-    console.log 'rootScope', $rootScope
-    console.log 'collapse before', $rootScope.rootTransferCollapse
     $rootScope.rootTransferCollapse = false
-    console.log 'collapse before', $rootScope.rootTransferCollapse
     $scope.transfer = transfer
 ])
 

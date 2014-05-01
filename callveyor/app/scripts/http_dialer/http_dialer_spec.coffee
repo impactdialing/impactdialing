@@ -29,19 +29,19 @@ describe 'callveyor.http_dialer', ->
   describe 'dial(caller_id, params, retry)', ->
     describe 'when called with invalid or undefined caller_id, params.session_id or params.voter_id', ->
       it 'throws an Error', ->
-        expect(-> factory.dial(1, {session_id: 3})).toThrowError()
-        expect(-> factory.dial(undefined, {session_id: 3, voter_id: 1})).toThrowError()
-        expect(-> factory.dial(1, {voter_id: 1})).toThrowError()
+        expect(-> factory.dialContact(1, {session_id: 3})).toThrowError()
+        expect(-> factory.dialContact(undefined, {session_id: 3, voter_id: 1})).toThrowError()
+        expect(-> factory.dialContact(1, {voter_id: 1})).toThrowError()
 
     beforeEach ->
       $httpBackend.whenPOST(dialerUrl).respond({})
     it 'spins the global-spinner', ->
-      factory.dial(caller.id, params)
+      factory.dialContact(caller.id, params)
       expect(usSpinnerService.spin).toHaveBeenCalled()
 
     it "POSTs given params to '#{dialerUrl}'", ->
       $httpBackend.expectPOST(dialerUrl).respond({})
-      factory.dial(caller.id, params)
+      factory.dialContact(caller.id, params)
       $httpBackend.verifyNoOutstandingExpectation()
 
     describe 'POST is success', ->
@@ -51,7 +51,7 @@ describe 'callveyor.http_dialer', ->
       it 'broadcasts "http_dialer:success"', ->
         yay = jasmine.createSpy('-http_dialer:success event spy-')
         $rootScope.$on('http_dialer:success', yay)
-        factory.dial(caller.id, params)
+        factory.dialContact(caller.id, params)
         $httpBackend.flush()
         expect(yay).toHaveBeenCalled()
 
@@ -61,7 +61,7 @@ describe 'callveyor.http_dialer', ->
           $httpBackend.expectPOST(dialerUrl).respond(408)
           boo = jasmine.createSpy('-http_dialer:error event spy-')
           $rootScope.$on('http_dialer:error', boo)
-          factory.dial(caller.id, params)
+          factory.dialContact(caller.id, params)
           $httpBackend.flush()
           expect(boo).toHaveBeenCalled()
 
@@ -80,7 +80,7 @@ describe 'callveyor.http_dialer', ->
               $rootScope.$on('http_dialer:success', successSpy)
               $rootScope.$on('http_dialer:error', errorSpy)
               $httpBackend.expectPOST(dialerUrl).respond(statusCode)
-              factory.dial(caller.id, params, true)
+              factory.dialContact(caller.id, params, true)
               $httpBackend.flush(1)
 
             it 'broadcasts "http_dialer:retrying"', ->
@@ -94,10 +94,10 @@ describe 'callveyor.http_dialer', ->
 
             it 'retries only once in the face of a second failure', ->
               # intercept the retried request before the initial whenPOST stub can respond w/ 200
-              $httpBackend.expectPOST(dialerUrl).respond(statusCode)
+              $httpBackend.whenPOST(dialerUrl).respond(statusCode)
               $httpBackend.flush()
               $httpBackend.verifyNoOutstandingExpectation()
-              expect(retrySpy.calls.count()).toEqual(2)
+              expect(retrySpy.calls.count()).toEqual(1)
 
             describe 'retry POST is success', ->
               beforeEach ->
@@ -108,7 +108,7 @@ describe 'callveyor.http_dialer', ->
 
             describe 'retry POST is a failure', ->
               it 'broadcasts "http_dialer:error"', ->
-                $httpBackend.expectPOST(dialerUrl).respond(statusCode)
+                $httpBackend.whenPOST(dialerUrl).respond(statusCode)
                 $httpBackend.flush()
                 $httpBackend.verifyNoOutstandingExpectation()
                 expect(errorSpy).toHaveBeenCalled()
@@ -120,7 +120,7 @@ describe 'callveyor.http_dialer', ->
             $rootScope.$on('http_dialer:error', errorSpy)
             $rootScope.$on('http_dialer:retrying', retrySpy)
             $httpBackend.expectPOST(dialerUrl).respond(403, {error: "blah"})
-            factory.dial(caller.id, params, true)
+            factory.dialContact(caller.id, params, true)
             $httpBackend.flush()
             $httpBackend.verifyNoOutstandingExpectation()
             expect(retrySpy).not.toHaveBeenCalled()
