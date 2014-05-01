@@ -22,6 +22,7 @@ callveyor = angular.module('callveyor', [
   'pusherConnectionHandlers',
   'idTwilio',
   'idFlash',
+  'idTransition',
   'angularSpinner',
   'callveyor.dialer'
 ])
@@ -45,8 +46,8 @@ callveyor.controller('MetaCtrl', [
 ])
 
 callveyor.controller('AppCtrl', [
-  '$rootScope', '$scope', '$state', '$cacheFactory', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory'
-  ($rootScope,   $scope,   $state,   $cacheFactory,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory) ->
+  '$rootScope', '$scope', '$state', '$cacheFactory', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented',
+  ($rootScope,   $scope,   $state,   $cacheFactory,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented) ->
     idFlashFactory.scope = $scope
     $scope.flash = idFlashFactory
 
@@ -59,7 +60,7 @@ callveyor.controller('AppCtrl', [
       usSpinnerService.stop('global-spinner')
     transitionError = (e) ->
       # todo: submit error to error collection tool
-      console.error 'Error transitioning $state', e.message, e.stack
+      console.error 'Error transitioning $state', e, $state.current
       # hmm: $stateChangeError seems to not be thrown when preventDefault is called
       # if e.message == 'transition prevented'
       #   # something called .preventDefault, probably the transitionGateway
@@ -71,7 +72,9 @@ callveyor.controller('AppCtrl', [
     $rootScope.$on('$stateChangeError', transitionError)
 
     # handle pusher app-specific events
-    markPusherReady = -> $state.go('dialer.ready')
+    markPusherReady = ->
+      p = $state.go('dialer.ready')
+      p.catch(idTransitionPrevented)
     abortAllAndNotifyUser = ->
       # todo: implement
       console.log 'Unsupported browser...'
