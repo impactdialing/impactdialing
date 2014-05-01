@@ -1,7 +1,7 @@
 require 'spec_helper'
 include JSHelpers
 
-describe 'Calling leads on a Preview campaign', caller: true, e2e: true do
+describe 'Calling leads on a Preview campaign', caller_ui: true, e2e: true, js: true do
   let(:account){ create(:account) }
   let(:campaign) do
     create(:preview, {
