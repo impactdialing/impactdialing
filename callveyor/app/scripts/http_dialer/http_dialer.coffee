@@ -46,6 +46,14 @@ mod.factory('idHttpDialerFactory', [
       url          = "/call_center/api/#{caller_id}/call_voter"
       dial(url, params).then(success, error)
 
+    dialer.skipContact = (caller_id, params) ->
+      dialer.retry = false
+      usSpinnerService.spin('global-spinner')
+
+      url = "/call_center/api/#{caller_id}/skip_voter"
+
+      $http.post(url, params) #.then(success, error)
+
     dialer.dialTransfer = (params, retry) ->
       dialer.retry = false
 
