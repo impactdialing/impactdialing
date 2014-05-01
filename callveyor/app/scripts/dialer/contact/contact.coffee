@@ -19,7 +19,7 @@ contact.controller('ContactCtrl', [
     handleStateChange = (event, toState, toParams, fromState, fromParams) ->
       console.log 'handleStateChange', toState, fromState
       switch toState.name
-        when 'dialer.stop'
+        when 'dialer.stop', 'dialer.ready'
           contact.data = {}
 
     updateFromCache = ->
