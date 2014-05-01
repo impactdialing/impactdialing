@@ -2,6 +2,19 @@ require "spec_helper"
 
 describe Script do
 
+  it 'returns transfer_types according to Ability' do
+    user    = create(:user)
+    account = user.account
+    script  = create(:script, {account: account})
+
+    script.transfer_types.should eq [Transfer::Type::WARM, Transfer::Type::COLD]
+
+    account.billing_subscription.update_attribute(:plan, 'basic')
+    script2 = Script.last
+    script.id.should eq script2.id
+    script2.transfer_types.should eq []
+  end
+
   it "restoring makes it active" do
     script = create(:script, :active => false)
     script.restore
@@ -26,7 +39,7 @@ describe Script do
     it "gets all questions and responses" do
       script = create(:script)
       question = create(:question, :script => script)
-      response_1 = create(:possible_response, :question => question)      
+      response_1 = create(:possible_response, :question => question)
       another_response = create(:possible_response)
       script.questions_and_responses.should == {question.text => [question.possible_responses.first.value, response_1.value]}
     end

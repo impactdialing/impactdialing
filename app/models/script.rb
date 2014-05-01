@@ -21,7 +21,9 @@ class Script < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
-
+  def ability
+    @ability ||= Ability.new(account)
+  end
 
   def selected_fields
     unless voter_fields.nil?
@@ -30,7 +32,11 @@ class Script < ActiveRecord::Base
   end
 
   def transfer_types
-    account.current_subscription.transfer_types
+    if ability.can? :add_transfer, self
+      [Transfer::Type::WARM, Transfer::Type::COLD]
+    else
+      []
+    end
   end
 
   def check_subscription_type_for_transfers
