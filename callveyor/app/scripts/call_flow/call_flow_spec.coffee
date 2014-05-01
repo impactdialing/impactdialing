@@ -262,7 +262,7 @@ describe 'callveyor.call_flow', ->
           transferCache = $cacheFactory.get('transfer')
           transferCache.put('type', 'warm')
 
-        describe 'contact (voter) is still connected', ->
+        describe 'current state is dialer.active.transfer.conference', ->
           beforeEach ->
             $state.go('dialer.active.transfer.conference')
             $rootScope.$apply()
@@ -276,16 +276,15 @@ describe 'callveyor.call_flow', ->
             $rootScope.$apply()
             expect($state.is('dialer.active')).toBeTruthy()
 
-        describe 'contact (voter) is not connected', ->
+        describe 'current state is dialer.wrap', ->
           beforeEach ->
-            service.voterDisconnected()
+            $state.go('dialer.wrap')
             $rootScope.$apply()
 
-          it 'displays a notice to the user, reporting that both the transfer party and voter have left the conference and that self-destructs in some seconds'
-          # , ->
-          #   service.transferConferenceEnded()
-          #   $rootScope.$apply()
-          #   expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String), jasmine.any(Number))
+          it 'displays a notice to the user, reporting that both the transfer party and voter have left the conference and that self-destructs in some seconds', ->
+            service.transferConferenceEnded()
+            $rootScope.$apply()
+            expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String), jasmine.any(Number))
 
       describe 'cold transfer', ->
         beforeEach ->
