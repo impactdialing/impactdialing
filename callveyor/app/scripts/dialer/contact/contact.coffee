@@ -28,11 +28,9 @@ contact.controller('ContactCtrl', [
         callStation = callStationCache.get('data')
       else
         callStation = {campaign: {}}
-      if callStation.campaign.type != 'Predictive'
-        # show preview of contact being dialed for Preview & Power modes
-        contactCache = $cacheFactory.get('contact')
-        if contactCache?
-          contact.data = contactCache.get('data')
+      contactCache = $cacheFactory.get('contact')
+      if contactCache?
+        contact.data = contactCache.get('data')
 
     $rootScope.$on('contact:changed', updateFromCache)
     $rootScope.$on('$stateChangeSuccess', handleStateChange)
