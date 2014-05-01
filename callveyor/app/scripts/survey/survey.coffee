@@ -66,9 +66,8 @@ surveyForm.controller('SurveyFormCtrl', [
     cacheTransferList = (payload) ->
       transferCache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
       list          = payload.data.transfers
-      coldOnly      = (transfer) -> transfer_type == 'cold'
-
-      $filter('filter')(list, coldOnly)
+      coldOnly      = (transfer) -> transfer.transfer_type == 'cold'
+      list          = $filter('filter')(list, coldOnly)
 
       transferCache.put('list', list)
     # :endtmp:
