@@ -118,7 +118,7 @@ mod.factory('idCallFlow', [
           if callStation.campaign.type == 'Power'
             caller = callStation.caller
             # console.log 'dialing for Power', caller
-            idHttpDialerFactory.dial(caller.id, {
+            idHttpDialerFactory.dialContact(caller.id, {
               session_id: caller.session_id,
               voter_id: contact.fields.id
             })
@@ -260,7 +260,11 @@ mod.factory('idCallFlow', [
         ###
         voterDisconnected: ->
           console.log 'voter_disconnected'
-          $state.go('dialer.wrap')
+          unless isWarmTransfer()
+            console.log 'transitioning', transferCache.get('id'), transferCache.get('type')
+            $state.go('dialer.wrap')
+          else
+            console.log 'skipping transition'
         ##
         # caller_disconnected
         #
@@ -323,10 +327,11 @@ mod.factory('idCallFlow', [
         - set transfer_call_id on campaign model to campaign model call_id
         ###
         transferConnected: (data) ->
-          # console.log 'transfer_connected', data
-          transferCache.put('id', data.call_id)
+          console.log 'transfer_connected', data
+          # transferCache.put('id', data.call_id)
           transferCache.put('type', data.type)
           idFlashFactory.now('notice', 'Transfer connected.', 3000)
+          # $state.go('dialer.active.transfer.conference')
 
         ##
         # contact_joined_transfer_conference
@@ -334,7 +339,7 @@ mod.factory('idCallFlow', [
         # Purpose: notify client that the contact has been served the conf twiml.
         #
         contactJoinedTransferConference: ->
-          # console.log 'contactJoinedTransferConference'
+          console.log 'contactJoinedTransferConference'
           if not isWarmTransfer()
             # idFlashFactory.now('notice', 'Transfer & Contact connected.', 3000)
             $state.go('dialer.wrap')
@@ -347,9 +352,12 @@ mod.factory('idCallFlow', [
         # Purpose: notify client that the caller has been served the conf twiml.
         #
         callerJoinedTransferConference: ->
-          # console.log 'callerJoinedTransferConference'
+          console.log 'callerJoinedTransferConference'
           # idFlashFactory.now('notice', 'Transfer, Contact & you connected.', 3000)
-          $state.go('dialer.active.transfer.conference')
+          p = $state.go('dialer.active.transfer.conference')
+          s = (r) -> console.log 'conference success', r
+          e = (e) -> console.log 'conference error', e
+          p.then(s,e)
 
         ##
         # transfer_conference_ended
@@ -369,9 +377,11 @@ mod.factory('idCallFlow', [
         - unset 'transfer_type' property from campaign call model
         ###
         transferConferenceEnded: ->
-          # console.log 'transfer_conference_ended'
+          console.log 'transfer_conference_ended', $state.current
+
           return if not isWarmTransfer()
 
+          transferCache.remove('type')
           if $state.is('dialer.active.transfer.conference')
             idFlashFactory.now('notice', 'Transfer disconnected.', 3000)
             $state.go('dialer.active')

@@ -47,10 +47,6 @@ describe 'dialer.ready', ->
 
         $state.go          = jasmine.createSpy('-$state.go spy-')
         twilioFake.connect = jasmine.createSpy('-idTwilioConnectionFactory.connect spy-')
-
-        # flashFake.now         = jasmine.createSpy('-idFlashFactory.now spy-')
-
-        # $controller('ReadyCtrl.buttons', {$scope, callStation})
     ))
 
     describe '$scope.ready.startCalling() when idTwilioService resolves', ->
