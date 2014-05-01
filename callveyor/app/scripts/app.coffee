@@ -22,6 +22,17 @@ callveyor.config([
     PusherServiceProvider.setToken(serviceTokens.pusher)
 ])
 
+callveyor.factory('idTransitionPrevented', [
+  '$rootScope', 'usSpinnerService',
+  ($rootScope,   usSpinnerService) ->
+    fn = (errObj) ->
+      console.log errObj
+      $rootScope.transitionInProgress = false
+      usSpinnerService.stop('global-spinner')
+
+    fn
+])
+
 callveyor.controller('MetaCtrl', [
   '$scope', 'currentYear',
   ($scope, currentYear) ->
