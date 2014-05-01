@@ -11,7 +11,8 @@ dialer = angular.module('callveyor.dialer', [
   'callveyor.dialer.stop',
   'survey',
   'callveyor.contact',
-  'callveyor.call_flow'
+  'callveyor.call_flow',
+  'idTransition'
 ])
 
 dialer.config([

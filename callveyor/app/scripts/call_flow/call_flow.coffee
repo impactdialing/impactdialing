@@ -14,6 +14,7 @@
 mod = angular.module('callveyor.call_flow', [
   'ui.router',
   'idFlash',
+  'idTransition',
   'callveyor.http_dialer'
 ])
 
@@ -149,6 +150,7 @@ mod.factory('idCallFlow', [
             contactCache = $cacheFactory.get('contact') || $cacheFactory('contact')
             contactCache.put('data', {})
             $rootScope.$broadcast('contact:changed')
+
           p = $state.go('dialer.hold')
           p.then(transitionSuccess, idTransitionPrevented)
         ##

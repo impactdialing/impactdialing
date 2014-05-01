@@ -1,5 +1,19 @@
 'use strict'
 
+a = angular.module('idTransition', [
+  'angularSpinner'
+])
+a.factory('idTransitionPrevented', [
+  '$rootScope', 'usSpinnerService',
+  ($rootScope,   usSpinnerService) ->
+    fn = (errObj) ->
+      console.log 'report this problem', errObj
+      $rootScope.transitionInProgress = false
+      usSpinnerService.stop('global-spinner')
+
+    fn
+])
+
 callveyor = angular.module('callveyor', [
   'config',
   'ui.bootstrap',
@@ -20,17 +34,6 @@ callveyor.config([
     idTwilioServiceProvider.setScriptUrl('//static.twilio.com/libs/twiliojs/1.1/twilio.js')
     PusherServiceProvider.setPusherUrl('//d3dy5gmtp8yhk7.cloudfront.net/2.1/pusher.min.js')
     PusherServiceProvider.setToken(serviceTokens.pusher)
-])
-
-callveyor.factory('idTransitionPrevented', [
-  '$rootScope', 'usSpinnerService',
-  ($rootScope,   usSpinnerService) ->
-    fn = (errObj) ->
-      console.log errObj
-      $rootScope.transitionInProgress = false
-      usSpinnerService.stop('global-spinner')
-
-    fn
 ])
 
 callveyor.controller('MetaCtrl', [

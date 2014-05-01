@@ -129,12 +129,18 @@ describe 'callveyor.call_flow', ->
             })
 
     describe 'callerConnectedDialer', ->
+      it 'transitions to dialer.hold', ->
+        service.callerConnectedDialer()
+        $rootScope.$apply()
+        expect($state.is('dialer.hold')).toBeTruthy()
+
       it 'removes "data" from "contact" cache', ->
         cache = $cacheFactory('contact')
         contact = {fields: {id: 42}}
         cache.put('data', contact)
         service.callerConnectedDialer()
-        expect(cache.get('data')).not.toBeDefined()
+        $rootScope.$apply()
+        expect(cache.get('data')).toEqual({})
 
     describe 'callerReassigned(contact)', ->
       it 'resets everything... by ...?'
@@ -150,6 +156,7 @@ describe 'callveyor.call_flow', ->
 
       it 'updates "id" on the "call" cache with data.call_id', ->
         service.voterConnected(data)
+        $rootScope.$apply()
         expect(callCache.get('id')).toEqual(data.call_id)
 
       it 'transitions to dialer.active', ->
@@ -167,11 +174,13 @@ describe 'callveyor.call_flow', ->
 
       it 'updates "data" on "contact" cache with data.voter', ->
         service.voterConnectedDialer(data)
+        $rootScope.$apply()
         cache = $cacheFactory.get('contact')
         expect(cache.get('data')).toEqual(data.voter)
 
       it 'updates "id" on "call" cache with data.call_id', ->
         service.voterConnectedDialer(data)
+        $rootScope.$apply()
         cache = $cacheFactory.get('call')
         expect(cache.get('id')).toEqual(data.call_id)
 
