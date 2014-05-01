@@ -85,6 +85,7 @@ surveyForm.controller('SurveyFormCtrl', [
         when 'dialer.wrap'
           survey.hideButtons = false
         else
+          survey.disable = false
           survey.hideButtons = true
 
     $rootScope.$on('$stateChangeSuccess', handleStateChange)
@@ -117,8 +118,8 @@ surveyForm.controller('SurveyFormCtrl', [
 
       success = (resp) ->
         reset()
-        $rootScope.$broadcast('survey:save:success')
         idFlashFactory.now('success', 'Results saved.', 4000)
+        $rootScope.$broadcast('survey:save:success', {andContinue})
       error = (resp) ->
         # console.log 'error', resp
         msg = 'Survey results failed to save.'
@@ -134,17 +135,15 @@ surveyForm.controller('SurveyFormCtrl', [
           else
             msg += ' Please try again and Report problem if the error continues.'
         idFlashFactory.now('error', msg)
-      notify = (resp) ->
-        console.log 'notify', resp
       always = (resp) ->
-        survey.disable = false
         survey.requestInProgress = false
         usSpinnerService.stop('global-spinner')
+        $rootScope.$broadcast('survey:save:done', {andContinue})
 
       # make a request, get a promise
       survey.requestInProgress = true
       $http.post("/call_center/api/#{call_id}/#{action}", survey.responses)
-      .then(success, error, notify).finally(always)
+      .then(success, error).finally(always)
 
       reset = ->
         survey.responses = {
