@@ -1,10 +1,14 @@
 (function() {
   'use strict';
-  angular.module('idTransition', ['angularSpinner']).factory('idTransitionPrevented', [
+  var a, callveyor;
+
+  a = angular.module('idTransition', ['angularSpinner']);
+
+  a.factory('idTransitionPrevented', [
     '$rootScope', 'usSpinnerService', function($rootScope, usSpinnerService) {
       var fn;
       fn = function(errObj) {
-        console.log('report this problem', errObj.message, errObj.stack);
+        console.log('report this problem', errObj);
         $rootScope.transitionInProgress = false;
         return usSpinnerService.stop('global-spinner');
       };
@@ -12,18 +16,26 @@
     }
   ]);
 
-  angular.module('callveyor', ['config', 'ui.bootstrap', 'ui.router', 'doowb.angular-pusher', 'pusherConnectionHandlers', 'idTwilio', 'idFlash', 'idTransition', 'angularSpinner', 'callveyor.dialer']).constant('currentYear', (new Date()).getFullYear()).config([
+  callveyor = angular.module('callveyor', ['config', 'ui.bootstrap', 'ui.router', 'doowb.angular-pusher', 'pusherConnectionHandlers', 'idTwilio', 'idFlash', 'idTransition', 'angularSpinner', 'callveyor.dialer']);
+
+  callveyor.constant('currentYear', (new Date()).getFullYear());
+
+  callveyor.config([
     'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider', function(serviceTokens, idTwilioServiceProvider, PusherServiceProvider) {
       idTwilioServiceProvider.setScriptUrl('//static.twilio.com/libs/twiliojs/1.1/twilio.js');
       PusherServiceProvider.setPusherUrl('//d3dy5gmtp8yhk7.cloudfront.net/2.1/pusher.min.js');
       return PusherServiceProvider.setToken(serviceTokens.pusher);
     }
-  ]).controller('MetaCtrl', [
+  ]);
+
+  callveyor.controller('MetaCtrl', [
     '$scope', 'currentYear', function($scope, currentYear) {
       $scope.meta || ($scope.meta = {});
       return $scope.meta.currentYear = currentYear;
     }
-  ]).controller('AppCtrl', [
+  ]);
+
+  callveyor.controller('AppCtrl', [
     '$rootScope', '$scope', '$state', '$cacheFactory', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', function($rootScope, $scope, $state, $cacheFactory, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented) {
       var abortAllAndNotifyUser, markPusherReady, transitionComplete, transitionError, transitionStart;
       idFlashFactory.scope = $scope;
