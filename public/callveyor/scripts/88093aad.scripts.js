@@ -60,16 +60,9 @@
 
   contact.controller('ContactCtrl', [
     '$rootScope', '$scope', '$state', '$http', '$cacheFactory', function($rootScope, $scope, $state, $http, $cacheFactory) {
-      var handleStateChange, reset, updateFromCache;
+      var handleStateChange, updateFromCache;
       console.log('ContactCtrl');
       contact = {};
-      reset = function() {
-        return contact = {
-          _meta: {
-            collapse: false
-          }
-        };
-      };
       handleStateChange = function(event, toState, toParams, fromState, fromParams) {
         console.log('handleStateChange', toState, fromState);
         switch (toState.name) {
@@ -222,6 +215,7 @@
         if (survey.requestInProgress) {
           return;
         }
+        survey.disable = true;
         callCache = $cacheFactory.get('call');
         if (callCache != null) {
           call_id = callCache.get('id');
@@ -278,6 +272,7 @@
           };
         };
       };
+      $rootScope.$on('survey:save:click', survey.save);
       return $scope.survey || ($scope.survey = survey);
     }
   ]);
@@ -307,53 +302,47 @@
         views: {
           callFlowButtons: {
             templateUrl: '/callveyor/dialer/ready/callFlowButtons.tpl.html',
-            controller: 'ReadyCtrl.buttons'
-          },
-          callInPhone: {
-            templateUrl: '/callveyor/dialer/ready/callInPhone.tpl.html',
-            controller: 'ReadyCtrl.phone'
-          },
-          callStatus: {
-            templateUrl: '/callveyor/dialer/ready/callStatus.tpl.html',
-            controller: 'ReadyCtrl.status'
+            controller: 'ReadyCtrl.splash'
           }
         }
       });
     }
   ]);
 
-  ready.controller('ReadyCtrl.buttons', [
-    '$scope', '$state', '$cacheFactory', 'callStation', 'idTwilioConnectionFactory', 'idFlashFactory', function($scope, $state, $cacheFactory, callStation, idTwilioConnectionFactory, idFlashFactory) {
+  ready.controller('ReadyCtrl.splashModal', [
+    '$scope', '$state', '$cacheFactory', '$modalInstance', 'idTwilioConnectionFactory', 'idFlashFactory', function($scope, $state, $cacheFactory, $modalInstance, idTwilioConnectionFactory, idFlashFactory) {
       var config, twilioParams;
-      config = callStation.data;
+      config = $cacheFactory.get('callStation').get('data');
       twilioParams = {
         'PhoneNumber': config.call_station.phone_number,
         'campaign_id': config.campaign.id,
         'caller_id': config.caller.id,
         'session_key': config.caller.session_key
       };
-      ready = {};
-      ready.startCallingText = "Requires a mic and snappy internet.";
+      ready = config || {};
       ready.startCalling = function() {
-        console.log('startCalling clicked', callStation.data);
+        console.log('startCalling clicked', config);
         $scope.transitionInProgress = true;
-        return idTwilioConnectionFactory.connect(twilioParams);
+        idTwilioConnectionFactory.connect(twilioParams);
+        return $modalInstance.close();
       };
       return $scope.ready = ready;
     }
   ]);
 
-  ready.controller('ReadyCtrl.phone', [
-    '$scope', 'callStation', function($scope, callStation) {
-      console.log('ready.callInPhoneCtrl', $scope.dialer);
-      ready = callStation.data;
-      return $scope.ready = ready;
-    }
-  ]);
-
-  ready.controller('ReadyCtrl.status', [
-    '$scope', 'callStation', function($scope, callStation) {
-      return console.log('ready.callStatusCtrl', $scope.dialer);
+  ready.controller('ReadyCtrl.splash', [
+    '$scope', '$modal', function($scope, $modal) {
+      var splash;
+      splash = {};
+      splash.getStarted = function() {
+        var openModal;
+        return openModal = $modal.open({
+          templateUrl: '/callveyor/dialer/ready/splash.tpl.html',
+          controller: 'ReadyCtrl.splashModal',
+          size: 'lg'
+        });
+      };
+      return $scope.splash = splash;
     }
   ]);
 
@@ -743,14 +732,20 @@
         views: {
           callStatus: {
             templateUrl: '/callveyor/dialer/wrap/callStatus.tpl.html',
-            controller: 'WrapCtrl'
+            controller: 'WrapCtrl.status'
+          },
+          callFlowButtons: {
+            templateUrl: '/callveyor/dialer/wrap/callFlowButtons.tpl.html',
+            controller: 'WrapCtrl.buttons'
           }
         }
       });
     }
   ]);
 
-  wrap.controller('WrapCtrl', [function() {}]);
+  wrap.controller('WrapCtrl.status', [function() {}]);
+
+  wrap.controller('WrapCtrl.buttons', [function() {}]);
 
 }).call(this);
 
@@ -815,7 +810,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
   'use strict';
 
   $templateCache.put('/callveyor/dialer/dialer.tpl.html',
-    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-4\"><!-- callFlowButtons ui-view --><div class=\"navbar-left\"><ul class=\"nav navbar-nav\"><li data-ui-view=\"callFlowButtons\"></li><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li></ul></div><!-- /callFlowButtons ui-view --></div><div class=\"col-xs-4\"><p class=\"alert small-text\" data-ng-show=\"flash.notice || flash.warning || flash.error || flash.success\" data-ng-class=\"{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}\">{{flash.notice || flash.warning || flash.error || flash.success}}</p></div><div class=\"col-xs-4\"><!-- callStatus ui-view --><div class=\"navbar-right status\"><span data-us-spinner=\"{length:0,top:10,left:-25,color:'#456587'}\" data-spinner-key=\"global-spinner\"></span><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\">Loading...</p></div></div><!-- /callStatus ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
+    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-4\"><!-- callStatus ui-view --><div class=\"navbar-left status\"><span data-us-spinner=\"{length:0,top:10,left:10,color:'#456587'}\" data-spinner-key=\"global-spinner\"></span><div class=\"call-status\" data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-4\"><p class=\"alert small-text\" data-ng-show=\"flash.notice || flash.warning || flash.error || flash.success\" data-ng-class=\"{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}\">{{flash.notice || flash.warning || flash.error || flash.success}}</p></div><div class=\"col-xs-4\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
   );
 
 
@@ -830,7 +825,14 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
 
   $templateCache.put('/callveyor/dialer/ready/callFlowButtons.tpl.html',
-    "<button class=\"btn btn-primary navbar-btn\" data-ng-click=\"ready.startCalling()\" data-ng-disabled=\"transitionInProgress\">Start calling</button> <span class=\"small-text\">{{ready.startCallingText}}</span>"
+    "<!-- <span class=\"small-text\">\n" +
+    "  {{ready.startCallingText}}\n" +
+    "</span>\n" +
+    "<button class=\"btn btn-primary navbar-btn\"\n" +
+    "        data-ng-click=\"ready.startCalling()\"\n" +
+    "        data-ng-disabled=\"transitionInProgress\">\n" +
+    "  Start calling\n" +
+    "</button> --> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"splash.getStarted()\">Start</button>"
   );
 
 
@@ -849,6 +851,11 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
   );
 
 
+  $templateCache.put('/callveyor/dialer/ready/splash.tpl.html',
+    "<div class=\"modal-header\"><h3 class=\"modal-title\">Choose your path</h3></div><div class=\"modal-body\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-sm-6\"><h4>Other Phone</h4><p><b>Dial:</b> {{ready.call_station.phone_number}}</p><p><b>PIN:</b> {{ready.caller.pin}}</p><p><b>Dial</b> the above number from a cell or landline then key in your <b>PIN</b> when prompted.</p></div><div class=\"col-sm-6\"><h4>Browser Phone</h4><div class=\"btn-group btn-group-justified\"><div class=\"btn-group\"><button class=\"btn btn-primary navbar-btn\" data-ng-click=\"ready.startCalling()\" data-ng-disabled=\"transitionInProgress\">Start calling</button></div></div><div class=\"alert alert-info\"><p>Pre-flight checks<ol class=\"bump-left\"><li>Computer has a built-in microphone or a headset is plugged in</li><li>Internet speed received a 'B' or better from <a href=\"http://pingtest.net/\" target=\"_blank\">pingtest.net</a></li><li>Firewall(s) allow Voice over IP (VoIP) connections. Some firewalls call this 'Skype'. <a href=\"https://impactdialing.freshdesk.com/support/solutions/articles/1000016223-troubleshooting-call-quality\" target=\"_blank\">Read more...</a></li></ol></p></div><p class=\"alert alert-warning\"><em>Poor voice quality, dropped calls or connecting/disconnecting calls rapidly are symptoms of a mis-configured firewall or poor network conditions. Try the Other Phone path.</em></p></div></div></div></div>"
+  );
+
+
   $templateCache.put('/callveyor/dialer/stop/callFlowButtons.tpl.html',
     ""
   );
@@ -856,6 +863,11 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
   $templateCache.put('/callveyor/dialer/stop/callStatus.tpl.html',
     "<p class=\"navbar-text label label-info\">{{stop.callStatusText}}</p>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/wrap/callFlowButtons.tpl.html',
+    "<div class=\"btn-group\" data-ng-hide=\"survey.hideButtons\"><button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', false); transitionInProgress = true\" data-ng-disabled=\"transitionInProgress\">Save &amp; stop calling</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', true); transitionInProgress = true;\" data-ng-disabled=\"transitionInProgress\">Save &amp; continue</button></div>"
   );
 
 
@@ -909,7 +921,7 @@ angular.module('callveyor.contact').run(['$templateCache', function($templateCac
   'use strict';
 
   $templateCache.put('/callveyor/dialer/contact/info.tpl.html',
-    "<div><button class=\"btn btn-block btn-default\" data-ng-click=\"contact._meta.collapse = !contact._meta.collapse\">Contact info</button></div><div collapse=\"contact._meta.collapse\" class=\"row content-box\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Contact details will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id\">{{contact.data.fields.custom_id}}</dd><dt data-ng-hide=\"!contact.data.fields.first_name\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name\">{{contact.data.fields.first_name}}</dd><dt data-ng-hide=\"!contact.data.fields.middle_name\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name\">{{contact.data.fields.middle_name}}</dd><dt data-ng-hide=\"!contact.data.fields.last_name\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name\">{{contact.data.fields.last_name}}</dd><dt data-ng-hide=\"!contact.data.fields.suffix\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix\">{{contact.data.fields.suffix}}</dd><dt data-ng-hide=\"!contact.data.fields.address\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address\">{{contact.data.fields.address}}</dd><dt data-ng-hide=\"!contact.data.fields.city\">City</dt><dd data-ng-hide=\"!contact.data.fields.city\">{{contact.data.fields.city}}</dd><dt data-ng-hide=\"!contact.data.fields.state\">State</dt><dd data-ng-hide=\"!contact.data.fields.state\">{{contact.data.fields.state}}</dd><dt data-ng-hide=\"!contact.data.fields.zip_code\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code\">{{contact.data.fields.zip_code}}</dd><dt data-ng-hide=\"!contact.data.fields.country\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country\">{{contact.data.fields.country}}</dd><dt data-ng-hide=\"!contact.data.fields.phone\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone\">{{contact.data.fields.phone}}</dd><dt data-ng-hide=\"!contact.data.fields.email\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email\">{{contact.data.fields.email}}</dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"(field, value) in contact.data.custom_fields\">{{field}}</dt><dd data-ng-repeat-end=\"\">{{value}}</dd></dl></div>"
+    "<div class=\"row content-box panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id\">{{contact.data.fields.custom_id}}</dd><dt data-ng-hide=\"!contact.data.fields.first_name\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name\">{{contact.data.fields.first_name}}</dd><dt data-ng-hide=\"!contact.data.fields.middle_name\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name\">{{contact.data.fields.middle_name}}</dd><dt data-ng-hide=\"!contact.data.fields.last_name\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name\">{{contact.data.fields.last_name}}</dd><dt data-ng-hide=\"!contact.data.fields.suffix\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix\">{{contact.data.fields.suffix}}</dd><dt data-ng-hide=\"!contact.data.fields.address\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address\">{{contact.data.fields.address}}</dd><dt data-ng-hide=\"!contact.data.fields.city\">City</dt><dd data-ng-hide=\"!contact.data.fields.city\">{{contact.data.fields.city}}</dd><dt data-ng-hide=\"!contact.data.fields.state\">State</dt><dd data-ng-hide=\"!contact.data.fields.state\">{{contact.data.fields.state}}</dd><dt data-ng-hide=\"!contact.data.fields.zip_code\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code\">{{contact.data.fields.zip_code}}</dd><dt data-ng-hide=\"!contact.data.fields.country\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country\">{{contact.data.fields.country}}</dd><dt data-ng-hide=\"!contact.data.fields.phone\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone\">{{contact.data.fields.phone}}</dd><dt data-ng-hide=\"!contact.data.fields.email\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email\">{{contact.data.fields.email}}</dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"(field, value) in contact.data.custom_fields\">{{field}}</dt><dd data-ng-repeat-end=\"\">{{value}}</dd></dl></div></div>"
   );
 
 }]);
@@ -918,7 +930,7 @@ angular.module('survey').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('/callveyor/survey/survey.tpl.html',
-    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"survey.disable\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><pre data-ng-if=\"item.type == 'scriptText'\">{{item.content}}</pre><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\"><option data-ng-repeat=\"response in item.possibleResponses\" value=\"{{response.id}}\">{{response.value}}</option></select></div><div class=\"btn-group\" data-ng-hide=\"survey.hideButtons\"><button class=\"btn btn-primary\" data-ng-click=\"survey.save($event, false); survey.disable = true\" data-ng-disabled=\"survey.disable\">Save &amp; stop calling</button> <button class=\"btn btn-primary\" data-ng-click=\"survey.save($event, true); survey.disable = true;\" data-ng-disabled=\"survey.disable\">Save &amp; continue</button></div></form></div>"
+    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"survey.disable\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><pre data-ng-if=\"item.type == 'scriptText'\">{{item.content}}</pre><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\"><option data-ng-repeat=\"response in item.possibleResponses\" value=\"{{response.id}}\">{{response.value}}</option></select></div></form></div>"
   );
 
 }]);
