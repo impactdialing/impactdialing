@@ -782,11 +782,13 @@
 
   stop.controller('StopCtrl.buttons', [
     '$scope', '$state', '$cacheFactory', '$http', 'idTwilioService', 'callStation', function($scope, $state, $cacheFactory, $http, idTwilioService, callStation) {
-      var always, caller_id, connection, stopPromise, _twilioCache;
+      var always, caller_id, connection, params, stopPromise, _twilioCache;
       _twilioCache = $cacheFactory.get('Twilio');
       connection = _twilioCache.get('connection');
       caller_id = callStation.data.caller.id;
-      stopPromise = $http.post("/call_center/api/" + caller_id + "/stop_calling");
+      params = {};
+      params.session_id = callStation.data.caller.session_id;
+      stopPromise = $http.post("/call_center/api/" + caller_id + "/stop_calling", params);
       always = function() {
         connection.disconnect();
         return $state.go('dialer.ready');
