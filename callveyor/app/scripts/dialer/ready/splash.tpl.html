@@ -1,0 +1,54 @@
+<div class="modal-header">
+    <h3 class="modal-title">Choose your path</h3>
+</div>
+
+<div class="modal-body">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h4>Other Phone</h4>
+                <p>
+                  <b>Dial:</b> {{ready.call_station.phone_number}}
+                </p>
+                <p>
+                  <b>PIN:</b> {{ready.caller.pin}}
+                </p>
+
+                <p>
+                    <b>Dial</b> the above number from a cell or landline then key in your <b>PIN</b> when prompted.
+                </p>
+            </div>
+            <div class="col-sm-6">
+                <h4>Browser Phone</h4>
+                <div class="btn-group btn-group-justified">
+                    <div class="btn-group">
+                        <button class="btn btn-primary navbar-btn"
+                                data-ng-click="ready.startCalling()"
+                                data-ng-disabled="transitionInProgress">
+                          Start calling
+                        </button>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <p>
+                        Pre-flight checks
+                        <ol class="bump-left">
+                            <li>
+                                Computer has a built-in microphone or a headset is plugged in
+                            </li>
+                            <li>
+                                Internet speed received a 'B' or better from <a href="http://pingtest.net/" target="_blank">pingtest.net</a>
+                            </li>
+                            <li>
+                                Firewall(s) allow Voice over IP (VoIP) connections. Some firewalls call this 'Skype'. <a href="https://impactdialing.freshdesk.com/support/solutions/articles/1000016223-troubleshooting-call-quality" target="_blank">Read more...</a>
+                            </li>
+                        </ol>
+                    </p>
+                </div>
+                <p class="alert alert-warning">
+                    <em>Poor voice quality, dropped calls or connecting/disconnecting calls rapidly are symptoms of a mis-configured firewall or poor network conditions. Try the Other Phone path.</em>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -24,6 +24,11 @@ $gray-lighter: lighten(#000, 90%);
     margin-left: 35px;
 }
 
+/* Lists */
+ol.bump-left {
+    padding-left: 20px;
+}
+
 /* Spacing for header */
 body {
     padding-top: 60px;
