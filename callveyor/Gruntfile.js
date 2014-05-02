@@ -35,7 +35,6 @@ module.exports = function (grunt) {
         name: 'config',
         dest: 'app/scripts/config.js',
         constants: {
-          package: grunt.file.readJSON('package.json'),
           apiver: 0.1
         }
       },
@@ -280,7 +279,16 @@ module.exports = function (grunt) {
       html: '<%= yeoman.app %>/index.html',
       options: {
         // root: 'app/../..',
-        dest: '<%= yeoman.dist %>'
+        dest: '<%= yeoman.dist %>',
+        // flow: {
+        //   html: {
+        //     steps: {
+        //       js: ['concat', 'uglifyjs'],
+        //       css: ['concat', 'cssmin']
+        //     },
+        //     post: {}
+        //   }
+        // }
       }
     },
 
@@ -341,7 +349,7 @@ module.exports = function (grunt) {
         files: [{
           expand: true,
           cwd: '.tmp/concat/scripts',
-          src: '*.js',
+          src: '**/*.js',
           dest: '.tmp/concat/scripts'
         }]
       }
@@ -350,25 +358,37 @@ module.exports = function (grunt) {
     // Compile angular templates into javascript for faster loading
     // and wrap them an angular module, storing them in $templateCache.
     // Templates are still available via ajax calls.
-    // /callveyor/dialer/ready/callInPhone.tpl.html
     ngtemplates: {
-      callveyor: {
+      options: {
+        prefix: '/callveyor',
+        url: function(url) {
+          return url.replace('callveyor', 'scripts');
+        },
+        htmlmin: {
+          collapseBooleanAttributes:      true,
+          collapseWhitespace:             true
+        },
+        usemin: '<%= yeoman.dist %>/callveyor/scripts/scripts.js'
+      },
+      'callveyor.dialer': {
         module: 'callveyor.dialer',
         standalone: false,
         dest: 'app/scripts/dialer-templates.js',
         cwd: 'app/scripts',
-        src: 'dialer/**/*.tpl.html',
-        options: {
-          prefix: '/callveyor',
-          url: function(url) {
-            return url.replace('callveyor', 'scripts');
-          },
-          htmlmin: {
-            collapseBooleanAttributes:      true,
-            collapseWhitespace:             true
-          },
-          usemin: '<%= yeoman.dist %>/callveyor/scripts/scripts.js'
-        }
+        src: [
+          'dialer/*.tpl.html',
+          'dialer/{hold,ready,stop,wrap}/*.tpl.html',
+          'dialer/active/**/*.tpl.html'
+        ],
+      },
+      'callveyor.contact': {
+        module: 'callveyor.contact',
+        standalone: false,
+        dest: 'app/scripts/contact-templates.js',
+        cwd: 'app/scripts',
+        src: [
+          'dialer/contact/*.tpl.html'
+        ]
       },
       /*
       TODO:
@@ -376,22 +396,11 @@ module.exports = function (grunt) {
       update callveyor section to include scripts/survey
       */
       survey: {
-        module: 'surveyTemplates',
-        standalone: true,
+        module: 'survey',
+        standalone: false,
         dest: 'app/scripts/survey-templates.js',
         cwd: 'app/scripts',
-        src: 'survey/**/*.tpl.html',
-        options: {
-          prefix: '/callveyor',
-          url: function(url) {
-            return url.replace('callveyor', 'scripts');
-          },
-          htmlmin: {
-            collapseBooleanAttributes:      true,
-            collapseWhitespace:             true
-          },
-          usemin: '<%= yeoman.dist %>/callveyor/scripts/scripts.js'
-        }
+        src: 'survey/*.tpl.html'
       }
     },
 
@@ -424,6 +433,11 @@ module.exports = function (grunt) {
           cwd: '.tmp/images',
           dest: '<%= yeoman.dist %>/callveyor/images',
           src: ['generated/*']
+        }, {
+          expand: true,
+          cwd: '.tmp/concat/callveyor/scripts',
+          dest: '<%= yeoman.dist %>/callveyor/scripts',
+          src: ['*.js']
         }]
       },
       styles: {
@@ -532,7 +546,7 @@ module.exports = function (grunt) {
     'copy:dist',
     // 'cdnify',
     'cssmin',
-    'uglify',
+    // 'uglify',
     'rev',
     'usemin',
     'htmlmin'
