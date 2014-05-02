@@ -3,14 +3,14 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-xs-4">
-        <!-- callFlowButtons ui-view -->
-        <div class="navbar-left">
-          <ul class="nav navbar-nav">
-            <li data-ui-view="callFlowButtons"></li>
-            <li class="dropdown" data-ui-view="callFlowDropdown"></li>
-          </ul>
+        <!-- callStatus ui-view -->
+        <div class="navbar-left status">
+          <span data-us-spinner="{length:0,top:10,left:-25,color:'#456587'}" data-spinner-key="global-spinner"></span>
+          <div data-ui-view="callStatus">
+            <p class="navbar-text label label-info">Loading...</p>
+          </div>
         </div>
-        <!-- /callFlowButtons ui-view -->
+        <!-- /callStatus ui-view -->
       </div>
 
       <div class="col-xs-4">
@@ -22,14 +22,14 @@
       </div>
 
       <div class="col-xs-4">
-        <!-- callStatus ui-view -->
-        <div class="navbar-right status">
-          <span data-us-spinner="{length:0,top:10,left:-25,color:'#456587'}" data-spinner-key="global-spinner"></span>
-          <div data-ui-view="callStatus">
-            <p class="navbar-text label label-info">Loading...</p>
-          </div>
+        <!-- callFlowButtons ui-view -->
+        <div class="navbar-right">
+          <ul class="nav navbar-nav">
+            <li data-ui-view="callFlowButtons"></li>
+            <li class="dropdown" data-ui-view="callFlowDropdown"></li>
+          </ul>
         </div>
-        <!-- /callStatus ui-view -->
+        <!-- /callFlowButtons ui-view -->
       </div>
     </div>
     <div class="row border-top-thin" data-ui-view="transferContainer"></div>
