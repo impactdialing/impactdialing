@@ -18,18 +18,5 @@
                 value="{{response.id}}">{{response.value}}</option>
       </select>
     </div>
-    <div class="btn-group"
-         data-ng-hide="survey.hideButtons">
-      <button class="btn btn-primary"
-              data-ng-click="survey.save($event, false); survey.disable = true"
-              data-ng-disabled="survey.disable">
-              Save &amp; stop calling
-      </button>
-      <button class="btn btn-primary"
-              data-ng-click="survey.save($event, true); survey.disable = true;"
-              data-ng-disabled="survey.disable">
-              Save &amp; continue
-      </button>
-    </div>
   </form>
 </div>
