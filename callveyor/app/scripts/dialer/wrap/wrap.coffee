@@ -6,7 +6,7 @@ wrap.config(['$stateProvider', ($stateProvider) ->
   $stateProvider.state('dialer.wrap', {
     views:
       callStatus:
-        templateUrl: '/scripts/dialer/wrap/callStatus.tpl.html'
+        templateUrl: '/callveyor/dialer/wrap/callStatus.tpl.html'
         controller: 'WrapCtrl'
   })
 ])

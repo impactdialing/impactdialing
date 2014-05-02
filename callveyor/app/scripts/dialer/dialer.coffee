@@ -20,7 +20,7 @@ dialer.config([
   ($stateProvider) ->
     $stateProvider.state('dialer', {
       abstract: true
-      templateUrl: '/scripts/dialer/dialer.tpl.html'
+      templateUrl: '/callveyor/dialer/dialer.tpl.html'
       resolve:
         callStation: ($http) -> $http.post('/call_center/api/call_station.json')
       controller: 'DialerCtrl'
