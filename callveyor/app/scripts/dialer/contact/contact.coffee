@@ -9,13 +9,6 @@ contact.controller('ContactCtrl', [
 
     contact = {}
 
-    reset = ->
-      contact = {
-        _meta: {
-          collapse: false
-        }
-      }
-
     handleStateChange = (event, toState, toParams, fromState, fromParams) ->
       console.log 'handleStateChange', toState, fromState
       switch toState.name
