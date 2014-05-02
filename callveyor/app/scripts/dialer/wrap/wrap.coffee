@@ -7,8 +7,13 @@ wrap.config(['$stateProvider', ($stateProvider) ->
     views:
       callStatus:
         templateUrl: '/callveyor/dialer/wrap/callStatus.tpl.html'
-        controller: 'WrapCtrl'
+        controller: 'WrapCtrl.status'
+      callFlowButtons:
+        templateUrl: '/callveyor/dialer/wrap/callFlowButtons.tpl.html'
+        controller: 'WrapCtrl.buttons'
   })
 ])
 
-wrap.controller('WrapCtrl', [->])
+wrap.controller('WrapCtrl.status', [->])
+
+wrap.controller('WrapCtrl.buttons', [->])

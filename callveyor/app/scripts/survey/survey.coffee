@@ -108,6 +108,8 @@ surveyForm.controller('SurveyFormCtrl', [
         # console.log 'survey.requestInProgress', survey.requestInProgress
         return
 
+      survey.disable = true
+
       callCache = $cacheFactory.get('call')
       if callCache?
         call_id = callCache.get('id')
@@ -154,6 +156,8 @@ surveyForm.controller('SurveyFormCtrl', [
           notes: {}
           question: {}
         }
+
+    $rootScope.$on('survey:save:click', survey.save)
 
     $scope.survey ||= survey
 ])
