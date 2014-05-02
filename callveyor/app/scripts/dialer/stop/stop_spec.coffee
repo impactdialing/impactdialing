@@ -51,8 +51,9 @@ describe 'dialer.stop', ->
         $controller('StopCtrl.buttons', {$scope, callStation})
     ))
 
-    it 'POSTs to /call_center/api/:caller_id/stop_calling', ->
-      $httpBackend.expectPOST("/call_center/api/#{callStation.data.caller.id}/stop_calling").respond(200)
+    it 'POSTs to /call_center/api/:caller_id/stop_calling w/ session_id param', ->
+      params = {session_id: callStation.data.caller.session_id}
+      $httpBackend.expectPOST("/call_center/api/#{callStation.data.caller.id}/stop_calling", params).respond(200)
       $controller('StopCtrl.buttons', {$scope, callStation})
       $httpBackend.flush()
       $httpBackend.verifyNoOutstandingExpectation()
