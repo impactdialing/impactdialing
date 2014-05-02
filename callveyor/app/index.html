@@ -102,9 +102,13 @@
     <!-- endbower -->
     <!-- endbuild -->
 
-    <!-- build:js({.tmp,app}) /callveyor/scripts/scripts.js -->
+    <!-- build:js({.tmp,app}) /callveyor/scripts/config.js -->
     <script src="scripts/config.js"></script>
+    <!-- endbuild -->
+    <!-- build:js({.tmp,app}) /callveyor/scripts/app.js -->
     <script src="scripts/app.js"></script>
+    <!-- endbuild -->
+    <!-- build:js({.tmp,app}) /callveyor/scripts/utilities.js -->
     <script src="scripts/common/transition_gateway/transition_gateway.js"></script>
     <script src="scripts/dialer/pusher_connection_factory.js"></script>
     <script src="scripts/dialer/twilio_connection_factory.js"></script>
@@ -113,6 +117,8 @@
     <script src="scripts/services/id_twilio_client.js"></script>
     <script src="scripts/http_dialer/http_dialer.js"></script>
     <script src="scripts/services/id_flash_factory.js"></script>
+    <!-- endbuild -->
+    <!-- build:js({.tmp,app}) /callveyor/scripts/scripts.js -->
     <script src="scripts/dialer/dialer.js"></script>
     <script src="scripts/dialer/contact/contact.js"></script>
     <script src="scripts/survey/survey.js"></script>
