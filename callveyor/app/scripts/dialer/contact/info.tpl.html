@@ -1,42 +1,38 @@
-
-<div>
-  <button class="btn btn-block btn-default"
-          data-ng-click="contact._meta.collapse = !contact._meta.collapse">
-    Contact info
-  </button>
-</div>
-<div collapse="contact._meta.collapse" class="row content-box">
-  <p class="col-xs-12" data-ng-hide="contact.data.fields">Contact details will be listed here when connected.</p>
-  <!-- system fields -->
-  <dl class="dl-horizontal col-xs-6 col-sm-12">
-    <dt data-ng-hide="!contact.data.fields.custom_id">ID</dt>
-    <dd data-ng-hide="!contact.data.fields.custom_id">{{contact.data.fields.custom_id}}</dd>
-    <dt data-ng-hide="!contact.data.fields.first_name">First name</dt>
-    <dd data-ng-hide="!contact.data.fields.first_name">{{contact.data.fields.first_name}}</dd>
-    <dt data-ng-hide="!contact.data.fields.middle_name">Middle name</dt>
-    <dd data-ng-hide="!contact.data.fields.middle_name">{{contact.data.fields.middle_name}}</dd>
-    <dt data-ng-hide="!contact.data.fields.last_name">Last name</dt>
-    <dd data-ng-hide="!contact.data.fields.last_name">{{contact.data.fields.last_name}}</dd>
-    <dt data-ng-hide="!contact.data.fields.suffix">Suffix</dt>
-    <dd data-ng-hide="!contact.data.fields.suffix">{{contact.data.fields.suffix}}</dd>
-    <dt data-ng-hide="!contact.data.fields.address">Address</dt>
-    <dd data-ng-hide="!contact.data.fields.address">{{contact.data.fields.address}}</dd>
-    <dt data-ng-hide="!contact.data.fields.city">City</dt>
-    <dd data-ng-hide="!contact.data.fields.city">{{contact.data.fields.city}}</dd>
-    <dt data-ng-hide="!contact.data.fields.state">State</dt>
-    <dd data-ng-hide="!contact.data.fields.state">{{contact.data.fields.state}}</dd>
-    <dt data-ng-hide="!contact.data.fields.zip_code">Zip / Postal code</dt>
-    <dd data-ng-hide="!contact.data.fields.zip_code">{{contact.data.fields.zip_code}}</dd>
-    <dt data-ng-hide="!contact.data.fields.country">Country</dt>
-    <dd data-ng-hide="!contact.data.fields.country">{{contact.data.fields.country}}</dd>
-    <dt data-ng-hide="!contact.data.fields.phone">Phone</dt>
-    <dd data-ng-hide="!contact.data.fields.phone">{{contact.data.fields.phone}}</dd>
-    <dt data-ng-hide="!contact.data.fields.email">Email</dt>
-    <dd data-ng-hide="!contact.data.fields.email">{{contact.data.fields.email}}</dd>
-  </dl>
-  <!-- custom fields -->
-  <dl class="dl-horizontal col-xs-6 col-sm-12">
-    <dt data-ng-repeat-start="(field, value) in contact.data.custom_fields">{{field}}</dt>
-    <dd data-ng-repeat-end>{{value}}</dd>
-  </dl>
+<div class="row content-box panel panel-default">
+  <div class="panel-heading">Contact details</div>
+  <div class="panel-body">
+    <p class="col-xs-12" data-ng-hide="contact.data.fields">Name, phone, address, etc will be listed here when connected.</p>
+    <!-- system fields -->
+    <dl class="dl-horizontal col-xs-6 col-sm-12">
+      <dt data-ng-hide="!contact.data.fields.custom_id">ID</dt>
+      <dd data-ng-hide="!contact.data.fields.custom_id">{{contact.data.fields.custom_id}}</dd>
+      <dt data-ng-hide="!contact.data.fields.first_name">First name</dt>
+      <dd data-ng-hide="!contact.data.fields.first_name">{{contact.data.fields.first_name}}</dd>
+      <dt data-ng-hide="!contact.data.fields.middle_name">Middle name</dt>
+      <dd data-ng-hide="!contact.data.fields.middle_name">{{contact.data.fields.middle_name}}</dd>
+      <dt data-ng-hide="!contact.data.fields.last_name">Last name</dt>
+      <dd data-ng-hide="!contact.data.fields.last_name">{{contact.data.fields.last_name}}</dd>
+      <dt data-ng-hide="!contact.data.fields.suffix">Suffix</dt>
+      <dd data-ng-hide="!contact.data.fields.suffix">{{contact.data.fields.suffix}}</dd>
+      <dt data-ng-hide="!contact.data.fields.address">Address</dt>
+      <dd data-ng-hide="!contact.data.fields.address">{{contact.data.fields.address}}</dd>
+      <dt data-ng-hide="!contact.data.fields.city">City</dt>
+      <dd data-ng-hide="!contact.data.fields.city">{{contact.data.fields.city}}</dd>
+      <dt data-ng-hide="!contact.data.fields.state">State</dt>
+      <dd data-ng-hide="!contact.data.fields.state">{{contact.data.fields.state}}</dd>
+      <dt data-ng-hide="!contact.data.fields.zip_code">Zip / Postal code</dt>
+      <dd data-ng-hide="!contact.data.fields.zip_code">{{contact.data.fields.zip_code}}</dd>
+      <dt data-ng-hide="!contact.data.fields.country">Country</dt>
+      <dd data-ng-hide="!contact.data.fields.country">{{contact.data.fields.country}}</dd>
+      <dt data-ng-hide="!contact.data.fields.phone">Phone</dt>
+      <dd data-ng-hide="!contact.data.fields.phone">{{contact.data.fields.phone}}</dd>
+      <dt data-ng-hide="!contact.data.fields.email">Email</dt>
+      <dd data-ng-hide="!contact.data.fields.email">{{contact.data.fields.email}}</dd>
+    </dl>
+    <!-- custom fields -->
+    <dl class="dl-horizontal col-xs-6 col-sm-12">
+      <dt data-ng-repeat-start="(field, value) in contact.data.custom_fields">{{field}}</dt>
+      <dd data-ng-repeat-end>{{value}}</dd>
+    </dl>
+  </div>
 </div>
