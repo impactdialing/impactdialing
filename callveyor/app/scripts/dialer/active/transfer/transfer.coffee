@@ -7,16 +7,16 @@ transfer.config(['$stateProvider', ($stateProvider) ->
     abstract: true
     views:
       transferPanel:
-        templateUrl: '/scripts/dialer/active/transfer/panel.tpl.html'
+        templateUrl: '/callveyor/dialer/active/transfer/panel.tpl.html'
         controller: 'TransferPanelCtrl'
   })
   $stateProvider.state('dialer.active.transfer.selected', {
     views:
       transferButtons:
-        templateUrl: '/scripts/dialer/active/transfer/selected/buttons.tpl.html'
+        templateUrl: '/callveyor/dialer/active/transfer/selected/buttons.tpl.html'
         controller: 'TransferButtonCtrl.selected'
       transferInfo:
-        templateUrl: '/scripts/dialer/active/transfer/info.tpl.html'
+        templateUrl: '/callveyor/dialer/active/transfer/info.tpl.html'
         controller: 'TransferInfoCtrl'
   })
   # ideally the {reload} option or fn would work but there seems to be a bug:
@@ -25,19 +25,19 @@ transfer.config(['$stateProvider', ($stateProvider) ->
   $stateProvider.state('dialer.active.transfer.reselect', {
     views:
       transferButtons:
-        templateUrl: '/scripts/dialer/active/transfer/selected/buttons.tpl.html'
+        templateUrl: '/callveyor/dialer/active/transfer/selected/buttons.tpl.html'
         controller: 'TransferButtonCtrl.selected'
       transferInfo:
-        templateUrl: '/scripts/dialer/active/transfer/info.tpl.html'
+        templateUrl: '/callveyor/dialer/active/transfer/info.tpl.html'
         controller: 'TransferInfoCtrl'
   })
   $stateProvider.state('dialer.active.transfer.conference', {
     views:
       transferInfo:
-        templateUrl: '/scripts/dialer/active/transfer/info.tpl.html'
+        templateUrl: '/callveyor/dialer/active/transfer/info.tpl.html'
         controller: 'TransferInfoCtrl'
       transferButtons:
-        templateUrl: '/scripts/dialer/active/transfer/conference/buttons.tpl.html'
+        templateUrl: '/callveyor/dialer/active/transfer/conference/buttons.tpl.html'
         controller: 'TransferButtonCtrl.conference'
   })
 ])
