@@ -200,9 +200,11 @@ describe CallerController do
   end
 
   describe '#pause session_id:, CallSid:, clear_active_transfer:' do
+    let(:campaign){ create(:power) }
     let(:caller_session) do
       create(:webui_caller_session, {
-        session_key: 'caller-session-key'
+        session_key: 'caller-session-key',
+        campaign: campaign
       })
     end
     let(:caller_session_key){ caller_session.session_key }
