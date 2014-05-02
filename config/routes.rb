@@ -81,7 +81,7 @@ ImpactDialing::Application.routes.draw do
   post 'call_center/api/:id/hangup', :to => 'calls#hangup'
   post 'call_center/api/:id/call_voter', :to => 'caller#call_voter'
   post 'call_center/api/transfer/dial', :to => 'transfer#dial'
-  post 'call_center/api/:session_id/stop_calling', :to => 'caller#stop_calling'
+  post 'call_center/api/:id/stop_calling', :to => 'caller#stop_calling'
   post 'call_center/api/:id/skip_voter', :to => 'caller#skip_voter'
   post 'call_center/api/:id/kick', :to => 'caller#kick'
   # /new api rough draft
