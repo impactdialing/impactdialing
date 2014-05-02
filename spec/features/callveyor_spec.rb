@@ -16,7 +16,7 @@ describe 'Calling leads on a Preview campaign', caller_ui: true, e2e: true, js: 
   end
   before do
     caller_login_as(caller)
-    visit '/'
+    visit '/app'
   end
 
   it 'page does not have account not funded error' do
