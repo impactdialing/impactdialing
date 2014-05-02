@@ -24,7 +24,9 @@ stop.controller('StopCtrl.buttons', [
     _twilioCache = $cacheFactory.get('Twilio')
     connection   = _twilioCache.get('connection')
     caller_id    = callStation.data.caller.id
-    stopPromise  = $http.post("/call_center/api/#{caller_id}/stop_calling")
+    params       = {}
+    params.session_id = callStation.data.caller.session_id
+    stopPromise  = $http.post("/call_center/api/#{caller_id}/stop_calling", params)
 
     always = ->
       connection.disconnect()
