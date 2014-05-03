@@ -128,6 +128,13 @@
           p = $state.go('dialer.hold');
           return p["catch"](idTransitionPrevented);
         },
+        disconnected: function(connection) {
+          var p;
+          console.log('twilio disconnected', connection);
+          idFlashFactory.now('error', 'Browser phone disconnected.', 5000);
+          p = $state.go('dialer.ready');
+          return p["catch"](idTransitionPrevented);
+        },
         error: function(error) {
           var p;
           console.log('report this problem', error);
@@ -138,6 +145,7 @@
         resolved: function(twilio) {
           console.log('bindAndConnect', twilio);
           twilio.Device.connect(factory.connected);
+          twilio.Device.disconnect(factory.disconnected);
           twilio.Device.error(factory.error);
           return twilio.Device.connect(twilioParams);
         },
