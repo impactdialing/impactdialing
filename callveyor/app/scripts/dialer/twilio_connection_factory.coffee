@@ -26,6 +26,12 @@ mod.factory('idTwilioConnectionFactory', [
       # ready: (device) ->
       #   console.log 'twilio connection ready', device
 
+      disconnected: (connection) ->
+        console.log 'twilio disconnected', connection
+        idFlashFactory.now('error', 'Browser phone disconnected.', 5000)
+        p = $state.go('dialer.ready')
+        p.catch(idTransitionPrevented)
+
       error: (error) ->
         console.log 'report this problem', error
         idFlashFactory.now('error', 'Browser phone could not connect to the call center. Please dial-in to continue.', 5000)
@@ -36,6 +42,7 @@ mod.factory('idTwilioConnectionFactory', [
         console.log 'bindAndConnect', twilio
         twilio.Device.connect(factory.connected)
         # twilio.Device.ready(handlers.ready)
+        twilio.Device.disconnect(factory.disconnected)
         twilio.Device.error(factory.error)
         twilio.Device.connect(twilioParams)
 
