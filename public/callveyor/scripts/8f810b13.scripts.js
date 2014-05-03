@@ -907,7 +907,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
 
   $templateCache.put('/callveyor/dialer/active/transfer/panel.tpl.html',
-    "<div class=\"col-xs-4\"><div class=\"navbar-right status\"><span data-us-spinner=\"{length:0,top:10,left:-25,color:'#456587'}\" data-spinner-key=\"transfer-spinner\"></span> <span class=\"label label-info navbar-text\">{{transferStatus}}</span></div></div><div class=\"col-xs-4\" data-ui-view=\"transferInfo\"></div><div class=\"col-xs-4\"><div class=\"navbar-left\" data-ui-view=\"transferButtons\"></div></div>"
+    "<div class=\"col-xs-4\"><div class=\"navbar-left status\"><span data-us-spinner=\"{length:0,top:10,left:-25,color:'#456587'}\" data-spinner-key=\"transfer-spinner\"></span> <span class=\"label label-info navbar-text\">{{transferStatus}}</span></div></div><div class=\"col-xs-4\" data-ui-view=\"transferInfo\"></div><div class=\"col-xs-4\"><div class=\"navbar-right\" data-ui-view=\"transferButtons\"></div></div>"
   );
 
 
