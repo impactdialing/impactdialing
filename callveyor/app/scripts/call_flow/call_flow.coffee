@@ -107,8 +107,9 @@ mod.factory('idCallFlow', [
           console.log 'conference_started (preview & power only)', contact, callStation
 
           if contact.campaign_out_of_leads
-            idFlashFactory.now('warning', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.', 20000)
-            p = $state.go('dialer.stop')
+            abortCache = $cacheFactory.get('abort') || $cacheFactory('abort')
+            abortCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.')
+            p = $state.go('abort')
             p.catch(idTransitionPrevented)
             return
 
