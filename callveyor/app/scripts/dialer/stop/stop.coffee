@@ -28,7 +28,12 @@ stop.controller('StopCtrl.buttons', [
     params.session_id = callStation.data.caller.session_id
     stopPromise  = $http.post("/call_center/api/#{caller_id}/stop_calling", params)
 
+    whenDisconnected = ->
+      p = $state.go('dialer.ready')
+      p.catch(idTransitionPrevented)
+
     always = ->
+      connection.disconnect(whenDisconnected)
       connection.disconnect()
       $state.go('dialer.ready')
 
