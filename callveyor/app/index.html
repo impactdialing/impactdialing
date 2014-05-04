@@ -30,11 +30,13 @@
       <div class="container-fluid" data-ng-controller="AppCtrl">
         <!-- dialer ui-view -->
         <div data-ui-view>
-          <p class="alert"
-             data-ng-show="flash.notice || flash.warning || flash.error || flash.success"
-             data-ng-class="{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}">
-            {{flash.notice || flash.warning || flash.error || flash.success}}
-          </p>
+          <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="alert navbar-text"
+               data-ng-show="flash.notice || flash.warning || flash.error || flash.success"
+               data-ng-class="{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}">
+              {{flash.notice || flash.warning || flash.error || flash.success}}
+            </div>
+          </nav>
         </div>
         <!-- /dialer ui-view -->
         <div class="row">
