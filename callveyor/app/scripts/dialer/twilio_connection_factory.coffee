@@ -28,9 +28,6 @@ mod.factory('idTwilioConnectionFactory', [
 
       disconnected: (connection) ->
         console.log 'twilio disconnected', connection
-        idFlashFactory.now('error', 'Browser phone disconnected.', 5000)
-        p = $state.go('dialer.ready')
-        p.catch(idTransitionPrevented)
 
       error: (error) ->
         console.log 'report this problem', error
@@ -39,7 +36,7 @@ mod.factory('idTwilioConnectionFactory', [
         p.catch(idTransitionPrevented)
 
       resolved: (twilio) ->
-        console.log 'bindAndConnect', twilio
+        console.log 'idTwilioService resolved', twilio
         twilio.Device.connect(factory.connected)
         # twilio.Device.ready(handlers.ready)
         twilio.Device.disconnect(factory.disconnected)
