@@ -4,12 +4,21 @@ a = angular.module('idTransition', [
   'angularSpinner'
 ])
 a.factory('idTransitionPrevented', [
-  '$rootScope', 'usSpinnerService',
-  ($rootScope,   usSpinnerService) ->
+  '$rootScope', '$state', '$cacheFactory', 'usSpinnerService',
+  ($rootScope,   $state,   $cacheFactory,   usSpinnerService) ->
+    isFailedResolve = (err) ->
+      err.config? and err.config.url? and /(GET|POST)/.test(err.config.method)
+
     fn = (errObj) ->
       console.log 'report this problem', errObj
       $rootScope.transitionInProgress = false
       usSpinnerService.stop('global-spinner')
+
+      if isFailedResolve(errObj)
+        abortCache = $cacheFactory('abort') || $cacheFactory.get('abort')
+
+        abortCache.put('error', errObj.data.message)
+        $state.go('abort')
 
     fn
 ])
@@ -30,11 +39,35 @@ callveyor = angular.module('callveyor', [
 callveyor.constant 'currentYear', (new Date()).getFullYear()
 
 callveyor.config([
-  'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider',
-  (serviceTokens,   idTwilioServiceProvider,   PusherServiceProvider) ->
+  '$stateProvider', 'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider',
+  ($stateProvider,   serviceTokens,   idTwilioServiceProvider,   PusherServiceProvider) ->
     idTwilioServiceProvider.setScriptUrl('//static.twilio.com/libs/twiliojs/1.1/twilio.js')
     PusherServiceProvider.setPusherUrl('//d3dy5gmtp8yhk7.cloudfront.net/2.1/pusher.min.js')
     PusherServiceProvider.setToken(serviceTokens.pusher)
+
+
+    $stateProvider.state('abort', {
+      template: ''
+      controller: 'AppCtrl.abort'
+    })
+])
+
+callveyor.controller('AppCtrl.abort', [
+  '$http', '$cacheFactory', 'PusherService', 'idFlashFactory',
+  ($http,   $cacheFactory,   PusherService,   idFlashFactory) ->
+    abortCache = $cacheFactory.get('abort')
+
+    idFlashFactory.now('error', abortCache.get('error'))
+
+    twilioCache = $cacheFactory.get('Twilio')
+    connection = twilioCache.get('connection')
+    # whenDisconnected = ->
+    # connection.disconnect(whenDisconnected)
+    connection.disconnect()
+
+    PusherService.then((p) ->
+      console.log 'PusherService abort', p
+    )
 ])
 
 callveyor.controller('MetaCtrl', [
