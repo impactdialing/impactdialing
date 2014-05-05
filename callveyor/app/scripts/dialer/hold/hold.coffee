@@ -21,7 +21,12 @@ hold.config([
 hold.controller('HoldCtrl.buttons', [
   '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService',
   ($scope,   $state,   $timeout,   $cacheFactory,   callStation,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService) ->
-    hold = {}
+    holdCache = $cacheFactory.get('hold') || $cacheFactory('hold')
+    hold = holdCache.get('sharedScope')
+    unless hold?
+      hold = {}
+      holdCache.put('sharedScope', hold)
+
     hold.campaign = callStation.data.campaign
     hold.stopCalling = ->
       console.log 'stopCalling clicked'
@@ -38,15 +43,10 @@ hold.controller('HoldCtrl.buttons', [
 
       idHttpDialerFactory.dialContact(caller.id, params)
 
-      $scope.transitionInProgress = true
       hold.callStatusText         = 'Dialing...'
+      $scope.transitionInProgress = true
 
     hold.skip = ->
-      # data : {
-      #   id: self.model.get("caller_id"),
-      #   voter_id : self.options.lead_info.get("fields").id,
-      #   session_id : self.model.get("session_id")
-      # }
       params            = {}
       contactCache      = $cacheFactory.get('contact')
       contact           = (contactCache.get('data') || {}).fields
@@ -75,16 +75,19 @@ hold.controller('HoldCtrl.buttons', [
 ])
 
 hold.controller('HoldCtrl.status', [
-  '$scope', 'callStation'
-  ($scope,   callStation) ->
-    hold = {}
+  '$scope', '$cacheFactory', 'callStation'
+  ($scope,   $cacheFactory,   callStation) ->
+    holdCache = $cacheFactory.get('hold') || $cacheFactory('hold')
+    hold = holdCache.get('sharedScope')
+    unless hold?
+      hold = {}
+      holdCache.put('sharedScope', hold)
+
     hold.callStatusText = switch callStation.data.campaign.type
                             when 'Power', 'Predictive'
                               'Dialing...'
                             when 'Preview'
                               'Waiting to dial...'
-                            else
-                              console.log 'Report this problem.'
 
     $scope.hold = hold
 ])
