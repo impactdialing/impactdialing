@@ -133,6 +133,24 @@ describe 'Account profile' do
       end
     end
 
+    context 'bug#70705768 - Updating card info when stripe customer email does not match any account user emails' do
+      before do
+        user.email = 'nada.nowhere@test.com'
+        user.save!
+        create(:user, {account: user.account})
+      end
+
+      it 'allows for new invoice recipient to be selected' do
+        go_to_update_billing
+        fill_in 'Card number', with: StripeFakes.valid_cards[:visa].first
+        fill_in 'CVC', with: 123
+        fill_in_expiration
+        select user.email, from: 'Who should we send invoices to?'
+        click_on 'Update payment information'
+        page.should have_content I18n.t('subscriptions.update_billing.success')
+      end
+    end
+
     describe 'Upgrade from Trial to Basic plan' do
       let(:cost){ 49 }
       let(:callers){ 2 }
