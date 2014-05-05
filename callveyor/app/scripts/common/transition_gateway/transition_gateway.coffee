@@ -8,6 +8,7 @@ mod = angular.module('transitionGateway', [
 
 mod.constant('validTransitions', {
   'root': ['dialer.ready'],
+  'abort': ['dialer.ready'],
   'dialer.ready': ['abort', 'dialer.hold'],
   'dialer.hold': ['abort', 'dialer.active', 'dialer.stop'],
   'dialer.active': ['abort', 'dialer.wrap', 'dialer.stop', 'dialer.active.transfer.selected', 'dialer.active.transfer.reselected', 'dialer.active.transfer.conference'],
