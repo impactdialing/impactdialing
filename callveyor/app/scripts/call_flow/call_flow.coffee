@@ -109,6 +109,8 @@ mod.factory('idCallFlow', [
           if contact.campaign_out_of_leads
             abortCache = $cacheFactory.get('abort') || $cacheFactory('abort')
             abortCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.')
+            contactCache.put('data', {})
+            $rootScope.$broadcast('contact:changed')
             p = $state.go('abort')
             p.catch(idTransitionPrevented)
             return
