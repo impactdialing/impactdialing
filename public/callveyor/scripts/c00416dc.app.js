@@ -5,12 +5,21 @@
   a = angular.module('idTransition', ['angularSpinner']);
 
   a.factory('idTransitionPrevented', [
-    '$rootScope', 'usSpinnerService', function($rootScope, usSpinnerService) {
-      var fn;
+    '$rootScope', '$state', '$cacheFactory', 'usSpinnerService', function($rootScope, $state, $cacheFactory, usSpinnerService) {
+      var fn, isFailedResolve;
+      isFailedResolve = function(err) {
+        return (err.config != null) && (err.config.url != null) && /(GET|POST)/.test(err.config.method);
+      };
       fn = function(errObj) {
+        var abortCache;
         console.log('report this problem', errObj);
         $rootScope.transitionInProgress = false;
-        return usSpinnerService.stop('global-spinner');
+        usSpinnerService.stop('global-spinner');
+        if (isFailedResolve(errObj)) {
+          abortCache = $cacheFactory('abort') || $cacheFactory.get('abort');
+          abortCache.put('error', errObj.data.message);
+          return $state.go('abort');
+        }
       };
       return fn;
     }
@@ -21,10 +30,28 @@
   callveyor.constant('currentYear', (new Date()).getFullYear());
 
   callveyor.config([
-    'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider', function(serviceTokens, idTwilioServiceProvider, PusherServiceProvider) {
+    '$stateProvider', 'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider', function($stateProvider, serviceTokens, idTwilioServiceProvider, PusherServiceProvider) {
       idTwilioServiceProvider.setScriptUrl('//static.twilio.com/libs/twiliojs/1.1/twilio.js');
       PusherServiceProvider.setPusherUrl('//d3dy5gmtp8yhk7.cloudfront.net/2.1/pusher.min.js');
-      return PusherServiceProvider.setToken(serviceTokens.pusher);
+      PusherServiceProvider.setToken(serviceTokens.pusher);
+      return $stateProvider.state('abort', {
+        template: '',
+        controller: 'AppCtrl.abort'
+      });
+    }
+  ]);
+
+  callveyor.controller('AppCtrl.abort', [
+    '$http', '$cacheFactory', 'PusherService', 'idFlashFactory', function($http, $cacheFactory, PusherService, idFlashFactory) {
+      var abortCache, connection, twilioCache;
+      abortCache = $cacheFactory.get('abort');
+      idFlashFactory.now('error', abortCache.get('error'));
+      twilioCache = $cacheFactory.get('Twilio');
+      connection = twilioCache.get('connection');
+      connection.disconnect();
+      return PusherService.then(function(p) {
+        return console.log('PusherService abort', p);
+      });
     }
   ]);
 
