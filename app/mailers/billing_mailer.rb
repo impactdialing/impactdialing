@@ -7,6 +7,7 @@ private
     payment_gateway.customer.presence.email || @account.users.first.email
   end
 
+public
   def initialize(account)
     super
     @account = account
