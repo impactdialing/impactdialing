@@ -376,7 +376,13 @@
 
   hold.controller('HoldCtrl.buttons', [
     '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', function($scope, $state, $timeout, $cacheFactory, callStation, idHttpDialerFactory, idFlashFactory, usSpinnerService) {
-      hold = {};
+      var holdCache;
+      holdCache = $cacheFactory.get('hold') || $cacheFactory('hold');
+      hold = holdCache.get('sharedScope');
+      if (hold == null) {
+        hold = {};
+        holdCache.put('sharedScope', hold);
+      }
       hold.campaign = callStation.data.campaign;
       hold.stopCalling = function() {
         console.log('stopCalling clicked');
@@ -391,8 +397,8 @@
         params.session_id = caller.session_id;
         params.voter_id = contact.id;
         idHttpDialerFactory.dialContact(caller.id, params);
-        $scope.transitionInProgress = true;
-        return hold.callStatusText = 'Dialing...';
+        hold.callStatusText = 'Dialing...';
+        return $scope.transitionInProgress = true;
       };
       hold.skip = function() {
         var always, caller, contact, contactCache, params, promise, skipErr, skipSuccess;
@@ -427,8 +433,14 @@
   ]);
 
   hold.controller('HoldCtrl.status', [
-    '$scope', 'callStation', function($scope, callStation) {
-      hold = {};
+    '$scope', '$cacheFactory', 'callStation', function($scope, $cacheFactory, callStation) {
+      var holdCache;
+      holdCache = $cacheFactory.get('hold') || $cacheFactory('hold');
+      hold = holdCache.get('sharedScope');
+      if (hold == null) {
+        hold = {};
+        holdCache.put('sharedScope', hold);
+      }
       hold.callStatusText = (function() {
         switch (callStation.data.campaign.type) {
           case 'Power':
@@ -436,8 +448,6 @@
             return 'Dialing...';
           case 'Preview':
             return 'Waiting to dial...';
-          default:
-            return console.log('Report this problem.');
         }
       })();
       return $scope.hold = hold;
@@ -777,14 +787,20 @@
 
   stop.controller('StopCtrl.buttons', [
     '$scope', '$state', '$cacheFactory', '$http', 'idTwilioService', 'callStation', function($scope, $state, $cacheFactory, $http, idTwilioService, callStation) {
-      var always, caller_id, connection, params, stopPromise, _twilioCache;
+      var always, caller_id, connection, params, stopPromise, whenDisconnected, _twilioCache;
       _twilioCache = $cacheFactory.get('Twilio');
       connection = _twilioCache.get('connection');
       caller_id = callStation.data.caller.id;
       params = {};
       params.session_id = callStation.data.caller.session_id;
       stopPromise = $http.post("/call_center/api/" + caller_id + "/stop_calling", params);
+      whenDisconnected = function() {
+        var p;
+        p = $state.go('dialer.ready');
+        return p["catch"](idTransitionPrevented);
+      };
       always = function() {
+        connection.disconnect(whenDisconnected);
         connection.disconnect();
         return $state.go('dialer.ready');
       };
@@ -810,12 +826,12 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
   'use strict';
 
   $templateCache.put('/callveyor/dialer/dialer.tpl.html',
-    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-4\"><!-- callStatus ui-view --><div class=\"navbar-left status\"><span data-us-spinner=\"{length:0,top:10,left:10,color:'#456587'}\" data-spinner-key=\"global-spinner\"></span><div class=\"call-status\" data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-4\"><p class=\"alert small-text\" data-ng-show=\"flash.notice || flash.warning || flash.error || flash.success\" data-ng-class=\"{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}\">{{flash.notice || flash.warning || flash.error || flash.success}}</p></div><div class=\"col-xs-4\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
+    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-4\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"global-spinner\"></span> <!-- callStatus ui-view --><div class=\"navbar-left status\"><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-4\"><p class=\"alert small-text\" data-ng-show=\"flash.notice || flash.warning || flash.error || flash.success\" data-ng-class=\"{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}\">{{flash.notice || flash.warning || flash.error || flash.success}}</p></div><div class=\"col-xs-4\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav add-gutter\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
   );
 
 
   $templateCache.put('/callveyor/dialer/hold/callFlowButtons.tpl.html',
-    "<button class=\"btn btn-primary navbar-btn\" data-ng-click=\"hold.stopCalling()\" data-ng-disabled=\"transitionInProgress\">Stop calling</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"hold.dial()\" data-ng-if=\"hold.campaign.type == 'Preview'\" data-ng-disabled=\"transitionInProgress\">Dial</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"hold.skip()\" data-ng-if=\"hold.campaign.type == 'Preview'\" data-ng-disabled=\"transitionInProgress\">Skip</button>"
+    "<button class=\"btn btn-primary navbar-btn\" data-ng-click=\"hold.stopCalling()\" data-ng-disabled=\"transitionInProgress\">Stop calling</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"hold.skip()\" data-ng-if=\"hold.campaign.type == 'Preview'\" data-ng-disabled=\"transitionInProgress\">Skip</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"hold.dial()\" data-ng-if=\"hold.campaign.type == 'Preview'\" data-ng-disabled=\"transitionInProgress\">Dial</button>"
   );
 
 
@@ -867,7 +883,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
 
   $templateCache.put('/callveyor/dialer/wrap/callFlowButtons.tpl.html',
-    "<div class=\"btn-group\" data-ng-hide=\"survey.hideButtons\"><button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', false); transitionInProgress = true\" data-ng-disabled=\"transitionInProgress\">Save &amp; stop calling</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', true); transitionInProgress = true;\" data-ng-disabled=\"transitionInProgress\">Save &amp; continue</button></div>"
+    "<div data-ng-hide=\"survey.hideButtons\"><button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', false); transitionInProgress = true\" data-ng-disabled=\"transitionInProgress\">Save &amp; stop calling</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', true); transitionInProgress = true;\" data-ng-disabled=\"transitionInProgress\">Save &amp; continue</button></div>"
   );
 
 
@@ -897,7 +913,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
 
   $templateCache.put('/callveyor/dialer/active/transfer/dropdown.tpl.html',
-    "<a href=\"#\" class=\"dropdown-toggle\">Transfer <b class=\"caret\"></b></a><ul class=\"dropdown-menu\"><li data-ng-repeat=\"target in transfer.list\"><a href=\"#\" data-ng-click=\"transfer.select(target.id)\">{{target.label}} ({{target.phone_number}}) <span class=\"label label-{{target.transfer_type == 'warm' ? 'danger' : 'info'}}\">{{target.transfer_type}}</span></a></li></ul>"
+    "<div class=\"btn-group\"><button type=\"button\" class=\"btn btn-default navbar-btn dropdown-toggle\">Transfer <b class=\"caret\"></b></button><ul class=\"dropdown-menu\" role=\"menu\"><li data-ng-repeat=\"target in transfer.list\"><a href=\"#\" data-ng-click=\"transfer.select(target.id)\">{{target.label}} ({{target.phone_number}}) <span class=\"label label-{{target.transfer_type == 'warm' ? 'danger' : 'info'}}\">{{target.transfer_type}}</span></a></li></ul></div>"
   );
 
 
@@ -907,12 +923,12 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
 
   $templateCache.put('/callveyor/dialer/active/transfer/panel.tpl.html',
-    "<div class=\"col-xs-4\"><div class=\"navbar-left status\"><span data-us-spinner=\"{length:0,top:10,left:-25,color:'#456587'}\" data-spinner-key=\"transfer-spinner\"></span> <span class=\"label label-info navbar-text\">{{transferStatus}}</span></div></div><div class=\"col-xs-4\" data-ui-view=\"transferInfo\"></div><div class=\"col-xs-4\"><div class=\"navbar-right\" data-ui-view=\"transferButtons\"></div></div>"
+    "<div class=\"col-xs-4\"><div class=\"navbar-left status\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"transfer-spinner\"></span> <span class=\"label label-info navbar-text\">{{transferStatus}}</span></div></div><div class=\"col-xs-4\" data-ui-view=\"transferInfo\"></div><div class=\"col-xs-4\"><div class=\"navbar-right\" data-ui-view=\"transferButtons\"></div></div>"
   );
 
 
   $templateCache.put('/callveyor/dialer/active/transfer/selected/buttons.tpl.html',
-    "<button class=\"btn btn-primary navbar-btn\" data-ng-click=\"transfer.dial()\" data-ng-disabled=\"transitionInProgress\">Dial</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"transfer.cancel()\" data-ng-disabled=\"transitionInProgress\">Cancel</button>"
+    "<button class=\"btn btn-primary navbar-btn\" data-ng-click=\"transfer.cancel()\" data-ng-disabled=\"transitionInProgress\">Cancel</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"transfer.dial()\" data-ng-disabled=\"transitionInProgress\">Dial</button>"
   );
 
 }]);
@@ -921,7 +937,7 @@ angular.module('callveyor.contact').run(['$templateCache', function($templateCac
   'use strict';
 
   $templateCache.put('/callveyor/dialer/contact/info.tpl.html',
-    "<div class=\"row content-box panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id\">{{contact.data.fields.custom_id}}</dd><dt data-ng-hide=\"!contact.data.fields.first_name\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name\">{{contact.data.fields.first_name}}</dd><dt data-ng-hide=\"!contact.data.fields.middle_name\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name\">{{contact.data.fields.middle_name}}</dd><dt data-ng-hide=\"!contact.data.fields.last_name\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name\">{{contact.data.fields.last_name}}</dd><dt data-ng-hide=\"!contact.data.fields.suffix\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix\">{{contact.data.fields.suffix}}</dd><dt data-ng-hide=\"!contact.data.fields.address\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address\">{{contact.data.fields.address}}</dd><dt data-ng-hide=\"!contact.data.fields.city\">City</dt><dd data-ng-hide=\"!contact.data.fields.city\">{{contact.data.fields.city}}</dd><dt data-ng-hide=\"!contact.data.fields.state\">State</dt><dd data-ng-hide=\"!contact.data.fields.state\">{{contact.data.fields.state}}</dd><dt data-ng-hide=\"!contact.data.fields.zip_code\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code\">{{contact.data.fields.zip_code}}</dd><dt data-ng-hide=\"!contact.data.fields.country\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country\">{{contact.data.fields.country}}</dd><dt data-ng-hide=\"!contact.data.fields.phone\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone\">{{contact.data.fields.phone}}</dd><dt data-ng-hide=\"!contact.data.fields.email\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email\">{{contact.data.fields.email}}</dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"(field, value) in contact.data.custom_fields\">{{field}}</dt><dd data-ng-repeat-end=\"\">{{value}}</dd></dl></div></div>"
+    "<div class=\"row panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id\">{{contact.data.fields.custom_id}}</dd><dt data-ng-hide=\"!contact.data.fields.first_name\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name\">{{contact.data.fields.first_name}}</dd><dt data-ng-hide=\"!contact.data.fields.middle_name\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name\">{{contact.data.fields.middle_name}}</dd><dt data-ng-hide=\"!contact.data.fields.last_name\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name\">{{contact.data.fields.last_name}}</dd><dt data-ng-hide=\"!contact.data.fields.suffix\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix\">{{contact.data.fields.suffix}}</dd><dt data-ng-hide=\"!contact.data.fields.address\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address\">{{contact.data.fields.address}}</dd><dt data-ng-hide=\"!contact.data.fields.city\">City</dt><dd data-ng-hide=\"!contact.data.fields.city\">{{contact.data.fields.city}}</dd><dt data-ng-hide=\"!contact.data.fields.state\">State</dt><dd data-ng-hide=\"!contact.data.fields.state\">{{contact.data.fields.state}}</dd><dt data-ng-hide=\"!contact.data.fields.zip_code\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code\">{{contact.data.fields.zip_code}}</dd><dt data-ng-hide=\"!contact.data.fields.country\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country\">{{contact.data.fields.country}}</dd><dt data-ng-hide=\"!contact.data.fields.phone\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone\">{{contact.data.fields.phone}}</dd><dt data-ng-hide=\"!contact.data.fields.email\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email\">{{contact.data.fields.email}}</dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"(field, value) in contact.data.custom_fields\">{{field}}</dt><dd data-ng-repeat-end=\"\">{{value}}</dd></dl></div></div>"
   );
 
 }]);

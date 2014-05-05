@@ -5,14 +5,15 @@
 
   mod.constant('validTransitions', {
     'root': ['dialer.ready'],
-    'dialer.ready': ['dialer.hold'],
-    'dialer.hold': ['dialer.active', 'dialer.stop'],
-    'dialer.active': ['dialer.wrap', 'dialer.stop', 'dialer.active.transfer.selected', 'dialer.active.transfer.reselected', 'dialer.active.transfer.conference'],
-    'dialer.active.transfer.selected': ['dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference'],
-    'dialer.active.transfer.reselected': ['dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference'],
-    'dialer.active.transfer.conference': ['dialer.active', 'dialer.wrap'],
-    'dialer.wrap': ['dialer.hold', 'dialer.stop', 'dialer.ready'],
-    'dialer.stop': ['dialer.ready']
+    'abort': ['dialer.ready'],
+    'dialer.ready': ['abort', 'dialer.hold'],
+    'dialer.hold': ['abort', 'dialer.active', 'dialer.stop'],
+    'dialer.active': ['abort', 'dialer.wrap', 'dialer.stop', 'dialer.active.transfer.selected', 'dialer.active.transfer.reselected', 'dialer.active.transfer.conference'],
+    'dialer.active.transfer.selected': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference'],
+    'dialer.active.transfer.reselected': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference'],
+    'dialer.active.transfer.conference': ['abort', 'dialer.active', 'dialer.wrap'],
+    'dialer.wrap': ['abort', 'dialer.hold', 'dialer.stop', 'dialer.ready'],
+    'dialer.stop': ['abort', 'dialer.ready']
   });
 
   mod.factory('transitionValidator', [
@@ -129,11 +130,7 @@
           return p["catch"](idTransitionPrevented);
         },
         disconnected: function(connection) {
-          var p;
-          console.log('twilio disconnected', connection);
-          idFlashFactory.now('error', 'Browser phone disconnected.', 5000);
-          p = $state.go('dialer.ready');
-          return p["catch"](idTransitionPrevented);
+          return console.log('twilio disconnected', connection);
         },
         error: function(error) {
           var p;
@@ -143,7 +140,7 @@
           return p["catch"](idTransitionPrevented);
         },
         resolved: function(twilio) {
-          console.log('bindAndConnect', twilio);
+          console.log('idTwilioService resolved', twilio);
           twilio.Device.connect(factory.connected);
           twilio.Device.disconnect(factory.disconnected);
           twilio.Device.error(factory.error);
@@ -206,14 +203,17 @@
         */
 
         conferenceStarted: function(contact) {
-          var callStation, callStationCache, caller, contactCache, p;
+          var abortCache, callStation, callStationCache, caller, contactCache, p;
           callStationCache = $cacheFactory.get('callStation');
           contactCache = $cacheFactory.get('contact') || $cacheFactory('contact');
           callStation = callStationCache.get('data');
           console.log('conference_started (preview & power only)', contact, callStation);
           if (contact.campaign_out_of_leads) {
-            idFlashFactory.now('warning', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.', 20000);
-            p = $state.go('dialer.stop');
+            abortCache = $cacheFactory.get('abort') || $cacheFactory('abort');
+            abortCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.');
+            contactCache.put('data', {});
+            $rootScope.$broadcast('contact:changed');
+            p = $state.go('abort');
             p["catch"](idTransitionPrevented);
             return;
           }
