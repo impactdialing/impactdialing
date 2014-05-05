@@ -49,7 +49,7 @@
           Who should we send invoices to?
         </label>
         <select id="invoice_recipient_id" name="invoice_recipient_id">
-          <%= options_from_collection_for_select(@account.users, 'id', 'email', @invoice_recipient.id) %>
+          <%= options_from_collection_for_select(@account.users, 'id', 'email', @invoice_recipient.try(:id)) %>
         </select>
       <% end %>
     </p>
