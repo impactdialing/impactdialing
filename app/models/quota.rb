@@ -199,15 +199,6 @@ class Quota < ActiveRecord::Base
     new_plan.per_minute?
   end
 
-# if pending > purchased
-#   pending -= purchased
-#   used     = purchased
-#   allowed  = purchased
-# else
-#   allowed = purchased
-#   used    = pending
-#   pending = 0
-# end
   def add_minutes(plan, old_plan_id, amount)
     price                = (plan.price_per_quantity * 100) # convert dollars to cents
     minutes_purchased    = (amount / price).to_i
