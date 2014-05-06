@@ -33,34 +33,11 @@ ol.bump-left {
 body {
     padding-top: 60px;
 }
-@media (max-width: 768px) {
-    body {
-        padding-top: 110px;
-    }
-}
-@media (max-width: 640px) {
-    body {
-        padding-top: 90px;
-    }
-    .call-in-phone {
-        margin-top: 20px;
-    }
-    .call-in-phone:empty {
-        display: none;
-    }
-}
 
 /* Prevent 3 pieces of footer content from stacking */
 footer .container-fluid {
     p, ul, li {
         display: inline-block;
-    }
-}
-@media (max-width: 768px) {
-    footer .container-fluid {
-        p:first-child {
-            padding-right: 25px;
-        }
     }
 }
 
@@ -70,36 +47,36 @@ footer .container-fluid {
 }
 
 /* Scrollable content boxes */
-.content-box {
-    max-height: 600px;
-    overflow-y: scroll;
-}
-@media (max-width: 768px) {
-  .content-box {
-      max-height: 180px;
-      overflow-y: auto;
-  }
-}
-@media (max-height: 1100px) {
-    .content-box {
-        max-height: 960px;
-    }
-}
-@media (max-height: 1000px) {
-    .content-box {
-        max-height: 760px;
-    }
-}
-@media (max-height: 900px) {
-    .content-box {
-        max-height: 660px;
-    }
-}
-@media (max-height: 700px) {
-    .content-box {
-        max-height: 590px;
-    }
-}
+// .content-box {
+//     max-height: 600px;
+//     overflow-y: scroll;
+// }
+// @media (max-width: 768px) {
+//   .content-box {
+//       max-height: 180px;
+//       overflow-y: auto;
+//   }
+// }
+// @media (max-height: 1100px) {
+//     .content-box {
+//         max-height: 960px;
+//     }
+// }
+// @media (max-height: 1000px) {
+//     .content-box {
+//         max-height: 760px;
+//     }
+// }
+// @media (max-height: 900px) {
+//     .content-box {
+//         max-height: 660px;
+//     }
+// }
+// @media (max-height: 700px) {
+//     .content-box {
+//         max-height: 590px;
+//     }
+// }
 
 .veil {
     position: absolute;
@@ -132,5 +109,51 @@ nav.navbar-fixed-top .alert {
 ul.nav.navbar-nav.add-gutter {
     li {
         margin-left: 5px;
+    }
+}
+
+.fixed-box-container {
+  margin-left: -250px;
+  left: 250px;
+  width: 33%;
+  position: fixed;
+  height: 100%;
+  overflow-y: auto;
+  z-index: 1000;
+  transition: all 0.4s ease 0s;
+}
+
+.fixed-box {
+  position: absolute;
+  top: 0;
+  width: 95%;
+  list-style: none;
+  margin: 10px;
+  padding: 5px;
+}
+
+@media (max-width: 767px) {
+    body {
+        padding-top: 80px;
+    }
+
+    footer .container-fluid {
+        p:first-child {
+            padding-right: 25px;
+        }
+    }
+    .fixed-box-container {
+        position: relative;
+        height: auto;
+        margin: 15px 0;
+        width: auto;
+        left: 0;
+    }
+    .fixed-box {
+        position: relative;
+        width: auto;
+        margin: auto;
+        padding: auto;
+        top: 0;
     }
 }
