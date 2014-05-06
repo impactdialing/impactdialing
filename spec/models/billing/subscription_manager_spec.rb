@@ -1,6 +1,10 @@
 require 'spec_helper'
 
 describe Billing::SubscriptionManager do
+  def new_manager(subscription, quota)
+    Billing::SubscriptionManager.new(customer_id, subscription, quota)
+  end
+
   describe '#prorate?(new_plan, callers_allowed)' do
     let(:customer_id){ 'cus_243fij0wije' }
     let(:old_plan){ 'trial' }
@@ -39,10 +43,6 @@ describe Billing::SubscriptionManager do
       })
     end
     let(:manager) do
-      Billing::SubscriptionManager.new(customer_id, subscription, quota)
-    end
-
-    def new_manager(subscription, quota)
       Billing::SubscriptionManager.new(customer_id, subscription, quota)
     end
 
@@ -156,26 +156,44 @@ describe Billing::SubscriptionManager do
         payment_gateway.should_receive(:update_subscription).with(new_plan, callers_allowed, anything)
         manager.update!(new_plan, opts)
       end
-      context 'old_plan is not trial AND this is an upgrade in plans OR addition of callers' do
-        let(:new_plan){ 'pro' }
-        before do
-          plans.stub(:is_trial?){ false }
-          plans.stub(:is_upgrade?){ true }
-          plans.stub(:buying_minutes?){ false }
-          subscription.stub(:plan){ 'basic' }
+      context 'old_plan is not trial AND' do
+        context 'this is an upgrade in plans OR' do
+          let(:new_plan){ 'pro' }
+          before do
+            plans.stub(:is_trial?){ false }
+            plans.stub(:is_upgrade?){ true }
+            plans.stub(:buying_minutes?){ false }
+            subscription.stub(:plan){ 'basic' }
+          end
+          it 'tells `payment_gateway` to prorate upgrades' do
+            payment_gateway.should_receive(:update_subscription).with(new_plan, callers_allowed, true)
+            manager.update!(new_plan, opts)
+          end
+          it 'tells `payment_gateway` to create and pay an invoice' do
+            payment_gateway.should_receive(:create_and_pay_invoice)
+            manager.update!(new_plan, opts)
+          end
         end
-        it 'tells `payment_gateway` to prorate upgrades' do
-          payment_gateway.should_receive(:update_subscription).with(new_plan, callers_allowed, true)
-          manager.update!(new_plan, opts)
-        end
-        it 'tells `payment_gateway` to prorate increase in number of callers allowed' do
-          subscription.plan.should eq 'basic'
-          payment_gateway.should_receive(:update_subscription).with('basic', callers_allowed + 1, true)
-          manager.update!('basic', {callers_allowed: callers_allowed + 1})
-        end
-        it 'tells `payment_gateway` to create and pay an invoice' do
-          payment_gateway.should_receive(:create_and_pay_invoice)
-          manager.update!(new_plan, opts)
+
+        context 'plan is the same w/ addition of callers' do
+          let(:new_plan){ 'pro' }
+          let(:opts) do
+            {callers_allowed: callers_allowed + 1}
+          end
+          before do
+            plans.stub(:is_trial?){ false }
+            plans.stub(:is_upgrade?){ false }
+            plans.stub(:buying_minutes?){ false }
+            subscription.stub(:plan){ 'pro' }
+          end
+          it 'tells `payment_gateway` to prorate increase in callers' do
+            payment_gateway.should_receive(:update_subscription).with('pro', callers_allowed + 1, true)
+            manager.update!('pro', opts)
+          end
+          it 'tells `payment_gateway` to create and pay an invoice' do
+            payment_gateway.should_receive(:create_and_pay_invoice)
+            manager.update!('pro', opts)
+          end
         end
       end
       context 'old_plan is trial OR this is a downgrade in plans' do

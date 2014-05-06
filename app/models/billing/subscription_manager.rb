@@ -45,8 +45,10 @@ class Billing::SubscriptionManager
   def update_recurring_subscription!(new_plan, callers_allowed)
     return nil unless plans.recurring?(new_plan)
 
-    prorate      = prorate?(new_plan)
+    prorate      = prorate?(new_plan, callers_allowed)
     subscription = payment_gateway.update_subscription(new_plan, callers_allowed, prorate)
+    # prorate and pay the invoice => charge customer pro-rated amount, right away
+    # https://support.stripe.com/questions/handling-subscription-changes
     if prorate
       payment_gateway.create_and_pay_invoice
     end
