@@ -2,9 +2,15 @@
 
 contact = angular.module('callveyor.contact', [])
 
+contact.factory('contactCache', [
+  '$cacheFactory',
+  ($cacheFactory) ->
+    $cacheFactory('contact')
+])
+
 contact.controller('ContactCtrl', [
-  '$rootScope', '$scope', '$state', '$http', '$cacheFactory'
-  ($rootScope,   $scope,   $state,   $http,   $cacheFactory) ->
+  '$rootScope', '$scope', '$state', '$http', 'callStationCache', 'contactCache',
+  ($rootScope,   $scope,   $state,   $http,   callStationCache,   contactCache) ->
     console.log 'ContactCtrl'
 
     contact = {}
@@ -16,12 +22,11 @@ contact.controller('ContactCtrl', [
           contact.data = {}
 
     updateFromCache = ->
-      callStationCache = $cacheFactory.get('callStation')
       if callStationCache?
         callStation = callStationCache.get('data')
       else
         callStation = {campaign: {}}
-      contactCache = $cacheFactory.get('contact')
+
       if contactCache?
         contact.data = contactCache.get('data')
 

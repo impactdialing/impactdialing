@@ -27,10 +27,15 @@ dialer.config([
     })
 ])
 
+dialer.factory('callStationCache', [
+  '$cacheFactory',
+  ($cacheFactory) ->
+    $cacheFactory('callStation')
+])
+
 dialer.controller('DialerCtrl', [
-  '$rootScope', '$cacheFactory', 'Pusher', 'idCallFlow', 'transitionValidator', 'callStation',
-  ($rootScope,   $cacheFactory,   Pusher,   idCallFlow,   transitionValidator,   callStation) ->
-    callStationCache = $cacheFactory('callStation')
+  '$rootScope', '$cacheFactory', 'Pusher', 'idCallFlow', 'transitionValidator', 'callStation', 'callStationCache'
+  ($rootScope,   $cacheFactory,   Pusher,   idCallFlow,   transitionValidator,   callStation,   callStationCache) ->
     callStationCache.put('data', callStation.data)
     channel = callStation.data.caller.session_key
 
