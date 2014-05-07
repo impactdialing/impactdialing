@@ -81,9 +81,9 @@
         apiKey: 'ee7280e5-4afa-4854-87a6-b19d6c1cf460',
         valign: 'middle',
         halign: 'left',
-        // beforeSend: function(obj) {
-        //   obj.addInfo = window.idDebugData || {};
-        // },
+        beforeSend: function(obj) {
+          obj.addInfo = window.idDebugData || {};
+        },
         // errorHandler: function(message, code) {
         //   var d = {},
         //       k = 'usersnap-error-' + code.toString();
