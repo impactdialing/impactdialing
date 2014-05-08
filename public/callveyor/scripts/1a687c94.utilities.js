@@ -1,4 +1,66 @@
 (function() {
+  var captureCache, simpleCache;
+
+  angular.module('idCacheFactories', []);
+
+  simpleCache = function(name) {
+    return angular.module('idCacheFactories').factory("" + name + "Cache", [
+      '$cacheFactory', function($cacheFactory) {
+        return $cacheFactory(name);
+      }
+    ]);
+  };
+
+  captureCache = function(name) {
+    return angular.module('idCacheFactories').factory("" + name + "Cache", [
+      '$cacheFactory', function($cacheFactory) {
+        var cache, data, debugCache, time;
+        cache = $cacheFactory(name);
+        data = {};
+        window.idDebugData = data;
+        time = function() {
+          return (new Date()).getTime();
+        };
+        debugCache = {
+          put: function(key, value) {
+            var t;
+            t = time();
+            data[t] = {};
+            data[t][key] = value;
+            return cache.put(key, value);
+          },
+          get: function(key) {
+            return cache.get(key);
+          },
+          remove: function(key) {
+            return cache.remove(key);
+          }
+        };
+        return debugCache;
+      }
+    ]);
+  };
+
+  simpleCache('Twilio');
+
+  simpleCache('Contact');
+
+  captureCache('CallStation');
+
+  captureCache('Error');
+
+  simpleCache('Flash');
+
+  simpleCache('Call');
+
+  simpleCache('Transfer');
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=id_cache_factories.js.map
+*/
+(function() {
   var mod;
 
   mod = angular.module('transitionGateway', ['ui.router']);
@@ -112,10 +174,9 @@
   mod = angular.module('idTwilioConnectionHandlers', ['ui.router', 'idFlash', 'idTransition', 'idTwilio']);
 
   mod.factory('idTwilioConnectionFactory', [
-    '$rootScope', '$state', '$cacheFactory', 'idFlashFactory', 'idTwilioService', 'idTransitionPrevented', function($rootScope, $state, $cacheFactory, idFlashFactory, idTwilioService, idTransitionPrevented) {
-      var factory, twilioParams, _twilioCache;
+    '$rootScope', '$state', 'TwilioCache', 'idFlashFactory', 'idTwilioService', 'idTransitionPrevented', function($rootScope, $state, TwilioCache, idFlashFactory, idTwilioService, idTransitionPrevented) {
+      var factory, twilioParams;
       console.log('idTwilioConnectionFactory');
-      _twilioCache = $cacheFactory.get('Twilio') || $cacheFactory('Twilio');
       twilioParams = {};
       factory = {
         connect: function(params) {
@@ -125,7 +186,7 @@
         connected: function(connection) {
           var p;
           console.log('connected', connection);
-          _twilioCache.put('connection', connection);
+          TwilioCache.put('connection', connection);
           p = $state.go('dialer.hold');
           return p["catch"](idTransitionPrevented);
         },
@@ -164,15 +225,13 @@
   'use strict';
   var mod;
 
-  mod = angular.module('callveyor.call_flow', ['ui.router', 'idFlash', 'idTransition', 'callveyor.http_dialer']);
+  mod = angular.module('callveyor.call_flow', ['ui.router', 'idFlash', 'idTransition', 'idCacheFactories', 'callveyor.http_dialer']);
 
   mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$cacheFactory', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', function($rootScope, $state, $cacheFactory, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented) {
-      var callCache, handlers, isWarmTransfer, transferCache;
-      callCache = $cacheFactory.get('call') || $cacheFactory('call');
-      transferCache = $cacheFactory.get('transfer') || $cacheFactory('transfer');
+    '$rootScope', '$state', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', function($rootScope, $state, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache) {
+      var handlers, isWarmTransfer;
       isWarmTransfer = function() {
-        return /warm/i.test(transferCache.get('type'));
+        return /warm/i.test(TransferCache.get('type'));
       };
       handlers = {
         survey: {
@@ -185,11 +244,9 @@
           }
         },
         startCalling: function(data) {
-          var callStation, callStationCache, caller;
-          callStationCache = $cacheFactory.get('callStation');
-          callStation = callStationCache.get('data');
-          console.log('start_calling', callStation);
-          caller = callStation.caller;
+          var caller;
+          caller = CallStationCache.get('caller');
+          console.log('start_calling', caller);
           return caller.session_id = data.caller_session_id;
         },
         /*
@@ -203,26 +260,23 @@
         */
 
         conferenceStarted: function(contact) {
-          var abortCache, callStation, callStationCache, caller, contactCache, p;
-          callStationCache = $cacheFactory.get('callStation');
-          contactCache = $cacheFactory.get('contact') || $cacheFactory('contact');
-          callStation = callStationCache.get('data');
-          console.log('conference_started (preview & power only)', contact, callStation);
+          var caller, campaign, p;
+          console.log('conference_started (preview & power only)');
           if (contact.campaign_out_of_leads) {
-            abortCache = $cacheFactory.get('abort') || $cacheFactory('abort');
-            abortCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.');
-            contactCache.put('data', {});
+            FlashCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.');
+            ContactCache.put('data', {});
             $rootScope.$broadcast('contact:changed');
             p = $state.go('abort');
             p["catch"](idTransitionPrevented);
             return;
           }
-          contactCache.put('data', contact);
+          ContactCache.put('data', contact);
           $rootScope.$broadcast('contact:changed');
           p = $state.go('dialer.hold');
           p["catch"](idTransitionPrevented);
-          if (callStation.campaign.type === 'Power') {
-            caller = callStation.caller;
+          campaign = CallStationCache.get('campaign');
+          if (campaign.type === 'Power') {
+            caller = CallStationCache.get('caller');
             return idHttpDialerFactory.dialContact(caller.id, {
               session_id: caller.session_id,
               voter_id: contact.fields.id
@@ -243,9 +297,7 @@
           var p, transitionSuccess;
           console.log('caller_connected_dialer (predictive only)');
           transitionSuccess = function() {
-            var contactCache;
-            contactCache = $cacheFactory.get('contact') || $cacheFactory('contact');
-            contactCache.put('data', {});
+            ContactCache.put('data', {});
             return $rootScope.$broadcast('contact:changed');
           };
           p = $state.go('dialer.hold');
@@ -281,9 +333,10 @@
         voterConnected: function(data) {
           var p;
           console.log('voter_connected', data);
-          callCache.put('id', data.call_id);
+          CallCache.put('id', data.call_id);
           p = $state.go('dialer.active');
-          return p["catch"](idTransitionPrevented);
+          p["catch"](idTransitionPrevented);
+          return console.log(CallCache.get('id'), CallCache.info());
         },
         /*
         LEGACY-way
@@ -299,11 +352,9 @@
           var p, transitionSuccess;
           console.log('voter_connected_dialer', data);
           transitionSuccess = function() {
-            var contactCache;
-            contactCache = $cacheFactory.get('contact') || $cacheFactory('contact');
-            contactCache.put('data', data.voter);
+            ContactCache.put('data', data.voter);
             $rootScope.$broadcast('contact:changed');
-            return callCache.put('id', data.call_id);
+            return CallCache.put('id', data.call_id);
           };
           p = $state.go('dialer.active');
           return p.then(transitionSuccess, idTransitionPrevented);
@@ -317,7 +368,7 @@
           var p;
           console.log('voter_disconnected');
           if (!isWarmTransfer()) {
-            console.log('transitioning', transferCache.get('type'));
+            console.log('transitioning', TransferCache.get('type'));
             p = $state.go('dialer.wrap');
             return p["catch"](idTransitionPrevented);
           } else {
@@ -352,7 +403,7 @@
 
         transferConnected: function(data) {
           console.log('transfer_connected', data);
-          transferCache.put('type', data.type);
+          TransferCache.put('type', data.type);
           return idFlashFactory.now('notice', 'Transfer connected.', 3000);
         },
         contactJoinedTransferConference: function() {
@@ -383,7 +434,7 @@
           if (!isWarmTransfer()) {
             return;
           }
-          transferCache.remove('type');
+          TransferCache.remove('type');
           if ($state.is('dialer.active.transfer.conference')) {
             idFlashFactory.now('notice', 'Transfer disconnected.', 3000);
             p = $state.go('dialer.active');
