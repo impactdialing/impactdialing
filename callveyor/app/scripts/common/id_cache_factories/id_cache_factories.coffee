@@ -30,7 +30,7 @@ captureCache = (name) ->
         put: (key, value) ->
           t = time()
           data[t] = {}
-          data[t][key] = value
+          data[t]["#{name}Cache:#{key}"] = value
           cache.put(key, value)
         get: (key) ->
           cache.get(key)
