@@ -60,8 +60,8 @@ transfer.controller('TransferInfoCtrl', [
 ])
 
 transfer.controller('TransferButtonCtrl.selected', [
-  '$rootScope', '$scope', '$state', '$filter', 'TransferCache', 'idHttpDialerFactory', 'usSpinnerService', 'callStation'
-  ($rootScope,   $scope,   $state,   $filter,   TransferCache,   idHttpDialerFactory,   usSpinnerService,   callStation) ->
+  '$rootScope', '$scope', '$state', '$filter', 'TransferCache', 'CallCache', 'ContactCache', 'idHttpDialerFactory', 'usSpinnerService', 'callStation'
+  ($rootScope,   $scope,   $state,   $filter,   TransferCache,   CallCache,   ContactCache,   idHttpDialerFactory,   usSpinnerService,   callStation) ->
     console.log 'TransferButtonCtrl.selected', TransferCache.info()
 
     transfer       = {}
