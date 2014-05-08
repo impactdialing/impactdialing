@@ -31,6 +31,7 @@ Spork.prefork do
       WebMock.allow_net_connect!
 
       if ENV['RAILS_ENV'] == 'e2e'
+        Capybara.javascript_driver = :webkit
         DatabaseCleaner.strategy = :truncation
       else
         DatabaseCleaner.strategy = :transaction

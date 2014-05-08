@@ -68,7 +68,9 @@ ImpactDialing::Application.routes.draw do
   end
 
   # new customer facing end-point
-  get '/app', :to => 'callers/station#show'
+  get '/app', :to => 'callers/station#show', :as => :callveyor
+  match '/app/login', :to => 'callers/station#login', :as => :callveyor_login
+  post '/app/logout', :to => 'callers/station#logout', :as => :callveyor_logout
   # /new customer facing end-point
   # new api rough draft
   post 'call_center/api/call_station', :to => 'callers/station#create'
