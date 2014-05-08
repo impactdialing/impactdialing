@@ -109,21 +109,24 @@ callveyor.directive('idLogout', ->
 )
 
 callveyor.controller('AppCtrl', [
-  '$rootScope', '$scope', '$state', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented',
-  ($rootScope,   $scope,   $state,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented) ->
+  '$rootScope', '$scope', '$state', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache',
+  ($rootScope,   $scope,   $state,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache) ->
     idFlashFactory.scope = $scope
     $scope.flash = idFlashFactory
 
     # handle generic state change conditions
-    transitionStart = ->
+    transitionStart = (event, toState, toParams, fromState, fromParams) ->
+      TransitionCache.put('$stateChangeStart', {event, toState, toParams, fromState, fromParams})
       usSpinnerService.spin('global-spinner')
       $rootScope.transitionInProgress = true
-    transitionComplete = ->
+    transitionComplete = (event, toState, toParams, fromState, fromParams) ->
+      TransitionCache.put('$stateChangeSuccess', {event, toState, toParams, fromState, fromParams})
       $rootScope.transitionInProgress = false
       usSpinnerService.stop('global-spinner')
-    transitionError = (e) ->
+    transitionError = (event, unfoundState, fromState, fromParams) ->
       # todo: submit error to error collection tool
       console.error 'Error transitioning $state', e, $state.current
+      TransitionCache.put('$stateChangeError', {event, unfoundState, fromState, fromParams})
       # hmm: $stateChangeError seems to not be thrown when preventDefault is called
       # if e.message == 'transition prevented'
       #   # something called .preventDefault, probably the transitionGateway
@@ -141,6 +144,7 @@ callveyor.controller('AppCtrl', [
     abortAllAndNotifyUser = ->
       # todo: implement
       console.log 'Unsupported browser...'
+      TransitionCache.put('pusher:bad_browser', '.')
 
     $rootScope.$on('pusher:ready', markPusherReady)
     $rootScope.$on('pusher:bad_browser', abortAllAndNotifyUser)

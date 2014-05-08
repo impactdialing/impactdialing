@@ -55,6 +55,9 @@ captureCache('CallStation')
 # transitions have completed
 captureCache('Error')
 
+# stores transition history for debugging
+captureCache('Transition')
+
 # stores error msg to display once all $state
 # transitions have completed
 simpleCache('Flash')
