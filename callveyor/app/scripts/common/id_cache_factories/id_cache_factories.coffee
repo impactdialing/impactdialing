@@ -13,7 +13,15 @@ captureCache = (name) ->
     '$cacheFactory',
     ($cacheFactory) ->
       cache = $cacheFactory(name)
-      data = {}
+      data = {
+        navigator: {
+          language: navigator.language
+          userAgent: navigator.userAgent
+          platform: navigator.platform
+          appVersion: navigator.appVersion
+          vendor: navigator.vendor
+        }
+      }
       window.idDebugData = data
 
       time = -> (new Date()).getTime()
