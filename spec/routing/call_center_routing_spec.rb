@@ -21,8 +21,8 @@ describe 'routes for CallCenter (draft)' do
     end
   end
 
-  it "POST /call_center/api/:session_id/stop_calling => calls#stop_calling" do
-    {post: "/call_center/api/1/stop_calling"}.should route_to(controller: 'caller', action: 'stop_calling', session_id: '1')
+  it "POST /call_center/api/:id/stop_calling => calls#stop_calling" do
+    {post: "/call_center/api/1/stop_calling"}.should route_to(controller: 'caller', action: 'stop_calling', id: '1')
   end
 
   [
