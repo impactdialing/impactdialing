@@ -6,10 +6,9 @@ mod = angular.module('idTwilioConnectionHandlers', [
 ])
 
 mod.factory('idTwilioConnectionFactory', [
-  '$rootScope', '$state', '$cacheFactory', 'idFlashFactory', 'idTwilioService', 'idTransitionPrevented'
-  ($rootScope,   $state,   $cacheFactory,   idFlashFactory,   idTwilioService,   idTransitionPrevented) ->
+  '$rootScope', '$state', 'TwilioCache', 'idFlashFactory', 'idTwilioService', 'idTransitionPrevented'
+  ($rootScope,   $state,   TwilioCache,   idFlashFactory,   idTwilioService,   idTransitionPrevented) ->
     console.log 'idTwilioConnectionFactory'
-    _twilioCache = $cacheFactory.get('Twilio') || $cacheFactory('Twilio')
     twilioParams = {}
 
     factory = {
@@ -19,7 +18,7 @@ mod.factory('idTwilioConnectionFactory', [
 
       connected: (connection) ->
         console.log 'connected', connection
-        _twilioCache.put('connection', connection)
+        TwilioCache.put('connection', connection)
         p = $state.go('dialer.hold')
         p.catch(idTransitionPrevented)
 

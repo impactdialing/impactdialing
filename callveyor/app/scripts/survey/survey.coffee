@@ -3,7 +3,8 @@
 surveyForm = angular.module('survey', [
   'ui.router',
   'angularSpinner',
-  'idFlash'
+  'idFlash',
+  'idCacheFactories'
 ])
 
 # surveyForm.config([])
@@ -56,20 +57,18 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 ])
 
 surveyForm.controller('SurveyFormCtrl', [
-  '$rootScope', '$scope', '$filter', '$state', '$http', '$cacheFactory', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory'
-  ($rootScope,   $scope,   $filter,   $state,   $http,   $cacheFactory,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory) ->
+  '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory'
+  ($rootScope,   $scope,   $filter,   $state,   $http,   TransferCache,   CallCache,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory) ->
     # Init public
     survey = {}
 
-    # :tmp: to maintain back compat
+    # :tmp: to maintain back compat (where transfers are sent alongside call script data)
     # todo: move transfer data out of survey related modules to dialer
     cacheTransferList = (payload) ->
-      transferCache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
       list          = payload.data.transfers
       coldOnly      = (transfer) -> transfer.transfer_type == 'cold'
       list          = $filter('filter')(list, coldOnly)
-
-      transferCache.put('list', list)
+      TransferCache.put('list', list)
     # :endtmp:
 
     e = (r) -> console.log 'survey load error', r.stack, r.message
@@ -110,12 +109,12 @@ surveyForm.controller('SurveyFormCtrl', [
 
       survey.disable = true
 
-      callCache = $cacheFactory.get('call')
-      if callCache?
-        call_id = callCache.get('id')
+      if CallCache?
+        call_id = CallCache.get('id')
       else
         # submit error report somewhere
         idFlashFactory.now('error', 'You found a bug! Please Report problem and we will have you up and running ASAP.')
+        return
 
       usSpinnerService.spin('global-spinner')
 

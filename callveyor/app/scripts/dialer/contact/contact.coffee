@@ -1,19 +1,16 @@
 'strict'
 
-contact = angular.module('callveyor.contact', [])
-
-contact.factory('contactCache', [
-  '$cacheFactory',
-  ($cacheFactory) ->
-    $cacheFactory('contact')
+contact = angular.module('callveyor.contact', [
+  'idCacheFactories'
 ])
 
 contact.controller('ContactCtrl', [
-  '$rootScope', '$scope', '$state', '$http', 'callStationCache', 'contactCache',
-  ($rootScope,   $scope,   $state,   $http,   callStationCache,   contactCache) ->
+  '$rootScope', '$scope', '$state', '$http', 'ContactCache',
+  ($rootScope,   $scope,   $state,   $http,   ContactCache) ->
     console.log 'ContactCtrl'
 
     contact = {}
+    contact.data = ContactCache.get('data')
 
     handleStateChange = (event, toState, toParams, fromState, fromParams) ->
       console.log 'handleStateChange', toState, fromState
@@ -22,13 +19,12 @@ contact.controller('ContactCtrl', [
           contact.data = {}
 
     updateFromCache = ->
-      if callStationCache?
-        callStation = callStationCache.get('data')
-      else
-        callStation = {campaign: {}}
+      console.log 'updateFromCache - noop'
+      # callStation = idModuleCache.get('callStation')
+      # unless callStation?
+      #   callStation = {campaign: {}}
 
-      if contactCache?
-        contact.data = contactCache.get('data')
+      contact.data = ContactCache.get('data')
 
     $rootScope.$on('contact:changed', updateFromCache)
     $rootScope.$on('$stateChangeSuccess', handleStateChange)

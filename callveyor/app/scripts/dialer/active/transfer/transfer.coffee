@@ -51,22 +51,21 @@ transfer.controller('TransferPanelCtrl', [
 ])
 
 transfer.controller('TransferInfoCtrl', [
-  '$scope', '$cacheFactory',
-  ($scope,   $cacheFactory) ->
+  '$scope', 'TransferCache',
+  ($scope,   TransferCache) ->
     console.log 'TransferInfoCtrl'
 
-    cache = $cacheFactory.get('transfer')
-    transfer = cache.get('selected')
+    transfer        = TransferCache.get('selected')
     $scope.transfer = transfer
 ])
 
 transfer.controller('TransferButtonCtrl.selected', [
-  '$rootScope', '$scope', '$state', '$filter', '$cacheFactory', 'idHttpDialerFactory', 'usSpinnerService', 'callStation'
-  ($rootScope,   $scope,   $state,   $filter,   $cacheFactory,   idHttpDialerFactory,   usSpinnerService,   callStation) ->
-    console.log 'TransferButtonCtrl.selected', $cacheFactory.get('transfer').info()
+  '$rootScope', '$scope', '$state', '$filter', 'TransferCache', 'idHttpDialerFactory', 'usSpinnerService', 'callStation'
+  ($rootScope,   $scope,   $state,   $filter,   TransferCache,   idHttpDialerFactory,   usSpinnerService,   callStation) ->
+    console.log 'TransferButtonCtrl.selected', TransferCache.info()
 
     transfer       = {}
-    transfer.cache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
+    transfer.cache = TransferCache
     selected       = transfer.cache.get('selected')
     transfer_type  = selected.transfer_type
 
@@ -75,12 +74,12 @@ transfer.controller('TransferButtonCtrl.selected', [
     transfer.dial = ->
       console.log 'dial', $scope
       params                = {}
-      contactCache          = $cacheFactory.get('contact')
-      callCache             = $cacheFactory.get('call')
-      contact               = (contactCache.get('data') || {}).fields
+
+
+      contact               = (ContactCache.get('data') || {}).fields
       caller                = callStation.data.caller || {}
       params.voter          = contact.id
-      params.call           = callCache.get('id')
+      params.call           = CallCache.get('id')
       params.caller_session = caller.session_id
       params.transfer       = {id: selected.id}
 
@@ -101,7 +100,7 @@ transfer.controller('TransferButtonCtrl.selected', [
 
     transfer.cancel = ->
       console.log 'cancel'
-      @cache.remove('selected')
+      TransferCache.remove('selected')
       $state.go('dialer.active')
 
     $rootScope.rootTransferCollapse = false
@@ -109,12 +108,12 @@ transfer.controller('TransferButtonCtrl.selected', [
 ])
 
 transfer.controller('TransferButtonCtrl.conference', [
-  '$rootScope', '$scope', '$state', '$cacheFactory', 'idHttpDialerFactory', 'usSpinnerService'
-  ($rootScope,   $scope,   $state,   $cacheFactory,   idHttpDialerFactory,   usSpinnerService) ->
+  '$rootScope', '$scope', '$state', 'TransferCache', 'idHttpDialerFactory', 'usSpinnerService'
+  ($rootScope,   $scope,   $state,   TransferCache,   idHttpDialerFactory,   usSpinnerService) ->
     console.log 'TransferButtonCtrl.conference'
 
     transfer = {}
-    transfer.cache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
+    transfer.cache = TransferCache
     usSpinnerService.stop('transfer-spinner')
     $rootScope.transferStatus = 'Transfer on call'
     transfer.hangup = ->

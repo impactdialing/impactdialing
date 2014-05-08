@@ -3,7 +3,8 @@
 ready = angular.module('callveyor.dialer.ready', [
   'ui.router',
   'idTwilioConnectionHandlers',
-  'idFlash'
+  'idFlash',
+  'idCacheFactories'
 ])
 
 ready.config(['$stateProvider', ($stateProvider) ->
@@ -22,9 +23,13 @@ ready.config(['$stateProvider', ($stateProvider) ->
 ])
 
 ready.controller('ReadyCtrl.splashModal', [
-  '$scope', '$state', '$cacheFactory', '$modalInstance', 'idTwilioConnectionFactory', 'idFlashFactory'
-  ($scope,   $state,   $cacheFactory,   $modalInstance,   idTwilioConnectionFactory,   idFlashFactory) ->
-    config = $cacheFactory.get('callStation').get('data')
+  '$scope', '$state', '$modalInstance', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory'
+  ($scope,   $state,   $modalInstance,   CallStationCache,   idTwilioConnectionFactory,   idFlashFactory) ->
+    config = {
+      caller: CallStationCache.get('caller')
+      campaign: CallStationCache.get('campaign')
+      call_station: CallStationCache.get('call_station')
+    }
 
     twilioParams = {
       'PhoneNumber': config.call_station.phone_number,

@@ -19,10 +19,9 @@ stop.config([
 ])
 
 stop.controller('StopCtrl.buttons', [
-  '$scope', '$state', '$cacheFactory', '$http', 'idTwilioService', 'callStation',
-  ($scope,   $state,   $cacheFactory,   $http,   idTwilioService,   callStation) ->
-    _twilioCache = $cacheFactory.get('Twilio')
-    connection   = _twilioCache.get('connection')
+  '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation',
+  ($scope,   $state,   TwilioCache,   $http,   idTwilioService,   callStation) ->
+    connection   = TwilioCache.get('connection')
     caller_id    = callStation.data.caller.id
     params       = {}
     params.session_id = callStation.data.caller.session_id

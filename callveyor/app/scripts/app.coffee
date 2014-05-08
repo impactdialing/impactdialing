@@ -1,12 +1,12 @@
 'use strict'
 
 idTransition = angular.module('idTransition', [
-  'idDebug',
+  'idCacheFactories',
   'angularSpinner'
 ])
 idTransition.factory('idTransitionPrevented', [
-  '$rootScope', '$state', 'idDebugCache', 'usSpinnerService',
-  ($rootScope,   $state,   idDebugCache,   usSpinnerService) ->
+  '$rootScope', '$state', 'ErrorCache', 'FlashCache', 'usSpinnerService',
+  ($rootScope,   $state,   ErrorCache,   FlashCache,   usSpinnerService) ->
     isFailedResolve = (err) ->
       err.config? and err.config.url? and /(GET|POST)/.test(err.config.method)
 
@@ -16,35 +16,15 @@ idTransition.factory('idTransitionPrevented', [
       usSpinnerService.stop('global-spinner')
 
       if isFailedResolve(errObj)
-        idDebugCache.put('abort', {error: errObj.data.message, errorObject: errObj})
+        # record the time & error
+        key = (new Date()).getTime()
+        val = {error: errObj, context: 'Remote $state dependency failed to resolve.'}
+        ErrorCache.put(key, val)
+
+        FlashCache.put('error', errObj.data.message)
         $state.go('abort')
 
     fn
-])
-
-idDebug = angular.module('idDebug', [])
-idDebug.factory('idDebugCache', [
-  '$cacheFactory',
-  ($cacheFactory) ->
-    cache = $cacheFactory('idDebugCache')
-    data = {}
-    window.idDebugData = data
-
-    time = -> (new Date()).getTime()
-
-    debugCache = {
-      put: (key, value) ->
-        t = time()
-        data[t] = {}
-        data[t][key] = value
-        cache.put(key, value)
-      get: (key) ->
-        cache.get(key)
-      remove: (key) ->
-        cache.remove(key)
-    }
-
-    debugCache
 ])
 
 callveyor = angular.module('callveyor', [
@@ -56,7 +36,7 @@ callveyor = angular.module('callveyor', [
   'idTwilio',
   'idFlash',
   'idTransition',
-  'idDebug',
+  'idCacheFactories',
   'angularSpinner',
   'callveyor.dialer'
 ])
@@ -78,18 +58,19 @@ callveyor.config([
 ])
 
 callveyor.controller('AppCtrl.abort', [
-  '$http', '$cacheFactory', 'idDebugCache', 'PusherService', 'idFlashFactory',
-  ($http,   $cacheFactory,   idDebugCache,   PusherService,   idFlashFactory) ->
-    console.log 'idDebugCache', idDebugCache
-    abort = idDebugCache.get('abort')
+  '$http', 'TwilioCache', 'FlashCache', 'PusherService', 'idFlashFactory',
+  ($http,   TwilioCache,   FlashCache,   PusherService,   idFlashFactory) ->
+    console.log 'AppCtrl.abort', FlashCache.get('error'), FlashCache.info()
+    flash = FlashCache.get('error')
+    idFlashFactory.now('error', flash)
+    FlashCache.remove('error')
+    console.log 'AppCtrl.abort', flash
 
-    idFlashFactory.now('error', abort.error)
+    twilioConnection = TwilioCache.get('connection')
 
-    twilioCache = $cacheFactory.get('Twilio')
-    connection = twilioCache.get('connection')
     # whenDisconnected = ->
     # connection.disconnect(whenDisconnected)
-    connection.disconnect()
+    twilioConnection.disconnect()
 
     PusherService.then((p) ->
       console.log 'PusherService abort', p
@@ -105,8 +86,8 @@ callveyor.controller('MetaCtrl', [
 ])
 
 callveyor.controller('AppCtrl', [
-  '$rootScope', '$scope', '$state', '$cacheFactory', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented',
-  ($rootScope,   $scope,   $state,   $cacheFactory,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented) ->
+  '$rootScope', '$scope', '$state', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented',
+  ($rootScope,   $scope,   $state,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented) ->
     idFlashFactory.scope = $scope
     $scope.flash = idFlashFactory
 
