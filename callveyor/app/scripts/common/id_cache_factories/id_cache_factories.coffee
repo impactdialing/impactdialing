@@ -7,6 +7,32 @@ simpleCache = (name) ->
   angular.module('idCacheFactories')
   .factory("#{name}Cache", ['$cacheFactory', ($cacheFactory) -> $cacheFactory(name)])
 
+captureCache = (name) ->
+  angular.module('idCacheFactories')
+  .factory("#{name}Cache", [
+    '$cacheFactory',
+    ($cacheFactory) ->
+      cache = $cacheFactory(name)
+      data = {}
+      window.idDebugData = data
+
+      time = -> (new Date()).getTime()
+
+      debugCache = {
+        put: (key, value) ->
+          t = time()
+          data[t] = {}
+          data[t][key] = value
+          cache.put(key, value)
+        get: (key) ->
+          cache.get(key)
+        remove: (key) ->
+          cache.remove(key)
+      }
+
+      debugCache
+  ])
+
 # stores active twilio connection
 simpleCache('Twilio')
 
@@ -15,36 +41,11 @@ simpleCache('Contact')
 
 # stores all config data for
 # caller, session, account & campaign info, twilio & pusher tokens
-simpleCache('CallStation')
+captureCache('CallStation')
 
 # stores error info for processing once all $state
 # transitions have completed
-simpleCache('Error')
-# idDebug = angular.module('idDebug', [])
-# idDebug.factory('idDebugCache', [
-#   '$cacheFactory',
-#   ($cacheFactory) ->
-#     cache = $cacheFactory('idDebugCache')
-#     data = {}
-#     window.idDebugData = data
-
-#     time = -> (new Date()).getTime()
-
-#     debugCache = {
-#       put: (key, value) ->
-#         t = time()
-#         data[t] = {}
-#         data[t][key] = value
-#         cache.put(key, value)
-#       get: (key) ->
-#         cache.get(key)
-#       remove: (key) ->
-#         cache.remove(key)
-#     }
-
-#     debugCache
-# ])
-
+captureCache('Error')
 
 # stores error msg to display once all $state
 # transitions have completed
