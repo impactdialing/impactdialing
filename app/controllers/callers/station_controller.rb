@@ -1,6 +1,6 @@
 module Callers
   class StationController < ::CallerController
-    layout false
+    layout false, only: :show
     include ActionView::Helpers::NumberHelper
     respond_to :json, :html
 
@@ -43,9 +43,40 @@ private
       {}
     end
 
+    def check_login
+      if session[:caller].blank?
+        redirect_to callveyor_login_path
+        return
+      end
+      begin
+        @caller = Caller.find(session[:caller])
+      rescue
+        logout
+      end
+    end
+
 public
     # draft new html/client entry point
     def show
+    end
+
+    def logout
+      session[:caller] = nil
+      redirect_to callveyor_login_path
+    end
+
+    def login
+      if !params[:username].blank?
+        @caller = Caller.find_by_username_and_password(params[:username], params[:password])
+        if @caller.blank?
+          flash_now(:error, "Wrong username or password.")
+        elsif !@caller.active?
+          flash_now(:error, "That account has been deleted.")
+        else
+          session[:caller] = @caller.id
+          redirect_to callveyor_path
+        end
+      end
     end
 
     def script

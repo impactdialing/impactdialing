@@ -1,0 +1,21 @@
+<h1>Log in</h1>
+  <%= form_tag(callveyor_login_path, :id=>"loginForm") do |f| %>
+  <fieldset>
+    <p><label for="username">Username</label><br>
+    <input id="username" type="text" name="username" class="field" value="<%= params[:username] %>" />
+
+    <p><label for="password">Password</label><br>
+    <input id="password" type="password" class="field" name="password"/>
+
+
+    <div class="buttons">
+      <button type="submit">Log in</button>
+    </div>
+  </fieldset>
+<% end %>
+
+<p>
+  If you are an administrator, <a href=<%="#{request.protocol}admin.#{request.domain}/"%>>log in here</a>.
+  <br>
+  To view phones-only reports, <a href=<%="#{request.protocol}admin.#{request.domain}/callers/phones_only"%>>log in here</a>.
+</p>
