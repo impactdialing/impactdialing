@@ -15,16 +15,14 @@ mod = angular.module('callveyor.call_flow', [
   'ui.router',
   'idFlash',
   'idTransition',
+  'idCacheFactories',
   'callveyor.http_dialer'
 ])
 
 mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$cacheFactory', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'idDebugCache'
-    ($rootScope,   $state,   $cacheFactory,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   idDebugCache) ->
-      callCache     = $cacheFactory.get('call') || $cacheFactory('call')
-      transferCache = $cacheFactory.get('transfer') || $cacheFactory('transfer')
-
-      isWarmTransfer = -> /warm/i.test(transferCache.get('type'))
+    '$rootScope', '$state', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache'
+    ($rootScope,   $state,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache) ->
+      isWarmTransfer = -> /warm/i.test(TransferCache.get('type'))
 
       handlers = {
         ##########################################
@@ -58,10 +56,8 @@ mod.factory('idCallFlow', [
         #
         # @param {object} {caller_session_id}
         startCalling: (data) ->
-          callStationCache = $cacheFactory.get('callStation')
-          callStation = callStationCache.get('data')
-          console.log 'start_calling', callStation
-          caller = callStation.caller
+          caller = CallStationCache.get('caller')
+          console.log 'start_calling', caller
           caller.session_id = data.caller_session_id
 
         ##
@@ -100,30 +96,25 @@ mod.factory('idCallFlow', [
         - update caller action buttons
         ###
         conferenceStarted: (contact) ->
-          callStationCache = $cacheFactory.get('callStation')
-          contactCache     = $cacheFactory.get('contact') || $cacheFactory('contact')
-          callStation      = callStationCache.get('data')
-
-          console.log 'conference_started (preview & power only)', contact, callStation
+          console.log 'conference_started (preview & power only)'
 
           if contact.campaign_out_of_leads
-            idDebugCache.put('abort', {
-                message: 'All contacts have been dialed! Please get in touch with your account admin for further instructions.'
-            })
-            contactCache.put('data', {})
+            FlashCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.')
+            ContactCache.put('data', {})
             $rootScope.$broadcast('contact:changed')
             p = $state.go('abort')
             p.catch(idTransitionPrevented)
             return
 
-          contactCache.put('data', contact)
+          ContactCache.put('data', contact)
           $rootScope.$broadcast('contact:changed')
 
           p = $state.go('dialer.hold')
           p.catch(idTransitionPrevented)
 
-          if callStation.campaign.type == 'Power'
-            caller = callStation.caller
+          campaign = CallStationCache.get('campaign')
+          if campaign.type == 'Power'
+            caller = CallStationCache.get('caller')
             # console.log 'dialing for Power', caller
             idHttpDialerFactory.dialContact(caller.id, {
               session_id: caller.session_id,
@@ -151,8 +142,7 @@ mod.factory('idCallFlow', [
         callerConnectedDialer: ->
           console.log 'caller_connected_dialer (predictive only)'
           transitionSuccess = ->
-            contactCache = $cacheFactory.get('contact') || $cacheFactory('contact')
-            contactCache.put('data', {})
+            ContactCache.put('data', {})
             $rootScope.$broadcast('contact:changed')
 
           p = $state.go('dialer.hold')
@@ -228,9 +218,10 @@ mod.factory('idCallFlow', [
         ###
         voterConnected: (data) ->
           console.log 'voter_connected', data
-          callCache.put('id', data.call_id)
+          CallCache.put('id', data.call_id)
           p = $state.go('dialer.active')
           p.catch(idTransitionPrevented)
+          console.log CallCache.get('id'), CallCache.info()
         ##
         # voter_connected_dialer
         #
@@ -254,10 +245,9 @@ mod.factory('idCallFlow', [
         voterConnectedDialer: (data) ->
           console.log 'voter_connected_dialer', data
           transitionSuccess = ->
-            contactCache = $cacheFactory.get('contact') || $cacheFactory('contact')
-            contactCache.put('data', data.voter)
+            ContactCache.put('data', data.voter)
             $rootScope.$broadcast('contact:changed')
-            callCache.put('id', data.call_id)
+            CallCache.put('id', data.call_id)
 
           p = $state.go('dialer.active')
           p.then(transitionSuccess, idTransitionPrevented)
@@ -278,7 +268,7 @@ mod.factory('idCallFlow', [
         voterDisconnected: ->
           console.log 'voter_disconnected'
           unless isWarmTransfer()
-            console.log 'transitioning', transferCache.get('type')
+            console.log 'transitioning', TransferCache.get('type')
             p = $state.go('dialer.wrap')
             p.catch(idTransitionPrevented)
           else
@@ -345,8 +335,8 @@ mod.factory('idCallFlow', [
         ###
         transferConnected: (data) ->
           console.log 'transfer_connected', data
-          # transferCache.put('id', data.call_id)
-          transferCache.put('type', data.type)
+          # TransferCache.put('id', data.call_id)
+          TransferCache.put('type', data.type)
           idFlashFactory.now('notice', 'Transfer connected.', 3000)
           # $state.go('dialer.active.transfer.conference')
 
@@ -397,7 +387,7 @@ mod.factory('idCallFlow', [
 
           return if not isWarmTransfer()
 
-          transferCache.remove('type')
+          TransferCache.remove('type')
           if $state.is('dialer.active.transfer.conference')
             idFlashFactory.now('notice', 'Transfer disconnected.', 3000)
             p = $state.go('dialer.active')

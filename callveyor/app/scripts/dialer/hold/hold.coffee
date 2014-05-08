@@ -19,8 +19,8 @@ hold.config([
 ])
 
 hold.controller('HoldCtrl.buttons', [
-  '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService',
-  ($scope,   $state,   $timeout,   $cacheFactory,   callStation,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService) ->
+  '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService',
+  ($scope,   $state,   $timeout,   $cacheFactory,   callStation,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService) ->
     holdCache = $cacheFactory.get('hold') || $cacheFactory('hold')
     hold = holdCache.get('sharedScope')
     unless hold?
@@ -35,8 +35,8 @@ hold.controller('HoldCtrl.buttons', [
     hold.dial = ->
       # update status > 'Dialing...'
       params            = {}
-      contactCache      = $cacheFactory.get('contact')
-      contact           = (contactCache.get('data') || {}).fields
+
+      contact           = (ContactCache.get('data') || {}).fields
       caller            = callStation.data.caller || {}
       params.session_id = caller.session_id
       params.voter_id   = contact.id
@@ -48,18 +48,19 @@ hold.controller('HoldCtrl.buttons', [
 
     hold.skip = ->
       params            = {}
-      contactCache      = $cacheFactory.get('contact')
-      contact           = (contactCache.get('data') || {}).fields
+
+      contact           = (ContactCache.get('data') || {}).fields
       caller            = callStation.data.caller || {}
       params.session_id = caller.session_id
       params.voter_id   = contact.id
 
       hold.callStatusText         = 'Skipping...'
       $scope.transitionInProgress = true
-      promise = idHttpDialerFactory.skipContact(caller.id, params)
+      promise                     = idHttpDialerFactory.skipContact(caller.id, params)
+
       skipSuccess = (payload) ->
         console.log 'skip success', payload
-        contactCache.put('data', payload.data)
+        ContactCache.put('data', payload.data)
         hold.callStatusText = 'Waiting to dial...'
         $scope.$emit('contact:changed')
       skipErr = (errObj) ->
@@ -69,6 +70,7 @@ hold.controller('HoldCtrl.buttons', [
       always = ->
         $scope.transitionInProgress = false
         usSpinnerService.stop('global-spinner')
+
       promise.then(skipSuccess, skipErr).finally(always)
 
     $scope.hold ||= hold

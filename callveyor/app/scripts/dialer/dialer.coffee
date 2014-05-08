@@ -12,7 +12,8 @@ dialer = angular.module('callveyor.dialer', [
   'survey',
   'callveyor.contact',
   'callveyor.call_flow',
-  'idTransition'
+  'idTransition',
+  'idCacheFactories'
 ])
 
 dialer.config([
@@ -27,17 +28,15 @@ dialer.config([
     })
 ])
 
-dialer.factory('callStationCache', [
-  '$cacheFactory',
-  ($cacheFactory) ->
-    $cacheFactory('callStation')
-])
-
 dialer.controller('DialerCtrl', [
-  '$rootScope', '$cacheFactory', 'Pusher', 'idCallFlow', 'transitionValidator', 'callStation', 'callStationCache'
-  ($rootScope,   $cacheFactory,   Pusher,   idCallFlow,   transitionValidator,   callStation,   callStationCache) ->
-    callStationCache.put('data', callStation.data)
-    channel = callStation.data.caller.session_key
+  '$rootScope', 'Pusher', 'idCallFlow', 'transitionValidator', 'callStation', 'CallStationCache'
+  ($rootScope,   Pusher,   idCallFlow,   transitionValidator,   callStation,   CallStationCache) ->
+    data = callStation.data
+    CallStationCache.put('caller', data.caller)
+    CallStationCache.put('campaign', data.campaign)
+    CallStationCache.put('call_station', data.call_station)
+
+    channel = data.caller.session_key
 
     # Enforce state transition rules
     transitionValidator.start()

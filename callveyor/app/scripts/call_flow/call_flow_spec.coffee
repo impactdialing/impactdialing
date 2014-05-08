@@ -55,11 +55,11 @@ describe 'callveyor.call_flow', ->
       it 'updates the callStation.caller.session_id cache w/ data.caller_session_id', ->
         data = {caller_session_id: 42}
         callStation = {caller: {}}
-        callStationCache = $cacheFactory('callStation')
-        callStationCache.put('data', callStation)
+        callStationCache = $cacheFactory('idModuleCache')
+        callStationCache.put('callStation', callStation)
         service.startCalling(data)
-        cache = $cacheFactory.get('callStation')
-        station = cache.get('data')
+        cache = $cacheFactory.get('idModuleCache')
+        station = cache.get('callStation')
         expect(station.caller.session_id).toEqual(data.caller_session_id)
 
     describe 'conferenceStarted(contact)', ->
@@ -69,7 +69,7 @@ describe 'callveyor.call_flow', ->
       campaign = {type: 'blah'}
 
       beforeEach ->
-        callStationCache = $cacheFactory('callStation')
+        callStationCache = $cacheFactory('idModuleCache')
         contactCache     = $cacheFactory('contact')
 
       describe 'when the campaign is out of leads', ->
@@ -88,7 +88,7 @@ describe 'callveyor.call_flow', ->
       describe 'when the campaign is not out of leads', ->
         beforeEach ->
           station = {campaign}
-          callStationCache.put("data", station)
+          callStationCache.put("callStation", station)
           contact = {fields: {id: 12, first_name: 'John', last_name: 'Apple'}}
 
         it 'stores contact as "data" in the "contact" cache', ->
@@ -119,7 +119,7 @@ describe 'callveyor.call_flow', ->
               session_id: 42
             }
             station = {campaign, caller}
-            callStationCache.put("data", station)
+            callStationCache.put("callStation", station)
 
           it 'dials the contact', ->
             service.conferenceStarted(contact)

@@ -25,21 +25,20 @@ active.config(['$stateProvider', ($stateProvider) ->
 ])
 active.controller('ActiveCtrl.status', [->])
 active.controller('ActiveCtrl.buttons', [
-  '$scope', '$state', '$http', '$cacheFactory', 'idFlashFactory',
-  ($scope,   $state,   $http,   $cacheFactory,   idFlashFactory) ->
+  '$scope', '$state', '$http', 'CallCache', 'idFlashFactory',
+  ($scope,   $state,   $http,   CallCache,   idFlashFactory) ->
     console.log 'ActiveCtrl', $scope.dialer
     active = {}
 
     active.hangup = ->
       console.log 'hangup clicked'
       $scope.transitionInProgress = true
-      callCache                   = $cacheFactory.get('call')
 
       # unless callCache?
       #   console.log 'report this problem'
       #   return
 
-      call_id     = callCache.get('id')
+      call_id     = CallCache.get('id')
       stopPromise = $http.post("/call_center/api/#{call_id}/hangup")
 
       success = ->
@@ -69,12 +68,12 @@ active.controller('TransferCtrl.container', [
 ])
 
 active.controller('TransferCtrl.list', [
-  '$scope', '$state', '$filter', '$cacheFactory', 'idFlashFactory',
-  ($scope,   $state,   $filter,   $cacheFactory,   idFlashFactory) ->
-    console.log 'TransferCtrl.list', $cacheFactory.get('transfer')
+  '$scope', '$state', '$filter', 'TransferCache', 'idFlashFactory',
+  ($scope,   $state,   $filter,   TransferCache,   idFlashFactory) ->
+    console.log 'TransferCtrl.list', TransferCache
 
     transfer = {}
-    transfer.cache = $cacheFactory.get('transfer')
+    transfer.cache = TransferCache
     if transfer.cache?
       transfer.list = transfer.cache.get('list') || []
     else
