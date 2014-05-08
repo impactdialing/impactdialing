@@ -31,11 +31,14 @@
         <!-- dialer ui-view -->
         <div data-ui-view>
           <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-            <div class="alert navbar-text col-sm-12"
+            <div class="col-sm-3"></div>
+            <div class="alert navbar-text col-sm-6"
+               data-ng-cloak
                data-ng-show="flash.notice || flash.warning || flash.error || flash.success"
                data-ng-class="{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}">
               {{flash.notice || flash.warning || flash.error || flash.success}}
             </div>
+            <div data-id-logout class="col-sm-3 navbar-right"></div>
           </nav>
         </div>
         <!-- /dialer ui-view -->
@@ -60,7 +63,7 @@
     <!-- Footer -->
     <footer class="navbar navbar-default">
       <div class="container-fluid">
-        <p class="nav navbar-text" data-ng-controller="MetaCtrl">
+        <p class="nav navbar-text" data-ng-controller="MetaCtrl" data-ng-cloak>
           &copy; {{meta.currentYear}}
         </p>
         <ul class="nav navbar-nav">
