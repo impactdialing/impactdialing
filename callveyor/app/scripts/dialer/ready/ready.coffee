@@ -33,7 +33,6 @@ ready.controller('ReadyCtrl.splashModal', [
     }
 
     ready = config || {}
-    $scope.rootScope.callStatusMessage = 'Click Start to begin'
     ready.startCalling = ->
       console.log 'startCalling clicked', config
       $scope.transitionInProgress = true

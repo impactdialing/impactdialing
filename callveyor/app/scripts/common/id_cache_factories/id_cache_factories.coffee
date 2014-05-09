@@ -22,7 +22,44 @@ captureCache = (name) ->
           vendor: navigator.vendor
         }
       }
-      window.idDebugData = data
+
+      simpleData = ->
+        d = {}
+        k = []
+
+        flatten = (val, key) ->
+          k.push("#{key}")
+
+          if angular.isObject val or angular.isArray val
+            angular.forEach(val, flatten)
+          else
+            newKey    = k.join(':')
+            d[newKey] = val
+
+          k.pop()
+
+        angular.forEach(data, flatten)
+        d
+
+      exportData = ->
+        pruneData()
+        window.idDebugData = data
+        window._errs.meta  = simpleData()
+
+      pruneData = ->
+        deleteOldTimes = (items) ->
+          isOld = (v, timestamp) ->
+            curTime        = time()
+            timeSinceCount = curTime - parseInt(timestamp)
+            timeSinceCount > 7000 # 300000 # keep them around for 5 minutes
+
+          deleteOld = (v, timestamp) ->
+            if isOld(v, timestamp)
+              delete(items[timestamp])
+
+          angular.forEach(items, deleteOld)
+
+        deleteOldTimes(data)
 
       time = -> (new Date()).getTime()
 
@@ -31,6 +68,9 @@ captureCache = (name) ->
           t = time()
           data[t] = {}
           data[t]["#{name}Cache:#{key}"] = value
+
+          exportData()
+
           cache.put(key, value)
         get: (key) ->
           cache.get(key)

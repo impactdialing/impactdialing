@@ -116,17 +116,17 @@ callveyor.controller('AppCtrl', [
 
     # handle generic state change conditions
     transitionStart = (event, toState, toParams, fromState, fromParams) ->
-      TransitionCache.put('$stateChangeStart', {event, toState, toParams, fromState, fromParams})
+      TransitionCache.put('$stateChangeStart', {toState: toState.name, fromState: fromState.name})
       usSpinnerService.spin('global-spinner')
       $rootScope.transitionInProgress = true
     transitionComplete = (event, toState, toParams, fromState, fromParams) ->
-      TransitionCache.put('$stateChangeSuccess', {event, toState, toParams, fromState, fromParams})
+      TransitionCache.put('$stateChangeSuccess', {toState: toState.name, fromState: fromState.name})
       $rootScope.transitionInProgress = false
       usSpinnerService.stop('global-spinner')
     transitionError = (event, unfoundState, fromState, fromParams) ->
       # todo: submit error to error collection tool
       console.error 'Error transitioning $state', e, $state.current
-      TransitionCache.put('$stateChangeError', {event, unfoundState, fromState, fromParams})
+      TransitionCache.put('$stateChangeError', {unfoundState: unfoundState.name, fromState: fromState.name})
       # hmm: $stateChangeError seems to not be thrown when preventDefault is called
       # if e.message == 'transition prevented'
       #   # something called .preventDefault, probably the transitionGateway
