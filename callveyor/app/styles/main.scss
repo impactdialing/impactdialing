@@ -1,5 +1,9 @@
 $gray-lighter: lighten(#000, 90%);
 
+.ng-cloak {
+    display: none;
+}
+
 .browsehappy {
     margin: 0.2em 0;
     background: #ccc;
