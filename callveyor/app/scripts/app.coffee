@@ -41,8 +41,6 @@ callveyor = angular.module('callveyor', [
   'callveyor.dialer'
 ])
 
-callveyor.constant 'currentYear', (new Date()).getFullYear()
-
 callveyor.config([
   '$stateProvider', 'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider',
   ($stateProvider,   serviceTokens,   idTwilioServiceProvider,   PusherServiceProvider) ->
@@ -78,11 +76,10 @@ callveyor.controller('AppCtrl.abort', [
 ])
 
 callveyor.controller('MetaCtrl', [
-  '$scope', 'currentYear',
-  ($scope, currentYear) ->
+  '$scope',
+  ($scope) ->
     # todo: de-register the $watch on $scope.meta.currentYear
-    $scope.meta ||= {}
-    $scope.meta.currentYear = currentYear
+    $scope.currentYear = (new Date()).getFullYear()
 ])
 
 callveyor.directive('idLogout', ->
@@ -109,8 +106,8 @@ callveyor.directive('idLogout', ->
 )
 
 callveyor.controller('AppCtrl', [
-  '$rootScope', '$scope', '$state', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache',
-  ($rootScope,   $scope,   $state,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache) ->
+  '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache',
+  ($rootScope,   $scope,   $state,   $timeout,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache) ->
     idFlashFactory.scope = $scope
     $scope.flash = idFlashFactory
 
@@ -139,8 +136,10 @@ callveyor.controller('AppCtrl', [
 
     # handle pusher app-specific events
     markPusherReady = ->
-      p = $state.go('dialer.ready')
-      p.catch(idTransitionPrevented)
+      now = ->
+        p = $state.go('dialer.ready')
+        p.catch(idTransitionPrevented)
+      $timeout(now, 300)
     abortAllAndNotifyUser = ->
       # todo: implement
       console.log 'Unsupported browser...'
