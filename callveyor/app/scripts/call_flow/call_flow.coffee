@@ -20,9 +20,11 @@ mod = angular.module('callveyor.call_flow', [
 ])
 
 mod.factory('idCallFlow', [
-    '$rootScope', '$state', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache'
-    ($rootScope,   $state,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache) ->
+    '$rootScope', '$state', '$window', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache'
+    ($rootScope,   $state,   $window,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache) ->
       isWarmTransfer = -> /warm/i.test(TransferCache.get('type'))
+
+      beforeunloadBeenBound = false
 
       handlers = {
         ##########################################
@@ -59,6 +61,27 @@ mod.factory('idCallFlow', [
           caller = CallStationCache.get('caller')
           console.log 'start_calling', caller
           caller.session_id = data.caller_session_id
+
+          unless beforeunloadBeenBound
+            beforeunloadBeenBound = true
+            # Clean-up after closed windows
+            stopFirst = (ev) ->
+              caller_id         = caller.id
+              params            = {}
+              params.session_id = caller.session_id
+              jQuery.ajax({
+                url : "/call_center/api/#{caller_id}/stop_calling",
+                data : params,
+                type : "POST",
+                async : false,
+                success: ->
+                  # Force the browser to wait for request to complete
+                  # by setting async false and supplying a callback.
+                  # Without the callback the page unload interrupts the request.
+                  console.log 'Bye.'
+              })
+
+            $window.addEventListener('beforeunload', stopFirst)
 
         ##
         # conference_started
