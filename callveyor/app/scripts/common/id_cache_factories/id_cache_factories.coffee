@@ -32,6 +32,8 @@ captureCache = (name) ->
 
           if angular.isObject val or angular.isArray val
             angular.forEach(val, flatten)
+          else if angular.isFunction val
+            # noop
           else
             newKey    = k.join(':')
             d[newKey] = val
