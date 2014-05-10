@@ -14,6 +14,29 @@ wrap.config(['$stateProvider', ($stateProvider) ->
   })
 ])
 
-wrap.controller('WrapCtrl.status', [->])
+wrap.controller('WrapCtrl.status', [
+  '$rootScope', '$scope',
+  ($rootScope,   $scope) ->
+    wrap        = {}
+    wrap.status = 'Waiting for call results.'
+    saveSuccess = false
+
+    successStatus = ->
+      saveSuccess = true
+      wrap.status = 'Results saved.'
+    doneStatus = ->
+      if saveSuccess
+        wrap.status = "Results saved. Waiting for next contact from server."
+      else
+        wrap.status = "Results failed to save. Please try again."
+        $rootScope.transitionInProgress = false
+
+      saveSuccess = false
+
+    $rootScope.$on('survey:save:success', successStatus)
+    $rootScope.$on('survey:save:done', doneStatus)
+
+    $scope.wrap = wrap
+])
 
 wrap.controller('WrapCtrl.buttons', [->])
