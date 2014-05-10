@@ -32,8 +32,6 @@
 
   callveyor = angular.module('callveyor', ['config', 'ui.bootstrap', 'ui.router', 'doowb.angular-pusher', 'pusherConnectionHandlers', 'idTwilio', 'idFlash', 'idTransition', 'idCacheFactories', 'angularSpinner', 'callveyor.dialer']);
 
-  callveyor.constant('currentYear', (new Date()).getFullYear());
-
   callveyor.config([
     '$stateProvider', 'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider', function($stateProvider, serviceTokens, idTwilioServiceProvider, PusherServiceProvider) {
       idTwilioServiceProvider.setScriptUrl('//static.twilio.com/libs/twiliojs/1.1/twilio.js');
@@ -63,9 +61,8 @@
   ]);
 
   callveyor.controller('MetaCtrl', [
-    '$scope', 'currentYear', function($scope, currentYear) {
-      $scope.meta || ($scope.meta = {});
-      return $scope.meta.currentYear = currentYear;
+    '$scope', function($scope) {
+      return $scope.currentYear = (new Date()).getFullYear();
     }
   ]);
 
@@ -93,32 +90,49 @@
   });
 
   callveyor.controller('AppCtrl', [
-    '$rootScope', '$scope', '$state', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', function($rootScope, $scope, $state, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented) {
+    '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', function($rootScope, $scope, $state, $timeout, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented, TransitionCache) {
       var abortAllAndNotifyUser, markPusherReady, transitionComplete, transitionError, transitionStart;
       idFlashFactory.scope = $scope;
       $scope.flash = idFlashFactory;
-      transitionStart = function() {
+      transitionStart = function(event, toState, toParams, fromState, fromParams) {
+        TransitionCache.put('$stateChangeStart', {
+          toState: toState.name,
+          fromState: fromState.name
+        });
         usSpinnerService.spin('global-spinner');
         return $rootScope.transitionInProgress = true;
       };
-      transitionComplete = function() {
+      transitionComplete = function(event, toState, toParams, fromState, fromParams) {
+        TransitionCache.put('$stateChangeSuccess', {
+          toState: toState.name,
+          fromState: fromState.name
+        });
         $rootScope.transitionInProgress = false;
         return usSpinnerService.stop('global-spinner');
       };
-      transitionError = function(e) {
+      transitionError = function(event, unfoundState, fromState, fromParams) {
         console.error('Error transitioning $state', e, $state.current);
+        TransitionCache.put('$stateChangeError', {
+          unfoundState: unfoundState.name,
+          fromState: fromState.name
+        });
         return transitionComplete();
       };
       $rootScope.$on('$stateChangeStart', transitionStart);
       $rootScope.$on('$stateChangeSuccess', transitionComplete);
       $rootScope.$on('$stateChangeError', transitionError);
       markPusherReady = function() {
-        var p;
-        p = $state.go('dialer.ready');
-        return p["catch"](idTransitionPrevented);
+        var now;
+        now = function() {
+          var p;
+          p = $state.go('dialer.ready');
+          return p["catch"](idTransitionPrevented);
+        };
+        return $timeout(now, 300);
       };
       abortAllAndNotifyUser = function() {
-        return console.log('Unsupported browser...');
+        console.log('Unsupported browser...');
+        return TransitionCache.put('pusher:bad_browser', '.');
       };
       $rootScope.$on('pusher:ready', markPusherReady);
       $rootScope.$on('pusher:bad_browser', abortAllAndNotifyUser);

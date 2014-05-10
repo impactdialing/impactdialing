@@ -160,8 +160,8 @@
   ]);
 
   surveyForm.controller('SurveyFormCtrl', [
-    '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', function($rootScope, $scope, $filter, $state, $http, TransferCache, CallCache, usSpinnerService, $timeout, SurveyFormFieldsFactory, idFlashFactory) {
-      var c, cacheTransferList, e, handleStateChange, prepForm, survey;
+    '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', function($rootScope, $scope, $filter, $state, $http, TransferCache, CallCache, usSpinnerService, $timeout, SurveyFormFieldsFactory, idFlashFactory, SurveyCache) {
+      var cacheTransferList, fetchErr, handleStateChange, loadForm, prepForm, survey;
       survey = {};
       cacheTransferList = function(payload) {
         var coldOnly, list;
@@ -172,18 +172,21 @@
         list = $filter('filter')(list, coldOnly);
         return TransferCache.put('list', list);
       };
-      e = function(r) {
-        return console.log('survey load error', r.stack, r.message);
-      };
-      c = function(r) {
-        return console.log('survey load notify', r.stack, r.message);
+      fetchErr = function(e) {
+        ErrorCache.put('SurveyFormFieldsFactory.fetch Error', e);
+        return idFlashFactory.now('error', 'Survey failed to load. Please refresh the page to try again.');
       };
       prepForm = function(payload) {
         SurveyFormFieldsFactory.prepareSurveyForm(payload);
         survey.form = SurveyFormFieldsFactory.data;
-        return cacheTransferList(payload);
+        survey.disable = false;
+        cacheTransferList(payload);
+        return $rootScope.$broadcast('survey:load:success');
       };
-      SurveyFormFieldsFactory.fetch().then(prepForm, e, c);
+      loadForm = function() {
+        survey.disable = true;
+        return SurveyFormFieldsFactory.fetch().then(prepForm, fetchErr);
+      };
       handleStateChange = function(event, toState, toParams, fromState, fromParams) {
         switch (toState.name) {
           case 'dialer.wrap':
@@ -263,7 +266,12 @@
           };
         };
       };
-      $rootScope.$on('survey:save:click', survey.save);
+      if (!SurveyCache.get('eventsBound')) {
+        $rootScope.$on('survey:save:click', survey.save);
+        $rootScope.$on('survey:reload', loadForm);
+        SurveyCache.put('eventsBound', true);
+      }
+      loadForm();
       return $scope.survey || ($scope.survey = survey);
     }
   ]);
@@ -326,7 +334,7 @@
   ]);
 
   ready.controller('ReadyCtrl.splash', [
-    '$scope', '$modal', '$http', '$location', 'ErrorCache', 'idFlashFactory', function($scope, $modal, $http, $location, ErrorCache, idFlashFactory) {
+    '$scope', '$modal', function($scope, $modal) {
       var splash;
       splash = {};
       splash.getStarted = function() {
@@ -741,7 +749,30 @@
     }
   ]);
 
-  wrap.controller('WrapCtrl.status', [function() {}]);
+  wrap.controller('WrapCtrl.status', [
+    '$rootScope', '$scope', function($rootScope, $scope) {
+      var doneStatus, saveSuccess, successStatus;
+      wrap = {};
+      wrap.status = 'Waiting for call results.';
+      saveSuccess = false;
+      successStatus = function() {
+        saveSuccess = true;
+        return wrap.status = 'Results saved.';
+      };
+      doneStatus = function() {
+        if (saveSuccess) {
+          wrap.status = "Results saved. Waiting for next contact from server.";
+        } else {
+          wrap.status = "Results failed to save. Please try again.";
+          $rootScope.transitionInProgress = false;
+        }
+        return saveSuccess = false;
+      };
+      $rootScope.$on('survey:save:success', successStatus);
+      $rootScope.$on('survey:save:done', doneStatus);
+      return $scope.wrap = wrap;
+    }
+  ]);
 
   wrap.controller('WrapCtrl.buttons', [function() {}]);
 
@@ -813,7 +844,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
   'use strict';
 
   $templateCache.put('/callveyor/dialer/dialer.tpl.html',
-    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-3\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"global-spinner\"></span> <!-- callStatus ui-view --><div class=\"navbar-left status\"><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-4\"><p class=\"alert small-text\" data-ng-show=\"flash.notice || flash.warning || flash.error || flash.success\" data-ng-class=\"{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}\">{{flash.notice || flash.warning || flash.error || flash.success}}</p></div><div class=\"col-xs-5\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav add-gutter\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
+    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\" data-ng-cloak=\"\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-3\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"global-spinner\"></span> <!-- callStatus ui-view --><div class=\"navbar-left status\"><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-4\"><p class=\"alert small-text\" data-ng-show=\"flash.notice || flash.warning || flash.error || flash.success\" data-ng-class=\"{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}\">{{flash.notice || flash.warning || flash.error || flash.success}}</p></div><div class=\"col-xs-5\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav add-gutter\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
   );
 
 
@@ -868,7 +899,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
 
   $templateCache.put('/callveyor/dialer/wrap/callStatus.tpl.html',
-    "<span class=\"navbar-text label label-info\">Waiting for call results</span>"
+    "<span class=\"navbar-text label label-info\">{{wrap.status}}</span>"
   );
 
 
