@@ -87,6 +87,9 @@ simpleCache('Twilio')
 # stores active contact data
 simpleCache('Contact')
 
+# stores active survey data
+simpleCache('Survey')
+
 # stores all config data for
 # caller, session, account & campaign info, twilio & pusher tokens
 captureCache('CallStation')
