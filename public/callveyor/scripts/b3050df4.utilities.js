@@ -14,10 +14,61 @@
   captureCache = function(name) {
     return angular.module('idCacheFactories').factory("" + name + "Cache", [
       '$cacheFactory', function($cacheFactory) {
-        var cache, data, debugCache, time;
+        var cache, data, debugCache, exportData, pruneData, simpleData, time;
         cache = $cacheFactory(name);
-        data = {};
-        window.idDebugData = data;
+        data = {
+          navigator: {
+            language: navigator.language,
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            appVersion: navigator.appVersion,
+            vendor: navigator.vendor
+          }
+        };
+        simpleData = function() {
+          var d, flatten, k;
+          d = {};
+          k = [];
+          flatten = function(val, key) {
+            var newKey;
+            k.push("" + key);
+            if (angular.isObject(val || angular.isArray(val))) {
+              angular.forEach(val, flatten);
+            } else if (angular.isFunction(val)) {
+
+            } else {
+              newKey = k.join(':');
+              d[newKey] = val;
+            }
+            return k.pop();
+          };
+          angular.forEach(data, flatten);
+          return d;
+        };
+        exportData = function() {
+          pruneData();
+          window.idDebugData = data;
+          return window._errs.meta = simpleData();
+        };
+        pruneData = function() {
+          var deleteOldTimes;
+          deleteOldTimes = function(items) {
+            var deleteOld, isOld;
+            isOld = function(v, timestamp) {
+              var curTime, timeSinceCount;
+              curTime = time();
+              timeSinceCount = curTime - parseInt(timestamp);
+              return timeSinceCount > 7000;
+            };
+            deleteOld = function(v, timestamp) {
+              if (isOld(v, timestamp)) {
+                return delete items[timestamp];
+              }
+            };
+            return angular.forEach(items, deleteOld);
+          };
+          return deleteOldTimes(data);
+        };
         time = function() {
           return (new Date()).getTime();
         };
@@ -26,7 +77,8 @@
             var t;
             t = time();
             data[t] = {};
-            data[t][key] = value;
+            data[t]["" + name + "Cache:" + key] = value;
+            exportData();
             return cache.put(key, value);
           },
           get: function(key) {
@@ -45,9 +97,13 @@
 
   simpleCache('Contact');
 
+  simpleCache('Survey');
+
   captureCache('CallStation');
 
   captureCache('Error');
+
+  captureCache('Transition');
 
   simpleCache('Flash');
 
@@ -228,11 +284,12 @@
   mod = angular.module('callveyor.call_flow', ['ui.router', 'idFlash', 'idTransition', 'idCacheFactories', 'callveyor.http_dialer']);
 
   mod.factory('idCallFlow', [
-    '$rootScope', '$state', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', function($rootScope, $state, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache) {
-      var handlers, isWarmTransfer;
+    '$rootScope', '$state', '$window', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', function($rootScope, $state, $window, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache) {
+      var beforeunloadBeenBound, handlers, isWarmTransfer;
       isWarmTransfer = function() {
         return /warm/i.test(TransferCache.get('type'));
       };
+      beforeunloadBeenBound = false;
       handlers = {
         survey: {
           save: {
@@ -244,10 +301,29 @@
           }
         },
         startCalling: function(data) {
-          var caller;
+          var caller, stopFirst;
           caller = CallStationCache.get('caller');
           console.log('start_calling', caller);
-          return caller.session_id = data.caller_session_id;
+          caller.session_id = data.caller_session_id;
+          if (!beforeunloadBeenBound) {
+            beforeunloadBeenBound = true;
+            stopFirst = function(ev) {
+              var caller_id, params;
+              caller_id = caller.id;
+              params = {};
+              params.session_id = caller.session_id;
+              return jQuery.ajax({
+                url: "/call_center/api/" + caller_id + "/stop_calling",
+                data: params,
+                type: "POST",
+                async: false,
+                success: function() {
+                  return console.log('Bye.');
+                }
+              });
+            };
+            return $window.addEventListener('beforeunload', stopFirst);
+          }
         },
         /*
         LEGACY-way
@@ -261,7 +337,10 @@
 
         conferenceStarted: function(contact) {
           var caller, campaign, p;
-          console.log('conference_started (preview & power only)');
+          console.log('conference_started (preview & power only)', contact);
+          campaign = CallStationCache.get('campaign');
+          campaign.type = contact.dialer;
+          delete contact.dialer;
           if (contact.campaign_out_of_leads) {
             FlashCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.');
             ContactCache.put('data', {});
@@ -274,7 +353,6 @@
           $rootScope.$broadcast('contact:changed');
           p = $state.go('dialer.hold');
           p["catch"](idTransitionPrevented);
-          campaign = CallStationCache.get('campaign');
           if (campaign.type === 'Power') {
             caller = CallStationCache.get('caller');
             return idHttpDialerFactory.dialContact(caller.id, {
@@ -315,7 +393,22 @@
         - alert('You have been reassigned')
         */
 
-        callerReassigned: function(contact) {},
+        callerReassigned: function(contact) {
+          var campaign, deregister, update;
+          console.log('caller_reassigned', contact);
+          deregister = {};
+          campaign = CallStationCache.get('campaign');
+          campaign.type = contact.campaign_type;
+          campaign.id = contact.campaign_id;
+          delete contact.campaign_type;
+          delete contact.campaign_id;
+          update = function() {
+            deregister();
+            return handlers.conferenceStarted(contact);
+          };
+          deregister = $rootScope.$on('survey:load:success', update);
+          return $rootScope.$broadcast('survey:reload');
+        },
         /*
         LEGACY-way
         - update caller action buttons
