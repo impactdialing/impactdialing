@@ -57,8 +57,8 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 ])
 
 surveyForm.controller('SurveyFormCtrl', [
-  '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory'
-  ($rootScope,   $scope,   $filter,   $state,   $http,   TransferCache,   CallCache,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory) ->
+  '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache',
+  ($rootScope,   $scope,   $filter,   $state,   $http,   TransferCache,   CallCache,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache) ->
     # Init public
     survey = {}
 
@@ -156,7 +156,10 @@ surveyForm.controller('SurveyFormCtrl', [
           question: {}
         }
 
-    $rootScope.$on('survey:save:click', survey.save)
+    deregister = SurveyCache.get('surveySaveClick')
+    if deregister?
+      deregister()
+    SurveyCache.put('surveySaveClick', $rootScope.$on('survey:save:click', survey.save))
 
     $scope.survey ||= survey
 ])
