@@ -71,17 +71,21 @@ surveyForm.controller('SurveyFormCtrl', [
       TransferCache.put('list', list)
     # :endtmp:
 
-    e = (r) -> console.log 'survey load error', r.stack, r.message
-    c = (r) -> console.log 'survey load notify', r.stack, r.message
+    fetchErr = (e) ->
+      ErrorCache.put('SurveyFormFieldsFactory.fetch Error', e)
+      idFlashFactory.now('error', 'Survey failed to load. Please refresh the page to try again.')
     prepForm = (payload) ->
       SurveyFormFieldsFactory.prepareSurveyForm(payload)
       survey.form = SurveyFormFieldsFactory.data
+      survey.disable = false
       # :tmp:
       cacheTransferList(payload)
       # :endtmp:
+      $rootScope.$broadcast('survey:load:success')
 
-
-    SurveyFormFieldsFactory.fetch().then(prepForm, e, c)
+    loadForm = ->
+      survey.disable = true
+      SurveyFormFieldsFactory.fetch().then(prepForm, fetchErr)
 
     handleStateChange = (event, toState, toParams, fromState, fromParams) ->
       switch toState.name
@@ -156,10 +160,12 @@ surveyForm.controller('SurveyFormCtrl', [
           question: {}
         }
 
-    deregister = SurveyCache.get('surveySaveClick')
-    if deregister?
-      deregister()
-    SurveyCache.put('surveySaveClick', $rootScope.$on('survey:save:click', survey.save))
+    unless SurveyCache.get('eventsBound')
+      $rootScope.$on('survey:save:click', survey.save)
+      $rootScope.$on('survey:reload', loadForm)
+      SurveyCache.put('eventsBound', true)
+
+    loadForm()
 
     $scope.survey ||= survey
 ])

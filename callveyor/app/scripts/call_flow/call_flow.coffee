@@ -119,7 +119,11 @@ mod.factory('idCallFlow', [
         - update caller action buttons
         ###
         conferenceStarted: (contact) ->
-          console.log 'conference_started (preview & power only)'
+          console.log 'conference_started (preview & power only)', contact
+
+          campaign      = CallStationCache.get('campaign')
+          campaign.type = contact.dialer
+          delete(contact.dialer)
 
           if contact.campaign_out_of_leads
             FlashCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.')
@@ -135,7 +139,6 @@ mod.factory('idCallFlow', [
           p = $state.go('dialer.hold')
           p.catch(idTransitionPrevented)
 
-          campaign = CallStationCache.get('campaign')
           if campaign.type == 'Power'
             caller = CallStationCache.get('caller')
             # console.log 'dialing for Power', caller
@@ -209,8 +212,20 @@ mod.factory('idCallFlow', [
         - alert('You have been reassigned')
         ###
         callerReassigned: (contact) ->
-          # console.log 'caller_reassigned', contact
+          console.log 'caller_reassigned', contact
+          deregister    = {}
+          campaign      = CallStationCache.get('campaign')
+          campaign.type = contact.campaign_type
+          campaign.id   = contact.campaign_id
+          delete(contact.campaign_type)
+          delete(contact.campaign_id)
 
+          update = ->
+            deregister()
+            handlers.conferenceStarted(contact)
+
+          deregister = $rootScope.$on('survey:load:success', update)
+          $rootScope.$broadcast('survey:reload')
         ##
         # calling_voter
         #
