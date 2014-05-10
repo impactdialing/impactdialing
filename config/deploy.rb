@@ -34,7 +34,9 @@ set :keep_releases, 5
 
 set :bundle_flags,    "--quiet"
 
-namespace :deploy do  
+set :bundle_without, %w{development test e2e}.join(' ')
+
+namespace :deploy do
 
   desc "Full deploy"
   task :default do
@@ -47,7 +49,7 @@ namespace :deploy do
     unicorn.upgrade
     deploy.cleanup
   end
-  
+
   task :symlink_database_config, :roles => :app do
     run <<-CMD
       ln -nfs #{release_path}/config/database.yml.sample #{release_path}/config/database.yml
@@ -56,7 +58,7 @@ namespace :deploy do
 end
 
 
-namespace :unicorn do  
+namespace :unicorn do
 
   task :start, roles => :web do
     sudo "/etc/init.d/unicorn start"
