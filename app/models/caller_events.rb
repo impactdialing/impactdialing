@@ -40,8 +40,12 @@ module CallerEvents
     def publish_caller_reassigned
       unless caller.is_phones_only?
         event_hash = campaign.caller_conference_started_event(nil)
-        Pusher[session_key].trigger!("caller_reassigned", event_hash[:data].merge!(dialer: campaign.type,
-          campaign_name: campaign.name))
+        Pusher[session_key].trigger!("caller_reassigned", event_hash[:data].merge!({
+          dialer: campaign.type,
+          campaign_name: campaign.name,
+          campaign_id: campaign.id,
+          campaign_type: campaign.type
+        }))
       end
     end
   end
