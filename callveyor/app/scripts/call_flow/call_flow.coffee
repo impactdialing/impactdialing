@@ -27,23 +27,6 @@ mod.factory('idCallFlow', [
       beforeunloadBeenBound = false
 
       handlers = {
-        ##########################################
-        # Handlers for events originating in-app #
-        ##########################################
-        ##
-        # survey:save:success
-        #
-        # When this event is $broadcast from the survey module, transition to dialer.hold.
-        survey: {
-          save: {
-            # let pusher events drive $state change, rather than survey save success
-            # success: (eventObj, data) ->
-            done: (eventObj, data) ->
-              if data.andContinue
-                usSpinnerService.spin('global-spinner')
-          }
-        }
-
         ############################################
         # Handlers for events originating remotely #
         ############################################

@@ -28,8 +28,7 @@ wrap.controller('WrapCtrl.status', [
       if saveSuccess
         wrap.status = "Results saved. Waiting for next contact from server."
       else
-        wrap.status = "Results failed to save. Please try again."
-        $rootScope.transitionInProgress = false
+        wrap.status = "Results failed to save."
 
       saveSuccess = false
 

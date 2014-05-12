@@ -1,11 +1,11 @@
 <div data-ng-hide="survey.hideButtons">
   <button class="btn btn-primary navbar-btn"
-          data-ng-click="$emit('survey:save:click', false); transitionInProgress = true"
+          data-ng-click="$emit('survey:save:click', false)"
           data-ng-disabled="transitionInProgress">
           Save &amp; stop calling
   </button>
   <button class="btn btn-primary navbar-btn"
-          data-ng-click="$emit('survey:save:click', true); transitionInProgress = true;"
+          data-ng-click="$emit('survey:save:click', true)"
           data-ng-disabled="transitionInProgress">
           Save &amp; continue
   </button>

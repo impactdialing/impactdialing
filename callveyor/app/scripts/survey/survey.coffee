@@ -72,19 +72,17 @@ surveyForm.controller('SurveyFormCtrl', [
     # :endtmp:
 
     fetchErr = (e) ->
-      ErrorCache.put('SurveyFormFieldsFactory.fetch Error', e)
+      ErrorCache.put('SurveyFormFieldsFactory.fetch.failed', e)
       idFlashFactory.now('error', 'Survey failed to load. Please refresh the page to try again.')
     prepForm = (payload) ->
       SurveyFormFieldsFactory.prepareSurveyForm(payload)
       survey.form = SurveyFormFieldsFactory.data
-      survey.disable = false
       # :tmp:
       cacheTransferList(payload)
       # :endtmp:
       $rootScope.$broadcast('survey:load:success')
 
     loadForm = ->
-      survey.disable = true
       SurveyFormFieldsFactory.fetch().then(prepForm, fetchErr)
 
     handleStateChange = (event, toState, toParams, fromState, fromParams) ->
@@ -92,7 +90,6 @@ surveyForm.controller('SurveyFormCtrl', [
         when 'dialer.wrap'
           survey.hideButtons = false
         else
-          survey.disable = false
           survey.hideButtons = true
 
     $rootScope.$on('$stateChangeSuccess', handleStateChange)
@@ -102,21 +99,17 @@ surveyForm.controller('SurveyFormCtrl', [
       notes: {}
       question: {}
     }
-    survey.disable = false
     survey.hideButtons = true
     survey.requestInProgress = false
 
     survey.save = ($event, andContinue) ->
       if survey.requestInProgress
-        # console.log 'survey.requestInProgress', survey.requestInProgress
+        console.log 'survey.requestInProgress, returning'
         return
 
-      survey.disable = true
-
-      if CallCache?
-        call_id = CallCache.get('id')
-      else
-        # submit error report somewhere
+      call_id = CallCache.get('id')
+      unless call_id?
+        ErrorCache.put('survey.save.failed', "CallCache had no ID.")
         idFlashFactory.now('error', 'You found a bug! Please Report problem and we will have you up and running ASAP.')
         return
 
@@ -125,32 +118,44 @@ surveyForm.controller('SurveyFormCtrl', [
       action = 'submit_result'
       action += '_and_stop' unless andContinue
 
+      successRan = false
+
       success = (resp) ->
+        console.log 'survey.success', resp
         reset()
         idFlashFactory.now('success', 'Results saved.', 4000)
         $rootScope.$broadcast('survey:save:success', {andContinue})
+        successRan = true
       error = (resp) ->
-        # console.log 'error', resp
-        msg = 'Survey results failed to save.'
+        console.log 'survey.error', resp
+        msg = ''
         switch resp.status
           when 400 # bad request, try again and contact support
-            msg += ' The browser sent a bad request. Please try again and Report problem if error continues.'
+            msg += 'Bad request. Try again and Report problem if error continues.'
           when 408, 504 # server/gatewa timeout, try again and contact support
-            msg += ' The browser took too long sending the data. Verify the internet connection before trying again and Report problem if the error continues.'
+            msg += 'Browser took too long sending data. Verify internet connection and try again. Report problem if the error continues.'
           when 500 # server error, try again and contact support
-            msg += ' Server is having some trouble. We are looking into it and will update account holders soon. Please Report problem then Stop calling.'
+            msg += 'Server error. We have been notified and will update account holders soon. Report problem then Stop calling.'
           when 503 # server unavailable/in maintenance, wait a minute, try again and contact support
-            msg += ' Server is undergoing minor maintenance. Please try again in a minute or so and Report problem if the error continues.'
+            msg += 'Minor maintenance in-progress. Try again in a minute or so. Report problem if the error continues.'
           else
-            msg += ' Please try again and Report problem if the error continues.'
+            msg += 'Please try again and Report problem if the error continues.'
         idFlashFactory.now('error', msg)
+        $rootScope.transitionInProgress = false
       always = (resp) ->
+        console.log 'survey.always, successRan', successRan
         survey.requestInProgress = false
-        usSpinnerService.stop('global-spinner')
+        if andContinue and successRan
+          usSpinnerService.spin('global-spinner')
+        else
+          usSpinnerService.stop('global-spinner')
+          $rootScope.transitionInProgress = false
+
         $rootScope.$broadcast('survey:save:done', {andContinue})
 
       # make a request, get a promise
-      survey.requestInProgress = true
+      survey.requestInProgress        = true
+
       $http.post("/call_center/api/#{call_id}/#{action}", survey.responses)
       .then(success, error).finally(always)
 

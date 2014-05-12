@@ -1,5 +1,5 @@
 <div class="col-xs-12">
-  <div class="veil" ng-show="survey.disable"></div>
+  <div class="veil" ng-show="transitionInProgress"></div>
   <form role="form">
     <div class="well" data-ng-repeat="item in survey.form">
       <pre data-ng-if="item.type == 'scriptText'">{{item.content}}</pre>
