@@ -70,3 +70,8 @@ Note `$scope.survey = survey` above. When unit testing this directive any change
 to the `$scope.survey` object from the test itself will be overridden when the controller runs.
 Instead, use `$scope.survey ||= survey` or refactor potential problem properties off of the `survey`
 object and put them directly on `$scope`.
+
+### $scope vs $rootScope
+
+When setting a variable intended for `$rootScope` in an HTML attribute e.g. `data-ng-click="transitionInProgress = true"` it makes it possible to lose
+the reference to the $rootScope property, setting the property on $scope instead.
