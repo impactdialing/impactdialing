@@ -139,7 +139,6 @@ surveyForm.controller('SurveyFormCtrl', [
       success = (resp) ->
         console.log 'survey.success', resp
         reset()
-        idFlashFactory.now('success', 'Results saved.', 4000)
         $rootScope.$broadcast('survey:save:success', {andContinue})
         successRan = true
       error = (resp) ->
