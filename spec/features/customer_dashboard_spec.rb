@@ -13,8 +13,12 @@ def within_nth_caller_cell(row_n, cell_n, &block)
 end
 
 describe 'Client Web Dashboard (/client/index)', admin: true do
+  let(:auth_time){ Time.now }
   let(:user) do
     create(:user)
+  end
+  let(:account) do
+    user.account
   end
   before do
     web_login_as(user)
@@ -41,23 +45,27 @@ describe 'Client Web Dashboard (/client/index)', admin: true do
     end
 
     describe 'listing active campaigns and callers', js: true do
-      let(:account){ user.account }
-
       let(:power_no_calls) do
         create(:power, {
-          account: account
+          account: account,
+          start_time: auth_time,
+          end_time: auth_time
         })
       end
 
       let(:power_extra) do
         create(:power, {
-          account: account
+          account: account,
+          start_time: auth_time,
+          end_time: auth_time
         })
       end
 
       let(:power_campaign) do
         create(:power, {
-          account: account
+          account: account,
+          start_time: auth_time,
+          end_time: auth_time
         })
       end
 
