@@ -958,6 +958,15 @@ angular.module('callveyor.contact').run(['$templateCache', function($templateCac
 
 }]);
 
+angular.module('idFlash').run(['$templateCache', function($templateCache) {
+  'use strict';
+
+  $templateCache.put('/callveyor/common/id_flash/id_flash.tpl.html',
+    "<div data-alert=\"\" data-ng-repeat=\"alert in flash.alerts\" type=\"alert.type\" close=\"flash.dismiss($index)\">{{alert.message}}</div>"
+  );
+
+}]);
+
 angular.module('survey').run(['$templateCache', function($templateCache) {
   'use strict';
 
