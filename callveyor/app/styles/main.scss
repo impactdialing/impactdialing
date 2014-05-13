@@ -175,3 +175,16 @@ ul.nav.navbar-nav.add-gutter {
         top: 0;
     }
 }
+
+@media (min-width: 768px) {
+    .dl-horizontal {
+        dt {
+            width: 35%;
+            margin-left: 3%;
+        }
+        dd {
+            width: 45%;
+            margin-left: 40%;
+        }
+    }
+}
