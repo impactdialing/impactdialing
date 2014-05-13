@@ -116,7 +116,7 @@ ul.nav.navbar-nav.add-gutter {
     }
 }
 
-.fixed-box-container {
+.fixed-contact-container {
   margin-left: -250px;
   left: 250px;
   width: 33%;
@@ -127,13 +127,27 @@ ul.nav.navbar-nav.add-gutter {
   transition: all 0.4s ease 0s;
 }
 
-.fixed-box {
+.fixed-contact {
   position: absolute;
   top: 0;
   width: 95%;
   list-style: none;
   margin: 10px;
   padding: 5px;
+}
+
+.fixed-messages-container {
+    position: fixed;
+    width: 66%;
+    z-index: 1000;
+    transition: all 0.4s ease 1s;
+    left: 16%;
+    position: fixed;
+}
+
+.fixed-messages {
+    position: absolute;
+    width: 100%;
 }
 
 @media (max-width: 767px) {
@@ -146,14 +160,14 @@ ul.nav.navbar-nav.add-gutter {
             padding-right: 25px;
         }
     }
-    .fixed-box-container {
+    .fixed-contact-container {
         position: relative;
         height: auto;
         margin: 15px 0;
         width: auto;
         left: 0;
     }
-    .fixed-box {
+    .fixed-contact {
         position: relative;
         width: auto;
         margin: auto;

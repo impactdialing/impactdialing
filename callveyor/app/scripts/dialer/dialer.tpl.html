@@ -2,7 +2,7 @@
 <nav class="navbar navbar-default navbar-fixed-top" role="navigation" data-ng-cloak>
   <div class="container-fluid">
     <div class="row">
-      <div class="col-xs-3">
+      <div class="col-xs-6">
         <span data-us-spinner="{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}" data-spinner-key="global-spinner"></span>
         <!-- callStatus ui-view -->
         <div class="navbar-left status">
@@ -13,15 +13,7 @@
         <!-- /callStatus ui-view -->
       </div>
 
-      <div class="col-xs-4">
-        <p class="alert small-text"
-           data-ng-show="flash.notice || flash.warning || flash.error || flash.success"
-           data-ng-class="{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}">
-          {{flash.notice || flash.warning || flash.error || flash.success}}
-        </p>
-      </div>
-
-      <div class="col-xs-5">
+      <div class="col-xs-6">
         <!-- callFlowButtons ui-view -->
         <div class="navbar-right">
           <ul class="nav navbar-nav add-gutter">

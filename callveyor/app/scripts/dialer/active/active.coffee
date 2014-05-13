@@ -51,7 +51,7 @@ active.controller('ActiveCtrl.buttons', [
 
       error = (resp) ->
         console.log 'error trying to stop calling', resp
-        idFlashFactory.now('error', 'Error. Try again.')
+        idFlashFactory.now('danger', 'Error. Try again.')
 
       stopPromise.then(success, error)
 
@@ -96,7 +96,7 @@ active.controller('TransferCtrl.list', [
         c = (r) -> console.log 'notify', r.stack, r.message
         p.then(s,e,c)
       else
-        idFlashFactory.now('error', 'Error loading selected transfer. Please try again and Report problem if error continues.', 5000)
+        idFlashFactory.now('danger', 'Error loading selected transfer. Please try again and Report problem if error continues.')
 
     $scope.transfer = transfer
 ])

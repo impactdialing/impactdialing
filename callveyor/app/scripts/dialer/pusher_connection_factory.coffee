@@ -12,7 +12,7 @@ mod.factory('pusherConnectionHandlerFactory', [
 
     pusherError = (wtf) ->
       # console.log 'pusherError', wtf
-      idFlashFactory.now('error', 'Something went wrong. We have been notified and will begin troubleshooting ASAP.')
+      idFlashFactory.now('danger', 'Something went wrong. We have been notified and will begin troubleshooting ASAP.')
 
     reConnecting = (wtf) ->
       # console.log 'temporaryConnectionFailure', wtf
@@ -35,7 +35,7 @@ mod.factory('pusherConnectionHandlerFactory', [
       success: (pusher) ->
         connecting = ->
           # console.log 'pusher-connecting'
-          idFlashFactory.now('notice', 'Establishing real-time connection...')
+          idFlashFactory.now('info', 'Establishing real-time connection...')
           pusher.connection.unbind('connecting', connecting)
           pusher.connection.bind('connecting', reConnecting)
           usSpinnerService.spin('global-spinner')
@@ -59,7 +59,7 @@ mod.factory('pusherConnectionHandlerFactory', [
         pusher.connection.bind('unavailable', connectionFailure)
       # Service did not resolve successfully. Most likely the pusher lib failed to load.
       loadError: ->
-        idFlashFactory.now('error', 'Browser failed to load a required resource. Please try again and Report problem if error continues.')
+        idFlashFactory.now('danger', 'Browser failed to load a required resource. Please try again and Report problem if error continues.')
     }
 
     connectionHandler

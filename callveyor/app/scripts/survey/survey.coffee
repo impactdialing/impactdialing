@@ -56,11 +56,29 @@ surveyForm.factory('SurveyFormFieldsFactory', [
     }
 ])
 
+##
+# SurveyFormCtrl manages
+# - loading of survey form data, including the list of transfers
+#   associated w/ the campaign
+# - saving survey responses
+#
+# Notifications:
+# - survey:load:success - $broadcast when form data is fetched and loaded.
+# - survey:save:success, {andContinue} - $broadcast when survey save returns success response
+# - survey:save:done, {andContinue} - $broadcast when survey save returns failure response
+#
+# Listeners:
+# - $stateChangeSuccess - triggers hide/show buttons according to toState.name
+# - survey:save:click - triggers survey response submission
+# - survey:reload - triggers re-fetch/load of survey form data & transfer list
+#
 surveyForm.controller('SurveyFormCtrl', [
   '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache',
   ($rootScope,   $scope,   $filter,   $state,   $http,   TransferCache,   CallCache,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache) ->
     # Init public
-    survey = {}
+    survey = {
+      hideButtons: true
+    }
 
     # :tmp: to maintain back compat (where transfers are sent alongside call script data)
     # todo: move transfer data out of survey related modules to dialer
@@ -73,7 +91,7 @@ surveyForm.controller('SurveyFormCtrl', [
 
     fetchErr = (e) ->
       ErrorCache.put('SurveyFormFieldsFactory.fetch.failed', e)
-      idFlashFactory.now('error', 'Survey failed to load. Please refresh the page to try again.')
+      idFlashFactory.now('danger', 'Survey failed to load. Please refresh the page to try again.')
     prepForm = (payload) ->
       SurveyFormFieldsFactory.prepareSurveyForm(payload)
       survey.form = SurveyFormFieldsFactory.data
@@ -99,18 +117,17 @@ surveyForm.controller('SurveyFormCtrl', [
       notes: {}
       question: {}
     }
-    survey.hideButtons = true
-    survey.requestInProgress = false
 
+    requestInProgress = false
     survey.save = ($event, andContinue) ->
-      if survey.requestInProgress
+      if requestInProgress
         console.log 'survey.requestInProgress, returning'
         return
 
       call_id = CallCache.get('id')
       unless call_id?
         ErrorCache.put('survey.save.failed', "CallCache had no ID.")
-        idFlashFactory.now('error', 'You found a bug! Please Report problem and we will have you up and running ASAP.')
+        idFlashFactory.now('danger', 'You found a bug! Please Report problem and we will have you up and running ASAP.')
         return
 
       usSpinnerService.spin('global-spinner')
@@ -119,7 +136,6 @@ surveyForm.controller('SurveyFormCtrl', [
       action += '_and_stop' unless andContinue
 
       successRan = false
-
       success = (resp) ->
         console.log 'survey.success', resp
         reset()
@@ -140,11 +156,12 @@ surveyForm.controller('SurveyFormCtrl', [
             msg += 'Minor maintenance in-progress. Try again in a minute or so. Report problem if the error continues.'
           else
             msg += 'Please try again and Report problem if the error continues.'
-        idFlashFactory.now('error', msg)
+        idFlashFactory.now('danger', msg)
         $rootScope.transitionInProgress = false
       always = (resp) ->
         console.log 'survey.always, successRan', successRan
-        survey.requestInProgress = false
+        requestInProgress = false
+
         if andContinue and successRan
           usSpinnerService.spin('global-spinner')
         else
@@ -153,9 +170,9 @@ surveyForm.controller('SurveyFormCtrl', [
 
         $rootScope.$broadcast('survey:save:done', {andContinue})
 
+      requestInProgress               = true
+      $rootScope.transitionInProgress = true
       # make a request, get a promise
-      survey.requestInProgress        = true
-
       $http.post("/call_center/api/#{call_id}/#{action}", survey.responses)
       .then(success, error).finally(always)
 

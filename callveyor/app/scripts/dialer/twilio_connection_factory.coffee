@@ -30,7 +30,7 @@ mod.factory('idTwilioConnectionFactory', [
 
       error: (error) ->
         console.log 'report this problem', error
-        idFlashFactory.now('error', 'Browser phone could not connect to the call center. Please dial-in to continue.', 5000)
+        idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please dial-in to continue.')
         p = $state.go('dialer.ready')
         p.catch(idTransitionPrevented)
 
@@ -44,7 +44,7 @@ mod.factory('idTwilioConnectionFactory', [
 
       resolveError: (err) ->
         console.log 'idTwilioService error', err
-        idFlashFactory.now('error', 'Browser phone setup failed. Please dial-in to continue.', 5000)
+        idFlashFactory.now('danger', 'Browser phone setup failed. Please dial-in to continue.')
     }
 
     factory

@@ -60,7 +60,7 @@ callveyor.controller('AppCtrl.abort', [
   ($http,   TwilioCache,   FlashCache,   PusherService,   idFlashFactory) ->
     console.log 'AppCtrl.abort', FlashCache.get('error'), FlashCache.info()
     flash = FlashCache.get('error')
-    idFlashFactory.now('error', flash)
+    idFlashFactory.now('danger', flash)
     FlashCache.remove('error')
     console.log 'AppCtrl.abort', flash
 
@@ -98,7 +98,7 @@ callveyor.directive('idLogout', ->
             window.location.reload(true)
           err = (e) ->
             ErrorCache.put("logout.failed", e)
-            idFlashFactory.now('error', "Logout failed.")
+            idFlashFactory.now('danger', "Logout failed.")
 
           promise.then(suc,err)
     ]
@@ -108,9 +108,7 @@ callveyor.directive('idLogout', ->
 callveyor.controller('AppCtrl', [
   '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache',
   ($rootScope,   $scope,   $state,   $timeout,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache) ->
-    idFlashFactory.scope = $scope
-    $scope.flash = idFlashFactory
-
+    $rootScope.transitionInProgress = false
     # handle generic state change conditions
     transitionStart = (event, toState, toParams, fromState, fromParams) ->
       TransitionCache.put('$stateChangeStart', {toState: toState.name, fromState: fromState.name})
