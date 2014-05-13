@@ -390,6 +390,15 @@ module.exports = function (grunt) {
           'dialer/contact/*.tpl.html'
         ]
       },
+      'idFlash': {
+        module: 'idFlash',
+        standalone: false,
+        dest: 'app/scripts/flash-templates.js',
+        cwd: 'app/scripts',
+        src: [
+          'common/id_flash/*.tpl.html'
+        ]
+      },
       /*
       TODO:
       put survey-templates.js somewhere useful for tests
