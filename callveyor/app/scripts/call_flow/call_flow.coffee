@@ -358,7 +358,7 @@ mod.factory('idCallFlow', [
           console.log 'transfer_connected', data
           # TransferCache.put('id', data.call_id)
           TransferCache.put('type', data.type)
-          idFlashFactory.now('notice', 'Transfer connected.', 3000)
+          # idFlashFactory.now('info', 'Transfer connected.')
           # $state.go('dialer.active.transfer.conference')
 
         ##
@@ -369,11 +369,11 @@ mod.factory('idCallFlow', [
         contactJoinedTransferConference: ->
           console.log 'contactJoinedTransferConference'
           if not isWarmTransfer()
-            # idFlashFactory.now('notice', 'Transfer & Contact connected.', 3000)
+            # idFlashFactory.now('info', 'Transfer & Contact connected.')
             p = $state.go('dialer.wrap')
             p.catch(idTransitionPrevented)
           # else
-          #   idFlashFactory.now('notice', 'Transfer & Contact connected.', 3000)
+          #   idFlashFactory.now('info', 'Transfer & Contact connected.')
 
         ##
         # caller_joined_transfer_conference
@@ -382,7 +382,7 @@ mod.factory('idCallFlow', [
         #
         callerJoinedTransferConference: ->
           console.log 'callerJoinedTransferConference'
-          # idFlashFactory.now('notice', 'Transfer, Contact & you connected.', 3000)
+          # idFlashFactory.now('info', 'Transfer, Contact & you connected.')
           p = $state.go('dialer.active.transfer.conference')
           p.catch(idTransitionPrevented)
 
@@ -410,11 +410,11 @@ mod.factory('idCallFlow', [
 
           TransferCache.remove('type')
           if $state.is('dialer.active.transfer.conference')
-            idFlashFactory.now('notice', 'Transfer disconnected.', 3000)
+            # idFlashFactory.now('info', 'Transfer disconnected.')
             p = $state.go('dialer.active')
             p.catch(idTransitionPrevented)
-          else if $state.is('dialer.wrap')
-            idFlashFactory.now('notice', 'All other parties have already disconnected.', 3000)
+          # else if $state.is('dialer.wrap')
+            # idFlashFactory.now('info', 'All other parties have already disconnected.')
 
         ##
         # warm_transfer
@@ -431,7 +431,7 @@ mod.factory('idCallFlow', [
         ###
         warmTransfer: ->
           console.log 'warm_transfer deprecated'
-          # idFlashFactory.now('notice', 'Joining conference...', 3000)
+          # idFlashFactory.now('info', 'Joining conference...')
           # $state.go('dialer.active.transfer.conference')
 
         ##
@@ -452,7 +452,7 @@ mod.factory('idCallFlow', [
         ###
         coldTransfer: ->
           console.log 'cold_transfer deprecated'
-          # idFlashFactory.now('notice', 'Transfer complete.', 3000)
+          # idFlashFactory.now('info', 'Transfer complete.')
           # $state.go('dialer.wrap')
 
         ##

@@ -31,24 +31,26 @@
         <!-- dialer ui-view -->
         <div data-ui-view>
           <nav class="navbar navbar-default navbar-fixed-top ng-cloak" role="navigation">
-            <div class="col-sm-3"></div>
-            <div class="alert navbar-text col-sm-6"
-               data-ng-show="flash.notice || flash.warning || flash.error || flash.success"
-               data-ng-class="{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}">
-              {{flash.notice || flash.warning || flash.error || flash.success}}
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-sm-10"></div>
+                <div data-id-logout class="col-sm-2 navbar-right"></div>
+              </div>
             </div>
-            <div data-id-logout class="col-sm-3 navbar-right"></div>
           </nav>
         </div>
         <!-- /dialer ui-view -->
         <div class="row">
           <div class="col-sm-4" data-ng-controller="ContactCtrl">
             <!-- contactInfo ui-view -->
-            <div class="fixed-box-container" data-id-contact></div>
+            <div class="fixed-contact-container" data-id-contact></div>
             <!-- /contactInfo ui-view -->
+            <div class="fixed-messages-container">
+              <div class="fixed-messages" data-id-user-messages></div>
+            </div>
           </div>
           <!-- survey -->
-          <div class="col-sm-8" data-ng-controller="SurveyFormCtrl">
+          <div class="col-sm-8">
             <div class="row script" data-id-survey></div>
           </div>
           <!-- /survey -->
@@ -161,7 +163,7 @@
     <script src="scripts/services/id_script_loader.js"></script>
     <script src="scripts/services/id_twilio_client.js"></script>
     <script src="scripts/http_dialer/http_dialer.js"></script>
-    <script src="scripts/services/id_flash_factory.js"></script>
+    <script src="scripts/common/id_flash/id_flash.js"></script>
     <!-- endbuild -->
     <!-- build:js({.tmp,app}) /callveyor/scripts/scripts.js -->
     <script src="scripts/dialer/dialer.js"></script>
