@@ -49,7 +49,7 @@
       var flash, twilioConnection;
       console.log('AppCtrl.abort', FlashCache.get('error'), FlashCache.info());
       flash = FlashCache.get('error');
-      idFlashFactory.now('error', flash);
+      idFlashFactory.now('danger', flash);
       FlashCache.remove('error');
       console.log('AppCtrl.abort', flash);
       twilioConnection = TwilioCache.get('connection');
@@ -80,7 +80,7 @@
             };
             err = function(e) {
               ErrorCache.put("logout.failed", e);
-              return idFlashFactory.now('error', "Logout failed.");
+              return idFlashFactory.now('danger', "Logout failed.");
             };
             return promise.then(suc, err);
           };
@@ -92,8 +92,7 @@
   callveyor.controller('AppCtrl', [
     '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', function($rootScope, $scope, $state, $timeout, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented, TransitionCache) {
       var abortAllAndNotifyUser, markPusherReady, transitionComplete, transitionError, transitionStart;
-      idFlashFactory.scope = $scope;
-      $scope.flash = idFlashFactory;
+      $rootScope.transitionInProgress = false;
       transitionStart = function(event, toState, toParams, fromState, fromParams) {
         TransitionCache.put('$stateChangeStart', {
           toState: toState.name,

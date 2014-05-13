@@ -172,7 +172,7 @@
     '$rootScope', 'usSpinnerService', 'idFlashFactory', function($rootScope, usSpinnerService, idFlashFactory) {
       var browserNotSupported, connectingIn, connectionFailure, connectionHandler, pusherError, reConnecting;
       pusherError = function(wtf) {
-        return idFlashFactory.now('error', 'Something went wrong. We have been notified and will begin troubleshooting ASAP.');
+        return idFlashFactory.now('danger', 'Something went wrong. We have been notified and will begin troubleshooting ASAP.');
       };
       reConnecting = function(wtf) {
         return idFlashFactory.now('warning', 'Your browser has lost its connection. Reconnecting...');
@@ -190,7 +190,7 @@
         success: function(pusher) {
           var connecting, initialConnectedHandler, runTimeConnectedHandler;
           connecting = function() {
-            idFlashFactory.now('notice', 'Establishing real-time connection...');
+            idFlashFactory.now('info', 'Establishing real-time connection...');
             pusher.connection.unbind('connecting', connecting);
             pusher.connection.bind('connecting', reConnecting);
             return usSpinnerService.spin('global-spinner');
@@ -212,7 +212,7 @@
           return pusher.connection.bind('unavailable', connectionFailure);
         },
         loadError: function() {
-          return idFlashFactory.now('error', 'Browser failed to load a required resource. Please try again and Report problem if error continues.');
+          return idFlashFactory.now('danger', 'Browser failed to load a required resource. Please try again and Report problem if error continues.');
         }
       };
       return connectionHandler;
@@ -252,7 +252,7 @@
         error: function(error) {
           var p;
           console.log('report this problem', error);
-          idFlashFactory.now('error', 'Browser phone could not connect to the call center. Please dial-in to continue.', 5000);
+          idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please dial-in to continue.');
           p = $state.go('dialer.ready');
           return p["catch"](idTransitionPrevented);
         },
@@ -265,7 +265,7 @@
         },
         resolveError: function(err) {
           console.log('idTwilioService error', err);
-          return idFlashFactory.now('error', 'Browser phone setup failed. Please dial-in to continue.', 5000);
+          return idFlashFactory.now('danger', 'Browser phone setup failed. Please dial-in to continue.');
         }
       };
       return factory;
@@ -291,15 +291,6 @@
       };
       beforeunloadBeenBound = false;
       handlers = {
-        survey: {
-          save: {
-            done: function(eventObj, data) {
-              if (data.andContinue) {
-                return usSpinnerService.spin('global-spinner');
-              }
-            }
-          }
-        },
         startCalling: function(data) {
           var caller, stopFirst;
           caller = CallStationCache.get('caller');
@@ -496,8 +487,7 @@
 
         transferConnected: function(data) {
           console.log('transfer_connected', data);
-          TransferCache.put('type', data.type);
-          return idFlashFactory.now('notice', 'Transfer connected.', 3000);
+          return TransferCache.put('type', data.type);
         },
         contactJoinedTransferConference: function() {
           var p;
@@ -529,11 +519,8 @@
           }
           TransferCache.remove('type');
           if ($state.is('dialer.active.transfer.conference')) {
-            idFlashFactory.now('notice', 'Transfer disconnected.', 3000);
             p = $state.go('dialer.active');
             return p["catch"](idTransitionPrevented);
-          } else if ($state.is('dialer.wrap')) {
-            return idFlashFactory.now('notice', 'All other parties have already disconnected.', 3000);
           }
         },
         /*
@@ -751,50 +738,37 @@
     '$timeout', function($timeout) {
       var flash;
       flash = {
-        _validKeys: ['success', 'notice', 'warning', 'error'],
-        clear: function() {
-          var key, _i, _len, _ref, _results;
-          _ref = flash._validKeys;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            key = _ref[_i];
-            if (flash[key] != null) {
-              flash[key] = void 0;
-              _results.push($timeout(function() {
-                return flash.scope.$apply();
-              }));
-            } else {
-              _results.push(void 0);
-            }
-          }
-          return _results;
+        alerts: [],
+        now: function(type, message) {
+          return flash.alerts.push({
+            type: type,
+            message: message
+          });
         },
-        now: function(key, msg, autoRemoveSeconds) {
-          var k, _i, _len, _ref;
-          autoRemoveSeconds || (autoRemoveSeconds = 0);
-          this.clear();
-          _ref = this._validKeys;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            k = _ref[_i];
-            if (key === k) {
-              this[k] = msg;
-              $timeout(function() {
-                return flash.scope.$apply();
-              });
-            }
-          }
-          if (autoRemoveSeconds > 0) {
-            $timeout(this.clear, autoRemoveSeconds);
-          }
-          return this;
+        dismiss: function(index) {
+          return flash.alerts.splice(index, 1);
         }
       };
       return flash;
     }
   ]);
 
+  userMessages.controller('idFlashCtrl', [
+    '$scope', 'idFlashFactory', function($scope, idFlashFactory) {
+      return $scope.flash = idFlashFactory;
+    }
+  ]);
+
+  userMessages.directive('idUserMessages', function() {
+    return {
+      restrict: 'A',
+      templateUrl: '/callveyor/common/id_flash/id_flash.tpl.html',
+      controller: 'idFlashCtrl'
+    };
+  });
+
 }).call(this);
 
 /*
-//@ sourceMappingURL=id_flash_factory.js.map
+//@ sourceMappingURL=id_flash.js.map
 */

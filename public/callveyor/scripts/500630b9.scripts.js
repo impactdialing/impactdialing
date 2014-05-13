@@ -28,8 +28,6 @@
       CallStationCache.put('call_station', data.call_station);
       channel = data.caller.session_key;
       transitionValidator.start();
-      $rootScope.$on('survey:save:success', idCallFlow.survey.save.success);
-      $rootScope.$on('survey:save:done', idCallFlow.survey.save.done);
       Pusher.subscribe(channel, 'start_calling', idCallFlow.startCalling);
       Pusher.subscribe(channel, 'conference_started', idCallFlow.conferenceStarted);
       Pusher.subscribe(channel, 'caller_connected_dialer', idCallFlow.callerConnectedDialer);
@@ -161,8 +159,10 @@
 
   surveyForm.controller('SurveyFormCtrl', [
     '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', function($rootScope, $scope, $filter, $state, $http, TransferCache, CallCache, usSpinnerService, $timeout, SurveyFormFieldsFactory, idFlashFactory, SurveyCache) {
-      var cacheTransferList, fetchErr, handleStateChange, loadForm, prepForm, survey;
-      survey = {};
+      var cacheTransferList, fetchErr, handleStateChange, loadForm, prepForm, requestInProgress, survey;
+      survey = {
+        hideButtons: true
+      };
       cacheTransferList = function(payload) {
         var coldOnly, list;
         list = payload.data.transfers;
@@ -173,18 +173,16 @@
         return TransferCache.put('list', list);
       };
       fetchErr = function(e) {
-        ErrorCache.put('SurveyFormFieldsFactory.fetch Error', e);
-        return idFlashFactory.now('error', 'Survey failed to load. Please refresh the page to try again.');
+        ErrorCache.put('SurveyFormFieldsFactory.fetch.failed', e);
+        return idFlashFactory.now('danger', 'Survey failed to load. Please refresh the page to try again.');
       };
       prepForm = function(payload) {
         SurveyFormFieldsFactory.prepareSurveyForm(payload);
         survey.form = SurveyFormFieldsFactory.data;
-        survey.disable = false;
         cacheTransferList(payload);
         return $rootScope.$broadcast('survey:load:success');
       };
       loadForm = function() {
-        survey.disable = true;
         return SurveyFormFieldsFactory.fetch().then(prepForm, fetchErr);
       };
       handleStateChange = function(event, toState, toParams, fromState, fromParams) {
@@ -192,7 +190,6 @@
           case 'dialer.wrap':
             return survey.hideButtons = false;
           default:
-            survey.disable = false;
             return survey.hideButtons = true;
         }
       };
@@ -201,19 +198,17 @@
         notes: {},
         question: {}
       };
-      survey.disable = false;
-      survey.hideButtons = true;
-      survey.requestInProgress = false;
+      requestInProgress = false;
       survey.save = function($event, andContinue) {
-        var action, always, call_id, error, reset, success;
-        if (survey.requestInProgress) {
+        var action, always, call_id, error, reset, success, successRan;
+        if (requestInProgress) {
+          console.log('survey.requestInProgress, returning');
           return;
         }
-        survey.disable = true;
-        if (CallCache != null) {
-          call_id = CallCache.get('id');
-        } else {
-          idFlashFactory.now('error', 'You found a bug! Please Report problem and we will have you up and running ASAP.');
+        call_id = CallCache.get('id');
+        if (call_id == null) {
+          ErrorCache.put('survey.save.failed', "CallCache had no ID.");
+          idFlashFactory.now('danger', 'You found a bug! Please Report problem and we will have you up and running ASAP.');
           return;
         }
         usSpinnerService.spin('global-spinner');
@@ -221,43 +216,54 @@
         if (!andContinue) {
           action += '_and_stop';
         }
+        successRan = false;
         success = function(resp) {
+          console.log('survey.success', resp);
           reset();
-          idFlashFactory.now('success', 'Results saved.', 4000);
-          return $rootScope.$broadcast('survey:save:success', {
+          $rootScope.$broadcast('survey:save:success', {
             andContinue: andContinue
           });
+          return successRan = true;
         };
         error = function(resp) {
           var msg;
-          msg = 'Survey results failed to save.';
+          console.log('survey.error', resp);
+          msg = '';
           switch (resp.status) {
             case 400:
-              msg += ' The browser sent a bad request. Please try again and Report problem if error continues.';
+              msg += 'Bad request. Try again and Report problem if error continues.';
               break;
             case 408:
             case 504:
-              msg += ' The browser took too long sending the data. Verify the internet connection before trying again and Report problem if the error continues.';
+              msg += 'Browser took too long sending data. Verify internet connection and try again. Report problem if the error continues.';
               break;
             case 500:
-              msg += ' Server is having some trouble. We are looking into it and will update account holders soon. Please Report problem then Stop calling.';
+              msg += 'Server error. We have been notified and will update account holders soon. Report problem then Stop calling.';
               break;
             case 503:
-              msg += ' Server is undergoing minor maintenance. Please try again in a minute or so and Report problem if the error continues.';
+              msg += 'Minor maintenance in-progress. Try again in a minute or so. Report problem if the error continues.';
               break;
             default:
-              msg += ' Please try again and Report problem if the error continues.';
+              msg += 'Please try again and Report problem if the error continues.';
           }
-          return idFlashFactory.now('error', msg);
+          idFlashFactory.now('danger', msg);
+          return $rootScope.transitionInProgress = false;
         };
         always = function(resp) {
-          survey.requestInProgress = false;
-          usSpinnerService.stop('global-spinner');
+          console.log('survey.always, successRan', successRan);
+          requestInProgress = false;
+          if (andContinue && successRan) {
+            usSpinnerService.spin('global-spinner');
+          } else {
+            usSpinnerService.stop('global-spinner');
+            $rootScope.transitionInProgress = false;
+          }
           return $rootScope.$broadcast('survey:save:done', {
             andContinue: andContinue
           });
         };
-        survey.requestInProgress = true;
+        requestInProgress = true;
+        $rootScope.transitionInProgress = true;
         $http.post("/call_center/api/" + call_id + "/" + action, survey.responses).then(success, error)["finally"](always);
         return reset = function() {
           return survey.responses = {
@@ -513,7 +519,7 @@
         };
         error = function(resp) {
           console.log('error trying to stop calling', resp);
-          return idFlashFactory.now('error', 'Error. Try again.');
+          return idFlashFactory.now('danger', 'Error. Try again.');
         };
         return stopPromise.then(success, error);
       };
@@ -565,7 +571,7 @@
           };
           return p.then(s, e, c);
         } else {
-          return idFlashFactory.now('error', 'Error loading selected transfer. Please try again and Report problem if error continues.', 5000);
+          return idFlashFactory.now('danger', 'Error loading selected transfer. Please try again and Report problem if error continues.');
         }
       };
       return $scope.transfer = transfer;
@@ -763,8 +769,7 @@
         if (saveSuccess) {
           wrap.status = "Results saved. Waiting for next contact from server.";
         } else {
-          wrap.status = "Results failed to save. Please try again.";
-          $rootScope.transitionInProgress = false;
+          wrap.status = "Results failed to save.";
         }
         return saveSuccess = false;
       };
@@ -844,7 +849,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
   'use strict';
 
   $templateCache.put('/callveyor/dialer/dialer.tpl.html',
-    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\" data-ng-cloak=\"\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-3\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"global-spinner\"></span> <!-- callStatus ui-view --><div class=\"navbar-left status\"><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-4\"><p class=\"alert small-text\" data-ng-show=\"flash.notice || flash.warning || flash.error || flash.success\" data-ng-class=\"{'alert-info': flash.notice, 'alert-warning': flash.warning, 'alert-danger': flash.error, 'alert-success': flash.success}\">{{flash.notice || flash.warning || flash.error || flash.success}}</p></div><div class=\"col-xs-5\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav add-gutter\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
+    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\" data-ng-cloak=\"\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-6\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"global-spinner\"></span> <!-- callStatus ui-view --><div class=\"navbar-left status\"><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-6\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav add-gutter\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
   );
 
 
@@ -894,7 +899,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
 
   $templateCache.put('/callveyor/dialer/wrap/callFlowButtons.tpl.html',
-    "<div data-ng-hide=\"survey.hideButtons\"><button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', false); transitionInProgress = true\" data-ng-disabled=\"transitionInProgress\">Save &amp; stop calling</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', true); transitionInProgress = true;\" data-ng-disabled=\"transitionInProgress\">Save &amp; continue</button></div>"
+    "<div data-ng-hide=\"survey.hideButtons\"><button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', false)\" data-ng-disabled=\"transitionInProgress\">Save &amp; stop calling</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', true)\" data-ng-disabled=\"transitionInProgress\">Save &amp; continue</button></div>"
   );
 
 
@@ -948,7 +953,7 @@ angular.module('callveyor.contact').run(['$templateCache', function($templateCac
   'use strict';
 
   $templateCache.put('/callveyor/dialer/contact/info.tpl.html',
-    "<div class=\"row fixed-box panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id\">{{contact.data.fields.custom_id}}</dd><dt data-ng-hide=\"!contact.data.fields.first_name\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name\">{{contact.data.fields.first_name}}</dd><dt data-ng-hide=\"!contact.data.fields.middle_name\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name\">{{contact.data.fields.middle_name}}</dd><dt data-ng-hide=\"!contact.data.fields.last_name\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name\">{{contact.data.fields.last_name}}</dd><dt data-ng-hide=\"!contact.data.fields.suffix\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix\">{{contact.data.fields.suffix}}</dd><dt data-ng-hide=\"!contact.data.fields.address\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address\">{{contact.data.fields.address}}</dd><dt data-ng-hide=\"!contact.data.fields.city\">City</dt><dd data-ng-hide=\"!contact.data.fields.city\">{{contact.data.fields.city}}</dd><dt data-ng-hide=\"!contact.data.fields.state\">State</dt><dd data-ng-hide=\"!contact.data.fields.state\">{{contact.data.fields.state}}</dd><dt data-ng-hide=\"!contact.data.fields.zip_code\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code\">{{contact.data.fields.zip_code}}</dd><dt data-ng-hide=\"!contact.data.fields.country\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country\">{{contact.data.fields.country}}</dd><dt data-ng-hide=\"!contact.data.fields.phone\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone\">{{contact.data.fields.phone}}</dd><dt data-ng-hide=\"!contact.data.fields.email\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email\">{{contact.data.fields.email}}</dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"(field, value) in contact.data.custom_fields\">{{field}}</dt><dd data-ng-repeat-end=\"\">{{value}}</dd></dl></div></div>"
+    "<div class=\"row fixed-contact panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id\">{{contact.data.fields.custom_id}}</dd><dt data-ng-hide=\"!contact.data.fields.first_name\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name\">{{contact.data.fields.first_name}}</dd><dt data-ng-hide=\"!contact.data.fields.middle_name\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name\">{{contact.data.fields.middle_name}}</dd><dt data-ng-hide=\"!contact.data.fields.last_name\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name\">{{contact.data.fields.last_name}}</dd><dt data-ng-hide=\"!contact.data.fields.suffix\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix\">{{contact.data.fields.suffix}}</dd><dt data-ng-hide=\"!contact.data.fields.address\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address\">{{contact.data.fields.address}}</dd><dt data-ng-hide=\"!contact.data.fields.city\">City</dt><dd data-ng-hide=\"!contact.data.fields.city\">{{contact.data.fields.city}}</dd><dt data-ng-hide=\"!contact.data.fields.state\">State</dt><dd data-ng-hide=\"!contact.data.fields.state\">{{contact.data.fields.state}}</dd><dt data-ng-hide=\"!contact.data.fields.zip_code\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code\">{{contact.data.fields.zip_code}}</dd><dt data-ng-hide=\"!contact.data.fields.country\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country\">{{contact.data.fields.country}}</dd><dt data-ng-hide=\"!contact.data.fields.phone\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone\">{{contact.data.fields.phone}}</dd><dt data-ng-hide=\"!contact.data.fields.email\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email\">{{contact.data.fields.email}}</dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"(field, value) in contact.data.custom_fields\">{{field}}</dt><dd data-ng-repeat-end=\"\">{{value}}</dd></dl></div></div>"
   );
 
 }]);
@@ -957,7 +962,7 @@ angular.module('survey').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('/callveyor/survey/survey.tpl.html',
-    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"survey.disable\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><pre data-ng-if=\"item.type == 'scriptText'\">{{item.content}}</pre><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\"><option data-ng-repeat=\"response in item.possibleResponses\" value=\"{{response.id}}\">{{response.value}}</option></select></div></form></div>"
+    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"transitionInProgress\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><pre data-ng-if=\"item.type == 'scriptText'\">{{item.content}}</pre><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\"><option data-ng-repeat=\"response in item.possibleResponses\" value=\"{{response.id}}\">{{response.value}}</option></select></div></form></div>"
   );
 
 }]);
