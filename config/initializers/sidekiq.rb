@@ -5,6 +5,8 @@ else
   url          = redis_config[Rails.env]['sidekiq']
 end
 
+STDOUT.puts "Sidekiq is connecting to #{url}. REDIS_URL is #{ENV['REDIS_URL']}"
+
 Rails.application.config.after_initialize do
   ActiveSupport.on_load(:active_record) do
     Sidekiq.configure_server do |config|
