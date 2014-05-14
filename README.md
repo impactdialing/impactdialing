@@ -20,9 +20,11 @@ Install rvm and proper ruby version (see /.ruby-version).
 
 ### Running Specs
 
-Start Redis: `redis-server`.
+A `.env` file is used to store local environment variables which are required to configure the app environment. So it is necessary to prepend `foreman run` to any test runs. Otherwise the `.env` file will not be loaded.
 
-`rake spec`
+`foreman run rake spec:note2e` - Run all specs that do not depend on javascript.
+`foreman run rake spec:e2e:all` - Run all specs that do depend on javascript.
+`foreman run rake spec:e2e:{js,admin,caller}` - Run specs tagged with the same name.
 
 ### Running Dev Server
 
