@@ -1,10 +1,15 @@
-redis_config = YAML.load_file(File.join(Rails.root, "/config/redis.yml"))
+unless ENV['REDIS_URL'].nil? || ENV['REDIS_URL'].size.zero?
+  url = ENV['REDIS_URL']
+else
+  redis_config = YAML.load_file(File.join(Rails.root, "/config/redis.yml"))
+  url          = redis_config[Rails.env]['sidekiq']
+end
 
 Rails.application.config.after_initialize do
   ActiveSupport.on_load(:active_record) do
     Sidekiq.configure_server do |config|
       config.redis = {
-        :url => redis_config[Rails.env]['sidekiq'],
+        :url => url,
         :namespace => 'resque'
       }
 
@@ -15,7 +20,7 @@ Rails.application.config.after_initialize do
 
     Sidekiq.configure_client do |config|
       config.redis = {
-        :url => redis_config[Rails.env]['sidekiq'],
+        :url => url,
         :namespace => 'resque'
       }
     end
