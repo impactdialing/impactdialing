@@ -17,7 +17,7 @@ unless ENV['REDIS_URL'].nil? || ENV['REDIS_URL'].size.zero?
   $redis_call_uri_connection           = Redis.new
 else
   # maintain backward compat for now
-  STDOUT.PUTS "Connecting to redis using config/redis.yml"
+  STDOUT.puts "Connecting to redis using config/redis.yml"
   rails_env = ENV['RAILS_ENV'] || 'development'
 
   redis_config = YAML.load_file(Rails.root.to_s + "/config/redis.yml")
