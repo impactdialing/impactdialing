@@ -20,6 +20,39 @@ describe Voter do
 
   include Rails.application.routes.url_helpers
 
+  describe 'voicemail_history' do
+    let(:campaign) do
+      create(:campaign, {
+        recording_id: 12
+      })
+    end
+    let(:voter) do
+      create(:voter, {
+        campaign: campaign,
+        account: campaign.account
+      })
+    end
+    context '#update_voicemail_history' do
+      it 'appends the current campaign.recording_id to voicemail_history' do
+        voter.update_voicemail_history
+        voter.voicemail_history.should eq '12'
+
+        voter.update_voicemail_history
+        voter.voicemail_history.should eq '12,12'
+      end
+    end
+
+    context '#yet_to_receive_voicemail?' do
+      it 'returns true when voicemail_history is blank' do
+        voter.yet_to_receive_voicemail?.should be_true
+      end
+      it 'returns false otherwise' do
+        voter.update_voicemail_history
+        voter.yet_to_receive_voicemail?.should be_false
+      end
+    end
+  end
+
   it "can share the same number" do
     voter1 = create(:voter, :phone => '92345623434')
     voter2 = create(:voter, :phone => '92345623434')
@@ -138,6 +171,15 @@ describe Voter do
       end
       it 'returns the size of the voter list minus 3' do
         @query.count.should eq 7
+      end
+    end
+
+    context 'Of 10 voters 1 is in progress, 2 need called back, 5 have not been called and 2 have completed calls' do
+      it 'returns the size of the voter list minus the 2 completed calls' do
+        @voters.first.update_attribute(:status, CallAttempt::Status::INPROGRESS)
+        @voters[1..2].each{|v| v.update_attributes(status: CallAttempt::Status::SUCCESS, call_back: true)}
+        @voters[3..4].each{|v| v.update_attribute(:status, CallAttempt::Status::SUCCESS)}
+        @query.count.should eq 8
       end
     end
 

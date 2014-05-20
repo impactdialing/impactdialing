@@ -47,7 +47,8 @@ describe CallAttempt do
 
 
   it "should end_answered_by_machine" do
-    voter = create(:voter)
+    campaign = create(:power)
+    voter = create(:voter, {campaign: campaign})
     call_attempt = create(:call_attempt, :voter => voter)
     now = Time.now
     nowminus2 = now - 2.minutes

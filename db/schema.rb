@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140324211526) do
+ActiveRecord::Schema.define(:version => 20140517002326) do
 
   create_table "accounts", :force => true do |t|
     t.datetime "created_at"
@@ -275,6 +275,7 @@ ActiveRecord::Schema.define(:version => 20140324211526) do
     t.time     "end_time"
     t.string   "time_zone"
     t.float    "acceptable_abandon_rate"
+    t.boolean  "call_back_after_voicemail_delivery", :default => false
   end
 
   create_table "custom_voter_field_values", :force => true do |t|
@@ -517,6 +518,7 @@ ActiveRecord::Schema.define(:version => 20140324211526) do
     t.string   "priority"
     t.integer  "lock_version",           :default => 0
     t.boolean  "enabled",                :default => true
+    t.string   "voicemail_history"
   end
 
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"

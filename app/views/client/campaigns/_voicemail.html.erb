@@ -1,22 +1,39 @@
 <% form ||= nil %>
 <p data-intro="If answering machine detection is off, any calls answered before 15 seconds of ringing will be immediately connected to a caller. After 15 seconds, the call will be hung up. If answering machine detection is on, the call will ring for up to 30 seconds. If it is answered, the detection system will listen to the call for about two seconds, and connect it to a caller if it is a human. If it is a machine, it will play a message if you have chosen to do so, or hang up." data-step="8">
-  <%= form.check_box :answering_machine_detect, {name: 'campaign[answering_machine_detect]', id: "campaign_answering_machine_detect"} %>
-  Automatically detect answering machines
+  <label for="campaign_answering_machine_detect">
+    <%= form.check_box :answering_machine_detect, {name: 'campaign[answering_machine_detect]', id: "campaign_answering_machine_detect"} %>
+    Automatically detect answering machines
+  </label>
 </p>
 
 
 <% if !@campaign.account.recordings.blank? %>
   <p>
-    <%= form.check_box :use_recordings, {name: 'campaign[use_recordings]', id: 'campaign_use_recordings'} %>
-    Leave messages
+    <label for="campaign_use_recordings">
+      <%= form.check_box :use_recordings, {name: 'campaign[use_recordings]', id: 'campaign_use_recordings'} %>
+      Leave messages
+    </label>
+  </p>
+
+  <p>
+    <label for="campaign_call_back_after_voicemail_delivery">
+      <%= form.check_box :call_back_after_voicemail_delivery, {name: 'campaign[call_back_after_voicemail_delivery]', id: 'campaign_call_back_after_voicemail_delivery'} %>
+      Call back after leaving message BUT leave only one message
+    </label>
   </p>
 
   <div id="recordingsdiv"
     <% if !@campaign.use_recordings? %>
       style="display:none;"
     <% end %>>
-    <label for=""><p>Message</label><br>
-    <%= form.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();",name: 'campaign[recording_id]', id: "campaign_recording_id"}) %></p>
+    <p>
+      <label for="campaign_recording_id">
+        Message
+      </label>
+
+      <%= form.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();",name: 'campaign[recording_id]', id: "campaign_recording_id"}) %>
+    </p>
+
     <div id="sndPreview"></div>
   </div>
 <% end %>

@@ -47,7 +47,7 @@ class PersistCalls
     end
 
     def import_voters(voters)
-      Voter.import  voters, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date]
+      Voter.import  voters, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date, :voicemail_history]
     end
 
     def import_call_attempts(call_attempts)

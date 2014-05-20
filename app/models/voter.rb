@@ -179,10 +179,26 @@ class Voter < ActiveRecord::Base
     self.caller_id = nil
   end
 
+  def update_voicemail_history
+    parts = (self.voicemail_history || '').split(',')
+    parts << campaign.recording_id
+    self.voicemail_history = parts.join(',')
+  end
+
+  def yet_to_receive_voicemail?
+    voicemail_history.blank?
+  end
+
   def end_answered_by_machine
+    agent = AnsweringMachineAgent.new(self)
+
+    if agent.leave_message?
+      self.update_voicemail_history
+    end
+
     self.caller_session = nil
-    self.status = campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP
-    self.call_back = false
+    self.status         = agent.call_status
+    self.call_back      = agent.call_back?
   end
 
   def end_unanswered_call(call_status)
