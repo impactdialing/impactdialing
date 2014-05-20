@@ -54,6 +54,7 @@ group :development, :test, :e2e do
   gem 'hirb', '~>0.7.1'
   gem 'rspec-instafail', '~>0.2.4'
   gem 'pry'
+  gem 'pry-debugger'
   gem 'jasmine'
   gem 'compass'
 end
