@@ -46,7 +46,8 @@ describe PersistCalls do
         before(:each) do
           Call.stub(:where) { raise 'exception' }
           CallAttempt.stub(:where) { raise 'exception' }
-          expect{ PersistCalls.perform }.to raise_error{ 'exception' }
+          # expect{ PersistCalls.perform }.to raise_error{ 'exception' }
+          PersistCalls.perform
         end
 
         it "should NOT remove data from all redis lists" do
