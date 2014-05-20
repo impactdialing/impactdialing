@@ -303,11 +303,11 @@ describe Ability do
       it 'cannot manage caller groups' do
         ability.should_not be_able_to :manage, CallerGroup
       end
-      it 'cannot view campaign reports' do
-        ability.should_not be_able_to :view_campaign_reports, Account
+      it 'can view campaign reports' do
+        ability.should be_able_to :view_campaign_reports, Account
       end
-      it 'cannot view caller reports' do
-        ability.should_not be_able_to :view_caller_reports, Account
+      it 'can view caller reports' do
+        ability.should be_able_to :view_caller_reports, Account
       end
       it 'cannot view dashboard' do
         ability.should_not be_able_to :view_dashboard, Account
