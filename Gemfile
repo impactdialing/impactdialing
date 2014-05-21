@@ -47,6 +47,10 @@ gem 'lograge', '~>0.2.0'
 gem 'cancan', '~>1.6.10'
 gem 'stripe', '~>1.8.4'
 
+# Text -> HTML processors
+gem 'redcarpet'
+gem 'github-markup'
+
 group :development, :test, :e2e do
   gem 'rspec'
   gem 'rspec-rails'

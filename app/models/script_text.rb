@@ -1,3 +1,5 @@
+require 'github/markup'
+
 class ScriptText < ActiveRecord::Base
   attr_accessible :content, :script_id, :script_order
 
@@ -6,4 +8,17 @@ class ScriptText < ActiveRecord::Base
   validates :script_order, presence: true, numericality: true
 
   belongs_to :script
+
+# private
+  def markdown_content
+    @markdown_content ||= GitHub::Markup.render("ScriptText:#{id}.md", content)
+  end
+
+# public
+  def as_json(options)
+    super({
+      except: [:content],
+      methods: [:markdown_content]
+    })
+  end
 end

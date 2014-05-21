@@ -10,8 +10,8 @@ surveyForm = angular.module('survey', [
 # surveyForm.config([])
 
 surveyForm.factory('SurveyFormFieldsFactory', [
-  '$http', '$filter',
-  ($http,   $filter) ->
+  '$http', '$filter', '$sce',
+  ($http,   $filter,   $sce) ->
     fields = {
       data: {}
       prepareSurveyForm: (payload) ->
@@ -30,7 +30,7 @@ surveyForm.factory('SurveyFormFieldsFactory', [
               obj.content = object.note
             when 'script_texts'
               obj.type = 'scriptText'
-              obj.content = object.content
+              obj.content = $sce.trustAsHtml(object.markdown_content)
             when 'questions'
               obj.type = 'question'
               obj.content = object.text

@@ -130,6 +130,8 @@ GEM
     formtastic (2.2.1)
       actionpack (>= 3.0)
     fssm (0.2.10)
+    github-markup (1.2.1)
+      posix-spawn (~> 0.3.8)
     guard (1.8.1)
       formatador (>= 0.2.4)
       listen (>= 1.0.0)
@@ -221,6 +223,7 @@ GEM
       cocaine (~> 0.5.0)
       mime-types
     polyglot (0.3.4)
+    posix-spawn (0.3.8)
     pry (0.9.12.2)
       coderay (~> 1.0.5)
       method_source (~> 0.8)
@@ -265,6 +268,7 @@ GEM
     rdoc (3.12.2)
       json (~> 1.4)
     recurly (2.1.9)
+    redcarpet (3.1.2)
     redis (3.0.4)
     redis-namespace (1.3.0)
       redis (~> 3.0.0)
@@ -414,6 +418,7 @@ DEPENDENCIES
   factory_girl_rails
   foreman
   formtastic (~> 2.2.1)
+  github-markup
   guard
   guard-rspec
   guard-spork
@@ -438,6 +443,7 @@ DEPENDENCIES
   rails (~> 3.2.17)
   rb-fsevent
   recurly (~> 2.1.9)
+  redcarpet
   redis (~> 3.0.4)
   redis-objects (~> 0.7.0)
   resque (~> 1.24.1)

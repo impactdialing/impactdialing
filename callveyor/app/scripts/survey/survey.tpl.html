@@ -2,7 +2,8 @@
   <div class="veil" ng-show="transitionInProgress"></div>
   <form role="form">
     <div class="well" data-ng-repeat="item in survey.form">
-      <pre data-ng-if="item.type == 'scriptText'">{{item.content}}</pre>
+      <div data-ng-if="item.type == 'scriptText'"
+           data-ng-bind-html="item.content"></div>
 
       <label data-ng-if="item.type != 'scriptText'"
              for="item_{{item.id}}">{{item.content}}</label>
