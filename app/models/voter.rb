@@ -37,7 +37,7 @@ class Voter < ActiveRecord::Base
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
-  scope :yet_to_call, enabled.where(:call_back => false).where('status not in (?) and priority is null', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED])
+  scope :yet_to_call, enabled.where('status not in (?) and priority is null', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED])
   scope :last_call_attempt_before_recycle_rate, lambda {|recycle_rate|
     where('last_call_attempt_time IS NULL OR last_call_attempt_time < ? ', recycle_rate.hours.ago)
   }
@@ -73,11 +73,24 @@ class Voter < ActiveRecord::Base
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from..to)) }
   scope :call_attempts_within, lambda {|from, to| where('call_attempts.created_at' => (from..to)).includes('call_attempts')}
   scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
-  scope :in_progress_or_call_back_or_not_called, where(active: true).where("status IN (?) OR call_back=1", [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, Status::NOTCALLED, CallAttempt::Status::BUSY, CallAttempt::Status::ABANDONED])
+  scope(:not_called_or_retry_or_call_back,
+        where(active: true).
+        where("status != ?", CallAttempt::Status::SUCCESS).
+        where("status IN (?) OR call_back=1", [
+          Status::NOTCALLED,
+          Status::RETRY,
+          CallAttempt::Status::BUSY,
+          CallAttempt::Status::NOANSWER,
+          CallAttempt::Status::ABANDONED,
+          CallAttempt::Status::HANGUP,
+          CallAttempt::Status::SCHEDULED,
+          CallAttempt::Status::CANCELLED
+        ])
+  )
   scope :remaining_voters_for_campaign, ->(campaign) { from('voters use index (index_voters_on_campaign_id_and_active_and_status_and_call_back)').
-    in_progress_or_call_back_or_not_called.where(campaign_id: campaign) }
+    not_called_or_retry_or_call_back.where(campaign_id: campaign) }
   scope :remaining_voters_for_voter_list, ->(voter_list, blocked_numbers=[]) {
-    in_progress_or_call_back_or_not_called.
+    not_called_or_retry_or_call_back.
     without(blocked_numbers).
     where(voter_list_id: voter_list)
   }
@@ -208,9 +221,10 @@ class Voter < ActiveRecord::Base
 
 
   def disconnect_call(caller_id)
-    self.status = CallAttempt::Status::SUCCESS
+    self.status         = CallAttempt::Status::SUCCESS
     self.caller_session = nil
-    self.caller_id = caller_id
+    self.caller_id      = caller_id
+    self.call_back      = false
   end
 
   def schedule_for_later(date)
