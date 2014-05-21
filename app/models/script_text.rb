@@ -17,7 +17,6 @@ class ScriptText < ActiveRecord::Base
 # public
   def as_json(options)
     super({
-      except: [:content],
       methods: [:markdown_content]
     })
   end

@@ -95,7 +95,6 @@ class Script < ActiveRecord::Base
         :transfers,
         {
           :script_texts => {
-            :except => [:content],
             :methods => [:markdown_content]
           }
         }
