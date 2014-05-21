@@ -18,8 +18,8 @@
     <tr<%= n % 2 != 0 ? row_style : '' %>>
       <td><%= account.id %></td>
       <td>
-        <%= account.current_subscription.try(:type) ||
-            'No current subscription' %>
+        <%= account.billing_subscription.plan ||
+            'No plan' %>
       </td>
       <td>
         <%= number_with_delimiter(@billable_totals[account.id]) %>

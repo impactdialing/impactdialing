@@ -3,7 +3,7 @@ Account Usage Report (<%= @from_date.strftime('%m-%d-%Y') %> - <%= @to_date.strf
 <%= 'Account ID'.ljust(@longest[0]) %> <%= 'Account Type'.ljust(@longest[1]) %> <%= 'Total Minutes'.ljust(@longest[2]) %><%= ' Undebited Minutes'.ljust(@longest[3]) if @include_undebited %><%= 'Email' %>
 
 <% @accounts.each do |account| %>
-<%= account.id.to_s.ljust(@longest[0]) %> <%= (account.current_subscription.try(:type).try(:to_s) || 'No current subscription').ljust(@longest[1]) %> <%= (@billable_totals[account.id] || 0).to_s.ljust(@longest[2]) %><%= ' ' + (@undebited_totals[account.id] || 0).to_s.ljust(@longest[3]) if @include_undebited %> <%= account.users.first.try(:email) || 'No users' %>
+<%= account.id.to_s.ljust(@longest[0]) %> <%= (account.billing_subscription.plan || 'No plan').ljust(@longest[1]) %> <%= (@billable_totals[account.id] || 0).to_s.ljust(@longest[2]) %><%= ' ' + (@undebited_totals[account.id] || 0).to_s.ljust(@longest[3]) if @include_undebited %> <%= account.users.first.try(:email) || 'No users' %>
 <% end %>
 
 Billable Total (all accounts) <%= number_with_delimiter(@grand_total) %> minutes
