@@ -3,7 +3,8 @@ require Rails.root.join('app/models/redis/redis_call.rb')
 
 describe PersistCalls do
 
-  let!(:campaign) { create(:campaign) }
+  let!(:recording){ create(:recording) }
+  let!(:campaign) { create(:campaign, {recording_id: recording.id}) }
   let!(:voter) { create(:voter, campaign: campaign) }
   let!(:call_attempt) { create(:call_attempt, voter: voter, campaign: campaign) }
   let!(:call) { create(:call, call_attempt: call_attempt) }
@@ -45,10 +46,11 @@ describe PersistCalls do
         before(:each) do
           Call.stub(:where) { raise 'exception' }
           CallAttempt.stub(:where) { raise 'exception' }
+          # expect{ PersistCalls.perform }.to raise_error{ 'exception' }
           PersistCalls.perform
         end
 
-        it "should remove data from all redis lists" do
+        it "should NOT remove data from all redis lists" do
           $redis_call_flow_connection.llen("abandoned_call_list").should == 2
           $redis_call_end_connection.llen("not_answered_call_list").should == 1
           $redis_call_flow_connection.llen("disconnected_call_list").should == 3
@@ -138,25 +140,48 @@ describe PersistCalls do
   end
 
   context ".endbymachine" do
-    before(:each) do
-      RedisCallFlow.processing_by_machine_call_hash.store(call.id, time)
-      PersistCalls.machine_calls(100)
+    context "no message to drop" do
+      before(:each) do
+        RedisCallFlow.processing_by_machine_call_hash.store(call.id, time)
+        PersistCalls.machine_calls(100)
+      end
+      context "call_attempt" do
+        subject { call_attempt.reload }
+        its(:status) { should == CallAttempt::Status::HANGUP }
+        its(:connecttime) { should == time }
+        its(:call_end) { should == time }
+        its(:wrapup_time) { should == time }
+      end
+      context 'voter' do
+        subject { voter.reload }
+        its(:status) { should == CallAttempt::Status::HANGUP }
+        # we want to call voters back if answered by a machine and we hangup
+        # voters who hangup on us will have a different status so currently no worry of cross-over
+        its(:call_back) { should == true }
+      end
     end
 
-    context "call_attempt" do
-      subject { call_attempt.reload }
-      its(:status) { should == CallAttempt::Status::HANGUP }
-      its(:connecttime) { should == time }
-      its(:call_end) { should == time }
-      its(:wrapup_time) { should == time }
-    end
+    context 'message to drop' do
+      let(:agent) do
+        double('AnsweringMachineAgent', {
+          leave_message?: true,
+          call_back?: true,
+          call_status: CallAttempt::Status::VOICEMAIL
+        })
+      end
+      before do
+        AnsweringMachineAgent.should_receive(:new).with(voter).at_least(:twice){ agent }
+        RedisCallFlow.processing_by_machine_call_hash.store(call.id, time)
+        PersistCalls.machine_calls(100)
+      end
 
-    context "voter" do
-      subject { voter.reload }
+      context 'voter' do
+        subject{ voter.reload }
 
-      its(:status) { should == CallAttempt::Status::HANGUP }
-      its(:call_back) { should == false }
+        its(:status){ should eq CallAttempt::Status::VOICEMAIL }
+        its(:voicemail_history){ should eq voter.campaign.recording.id.to_s }
+        its(:call_back){ should be_true }
+      end
     end
   end
-
 end

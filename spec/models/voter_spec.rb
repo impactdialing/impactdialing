@@ -20,6 +20,58 @@ describe Voter do
 
   include Rails.application.routes.url_helpers
 
+  describe 'voicemail_history' do
+    let(:campaign) do
+      create(:campaign, {
+        recording_id: 12
+      })
+    end
+    let(:voter) do
+      create(:voter, {
+        campaign: campaign,
+        account: campaign.account
+      })
+    end
+    context '#update_voicemail_history' do
+      it 'appends the current campaign.recording_id to voicemail_history' do
+        voter.update_voicemail_history
+        voter.voicemail_history.should eq '12'
+
+        voter.update_voicemail_history
+        voter.voicemail_history.should eq '12,12'
+      end
+    end
+
+    context '#yet_to_receive_voicemail?' do
+      it 'returns true when voicemail_history is blank' do
+        voter.yet_to_receive_voicemail?.should be_true
+      end
+      it 'returns false otherwise' do
+        voter.update_voicemail_history
+        voter.yet_to_receive_voicemail?.should be_false
+      end
+    end
+  end
+
+  context '#disconnect_call(caller_id)' do
+    subject do
+      create(:voter, {
+        status: 'hello',
+        caller_session: create(:caller_session),
+        caller_id: 1,
+        call_back: true
+      })
+    end
+    let(:caller_id){ 42 }
+    before do
+      subject.disconnect_call(caller_id)
+    end
+    its(:status) { should eq CallAttempt::Status::SUCCESS }
+    its(:caller_session) { should be_nil }
+    its(:caller_id) { should eq caller_id }
+    its(:call_back) { should be_false }
+  end
+
   it "can share the same number" do
     voter1 = create(:voter, :phone => '92345623434')
     voter2 = create(:voter, :phone => '92345623434')
@@ -138,6 +190,15 @@ describe Voter do
       end
       it 'returns the size of the voter list minus 3' do
         @query.count.should eq 7
+      end
+    end
+
+    context 'Of 10 voters 1 is in progress, 2 need called back, 5 have not been called and 2 have completed calls' do
+      it 'returns the size of the voter list minus the 2 completed calls' do
+        @voters.first.update_attribute(:status, CallAttempt::Status::NOANSWER)
+        @voters[1..2].each{|v| v.update_attributes(status: CallAttempt::Status::VOICEMAIL, call_back: true)}
+        @voters[3..4].each{|v| v.update_attribute(:status, CallAttempt::Status::SUCCESS)}
+        @query.count.should eq 8
       end
     end
 
@@ -563,17 +624,6 @@ describe Voter do
     def attempt_calls(voters)
       voters.each{|v| v.update_attribute('last_call_attempt_time', @campaign.recycle_rate.hours.ago - 1.minute)}
     end
-
-    # context 'not all voters have a last_call_attempt_time' do
-    #   before do
-    #     setup_voters
-    #     @voters[3..6].each do |v|
-    #       v.update_attribute(:last_call_attempt_time, nil)
-    #     end
-    #   end
-
-
-    # end
 
     context 'current_voter_id is not present' do
       before do

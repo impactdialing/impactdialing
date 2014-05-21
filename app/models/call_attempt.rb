@@ -85,8 +85,8 @@ class CallAttempt < ActiveRecord::Base
   def end_answered_by_machine(connect_time, end_time)
     self.connecttime = connect_time
     self.wrapup_time = end_time
-    self.call_end = end_time
-    self.status = campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP
+    self.call_end    = end_time
+    self.status      = AnsweringMachineAgent.new(voter).call_status
   end
 
   def end_unanswered_call(call_status, time)

@@ -17,6 +17,8 @@ Spork.prefork do
   Dir[Rails.root.join("spec/shared/**/*.rb")].each {|f| require f}
   #Dir[Rails.root.join("simulator/new_simulator.rb")].each {|f| require f}
 
+  Capybara.javascript_driver = :webkit
+
   RSpec.configure do |config|
     config.include FactoryGirl::Syntax::Methods
     config.include TwilioRequestStubs

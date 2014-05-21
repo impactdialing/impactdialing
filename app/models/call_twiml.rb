@@ -34,8 +34,12 @@ module CallTwiml
     end
 
     def call_answered_by_machine_twiml
+      agent = AnsweringMachineAgent.new(voter)
+
       Twilio::TwiML::Response.new do |r|
-        r.Play campaign.recording.file.url if campaign.use_recordings?
+        if agent.leave_message?
+          r.Play campaign.recording.file.url
+        end
         r.Hangup
       end.text
     end

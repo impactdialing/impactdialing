@@ -3,7 +3,10 @@ require Rails.root.join("lib/twilio_lib")
 class Campaign < ActiveRecord::Base
   include Deletable
 
-  attr_accessible :type, :name, :caller_id, :script_id, :acceptable_abandon_rate, :time_zone, :start_time, :end_time, :recycle_rate, :answering_machine_detect, :voter_lists_attributes, :use_recordings, :recording_id
+  attr_accessible :type, :name, :caller_id, :script_id, :acceptable_abandon_rate, :time_zone,
+                  :start_time, :end_time, :recycle_rate, :answering_machine_detect,
+                  :voter_lists_attributes, :use_recordings, :recording_id,
+                  :call_back_after_voicemail_delivery
 
 
   has_many :caller_sessions

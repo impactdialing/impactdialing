@@ -25,7 +25,11 @@ class PersistCalls
         element = connection.lpop list_name
         begin
           result << JSON.parse(element) unless element.nil?
-        rescue Exception
+        rescue Resque::TermException => e
+          Rails.logger.info "Shutting down. [multipop]"
+        rescue Exception => e
+          Rails.logger.error "PersistCalls Exception: #{e.message}"
+          # raise e
         end
       end
       result
@@ -41,13 +45,18 @@ class PersistCalls
       data = multipop(connection, list_name, number)
       begin
         yield data
+      rescue Resque::TermException => e
+        Rails.logger.info "Shutting down. Saving popped data. [safe_pop]"
+        multipush(connection, list_name, data)
       rescue Exception => e
         multipush(connection, list_name, data)
+        Rails.logger.error "PersistCalls Exception: #{e.message}"
+        # raise e
       end
     end
 
     def import_voters(voters)
-      Voter.import  voters, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date]
+      Voter.import  voters, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date, :voicemail_history]
     end
 
     def import_call_attempts(call_attempts)
@@ -126,7 +135,11 @@ class PersistCalls
             call_attempt = call_attempts[wrapped_up_call['id'].to_i]
             call_attempt.wrapup_now(wrapped_up_call['current_time'], wrapped_up_call['caller_type'])
             result << call_attempt
-          rescue
+          rescue Resque::TermException => e
+            Rails.logger.info "Shutting down. [wrapped_up_calls]"
+          rescue Exception => e
+            Rails.logger.error "PersistCalls Exception: #{e.message}"
+            # raise e
           end
         end
         CallAttempt.import result, :on_duplicate_key_update=>[:wrapup_time, :voter_response_processed]

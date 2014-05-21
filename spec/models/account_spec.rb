@@ -31,11 +31,6 @@ describe Account do
     end
   end
 
-  it "returns the activated status as the paid flag" do
-    create(:account, :activated => true).paid?.should be_true
-    create(:account, :activated => false).paid?.should be_false
-  end
-
   it "can toggle the call_recording setting" do
     account = create(:account, :record_calls => true)
     account.record_calls?.should be_true
@@ -52,28 +47,4 @@ describe Account do
     field3 = create(:custom_voter_field, :name => "field3", :account => account)
     account.custom_fields.should == [field1, field2, field3]
   end
-
-  describe '#upgraded_to_enterprise' do
-    let(:account){ build(:account) }
-    before do
-      account.activated = false
-      account.card_verified = false
-      account.subscription_name = 'Per Agent'
-
-      account.upgraded_to_enterprise
-      account.reload
-    end
-    it 'updates :activated to true' do
-      account.activated.should be_true
-    end
-
-    it 'updates :card_verified to true' do
-      account.card_verified.should be_true
-    end
-
-    it 'updates :subscription_name to "Manual"' do
-      account.subscription_name.should eq 'Manual'
-    end
-  end
-
 end

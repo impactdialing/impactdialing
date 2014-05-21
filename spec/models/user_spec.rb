@@ -42,12 +42,6 @@ describe User do
     user.authenticate_with?(nil).should be_false
   end
 
-  it "finds the billing_account through account" do
-    billing_account = create(:billing_account)
-    user.account.update_attribute(:billing_account, billing_account)
-    user.billing_account.should == billing_account
-  end
-
   it "delegates the domain to the account" do
     account = create(:account, :domain_name => 'foo.com')
     user.update_attribute(:account, account)

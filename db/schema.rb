@@ -11,23 +11,14 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140321100319) do
+ActiveRecord::Schema.define(:version => 20140517002326) do
 
   create_table "accounts", :force => true do |t|
-    t.boolean  "card_verified"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "domain_name"
     t.boolean  "activated",                    :default => false
     t.boolean  "record_calls",                 :default => false
-    t.string   "recurly_account_code"
-    t.string   "subscription_name"
-    t.integer  "subscription_count"
-    t.boolean  "subscription_active",          :default => false
-    t.string   "recurly_subscription_uuid"
-    t.boolean  "autorecharge_enabled",         :default => false
-    t.float    "autorecharge_trigger"
-    t.float    "autorecharge_amount"
     t.integer  "lock_version",                 :default => 0
     t.string   "status"
     t.string   "abandonment"
@@ -35,7 +26,6 @@ ActiveRecord::Schema.define(:version => 20140321100319) do
     t.text     "caller_hashed_password_salt"
     t.string   "api_key",                      :default => ""
     t.datetime "tos_accepted_date"
-    t.boolean  "credit_card_declined",         :default => false
     t.string   "billing_provider_customer_id"
     t.string   "billing_provider"
   end
@@ -56,29 +46,6 @@ ActiveRecord::Schema.define(:version => 20140321100319) do
   add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response_campaign"
   add_index "answers", ["question_id", "campaign_id"], :name => "index_distinct_question"
   add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"
-
-  create_table "billing_accounts", :force => true do |t|
-    t.integer  "account_id"
-    t.string   "cc"
-    t.boolean  "active"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "cardtype"
-    t.integer  "expires_month"
-    t.integer  "expires_year"
-    t.string   "last4"
-    t.string   "zip"
-    t.string   "address1"
-    t.string   "city"
-    t.string   "state"
-    t.string   "country"
-    t.string   "name"
-    t.string   "checking_account_number"
-    t.string   "bank_routing_number"
-    t.string   "drivers_license_number"
-    t.string   "drivers_license_state"
-    t.string   "checking_account_type"
-  end
 
   create_table "billing_credit_cards", :force => true do |t|
     t.integer  "account_id",  :null => false
@@ -162,7 +129,6 @@ ActiveRecord::Schema.define(:version => 20140321100319) do
     t.string   "recording_url"
     t.integer  "recording_duration"
     t.datetime "wrapup_time"
-    t.integer  "payment_id"
     t.integer  "call_id"
     t.boolean  "voter_response_processed", :default => false
     t.boolean  "debited",                  :default => false
@@ -227,7 +193,6 @@ ActiveRecord::Schema.define(:version => 20140321100319) do
     t.float    "tPrice"
     t.integer  "attempt_in_progress"
     t.string   "session_key"
-    t.integer  "payment_id"
     t.string   "state"
     t.string   "type"
     t.string   "digit"
@@ -310,6 +275,7 @@ ActiveRecord::Schema.define(:version => 20140321100319) do
     t.time     "end_time"
     t.string   "time_zone"
     t.float    "acceptable_abandon_rate"
+    t.boolean  "call_back_after_voicemail_delivery", :default => false
   end
 
   create_table "custom_voter_field_values", :force => true do |t|
@@ -365,16 +331,6 @@ ActiveRecord::Schema.define(:version => 20140321100319) do
     t.text    "note",         :null => false
     t.integer "script_id",    :null => false
     t.integer "script_order"
-  end
-
-  create_table "payments", :force => true do |t|
-    t.float    "amount_paid"
-    t.float    "amount_remaining"
-    t.integer  "recurly_transaction_uuid"
-    t.integer  "account_id"
-    t.string   "notes"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "possible_responses", :force => true do |t|
@@ -444,27 +400,6 @@ ActiveRecord::Schema.define(:version => 20140321100319) do
     t.float    "best_conversation"
     t.float    "longest_conversation"
     t.float    "best_wrapup_time"
-  end
-
-  create_table "subscriptions", :force => true do |t|
-    t.string   "type",                    :default => "Trial", :null => false
-    t.integer  "number_of_callers",       :default => 0
-    t.integer  "minutes_utlized",         :default => 0
-    t.integer  "total_allowed_minutes",   :default => 0
-    t.integer  "account_id"
-    t.datetime "subscription_start_date"
-    t.datetime "created_at",                                   :null => false
-    t.datetime "updated_at",                                   :null => false
-    t.string   "stripe_customer_id"
-    t.string   "cc_last4"
-    t.string   "exp_month"
-    t.string   "exp_year"
-    t.string   "status",                  :default => "Trial"
-    t.float    "amount_paid"
-    t.datetime "subscription_end_date"
-    t.boolean  "autorecharge_enabled",    :default => false
-    t.float    "autorecharge_amount"
-    t.float    "autorecharge_trigger"
   end
 
   create_table "temp_voter_lists", :force => true do |t|
@@ -583,6 +518,7 @@ ActiveRecord::Schema.define(:version => 20140321100319) do
     t.string   "priority"
     t.integer  "lock_version",           :default => 0
     t.boolean  "enabled",                :default => true
+    t.string   "voicemail_history"
   end
 
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
