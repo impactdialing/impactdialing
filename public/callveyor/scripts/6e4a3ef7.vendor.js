@@ -21652,7 +21652,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
       });
     }
   };
-
+  
   // This is called from the accordion-group directive to add itself to the accordion
   this.addGroup = function(groupScope) {
     var that = this;
@@ -21705,7 +21705,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
       accordionCtrl.addGroup(scope);
 
       scope.isOpen = false;
-
+      
       if ( attrs.isOpen ) {
         getIsOpen = $parse(attrs.isOpen);
         setIsOpen = getIsOpen.assign;
@@ -21850,7 +21850,7 @@ angular.module('ui.bootstrap.buttons', [])
       function getFalseValue() {
         return getCheckboxValue(attrs.btnCheckboxFalse, false);
       }
-
+      
       function getCheckboxValue(attributeValue, defaultValue) {
         var val = scope.$eval(attributeValue);
         return angular.isDefined(val) ? val : defaultValue;
@@ -23051,7 +23051,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
           backdropDomEl = $compile('<div modal-backdrop></div>')(backdropScope);
           body.append(backdropDomEl);
         }
-
+          
         var angularDomEl = angular.element('<div modal-window></div>');
         angularDomEl.attr('window-class', modal.windowClass);
         angularDomEl.attr('index', openedWindows.length() - 1);
@@ -23473,7 +23473,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
 
   // The options specified to the provider globally.
   var globalOptions = {};
-
+  
   /**
    * `options({})` allows global configuration of all tooltips in the
    * application.
@@ -23542,7 +23542,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
 
       var startSym = $interpolate.startSymbol();
       var endSym = $interpolate.endSymbol();
-      var template =
+      var template = 
         '<div '+ directiveName +'-popup '+
           'title="'+startSym+'tt_title'+endSym+'" '+
           'content="'+startSym+'tt_content'+endSym+'" '+
@@ -23667,7 +23667,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
               // Set the initial positioning.
               tooltip.css({ top: 0, left: 0, display: 'block' });
 
-              // Now we add it to the DOM because need some info about it. But it's not
+              // Now we add it to the DOM because need some info about it. But it's not 
               // visible yet anyway.
               if ( appendToBody ) {
                   $document.find( 'body' ).append( tooltip );
@@ -23694,7 +23694,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
               //if tooltip is going to be shown after delay, we must cancel this
               $timeout.cancel( popupTimeout );
 
-              // And now we remove it from the DOM. However, if we have animation, we
+              // And now we remove it from the DOM. However, if we have animation, we 
               // need to wait for it to expire beforehand.
               // FIXME: this is a placeholder for a port of the transitions library.
               if ( scope.tt_animation ) {
@@ -24684,7 +24684,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //we need to propagate user's query so we can higlight matches
       scope.query = undefined;
 
-      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later
+      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later 
       var timeoutPromise;
 
       //plug into $parsers pipeline to open a typeahead on view changes initiated from DOM
@@ -24993,7 +24993,7 @@ angular.module("template/modal/backdrop.html", []).run(["$templateCache", functi
 angular.module("template/modal/window.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/modal/window.html",
     "<div tabindex=\"-1\" class=\"modal fade {{ windowClass }}\" ng-class=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\" ng-click=\"close($event)\">\n" +
-    "    <div class=\"modal-dialog modal-lg\"><div class=\"modal-content\" ng-transclude></div></div>\n" +
+    "    <div class=\"modal-dialog\"><div class=\"modal-content\" ng-transclude></div></div>\n" +
     "</div>");
 }]);
 
@@ -25162,98 +25162,92 @@ angular.module('doowb.angular-pusher', [])
 
 // create a provider that loads the pusher script from a cdn
 .provider('PusherService', function () {
-	var scriptUrl = '//js.pusher.com/2.1/pusher.min.js';
-	var scriptId = 'pusher-sdk';
-	var apiKey = '';
-	var initOptions = {};
+  var scriptUrl = '//js.pusher.com/2.1/pusher.min.js';
+  var scriptId = 'pusher-sdk';
+  var apiKey = '';
+  var initOptions = {};
 
-	this.setPusherUrl = function (url) {
-		scriptUrl = url || scriptUrl;
-		return this;
-	};
+  this.setPusherUrl = function (url) {
+    scriptUrl = url || scriptUrl;
+    return this;
+  };
 
-	this.setOptions = function (options) {
-		initOptions = options || initOptions;
-		return this;
-	};
+  this.setOptions = function (options) {
+    initOptions = options || initOptions;
+    return this;
+  };
 
-	this.setToken = function (token) {
-		apiKey = token || apiKey;
-		return this;
-	};
+  this.setToken = function (token) {
+    apiKey = token || apiKey;
+    return this;
+  };
 
-	// load the pusher api script async
-	function createScript ($document, callback, success, error) {
-		var tag = $document.createElement('script');
-		tag.type = 'text/javascript';
-		tag.async = true;
-		tag.id = scriptId;
-		tag.src = scriptUrl;
+  // load the pusher api script async
+  function createScript ($document, callback, success) {
+    var tag = $document.createElement('script');
+    tag.type = 'text/javascript';
+    tag.async = true;
+    tag.id = scriptId;
+    tag.src = scriptUrl;
 
-		tag.onreadystatechange = tag.onload = function () {
-			var state = tag.readState;
+    tag.onreadystatechange = tag.onload = function () {
+      var state = tag.readState;
+      if (!callback.done && (!state || /loaded|complete/.test(state))) {
+        callback.done = true;
+        callback();
+      }
+    };
 
-			if (!callback.done && (!state || /loaded|complete/.test(state))) {
-				callback.done = true;
-				callback();
-			}
-		};
+    $document.getElementsByTagName('head')[0].appendChild(tag);
+  }
 
-		tag.onerror = function(eventObj, callee, caller) {
-			console.log('pusher script failed to load', eventObj);
-			var target = $document.getElementById(scriptId);
-			target.parentNode.removeChild(target);
-			error(createScript, $document, callback, success, error);
-		}
+  this.$get = ['$document', '$timeout', '$q', '$rootScope', '$window',
+    function ($document, $timeout, $q, $rootScope, $window) {
+      var deferred = $q.defer();
+      var socket;
+      var pusher;
 
-		$document.getElementsByTagName('head')[0].appendChild(tag);
-	}
+      function onSuccess () {
+        pusher = new $window.Pusher(apiKey, initOptions);
+      }
 
-	this.$get = ['$document', '$timeout', '$q', '$rootScope', '$window',
-		function ($document, $timeout, $q, $rootScope, $window) {
-			var deferred = $q.defer();
-			var socket;
-			var pusher;
+      var onScriptLoad = function (callback) {
+        onSuccess();
+        $timeout(function () {
+          deferred.resolve(pusher);
+        });
+      };
 
-			function onSuccess () {
-				pusher = new $window.Pusher(apiKey, initOptions);
-			}
-
-			var onScriptLoad = function (callback) {
-				onSuccess();
-				$timeout(function () {
-					deferred.resolve(pusher);
-				});
-			};
-
-			var onScriptLoadError = function () {
-				$timeout(function () {
-					deferred.reject("The browser failed to load the script.", arguments);
-				});
-			}
-
-			createScript($document[0], onScriptLoad, {}, onScriptLoadError);
-			return deferred.promise;
-		}];
+      createScript($document[0], onScriptLoad);
+      return deferred.promise;
+    }];
 
 })
 
 .factory('Pusher', ['$rootScope', 'PusherService',
-	function ($rootScope, PusherService) {
-		return {
-			subscribe: function (channelName, eventName, callback) {
-				PusherService.then(function (pusher) {
-                    var channel = pusher.channel(channelName) || pusher.subscribe(channelName);
-					channel.bind(eventName, function (data) {
-						if (callback) callback(data);
-						$rootScope.$broadcast(channel + ':' + eventName, data);
-						$rootScope.$digest();
-					});
-				});
-			}
-		};
-	}
+  function ($rootScope, PusherService) {
+    return {
+
+      subscribe: function (channelName, eventName, callback) {
+        PusherService.then(function (pusher) {
+          var channel = pusher.channel(channelName) || pusher.subscribe(channelName);
+          channel.bind(eventName, function (data) {
+            if (callback) callback(data);
+            $rootScope.$broadcast(channelName + ':' + eventName, data);
+            $rootScope.$digest();
+          });
+        });
+      },
+
+      unsubscribe: function (channelName) {
+        PusherService.then(function (pusher) {
+          pusher.unsubscribe(channelName);
+        });
+      }
+    };
+  }
 ]);
+
 /**
  * State-based routing for AngularJS
  * @version v0.2.8

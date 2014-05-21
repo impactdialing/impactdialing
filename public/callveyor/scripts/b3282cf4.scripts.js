@@ -101,7 +101,7 @@
   surveyForm = angular.module('survey', ['ui.router', 'angularSpinner', 'idFlash', 'idCacheFactories']);
 
   surveyForm.factory('SurveyFormFieldsFactory', [
-    '$http', '$filter', function($http, $filter) {
+    '$http', '$filter', '$sce', function($http, $filter, $sce) {
       var fields;
       return fields = {
         data: {},
@@ -125,7 +125,7 @@
                 break;
               case 'script_texts':
                 obj.type = 'scriptText';
-                obj.content = object.content;
+                obj.content = $sce.trustAsHtml(object.markdown_content);
                 break;
               case 'questions':
                 obj.type = 'question';
@@ -971,7 +971,7 @@ angular.module('survey').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('/callveyor/survey/survey.tpl.html',
-    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"transitionInProgress\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><pre data-ng-if=\"item.type == 'scriptText'\">{{item.content}}</pre><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\"><option data-ng-repeat=\"response in item.possibleResponses\" value=\"{{response.id}}\">{{response.value}}</option></select></div></form></div>"
+    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"transitionInProgress\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><div data-ng-if=\"item.type == 'scriptText'\" data-ng-bind-html=\"item.content\"></div><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\"><option data-ng-repeat=\"response in item.possibleResponses\" value=\"{{response.id}}\">{{response.value}}</option></select></div></form></div>"
   );
 
 }]);
