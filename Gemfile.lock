@@ -130,8 +130,6 @@ GEM
     formtastic (2.2.1)
       actionpack (>= 3.0)
     fssm (0.2.10)
-    github-markup (1.2.1)
-      posix-spawn (~> 0.3.8)
     guard (1.8.1)
       formatador (>= 0.2.4)
       listen (>= 1.0.0)
@@ -223,7 +221,6 @@ GEM
       cocaine (~> 0.5.0)
       mime-types
     polyglot (0.3.4)
-    posix-spawn (0.3.8)
     pry (0.9.12.2)
       coderay (~> 1.0.5)
       method_source (~> 0.8)
@@ -418,7 +415,6 @@ DEPENDENCIES
   factory_girl_rails
   foreman
   formtastic (~> 2.2.1)
-  github-markup
   guard
   guard-rspec
   guard-spork

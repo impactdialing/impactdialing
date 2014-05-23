@@ -24,7 +24,7 @@ describe Client::ScriptTextsController do
       script_text = create(:script_text, content: "abc", script_order: 1, script: active_script)
       create(:script_text, content: "def", script_order: 2, script: active_script)
       get :show, script_id: active_script.id, id: script_text.id,  :api_key=> account.api_key, :format => "json"
-      response.body.should eq("{\"script_text\":{\"content\":\"abc\",\"id\":#{script_text.id},\"script_id\":#{active_script.id},\"script_order\":1}}")
+      response.body.should eq("{\"script_text\":{\"content\":\"abc\",\"id\":#{script_text.id},\"script_id\":#{active_script.id},\"script_order\":1,\"markdown_content\":\"\\n<p>abc</p>\\n\"}}")
     end
 
     it "should 404 if script not found" do
@@ -61,7 +61,7 @@ describe Client::ScriptTextsController do
       active_script = create(:script, :account => account, :active => true)
       create(:script_text, content: "def", script_order: 2, script: active_script)
       post :create, script_id: active_script.id, script_text: {content: "Hi", script_order: 1},  :api_key=> account.api_key, :format => "json"
-      response.body.should match(/{\"script_text\":{\"content\":\"Hi\",\"id\":(.*),\"script_id\":#{active_script.id},\"script_order\":1}}/)
+      response.body.should match(/{\"script_text\":{\"content\":\"Hi\",\"id\":(.*),\"script_id\":#{active_script.id},\"script_order\":1,\"markdown_content\":\"\\n<p>Hi<\/p>\\n\"}}/)
     end
 
     it "should throw validation error" do

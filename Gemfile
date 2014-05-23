@@ -49,7 +49,6 @@ gem 'stripe', '~>1.8.4'
 
 # Text -> HTML processors
 gem 'redcarpet'
-gem 'github-markup'
 
 group :development, :test, :e2e do
   gem 'rspec'
