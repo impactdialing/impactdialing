@@ -68,6 +68,10 @@ class Redcarpet::Render::ScriptText < Redcarpet::Render::Base
     end
   end
 
+  def triple_emphasis(text)
+    nil
+  end
+
   def double_emphasis(text)
     "<strong>#{text}</strong>"
   end

@@ -43,7 +43,7 @@ describe ScriptText do
 
 <p>~strikenot~</p>
 
-<p>***other things***</p>
+<p>*<strong>other things</strong>*</p>
 """
     end
 
@@ -74,6 +74,12 @@ describe ScriptText do
     it 'does not handle anything else' do
       subject.content = unsupported
       subject.markdown_content.should eq expected_unsupported
+    end
+    it 'does not cause segfaults when triple emphasis markers are used' do
+      content = "Hi is __________there? Hi, this is_________."
+      expected = "\n<p>Hi is________<strong>there? Hi, this is</strong>_______.</p>\n"
+      subject.content = content
+      subject.markdown_content.should eq expected
     end
   end
 end
