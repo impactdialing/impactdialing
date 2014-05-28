@@ -23,6 +23,7 @@ describe Call do
       end
 
       it "should start a conference in connected state with callsid if call not from twilio" do
+        pending "review & removal"
         call = create(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
         RedisCall.set_request_params(call.id, call.attributes)
         RedisCallerSession.set_datacentre(@caller_session.id, DataCentre::Code::ORL)

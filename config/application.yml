@@ -2,12 +2,7 @@ default: &default_settings
   twilio_callback_host: impactcallergiraffeblue-aws.impactdialing.com
   call_end_callback_host: impactdialingcallend-aws.impactdialing.com
   incoming_callback_host: impactdialingincomingcalls-aws.impactdialing.com
-  voxeo_callback_host: voxeo-prodaws.impactdialing.com
-  voxeo_call_end_callback_host: voxeo-prodaws.impactdialing.com
-  voxeo_incoming_callback_host: voxeo-prodaws.impactdialing.com
   voip_api_url: api.twilio.com
-  voxeo_voip_api_url: voxeo-prodaws.impactdialing.com
-
   twilio_callback_port: 80
   recording_env: heroku
   callin_phone: 4157499271
