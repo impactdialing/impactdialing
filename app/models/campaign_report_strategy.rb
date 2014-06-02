@@ -47,7 +47,7 @@ class CampaignReportStrategy
     @csv
   end
 
-  def call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt={})
+  def call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt={}, voter={})
     out = [
       caller_names[call_attempt['caller_id']],
       CampaignReportStrategy.map_status(call_attempt['status']),
@@ -61,6 +61,11 @@ class CampaignReportStrategy
     ]
     if @mode == CampaignReportStrategy::Mode::PER_LEAD
       out << attempt_numbers[call_attempt['voter_id']][:cnt]
+      if voter['voicemail_history'].blank?
+        out << 'No'
+      else
+        out << 'Yes'
+      end
     end
     out << CallAttempt.report_recording_url(call_attempt['recording_url'])
     out.flatten

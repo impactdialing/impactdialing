@@ -4,7 +4,11 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
 
   def csv_header
     header_fields = [manipulate_header_fields, @selected_custom_voter_fields, "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)"]
-    header_fields << "Attempts" if @mode == CampaignReportStrategy::Mode::PER_LEAD
+
+    if @mode == CampaignReportStrategy::Mode::PER_LEAD
+      header_fields << "Attempts"
+      header_fields << "Left Voicemail"
+    end
     header_fields.concat(["Recording", Question.question_texts(@question_ids) , Note.note_texts(@note_ids)])
     header_fields.flatten.compact
   end
@@ -107,14 +111,15 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       data[voter['id']] = csv_for(voter, voter_field_values[voter['id']])
       call_attempt_ids << attempt_numbers[voter['id']][:last_id] if attempt_numbers[voter['id']]
     end
-    conn = OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2))
-    attempts = conn.execute(CallAttempt.where(id: call_attempt_ids.compact).includes(:transfer_attempt).to_sql).each(as: :hash)
-    answers = get_answers(call_attempt_ids)
-    note_responses = get_note_responses(call_attempt_ids)
-    caller_names = get_callers_names(attempts)
+    conn              = OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2))
+    attempts          = conn.execute(CallAttempt.where(id: call_attempt_ids.compact).includes(:transfer_attempt).to_sql).each(as: :hash)
+    answers           = get_answers(call_attempt_ids)
+    note_responses    = get_note_responses(call_attempt_ids)
+    caller_names      = get_callers_names(attempts)
     transfer_attempts = get_transfer_attempts(attempts)
     attempts.each do |a|
-      data[a['voter_id']][-1] = call_attempt_details(a, answers[a['id']], note_responses[a['id']], caller_names, attempt_numbers, @possible_responses, transfer_attempts[a['id']])
+      voter                   = voters.find{|v| v['id'] == a['voter_id']}
+      data[a['voter_id']][-1] = call_attempt_details(a, answers[a['id']], note_responses[a['id']], caller_names, attempt_numbers, @possible_responses, transfer_attempts[a['id']], voter)
     end
     data.values.each do |o|
       @csv << o.flatten
@@ -140,10 +145,12 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     transfer_attempts = get_transfer_attempts(attempts)
 
     attempts.each do |attempt|
-      voter_id = attempt['voter_id']
+      voter_id   = attempt['voter_id']
       attempt_id = attempt['id']
-      data = csv_for(voters[voter_id], voter_field_values[voter_id])
-      data[-1] = call_attempt_details(attempt, answers[attempt_id], note_responses[attempt_id], caller_names, attempt_numbers, @possible_responses, transfer_attempts[attempt_id])
+      data       = csv_for(voters[voter_id], voter_field_values[voter_id])
+      Rails.logger.error "process_attempts - #{voters.class}"
+      voter      = voters[voter_id]
+      data[-1]   = call_attempt_details(attempt, answers[attempt_id], note_responses[attempt_id], caller_names, attempt_numbers, @possible_responses, transfer_attempts[attempt_id], voter)
       @csv << data.flatten
     end
   end
@@ -190,11 +197,11 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     end
   end
 
-  def call_attempt_details(call_attempt, answers, note_responses, caller_names, attempt_numbers, possible_responses, transfer_attempt={})
+  def call_attempt_details(call_attempt, answers, note_responses, caller_names, attempt_numbers, possible_responses, transfer_attempt={}, voter={})
     if [CallAttempt::Status::RINGING, CallAttempt::Status::READY].include?(call_attempt['status'])
-      [nil, "Not Dialed","","","","", [], []]
+      [nil, "Not Dialed","","","","", "", [], []]
     else
-      [call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt), PossibleResponse.possible_response_text(@question_ids, answers, possible_responses), NoteResponse.response_texts(@note_ids, note_responses)].flatten
+      [call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt, voter), PossibleResponse.possible_response_text(@question_ids, answers, possible_responses), NoteResponse.response_texts(@note_ids, note_responses)].flatten
     end
   end
 

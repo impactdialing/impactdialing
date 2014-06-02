@@ -13,7 +13,7 @@ describe CallerCampaignReportStrategy do
 
      it "should create csv headers" do
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Recording"])
+       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Left Voicemail", "Recording"])
      end
 
      it "should create csv headers and not have Attempts if per dial" do
@@ -24,7 +24,7 @@ describe CallerCampaignReportStrategy do
      it "should manipulate headers" do
        selected_voter_fields = ["custom_id", "last_name", "first_name", "middle_name", "address", "city", "state", "zip_code", "country"]
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "Last name", "First name", "Middle name", "Address", "City", "State", "Zip code", "Country", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Recording"])
+       strategy.csv_header.should eq(["ID", "Last name", "First name", "Middle name", "Address", "City", "State", "Zip code", "Country", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Left Voicemail", "Recording"])
      end
 
      it "should create csv headers with question texts" do
@@ -137,6 +137,7 @@ describe CallerCampaignReportStrategy do
         'N/A', # transfer attempt end
         'N/A', # transfer attempt duration
         1,
+        "No",
         "xyz.mp3"
       ]
       actual.should eq expected
@@ -212,14 +213,14 @@ describe CallerCampaignReportStrategy do
     context "ringing" do
       let(:call_attempt) { create(:call_attempt, voter: voter, status: CallAttempt::Status::RINGING, caller: @caller) }
       it "should create the csv row convert ringing to not dialed" do
-        @strategy.call_attempt_details(call_attempt.attributes, @answers, @note_responses, {call_attempt.caller_id => call_attempt.caller.known_as}, {voter.id => 1}, @possible_responses).should eq([nil, "Not Dialed", "", "", "", "", [], []])
+        @strategy.call_attempt_details(call_attempt.attributes, @answers, @note_responses, {call_attempt.caller_id => call_attempt.caller.known_as}, {voter.id => 1}, @possible_responses).should eq([nil, "Not Dialed", "", "", "", "", "", [], []])
       end
     end
 
     context "ready" do
       let(:call_attempt) { create(:call_attempt, voter: voter, status: CallAttempt::Status::READY, caller: @caller) }
       it "should create the csv row convert ready to not dialed" do
-        @strategy.call_attempt_details(call_attempt.attributes, @answers, @note_responses, {call_attempt.caller_id => call_attempt.caller.known_as}, {voter.id => 1}, @possible_responses).should eq([nil, "Not Dialed", "", "", "", "", [], []])
+        @strategy.call_attempt_details(call_attempt.attributes, @answers, @note_responses, {call_attempt.caller_id => call_attempt.caller.known_as}, {voter.id => 1}, @possible_responses).should eq([nil, "Not Dialed", "", "", "", "", "", [], []])
       end
     end
   end
@@ -514,6 +515,7 @@ describe CallerCampaignReportStrategy do
             "Time Transfer Ended",
             "Transfer Duration (minutes)",
             "Attempts",
+            "Left Voicemail",
             "Recording",
             "Q1",
             "Q12",
@@ -537,6 +539,7 @@ describe CallerCampaignReportStrategy do
             'N/A', # transfer attempt end
             'N/A', # transfer attempt duration
             1,
+            "No",
             "xyz.mp3",
             "Hey",
             "Wee",
