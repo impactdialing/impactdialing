@@ -35,8 +35,8 @@ describe 'idTwilioConnectionHandlers', ->
     idFlashFactory = $injector.get('idFlashFactory')
 
     idFlashFactory.now = jasmine.createSpy('-idFlashFactory.now spy-')
-    $state.go          = jasmine.createSpy('-$state.go spy-').and.returnValue($state)
-    $state.catch       = jasmine.createSpy('-$statePromise.catch spy-')
+    $state             = jasmine.createSpyObj('$state', ['go', 'catch'])
+    $state.go.andReturn($state)
 
   describe 'connected(connection)', ->
     it 'stores connection in $cacheFactory("Twilio").put("connection")', ->
@@ -44,14 +44,15 @@ describe 'idTwilioConnectionHandlers', ->
       factory.connected(connection)
       expect($cacheFactory.get('Twilio').get('connection')).toEqual(connection)
 
-    it 'transitions to dialer.hold', ->
+    it 'calls afterConnected if defined', ->
+      factory.afterConnected = jasmine.createSpy('-afterConnected spy-')
       factory.connected({})
-      expect($state.go).toHaveBeenCalledWith('dialer.hold')
+      expect(factory.afterConnected).toHaveBeenCalled()
 
   describe 'error(error)', ->
     it 'displays an error to user, that self-destructs in some seconds', ->
       factory.error({message: 'Bad twilio', stack: {}})
-      expect(idFlashFactory.now).toHaveBeenCalledWith('error', jasmine.any(String), jasmine.any(Number))
+      expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
 
   describe 'resolved(twilio)', ->
     twilio = {}
@@ -63,11 +64,7 @@ describe 'idTwilioConnectionHandlers', ->
     }
     beforeEach ->
       twilio.then = jasmine.createSpy('-idTwilioService.then spy-')
-      twilio.Device = {
-        connect: jasmine.createSpy('-Twilio.Device.connect spy-')
-        ready: jasmine.createSpy('-Twilio.Device.ready spy-')
-        error: jasmine.createSpy('-Twilio.Device.error spy-')
-      }
+      twilio.Device = jasmine.createSpyObj('twilio.Device', ['connect', 'ready', 'error', 'disconnect'])
       factory.connect(twilioParams)
 
     it 'registers Twilio.Device.connect,error handlers', ->

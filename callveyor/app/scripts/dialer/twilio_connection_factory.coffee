@@ -6,8 +6,8 @@ mod = angular.module('idTwilioConnectionHandlers', [
 ])
 
 mod.factory('idTwilioConnectionFactory', [
-  '$rootScope', '$state', 'TwilioCache', 'idFlashFactory', 'idTwilioService', 'idTransitionPrevented'
-  ($rootScope,   $state,   TwilioCache,   idFlashFactory,   idTwilioService,   idTransitionPrevented) ->
+  '$rootScope', 'TwilioCache', 'idFlashFactory', 'idTwilioService',
+  ($rootScope,   TwilioCache,   idFlashFactory,   idTwilioService) ->
     console.log 'idTwilioConnectionFactory'
     twilioParams = {}
 
@@ -19,8 +19,8 @@ mod.factory('idTwilioConnectionFactory', [
       connected: (connection) ->
         console.log 'connected', connection
         TwilioCache.put('connection', connection)
-        p = $state.go('dialer.hold')
-        p.catch(idTransitionPrevented)
+        if angular.isFunction(factory.afterConnected)
+          factory.afterConnected()
 
       # ready: (device) ->
       #   console.log 'twilio connection ready', device
@@ -31,8 +31,8 @@ mod.factory('idTwilioConnectionFactory', [
       error: (error) ->
         console.log 'report this problem', error
         idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please dial-in to continue.')
-        p = $state.go('dialer.ready')
-        p.catch(idTransitionPrevented)
+        if angular.isFunction(factory.afterError)
+          factory.afterError()
 
       resolved: (twilio) ->
         console.log 'idTwilioService resolved', twilio

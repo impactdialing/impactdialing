@@ -32,6 +32,14 @@ ready.controller('ReadyCtrl.splashModal', [
       'session_key': config.caller.session_key
     }
 
+    idTwilioConnectionFactory.afterConnected = ->
+      p = $state.go('dialer.hold')
+      p.catch(idTransitionPrevented)
+
+    idTwilioConnectionFactory.afterError = ->
+      p = $state.go('dialer.ready')
+      p.catch(idTransitionPrevented)
+
     ready = config || {}
     ready.startCalling = ->
       console.log 'startCalling clicked', config
