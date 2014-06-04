@@ -3,7 +3,8 @@
 active = angular.module('callveyor.dialer.active', [
   'ui.router',
   'callveyor.dialer.active.transfer',
-  'idFlash'
+  'idFlash',
+  'idCacheFactories'
 ])
 
 active.config(['$stateProvider', ($stateProvider) ->
@@ -34,12 +35,13 @@ active.controller('ActiveCtrl.buttons', [
       console.log 'hangup clicked'
       $scope.transitionInProgress = true
 
-      # unless callCache?
-      #   console.log 'report this problem'
-      #   return
-
       call_id     = CallCache.get('id')
+      # if not in active warm transfer
+      ## hangup on voter
       stopPromise = $http.post("/call_center/api/#{call_id}/hangup")
+      # if in active warm transfer
+      ## disconnect caller but leave voter & transfer connected
+      ## POST "/caller/:caller_id/kick?caller_session_id=1&participant_type=caller"
 
       success = ->
         e = (obj) ->

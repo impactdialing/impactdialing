@@ -29,9 +29,9 @@ describe 'callveyor.http_dialer', ->
   describe 'dial(caller_id, params, retry)', ->
     describe 'when called with invalid or undefined caller_id, params.session_id or params.voter_id', ->
       it 'throws an Error', ->
-        expect(-> factory.dialContact(1, {session_id: 3})).toThrowError()
-        expect(-> factory.dialContact(undefined, {session_id: 3, voter_id: 1})).toThrowError()
-        expect(-> factory.dialContact(1, {voter_id: 1})).toThrowError()
+        expect(-> factory.dialContact(1, {session_id: 3})).toThrow()
+        expect(-> factory.dialContact(undefined, {session_id: 3, voter_id: 1})).toThrow()
+        expect(-> factory.dialContact(1, {voter_id: 1})).toThrow()
 
     beforeEach ->
       $httpBackend.whenPOST(dialerUrl).respond({})
@@ -97,7 +97,7 @@ describe 'callveyor.http_dialer', ->
               $httpBackend.whenPOST(dialerUrl).respond(statusCode)
               $httpBackend.flush()
               $httpBackend.verifyNoOutstandingExpectation()
-              expect(retrySpy.calls.count()).toEqual(1)
+              expect(retrySpy.calls.length).toEqual(1)
 
             describe 'retry POST is success', ->
               beforeEach ->

@@ -62,7 +62,7 @@ describe 'dialer.hold', ->
     describe '$scope.hold.dial()', ->
       describe '$cacheFactory("contact") exists and has "data"', ->
         beforeEach ->
-          $cacheFactory('contact').put('data', contact.data)
+          $cacheFactory.get('Contact').put('data', contact.data)
 
         it 'updates status message', ->
           curStatus = $scope.hold.callStatusText

@@ -2,6 +2,7 @@
 
 ready = angular.module('callveyor.dialer.ready', [
   'ui.router',
+  'ui.bootstrap',
   'idTwilioConnectionHandlers',
   'idFlash',
   'idCacheFactories'

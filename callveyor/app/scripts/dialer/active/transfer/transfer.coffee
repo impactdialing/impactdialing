@@ -118,6 +118,7 @@ transfer.controller('TransferButtonCtrl.conference', [
     $rootScope.transferStatus = 'Transfer on call'
     transfer.hangup = ->
       console.log 'transfer.hangup'
+      # POST "/caller/:caller_id/kick?caller_session_id=1&participant_type=transfer"
       p = $state.go('dialer.active')
       s = (o) -> console.log 'success', o
       e = (r) -> console.log 'error', e

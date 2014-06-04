@@ -48,10 +48,9 @@ describe 'callveyor.dialer module', ->
         idCallFlow                     = _idCallFlow_
         transitionValidator            = _transitionValidator_
         transitionValidator.start      = jasmine.createSpy('-transitionValidator.start spy-')
-        idCallFlow.survey.save.success = jasmine.createSpy('-survey:save:success spy-')
         FakePusher.subscribe           = jasmine.createSpy('-Pusher.subscribe spy-')
 
-        $httpBackend.whenPOST('/call_center/api/call_station.json').respond(callStation)
+        $httpBackend.expectPOST('/call_center/api/call_station.json').respond(callStation)
         tplUrls = [
           '/scripts/dialer/dialer.tpl.html',
           '/callveyor/dialer/ready/callFlowButtons.tpl.html',
@@ -70,13 +69,20 @@ describe 'callveyor.dialer module', ->
         $controller('DialerCtrl', {$scope, callStation})
     ))
 
-    it 'puts resolved callStation.data into "data" of "callStation" cache', ->
-      cache = $cacheFactory.get('callStation')
-      expect(cache.get('data')).toEqual(callStation.data)
+    afterEach ->
+      $httpBackend.verifyNoOutstandingRequest()
 
-    it 'binds idCallFlow.survey.save.success to "survey:save:success"', ->
-      $rootScope.$broadcast('survey:save:success')
-      expect(idCallFlow.survey.save.success).toHaveBeenCalled()
+    it 'puts resolved callStation.data.caller into "caller" prop of "callStation" cache', ->
+      cache = $cacheFactory.get('CallStation')
+      expect(cache.get('caller')).toEqual(callStation.data.caller)
+
+    it 'puts callStation.data.campaign into "campaign" prop of "callStation" cache', ->
+      cache = $cacheFactory.get('CallStation')
+      expect(cache.get('campaign')).toEqual(callStation.data.campaign)
+
+    it 'puts callStation.data.call_station into "call_station" prop of "callStation" cache', ->
+      cache = $cacheFactory.get('CallStation')
+      expect(cache.get('call_station')).toEqual(callStation.data.call_station)
 
     it "subscribes appropriate idCallFlow handler to corresponding event on the callStation.data.caller.session_key channel", ->
       for event in pusherEvents

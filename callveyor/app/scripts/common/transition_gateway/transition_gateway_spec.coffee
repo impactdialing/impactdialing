@@ -66,4 +66,4 @@ describe 'transitionGateway module', ->
       transitionValidator.start()
       transitionValidator.start()
       $state.go('blah')
-      expect(transitionValidator.reviewTransition.calls.count()).toEqual(1)
+      expect(transitionValidator.reviewTransition.calls.length).toEqual(1)

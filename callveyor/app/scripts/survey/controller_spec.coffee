@@ -13,16 +13,17 @@ describe 'survey controller', ->
 
   beforeEach(module('survey'))
 
-  beforeEach(inject((_$rootScope_, _$controller_, _$httpBackend_, _$cacheFactory_, _usSpinnerService_, _SurveyFormFieldsFactory_, _idFlashFactory_) ->
-    $rootScope = _$rootScope_
-    $controller = _$controller_
-    $scope = $rootScope
-    $httpBackend = _$httpBackend_
-    $cacheFactory = _$cacheFactory_
+  beforeEach(inject((_$rootScope_, _$controller_, _$httpBackend_, _$cacheFactory_, _usSpinnerService_, _SurveyFormFieldsFactory_, _idFlashFactory_, _ErrorCache_, _CallCache_) ->
+    $rootScope     = _$rootScope_
+    $controller    = _$controller_
+    $scope         = $rootScope
+    $httpBackend   = _$httpBackend_
+    $cacheFactory  = _$cacheFactory_
     idFlashFactory = _idFlashFactory_
-    callCache = $cacheFactory('call')
-    callCache.put('id', call.id)
+    CallCache      = _CallCache_
+    ErrorCache     = _ErrorCache_
 
+    CallCache.put('id', call.id)
     $httpBackend.whenGET('/call_center/api/survey_fields.json').respond({})
     usSpinnerService = _usSpinnerService_
     SurveyFormFieldsFactory = _SurveyFormFieldsFactory_
@@ -45,40 +46,60 @@ describe 'survey controller', ->
     it 'have a question key with an empty obj value', ->
       expect($scope.survey.responses.question).toEqual({})
 
+  describe 'survey.save($event, andContinue=true|false) request completes UNsuccessfully', ->
+    beforeEach ->
+      $httpBackend.whenPOST("/call_center/api/#{call.id}/submit_result").respond(400, {})
+      usSpinnerService.spin = jasmine.createSpy('-usSpinnerService.spin Spy-')
+      usSpinnerService.stop = jasmine.createSpy('-usSpinnerService.stop Spy-')
+      @notes = {"42": 367}
+      @question = {"73": 91}
+
+    it 'stops the global spinner', ->
+      $scope.survey.save({}, true)
+      $httpBackend.flush()
+      expect(usSpinnerService.stop).toHaveBeenCalled()
+
+    it 'sets $rootScope.transitionInProgress to false', ->
+      $scope.survey.save({}, true)
+      $httpBackend.flush()
+      expect($rootScope.transitionInProgress).toBeFalsy()
+
+    it '$broadcasts survey:save:done, {andContinue}', ->
+      spy = jasmine.createSpy('--survey:save:done spy--')
+      $rootScope.$on('survey:save:done', spy)
+      $scope.survey.save({}, true)
+      $httpBackend.flush()
+      expect(spy).toHaveBeenCalledWith(jasmine.any(Object), {andContinue: true})
+
   describe 'survey.save($event, andContinue=true|false)', ->
     beforeEach ->
       $httpBackend.whenPOST("/call_center/api/#{call.id}/submit_result").respond(200, {})
       $httpBackend.whenPOST("/call_center/api/#{call.id}/submit_result_and_stop").respond(200, {})
       usSpinnerService.spin = jasmine.createSpy('-usSpinnerService.spin Spy-')
       usSpinnerService.stop = jasmine.createSpy('-usSpinnerService.stop Spy-')
-
       @notes = {"42": 367}
       @question = {"73": 91}
 
     it 'is a no-op if survey.requestInProgress is true', ->
-      $scope.$apply('survey.requestInProgress = true')
       $scope.survey.save()
-      expect(usSpinnerService.spin).not.toHaveBeenCalled()
+      $scope.survey.save()
+      expect(usSpinnerService.spin.calls.length).toEqual(1)
 
     it 'spins the global spinner', ->
       $scope.survey.save({})
       expect(usSpinnerService.spin).toHaveBeenCalled()
 
-    it 'sets survey.requestInProgress to true', ->
-      expect($scope.survey.requestInProgress).toBeFalsy()
-      $scope.survey.save({})
-      expect($scope.survey.requestInProgress).toBeTruthy()
-
-    describe 'request completes', ->
-      it 'stops the global spinner', ->
+    describe 'request completes successfully', ->
+      it 'spins the global spinner when andContinue is true', ->
         $scope.survey.save({}, true)
         $httpBackend.flush()
+        expect(usSpinnerService.spin).toHaveBeenCalled()
+
+      it 'stops the global spinner when andContinue is false', ->
+        $scope.survey.save({}, false)
+        $httpBackend.flush()
+        $httpBackend.verifyNoOutstandingRequest()
         expect(usSpinnerService.stop).toHaveBeenCalled()
-
-      it 'sets survey.disable to false', ->
-        $scope.survey.save({}, true)
-        $httpBackend.flush()
-        expect($scope.survey.disable).toBeFalsy()
 
     describe 'request is success', ->
       beforeEach ->
@@ -96,12 +117,6 @@ describe 'survey controller', ->
         $scope.survey.save({}, true)
         $httpBackend.flush()
         expect(successSpy).toHaveBeenCalled()
-
-      it 'notifies the user of success, hiding the notification after some seconds', ->
-        idFlashFactory.now = jasmine.createSpy('-idFlashFactory.now spy-')
-        $scope.survey.save({}, true)
-        $httpBackend.flush()
-        expect(idFlashFactory.now).toHaveBeenCalledWith('success', jasmine.any(String), jasmine.any(Number))
 
     describe 'request is error', ->
       beforeEach ->
@@ -122,7 +137,7 @@ describe 'survey controller', ->
         idFlashFactory.now = jasmine.createSpy('-idFlashFactory.now spy-')
         $scope.survey.save({}, true)
         $httpBackend.flush()
-        expect(idFlashFactory.now).toHaveBeenCalledWith('error', jasmine.any(String))
+        expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
 
       it 'sets survey.disable to false', ->
         $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(444, {})
@@ -135,7 +150,7 @@ describe 'survey controller', ->
           $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(400, {})
           $scope.survey.save({}, true)
           $httpBackend.flush()
-          expect(idFlashFactory.now).toHaveBeenCalledWith('error', jasmine.any(String))
+          expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
 
       describe 'error is 408 (server timeout) or 504 (gateway timeout)', ->
 
@@ -144,7 +159,7 @@ describe 'survey controller', ->
             $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(errorCode, {})
             $scope.survey.save({}, true)
             $httpBackend.flush()
-            expect(idFlashFactory.now).toHaveBeenCalledWith('error', jasmine.any(String))
+            expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
           )
 
       describe 'error is 500', ->
@@ -152,14 +167,14 @@ describe 'survey controller', ->
           $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(500, {})
           $scope.survey.save({}, true)
           $httpBackend.flush()
-          expect(idFlashFactory.now).toHaveBeenCalledWith('error', jasmine.any(String))
+          expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
 
       describe 'error is 503', ->
         it 'displays maintenance message', ->
           $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(503, {})
           $scope.survey.save({}, true)
           $httpBackend.flush()
-          expect(idFlashFactory.now).toHaveBeenCalledWith('error', jasmine.any(String))
+          expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
 
     describe 'andContinue=true', ->
 

@@ -52,20 +52,13 @@ describe 'pusherConnectionHandlers module', ->
 
         describe 'when first fired', ->
           it 'displays a notice to the user', ->
-            expect(idFlashFactory.now).toHaveBeenCalledWith('notice', jasmine.any(String))
-
-          it 'resets the initial connecting handler to a reConnecting handler', ->
-            idFlashFactory.now.calls.reset()
-            trigger('connecting')
-            # hack-ish test that will fail if reConnecting handler flashes 'notice' instead of 'warning'
-            expect(idFlashFactory.now).not.toHaveBeenCalledWith('notice', jasmine.any(String))
+            expect(idFlashFactory.now).toHaveBeenCalledWith('info', jasmine.any(String))
 
           it 'spins the global-spinner', ->
             expect(usSpinnerService.spin).toHaveBeenCalledWith('global-spinner')
 
         describe 'when fired after the first time', ->
           beforeEach ->
-            idFlashFactory.now.calls.reset()
             trigger('connecting')
 
           it 'displays a warning to the user', ->

@@ -30,15 +30,17 @@ describe 'dialer.stop', ->
     $cacheFactory = ''
     $httpBackend  = ''
     $controller   = ''
+    TwilioCache   = ''
 
     beforeEach(inject(
-      (_$rootScope_, _$state_, _$cacheFactory_, _$httpBackend_, _$controller_) ->
-        $rootScope            = _$rootScope_
-        $scope                = $rootScope
-        $controller           = _$controller_
-        $state                = _$state_
-        $httpBackend          = _$httpBackend_
-        $cacheFactory         = _$cacheFactory_
+      (_$rootScope_, _$state_, _$cacheFactory_, _$httpBackend_, _$controller_, _TwilioCache_) ->
+        $rootScope    = _$rootScope_
+        $scope        = $rootScope
+        $controller   = _$controller_
+        $state        = _$state_
+        $httpBackend  = _$httpBackend_
+        $cacheFactory = _$cacheFactory_
+        TwilioCache   = _TwilioCache_
 
         $httpBackend.whenPOST("/call_center/api/#{callStation.data.caller.id}/stop_calling").respond(200)
         $state.go             = jasmine.createSpy('-$state.go spy-')
@@ -46,7 +48,7 @@ describe 'dialer.stop', ->
         twilioFake.connection = {
           disconnect: jasmine.createSpy('-twilioFake.connection.disconnect spy-')
         }
-        $cacheFactory('Twilio').put('connection', twilioFake.connection)
+        TwilioCache.put('connection', twilioFake.connection)
 
         $controller('StopCtrl.buttons', {$scope, callStation})
     ))

@@ -1,11 +1,12 @@
 describe 'idSurvey directive', ->
 
-  $rootScope = ''
-  $compile = ''
-  $httpBackend = ''
+  $rootScope     = ''
+  $compile       = ''
+  $httpBackend   = ''
+  $sce           = ''
   surveyTemplate = ''
-  scope = ''
-  ele = ''
+  scope          = ''
+  ele            = ''
 
   # Load module under test
   beforeEach module 'survey'
@@ -13,10 +14,11 @@ describe 'idSurvey directive', ->
   # Load template module
   # beforeEach module '/scripts/survey/survey.tpl.html'
 
-  beforeEach(inject((_$rootScope_, _$compile_, _$httpBackend_) ->
-    $rootScope = _$rootScope_
-    $compile = _$compile_
+  beforeEach(inject((_$rootScope_, _$compile_, _$httpBackend_, _$sce_) ->
+    $rootScope   = _$rootScope_
+    $compile     = _$compile_
     $httpBackend = _$httpBackend_
+    $sce         = _$sce_
     $httpBackend.whenGET('/call_center/api/survey_fields.json').respond({})
     @tpl = '<div data-id-survey></div>'
     scope = $rootScope
@@ -25,30 +27,14 @@ describe 'idSurvey directive', ->
     scope.$digest()
   ))
 
-  it 'contains a "Save & stop calling" button', ->
-    el = angular.element(ele.find('button')[0])
-    expect(el.text()).toEqual('Save & stop calling')
-
-  it 'contains a "Save & continue" button', ->
-    el = angular.element(ele.find('button')[1])
-    expect(el.text()).toEqual('Save & continue')
-
-  it 'hides buttons when survey.hideButtons = true', ->
-    scope.$apply('survey.hideButtons = true')
-    el = angular.element(ele.find('div')[2])
-    expect(el.hasClass('btn-group ng-hide')).toBeTruthy()
-
-  it 'shows buttons when survey.hideButtons = false', ->
-    scope.$apply('survey.hideButtons = false')
-    el = angular.element(ele.find('div')[2])
-    expect(el.hasClass('btn-group ng-hide')).toBeFalsy()
-
-  it 'renders item.content from scriptText type items to <pre/>', ->
-    scope.$apply("survey.form = [
-      {type: 'scriptText', content: 'Lorem Ipsum dolla etsa...'}
-    ]")
-    el = angular.element(ele.find('pre')[0])
-    expect(el.text()).toEqual('Lorem Ipsum dolla etsa...')
+  it 'renders item.content from scriptText type items literally'
+  # , ->
+  #   scope.$apply("survey.form = [
+  #     {type: 'scriptText', content: '<p>Lorem Ipsum dolla etsa...</p>'}
+  #   ]")
+  #   el = angular.element(ele.find('form')[0])
+  #   console.log 'form el', el, scope.survey.form
+  #   expect(el.text()).toContain('<p>Lorem Ipsum dolla etsa...</p>')
 
   it 'renders item.content from !scriptText type items to label', ->
     scope.$apply("survey.form = [{type: 'blah', content: 'myLabel'}]")
@@ -106,18 +92,11 @@ describe 'idSurvey directive', ->
     el = angular.element(ele.find('select')[0])
     expect(el.val()).toEqual('resp_2')
 
-  it 'disables all buttons when saving', ->
-    expect(ele.find('button').prop('disabled')).toBeFalsy()
-    el = ele.find('div').eq(2).find('button').eq(0)
-    el.triggerHandler('click')
-    expect(ele.find('button').prop('disabled')).toBeTruthy()
-
-  it 'drops the veil when saving', ->
+  it 'drops the veil when transitionInProgress is true', ->
     # sanity check
     veil = ele.find('div').eq(1)
     expect(veil.hasClass('veil ng-hide')).toBeTruthy()
 
-    el = ele.find('div').eq(2).find('button').eq(0)
-    el.triggerHandler('click')
+    scope.$apply('transitionInProgress = true')
     veil = ele.find('div').eq(1)
     expect(veil.hasClass('veil ng-hide')).toBeFalsy()

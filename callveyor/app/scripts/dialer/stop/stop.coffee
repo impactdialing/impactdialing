@@ -1,7 +1,8 @@
 'use strict'
 
 stop = angular.module('callveyor.dialer.stop', [
-  'ui.router'
+  'ui.router',
+  'idCacheFactories'
 ])
 
 stop.config([

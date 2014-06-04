@@ -19,6 +19,12 @@ describe 'dialer.ready', ->
       }
     }
   }
+  modalInstanceFake = {
+    close: jasmine.createSpy('-$modalInstance.close spy-')
+  }
+  modalFake = {
+    open: jasmine.createSpy('-$modal.open spy-')
+  }
 
   beforeEach module('callveyor.dialer.ready', ($provide) ->
     ->
@@ -26,25 +32,30 @@ describe 'dialer.ready', ->
       $provide.value('idTwilioConnectionFactory', twilioFake)
       $provide.value('idFlashFactory', flashFake)
       $provide.value('usSpinnerService', spinnerFake)
+      $provide.value('$modalInstance', modalInstanceFake)
+      $provide.value('$modal', modalFake)
   )
 
-  describe 'ReadyCtrl.buttons', ->
-    $rootScope    = ''
-    $scope        = ''
-    $state        = ''
-    $cacheFactory = ''
-    $httpBackend  = ''
-    $controller   = ''
+  describe 'ReadyCtrl.splashModal', ->
+    $rootScope       = ''
+    $scope           = ''
+    $state           = ''
+    $cacheFactory    = ''
+    $httpBackend     = ''
+    $controller      = ''
+    $modalInstance   = ''
+    CallStationCache = ''
 
     beforeEach(inject(
-      (_$rootScope_, _$state_, _$cacheFactory_, _$httpBackend_, _$controller_) ->
-        $rootScope            = _$rootScope_
-        $scope                = $rootScope
-        $controller           = _$controller_
-        $state                = _$state_
-        $httpBackend          = _$httpBackend_
-        $cacheFactory         = _$cacheFactory_
-
+      (_$rootScope_, _$state_, _$cacheFactory_, _$httpBackend_, _$controller_, _$modalInstance_, _CallStationCache_) ->
+        $rootScope         = _$rootScope_
+        $scope             = $rootScope
+        $controller        = _$controller_
+        $state             = _$state_
+        $httpBackend       = _$httpBackend_
+        $cacheFactory      = _$cacheFactory_
+        $modalInstance     = _$modalInstance_
+        CallStationCache   = _CallStationCache_
         $state.go          = jasmine.createSpy('-$state.go spy-')
         twilioFake.connect = jasmine.createSpy('-idTwilioConnectionFactory.connect spy-')
     ))
@@ -58,7 +69,10 @@ describe 'dialer.ready', ->
       }
 
       beforeEach ->
-        $controller('ReadyCtrl.buttons', {$scope, callStation})
+        CallStationCache.put('caller', callStation.data.caller)
+        CallStationCache.put('campaign', callStation.data.campaign)
+        CallStationCache.put('call_station', callStation.data.call_station)
+        $controller('ReadyCtrl.splashModal', {$scope})
 
       it 'sets $scope.transitionInProgress to true', ->
         expect($scope.transitionInProgress).toBeFalsy()

@@ -1,7 +1,8 @@
 'use strict'
 
 hold = angular.module('callveyor.dialer.hold', [
-  'ui.router'
+  'ui.router',
+  'idCacheFactories'
 ])
 
 hold.config([

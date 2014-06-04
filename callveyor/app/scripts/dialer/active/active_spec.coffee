@@ -31,7 +31,7 @@ describe 'dialer.active', ->
         $cacheFactory = _$cacheFactory_
         $httpBackend  = _$httpBackend_
         $controller   = _$controller_
-        $state.go     = jasmine.createSpy('-$state.go spy-').and.returnValue($state)
+        $state.go     = jasmine.createSpy('-$state.go spy-').andReturn($state)
         $state.catch  = jasmine.createSpy('-$statePromise spy-')
 
         $controller('ActiveCtrl.buttons', {$scope, transfers})
@@ -43,7 +43,7 @@ describe 'dialer.active', ->
       }
 
       beforeEach ->
-        $cacheFactory('call').put('id', call.id)
+        $cacheFactory.get('Call').put('id', call.id)
         $httpBackend.whenPOST("/call_center/api/#{call.id}/hangup").respond(200)
 
       it 'POSTs to /call_center/api/#{$cacheFactory.get("call").get("id")}/hangup', ->
@@ -88,17 +88,18 @@ describe 'dialer.active', ->
         $cacheFactory = _$cacheFactory_
         $httpBackend  = _$httpBackend_
         $controller   = _$controller_
-        $state.go     = jasmine.createSpy('-$state.go spy-').and.returnValue($state)
+        $state.go     = jasmine.createSpy('-$state.go spy-').andReturn($state)
         $state.then  = jasmine.createSpy('-$statePromise spy-')
 
         $controller('TransferCtrl.list', {$scope})
     ))
 
     it 'loads $cacheFactory.get("transfer") to $scope.transfer.cache', ->
-      expect($scope.transfer.cache).toEqual($cacheFactory.get('transfer'))
+      expect($cacheFactory.get('Transfer')).toBeDefined()
+      expect($scope.transfer.cache).toEqual($cacheFactory.get('Transfer'))
 
     it 'loads $cacheFactory.get("transfer").get("list") to $scope.transfer.list', ->
-      $cacheFactory('transfer').put('list', transfers)
+      $cacheFactory.get('Transfer').put('list', transfers)
       $controller('TransferCtrl.list', {$scope})
       expect($scope.transfer.list).toEqual(transfers)
 
@@ -108,13 +109,13 @@ describe 'dialer.active', ->
     describe '$scope.transfer.select(id)', ->
       describe 'a match in $scope.transfer.list is found', ->
         beforeEach ->
-          $state.is     = jasmine.createSpy('-$state.is spy-').and.returnValue(false)
-          $cacheFactory('transfer').put('list', transfers)
+          $state.is     = jasmine.createSpy('-$state.is spy-').andReturn(false)
+          $cacheFactory.get('Transfer').put('list', transfers)
           $controller('TransferCtrl.list', {$scope})
 
         it 'puts the first match in the list to $cacheFactory("transfer").put("list")', ->
           $scope.transfer.select(transfers[0].id)
-          cache = $cacheFactory.get('transfer')
+          cache = $cacheFactory.get('Transfer')
           expect(cache.get('selected')).toEqual(transfers[0])
 
         it 'transitions to dialer.active.transfer.(re)selected', ->
@@ -128,8 +129,8 @@ describe 'dialer.active', ->
 
         it 'displays an error to the user, that self-destructs in some seconds', ->
           $scope.transfer.select(9999999)
-          expect(flashFake.now.calls.count()).toEqual(1)
-          expect(flashFake.now).toHaveBeenCalledWith('error', jasmine.any(String), jasmine.any(Number))
+          expect(flashFake.now.calls.length).toEqual(1)
+          expect(flashFake.now).toHaveBeenCalledWith('danger', jasmine.any(String))
 
         it 'does not transition anywhere', ->
           $scope.transfer.select(9999999)

@@ -84,8 +84,8 @@ surveyForm.controller('SurveyFormCtrl', [
     # todo: move transfer data out of survey related modules to dialer
     cacheTransferList = (payload) ->
       list          = payload.data.transfers
-      coldOnly      = (transfer) -> transfer.transfer_type == 'cold'
-      list          = $filter('filter')(list, coldOnly)
+      # coldOnly      = (transfer) -> transfer.transfer_type == 'cold'
+      # list          = $filter('filter')(list, coldOnly)
       TransferCache.put('list', list)
     # :endtmp:
 

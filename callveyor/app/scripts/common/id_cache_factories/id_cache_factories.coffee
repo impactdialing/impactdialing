@@ -3,6 +3,12 @@ angular.module('idCacheFactories', [])
 # hmm. can we create ng factories after the config phase has completed?
 # if so, then this primitive fn & subsequent calls could be replaced
 # w/ a config block for this module in which cache names get declared.
+
+## Testing heads up
+# it is best to get a handle to the defined factory e.g. 'CacheNameCache'
+# in an inject block, then `put` or `get` from that factory directly
+# rather than trying to access the cache instance through $cacheFactory.
+##
 simpleCache = (name) ->
   angular.module('idCacheFactories')
   .factory("#{name}Cache", ['$cacheFactory', ($cacheFactory) -> $cacheFactory(name)])
@@ -10,8 +16,8 @@ simpleCache = (name) ->
 captureCache = (name) ->
   angular.module('idCacheFactories')
   .factory("#{name}Cache", [
-    '$cacheFactory',
-    ($cacheFactory) ->
+    '$cacheFactory', '$window',
+    ($cacheFactory,   $window) ->
       cache = $cacheFactory(name)
       data = {
         navigator: {
@@ -22,6 +28,7 @@ captureCache = (name) ->
           vendor: navigator.vendor
         }
       }
+      $window._errs ||= {}
 
       simpleData = ->
         d = {}
@@ -45,8 +52,8 @@ captureCache = (name) ->
 
       exportData = ->
         pruneData()
-        window.idDebugData = data
-        window._errs.meta  = simpleData()
+        $window.idDebugData = data
+        $window._errs.meta  = simpleData()
 
       pruneData = ->
         deleteOldTimes = (items) ->
