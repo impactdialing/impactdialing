@@ -43,7 +43,6 @@ stop.controller('StopCtrl.buttons', [
 stop.controller('StopCtrl.status', [
   '$scope',
   ($scope) ->
-    console.log 'stop.callStatusCtrl', $scope
     stop = {}
     stop.callStatusText = 'Stopping...'
     $scope.stop = stop

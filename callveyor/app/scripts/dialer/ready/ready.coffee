@@ -43,7 +43,6 @@ ready.controller('ReadyCtrl.splashModal', [
 
     ready = config || {}
     ready.startCalling = ->
-      console.log 'startCalling clicked', config
       $scope.transitionInProgress = true
       idTwilioConnectionFactory.connect(twilioParams)
       $modalInstance.close()

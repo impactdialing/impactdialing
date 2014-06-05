@@ -58,11 +58,11 @@ callveyor.config([
 callveyor.controller('AppCtrl.abort', [
   '$http', 'TwilioCache', 'FlashCache', 'PusherService', 'idFlashFactory',
   ($http,   TwilioCache,   FlashCache,   PusherService,   idFlashFactory) ->
-    console.log 'AppCtrl.abort', FlashCache.get('error'), FlashCache.info()
+    # console.log 'AppCtrl.abort', FlashCache.get('error'), FlashCache.info()
     flash = FlashCache.get('error')
     idFlashFactory.now('danger', flash)
     FlashCache.remove('error')
-    console.log 'AppCtrl.abort', flash
+    # console.log 'AppCtrl.abort', flash
 
     twilioConnection = TwilioCache.get('connection')
 

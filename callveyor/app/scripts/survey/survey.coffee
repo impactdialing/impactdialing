@@ -137,12 +137,12 @@ surveyForm.controller('SurveyFormCtrl', [
 
       successRan = false
       success = (resp) ->
-        console.log 'survey.success', resp
+        # console.log 'survey.success', resp
         reset()
         $rootScope.$broadcast('survey:save:success', {andContinue})
         successRan = true
       error = (resp) ->
-        console.log 'survey.error', resp
+        # console.log 'survey.error', resp
         msg = ''
         switch resp.status
           when 400 # bad request, try again and contact support
@@ -158,7 +158,7 @@ surveyForm.controller('SurveyFormCtrl', [
         idFlashFactory.now('danger', msg)
         $rootScope.transitionInProgress = false
       always = (resp) ->
-        console.log 'survey.always, successRan', successRan
+        # console.log 'survey.always, successRan', successRan
         requestInProgress = false
 
         if andContinue and successRan

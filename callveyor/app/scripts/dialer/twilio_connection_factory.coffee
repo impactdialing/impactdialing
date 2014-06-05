@@ -8,7 +8,6 @@ mod = angular.module('idTwilioConnectionHandlers', [
 mod.factory('idTwilioConnectionFactory', [
   '$rootScope', 'TwilioCache', 'idFlashFactory', 'idTwilioService',
   ($rootScope,   TwilioCache,   idFlashFactory,   idTwilioService) ->
-    console.log 'idTwilioConnectionFactory'
     twilioParams = {}
 
     factory = {
@@ -17,7 +16,7 @@ mod.factory('idTwilioConnectionFactory', [
         idTwilioService.then(factory.resolved, factory.resolveError)
 
       connected: (connection) ->
-        console.log 'connected', connection
+        # console.log 'connected', connection
         TwilioCache.put('connection', connection)
         if angular.isFunction(factory.afterConnected)
           factory.afterConnected()
@@ -29,13 +28,13 @@ mod.factory('idTwilioConnectionFactory', [
         console.log 'twilio disconnected', connection
 
       error: (error) ->
-        console.log 'report this problem', error
+        # console.log 'report this problem', error
         idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please dial-in to continue.')
         if angular.isFunction(factory.afterError)
           factory.afterError()
 
       resolved: (twilio) ->
-        console.log 'idTwilioService resolved', twilio
+        # console.log 'idTwilioService resolved', twilio
         twilio.Device.connect(factory.connected)
         # twilio.Device.ready(handlers.ready)
         twilio.Device.disconnect(factory.disconnected)
@@ -43,7 +42,7 @@ mod.factory('idTwilioConnectionFactory', [
         twilio.Device.connect(twilioParams)
 
       resolveError: (err) ->
-        console.log 'idTwilioService error', err
+        # console.log 'idTwilioService error', err
         idFlashFactory.now('danger', 'Browser phone setup failed. Please dial-in to continue.')
     }
 

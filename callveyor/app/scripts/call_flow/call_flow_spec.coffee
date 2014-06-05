@@ -113,7 +113,6 @@ describe 'callveyor.call_flow', ->
           expect(contactChange).toHaveBeenCalled()
 
         it 'transitions to dialer.hold', ->
-          console.log 'transitions to dialer.hold'
           service.conferenceStarted(contact)
           $rootScope.$apply()
           expect($state.is('dialer.hold')).toBeTruthy()
@@ -134,7 +133,6 @@ describe 'callveyor.call_flow', ->
             callStationCache.put("caller", caller)
 
           it 'dials the contact', ->
-            console.log 'dials the contact'
             service.conferenceStarted(contact)
             expect(idHttpDialerFactory.dialContact).toHaveBeenCalledWith(caller.id, {
               session_id: caller.session_id,
@@ -215,7 +213,6 @@ describe 'callveyor.call_flow', ->
           $rootScope.$apply()
 
         it 'displays a warning to the user', ->
-          # console.log '$state.current', $state.current
           service.callerDisconnected()
           self.expect(idFlashFactory.now).toHaveBeenCalledWith('warning', jasmine.any(String))
 
@@ -266,7 +263,6 @@ describe 'callveyor.call_flow', ->
 
     describe 'callerJoinedTransferConference (caller just joined conference)', ->
       it 'transitions to dialer.active.transfer.conference', ->
-        # console.log $state.current
         service.callerJoinedTransferConference()
         $rootScope.$apply()
         expect($state.is('dialer.active.transfer.conference')).toBeTruthy()

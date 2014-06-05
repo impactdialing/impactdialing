@@ -30,7 +30,6 @@ hold.controller('HoldCtrl.buttons', [
 
     hold.campaign = callStation.data.campaign
     hold.stopCalling = ->
-      console.log 'stopCalling clicked'
       $state.go('dialer.stop')
 
     hold.dial = ->
@@ -60,7 +59,6 @@ hold.controller('HoldCtrl.buttons', [
       promise                     = idHttpDialerFactory.skipContact(caller.id, params)
 
       skipSuccess = (payload) ->
-        console.log 'skip success', payload
         ContactCache.put('data', payload.data)
         hold.callStatusText = 'Waiting to dial...'
         $scope.$emit('contact:changed')

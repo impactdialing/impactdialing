@@ -5,7 +5,6 @@ scriptLoader = angular.module('idScriptLoader', [])
 scriptLoader.factory('idScriptLoader', [
   '$window', '$document',
   ($window,   $document) ->
-    console.log 'idScriptLoader', $document
     scriptLoader = {}
     scriptLoader.createScriptTag = (scriptId, scriptUrl, callback) ->
       scriptTag = $document[0].createElement('script')

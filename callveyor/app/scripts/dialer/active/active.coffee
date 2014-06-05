@@ -28,11 +28,9 @@ active.controller('ActiveCtrl.status', [->])
 active.controller('ActiveCtrl.buttons', [
   '$scope', '$state', '$http', 'CallCache', 'idFlashFactory',
   ($scope,   $state,   $http,   CallCache,   idFlashFactory) ->
-    console.log 'ActiveCtrl', $scope.dialer
     active = {}
 
     active.hangup = ->
-      console.log 'hangup clicked'
       $scope.transitionInProgress = true
 
       call_id     = CallCache.get('id')
@@ -64,16 +62,12 @@ active.controller('ActiveCtrl.buttons', [
 active.controller('TransferCtrl.container', [
   '$rootScope', '$scope',
   ($rootScope,   $scope) ->
-    console.log 'TransferCtrl.container'
-
     $rootScope.rootTransferCollapse = false
 ])
 
 active.controller('TransferCtrl.list', [
   '$scope', '$state', '$filter', 'TransferCache', 'idFlashFactory',
   ($scope,   $state,   $filter,   TransferCache,   idFlashFactory) ->
-    console.log 'TransferCtrl.list', TransferCache
-
     transfer = {}
     transfer.cache = TransferCache
     if transfer.cache?
@@ -86,7 +80,6 @@ active.controller('TransferCtrl.list', [
       matchingID = (obj) -> id == obj.id
       targets = $filter('filter')(transfer.list, matchingID)
       if targets[0]?
-        console.log 'target', targets[0]
         transfer.cache.put('selected', targets[0])
 
         if $state.is('dialer.active.transfer.selected')

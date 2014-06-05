@@ -24,8 +24,6 @@ twilio.provider('idTwilioService', ->
   @$get = [
     '$q', '$window', '$timeout', '$http', 'idScriptLoader',
     ($q,   $window,   $timeout,   $http,   idScriptLoader) ->
-      console.log 'TwilioService $get', idScriptLoader
-
       # todo: refactor $http.get(_tokenUrl) et al to factory
       tokens = $http.get(_tokenUrl)
       twilioToken = ''
@@ -38,7 +36,6 @@ twilio.provider('idTwilioService', ->
           'debug':true
         })
         $timeout(->
-          console.log 'resolving Twilio', _Twilio
           deferred.resolve(_Twilio)
         )
 
