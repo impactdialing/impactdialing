@@ -75,7 +75,10 @@ public
     response = Providers::Phone::Call.make_for(transfer, :connect)
     transfer_attempt_dialed(response)
 
-    return {type: transfer.transfer_type}
+    return {
+      type: transfer.transfer_type,
+      status: transfer_attempt.status
+    }
   end
 
   def end

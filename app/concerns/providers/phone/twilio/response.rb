@@ -3,7 +3,7 @@
 # responses returned from the Twilio gem by webficient:
 # https://github.com/webficient/twilio.
 #
-# The Twilio gem returns an instance HTTParty::Response
+# The Twilio gem returns a HTTParty::Response instance
 # from requests:
 # https://github.com/jnunemaker/httparty/blob/master/lib/httparty/response.rb
 #

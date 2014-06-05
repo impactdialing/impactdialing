@@ -14,19 +14,19 @@ mod.factory('idHttpDialerFactory', [
       usSpinnerService.spin('global-spinner')
       $http.post(url, params)
 
-    success = (o) ->
-      # console.log 'dial success', o
+    success = (resp, status, headers, config) ->
+      console.log 'dialer factory success', resp
       dialer.caller_id = undefined
       dialer.params    = undefined
       dialer.retry     = false
-      $rootScope.$broadcast('http_dialer:success')
-    error = (resp) ->
-      # console.log 'error', resp
+      $rootScope.$broadcast('http_dialer:success', resp)
+    error = (resp, status, headers, config) ->
+      console.log 'dialer factory error', resp
       if dialer.retry && /(408|500|504)/.test(resp.status)
-        $rootScope.$broadcast('http_dialer:retrying')
+        $rootScope.$broadcast('http_dialer:retrying', resp)
         dialer[dialer.retry](dialer.caller_id, dialer.params, false)
       else
-        $rootScope.$broadcast('http_dialer:error')
+        $rootScope.$broadcast('http_dialer:error', resp)
 
     dialer.retry = false
 
