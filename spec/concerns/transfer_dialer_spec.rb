@@ -96,8 +96,8 @@ describe TransferDialer do
       transfer_dialer.dial(caller_session, call, voter)
     end
 
-    it 'returns a hash {type: transfer_type}' do
-      transfer_dialer.dial(caller_session, call, voter).should eq({type: transfer.transfer_type})
+    it 'returns a hash {type: transfer_type, status: ''}' do
+      transfer_dialer.dial(caller_session, call, voter).should eq({type: transfer.transfer_type, status: nil})
     end
 
     context 'the transfer succeeds' do

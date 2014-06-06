@@ -593,7 +593,7 @@
 
   twilio.provider('idTwilioService', function() {
     var _initOptions, _scriptId, _scriptUrl, _tokenUrl;
-    _scriptUrl = '//static.twilio.com/libs/twiliojs/1.1/twilio.js';
+    _scriptUrl = '//static.twilio.com/libs/twiliojs/1.2/twilio.js';
     _scriptId = 'TwilioJS';
     _tokenUrl = '/call_center/api/twilio_token.json';
     _initOptions = {};

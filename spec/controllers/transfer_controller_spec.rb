@@ -71,7 +71,7 @@ describe TransferController do
     end
 
     it "renders json describing the type of transfer" do
-      response.body.should eq("{\"type\":\"warm\"}")
+      response.body.should eq("{\"type\":\"warm\",\"status\":\"Ringing\"}")
     end
   end
 
