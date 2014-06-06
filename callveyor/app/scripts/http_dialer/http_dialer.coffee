@@ -60,5 +60,37 @@ mod.factory('idHttpDialerFactory', [
       url          = "/call_center/api/transfer/dial"
       dial(url, params).then(success, error)
 
+    dialer.kick = (caller, participant_type) ->
+      usSpinnerService.spin('global-spinner')
+      params                   = {}
+      params.caller_session_id = caller.session_id
+      params.participant_type  = participant_type
+      url                      = "/call_center/api/#{caller.id}/kick"
+
+      $http.post(url, params)
+
+    dialer.hangupTransfer = (caller) ->
+      console.log 'dialer.hangupTransfer'
+      dialer.retry = false
+
+      dialer.kick(caller, 'transfer')
+
+    dialer.hangup = (call_id, transfer, caller) ->
+      console.log 'dialer.hangup'
+      dialer.retry = false
+
+      if transfer? and transfer.transfer_type == 'warm'
+        console.log 'dialer.hangup - kick caller'
+        # Caller clicked hang-up in voter context
+        # but is in conference with a transfer and voter.
+        # So rather than disconnecting the voter,
+        # disconnect the caller and allow the voter &
+        # transfer target to continue talking.
+        dialer.kick(caller, 'caller')
+      else
+        console.log 'dialer.hangup - voter'
+        url = "/call_center/api/#{call_id}/hangup"
+        $http.post(url)
+
     dialer
 ])

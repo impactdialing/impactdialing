@@ -18,8 +18,8 @@ ready.config(['$stateProvider', ($stateProvider) ->
 ])
 
 ready.controller('ReadyCtrl.splashModal', [
-  '$scope', '$state', '$modalInstance', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory'
-  ($scope,   $state,   $modalInstance,   CallStationCache,   idTwilioConnectionFactory,   idFlashFactory) ->
+  '$scope', '$state', '$modalInstance', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory', 'idTransitionPrevented',
+  ($scope,   $state,   $modalInstance,   CallStationCache,   idTwilioConnectionFactory,   idFlashFactory,   idTransitionPrevented) ->
     config = {
       caller: CallStationCache.get('caller')
       campaign: CallStationCache.get('campaign')

@@ -4,7 +4,8 @@ active = angular.module('callveyor.dialer.active', [
   'ui.router',
   'callveyor.dialer.active.transfer',
   'idFlash',
-  'idCacheFactories'
+  'idCacheFactories',
+  'callveyor.http_dialer'
 ])
 
 active.config(['$stateProvider', ($stateProvider) ->
@@ -26,20 +27,17 @@ active.config(['$stateProvider', ($stateProvider) ->
 ])
 active.controller('ActiveCtrl.status', [->])
 active.controller('ActiveCtrl.buttons', [
-  '$scope', '$state', '$http', 'CallCache', 'idFlashFactory',
-  ($scope,   $state,   $http,   CallCache,   idFlashFactory) ->
+  '$scope', '$state', '$http', 'CallCache', 'TransferCache', 'CallStationCache', 'idFlashFactory', 'idHttpDialerFactory',
+  ($scope,   $state,   $http,   CallCache,   TransferCache,   CallStationCache,   idFlashFactory,   idHttpDialerFactory) ->
     active = {}
 
     active.hangup = ->
       $scope.transitionInProgress = true
 
-      call_id     = CallCache.get('id')
-      # if not in active warm transfer
-      ## hangup on voter
-      stopPromise = $http.post("/call_center/api/#{call_id}/hangup")
-      # if in active warm transfer
-      ## disconnect caller but leave voter & transfer connected
-      ## POST "/caller/:caller_id/kick?caller_session_id=1&participant_type=caller"
+      call_id  = CallCache.get('id')
+      transfer = TransferCache.get('selected')
+      caller   = CallStationCache.get('caller')
+      promise  = idHttpDialerFactory.hangup(call_id, transfer, caller)
 
       success = ->
         e = (obj) ->
@@ -53,7 +51,7 @@ active.controller('ActiveCtrl.buttons', [
         console.log 'error trying to stop calling', resp
         idFlashFactory.now('danger', 'Error. Try again.')
 
-      stopPromise.then(success, error)
+      promise.then(success, error)
 
     $scope.active = active
 ])

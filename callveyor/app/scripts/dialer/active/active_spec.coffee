@@ -7,6 +7,13 @@ describe 'dialer.active', ->
     {id: 12, label: 'Rep. Kansas, Joe', phone: '5553224542'},
     {id: 15, label: 'Rep. Kentucky, Jack', phone: '5552526426'}
   ]
+  call = {
+    id: 42
+  }
+  caller = {
+    id: 2
+    session_id: 12
+  }
 
   beforeEach module 'callveyor.dialer.active', ($provide) ->
     ->
@@ -16,44 +23,51 @@ describe 'dialer.active', ->
       $provide.value('usSpinnerService', spinnerFake)
 
   describe 'ActiveCtrl.buttons', ->
-    $rootScope    = ''
-    $scope        = ''
-    $state        = ''
-    $cacheFactory = ''
-    $httpBackend  = ''
-    $controller   = ''
+    $rootScope       = ''
+    $scope           = ''
+    $state           = ''
+    $cacheFactory    = ''
+    $httpBackend     = ''
+    $controller      = ''
+    TransferCache    = ''
+    CallCache        = ''
+    CallStationCache = ''
 
     beforeEach(inject(
-      (_$rootScope_, _$state_, _$cacheFactory_, _$httpBackend_, _$controller_) ->
-        $rootScope    = _$rootScope_
-        $scope        = $rootScope
-        $state        = _$state_
-        $cacheFactory = _$cacheFactory_
-        $httpBackend  = _$httpBackend_
-        $controller   = _$controller_
-        $state.go     = jasmine.createSpy('-$state.go spy-').andReturn($state)
-        $state.catch  = jasmine.createSpy('-$statePromise spy-')
+      (_$rootScope_, _$state_, _$cacheFactory_, _$httpBackend_, _$controller_, _TransferCache_, _CallCache_, _CallStationCache_) ->
+        $rootScope       = _$rootScope_
+        $scope           = $rootScope
+        $state           = _$state_
+        $cacheFactory    = _$cacheFactory_
+        $httpBackend     = _$httpBackend_
+        $controller      = _$controller_
+        TransferCache    = _TransferCache_
+        CallCache        = _CallCache_
+        CallStationCache = _CallStationCache_
+        $state.go        = jasmine.createSpy('-$state.go spy-').andReturn($state)
+        $state.catch     = jasmine.createSpy('-$statePromise spy-')
 
+        TransferCache.put('selected', transfers[0])
+        CallCache.put('id', call.id)
+        CallStationCache.put('caller', caller)
         $controller('ActiveCtrl.buttons', {$scope, transfers})
     ))
 
     describe '$scope.active.hangup()', ->
-      call = {
-        id: 42
-      }
 
       beforeEach ->
+        dialerFake.then   = jasmine.createSpy('-idHttpDialerFactoryPromise spy-')
+        dialerFake.hangup = jasmine.createSpy('-idHttpDialerFactory.hangup spy-').andReturn(dialerFake)
         $cacheFactory.get('Call').put('id', call.id)
-        $httpBackend.whenPOST("/call_center/api/#{call.id}/hangup").respond(200)
 
-      it 'POSTs to /call_center/api/#{$cacheFactory.get("call").get("id")}/hangup', ->
-        $httpBackend.expectPOST("/call_center/api/#{call.id}/hangup").respond(200)
+      it 'calls idHttpDialerFactory.hangup(call_id, transfer, caller)', ->
         $scope.active.hangup()
-        $httpBackend.verifyNoOutstandingExpectation()
+        expect(dialerFake.hangup).toHaveBeenCalledWith(call.id, transfers[0], caller)
 
       it 'transitions to dialer.wrap', ->
+        dialerFake.then.andCallFake(-> dialerFake.then.calls[0].args[0]())
         $scope.active.hangup()
-        $httpBackend.flush()
+
         expect($state.go).toHaveBeenCalledWith('dialer.wrap')
 
   describe 'TransferCtrl.container', ->

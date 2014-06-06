@@ -66,8 +66,6 @@ transfer.factory('TransferDialerEventFactory', [
     handlers = {
       httpSuccess: ($event, resp) ->
         console.log 'http dialer success', resp
-        usSpinnerService.stop('transfer-spinner')
-        $rootScope.transitionInProgress = false
         $rootScope.transferStatus = resp.data.status
       httpError: ($event, resp) ->
         console.log 'http dialer error', resp
@@ -124,15 +122,9 @@ transfer.controller('TransferButtonCtrl.conference', [
     usSpinnerService.stop('transfer-spinner')
     $rootScope.transferStatus = 'Transfer on call'
     transfer.hangup = ->
-      caller                   = CallStationCache.get('caller')
-      url                      = "/call_center/api/#{caller.id}/kick"
-      params                   = {}
-      params.caller_session_id = caller.session_id
-      params.participant_type  = 'transfer'
-
-      # POST "/caller/:caller_id/kick?caller_session_id=1&participant_type=transfer"
-      promise = $http.post(url, params)
-      error = (resp) ->
+      caller  = CallStationCache.get('caller')
+      promise = idHttpDialerFactory.hangupTransfer(caller)
+      error   = (resp) ->
         $rootScope.transferStatus = "Transfer on call (hangup failed)"
       promise.catch(error)
 
