@@ -4,7 +4,8 @@ describe Providers::Phone::Twilio::Response do
   def httparty_response(code, body)
     double('HTTPartyInstance', {
       code: code,
-      parsed_response: body
+      parsed_response: body,
+      :[] => {}
     })
   end
   let(:valid_content) do

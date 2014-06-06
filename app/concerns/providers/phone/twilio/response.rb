@@ -18,6 +18,10 @@ public
     else
       @content = response.parsed_response['TwilioResponse']
     end
+
+    if error?
+      TwilioLogger.error(response)
+    end
   end
 
   def success?
