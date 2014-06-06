@@ -47,11 +47,9 @@
   callveyor.controller('AppCtrl.abort', [
     '$http', 'TwilioCache', 'FlashCache', 'PusherService', 'idFlashFactory', function($http, TwilioCache, FlashCache, PusherService, idFlashFactory) {
       var flash, twilioConnection;
-      console.log('AppCtrl.abort', FlashCache.get('error'), FlashCache.info());
       flash = FlashCache.get('error');
       idFlashFactory.now('danger', flash);
       FlashCache.remove('error');
-      console.log('AppCtrl.abort', flash);
       twilioConnection = TwilioCache.get('connection');
       twilioConnection.disconnect();
       return PusherService.then(function(p) {

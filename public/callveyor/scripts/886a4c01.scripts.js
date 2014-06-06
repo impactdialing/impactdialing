@@ -61,11 +61,9 @@
   contact.controller('ContactCtrl', [
     '$rootScope', '$scope', '$state', '$http', 'ContactCache', function($rootScope, $scope, $state, $http, ContactCache) {
       var handleStateChange, updateFromCache;
-      console.log('ContactCtrl');
       contact = {};
       contact.data = ContactCache.get('data');
       handleStateChange = function(event, toState, toParams, fromState, fromParams) {
-        console.log('handleStateChange', toState, fromState);
         switch (toState.name) {
           case 'dialer.stop':
           case 'dialer.ready':
@@ -73,7 +71,6 @@
         }
       };
       updateFromCache = function() {
-        console.log('updateFromCache - noop');
         return contact.data = ContactCache.get('data');
       };
       $rootScope.$on('contact:changed', updateFromCache);
@@ -164,12 +161,8 @@
         hideButtons: true
       };
       cacheTransferList = function(payload) {
-        var coldOnly, list;
+        var list;
         list = payload.data.transfers;
-        coldOnly = function(transfer) {
-          return transfer.transfer_type === 'cold';
-        };
-        list = $filter('filter')(list, coldOnly);
         return TransferCache.put('list', list);
       };
       fetchErr = function(e) {
@@ -218,7 +211,6 @@
         }
         successRan = false;
         success = function(resp) {
-          console.log('survey.success', resp);
           reset();
           $rootScope.$broadcast('survey:save:success', {
             andContinue: andContinue
@@ -227,7 +219,6 @@
         };
         error = function(resp) {
           var msg;
-          console.log('survey.error', resp);
           msg = '';
           switch (resp.status) {
             case 400:
@@ -250,7 +241,6 @@
           return $rootScope.transitionInProgress = false;
         };
         always = function(resp) {
-          console.log('survey.always, successRan', successRan);
           requestInProgress = false;
           if (andContinue && successRan) {
             usSpinnerService.spin('global-spinner');
@@ -299,7 +289,7 @@
   'use strict';
   var ready;
 
-  ready = angular.module('callveyor.dialer.ready', ['ui.router', 'idTwilioConnectionHandlers', 'idFlash', 'idCacheFactories']);
+  ready = angular.module('callveyor.dialer.ready', ['ui.router', 'ui.bootstrap', 'idTwilioConnectionHandlers', 'idFlash', 'idCacheFactories']);
 
   ready.config([
     '$stateProvider', function($stateProvider) {
@@ -315,7 +305,7 @@
   ]);
 
   ready.controller('ReadyCtrl.splashModal', [
-    '$scope', '$state', '$modalInstance', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory', function($scope, $state, $modalInstance, CallStationCache, idTwilioConnectionFactory, idFlashFactory) {
+    '$scope', '$state', '$modalInstance', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory', 'idTransitionPrevented', function($scope, $state, $modalInstance, CallStationCache, idTwilioConnectionFactory, idFlashFactory, idTransitionPrevented) {
       var config, twilioParams;
       config = {
         caller: CallStationCache.get('caller'),
@@ -328,9 +318,18 @@
         'caller_id': config.caller.id,
         'session_key': config.caller.session_key
       };
+      idTwilioConnectionFactory.afterConnected = function() {
+        var p;
+        p = $state.go('dialer.hold');
+        return p["catch"](idTransitionPrevented);
+      };
+      idTwilioConnectionFactory.afterError = function() {
+        var p;
+        p = $state.go('dialer.ready');
+        return p["catch"](idTransitionPrevented);
+      };
       ready = config || {};
       ready.startCalling = function() {
-        console.log('startCalling clicked', config);
         $scope.transitionInProgress = true;
         idTwilioConnectionFactory.connect(twilioParams);
         return $modalInstance.close();
@@ -364,7 +363,7 @@
   'use strict';
   var hold;
 
-  hold = angular.module('callveyor.dialer.hold', ['ui.router']);
+  hold = angular.module('callveyor.dialer.hold', ['ui.router', 'idCacheFactories']);
 
   hold.config([
     '$stateProvider', function($stateProvider) {
@@ -394,7 +393,6 @@
       }
       hold.campaign = callStation.data.campaign;
       hold.stopCalling = function() {
-        console.log('stopCalling clicked');
         return $state.go('dialer.stop');
       };
       hold.dial = function() {
@@ -419,7 +417,6 @@
         $scope.transitionInProgress = true;
         promise = idHttpDialerFactory.skipContact(caller.id, params);
         skipSuccess = function(payload) {
-          console.log('skip success', payload);
           ContactCache.put('data', payload.data);
           hold.callStatusText = 'Waiting to dial...';
           return $scope.$emit('contact:changed');
@@ -470,7 +467,7 @@
   'use strict';
   var active;
 
-  active = angular.module('callveyor.dialer.active', ['ui.router', 'callveyor.dialer.active.transfer', 'idFlash']);
+  active = angular.module('callveyor.dialer.active', ['ui.router', 'callveyor.dialer.active.transfer', 'idFlash', 'idCacheFactories', 'callveyor.http_dialer']);
 
   active.config([
     '$stateProvider', function($stateProvider) {
@@ -500,15 +497,15 @@
   active.controller('ActiveCtrl.status', [function() {}]);
 
   active.controller('ActiveCtrl.buttons', [
-    '$scope', '$state', '$http', 'CallCache', 'idFlashFactory', function($scope, $state, $http, CallCache, idFlashFactory) {
-      console.log('ActiveCtrl', $scope.dialer);
+    '$scope', '$state', '$http', 'CallCache', 'TransferCache', 'CallStationCache', 'idFlashFactory', 'idHttpDialerFactory', function($scope, $state, $http, CallCache, TransferCache, CallStationCache, idFlashFactory, idHttpDialerFactory) {
       active = {};
       active.hangup = function() {
-        var call_id, error, stopPromise, success;
-        console.log('hangup clicked');
+        var call_id, caller, error, promise, success, transfer;
         $scope.transitionInProgress = true;
         call_id = CallCache.get('id');
-        stopPromise = $http.post("/call_center/api/" + call_id + "/hangup");
+        transfer = TransferCache.get('selected');
+        caller = CallStationCache.get('caller');
+        promise = idHttpDialerFactory.hangup(call_id, transfer, caller);
         success = function() {
           var e, statePromise;
           e = function(obj) {
@@ -521,7 +518,7 @@
           console.log('error trying to stop calling', resp);
           return idFlashFactory.now('danger', 'Error. Try again.');
         };
-        return stopPromise.then(success, error);
+        return promise.then(success, error);
       };
       return $scope.active = active;
     }
@@ -529,7 +526,6 @@
 
   active.controller('TransferCtrl.container', [
     '$rootScope', '$scope', function($rootScope, $scope) {
-      console.log('TransferCtrl.container');
       return $rootScope.rootTransferCollapse = false;
     }
   ]);
@@ -537,7 +533,6 @@
   active.controller('TransferCtrl.list', [
     '$scope', '$state', '$filter', 'TransferCache', 'idFlashFactory', function($scope, $state, $filter, TransferCache, idFlashFactory) {
       var transfer;
-      console.log('TransferCtrl.list', TransferCache);
       transfer = {};
       transfer.cache = TransferCache;
       if (transfer.cache != null) {
@@ -553,7 +548,6 @@
         };
         targets = $filter('filter')(transfer.list, matchingID);
         if (targets[0] != null) {
-          console.log('target', targets[0]);
           transfer.cache.put('selected', targets[0]);
           if ($state.is('dialer.active.transfer.selected')) {
             p = $state.go('dialer.active.transfer.reselect');
@@ -587,7 +581,7 @@
   'use strict';
   var transfer;
 
-  transfer = angular.module('callveyor.dialer.active.transfer', []);
+  transfer = angular.module('callveyor.dialer.active.transfer', ['ui.router', 'callveyor.http_dialer', 'idCacheFactories', 'angularSpinner']);
 
   transfer.config([
     '$stateProvider', function($stateProvider) {
@@ -641,23 +635,41 @@
 
   transfer.controller('TransferPanelCtrl', [
     '$rootScope', '$scope', '$cacheFactory', function($rootScope, $scope, $cacheFactory) {
-      console.log('TransferPanelCtrl');
       return $rootScope.transferStatus = 'Ready to dial...';
     }
   ]);
 
   transfer.controller('TransferInfoCtrl', [
     '$scope', 'TransferCache', function($scope, TransferCache) {
-      console.log('TransferInfoCtrl');
       transfer = TransferCache.get('selected');
       return $scope.transfer = transfer;
     }
   ]);
 
+  transfer.factory('TransferDialerEventFactory', [
+    '$rootScope', 'usSpinnerService', function($rootScope, usSpinnerService) {
+      var handlers;
+      handlers = {
+        httpSuccess: function($event, resp) {
+          console.log('http dialer success', resp);
+          return $rootScope.transferStatus = resp.data.status;
+        },
+        httpError: function($event, resp) {
+          console.log('http dialer error', resp);
+          usSpinnerService.stop('transfer-spinner');
+          $rootScope.transitionInProgress = false;
+          return $rootScope.transferStatus = 'Dial failed.';
+        }
+      };
+      $rootScope.$on('http_dialer:success', handlers.httpSuccess);
+      $rootScope.$on('http_dialer:error', handlers.httpError);
+      return handlers;
+    }
+  ]);
+
   transfer.controller('TransferButtonCtrl.selected', [
-    '$rootScope', '$scope', '$state', '$filter', 'TransferCache', 'CallCache', 'ContactCache', 'idHttpDialerFactory', 'usSpinnerService', 'callStation', function($rootScope, $scope, $state, $filter, TransferCache, CallCache, ContactCache, idHttpDialerFactory, usSpinnerService, callStation) {
+    '$rootScope', '$scope', '$state', 'TransferCache', 'TransferDialerEventFactory', 'CallCache', 'ContactCache', 'idHttpDialerFactory', 'usSpinnerService', 'CallStationCache', function($rootScope, $scope, $state, TransferCache, TransferDialerEventFactory, CallCache, ContactCache, idHttpDialerFactory, usSpinnerService, CallStationCache) {
       var isWarmTransfer, selected, transfer_type;
-      console.log('TransferButtonCtrl.selected', TransferCache.info());
       transfer = {};
       transfer.cache = TransferCache;
       selected = transfer.cache.get('selected');
@@ -666,33 +678,22 @@
         return transfer_type === 'warm';
       };
       transfer.dial = function() {
-        var caller, contact, e, p, params, s;
-        console.log('dial', $scope);
+        var caller, contact, params;
         params = {};
         contact = (ContactCache.get('data') || {}).fields;
-        caller = callStation.data.caller || {};
+        caller = CallStationCache.get('caller');
         params.voter = contact.id;
         params.call = CallCache.get('id');
         params.caller_session = caller.session_id;
         params.transfer = {
           id: selected.id
         };
-        p = idHttpDialerFactory.dialTransfer(params);
-        $rootScope.transferStatus = 'Dialing...';
+        $rootScope.transferStatus = 'Preparing to dial...';
+        idHttpDialerFactory.dialTransfer(params);
         $rootScope.transitionInProgress = true;
-        usSpinnerService.spin('transfer-spinner');
-        s = function(o) {
-          $rootScope.transferStatus = 'Ringing...';
-          return console.log('dial success', o);
-        };
-        e = function(r) {
-          $rootScope.transferStatus = 'Error dialing.';
-          return console.log('report this problem', r);
-        };
-        return p.then(s, e);
+        return usSpinnerService.spin('transfer-spinner');
       };
       transfer.cancel = function() {
-        console.log('cancel');
         TransferCache.remove('selected');
         return $state.go('dialer.active');
       };
@@ -702,26 +703,19 @@
   ]);
 
   transfer.controller('TransferButtonCtrl.conference', [
-    '$rootScope', '$scope', '$state', 'TransferCache', 'idHttpDialerFactory', 'usSpinnerService', function($rootScope, $scope, $state, TransferCache, idHttpDialerFactory, usSpinnerService) {
-      console.log('TransferButtonCtrl.conference');
+    '$rootScope', '$scope', '$state', '$http', 'TransferCache', 'CallStationCache', 'idHttpDialerFactory', 'usSpinnerService', 'idFlashFactory', function($rootScope, $scope, $state, $http, TransferCache, CallStationCache, idHttpDialerFactory, usSpinnerService, idFlashFactory) {
       transfer = {};
       transfer.cache = TransferCache;
       usSpinnerService.stop('transfer-spinner');
       $rootScope.transferStatus = 'Transfer on call';
       transfer.hangup = function() {
-        var c, e, p, s;
-        console.log('transfer.hangup');
-        p = $state.go('dialer.active');
-        s = function(o) {
-          return console.log('success', o);
+        var caller, error, promise;
+        caller = CallStationCache.get('caller');
+        promise = idHttpDialerFactory.hangupTransfer(caller);
+        error = function(resp) {
+          return $rootScope.transferStatus = "Transfer on call (hangup failed)";
         };
-        e = function(r) {
-          return console.log('error', e);
-        };
-        c = function(n) {
-          return console.log('notify', n);
-        };
-        return p.then(s, e, c);
+        return promise["catch"](error);
       };
       return $scope.transfer = transfer;
     }
@@ -790,7 +784,7 @@
   'use strict';
   var stop;
 
-  stop = angular.module('callveyor.dialer.stop', ['ui.router']);
+  stop = angular.module('callveyor.dialer.stop', ['ui.router', 'idCacheFactories']);
 
   stop.config([
     '$stateProvider', function($stateProvider) {
@@ -833,7 +827,6 @@
 
   stop.controller('StopCtrl.status', [
     '$scope', function($scope) {
-      console.log('stop.callStatusCtrl', $scope);
       stop = {};
       stop.callStatusText = 'Stopping...';
       return $scope.stop = stop;
