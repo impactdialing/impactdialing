@@ -184,8 +184,12 @@ class CallerController < ApplicationController
 
 
   def index
-    # redirect_to callers_campaign_calls_path + "/" + @caller.campaign.id.to_s if @caller.campaign
     redirect_to callveyor_path if @caller.campaign
+  end
+
+  # todo: remove when old caller app can be retired.
+  def v1
+    redirect_to callers_campaign_calls_path + "/" + @caller.campaign.id.to_s if @caller.campaign
   end
 
   def check_login

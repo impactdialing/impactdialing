@@ -2,7 +2,7 @@ PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku_staging' ? 'http:/
 #PROTOCOL = 'http://'
 ImpactDialing::Application.routes.draw do
 
-  # root :to => "caller#index", :constraints => {:subdomain => "caller"}
+  match "/v1", :to => "caller#v1", :constraints => {:subdomain => "caller"}
   root :to => "callers/station#show", :constraints => {:subdomain => "caller"}
   root :to => "client#login"
 
