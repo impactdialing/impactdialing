@@ -1,6 +1,4 @@
-## Impact Dialing
-
-[![Code Climate](https://codeclimate.com/repos/521ce4f7c7f3a323041654cc/badges/94d7e824870b5f23e781/gpa.png)](https://codeclimate.com/repos/521ce4f7c7f3a323041654cc/feed)
+## Impact Dialing Server
 
 ### Installing
 
@@ -46,7 +44,6 @@ ssh user: `root`
 
 deploy user: `impactdialing`
 
-- Redis-Staging
 - Haproxy-Impact
 - App1 Stage
 
@@ -70,7 +67,6 @@ ssh user: `ubuntu`
 
 deploy user: `impactdialing`
 
-- Redis-production
 - Haproxy Prod
 - LTS1
 - LTS2
@@ -159,7 +155,15 @@ Sometimes caller sessions will remain registered long after the caller has disco
 
 Clean up phantom sessions by locating the session id at `/admin/state` then open up a rails console and call `end_session` on the 'phantom' CallerSession instance.
 
-### Contributing
+# Impact Dialing Client (callveyor)
+
+Tests run on karma, jasmine and grunt. Use `grunt test` to run continuously in Firefox, Safari and Chrome.
+
+Builds are wrapped in a Rake task that handles cleaning files outside the root directory of grunt. Use `rake callveyor:build` to generate a new build of the callveyor app.
+
+See the README in callveyor/ for all of the gory deets.
+
+# Contributing
 
 Master is mainline development and should always be ready to deploy.
 
