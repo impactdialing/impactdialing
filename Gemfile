@@ -46,6 +46,7 @@ gem 'sidekiq-failures', '~> 0.2.1'
 gem 'lograge', '~>0.2.0'
 gem 'cancan', '~>1.6.10'
 gem 'stripe', '~>1.8.4'
+gem 'librato-rails'
 
 # Text -> HTML processors
 gem 'redcarpet'
