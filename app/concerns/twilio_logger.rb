@@ -1,6 +1,6 @@
 class TwilioLogger
   def self.error(response)
-    exception = response['RestException']
+    exception = response['RestException'] || response
     msg = "TwilioRestException #{exception['Message']}" +
           " [#{exception['Code']}] [#{exception['Status']}]" +
           " (#{exception['MoreInfo']})"
