@@ -63,7 +63,7 @@ captureCache = (name, isPruned) ->
           isOld = (v, timestamp) ->
             curTime        = time()
             timeSinceCount = curTime - parseInt(timestamp)
-            timeSinceCount > 7000 # 300000 # keep them around for 5 minutes
+            timeSinceCount > 60000 # 300000 # keep them around for 5 minutes
 
           deleteOld = (v, timestamp) ->
             if isOld(v, timestamp)
