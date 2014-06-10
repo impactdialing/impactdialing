@@ -13,7 +13,7 @@ simpleCache = (name) ->
   angular.module('idCacheFactories')
   .factory("#{name}Cache", ['$cacheFactory', ($cacheFactory) -> $cacheFactory(name)])
 
-captureCache = (name) ->
+captureCache = (name, isPruned) ->
   angular.module('idCacheFactories')
   .factory("#{name}Cache", [
     '$cacheFactory', '$window',
@@ -47,12 +47,15 @@ captureCache = (name) ->
 
           k.pop()
 
-        angular.forEach(data, flatten)
+        angular.forEach($window.idDebugData, flatten)
         d
 
       exportData = ->
-        pruneData()
-        $window.idDebugData = data
+        if isPruned
+          pruneData()
+
+        $window.idDebugData ||= {}
+        $window.idDebugData[name] = data
         $window._errs.meta  = simpleData()
 
       pruneData = ->
@@ -101,14 +104,14 @@ simpleCache('Survey')
 
 # stores all config data for
 # caller, session, account & campaign info, twilio & pusher tokens
-captureCache('CallStation')
+captureCache('CallStation', false)
 
 # stores error info for processing once all $state
 # transitions have completed
-captureCache('Error')
+captureCache('Error', false)
 
 # stores transition history for debugging
-captureCache('Transition')
+captureCache('Transition', true)
 
 # stores error msg to display once all $state
 # transitions have completed
