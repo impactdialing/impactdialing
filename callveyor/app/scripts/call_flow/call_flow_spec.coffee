@@ -269,11 +269,24 @@ describe 'callveyor.call_flow', ->
 
     describe 'transferConferenceEnded', ->
       transferCache = {}
+      transfer = {id: 32}
 
       describe 'warm transfer', ->
         beforeEach ->
+          transfer.transfer_type = 'warm'
           transferCache = $cacheFactory.get('Transfer')
           transferCache.put('type', 'warm')
+          transferCache.put('selected', transfer)
+
+        it 'removes type property from TransferCache', ->
+          service.transferConferenceEnded()
+          typeCache = transferCache.get('type')
+          expect(typeCache).toBeUndefined()
+
+        it 'removes selected property from TransferCache', ->
+          service.transferConferenceEnded()
+          selectCache = transferCache.get('selected')
+          expect(selectCache).toBeUndefined()
 
         describe 'current state is dialer.active.transfer.conference', ->
           beforeEach ->
@@ -303,10 +316,22 @@ describe 'callveyor.call_flow', ->
 
       describe 'cold transfer', ->
         beforeEach ->
+          transfer.transfer_type = 'cold'
           transferCache = $cacheFactory.get('Transfer')
           transferCache.put('type', 'cold')
 
-        it 'does nothing', ->
+
+        it 'removes type property from TransferCache', ->
+          service.transferConferenceEnded()
+          typeCache = transferCache.get('type')
+          expect(typeCache).toBeUndefined()
+
+        it 'removes selected property from TransferCache', ->
+          service.transferConferenceEnded()
+          selectCache = transferCache.get('selected')
+          expect(selectCache).toBeUndefined()
+
+        it 'does nothing else', ->
           for event in ['dialer.active.transfer.conference', 'dialer.wrap']
             $state.go(event)
             $rootScope.$apply()
@@ -314,7 +339,6 @@ describe 'callveyor.call_flow', ->
             bound = $rootScope.$on('$stateChangeStart', stateChangeSpy)
             service.transferConferenceEnded()
             $rootScope.$apply()
-            expect(idFlashFactory.now).not.toHaveBeenCalled()
             expect(stateChangeSpy).not.toHaveBeenCalled()
             bound()
 

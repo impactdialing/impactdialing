@@ -406,9 +406,13 @@ mod.factory('idCallFlow', [
         transferConferenceEnded: ->
           console.log 'transfer_conference_ended', $state.current
 
-          return if not isWarmTransfer()
+          isWarm = isWarmTransfer()
 
           TransferCache.remove('type')
+          TransferCache.remove('selected')
+
+          return if not isWarm
+
           if $state.is('dialer.active.transfer.conference')
             # idFlashFactory.now('info', 'Transfer disconnected.')
             p = $state.go('dialer.active')
