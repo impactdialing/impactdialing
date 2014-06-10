@@ -11,7 +11,7 @@
     ]);
   };
 
-  captureCache = function(name) {
+  captureCache = function(name, isPruned) {
     return angular.module('idCacheFactories').factory("" + name + "Cache", [
       '$cacheFactory', '$window', function($cacheFactory, $window) {
         var cache, data, debugCache, exportData, pruneData, simpleData, time;
@@ -43,12 +43,15 @@
             }
             return k.pop();
           };
-          angular.forEach(data, flatten);
+          angular.forEach($window.idDebugData, flatten);
           return d;
         };
         exportData = function() {
-          pruneData();
-          $window.idDebugData = data;
+          if (isPruned) {
+            pruneData();
+          }
+          $window.idDebugData || ($window.idDebugData = {});
+          $window.idDebugData[name] = data;
           return $window._errs.meta = simpleData();
         };
         pruneData = function() {
@@ -59,7 +62,7 @@
               var curTime, timeSinceCount;
               curTime = time();
               timeSinceCount = curTime - parseInt(timestamp);
-              return timeSinceCount > 7000;
+              return timeSinceCount > 60000;
             };
             deleteOld = function(v, timestamp) {
               if (isOld(v, timestamp)) {
@@ -100,11 +103,11 @@
 
   simpleCache('Survey');
 
-  captureCache('CallStation');
+  captureCache('CallStation', false);
 
-  captureCache('Error');
+  captureCache('Error', false);
 
-  captureCache('Transition');
+  captureCache('Transition', true);
 
   simpleCache('Flash');
 
