@@ -498,12 +498,14 @@
         */
 
         transferConferenceEnded: function() {
-          var p;
+          var isWarm, p;
           console.log('transfer_conference_ended', $state.current);
-          if (!isWarmTransfer()) {
+          isWarm = isWarmTransfer();
+          TransferCache.remove('type');
+          TransferCache.remove('selected');
+          if (!isWarm) {
             return;
           }
-          TransferCache.remove('type');
           if ($state.is('dialer.active.transfer.conference')) {
             p = $state.go('dialer.active');
             return p["catch"](idTransitionPrevented);
