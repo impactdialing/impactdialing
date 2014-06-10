@@ -20,7 +20,7 @@ public
     end
 
     if error?
-      TwilioLogger.error(response)
+      TwilioLogger.error(content)
     end
   end
 

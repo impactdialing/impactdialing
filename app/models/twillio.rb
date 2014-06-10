@@ -8,7 +8,7 @@ class Twillio
     http_response = twilio_lib.make_call(campaign, voter, call_attempt)
     response = JSON.parse(http_response)
     if response["status"] == 400
-      TwilioLogger.error(response)
+      TwilioLogger.error(response['TwilioResponse'] || response)
       handle_failed_call(call_attempt, caller_session, voter)
     else
       call_attempt.update_attributes(:sid => response["sid"])
@@ -25,7 +25,7 @@ class Twillio
       Rails.logger.info "#{call_attempt.id} - after call"
       response = JSON.parse(http.response)
       if response["status"] == 400
-        TwilioLogger.error(response)
+        TwilioLogger.error(response['TwilioResponse'] || response)
         handle_failed_call(call_attempt, nil, voter)
       else
         call_attempt.update_attributes(:sid => response["sid"])
