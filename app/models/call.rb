@@ -51,6 +51,9 @@ class Call < ActiveRecord::Base
   end
 
   def call_ended(campaign_type)
+    unless caller_session.nil? # can be the case for transfers
+      caller_session.publish_call_ended(redis_call_status, campaign_type)
+    end
     if call_did_not_connect?
       RedisCallFlow.push_to_not_answered_call_list(self.id, redis_call_status)
     end

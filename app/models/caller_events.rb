@@ -48,6 +48,12 @@ module CallerEvents
         }))
       end
     end
+
+    def publish_call_ended(call_status, campaign_type)
+      return if caller.is_phones_only?
+
+      Pusher[session_key].trigger!('call_ended', {status: call_status, campaign_type: campaign_type})
+    end
   end
 
   def self.included(receiver)
