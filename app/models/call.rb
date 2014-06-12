@@ -50,9 +50,9 @@ class Call < ActiveRecord::Base
     disconnected_twiml
   end
 
-  def call_ended(campaign_type)
+  def call_ended(campaign_type, params={})
     unless caller_session.nil? # can be the case for transfers
-      caller_session.publish_call_ended(redis_call_status, campaign_type)
+      caller_session.publish_call_ended(params)
     end
     if call_did_not_connect?
       RedisCallFlow.push_to_not_answered_call_list(self.id, redis_call_status)

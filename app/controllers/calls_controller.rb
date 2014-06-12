@@ -16,7 +16,7 @@ class CallsController < ApplicationController
   end
 
   def call_ended
-    render xml:  @call.call_ended(params['campaign_type'])
+    render xml:  @call.call_ended(params['campaign_type'], params)
   end
 
   def submit_result

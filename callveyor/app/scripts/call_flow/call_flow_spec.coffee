@@ -347,3 +347,41 @@ describe 'callveyor.call_flow', ->
         service.callerKickedOff()
         $rootScope.$apply()
         expect($state.is('dialer.wrap')).toBeTruthy()
+
+    describe 'callEnded(data)', ->
+      sharedScope = {}
+      data = {
+        status: 'no-answer'
+        campaign_type: 'Power'
+      }
+      cache = ''
+
+      beforeEach ->
+        $state.is = (state) ->
+          state == 'dialer.hold'
+        sharedScope.reset = jasmine.createSpy('-hold cache sharedScope.reset spy-')
+        cache = $cacheFactory('hold')
+        cache.put('sharedScope', sharedScope)
+
+      describe 'when data.status != completed and $state.is dialer.hold and data.campaign_type != Predictive', ->
+        beforeEach ->
+        it 'calls reset on "sharedScope" prop of "hold" cache', ->
+          service.callEnded(data)
+          expect(sharedScope.reset).toHaveBeenCalled()
+        it 'displays info message to user', ->
+          service.callEnded(data)
+          expect(idFlashFactory.now).toHaveBeenCalledWith('info', jasmine.any(String))
+
+      describe 'when data.status == completed or $state is not dialer.hold or data.campaign_type == Predictive', ->
+        it 'does nothing', ->
+          data.status = 'completed'
+          service.callEnded(data)
+          expect(sharedScope.reset).not.toHaveBeenCalled()
+          data.status = 'blah'
+          data.campaign_type = 'Predictive'
+          service.callEnded(data)
+          expect(sharedScope.reset).not.toHaveBeenCalled()
+          data.campaign_type = 'Preview'
+          $state.is = -> false
+          service.callEnded(data)
+          expect(sharedScope.reset).not.toHaveBeenCalled()

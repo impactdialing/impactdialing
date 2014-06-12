@@ -32,6 +32,10 @@ hold.controller('HoldCtrl.buttons', [
     hold.stopCalling = ->
       $state.go('dialer.stop')
 
+    hold.reset = ->
+      hold.callStatusText = 'Waiting to dial...'
+      $scope.transitionInProgress = false
+
     hold.dial = ->
       # update status > 'Dialing...'
       params            = {}

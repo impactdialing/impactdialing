@@ -20,8 +20,8 @@ mod = angular.module('callveyor.call_flow', [
 ])
 
 mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache'
-    ($rootScope,   $state,   $window,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache) ->
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache'
+    ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache) ->
       isWarmTransfer = -> /warm/i.test(TransferCache.get('type'))
 
       beforeunloadBeenBound = false
@@ -316,6 +316,24 @@ mod.factory('idCallFlow', [
             # console.log '$state is NOT dialer.active'
             p = $state.go('dialer.ready')
             p.catch(idTransitionPrevented)
+
+        ##
+        # call_ended
+        #
+        callEnded: (data) ->
+          console.log 'call_ended', data
+          status        = data.status
+          campaign_type = data.campaign_type
+          number        = data.number
+          shouldReload  = ->
+            status != 'completed' and $state.is('dialer.hold') and campaign_type != 'Predictive'
+          if shouldReload()
+            console.log 'reloading dialer.hold $state'
+            idFlashFactory.now('info', "#{number} did not connect: #{status}")
+            holdCache = $cacheFactory.get('hold')
+            hold = holdCache.get('sharedScope')
+            hold.reset()
+
         ##
         # transfer_busy
         #
@@ -479,6 +497,13 @@ mod.factory('idCallFlow', [
           p.catch(idTransitionPrevented)
 
         callerWrapupVoiceHit: ->
+          # in case end_call event is missed, tmp until pusher events are confirmed
+          if $state.is('dialer.hold')
+            holdCache = $cacheFactory.get('hold')
+            hold = holdCache.get('sharedScope')
+            hold.reset()
+          # /in case end_call event is missed, tmp until pusher events are confirmed
+
           console.log 'caller:wrapup:start'
           p = $state.go('dialer.wrap')
           p.catch(idTransitionPrevented)

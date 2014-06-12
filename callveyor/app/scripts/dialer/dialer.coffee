@@ -58,4 +58,5 @@ dialer.controller('DialerCtrl', [
     Pusher.subscribe(channel, 'caller_joined_transfer_conference', idCallFlow.callerJoinedTransferConference)
     Pusher.subscribe(channel, 'caller_kicked_off', idCallFlow.callerKickedOff)
     Pusher.subscribe(channel, 'caller_wrapup_voice_hit', idCallFlow.callerWrapupVoiceHit)
+    Pusher.subscribe(channel, 'call_ended', idCallFlow.callEnded)
 ])
