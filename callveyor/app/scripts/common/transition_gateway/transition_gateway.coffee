@@ -3,7 +3,8 @@
 # Override the `validTransitions` constant to customize workflow enforcement.
 #
 mod = angular.module('transitionGateway', [
-  'ui.router'
+  'ui.router',
+  'idCacheFactories'
 ])
 
 mod.constant('validTransitions', {
@@ -20,16 +21,30 @@ mod.constant('validTransitions', {
 })
 
 mod.factory('transitionValidator', [
-  '$rootScope', 'validTransitions',
-  ($rootScope,   validTransitions) ->
+  '$rootScope', 'validTransitions', 'ErrorCache', 'ContactCache',
+  ($rootScope,   validTransitions,   ErrorCache,   ContactCache) ->
     {
       reviewTransition: (eventObj, toState, toParams, fromState, fromParams) ->
         toName   = toState.name
         fromName = fromState.name || 'root'
+        getContact = ->
+          contact = ContactCache.get('data')
+          phone   = ''
+          id      = ''
+          if contact? and contact.fields?
+            id    = contact.fields.id
+            phone = contact.fields.phone
+          {id, phone}
+        getMeta = ->
+          caller = CallStationCache.get('caller')
+          campaign = CallStationCache.get('campaign')
+          {caller, campaign}
 
         entry = validTransitions[fromName]
 
         if !entry? || entry.indexOf(toName) == -1
+          contact = getContact()
+          ErrorCache.put('InvalidTransition prevented', {toName, fromName, contact})
           eventObj.preventDefault()
 
       start: ->
