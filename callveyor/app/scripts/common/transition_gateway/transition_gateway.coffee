@@ -4,6 +4,7 @@
 #
 mod = angular.module('transitionGateway', [
   'ui.router',
+  'angularSpinner',
   'idCacheFactories'
 ])
 
@@ -21,8 +22,8 @@ mod.constant('validTransitions', {
 })
 
 mod.factory('transitionValidator', [
-  '$rootScope', 'validTransitions', 'ErrorCache', 'ContactCache',
-  ($rootScope,   validTransitions,   ErrorCache,   ContactCache) ->
+  '$rootScope', 'validTransitions', 'ErrorCache', 'ContactCache', 'usSpinnerService',
+  ($rootScope,   validTransitions,   ErrorCache,   ContactCache,   usSpinnerService) ->
     {
       reviewTransition: (eventObj, toState, toParams, fromState, fromParams) ->
         toName   = toState.name
@@ -45,6 +46,8 @@ mod.factory('transitionValidator', [
         if !entry? || entry.indexOf(toName) == -1
           contact = getContact()
           ErrorCache.put('InvalidTransition prevented', {toName, fromName, contact})
+          $rootScope.transitionInProgress = false
+          usSpinnerService.stop('global-spinner')
           eventObj.preventDefault()
 
       start: ->
