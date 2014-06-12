@@ -106,22 +106,39 @@ callveyor.directive('idLogout', ->
 )
 
 callveyor.controller('AppCtrl', [
-  '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache',
-  ($rootScope,   $scope,   $state,   $timeout,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache) ->
+  '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'ContactCache', 'CallStationCache',
+  ($rootScope,   $scope,   $state,   $timeout,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache,   ContactCache,   CallStationCache) ->
     $rootScope.transitionInProgress = false
+    getContact = ->
+      contact = ContactCache.get('data')
+      phone   = ''
+      id      = ''
+      if contact? and contact.fields?
+        id    = contact.fields.id
+        phone = contact.fields.phone
+      {id, phone}
+    getMeta = ->
+      caller = CallStationCache.get('caller')
+      campaign = CallStationCache.get('campaign')
+      {caller, campaign}
     # handle generic state change conditions
     transitionStart = (event, toState, toParams, fromState, fromParams) ->
-      TransitionCache.put('$stateChangeStart', {toState: toState.name, fromState: fromState.name})
+      contact = getContact()
+      TransitionCache.put('$stateChangeStart', {toState: toState.name, fromState: fromState.name, contact})
       usSpinnerService.spin('global-spinner')
       $rootScope.transitionInProgress = true
     transitionComplete = (event, toState, toParams, fromState, fromParams) ->
-      TransitionCache.put('$stateChangeSuccess', {toState: toState.name, fromState: fromState.name})
+      contact = getContact()
+      meta  = getMeta()
+      TransitionCache.put('$stateChangeSuccess', {toState: toState.name, fromState: fromState.name, contact, meta})
       $rootScope.transitionInProgress = false
       usSpinnerService.stop('global-spinner')
     transitionError = (event, unfoundState, fromState, fromParams) ->
       # todo: submit error to error collection tool
       console.error 'Error transitioning $state', e, $state.current
-      TransitionCache.put('$stateChangeError', {unfoundState: unfoundState.name, fromState: fromState.name})
+      contact = getContact()
+      meta  = getMeta()
+      TransitionCache.put('$stateChangeError', {unfoundState: unfoundState.name, fromState: fromState.name, contact, meta})
       # hmm: $stateChangeError seems to not be thrown when preventDefault is called
       # if e.message == 'transition prevented'
       #   # something called .preventDefault, probably the transitionGateway

@@ -63,7 +63,7 @@ captureCache = (name, isPruned) ->
           isOld = (v, timestamp) ->
             curTime        = time()
             timeSinceCount = curTime - parseInt(timestamp)
-            timeSinceCount > 60000 # 300000 # keep them around for 5 minutes
+            timeSinceCount > 300000 # keep them around for 5 minutes
 
           deleteOld = (v, timestamp) ->
             if isOld(v, timestamp)
@@ -104,7 +104,7 @@ simpleCache('Survey')
 
 # stores all config data for
 # caller, session, account & campaign info, twilio & pusher tokens
-captureCache('CallStation', false)
+simpleCache('CallStation')
 
 # stores error info for processing once all $state
 # transitions have completed
