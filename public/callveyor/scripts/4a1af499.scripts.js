@@ -43,7 +43,8 @@
       Pusher.subscribe(channel, 'contact_joined_transfer_conference', idCallFlow.contactJoinedTransferConference);
       Pusher.subscribe(channel, 'caller_joined_transfer_conference', idCallFlow.callerJoinedTransferConference);
       Pusher.subscribe(channel, 'caller_kicked_off', idCallFlow.callerKickedOff);
-      return Pusher.subscribe(channel, 'caller_wrapup_voice_hit', idCallFlow.callerWrapupVoiceHit);
+      Pusher.subscribe(channel, 'caller_wrapup_voice_hit', idCallFlow.callerWrapupVoiceHit);
+      return Pusher.subscribe(channel, 'call_ended', idCallFlow.callEnded);
     }
   ]);
 
@@ -155,7 +156,7 @@
   ]);
 
   surveyForm.controller('SurveyFormCtrl', [
-    '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', function($rootScope, $scope, $filter, $state, $http, TransferCache, CallCache, usSpinnerService, $timeout, SurveyFormFieldsFactory, idFlashFactory, SurveyCache) {
+    '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', function($rootScope, $scope, $filter, $state, $http, TransferCache, CallCache, TwilioCache, usSpinnerService, $timeout, SurveyFormFieldsFactory, idFlashFactory, SurveyCache) {
       var cacheTransferList, fetchErr, handleStateChange, loadForm, prepForm, requestInProgress, survey;
       survey = {
         hideButtons: true
@@ -208,6 +209,7 @@
         action = 'submit_result';
         if (!andContinue) {
           action += '_and_stop';
+          TwilioCache.put('disconnect_pending', 1);
         }
         successRan = false;
         success = function(resp) {
@@ -339,8 +341,16 @@
   ]);
 
   ready.controller('ReadyCtrl.splash', [
-    '$scope', '$modal', function($scope, $modal) {
-      var splash;
+    '$scope', '$rootScope', '$modal', '$window', 'idTwilioService', 'usSpinnerService', function($scope, $rootScope, $modal, $window, idTwilioService, usSpinnerService) {
+      var done, err, splash;
+      done = function() {
+        return $rootScope.transitionInProgress = false;
+      };
+      err = function() {
+        done();
+        throw Error("TwilioClient failed to load");
+      };
+      idTwilioService.then(done, err);
       splash = {};
       splash.getStarted = function() {
         var openModal;
@@ -394,6 +404,10 @@
       hold.campaign = callStation.data.campaign;
       hold.stopCalling = function() {
         return $state.go('dialer.stop');
+      };
+      hold.reset = function() {
+        hold.callStatusText = 'Waiting to dial...';
+        return $scope.transitionInProgress = false;
       };
       hold.dial = function() {
         var caller, contact, params;
@@ -946,7 +960,7 @@ angular.module('callveyor.contact').run(['$templateCache', function($templateCac
   'use strict';
 
   $templateCache.put('/callveyor/dialer/contact/info.tpl.html',
-    "<div class=\"row fixed-contact panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id\">{{contact.data.fields.custom_id}}</dd><dt data-ng-hide=\"!contact.data.fields.first_name\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name\">{{contact.data.fields.first_name}}</dd><dt data-ng-hide=\"!contact.data.fields.middle_name\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name\">{{contact.data.fields.middle_name}}</dd><dt data-ng-hide=\"!contact.data.fields.last_name\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name\">{{contact.data.fields.last_name}}</dd><dt data-ng-hide=\"!contact.data.fields.suffix\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix\">{{contact.data.fields.suffix}}</dd><dt data-ng-hide=\"!contact.data.fields.address\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address\">{{contact.data.fields.address}}</dd><dt data-ng-hide=\"!contact.data.fields.city\">City</dt><dd data-ng-hide=\"!contact.data.fields.city\">{{contact.data.fields.city}}</dd><dt data-ng-hide=\"!contact.data.fields.state\">State</dt><dd data-ng-hide=\"!contact.data.fields.state\">{{contact.data.fields.state}}</dd><dt data-ng-hide=\"!contact.data.fields.zip_code\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code\">{{contact.data.fields.zip_code}}</dd><dt data-ng-hide=\"!contact.data.fields.country\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country\">{{contact.data.fields.country}}</dd><dt data-ng-hide=\"!contact.data.fields.phone\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone\">{{contact.data.fields.phone}}</dd><dt data-ng-hide=\"!contact.data.fields.email\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email\">{{contact.data.fields.email}}</dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"(field, value) in contact.data.custom_fields\">{{field}}</dt><dd data-ng-repeat-end=\"\">{{value}}</dd></dl></div></div>"
+    "<div class=\"row fixed-contact panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id || !contact.data.ID_flag\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id || !contact.data.ID_flag\">{{contact.data.fields.custom_id}}</dd><dt data-ng-hide=\"!contact.data.fields.first_name || !contact.data.FirstName_flag\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name || !contact.data.FirstName_flag\">{{contact.data.fields.first_name}}</dd><dt data-ng-hide=\"!contact.data.fields.middle_name || !contact.data.MiddleName_flag\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name || !contact.data.MiddleName_flag\">{{contact.data.fields.middle_name}}</dd><dt data-ng-hide=\"!contact.data.fields.last_name || !contact.data.LastName_flag\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name || !contact.data.LastName_flag\">{{contact.data.fields.last_name}}</dd><dt data-ng-hide=\"!contact.data.fields.suffix || !contact.data.Suffix_flag\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix || !contact.data.Suffix_flag\">{{contact.data.fields.suffix}}</dd><dt data-ng-hide=\"!contact.data.fields.address || !contact.data.Address_flag\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address || !contact.data.Address_flag\">{{contact.data.fields.address}}</dd><dt data-ng-hide=\"!contact.data.fields.city || !contact.data.City_flag\">City</dt><dd data-ng-hide=\"!contact.data.fields.city || !contact.data.City_flag\">{{contact.data.fields.city}}</dd><dt data-ng-hide=\"!contact.data.fields.state || !contact.data.State/Province_flag\">State</dt><dd data-ng-hide=\"!contact.data.fields.state || !contact.data.State/Province_flag\">{{contact.data.fields.state}}</dd><dt data-ng-hide=\"!contact.data.fields.zip_code || !contact.data.Zip/Postal_flag\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code || !contact.data.Zip/Postal_flag\">{{contact.data.fields.zip_code}}</dd><dt data-ng-hide=\"!contact.data.fields.country || !contact.data.Country_flag\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country || !contact.data.Country_flag\">{{contact.data.fields.country}}</dd><dt data-ng-hide=\"!contact.data.fields.phone || !contact.data.Phone_flag\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone || !contact.data.Phone_flag\">{{contact.data.fields.phone}}</dd><dt data-ng-hide=\"!contact.data.fields.email || !contact.data.Email_flag\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email || !contact.data.Email_flag\">{{contact.data.fields.email}}</dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"(field, value) in contact.data.custom_fields\">{{field}}</dt><dd data-ng-repeat-end=\"\">{{value}}</dd></dl></div></div>"
   );
 
 }]);

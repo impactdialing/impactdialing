@@ -62,7 +62,7 @@
               var curTime, timeSinceCount;
               curTime = time();
               timeSinceCount = curTime - parseInt(timestamp);
-              return timeSinceCount > 60000;
+              return timeSinceCount > 300000;
             };
             deleteOld = function(v, timestamp) {
               if (isOld(v, timestamp)) {
@@ -103,7 +103,7 @@
 
   simpleCache('Survey');
 
-  captureCache('CallStation', false);
+  simpleCache('CallStation');
 
   captureCache('Error', false);
 
@@ -123,7 +123,7 @@
 (function() {
   var mod;
 
-  mod = angular.module('transitionGateway', ['ui.router']);
+  mod = angular.module('transitionGateway', ['ui.router', 'angularSpinner', 'idCacheFactories']);
 
   mod.constant('validTransitions', {
     'root': ['dialer.ready'],
@@ -139,14 +139,45 @@
   });
 
   mod.factory('transitionValidator', [
-    '$rootScope', 'validTransitions', function($rootScope, validTransitions) {
+    '$rootScope', 'validTransitions', 'ErrorCache', 'ContactCache', 'usSpinnerService', function($rootScope, validTransitions, ErrorCache, ContactCache, usSpinnerService) {
       return {
         reviewTransition: function(eventObj, toState, toParams, fromState, fromParams) {
-          var entry, fromName, toName;
+          var contact, entry, fromName, getContact, getMeta, toName;
           toName = toState.name;
           fromName = fromState.name || 'root';
+          getContact = function() {
+            var contact, id, phone;
+            contact = ContactCache.get('data');
+            phone = '';
+            id = '';
+            if ((contact != null) && (contact.fields != null)) {
+              id = contact.fields.id;
+              phone = contact.fields.phone;
+            }
+            return {
+              id: id,
+              phone: phone
+            };
+          };
+          getMeta = function() {
+            var caller, campaign;
+            caller = CallStationCache.get('caller');
+            campaign = CallStationCache.get('campaign');
+            return {
+              caller: caller,
+              campaign: campaign
+            };
+          };
           entry = validTransitions[fromName];
           if ((entry == null) || entry.indexOf(toName) === -1) {
+            contact = getContact();
+            ErrorCache.put('InvalidTransition prevented', {
+              toName: toName,
+              fromName: fromName,
+              contact: contact
+            });
+            $rootScope.transitionInProgress = false;
+            usSpinnerService.stop('global-spinner');
             return eventObj.preventDefault();
           }
         },
@@ -231,7 +262,7 @@
 (function() {
   var mod;
 
-  mod = angular.module('idTwilioConnectionHandlers', ['ui.router', 'idFlash', 'idTransition', 'idTwilio']);
+  mod = angular.module('idTwilioConnectionHandlers', ['ui.router', 'idFlash', 'idTransition', 'idTwilio', 'idCacheFactories']);
 
   mod.factory('idTwilioConnectionFactory', [
     '$rootScope', 'TwilioCache', 'idFlashFactory', 'idTwilioService', function($rootScope, TwilioCache, idFlashFactory, idTwilioService) {
@@ -249,7 +280,14 @@
           }
         },
         disconnected: function(connection) {
-          return console.log('twilio disconnected', connection);
+          var pending;
+          console.log('twilio disconnected', connection);
+          pending = TwilioCache.get('disconnect_pending');
+          if (pending == null) {
+            return idFlashFactory.now('danger', 'The browser phone has disconnected unexpectedly. Save any responses (you may need to click Hangup first), report the problem and reload the page.');
+          } else {
+            return TwilioCache.remove('disconnect_pending');
+          }
         },
         error: function(error) {
           idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please dial-in to continue.');
@@ -283,7 +321,7 @@
   mod = angular.module('callveyor.call_flow', ['ui.router', 'idFlash', 'idTransition', 'idCacheFactories', 'callveyor.http_dialer']);
 
   mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', function($rootScope, $state, $window, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache) {
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', function($rootScope, $state, $window, $cacheFactory, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache) {
       var beforeunloadBeenBound, handlers, isWarmTransfer;
       isWarmTransfer = function() {
         return /warm/i.test(TransferCache.get('type'));
@@ -460,6 +498,23 @@
             return p["catch"](idTransitionPrevented);
           }
         },
+        callEnded: function(data) {
+          var campaign_type, hold, holdCache, number, shouldReload, status;
+          console.log('call_ended', data);
+          status = data.status;
+          campaign_type = data.campaign_type;
+          number = data.number;
+          shouldReload = function() {
+            return status !== 'completed' && $state.is('dialer.hold') && campaign_type !== 'Predictive';
+          };
+          if (shouldReload()) {
+            console.log('reloading dialer.hold $state');
+            idFlashFactory.now('info', "" + number + " did not connect: " + status);
+            holdCache = $cacheFactory.get('hold');
+            hold = holdCache.get('sharedScope');
+            return hold.reset();
+          }
+        },
         /*
         LEGACY-way
         - update caller action buttons
@@ -541,7 +596,12 @@
           return p["catch"](idTransitionPrevented);
         },
         callerWrapupVoiceHit: function() {
-          var p;
+          var hold, holdCache, p;
+          if ($state.is('dialer.hold')) {
+            holdCache = $cacheFactory.get('hold');
+            hold = holdCache.get('sharedScope');
+            hold.reset();
+          }
           console.log('caller:wrapup:start');
           p = $state.go('dialer.wrap');
           return p["catch"](idTransitionPrevented);
@@ -652,10 +712,10 @@
   'use strict';
   var mod;
 
-  mod = angular.module('callveyor.http_dialer', ['idFlash', 'angularSpinner']);
+  mod = angular.module('callveyor.http_dialer', ['idFlash', 'angularSpinner', 'idCacheFactories']);
 
   mod.factory('idHttpDialerFactory', [
-    '$rootScope', '$timeout', '$http', 'idFlashFactory', 'usSpinnerService', function($rootScope, $timeout, $http, idFlashFactory, usSpinnerService) {
+    '$rootScope', '$timeout', '$http', 'idFlashFactory', 'usSpinnerService', 'TwilioCache', function($rootScope, $timeout, $http, idFlashFactory, usSpinnerService, TwilioCache) {
       var dial, dialer, error, success;
       dialer = {};
       dial = function(url, params) {
@@ -663,14 +723,12 @@
         return $http.post(url, params);
       };
       success = function(resp, status, headers, config) {
-        console.log('dialer factory success', resp);
         dialer.caller_id = void 0;
         dialer.params = void 0;
         dialer.retry = false;
         return $rootScope.$broadcast('http_dialer:success', resp);
       };
       error = function(resp, status, headers, config) {
-        console.log('dialer factory error', resp);
         if (dialer.retry && /(408|500|504)/.test(resp.status)) {
           $rootScope.$broadcast('http_dialer:retrying', resp);
           return dialer[dialer.retry](dialer.caller_id, dialer.params, false);
@@ -719,19 +777,16 @@
         return $http.post(url, params);
       };
       dialer.hangupTransfer = function(caller) {
-        console.log('dialer.hangupTransfer');
         dialer.retry = false;
         return dialer.kick(caller, 'transfer');
       };
       dialer.hangup = function(call_id, transfer, caller) {
         var url;
-        console.log('dialer.hangup');
         dialer.retry = false;
         if ((transfer != null) && transfer.transfer_type === 'warm') {
-          console.log('dialer.hangup - kick caller');
           return dialer.kick(caller, 'caller');
         } else {
-          console.log('dialer.hangup - voter');
+          TwilioCache.put('disconnect_pending', 1);
           url = "/call_center/api/" + call_id + "/hangup";
           return $http.post(url);
         }

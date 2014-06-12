@@ -88,30 +88,66 @@
   });
 
   callveyor.controller('AppCtrl', [
-    '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', function($rootScope, $scope, $state, $timeout, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented, TransitionCache) {
-      var abortAllAndNotifyUser, markPusherReady, transitionComplete, transitionError, transitionStart;
+    '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'ContactCache', 'CallStationCache', function($rootScope, $scope, $state, $timeout, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented, TransitionCache, ContactCache, CallStationCache) {
+      var abortAllAndNotifyUser, getContact, getMeta, markPusherReady, transitionComplete, transitionError, transitionStart;
       $rootScope.transitionInProgress = false;
+      getContact = function() {
+        var contact, id, phone;
+        contact = ContactCache.get('data');
+        phone = '';
+        id = '';
+        if ((contact != null) && (contact.fields != null)) {
+          id = contact.fields.id;
+          phone = contact.fields.phone;
+        }
+        return {
+          id: id,
+          phone: phone
+        };
+      };
+      getMeta = function() {
+        var caller, campaign;
+        caller = CallStationCache.get('caller');
+        campaign = CallStationCache.get('campaign');
+        return {
+          caller: caller,
+          campaign: campaign
+        };
+      };
       transitionStart = function(event, toState, toParams, fromState, fromParams) {
+        var contact;
+        contact = getContact();
         TransitionCache.put('$stateChangeStart', {
           toState: toState.name,
-          fromState: fromState.name
+          fromState: fromState.name,
+          contact: contact
         });
         usSpinnerService.spin('global-spinner');
         return $rootScope.transitionInProgress = true;
       };
       transitionComplete = function(event, toState, toParams, fromState, fromParams) {
+        var contact, meta;
+        contact = getContact();
+        meta = getMeta();
         TransitionCache.put('$stateChangeSuccess', {
           toState: toState.name,
-          fromState: fromState.name
+          fromState: fromState.name,
+          contact: contact,
+          meta: meta
         });
         $rootScope.transitionInProgress = false;
         return usSpinnerService.stop('global-spinner');
       };
       transitionError = function(event, unfoundState, fromState, fromParams) {
+        var contact, meta;
         console.error('Error transitioning $state', e, $state.current);
+        contact = getContact();
+        meta = getMeta();
         TransitionCache.put('$stateChangeError', {
           unfoundState: unfoundState.name,
-          fromState: fromState.name
+          fromState: fromState.name,
+          contact: contact,
+          meta: meta
         });
         return transitionComplete();
       };
