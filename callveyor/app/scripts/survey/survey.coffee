@@ -73,8 +73,8 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 # - survey:reload - triggers re-fetch/load of survey form data & transfer list
 #
 surveyForm.controller('SurveyFormCtrl', [
-  '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache',
-  ($rootScope,   $scope,   $filter,   $state,   $http,   TransferCache,   CallCache,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache) ->
+  '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache',
+  ($rootScope,   $scope,   $filter,   $state,   $http,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache) ->
     # Init public
     survey = {
       hideButtons: true
@@ -133,7 +133,9 @@ surveyForm.controller('SurveyFormCtrl', [
       usSpinnerService.spin('global-spinner')
 
       action = 'submit_result'
-      action += '_and_stop' unless andContinue
+      unless andContinue
+        action += '_and_stop'
+        TwilioCache.put('disconnect_pending', 1)
 
       successRan = false
       success = (resp) ->

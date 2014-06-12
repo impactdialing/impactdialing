@@ -2,7 +2,8 @@ mod = angular.module('idTwilioConnectionHandlers', [
   'ui.router',
   'idFlash',
   'idTransition',
-  'idTwilio'
+  'idTwilio',
+  'idCacheFactories'
 ])
 
 mod.factory('idTwilioConnectionFactory', [
@@ -26,6 +27,11 @@ mod.factory('idTwilioConnectionFactory', [
 
       disconnected: (connection) ->
         console.log 'twilio disconnected', connection
+        pending = TwilioCache.get('disconnect_pending')
+        unless pending?
+          idFlashFactory.now('danger', 'The browser phone has disconnected unexpectedly. Save any responses (you may need to click Hangup first), report the problem and reload the page.')
+        else
+          TwilioCache.remove('disconnect_pending')
 
       error: (error) ->
         # console.log 'report this problem', error

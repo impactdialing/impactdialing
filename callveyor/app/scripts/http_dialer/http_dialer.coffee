@@ -2,12 +2,13 @@
 
 mod = angular.module('callveyor.http_dialer', [
   'idFlash',
-  'angularSpinner'
+  'angularSpinner',
+  'idCacheFactories'
 ])
 
 mod.factory('idHttpDialerFactory', [
-  '$rootScope', '$timeout', '$http', 'idFlashFactory', 'usSpinnerService',
-  ($rootScope,   $timeout,   $http,   idFlashFactory,   usSpinnerService) ->
+  '$rootScope', '$timeout', '$http', 'idFlashFactory', 'usSpinnerService', 'TwilioCache',
+  ($rootScope,   $timeout,   $http,   idFlashFactory,   usSpinnerService,   TwilioCache) ->
     dialer = {}
 
     dial = (url, params) ->
@@ -15,13 +16,13 @@ mod.factory('idHttpDialerFactory', [
       $http.post(url, params)
 
     success = (resp, status, headers, config) ->
-      console.log 'dialer factory success', resp
+      # console.log 'dialer factory success', resp
       dialer.caller_id = undefined
       dialer.params    = undefined
       dialer.retry     = false
       $rootScope.$broadcast('http_dialer:success', resp)
     error = (resp, status, headers, config) ->
-      console.log 'dialer factory error', resp
+      # console.log 'dialer factory error', resp
       if dialer.retry && /(408|500|504)/.test(resp.status)
         $rootScope.$broadcast('http_dialer:retrying', resp)
         dialer[dialer.retry](dialer.caller_id, dialer.params, false)
@@ -70,17 +71,17 @@ mod.factory('idHttpDialerFactory', [
       $http.post(url, params)
 
     dialer.hangupTransfer = (caller) ->
-      console.log 'dialer.hangupTransfer'
+      # console.log 'dialer.hangupTransfer'
       dialer.retry = false
 
       dialer.kick(caller, 'transfer')
 
     dialer.hangup = (call_id, transfer, caller) ->
-      console.log 'dialer.hangup'
+      # console.log 'dialer.hangup'
       dialer.retry = false
 
       if transfer? and transfer.transfer_type == 'warm'
-        console.log 'dialer.hangup - kick caller'
+        # console.log 'dialer.hangup - kick caller'
         # Caller clicked hang-up in voter context
         # but is in conference with a transfer and voter.
         # So rather than disconnecting the voter,
@@ -88,7 +89,8 @@ mod.factory('idHttpDialerFactory', [
         # transfer target to continue talking.
         dialer.kick(caller, 'caller')
       else
-        console.log 'dialer.hangup - voter'
+        # console.log 'dialer.hangup - voter'
+        TwilioCache.put('disconnect_pending', 1)
         url = "/call_center/api/#{call_id}/hangup"
         $http.post(url)
 
