@@ -10,9 +10,11 @@ describe Call do
         @caller = create(:caller)
         @script = create(:script)
         @campaign =  create(:predictive, script: @script)
-        @voter  = create(:voter, campaign: @campaign, caller_session: @caller_session)
+        @voter  = create(:voter, campaign: @campaign)
         @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign)
         @caller_session = create(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt, on_call: true, available_for_call: false, state: "connected", sid: "123456")
+        @call_attempt.caller_session = @caller_session
+        @call_attempt.save!
       end
 
       it "should start a conference in connected state" do
@@ -299,11 +301,14 @@ end
   describe "call_ended" do
 
     before(:each) do
+      @caller = create(:caller)
       @script = create(:script)
-      @campaign =  create(:campaign, script: @script)
-      @voter = create(:voter, campaign: @campaign)
-      @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
-      @caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, attempt_in_progress: @call_attempt, state: "connected")
+      @campaign =  create(:predictive, script: @script)
+      @voter  = create(:voter, campaign: @campaign)
+      @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign)
+      @caller_session = create(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt, on_call: true, available_for_call: false, state: "connected", sid: "123456")
+      @call_attempt.caller_session = @caller_session
+      @call_attempt.save!
     end
 
     it "should push to not connected call list if call did not connect" do

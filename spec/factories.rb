@@ -162,6 +162,7 @@ FactoryGirl.define do
   factory :call_attempt do
     campaign
     caller
+    caller_session
     created_at Time.now
     updated_at Time.now
   end
@@ -233,6 +234,7 @@ FactoryGirl.define do
   end
 
   factory :call do
+    call_attempt
     state 'initial'
   end
 
