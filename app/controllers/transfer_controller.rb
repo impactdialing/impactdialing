@@ -61,7 +61,6 @@ class TransferController < ApplicationController
     render json: json
   end
 
-
   def callee
     logger.debug "DoublePause: Transfer#callee SessionKey: #{params[:session_key]}"
     transfer_attempt = TransferAttempt.includes(:caller_session).find_by_session_key params[:session_key]
@@ -69,7 +68,7 @@ class TransferController < ApplicationController
 
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
-        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => true, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
+        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
       end
     end.response
     if params[:transfer_type] == 'warm'
