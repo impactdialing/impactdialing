@@ -51,8 +51,16 @@ ready.controller('ReadyCtrl.splashModal', [
 ])
 
 ready.controller('ReadyCtrl.splash', [
-  '$scope', '$modal',
-  ($scope,   $modal) ->
+  '$scope', '$rootScope', '$modal', '$window', 'idTwilioService', 'usSpinnerService',
+  ($scope,   $rootScope,   $modal,   $window,   idTwilioService,   usSpinnerService) ->
+
+    done = ->
+      $rootScope.transitionInProgress = false
+    err = ->
+      done()
+      throw Error("TwilioClient failed to load")
+
+    idTwilioService.then(done, err)
 
     splash = {}
 
