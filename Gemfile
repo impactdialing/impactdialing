@@ -49,6 +49,7 @@ gem 'stripe', '~>1.8.4'
 
 # monitoring
 gem 'librato-rails'
+gem 'rack-timing'
 gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
 
 # Text -> HTML processors

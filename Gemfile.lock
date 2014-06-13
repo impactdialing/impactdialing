@@ -262,6 +262,7 @@ GEM
       rack
     rack-test (0.6.2)
       rack (>= 1.0)
+    rack-timing (0.0.2)
     rails (3.2.18)
       actionmailer (= 3.2.18)
       actionpack (= 3.2.18)
@@ -459,6 +460,7 @@ DEPENDENCIES
   pry-debugger
   pusher (~> 0.11.3)
   rack-queue-metrics!
+  rack-timing
   rails (~> 3.2.17)
   rb-fsevent
   recurly (~> 2.1.9)
