@@ -6,6 +6,14 @@ GIT
       activerecord (>= 3.0.0, < 4.0)
       activesupport (>= 3.0.0, < 4.0)
 
+GIT
+  remote: https://github.com/heroku/rack-queue-metrics.git
+  revision: 5922f9c7c00635b2822c6299945758f18029c736
+  branch: cb-logging
+  specs:
+    rack-queue-metrics (1.0.2)
+      raindrops
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -450,6 +458,7 @@ DEPENDENCIES
   pry
   pry-debugger
   pusher (~> 0.11.3)
+  rack-queue-metrics!
   rails (~> 3.2.17)
   rb-fsevent
   recurly (~> 2.1.9)

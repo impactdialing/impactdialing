@@ -46,7 +46,10 @@ gem 'sidekiq-failures', '~> 0.2.1'
 gem 'lograge', '~>0.2.0'
 gem 'cancan', '~>1.6.10'
 gem 'stripe', '~>1.8.4'
+
+# monitoring
 gem 'librato-rails'
+gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
 
 # Text -> HTML processors
 gem 'redcarpet'
