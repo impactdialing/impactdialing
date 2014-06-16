@@ -8,7 +8,12 @@
       <% if logged_in_as_client? %>
         <ul class="clearfix">
           <li><button onclick="javascript:introJs().start();" class="action secondary">Help</button></li>
-          <li><%= link_to 'Log out', client_session_path, :method => :delete %></li>
+          <li>
+            <% if session[:internal_admin] %>
+            <span style="font-size: 90%">Logged-in as <%= @user.lname %> (Acct #<%= @user.account_id %>)</span><br>
+            <% end %>
+            <%= link_to 'Log out', client_session_path, :method => :delete %>
+          </li>
         </ul>
       <% end %>
     </header>
