@@ -32,14 +32,25 @@ class NewReportJob
     end
   end
 
+  def response_strategy(status, exception=nil)
+    @response_strategy ||=  case @strategy
+                            when 'webui'
+                              ReportWebUIStrategy.new(status, @user, @campaign, exception)
+                            when 'api'
+                              ReportApiStrategy.new(status, @campaign.account.id, @campaign.id, @callback_url)
+                            when 'internal-webui'
+                              ReportInternalStrategy.new(status, @user, @campaign, exception)
+                            else
+                              raise ArgumentError, "Unknown Response Strategy [#{@strategy}]. Valid strategies: webui, api, internal-webui."
+                            end
+  end
+
   def notify_success
-    response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil) : ReportApiStrategy.new("success", @campaign.account.id, @campaign.id, @callback_url)
-    response_strategy.response({campaign_name: @campaign_name})
+    response_strategy('success', nil).response({campaign_name: @campaign_name})
   end
 
    def on_failure_report(exception)
-      response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("failure", @user, @campaign, exception) : ReportApiStrategy.new("failure", @campaign.account.id, @campaign.id, @callback_url)
-      response_strategy.response({})
+      response_strategy('failure', exception).response({})
    end
 
 

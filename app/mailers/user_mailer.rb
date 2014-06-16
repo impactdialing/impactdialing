@@ -74,6 +74,17 @@ class UserMailer < MandrillMailer
     })
   end
 
+  def deliver_to_internal_admin(subject, content)
+    send_email({
+      :subject => subject,
+      :text => content,
+      :html => content,
+      :from_name => 'Admin',
+      :from_email => FROM_EMAIL,
+      :to => [{email: SALES_EMAIL}, {email: TECH_EMAIL}]
+    })
+  end
+
   def deliver_download(user, download_link)
     subject = I18n.t(:report_ready_for_download)
 
