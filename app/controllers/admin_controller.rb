@@ -142,7 +142,9 @@ class AdminController < ApplicationController
   end
 
   def login
-    session[:user]=params[:id]
+    session[:internal_admin] = true
+    session[:user]           = params[:id]
+
     redirect_to :controller => "client", :action => "index"
   end
 

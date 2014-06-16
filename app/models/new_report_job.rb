@@ -38,10 +38,10 @@ class NewReportJob
                               ReportWebUIStrategy.new(status, @user, @campaign, exception)
                             when 'api'
                               ReportApiStrategy.new(status, @campaign.account.id, @campaign.id, @callback_url)
-                            when 'internal-webui'
+                            when 'web-internal-admin'
                               ReportInternalStrategy.new(status, @user, @campaign, exception)
                             else
-                              raise ArgumentError, "Unknown Response Strategy [#{@strategy}]. Valid strategies: webui, api, internal-webui."
+                              raise ArgumentError, "Unknown Response Strategy [#{@strategy}]. Valid strategies: webui, api, web-internal-admin."
                             end
   end
 

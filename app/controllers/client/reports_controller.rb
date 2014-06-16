@@ -7,9 +7,20 @@ module Client
     around_filter :select_shard
     respond_to :html, :json
 
+  private
+    def report_response_strategy
+      unless session[:internal_admin]
+        return params[:strategy]
+      else
+        'web-internal-admin'
+      end
+    end
+
+  public
+
     def index
       @campaigns = params[:id].blank? ? account.campaigns : Campaign.find(params[:id])
-      @download_report_count = DownloadedReport.accounts_active_report_count(@campaigns.collect{|c| c.id})
+      @download_report_count = DownloadedReport.accounts_active_report_count(@campaigns.collect{|c| c.id}, session[:internal_admin])
       @callers = account.callers.active
     end
 
@@ -54,7 +65,7 @@ module Client
         params[:custom_voter_fields],
         params[:download_all_voters],
         params[:lead_dial],
-        @from_date, @to_date, params[:callback_url], params[:strategy]
+        @from_date, @to_date, params[:callback_url], report_response_strategy
       )
       respond_with(@campaign, location:  client_reports_url) do |format|
         format.html {
@@ -69,7 +80,7 @@ module Client
     def downloaded_reports
       authorize! :view_campaign_reports, @account
       load_campaign
-      @downloaded_reports = DownloadedReport.active_reports(@campaign.id)
+      @downloaded_reports = DownloadedReport.active_reports(@campaign.id, session[:internal_admin])
     end
 
     private

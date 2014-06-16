@@ -15,7 +15,8 @@ module Client
     end
 
     def destroy
-      session[:user] = nil
+      session[:user]           = nil
+      session[:internal_admin] = nil
       flash_message(:notice, "You have been logged out.")
       redirect_to login_path
     end
