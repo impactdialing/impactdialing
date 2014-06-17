@@ -306,10 +306,26 @@
     }
   ]);
 
+  ready.factory('ReadyEventHandlers', [
+    '$rootScope', function($rootScope) {
+      var handlers;
+      handlers = {
+        bindCloseModal: function(event, modalInstance) {
+          if (handlers.boundCloseModal != null) {
+            handlers.boundCloseModal();
+          }
+          return handlers.boundCloseModal = $rootScope.$on(event, function() {
+            return modalInstance.close();
+          });
+        }
+      };
+      return handlers;
+    }
+  ]);
+
   ready.controller('ReadyCtrl.splashModal', [
-    '$scope', '$state', '$modalInstance', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory', 'idTransitionPrevented', function($scope, $state, $modalInstance, CallStationCache, idTwilioConnectionFactory, idFlashFactory, idTransitionPrevented) {
-      var closeModalTrigger, config, twilioParams,
-        _this = this;
+    '$scope', '$state', '$modalInstance', 'ReadyEventHandlers', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory', 'idTransitionPrevented', function($scope, $state, $modalInstance, ReadyEventHandlers, CallStationCache, idTwilioConnectionFactory, idFlashFactory, idTransitionPrevented) {
+      var config, twilioParams;
       config = {
         caller: CallStationCache.get('caller'),
         campaign: CallStationCache.get('campaign'),
@@ -321,9 +337,7 @@
         'caller_id': config.caller.id,
         'session_key': config.caller.session_key
       };
-      closeModalTrigger = $scope.$on("" + config.caller.session_key + ":start_calling", function() {
-        return $modalInstance.close();
-      });
+      ReadyEventHandlers.bindCloseModal("" + config.caller.session_key + ":start_calling", $modalInstance);
       idTwilioConnectionFactory.afterConnected = function() {
         var p;
         p = $state.go('dialer.hold');
@@ -336,10 +350,8 @@
       };
       ready = config || {};
       ready.startCalling = function() {
-        closeModalTrigger();
         $scope.transitionInProgress = true;
-        idTwilioConnectionFactory.connect(twilioParams);
-        return $modalInstance.close();
+        return idTwilioConnectionFactory.connect(twilioParams);
       };
       return $scope.ready = ready;
     }
@@ -823,7 +835,7 @@
   ]);
 
   stop.controller('StopCtrl.buttons', [
-    '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation', function($scope, $state, TwilioCache, $http, idTwilioService, callStation) {
+    '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation', 'idTransitionPrevented', function($scope, $state, TwilioCache, $http, idTwilioService, callStation, idTransitionPrevented) {
       var always, caller_id, connection, params, stopPromise, whenDisconnected;
       connection = TwilioCache.get('connection');
       caller_id = callStation.data.caller.id;
@@ -836,8 +848,11 @@
         return p["catch"](idTransitionPrevented);
       };
       always = function() {
-        connection.disconnect(whenDisconnected);
-        connection.disconnect();
+        if ((connection != null) && connection.status() === 'open') {
+          TwilioCache.put('disconnect_pending', true);
+          connection.disconnect(whenDisconnected);
+          connection.disconnectAll();
+        }
         return $state.go('dialer.ready');
       };
       return stopPromise["finally"](always);

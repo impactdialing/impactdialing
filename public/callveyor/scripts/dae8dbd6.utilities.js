@@ -269,6 +269,10 @@
       var factory, twilioParams;
       twilioParams = {};
       factory = {
+        boundEvents: [],
+        boundEventsMissing: function(eventName) {
+          return factory.boundEvents.indexOf(eventName) === -1;
+        },
         connect: function(params) {
           twilioParams = params;
           return idTwilioService.then(factory.resolved, factory.resolveError);
@@ -290,15 +294,25 @@
           }
         },
         error: function(error) {
-          idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please dial-in to continue.');
+          console.log('Twilio Connection Error', error);
+          idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.');
           if (angular.isFunction(factory.afterError)) {
             return factory.afterError();
           }
         },
         resolved: function(twilio) {
-          twilio.Device.connect(factory.connected);
-          twilio.Device.disconnect(factory.disconnected);
-          twilio.Device.error(factory.error);
+          if (factory.boundEventsMissing('connect')) {
+            twilio.Device.connect(factory.connected);
+            factory.boundEvents.push('connect');
+          }
+          if (factory.boundEventsMissing('disconnect')) {
+            twilio.Device.disconnect(factory.disconnected);
+            factory.boundEvents.push('disconnect');
+          }
+          if (factory.boundEventsMissing('error')) {
+            twilio.Device.error(factory.error);
+            factory.boundEvents.push('error');
+          }
           return twilio.Device.connect(twilioParams);
         },
         resolveError: function(err) {
