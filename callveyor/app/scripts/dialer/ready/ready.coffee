@@ -33,6 +33,9 @@ ready.controller('ReadyCtrl.splashModal', [
       'session_key': config.caller.session_key
     }
 
+    # get handle to unbind callback from event
+    closeModalTrigger = $scope.$on("#{config.caller.session_key}:start_calling", => $modalInstance.close())
+
     idTwilioConnectionFactory.afterConnected = ->
       p = $state.go('dialer.hold')
       p.catch(idTransitionPrevented)
@@ -43,6 +46,11 @@ ready.controller('ReadyCtrl.splashModal', [
 
     ready = config || {}
     ready.startCalling = ->
+      # just close modal here, rather than wait for start_calling event
+      # works around context issue where $modalInstance.value is undefined
+      # when connecting via phones and binding to `this` via =>. the inverse
+      # occurs when connecting via browser and not binding to `this` via =>
+      closeModalTrigger()
       $scope.transitionInProgress = true
       idTwilioConnectionFactory.connect(twilioParams)
       $modalInstance.close()
