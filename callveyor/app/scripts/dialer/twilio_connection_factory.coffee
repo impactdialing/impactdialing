@@ -12,6 +12,11 @@ mod.factory('idTwilioConnectionFactory', [
     twilioParams = {}
 
     factory = {
+      boundEvents: []
+
+      boundEventsMissing: (eventName) ->
+        factory.boundEvents.indexOf(eventName) == -1
+
       connect: (params) ->
         twilioParams = params
         idTwilioService.then(factory.resolved, factory.resolveError)
@@ -34,17 +39,23 @@ mod.factory('idTwilioConnectionFactory', [
           TwilioCache.remove('disconnect_pending')
 
       error: (error) ->
-        # console.log 'report this problem', error
-        idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please dial-in to continue.')
+        console.log 'Twilio Connection Error', error
+        idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.')
         if angular.isFunction(factory.afterError)
           factory.afterError()
 
       resolved: (twilio) ->
         # console.log 'idTwilioService resolved', twilio
-        twilio.Device.connect(factory.connected)
-        # twilio.Device.ready(handlers.ready)
-        twilio.Device.disconnect(factory.disconnected)
-        twilio.Device.error(factory.error)
+        if factory.boundEventsMissing('connect')
+          twilio.Device.connect(factory.connected)
+          factory.boundEvents.push('connect')
+          # twilio.Device.ready(handlers.ready)
+        if factory.boundEventsMissing('disconnect')
+          twilio.Device.disconnect(factory.disconnected)
+          factory.boundEvents.push('disconnect')
+        if factory.boundEventsMissing('error')
+          twilio.Device.error(factory.error)
+          factory.boundEvents.push('error')
         twilio.Device.connect(twilioParams)
 
       resolveError: (err) ->

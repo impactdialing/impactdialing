@@ -20,8 +20,8 @@ stop.config([
 ])
 
 stop.controller('StopCtrl.buttons', [
-  '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation',
-  ($scope,   $state,   TwilioCache,   $http,   idTwilioService,   callStation) ->
+  '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation', 'idTransitionPrevented'
+  ($scope,   $state,   TwilioCache,   $http,   idTwilioService,   callStation,   idTransitionPrevented) ->
     connection   = TwilioCache.get('connection')
     caller_id    = callStation.data.caller.id
     params       = {}
@@ -33,8 +33,10 @@ stop.controller('StopCtrl.buttons', [
       p.catch(idTransitionPrevented)
 
     always = ->
-      connection.disconnect(whenDisconnected)
-      connection.disconnect()
+      if connection? and connection.status() == 'open'
+        TwilioCache.put('disconnect_pending', true)
+        connection.disconnect(whenDisconnected)
+        connection.disconnectAll()
       $state.go('dialer.ready')
 
     stopPromise.finally(always)
