@@ -308,7 +308,8 @@
 
   ready.controller('ReadyCtrl.splashModal', [
     '$scope', '$state', '$modalInstance', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory', 'idTransitionPrevented', function($scope, $state, $modalInstance, CallStationCache, idTwilioConnectionFactory, idFlashFactory, idTransitionPrevented) {
-      var config, twilioParams;
+      var closeModalTrigger, config, twilioParams,
+        _this = this;
       config = {
         caller: CallStationCache.get('caller'),
         campaign: CallStationCache.get('campaign'),
@@ -320,6 +321,9 @@
         'caller_id': config.caller.id,
         'session_key': config.caller.session_key
       };
+      closeModalTrigger = $scope.$on("" + config.caller.session_key + ":start_calling", function() {
+        return $modalInstance.close();
+      });
       idTwilioConnectionFactory.afterConnected = function() {
         var p;
         p = $state.go('dialer.hold');
@@ -332,6 +336,7 @@
       };
       ready = config || {};
       ready.startCalling = function() {
+        closeModalTrigger();
         $scope.transitionInProgress = true;
         idTwilioConnectionFactory.connect(twilioParams);
         return $modalInstance.close();
