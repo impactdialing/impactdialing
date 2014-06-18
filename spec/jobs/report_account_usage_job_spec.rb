@@ -19,6 +19,7 @@ describe ReportAccountUsageJob do
       account: account
     })
   end
+  let(:internal_admin){ nil }
 
   before do
     User.stub(:find).with(1){ user }
@@ -28,16 +29,16 @@ describe ReportAccountUsageJob do
     describe 'report_type = "campaigns"' do
       it "calls .mail_campaigns_usage(account, user, from_date, to_date)" do
         ReportAccountUsageJob.should_receive(:mail_campaigns_usage).
-          with(user.id, from_date, to_date)
-        ReportAccountUsageJob.perform('campaigns', user.id, from_date, to_date)
+          with(user.id, from_date, to_date, internal_admin)
+        ReportAccountUsageJob.perform('campaigns', user.id, from_date, to_date, internal_admin)
       end
     end
 
     describe 'report_type = "callers"' do
       it "calls .mail_callers_usage(account, user, from_date, to_date)" do
         ReportAccountUsageJob.should_receive(:mail_callers_usage).
-          with(user.id, from_date, to_date)
-        ReportAccountUsageJob.perform('callers', user.id, from_date, to_date)
+          with(user.id, from_date, to_date, internal_admin)
+        ReportAccountUsageJob.perform('callers', user.id, from_date, to_date, internal_admin)
       end
     end
 
@@ -62,14 +63,14 @@ describe ReportAccountUsageJob do
       end
       before do
         AccountUsageMailer.stub(:new).
-          with(user).
+          with(user, nil).
           and_return(mailer)
       end
       describe '.mail_campaigns_usage(account, user, from_date, to_date)' do
         it "builds the email" do
           mailer.should_receive(:by_campaigns).
             with(from_date, to_date)
-          ReportAccountUsageJob.mail_campaigns_usage(user.id, from_date, to_date)
+          ReportAccountUsageJob.mail_campaigns_usage(user.id, from_date, to_date, internal_admin)
         end
       end
 
@@ -82,14 +83,14 @@ describe ReportAccountUsageJob do
         it "builds that email" do
           mailer.should_receive(:by_callers).
             with(from_date, to_date)
-          ReportAccountUsageJob.mail_callers_usage(user.id, from_date, to_date)
+          ReportAccountUsageJob.mail_callers_usage(user.id, from_date, to_date, internal_admin)
         end
       end
     end
 
     it 'raises a NoMethodError when report_type is not one of "campaigns" or "callers"' do
       expect{
-        ReportAccountUsageJob.perform('nonsense', user.id, from_date, to_date)
+        ReportAccountUsageJob.perform('nonsense', user.id, from_date, to_date, internal_admin)
       }.to raise_error NoMethodError
     end
   end

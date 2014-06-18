@@ -10,10 +10,15 @@ private
   end
 
 public
-  def initialize(user)
+  def initialize(user, internal_admin=false)
     super
-    @user    = user
-    @account = user.account
+    @user           = user
+    @account        = user.account
+    @internal_admin = internal_admin
+  end
+
+  def internal_admin?
+    @internal_admin
   end
 
   def by_campaigns(from_date, to_date)
@@ -24,17 +29,10 @@ public
     campaigns        = account.all_campaigns
     html             = AccountUsageRender.new.by_campaigns(:html, billable_totals, grand_total, campaigns)
     text             = AccountUsageRender.new.by_campaigns(:text, billable_totals, grand_total, campaigns)
+    subject          = "Campaign Usage Report: #{format_date(from_date)} - #{format_date(to_date)}"
+    to               = [{email: user.email}]
 
-    send_email({
-      :subject => "Campaign Usage Report: #{format_date(from_date)} - #{format_date(to_date)}",
-      :html => html,
-      :text => text,
-      :from_name => 'Impact Dialing',
-      :from_email => FROM_EMAIL,
-      :to=>[{email: user.email}],
-      :track_opens => true,
-      :track_clicks => true
-    })
+    send_account_usage_report(to, subject, text, html)
   end
 
   def by_callers(from_date, to_date)
@@ -47,15 +45,25 @@ public
     callers          = account.callers
     html             = AccountUsageRender.new.by_callers(:html, billable_totals, status_totals, grand_total, callers)
     text             = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, grand_total, callers)
+    subject          = "Caller Usage Report: #{format_date(from_date)} - #{format_date(to_date)}"
+    to               = [{email: user.email}]
+
+    send_account_usage_report(to, subject, text, html)
+  end
+
+  def send_account_usage_report(to, subject, text, html)
+    if internal_admin?
+      to = [{email: SALES_EMAIL}, {email: TECH_EMAIL}]
+    end
 
     send_email({
-      :subject => "Caller Usage Report: #{format_date(from_date)} - #{format_date(to_date)}",
-      :html => html,
-      :text => text,
-      :from_name => 'Impact Dialing',
-      :from_email => FROM_EMAIL,
-      :to=>[{email: user.email}],
-      :track_opens => true,
+      :subject      => subject,
+      :html         => html,
+      :text         => text,
+      :from_name    => 'Impact Dialing',
+      :from_email   => FROM_EMAIL,
+      :to           => to,
+      :track_opens  => true,
       :track_clicks => true
     })
   end

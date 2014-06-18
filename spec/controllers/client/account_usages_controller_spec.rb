@@ -48,7 +48,7 @@ describe Client::AccountUsagesController do
     end
     it 'queues a new ReportAccountUsageJob' do
       Resque.should_receive(:enqueue).
-        with(ReportAccountUsageJob, report_type, user.id, db_from_date, db_to_date)
+        with(ReportAccountUsageJob, report_type, user.id, db_from_date, db_to_date, nil)
       post :create, valid_params
     end
     it 'redirects to client_account_usage_path' do
