@@ -14,7 +14,7 @@
       </p>
       <p data-intro="Choose which script your callers should use." data-step="3">
         <%= f.label :script %>
-        <%= f.collection_select(:script_id, @scripts, :id, :name, {}, name: "campaign[script_id]",
+        <%= f.collection_select(:script_id, @scripts, :id, :name, {prompt: true}, name: "campaign[script_id]",
         id: "campaign_script") %>
       </p>
       <p data-intro="There are three dialing modes. Preview mode shows the name of the lead and lets your caller choose to dial or skip it. Power mode dials a new lead immediately after the previous one is finished. Predictive mode will dial more lines than you have callers, intelligently adapting to the answer rate and conversation length; occasionally, however, a call will be answered when no caller is available. Predictive should generally only be used when several callers are calling at the same time." data-step="4">
