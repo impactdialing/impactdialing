@@ -69,7 +69,7 @@ describe Call do
 
         it "should render the user recording and hangup if user recording present" do
           recording = create(:recording)
-          @campaign.update_attributes(recording_id: recording.id, use_recordings: true)
+          @campaign.update_attributes(recording_id: recording.id, use_recordings: true, answering_machine_detect: true)
           call = create(:call, answered_by: "machine", call_attempt: @call_attempt)
           RedisCall.set_request_params(call.id, call.attributes)
           RedisCallFlow.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);

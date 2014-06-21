@@ -97,6 +97,20 @@ describe Campaign do
       campaign.save
     end
 
+    it "sets use_recordings to false when answering_machine_detect is false" do
+      campaign = create(:power, {answering_machine_detect: false})
+      campaign.use_recordings = true
+      campaign.save
+      campaign.use_recordings.should be_false
+    end
+
+    it "sets call_back_after_voicemail_delivery to false when both use_recordings and caller_can_drop_message_manually are false" do
+      campaign = create(:power, {use_recordings: false, caller_can_drop_message_manually: false})
+      campaign.call_back_after_voicemail_delivery = true
+      campaign.save
+      campaign.call_back_after_voicemail_delivery.should be_false
+    end
+
     describe "delete campaign" do
 
       it "should not delete a campaign that has active callers assigned to it" do

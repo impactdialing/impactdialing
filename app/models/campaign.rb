@@ -1,12 +1,33 @@
 require Rails.root.join("lib/twilio_lib")
 
+##
+# Attributes
+# +use_recordings+ boolean
+#     Truthy value tells system to auto-drop a message when machine is detected.
+#     Falsy value tells system to hang-up when machine is detected.
+#
+# +recording_id+ integer
+#     Reference to recorded message ID that will drop (either automatically or manually)
+#
+# +answering_machine_detect+ boolean
+#     Truthy value tells system to enable Twilio AMD and increase ring timeout to 30 seconds
+#     Falsey value tells system to not enable Twilio AMD and maintain ring timeout of 15 seconds
+#
+# +call_back_after_voicemail_delivery+ boolean
+#     Truthy value tells system to recycle contacts after a message has been dropped (only one message should ever be left as of June 20, 2014)
+#     Falsey value tells system to not recycle contacts after a message has been dropped (contact will not be dialed again)
+#
+# +caller_can_drop_message_manually+ boolean
+#     Truthy value tells system to present callers with the ability to click to drop a message when on active calls
+#     Falsey value tells system to deny callers ability to click to drop a message
+#
 class Campaign < ActiveRecord::Base
   include Deletable
 
   attr_accessible :type, :name, :caller_id, :script_id, :acceptable_abandon_rate, :time_zone,
                   :start_time, :end_time, :recycle_rate, :answering_machine_detect,
                   :voter_lists_attributes, :use_recordings, :recording_id,
-                  :call_back_after_voicemail_delivery
+                  :call_back_after_voicemail_delivery, :caller_can_drop_message_manually
 
 
   has_many :caller_sessions
@@ -69,6 +90,20 @@ class Campaign < ActiveRecord::Base
   @@per_page = 25
 
   before_validation :sanitize_caller_id
+  before_save :sanitize_message_service_settings
+
+private
+  def sanitize_message_service_settings
+    if use_recordings? and !answering_machine_detect?
+      self.use_recordings = false
+    end
+
+    if call_back_after_voicemail_delivery? and !use_recordings? and !caller_can_drop_message_manually?
+      self.call_back_after_voicemail_delivery = false
+    end
+  end
+
+public
 
   module Type
     PREVIEW = "Preview"
