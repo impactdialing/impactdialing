@@ -330,7 +330,9 @@ mod.factory('idCallFlow', [
             status != 'completed' and $state.is('dialer.hold') and campaign_type != 'Predictive'
           if shouldReload()
             console.log 'reloading dialer.hold $state'
-            idFlashFactory.now('info', "#{number} did not connect: #{status}")
+            msg = "#{number} #{status}"
+            idFlashFactory.nowAndDismiss('info', msg, 3000)
+            # idFlashFactory.now('info', msg)
             holdCache = $cacheFactory.get('hold')
             hold = holdCache.get('sharedScope')
             hold.reset()

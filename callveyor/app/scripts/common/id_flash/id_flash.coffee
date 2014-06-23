@@ -7,6 +7,13 @@ userMessages.factory('idFlashFactory', [
   ($timeout) ->
     flash = {
       alerts: []
+      nowAndDismiss: (type, message, dismissIn) ->
+        obj = {type, message}
+        flash.alerts.push(obj)
+        autoDismiss = ->
+          index = flash.alerts.indexOf(obj)
+          flash.dismiss(index)
+        $timeout(autoDismiss, dismissIn)
       now: (type, message) ->
         flash.alerts.push({type, message})
       dismiss: (index) ->

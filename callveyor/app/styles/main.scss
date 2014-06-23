@@ -27,6 +27,10 @@ $gray-lighter: lighten(#000, 90%);
 .call-status {
     margin-left: 35px;
 }
+.slim-alert {
+    margin: 2px;
+    padding: 3px;
+}
 
 /* Lists */
 ol.bump-left {
@@ -137,16 +141,14 @@ ul.nav.navbar-nav.add-gutter {
 
 .fixed-messages-container {
     position: fixed;
-    width: 66%;
     z-index: 1000;
     transition: all 0.4s ease 1s;
-    left: 16%;
-    position: fixed;
+    right: 0;
 }
 
 .fixed-messages {
-    position: absolute;
-    width: 100%;
+    text-align: center;
+    width: 175px;
 }
 
 @media (max-width: 767px) {
