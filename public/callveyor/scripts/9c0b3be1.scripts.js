@@ -989,7 +989,7 @@ angular.module('idFlash').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('/callveyor/common/id_flash/id_flash.tpl.html',
-    "<div data-alert=\"\" data-ng-repeat=\"alert in flash.alerts\" type=\"alert.type\" close=\"flash.dismiss($index)\">{{alert.message}}</div>"
+    "<div data-alert=\"\" data-ng-repeat=\"alert in flash.alerts\" type=\"alert.type\" close=\"flash.dismiss($index)\" class=\"slim-alert\">{{alert.message}}</div>"
   );
 
 }]);

@@ -335,7 +335,7 @@
   mod = angular.module('callveyor.call_flow', ['ui.router', 'idFlash', 'idTransition', 'idCacheFactories', 'callveyor.http_dialer']);
 
   mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', function($rootScope, $state, $window, $cacheFactory, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache) {
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', function($rootScope, $state, $window, $cacheFactory, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache, TwilioCache) {
       var beforeunloadBeenBound, handlers, isWarmTransfer;
       isWarmTransfer = function() {
         return /warm/i.test(TransferCache.get('type'));
@@ -382,6 +382,7 @@
           campaign.type = contact.dialer;
           delete contact.dialer;
           if (contact.campaign_out_of_leads) {
+            TwilioCache.put('disconnect_pending', true);
             FlashCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.');
             ContactCache.put('data', {});
             $rootScope.$broadcast('contact:changed');
@@ -513,7 +514,7 @@
           }
         },
         callEnded: function(data) {
-          var campaign_type, hold, holdCache, number, shouldReload, status;
+          var campaign_type, hold, holdCache, msg, number, shouldReload, status;
           console.log('call_ended', data);
           status = data.status;
           campaign_type = data.campaign_type;
@@ -523,7 +524,8 @@
           };
           if (shouldReload()) {
             console.log('reloading dialer.hold $state');
-            idFlashFactory.now('info', "" + number + " did not connect: " + status);
+            msg = "" + number + " " + status;
+            idFlashFactory.nowAndDismiss('info', msg, 3000);
             holdCache = $cacheFactory.get('hold');
             hold = holdCache.get('sharedScope');
             return hold.reset();
@@ -825,6 +827,20 @@
       var flash;
       flash = {
         alerts: [],
+        nowAndDismiss: function(type, message, dismissIn) {
+          var autoDismiss, obj;
+          obj = {
+            type: type,
+            message: message
+          };
+          flash.alerts.push(obj);
+          autoDismiss = function() {
+            var index;
+            index = flash.alerts.indexOf(obj);
+            return flash.dismiss(index);
+          };
+          return $timeout(autoDismiss, dismissIn);
+        },
         now: function(type, message) {
           return flash.alerts.push({
             type: type,
