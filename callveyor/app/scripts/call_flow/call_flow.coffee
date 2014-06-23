@@ -20,8 +20,8 @@ mod = angular.module('callveyor.call_flow', [
 ])
 
 mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache'
-    ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache) ->
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache',
+    ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache) ->
       isWarmTransfer = -> /warm/i.test(TransferCache.get('type'))
 
       beforeunloadBeenBound = false
@@ -109,6 +109,7 @@ mod.factory('idCallFlow', [
           delete(contact.dialer)
 
           if contact.campaign_out_of_leads
+            TwilioCache.put('disconnect_pending', true)
             FlashCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.')
             ContactCache.put('data', {})
             $rootScope.$broadcast('contact:changed')
