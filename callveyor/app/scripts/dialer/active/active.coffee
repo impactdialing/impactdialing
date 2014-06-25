@@ -27,9 +27,12 @@ active.config(['$stateProvider', ($stateProvider) ->
 ])
 active.controller('ActiveCtrl.status', [->])
 active.controller('ActiveCtrl.buttons', [
-  '$scope', '$state', '$http', 'CallCache', 'TransferCache', 'CallStationCache', 'idFlashFactory', 'idHttpDialerFactory',
-  ($scope,   $state,   $http,   CallCache,   TransferCache,   CallStationCache,   idFlashFactory,   idHttpDialerFactory) ->
+  '$rootScope', '$scope', '$state', '$http', '$timeout', '$window', 'CallCache', 'TransferCache', 'CallStationCache', 'idFlashFactory', 'idHttpDialerFactory',
+  ($rootScope,   $scope,   $state,   $http,   $timeout,   $window,   CallCache,   TransferCache,   CallStationCache,   idFlashFactory,   idHttpDialerFactory) ->
     active = {}
+
+    permissions = CallStationCache.get('permissions')
+    active.permissions = permissions
 
     active.hangup = ->
       $scope.transitionInProgress = true
@@ -40,16 +43,58 @@ active.controller('ActiveCtrl.buttons', [
       promise  = idHttpDialerFactory.hangup(call_id, transfer, caller)
 
       success = ->
-        e = (obj) ->
-          # todo: submit to errorception
-          console.log 'error transitioning to dialer.wrap', obj
-
         statePromise = $state.go('dialer.wrap')
-        statePromise.catch(e)
+        statePromise.catch($window._errs.push)
 
       error = (resp) ->
         console.log 'error trying to stop calling', resp
-        idFlashFactory.now('danger', 'Error. Try again.')
+        idFlashFactory.now('danger', 'Error hanging up. Try again.')
+        $window._errs.push(resp)
+
+      promise.then(success, error)
+
+    active.dropMessage = ->
+      return unless active.permissions.can_drop_message_manually == true
+
+      $scope.transitionInProgress = true
+
+      call_id     = CallCache.get('id')
+      promise     = idHttpDialerFactory.dropMessage(call_id)
+
+      success = (resp) ->
+        console.log 'success requesting to drop message', resp
+
+        boundEvents = []
+        caller      = CallStationCache.get('caller')
+
+        idFlashFactory.nowAndDismiss('info', 'Message drop queued for processing...', 3000)
+
+        # warning: possible issue w/ this timeout algorithm. seems that occasionally, the timeout
+        # will not be cleared despite message_drop_error|success having fired.
+        timeoutReached = ->
+          obj = new Error("Client timeout reached. Message drop queued successfully. Completion message not received.")
+          $window._errs.push(obj)
+          idFlashFactory.nowAndDismiss('warning', 'Message drop outcome unclear.', 3000)
+          $scope.transitionInProgress = false
+
+        timeoutPromise = $timeout(timeoutReached, 10000)
+
+        deregisterEvents = ->
+          while fn = boundEvents.pop()
+            fn()
+
+        cancel = (deregisterEvent) ->
+          $timeout.cancel(timeoutPromise)
+          deregisterEvents()
+
+        boundEvents.push($rootScope.$on("#{caller.session_key}:message_drop_error", cancel))
+        boundEvents.push($rootScope.$on("#{caller.session_key}:message_drop_success", cancel))
+
+      error = (resp) ->
+        console.log 'error dropping message', resp
+        idFlashFactory.now('danger', 'Error dropping message. Try again.')
+        _errs.push(resp)
+        $scope.transitionInProgress = false
 
       promise.then(success, error)
 
@@ -64,15 +109,16 @@ active.controller('TransferCtrl.container', [
 ])
 
 active.controller('TransferCtrl.list', [
-  '$scope', '$state', '$filter', 'TransferCache', 'idFlashFactory',
-  ($scope,   $state,   $filter,   TransferCache,   idFlashFactory) ->
+  '$scope', '$state', '$filter', '$window', 'TransferCache', 'idFlashFactory',
+  ($scope,   $state,   $filter,   $window,   TransferCache,   idFlashFactory) ->
     transfer = {}
     transfer.cache = TransferCache
     if transfer.cache?
       transfer.list = transfer.cache.get('list') || []
     else
       transfer.list = []
-      console.log 'report the problem'
+      err = new Error("TransferCtrl.list running but TransferCache is undefined.")
+      $window._errs.push(err)
 
     transfer.select = (id) ->
       matchingID = (obj) -> id == obj.id
@@ -85,9 +131,7 @@ active.controller('TransferCtrl.list', [
         else
           p = $state.go('dialer.active.transfer.selected')
         s = (r) -> console.log 'success', r.stack, r.message
-        e = (r) -> console.log 'error', r.stack, r.message
-        c = (r) -> console.log 'notify', r.stack, r.message
-        p.then(s,e,c)
+        p.then(s,$window._errs.push)
       else
         idFlashFactory.now('danger', 'Error loading selected transfer. Please try again and Report problem if error continues.')
 

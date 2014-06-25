@@ -1,9 +1,11 @@
 describe 'dialer.active', ->
   $stateFake  = {}
+  $timeout    = {}
+  $window     = {}
   dialerFake  = {}
   flashFake   = {}
   spinnerFake = {}
-  transfers = [
+  transfers   = [
     {id: 12, label: 'Rep. Kansas, Joe', phone: '5553224542'},
     {id: 15, label: 'Rep. Kentucky, Jack', phone: '5552526426'}
   ]
@@ -13,6 +15,10 @@ describe 'dialer.active', ->
   caller = {
     id: 2
     session_id: 12
+    session_key: 'caller-session-key-1234'
+  }
+  permissions = {
+    can_drop_message_manually: true
   }
 
   beforeEach module 'callveyor.dialer.active', ($provide) ->
@@ -29,15 +35,18 @@ describe 'dialer.active', ->
     $cacheFactory    = ''
     $httpBackend     = ''
     $controller      = ''
+    $timeout         = ''
     TransferCache    = ''
     CallCache        = ''
     CallStationCache = ''
 
     beforeEach(inject(
-      (_$rootScope_, _$state_, _$cacheFactory_, _$httpBackend_, _$controller_, _TransferCache_, _CallCache_, _CallStationCache_) ->
+      (_$rootScope_, _$state_, _$cacheFactory_, _$httpBackend_, _$controller_, _$timeout_, _$window_, _TransferCache_, _CallCache_, _CallStationCache_) ->
         $rootScope       = _$rootScope_
         $scope           = $rootScope
         $state           = _$state_
+        $window          = _$window_
+        $timeout         = _$timeout_
         $cacheFactory    = _$cacheFactory_
         $httpBackend     = _$httpBackend_
         $controller      = _$controller_
@@ -46,10 +55,14 @@ describe 'dialer.active', ->
         CallStationCache = _CallStationCache_
         $state.go        = jasmine.createSpy('-$state.go spy-').andReturn($state)
         $state.catch     = jasmine.createSpy('-$statePromise spy-')
+        $window._errs    = {
+          push: jasmine.createSpy('-errorception _errs.push spy-')
+        }
 
         TransferCache.put('selected', transfers[0])
         CallCache.put('id', call.id)
         CallStationCache.put('caller', caller)
+        CallStationCache.put('permissions', permissions)
         $controller('ActiveCtrl.buttons', {$scope, transfers})
     ))
 
@@ -69,6 +82,78 @@ describe 'dialer.active', ->
         $scope.active.hangup()
 
         expect($state.go).toHaveBeenCalledWith('dialer.wrap')
+
+    describe '$scope.active.dropMessage', ->
+      beforeEach ->
+        dialerFake.then        = jasmine.createSpy('-idHttpDialerFactoryPromise spy-')
+        dialerFake.dropMessage = jasmine.createSpy('-idHttpDialerFactory.dropMessage spy-').andReturn(dialerFake)
+        $cacheFactory.get('Call').put('id', call.id)
+
+      describe 'when active.permissions.can_drop_message_manually === false (permissions obj comes from CallStationCache)', ->
+        it 'returns early', ->
+          permissions.can_drop_message_manually = false
+          $scope.active.dropMessage()
+          expect(dialerFake.dropMessage).not.toHaveBeenCalled()
+
+      describe 'when active.permissions.can_drop_message_manually === true', ->
+        beforeEach ->
+          permissions.can_drop_message_manually = true
+
+        it 'sets transitionInProgress to true', ->
+          $scope.active.dropMessage()
+          expect($scope.transitionInProgress).toBeTruthy()
+
+        it 'tells idHttpDialerFactory to dropMessage(call_id) (call_id comes from CallCache)', ->
+          $scope.active.dropMessage()
+          expect(dialerFake.dropMessage).toHaveBeenCalledWith(call.id)
+
+        describe 'idHttpDialerFactory.dropMessage completes successfully', ->
+          beforeEach ->
+            flashFake.nowAndDismiss = jasmine.createSpy('-flashFake.nowAndDismiss spy-')
+            $scope.active.dropMessage()
+            dialerFake.then.mostRecentCall.args[0]()
+
+          it 'displays a info message to user for a few seconds', ->
+            expect(flashFake.nowAndDismiss).toHaveBeenCalledWith('info', jasmine.any(String), jasmine.any(Number))
+
+          it 'sets an outcome timeout of 10 seconds -- when reached, submit error, display warning & set transitionInProgress to false', ->
+            $timeout.flush()
+            expect($window._errs.push).toHaveBeenCalled()
+            expect(flashFake.nowAndDismiss).toHaveBeenCalledWith('warning', jasmine.any(String), jasmine.any(Number))
+            expect($scope.transitionInProgress).toBeFalsy()
+
+          angular.forEach(["message_drop_success", "message_drop_error"], (ev) ->
+            describe "#{ev} event received before outcome timeout reached", ->
+              beforeEach ->
+                $rootScope.$broadcast("#{caller.session_key}:#{ev}")
+
+              it 'cancels the timeout', ->
+                $timeout.verifyNoPendingTasks()
+                expect($window._errs.push).not.toHaveBeenCalled()
+                expect(flashFake.nowAndDismiss).not.toHaveBeenCalledWith('warning', jasmine.any(String), jasmine.any(Number))
+                expect($scope.transitionInProgress).toBeTruthy()
+
+              it 'removes handlers for message_drop_error and message_drop_success', ->
+                $timeout.cancel = jasmine.createSpy('-$timeout.cancel spy-')
+                $rootScope.$broadcast("#{caller.session_key}:#{ev}")
+                expect($timeout.cancel).not.toHaveBeenCalled()
+          )
+
+        describe 'idHttpDialerFactory.dropMessage completes with error', ->
+          beforeEach ->
+            flashFake.now = jasmine.createSpy('-flashFake.nowAndDismiss spy-')
+            $scope.active.dropMessage()
+            dialerFake.then.mostRecentCall.args[1]()
+
+          it 'displays error message', ->
+            expect(flashFake.now).toHaveBeenCalledWith('danger', jasmine.any(String))
+
+          it 'submits error to errorception', ->
+            expect($window._errs.push).toHaveBeenCalled()
+
+          it 'sets transitionInProgress to false', ->
+            expect($scope.transitionInProgress).toBeFalsy()
+
 
   describe 'TransferCtrl.container', ->
     $rootScope = ''
