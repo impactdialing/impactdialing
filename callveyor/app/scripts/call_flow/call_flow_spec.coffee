@@ -44,6 +44,7 @@ describe 'callveyor.call_flow', ->
   describe 'handlers', ->
     beforeEach ->
       idFlashFactory.now = jasmine.createSpy('-idFlashFactory.now spy-')
+      idFlashFactory.nowAndDismiss = jasmine.createSpy('-idFlashFactory.nowAndDismiss spy-')
 
     it 'initializes a "call" cache', ->
       cache = $cacheFactory.get('Call')
@@ -370,7 +371,7 @@ describe 'callveyor.call_flow', ->
           expect(sharedScope.reset).toHaveBeenCalled()
         it 'displays info message to user', ->
           service.callEnded(data)
-          expect(idFlashFactory.now).toHaveBeenCalledWith('info', jasmine.any(String))
+          expect(idFlashFactory.nowAndDismiss).toHaveBeenCalledWith('info', jasmine.any(String), jasmine.any(Number))
 
       describe 'when data.status == completed or $state is not dialer.hold or data.campaign_type == Predictive', ->
         it 'does nothing', ->

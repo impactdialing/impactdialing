@@ -510,6 +510,17 @@ mod.factory('idCallFlow', [
           console.log 'caller:wrapup:start'
           p = $state.go('dialer.wrap')
           p.catch(idTransitionPrevented)
+
+        messageDropError: (data) ->
+          console.log 'messageDropError', data
+          idFlashFactory.now('danger', data.message, 7000)
+
+        messageDropSuccess: ->
+          console.log 'messageDropSuccess'
+          idFlashFactory.nowAndDismiss('info', 'Message drop complete.', 3000)
+
+          statePromise = $state.go('dialer.wrap')
+          statePromise.catch($window._errs.push)
       }
 
       handlers

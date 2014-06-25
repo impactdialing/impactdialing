@@ -2,7 +2,8 @@
 
 stop = angular.module('callveyor.dialer.stop', [
   'ui.router',
-  'idCacheFactories'
+  'idCacheFactories',
+  'idTransition'
 ])
 
 stop.config([
@@ -28,16 +29,19 @@ stop.controller('StopCtrl.buttons', [
     params.session_id = callStation.data.caller.session_id
     stopPromise  = $http.post("/call_center/api/#{caller_id}/stop_calling", params)
 
-    whenDisconnected = ->
+    goToReady = ->
+      console.log 'going to "ready" $state'
       p = $state.go('dialer.ready')
+      console.log 'p = ', p, idTransitionPrevented
       p.catch(idTransitionPrevented)
 
     always = ->
       if connection? and connection.status() == 'open'
         TwilioCache.put('disconnect_pending', true)
-        connection.disconnect(whenDisconnected)
+        connection.disconnect(goToReady)
         connection.disconnectAll()
-      $state.go('dialer.ready')
+      else
+        goToReady()
 
     stopPromise.finally(always)
 ])

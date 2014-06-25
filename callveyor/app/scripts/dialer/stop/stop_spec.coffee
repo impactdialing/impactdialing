@@ -23,7 +23,7 @@ describe 'dialer.stop', ->
       $provide.value('usSpinnerService', spinnerFake)
   )
 
-  describe 'HoldCtrl.buttons', ->
+  describe 'StopCtrl.buttons', ->
     $rootScope    = ''
     $scope        = ''
     $state        = ''
@@ -43,10 +43,15 @@ describe 'dialer.stop', ->
         TwilioCache   = _TwilioCache_
 
         $httpBackend.whenPOST("/call_center/api/#{callStation.data.caller.id}/stop_calling").respond(200)
-        $state.go             = jasmine.createSpy('-$state.go spy-')
+
+        $state.catch = jasmine.createSpy('-$state promise.catch spy-')
+        $state.go    = jasmine.createSpy('-$state.go spy-').andReturn($state)
 
         twilioFake.connection = {
-          disconnect: jasmine.createSpy('-twilioFake.connection.disconnect spy-')
+          disconnectAll: jasmine.createSpy('-twilioFake.connection.disconnectAll spy-')
+          disconnect: (fn) ->
+            twilioFake.connection.disconnectCallback = fn
+          status: jasmine.createSpy('-twilioFake.connection.status spy-').andReturn('open')
         }
         TwilioCache.put('connection', twilioFake.connection)
 
@@ -60,11 +65,12 @@ describe 'dialer.stop', ->
       $httpBackend.flush()
       $httpBackend.verifyNoOutstandingExpectation()
 
-    it 'always calls connection.disconnect() on $cacheFactory.get("Twilio").get("connection")', ->
+    it 'when connection.status() == open, call connection.disconnectAll() on $cacheFactory.get("Twilio").get("connection")', ->
       $httpBackend.flush()
-      expect(twilioFake.connection.disconnect).toHaveBeenCalled()
+      expect(twilioFake.connection.disconnectAll).toHaveBeenCalled()
 
     it 'always transitions to dialer.ready', ->
       $httpBackend.flush()
       $httpBackend.verifyNoOutstandingRequest()
+      twilioFake.connection.disconnectCallback()
       expect($state.go).toHaveBeenCalledWith('dialer.ready')
