@@ -44,6 +44,13 @@ module CallTwiml
       end.text
     end
 
+    def play_message_twiml
+      Twilio::TwiML::Response.new do |r|
+        r.Play campaign.recording.file.url
+        r.Hangup
+      end.text
+    end
+
     def call_ended_twiml
       hangup_twiml
     end

@@ -3,10 +3,10 @@ class CallsController < ApplicationController
   before_filter :parse_params
   before_filter :find_and_update_call, :only => [:destroy, :incoming, :call_ended, :disconnected]
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
-  before_filter :find_call, :only => [:hangup, :call_ended]
+  before_filter :find_call, :only => [:hangup, :call_ended, :drop_message, :play_message]
 
 
-
+  # TwiML
   def incoming
     if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human?
       call_attempt = @call.call_attempt
@@ -15,27 +15,55 @@ class CallsController < ApplicationController
     render xml: @call.incoming_call
   end
 
+  # TwiML
   def call_ended
     render xml:  @call.call_ended(params['campaign_type'], params)
   end
 
+  # TwiML
+  def disconnected
+    render xml: @call.disconnected
+  end
+
+  # TwiML
+  def play_message
+    xml = @call.play_message_twiml
+
+    Sidekiq::Client.push({
+      'queue' => 'call_flow',
+      'class' => CallerPusherJob,
+      'args' => [@call.caller_session.id, 'publish_message_drop_success']
+    })
+
+    render xml: xml
+  end
+
+  # Browser
   def submit_result
     @call.wrapup_and_continue
     render nothing: true
   end
 
+  # Browser
   def submit_result_and_stop
     @call.wrapup_and_stop
     render nothing: true
   end
 
+  # Browser
   def hangup
     @call.hungup
     render nothing: true
   end
 
-  def disconnected
-    render xml: @call.disconnected
+  # Browser
+  def drop_message
+    Sidekiq::Client.push({
+      'queue' => 'call_flow',
+      'class' => Providers::Phone::Jobs::DropMessage,
+      'args' => [@call.id]
+    })
+    render nothing: true
   end
 
   private

@@ -11,7 +11,8 @@ class CallerController < ApplicationController
     :conference_started_phones_only_predictive,
     :gather_response, :submit_response, :next_question,
     :next_call, :time_period_exceeded,
-    :account_out_of_funds, :datacentre, :kick
+    :account_out_of_funds, :datacentre, :kick,
+    :play_message_error
   ]
 
   before_filter :check_login, :except=>[
@@ -24,7 +25,8 @@ class CallerController < ApplicationController
     :conference_started_phones_only_predictive,
     :gather_response, :submit_response, :next_question,
     :next_call, :time_period_exceeded,
-    :account_out_of_funds, :datacentre, :kick
+    :account_out_of_funds, :datacentre, :kick,
+    :play_message_error
   ]
 
   before_filter :find_caller_session , :only => [
@@ -135,6 +137,16 @@ class CallerController < ApplicationController
 
   def account_out_of_funds
     render xml: @caller_session.account_has_no_funds
+  end
+
+  def play_message_error
+    msg = I18n.t('dialer.message_drop.failed')
+    xml = Twilio::TwiML::Response.new do |r|
+      r.Say(msg)
+      r.Pause("length" => 600)
+    end.text
+
+    render xml: xml
   end
 
   def call_voter

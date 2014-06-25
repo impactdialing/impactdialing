@@ -74,6 +74,13 @@ describe Providers::Phone::Call::Params::CallerSession do
           params.url.should eq account_out_of_funds_caller_url(caller, url_opts.merge(session_id: caller_session.id))
         end
       end
+
+      context 'type == :play_message_error' do
+        it 'returns play_message_error_caller_url(caller)' do
+          params = param_class.new(caller_session, :play_message_error)
+          params.url.should eq play_message_error_caller_url(caller, url_opts.merge(session_id: caller_session.id))
+        end
+      end
     end
 
     context '#return_url? is false' do

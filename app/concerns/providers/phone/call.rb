@@ -29,6 +29,11 @@ module Providers::Phone::Call
     make(params.from, params.to, params.url, params.params, Providers::Phone.default_options)
   end
 
+  def self.play_message_for(call)
+    params   = Params.for(call, :play_message)
+    redirect(call.call_attempt.sid, params.url, Providers::Phone.default_options)
+  end
+
   def self.info(msg)
     Rails.logger.info("[Providers::Phone::Call] #{msg}")
   end

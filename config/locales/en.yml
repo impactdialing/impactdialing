@@ -56,6 +56,8 @@ en:
     campaign:
       out_of_numbers: "This campaign has run out of phone numbers."
       time_period_exceeded: "You can only call this campaign between %{start_time} and %{end_time}. Please try back during those hours."
+    message_drop:
+      failed: "The message drop failed. If the other party is still connected, please try again. If the other party has already disconnected, please hang-up or save your call results to continue. We have been notified of the error."
 
   account_usages:
     create:

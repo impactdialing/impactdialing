@@ -17,6 +17,7 @@ ImpactDialing::Application.routes.draw do
       post :disconnected
       post :submit_result
       post :submit_result_and_stop
+      post :play_message
     end
   end
 
@@ -48,6 +49,7 @@ ImpactDialing::Application.routes.draw do
       post :kick
       post :time_period_exceeded
       post :account_out_of_funds
+      post :play_message_error
     end
   end
 
@@ -88,6 +90,7 @@ ImpactDialing::Application.routes.draw do
   post 'call_center/api/:id/stop_calling', :to => 'caller#stop_calling'
   post 'call_center/api/:id/skip_voter', :to => 'caller#skip_voter'
   post 'call_center/api/:id/kick', :to => 'caller#kick'
+  post 'call_center/api/:id/drop_message', :to => 'calls#drop_message'
   # /new api rough draft
 
   match '/policies', :to => 'client#policies'

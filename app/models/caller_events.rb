@@ -58,6 +58,18 @@ module CallerEvents
         number: params['To']
       })
     end
+
+    def publish_message_drop_error(message, data={})
+      return if caller.is_phones_only?
+
+      Pusher[session_key].trigger('message_drop_error', data.merge({message: message}))
+    end
+
+    def publish_message_drop_success
+      return if caller.is_phones_only?
+
+      Pusher[session_key].trigger('message_drop_success', {})
+    end
   end
 
   def self.included(receiver)

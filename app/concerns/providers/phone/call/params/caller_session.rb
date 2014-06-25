@@ -40,6 +40,10 @@ class Providers::Phone::Call::Params::CallerSession
     return pause_caller_url(caller, url_options)
   end
 
+  def play_message_error_url
+    return play_message_error_caller_url(caller, url_options)
+  end
+
   def out_of_numbers_url
     if return_url?
       return run_out_of_numbers_caller_url(caller, url_options)
