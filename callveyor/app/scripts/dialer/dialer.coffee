@@ -35,6 +35,7 @@ dialer.controller('DialerCtrl', [
     CallStationCache.put('caller', data.caller)
     CallStationCache.put('campaign', data.campaign)
     CallStationCache.put('call_station', data.call_station)
+    CallStationCache.put('permissions', data.permissions)
 
     channel = data.caller.session_key
 
@@ -59,4 +60,6 @@ dialer.controller('DialerCtrl', [
     Pusher.subscribe(channel, 'caller_kicked_off', idCallFlow.callerKickedOff)
     Pusher.subscribe(channel, 'caller_wrapup_voice_hit', idCallFlow.callerWrapupVoiceHit)
     Pusher.subscribe(channel, 'call_ended', idCallFlow.callEnded)
+    Pusher.subscribe(channel, 'message_drop_error', idCallFlow.messageDropError)
+    Pusher.subscribe(channel, 'message_drop_success', idCallFlow.messageDropSuccess)
 ])

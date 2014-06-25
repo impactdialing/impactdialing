@@ -1,5 +1,11 @@
-<button class="btn btn-primary navbar-btn"
+<button type="button" class="btn btn-primary navbar-btn"
         data-ng-click="active.hangup()"
         data-ng-disabled="transitionInProgress">
   Hangup
+</button>
+<button type="button" class="btn btn-primary navbar-btn"
+        data-ng-click="active.dropMessage()"
+        data-ng-disabled="transitionInProgress"
+        data-ng-show="active.permissions.can_drop_message_manually">
+  Drop message
 </button>

@@ -117,7 +117,10 @@ public
         },
         campaign: {
           id: campaign.id,
-          type: campaign.type
+          type: campaign.type,
+        },
+        permissions: {
+          can_drop_message_manually: campaign.caller_can_drop_message_manually?
         }
       }
     end
