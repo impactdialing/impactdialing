@@ -198,6 +198,11 @@ class Voter < ActiveRecord::Base
     self.voicemail_history = parts.join(',')
   end
 
+  def update_voicemail_history!
+    update_voicemail_history
+    save
+  end
+
   def yet_to_receive_voicemail?
     voicemail_history.blank?
   end

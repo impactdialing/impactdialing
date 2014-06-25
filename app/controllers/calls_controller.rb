@@ -29,6 +29,8 @@ class CallsController < ApplicationController
   def play_message
     xml = @call.play_message_twiml
 
+    @call.voter.update_voicemail_history!
+
     Sidekiq::Client.push({
       'queue' => 'call_flow',
       'class' => CallerPusherJob,
