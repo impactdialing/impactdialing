@@ -11,6 +11,9 @@ describe 'callveyor.http_dialer', ->
     voter_id: 12
     session_id: 42
   }
+  call = {
+    id: 23
+  }
   dialerUrl = "/call_center/api/#{caller.id}/call_voter"
 
   beforeEach module('callveyor.http_dialer')
@@ -126,3 +129,13 @@ describe 'callveyor.http_dialer', ->
             expect(retrySpy).not.toHaveBeenCalled()
             expect(errorSpy).toHaveBeenCalled()
 
+    describe 'dropMessage(call_id)', ->
+      beforeEach ->
+        $httpBackend.expectPOST("/call_center/api/#{call.id}/drop_message").respond(200)
+        factory.dropMessage(call.id)
+
+      it 'spins the global-spinner', ->
+        expect(usSpinnerService.spin).toHaveBeenCalledWith('global-spinner')
+
+      it 'POSTS to call_center/api/:call_id/drop_message', ->
+        $httpBackend.verifyNoOutstandingExpectation()

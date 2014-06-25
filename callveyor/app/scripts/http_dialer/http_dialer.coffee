@@ -94,5 +94,12 @@ mod.factory('idHttpDialerFactory', [
         url = "/call_center/api/#{call_id}/hangup"
         $http.post(url)
 
+    dialer.dropMessage = (call_id) ->
+      usSpinnerService.spin('global-spinner')
+
+      url    = "/call_center/api/#{call_id}/drop_message"
+
+      $http.post(url)
+
     dialer
 ])
