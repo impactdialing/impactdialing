@@ -5,7 +5,13 @@ require 'spork/ext/ruby-debug'
 Spork.prefork do
   # This file is copied to spec/ when you run 'rails generate rspec:install'
   ENV["RAILS_ENV"] ||= 'test'
-  ENV["RECORDING_ENV"] = 'test'
+  ENV['TWILIO_CALLBACK_HOST'] ||= 'test.com'
+  ENV['CALL_END_CALLBACK_HOST'] ||= 'test.com'
+  ENV['INCOMING_CALLBACK_HOST'] ||= 'test.com'
+  ENV['VOIP_API_URL'] ||= 'test.com'
+  ENV['TWILIO_CALLBACK_PORT'] ||= '80'
+  ENV['RECORDING_ENV'] ||= 'test'
+  ENV['CALLIN_PHONE'] ||= '5555551234'
 
   require File.expand_path("../../config/environment", __FILE__)
   require 'rspec/rails'
