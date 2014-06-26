@@ -101,6 +101,8 @@ private
     if call_back_after_voicemail_delivery? and !use_recordings?
       self.call_back_after_voicemail_delivery = false
     end
+
+    true # make sure to not halt callback chain for any reason from here
   end
 
 public

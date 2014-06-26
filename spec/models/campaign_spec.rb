@@ -20,6 +20,44 @@ describe Campaign do
 
   end
 
+  describe 'callbacks' do
+    let(:campaign){ create(:campaign) }
+
+    describe 'sanitizing message service settings' do
+      before do
+        campaign.call_back_after_voicemail_delivery = true
+        campaign.answering_machine_detect           = true
+        campaign.use_recordings                     = true
+        campaign.save
+        campaign.use_recordings.should be_true
+        campaign.answering_machine_detect.should be_true
+        campaign.call_back_after_voicemail_delivery.should be_true
+      end
+      it 'should set use_recordings & call_back_after_voicemail_delivery to false, if it is true and answering_machine_detect is false' do
+        campaign.answering_machine_detect = false
+        campaign.save
+        campaign.use_recordings.should be_false
+        campaign.answering_machine_detect.should be_false
+        campaign.call_back_after_voicemail_delivery.should be_false
+      end
+
+      it 'should set call_back_after_voicemail_delivery to false, if it is true and use_recordings is false' do
+        campaign.use_recordings = false
+        campaign.save
+        campaign.call_back_after_voicemail_delivery.should be_false
+        campaign.answering_machine_detect.should be_true
+        campaign.use_recordings.should be_false
+      end
+
+      it 'should not abort callback chain' do
+        campaign.use_recordings = false
+        campaign.caller_can_drop_message_manually = true
+        campaign.save
+        campaign.caller_can_drop_message_manually.should be_true
+      end
+    end
+  end
+
   describe "validations" do
     let(:campaign) { create(:campaign, :account => create(:account)) }
     it {campaign.should validate_presence_of :name}
