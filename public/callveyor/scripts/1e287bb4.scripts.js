@@ -983,7 +983,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
 
   $templateCache.put('/callveyor/dialer/active/callFlowButtons.tpl.html',
-    "<button type=\"button\" class=\"btn btn-primary navbar-btn\" data-ng-click=\"active.hangup()\" data-ng-disabled=\"transitionInProgress\">Hangup</button> <button type=\"button\" class=\"btn btn-primary navbar-btn\" data-ng-click=\"active.dropMessage()\" data-ng-disabled=\"transitionInProgress\" data-ng-show=\"active.permissions.can_drop_message_manually\">Drop message</button>"
+    "<button type=\"button\" class=\"btn btn-primary navbar-btn\" data-ng-click=\"active.hangup()\" data-ng-disabled=\"transitionInProgress\">Hangup</button> <button type=\"button\" class=\"btn btn-primary navbar-btn\" data-ng-click=\"active.dropMessage()\" data-ng-disabled=\"transitionInProgress\" data-ng-show=\"active.permissions.can_drop_message_manually\" title=\"Message will begin playing right away. Wait for the beep and then click to Drop message.\">Drop message</button>"
   );
 
 
