@@ -621,6 +621,17 @@
           console.log('caller:wrapup:start');
           p = $state.go('dialer.wrap');
           return p["catch"](idTransitionPrevented);
+        },
+        messageDropError: function(data) {
+          console.log('messageDropError', data);
+          return idFlashFactory.now('danger', data.message, 7000);
+        },
+        messageDropSuccess: function() {
+          var statePromise;
+          console.log('messageDropSuccess');
+          idFlashFactory.nowAndDismiss('info', 'Message drop complete.', 3000);
+          statePromise = $state.go('dialer.wrap');
+          return statePromise["catch"]($window._errs.push);
         }
       };
       return handlers;
@@ -806,6 +817,12 @@
           url = "/call_center/api/" + call_id + "/hangup";
           return $http.post(url);
         }
+      };
+      dialer.dropMessage = function(call_id) {
+        var url;
+        usSpinnerService.spin('global-spinner');
+        url = "/call_center/api/" + call_id + "/drop_message";
+        return $http.post(url);
       };
       return dialer;
     }

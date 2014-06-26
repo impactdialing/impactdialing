@@ -26,6 +26,7 @@
       CallStationCache.put('caller', data.caller);
       CallStationCache.put('campaign', data.campaign);
       CallStationCache.put('call_station', data.call_station);
+      CallStationCache.put('permissions', data.permissions);
       channel = data.caller.session_key;
       transitionValidator.start();
       Pusher.subscribe(channel, 'start_calling', idCallFlow.startCalling);
@@ -44,7 +45,9 @@
       Pusher.subscribe(channel, 'caller_joined_transfer_conference', idCallFlow.callerJoinedTransferConference);
       Pusher.subscribe(channel, 'caller_kicked_off', idCallFlow.callerKickedOff);
       Pusher.subscribe(channel, 'caller_wrapup_voice_hit', idCallFlow.callerWrapupVoiceHit);
-      return Pusher.subscribe(channel, 'call_ended', idCallFlow.callEnded);
+      Pusher.subscribe(channel, 'call_ended', idCallFlow.callEnded);
+      Pusher.subscribe(channel, 'message_drop_error', idCallFlow.messageDropError);
+      return Pusher.subscribe(channel, 'message_drop_success', idCallFlow.messageDropSuccess);
     }
   ]);
 
@@ -528,8 +531,11 @@
   active.controller('ActiveCtrl.status', [function() {}]);
 
   active.controller('ActiveCtrl.buttons', [
-    '$scope', '$state', '$http', 'CallCache', 'TransferCache', 'CallStationCache', 'idFlashFactory', 'idHttpDialerFactory', function($scope, $state, $http, CallCache, TransferCache, CallStationCache, idFlashFactory, idHttpDialerFactory) {
+    '$rootScope', '$scope', '$state', '$http', '$timeout', '$window', 'CallCache', 'TransferCache', 'CallStationCache', 'idFlashFactory', 'idHttpDialerFactory', function($rootScope, $scope, $state, $http, $timeout, $window, CallCache, TransferCache, CallStationCache, idFlashFactory, idHttpDialerFactory) {
+      var permissions;
       active = {};
+      permissions = CallStationCache.get('permissions');
+      active.permissions = permissions;
       active.hangup = function() {
         var call_id, caller, error, promise, success, transfer;
         $scope.transitionInProgress = true;
@@ -538,16 +544,59 @@
         caller = CallStationCache.get('caller');
         promise = idHttpDialerFactory.hangup(call_id, transfer, caller);
         success = function() {
-          var e, statePromise;
-          e = function(obj) {
-            return console.log('error transitioning to dialer.wrap', obj);
-          };
+          var statePromise;
           statePromise = $state.go('dialer.wrap');
-          return statePromise["catch"](e);
+          return statePromise["catch"]($window._errs.push);
         };
         error = function(resp) {
           console.log('error trying to stop calling', resp);
-          return idFlashFactory.now('danger', 'Error. Try again.');
+          idFlashFactory.now('danger', 'Error hanging up. Try again.');
+          return $window._errs.push(resp);
+        };
+        return promise.then(success, error);
+      };
+      active.dropMessage = function() {
+        var call_id, error, promise, success;
+        if (active.permissions.can_drop_message_manually !== true) {
+          return;
+        }
+        $scope.transitionInProgress = true;
+        call_id = CallCache.get('id');
+        promise = idHttpDialerFactory.dropMessage(call_id);
+        success = function(resp) {
+          var boundEvents, caller, cancel, deregisterEvents, timeoutPromise, timeoutReached;
+          console.log('success requesting to drop message', resp);
+          boundEvents = [];
+          caller = CallStationCache.get('caller');
+          idFlashFactory.nowAndDismiss('info', 'Message drop queued for processing...', 3000);
+          timeoutReached = function() {
+            var obj;
+            obj = new Error("Client timeout reached. Message drop queued successfully. Completion message not received.");
+            $window._errs.push(obj);
+            idFlashFactory.nowAndDismiss('warning', 'Message drop outcome unclear.', 3000);
+            return $scope.transitionInProgress = false;
+          };
+          timeoutPromise = $timeout(timeoutReached, 10000);
+          deregisterEvents = function() {
+            var fn, _results;
+            _results = [];
+            while (fn = boundEvents.pop()) {
+              _results.push(fn());
+            }
+            return _results;
+          };
+          cancel = function(deregisterEvent) {
+            $timeout.cancel(timeoutPromise);
+            return deregisterEvents();
+          };
+          boundEvents.push($rootScope.$on("" + caller.session_key + ":message_drop_error", cancel));
+          return boundEvents.push($rootScope.$on("" + caller.session_key + ":message_drop_success", cancel));
+        };
+        error = function(resp) {
+          console.log('error dropping message', resp);
+          idFlashFactory.now('danger', 'Error dropping message. Try again.');
+          _errs.push(resp);
+          return $scope.transitionInProgress = false;
         };
         return promise.then(success, error);
       };
@@ -562,18 +611,19 @@
   ]);
 
   active.controller('TransferCtrl.list', [
-    '$scope', '$state', '$filter', 'TransferCache', 'idFlashFactory', function($scope, $state, $filter, TransferCache, idFlashFactory) {
-      var transfer;
+    '$scope', '$state', '$filter', '$window', 'TransferCache', 'idFlashFactory', function($scope, $state, $filter, $window, TransferCache, idFlashFactory) {
+      var err, transfer;
       transfer = {};
       transfer.cache = TransferCache;
       if (transfer.cache != null) {
         transfer.list = transfer.cache.get('list') || [];
       } else {
         transfer.list = [];
-        console.log('report the problem');
+        err = new Error("TransferCtrl.list running but TransferCache is undefined.");
+        $window._errs.push(err);
       }
       transfer.select = function(id) {
-        var c, e, matchingID, p, s, targets;
+        var matchingID, p, s, targets;
         matchingID = function(obj) {
           return id === obj.id;
         };
@@ -588,13 +638,7 @@
           s = function(r) {
             return console.log('success', r.stack, r.message);
           };
-          e = function(r) {
-            return console.log('error', r.stack, r.message);
-          };
-          c = function(r) {
-            return console.log('notify', r.stack, r.message);
-          };
-          return p.then(s, e, c);
+          return p.then(s, $window._errs.push);
         } else {
           return idFlashFactory.now('danger', 'Error loading selected transfer. Please try again and Report problem if error continues.');
         }
@@ -815,7 +859,7 @@
   'use strict';
   var stop;
 
-  stop = angular.module('callveyor.dialer.stop', ['ui.router', 'idCacheFactories']);
+  stop = angular.module('callveyor.dialer.stop', ['ui.router', 'idCacheFactories', 'idTransition']);
 
   stop.config([
     '$stateProvider', function($stateProvider) {
@@ -836,24 +880,27 @@
 
   stop.controller('StopCtrl.buttons', [
     '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation', 'idTransitionPrevented', function($scope, $state, TwilioCache, $http, idTwilioService, callStation, idTransitionPrevented) {
-      var always, caller_id, connection, params, stopPromise, whenDisconnected;
+      var always, caller_id, connection, goToReady, params, stopPromise;
       connection = TwilioCache.get('connection');
       caller_id = callStation.data.caller.id;
       params = {};
       params.session_id = callStation.data.caller.session_id;
       stopPromise = $http.post("/call_center/api/" + caller_id + "/stop_calling", params);
-      whenDisconnected = function() {
+      goToReady = function() {
         var p;
+        console.log('going to "ready" $state');
         p = $state.go('dialer.ready');
+        console.log('p = ', p, idTransitionPrevented);
         return p["catch"](idTransitionPrevented);
       };
       always = function() {
         if ((connection != null) && connection.status() === 'open') {
           TwilioCache.put('disconnect_pending', true);
-          connection.disconnect(whenDisconnected);
-          connection.disconnectAll();
+          connection.disconnect(goToReady);
+          return connection.disconnectAll();
+        } else {
+          return goToReady();
         }
-        return $state.go('dialer.ready');
       };
       return stopPromise["finally"](always);
     }
@@ -936,7 +983,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
 
   $templateCache.put('/callveyor/dialer/active/callFlowButtons.tpl.html',
-    "<button class=\"btn btn-primary navbar-btn\" data-ng-click=\"active.hangup()\" data-ng-disabled=\"transitionInProgress\">Hangup</button>"
+    "<button type=\"button\" class=\"btn btn-primary navbar-btn\" data-ng-click=\"active.hangup()\" data-ng-disabled=\"transitionInProgress\">Hangup</button> <button type=\"button\" class=\"btn btn-primary navbar-btn\" data-ng-click=\"active.dropMessage()\" data-ng-disabled=\"transitionInProgress\" data-ng-show=\"active.permissions.can_drop_message_manually\">Drop message</button>"
   );
 
 
@@ -956,7 +1003,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
 
 
   $templateCache.put('/callveyor/dialer/active/transfer/dropdown.tpl.html',
-    "<div class=\"btn-group\"><button type=\"button\" class=\"btn btn-default navbar-btn dropdown-toggle\">Transfer <b class=\"caret\"></b></button><ul class=\"dropdown-menu\" role=\"menu\"><li data-ng-repeat=\"target in transfer.list\"><a href=\"#\" data-ng-click=\"transfer.select(target.id)\">{{target.label}} ({{target.phone_number}}) <span class=\"label label-{{target.transfer_type == 'warm' ? 'danger' : 'info'}}\">{{target.transfer_type}}</span></a></li></ul></div>"
+    "<div class=\"btn-group\" data-ng-hide=\"transfer.list.length == 0\"><button type=\"button\" class=\"btn btn-default navbar-btn dropdown-toggle\">Transfer <b class=\"caret\"></b></button><ul class=\"dropdown-menu\" role=\"menu\"><li data-ng-repeat=\"target in transfer.list\"><a href=\"#\" data-ng-click=\"transfer.select(target.id)\">{{target.label}} ({{target.phone_number}}) <span class=\"label label-{{target.transfer_type == 'warm' ? 'danger' : 'info'}}\">{{target.transfer_type}}</span></a></li></ul></div>"
   );
 
 
