@@ -31,19 +31,31 @@
           </label>
         </li>
       </ul>
+      <ul id="call_back_after_voicemail_delivery_options">
+        <li>
+        And
+          <ul>
+            <li>
+              <label for="campaign_call_back_after_voicemail_delivery_false">
+                <%= form.radio_button :call_back_after_voicemail_delivery, 0, {checked: !form.object.call_back_after_voicemail_delivery?, name: 'campaign[call_back_after_voicemail_delivery]', id: 'campaign_call_back_after_voicemail_delivery_false'} %>
+                Do not call back after dropping message
+              </label>
+            </li>
+            <li>
+              <label for="campaign_call_back_after_voicemail_delivery_true">
+                <%= form.radio_button :call_back_after_voicemail_delivery, 1, {checked: form.object.call_back_after_voicemail_delivery?, name: 'campaign[call_back_after_voicemail_delivery]', id: 'campaign_call_back_after_voicemail_delivery_true'} %>
+                Call back after dropping message BUT drop only one message
+              </label>
+            </li>
+          </ul>
+        </li>
+      </ul>
     </li>
 
     <li>
       <label for="campaign_caller_can_drop_message_manually">
         <%= form.check_box :caller_can_drop_message_manually, {name: 'campaign[caller_can_drop_message_manually]', id: 'campaign_caller_can_drop_message_manually'} %>
-        Callers can click to drop recorded message
-      </label>
-    </li>
-
-    <li>
-      <label for="campaign_call_back_after_voicemail_delivery">
-        <%= form.check_box :call_back_after_voicemail_delivery, {name: 'campaign[call_back_after_voicemail_delivery]', id: 'campaign_call_back_after_voicemail_delivery'} %>
-        Call back after dropping message BUT drop only one message
+        Callers can click to drop recorded message after a call is answered
       </label>
     </li>
 

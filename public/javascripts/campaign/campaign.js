@@ -21,7 +21,8 @@ var Campaign = function(){
 
   $(document).on('click', '#campaign_use_recordings_true, #campaign_use_recordings_false, #campaign_caller_can_drop_message_manually', function(){
     if( !self.isUsingRecordings() ) {
-      $('#campaign_call_back_after_voicemail_delivery').prop('checked', false);
+      $('#campaign_call_back_after_voicemail_delivery_true').prop('checked', false);
+      $('#campaign_call_back_after_voicemail_delivery_false').prop('checked', true);
     }
 
     self.toggleRecordingsDiv();
@@ -77,7 +78,7 @@ Campaign.prototype.isDetectingMachines = function() {
 };
 
 Campaign.prototype.isUsingRecordings = function() {
-  var val = $('#campaign_use_recordings_true').is(':checked') || $('#campaign_caller_can_drop_message_manually').is(':checked');
+  var val = $('#campaign_use_recordings_true').is(':checked');
   console.log('isUsingRecordings', val);
   return val;
 };
@@ -96,7 +97,7 @@ Campaign.prototype.toggleRecordingsDiv = function(){
 };
 
 Campaign.prototype.toggleCallbackAfterVoicemail = function(){
-  var el = $('#campaign_call_back_after_voicemail_delivery').parent().parent();
+  var el = $('#call_back_after_voicemail_delivery_options');
   this.toggle(el, this.isUsingRecordings());
 };
 

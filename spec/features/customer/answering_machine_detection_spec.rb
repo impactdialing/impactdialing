@@ -60,13 +60,13 @@ describe 'Answering Machine Detection', js: true, admin: true do
         before do
           choose "Drop recorded message"
         end
-        it 'is enabled by checking "Call back after leaving message"' do
-          check "Call back after dropping message BUT drop only one message"
-          save_campaign(campaign, 'campaign_call_back_after_voicemail_delivery', '1')
+        it 'is enabled by choosing "Call back after leaving message"' do
+          choose "Call back after dropping message BUT drop only one message"
+          save_campaign(campaign, 'campaign_call_back_after_voicemail_delivery_true', '1')
         end
-        it 'is disabled by unchecking "Call back after leaving message"' do
-          uncheck "Call back after dropping message BUT drop only one message"
-          save_campaign(campaign, 'campaign_call_back_after_voicemail_delivery', '0')
+        it 'is disabled by choosing "Do not call back after dropping message"' do
+          choose "Do not call back after dropping message"
+          save_campaign(campaign, 'campaign_call_back_after_voicemail_delivery_true', '0')
         end
       end
     end
@@ -77,17 +77,6 @@ describe 'Answering Machine Detection', js: true, admin: true do
       end
       it 'choose "Callers can click to drop recorded message" and selecting a recording to auto-drop' do
         save_campaign(campaign, 'campaign_caller_can_drop_message_manually', '1')
-      end
-
-      context "Calling back after leaving a message" do
-        it 'is enabled by checking "Call back after leaving message"' do
-          check "Call back after dropping message BUT drop only one message"
-          save_campaign(campaign, 'campaign_call_back_after_voicemail_delivery', '1')
-        end
-        it 'is disabled by unchecking "Call back after leaving message"' do
-          uncheck "Call back after dropping message BUT drop only one message"
-          save_campaign(campaign, 'campaign_call_back_after_voicemail_delivery', '0')
-        end
       end
     end
   end
