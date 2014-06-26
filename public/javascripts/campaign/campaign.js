@@ -77,8 +77,12 @@ Campaign.prototype.isDetectingMachines = function() {
   return $('#campaign_answering_machine_detect').is(":checked");
 };
 
+Campaign.prototype.isAutoDroppingMessages = function() {
+  return $('#campaign_use_recordings_true').is(':checked');
+};
+
 Campaign.prototype.isUsingRecordings = function() {
-  var val = $('#campaign_use_recordings_true').is(':checked');
+  var val = $('#campaign_use_recordings_true').is(':checked') || $('#campaign_caller_can_drop_message_manually').is(':checked');
   console.log('isUsingRecordings', val);
   return val;
 };
@@ -98,7 +102,7 @@ Campaign.prototype.toggleRecordingsDiv = function(){
 
 Campaign.prototype.toggleCallbackAfterVoicemail = function(){
   var el = $('#call_back_after_voicemail_delivery_options');
-  this.toggle(el, this.isUsingRecordings());
+  this.toggle(el, this.isAutoDroppingMessages());
 };
 
 Campaign.prototype.toggleAutoDetectOptions = function() {
