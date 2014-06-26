@@ -6,7 +6,12 @@
     <th>Status</th>
     <th>Dials</th>
     <th>Percentage</th>
-  </tr>			
-  <%= render partial: 'dial_table', locals: {dials: dials_report.attempts_grouped_by_status_filtered, total_dials: dials_report.total_dials_made_attempts }%>		      
+  </tr>
+  <%= render({
+    partial: 'dial_table',
+    locals: {
+      dials: dials_report.attempts_grouped_by_status_filtered,
+      total_dials: dials_report.total_dials_made_attempts
+  }) %>
 </table>
-      
+
