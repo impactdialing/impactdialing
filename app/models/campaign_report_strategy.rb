@@ -71,9 +71,9 @@ class CampaignReportStrategy
         out << 'No'
       else
         if call_attempt['recording_delivered_manually'].to_i == 1
-          out << 'Yes: manually (caller dropped message)'
+          out << 'Yes: caller dropped'
         else
-          out << 'Yes: automatically (machine was detected)'
+          out << 'Yes: automatically'
         end
       end
     end
