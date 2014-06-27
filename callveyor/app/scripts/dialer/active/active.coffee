@@ -67,7 +67,7 @@ active.controller('ActiveCtrl.buttons', [
         boundEvents = []
         caller      = CallStationCache.get('caller')
 
-        idFlashFactory.nowAndDismiss('info', 'Message drop queued for processing...', 3000)
+        idFlashFactory.nowAndDismiss('info', 'Preparing message drop...', 3000)
 
         # warning: possible issue w/ this timeout algorithm. seems that occasionally, the timeout
         # will not be cleared despite message_drop_error|success having fired.
@@ -92,7 +92,7 @@ active.controller('ActiveCtrl.buttons', [
 
       error = (resp) ->
         console.log 'error dropping message', resp
-        idFlashFactory.now('danger', 'Error dropping message. Try again.')
+        idFlashFactory.now('danger', 'Error preparing message drop. Try again.')
         _errs.push(resp)
         $scope.transitionInProgress = false
 
