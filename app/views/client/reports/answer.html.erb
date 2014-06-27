@@ -1,5 +1,7 @@
 <h1><%= @campaign.name %> Answered Calls Report</h1>
 
+<% total_answers = 0 %>
+
 <div role="main" data-intro="This report shows you how people answered each of the questions in your script for this campaign." data-step="1">
   <% if @results.empty? %>
     <p>This campaign has not had any calls answered yet.</p>
@@ -16,6 +18,7 @@
              <th>Percentage</th>
            </tr>
            <% stats.each do |answers| %>
+            <% total_answers += answers[:number].to_i %>
             <tr>
               <td><%= answers[:answer]%></td>
               <td><%= answers[:number]%></td>
@@ -28,8 +31,8 @@
     <% end %>
 
     <% unless @transfers.blank? %>
+      <h3>Transfers</h3>
       <table>
-        <h3>Transfers</h3>
         <tr>
           <th>Transfer</th>
           <th>Number</th>
@@ -44,6 +47,27 @@
         <% end %>
       </table>
     <% end %>
+
+    <h3>Messages Left</h3>
+    <table>
+      <tr>
+        <th>Recording</th>
+        <th>Number</th>
+        <th>Percentage (of answered calls)</th>
+      </tr>
+      <% drops = CallAttempt.where('recording_id IS NOT NULL').
+                      where('recording_delivered_manually=?', true).
+                      where(campaign_id: @campaign.id)
+         recording_ids = drops.map(&:recording_id)
+         messages = Recording.where(id: recording_ids) %>
+      <% messages.each do |message| %>
+        <tr>
+          <td><%= message.name %></td>
+          <td><%= drops.count %></td>
+          <td><%= ((drops.count / total_answers.to_f) * 100.0).to_i %>%</td>
+        </tr>
+      <% end %>
+    </table>
 
     <%= render partial: 'shared/date_picker_campaigns', locals: {target: answer_client_reports_path} %>
   <% end %>
