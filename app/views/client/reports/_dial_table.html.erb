@@ -4,7 +4,7 @@
     row_title:"Answered",
     dial_count: sanitize_dials(dials[CallAttempt::Status::SUCCESS]) + sanitize_dials(dials['retry']) + sanitize_dials(dials[CallAttempt::Status::SCHEDULED]),
     total_dials: total_dials
-  }) %>
+  }}) %>
 
   <%= render({
     partial: 'dial_row',
@@ -12,7 +12,7 @@
       row_title:"No answer",
       dial_count: dials[CallAttempt::Status::NOANSWER],
       total_dials: total_dials
-  }) %>
+  }}) %>
 
   <%= render({
     partial: 'dial_row',
@@ -20,7 +20,7 @@
       row_title:"Busy",
       dial_count: dials[CallAttempt::Status::BUSY],
       total_dials: total_dials
-  }) %>
+  }}) %>
 
   <%= render({
     partial: 'dial_row',
@@ -28,7 +28,7 @@
       row_title:"Answering machine",
       dial_count: dials[CallAttempt::Status::HANGUP],
       total_dials: total_dials
-  }) %>
+  }}) %>
 
   <%= render({
     partial: 'dial_row',
@@ -36,7 +36,7 @@
       row_title:"Message left",
       dial_count: dials[CallAttempt::Status::VOICEMAIL],
       total_dials: total_dials
-  }) %>
+  }}) %>
 
   <%= render({
     partial: 'dial_row',
@@ -44,7 +44,7 @@
       row_title:"Failed",
       dial_count: dials[CallAttempt::Status::FAILED],
       total_dials: total_dials
-  }) %>
+  }}) %>
 
   <%= render({
     partial: 'dial_row',
@@ -52,7 +52,7 @@
       row_title:"Abandoned",
       dial_count: dials[CallAttempt::Status::ABANDONED],
       total_dials: total_dials
-  }) %>
+  }}) %>
 
   <tr class="<%= cycle("odd","even") %>">
   	<td>Total dials</td>
