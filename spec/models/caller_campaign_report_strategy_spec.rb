@@ -13,18 +13,18 @@ describe CallerCampaignReportStrategy do
 
      it "should create csv headers" do
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Left Voicemail", "Recording"])
+       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Message Left", "Recording"])
      end
 
      it "should create csv headers and not have Attempts if per dial" do
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Recording"])
+       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording"])
      end
 
      it "should manipulate headers" do
        selected_voter_fields = ["custom_id", "last_name", "first_name", "middle_name", "address", "city", "state", "zip_code", "country"]
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "Last name", "First name", "Middle name", "Address", "City", "State", "Zip code", "Country", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Left Voicemail", "Recording"])
+       strategy.csv_header.should eq(["ID", "Last name", "First name", "Middle name", "Address", "City", "State", "Zip code", "Country", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Message Left", "Recording"])
      end
 
      it "should create csv headers with question texts" do
@@ -33,7 +33,7 @@ describe CallerCampaignReportStrategy do
        answer1 = create(:answer, campaign: @campaign, question: question1 , voter: create(:voter), possible_response: create(:possible_response))
        answer2 = create(:answer, campaign: @campaign, question: question2, voter: create(:voter), possible_response: create(:possible_response))
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Recording", "Q1", "Q12"])
+       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording", "Q1", "Q12"])
      end
 
      it "should create csv headers with notes " do
@@ -42,7 +42,7 @@ describe CallerCampaignReportStrategy do
        note_response1 = create(:note_response, campaign: @campaign, note: note1 , voter: create(:voter))
        note_response2 = create(:note_response, campaign: @campaign, note: note2, voter: create(:voter))
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Recording", "note1", "note2"])
+       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording", "note1", "note2"])
      end
 
      it "should create csv headers with questions and  notes " do
@@ -56,7 +56,7 @@ describe CallerCampaignReportStrategy do
        note_response1 = create(:note_response, campaign: @campaign, note: note1 , voter: create(:voter))
        note_response2 = create(:note_response, campaign: @campaign, note: note2, voter: create(:voter))
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Recording", "Q1", "Q12", "note1", "note2"])
+       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording", "Q1", "Q12", "note1", "note2"])
      end
   end
 
@@ -100,6 +100,7 @@ describe CallerCampaignReportStrategy do
         'N/A', # transfer attempt start
         'N/A', # transfer attempt end
         'N/A', # transfer attempt duration
+        "No",
         "xyz.mp3"
       ]
       actual.should eq expected
@@ -200,6 +201,7 @@ describe CallerCampaignReportStrategy do
           'N/A', # transfer attempt start
           'N/A', # transfer attempt end
           'N/A', # transfer attempt duration
+          "No",
           "xyz.mp3",
           "Hey",
           "Wee",
@@ -283,6 +285,7 @@ describe CallerCampaignReportStrategy do
         'N/A', # transfer attempt start
         'N/A', # transfer attempt end
         'N/A', # transfer attempt duration
+        "No",
         "xyz.mp3",
         "Hey",
         "Wee",
@@ -442,6 +445,7 @@ describe CallerCampaignReportStrategy do
             "Time Transfer Started",
             "Time Transfer Ended",
             "Transfer Duration (minutes)",
+            "Message Left",
             "Recording",
             "Q1",
             "Q12",
@@ -464,6 +468,7 @@ describe CallerCampaignReportStrategy do
             transfer_attempt.tStartTime.in_time_zone(@campaign.time_zone),
             transfer_attempt.tEndTime.in_time_zone(@campaign.time_zone),
             1,
+            "No",
             "xyz.mp3",
             "Hey",
             "Wee",
@@ -515,7 +520,7 @@ describe CallerCampaignReportStrategy do
             "Time Transfer Ended",
             "Transfer Duration (minutes)",
             "Attempts",
-            "Left Voicemail",
+            "Message Left",
             "Recording",
             "Q1",
             "Q12",

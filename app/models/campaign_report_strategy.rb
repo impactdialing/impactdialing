@@ -66,6 +66,16 @@ class CampaignReportStrategy
       else
         out << 'Yes'
       end
+    elsif @mode == CampaignReportStrategy::Mode::PER_DIAL
+      if call_attempt['recording_id'].blank?
+        out << 'No'
+      else
+        if call_attempt['recording_delivered_manually'].to_i == 1
+          out << 'Yes: manually (caller dropped message)'
+        else
+          out << 'Yes: automatically (machine was detected)'
+        end
+      end
     end
     out << CallAttempt.report_recording_url(call_attempt['recording_url'])
     out.flatten

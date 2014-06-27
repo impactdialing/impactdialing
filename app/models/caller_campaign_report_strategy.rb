@@ -7,7 +7,9 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
 
     if @mode == CampaignReportStrategy::Mode::PER_LEAD
       header_fields << "Attempts"
-      header_fields << "Left Voicemail"
+      header_fields << "Message Left"
+    elsif @mode == CampaignReportStrategy::Mode::PER_DIAL
+      header_fields << "Message Left"
     end
     header_fields.concat(["Recording", Question.question_texts(@question_ids) , Note.note_texts(@note_ids)])
     header_fields.flatten.compact
