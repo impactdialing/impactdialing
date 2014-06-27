@@ -1,5 +1,6 @@
 ##
-# To be used when
+# todo: document
+#
 class AnsweringMachineAgent
   attr_reader :voter
 

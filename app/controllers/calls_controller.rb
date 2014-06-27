@@ -29,13 +29,8 @@ class CallsController < ApplicationController
   def play_message
     xml = @call.play_message_twiml
 
-    @call.voter.update_voicemail_history!
-
-    Sidekiq::Client.push({
-      'queue' => 'call_flow',
-      'class' => CallerPusherJob,
-      'args' => [@call.caller_session.id, 'publish_message_drop_success']
-    })
+    @call.enqueue_call_flow(Providers::Phone::Jobs::DropMessageRecorder, [@call.id, 1])
+    @call.enqueue_call_flow(CallerPusherJob, [@call.caller_session.id, 'publish_message_drop_success'])
 
     render xml: xml
   end
@@ -60,11 +55,8 @@ class CallsController < ApplicationController
 
   # Browser
   def drop_message
-    Sidekiq::Client.push({
-      'queue' => 'call_flow',
-      'class' => Providers::Phone::Jobs::DropMessage,
-      'args' => [@call.id]
-    })
+    @call.enqueue_call_flow(Providers::Phone::Jobs::DropMessage, [@call.id])
+
     render nothing: true
   end
 

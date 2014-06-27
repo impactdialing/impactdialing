@@ -3,6 +3,34 @@ require "spec_helper"
 describe CallAttempt do
   include Rails.application.routes.url_helpers
 
+  describe '#update_recording!(delivered_manually=false)' do
+    let(:recording){ create(:recording) }
+    let(:campaign){ create(:power, {recording: recording}) }
+    let(:voter){ create(:voter, {campaign: campaign}) }
+    subject{ create(:call_attempt, {campaign: campaign, voter: voter}) }
+
+    before do
+      subject.update_recording!(true)
+    end
+
+    it 'sets self.recording_id to campaign.recording_id' do
+      subject.recording_id.should eq recording.id
+    end
+
+    it 'sets self.recording_delivered_manually to `delivered_manually` arg value' do
+      subject.recording_delivered_manually.should be_true
+    end
+
+    it 'calls update_voicemail_history! on associated voter' do
+      voter.voicemail_history.should eq recording.id.to_s
+    end
+
+    it 'save!s' do
+      pre = subject
+      subject.reload.should eql pre
+    end
+  end
+
   it "lists all attempts for a campaign" do
     campaign = create(:campaign)
     attempt_of_our_campaign = create(:call_attempt, :campaign => campaign)

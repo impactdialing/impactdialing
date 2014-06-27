@@ -42,6 +42,13 @@ class CallAttempt < ActiveRecord::Base
     CallAttempt.report_recording_url(self.recording_url)
   end
 
+  def update_recording!(delivered_manually=false)
+    self.recording_id                 = campaign.recording_id
+    self.recording_delivered_manually = delivered_manually
+    voter.update_voicemail_history!
+    self.save!
+  end
+
   def duration
     return nil unless connecttime
     ((call_end || Time.now) - connecttime).to_i

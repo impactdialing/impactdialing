@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140620060957) do
+ActiveRecord::Schema.define(:version => 20140627004212) do
 
   create_table "accounts", :force => true do |t|
     t.datetime "created_at"
@@ -130,8 +130,10 @@ ActiveRecord::Schema.define(:version => 20140620060957) do
     t.integer  "recording_duration"
     t.datetime "wrapup_time"
     t.integer  "call_id"
-    t.boolean  "voter_response_processed", :default => false
-    t.boolean  "debited",                  :default => false
+    t.boolean  "voter_response_processed",     :default => false
+    t.boolean  "debited",                      :default => false
+    t.integer  "recording_id"
+    t.boolean  "recording_delivered_manually", :default => false
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"

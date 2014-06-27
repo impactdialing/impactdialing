@@ -11,7 +11,7 @@ class Call < ActiveRecord::Base
   delegate :end_caller_session, :to=> :call_attempt
   delegate :caller_session_key, :to=> :call_attempt
   delegate :enqueue_call_flow, :to=> :call_attempt
-
+  delegate :update_recording!, :to => :call_attempt
 
   def incoming_call
     return connected if answered_by_human_and_caller_available?
@@ -32,7 +32,7 @@ class Call < ActiveRecord::Base
   end
 
   def call_answered_by_machine
-    RedisCallFlow.push_to_processing_by_machine_call_hash(self.id);
+    RedisCallFlow.push_to_processing_by_machine_call_hash(self.id)
     call_attempt.redirect_caller
     call_answered_by_machine_twiml
   end
@@ -125,7 +125,4 @@ class Call < ActiveRecord::Base
   def data_centre
     RedisCallerSession.datacentre(call_attempt.caller_session_id)
   end
-
-
-
 end

@@ -36,6 +36,10 @@ module CallTwiml
     def call_answered_by_machine_twiml
       agent = AnsweringMachineAgent.new(voter)
 
+      if agent.leave_message?
+        enqueue_call_flow(Providers::Phone::Jobs::DropMessageRecorder, [self.id, 0])
+      end
+
       Twilio::TwiML::Response.new do |r|
         if agent.leave_message?
           r.Play campaign.recording.file.url
