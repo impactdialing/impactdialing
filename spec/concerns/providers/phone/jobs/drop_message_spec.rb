@@ -8,7 +8,7 @@ describe Providers::Phone::Jobs::DropMessage do
   let(:voter){ create(:voter, {campaign: campaign}) }
   let(:call_attempt){ create(:call_attempt, {voter: voter, campaign: campaign, caller_session: caller_session}) }
   let(:call){ create(:call, {call_attempt: call_attempt}) }
-  let(:response){ double('Response', {success?: true}) }
+  let(:response){ double('Response', {error?: false}) }
 
   subject{ Providers::Phone::Jobs::DropMessage.new }
 
@@ -23,12 +23,7 @@ describe Providers::Phone::Jobs::DropMessage do
   end
 
   context 'when message plays successfully' do
-    before do
-      subject.stub(:request_message_drop){ response }
-    end
-    it 'redirect caller voice to pause (wrap-up)' do
-      Providers::Phone::Call.should_receive(:redirect_for).with(caller_session, :pause)
-      subject.perform(call.id)
+    it 'caller is redirect automatically via action attr on Dial verb from previous TwiML' do
     end
   end
 
@@ -36,7 +31,7 @@ describe Providers::Phone::Jobs::DropMessage do
     let(:response2){ double('ResponseDeux') }
     before do
       caller_session.stub(:publish_message_drop_error)
-      response.stub(:success?){ false }
+      response.stub(:error?){ true }
       response.stub(:response){ response2 }
       subject.stub(:request_message_drop){ response }
     end

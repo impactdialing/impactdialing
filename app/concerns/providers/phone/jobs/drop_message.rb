@@ -9,9 +9,7 @@ public
 
     response = request_message_drop
 
-    if response.success?
-      redirect_caller_to_pause
-    else
+    if response.error?
       notify_client_of_error(response)
       redirect_caller_to_error
     end
@@ -20,10 +18,6 @@ public
 private
   def request_message_drop
     Providers::Phone::Call.play_message_for(@call)
-  end
-
-  def redirect_caller_to_pause
-    Providers::Phone::Call.redirect_for(@call.caller_session, :pause)
   end
 
   def redirect_caller_to_error
