@@ -98,7 +98,7 @@ private
       self.use_recordings = false
     end
 
-    if call_back_after_voicemail_delivery? and !use_recordings?
+    if call_back_after_voicemail_delivery? and !use_recordings? and !caller_can_drop_message_manually?
       self.call_back_after_voicemail_delivery = false
     end
 

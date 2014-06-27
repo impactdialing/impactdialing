@@ -41,7 +41,7 @@ describe Campaign do
         campaign.call_back_after_voicemail_delivery.should be_false
       end
 
-      it 'should set call_back_after_voicemail_delivery to false, if it is true and use_recordings is false' do
+      it 'should set call_back_after_voicemail_delivery to false, if it is true and use_recordings and caller_can_drop_message_manually are both false' do
         campaign.use_recordings = false
         campaign.save
         campaign.call_back_after_voicemail_delivery.should be_false

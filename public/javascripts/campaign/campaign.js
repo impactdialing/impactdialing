@@ -10,8 +10,7 @@ var Campaign = function(){
 
   $('#campaign_answering_machine_detect').change(function () {
     if( !self.isDetectingMachines() ) {
-      $('#campaign_use_recordings_false').prop('checked', true);
-      $('#campaign_use_recordings_true').prop('checked', false);
+      $('#campaign_use_recordings').val('0');
       self.toggleCallbackAfterVoicemail();
       self.toggleRecordingsDiv();
     }
@@ -19,10 +18,9 @@ var Campaign = function(){
 	  self.toggleAutoDetectOptions();
   });
 
-  $(document).on('click', '#campaign_use_recordings_true, #campaign_use_recordings_false, #campaign_caller_can_drop_message_manually', function(){
+  $(document).on('change', '#campaign_use_recordings, #campaign_caller_can_drop_message_manually', function(){
     if( !self.isUsingRecordings() ) {
-      $('#campaign_call_back_after_voicemail_delivery_true').prop('checked', false);
-      $('#campaign_call_back_after_voicemail_delivery_false').prop('checked', true);
+      $('#campaign_call_back_after_voicemail_delivery').val('0');
     }
 
     self.toggleRecordingsDiv();
@@ -78,12 +76,11 @@ Campaign.prototype.isDetectingMachines = function() {
 };
 
 Campaign.prototype.isAutoDroppingMessages = function() {
-  return $('#campaign_use_recordings_true').is(':checked');
+  return $('#campaign_use_recordings').val() == '1';
 };
 
 Campaign.prototype.isUsingRecordings = function() {
-  var val = $('#campaign_use_recordings_true').is(':checked') || $('#campaign_caller_can_drop_message_manually').is(':checked');
-  console.log('isUsingRecordings', val);
+  var val = this.isAutoDroppingMessages() || $('#campaign_caller_can_drop_message_manually').is(':checked')
   return val;
 };
 
@@ -101,12 +98,12 @@ Campaign.prototype.toggleRecordingsDiv = function(){
 };
 
 Campaign.prototype.toggleCallbackAfterVoicemail = function(){
-  var el = $('#call_back_after_voicemail_delivery_options');
-  this.toggle(el, this.isAutoDroppingMessages());
+  var el = $('#campaign_call_back_after_voicemail_delivery').parent();
+  this.toggle(el, this.isUsingRecordings());
 };
 
 Campaign.prototype.toggleAutoDetectOptions = function() {
-  var el = $("#auto_detect_options");
+  var el = $("#campaign_use_recordings").parent();
   this.toggle(el, this.isDetectingMachines());
 };
 

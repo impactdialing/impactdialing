@@ -107,7 +107,12 @@ class Voter < ActiveRecord::Base
   scope :next_in_recycled_queue, lambda {|recycle_rate, blocked_numbers|
     enabled.without(blocked_numbers).
     last_call_attempt_before_recycle_rate(recycle_rate).
-    to_be_dialed.order('id')
+    where('(status NOT IN (?) AND priority IS NULL) OR call_back=?', [
+      CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING,
+      CallAttempt::Status::READY, CallAttempt::Status::SUCCESS,
+      CallAttempt::Status::FAILED
+    ], 1).
+    order('last_call_attempt_time, id')
   }
 
   before_validation :sanitize_phone
@@ -201,6 +206,10 @@ class Voter < ActiveRecord::Base
   def update_voicemail_history!
     update_voicemail_history
     save
+  end
+
+  def update_call_back_after_message_drop
+    self.call_back = campaign.call_back_after_voicemail_delivery?
   end
 
   def yet_to_receive_voicemail?
