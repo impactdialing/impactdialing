@@ -517,7 +517,6 @@ mod.factory('idCallFlow', [
 
         messageDropSuccess: ->
           console.log 'messageDropSuccess'
-          idFlashFactory.nowAndDismiss('info', 'Message drop complete.', 3000)
 
           statePromise = $state.go('dialer.wrap')
           statePromise.catch($window._errs.push)

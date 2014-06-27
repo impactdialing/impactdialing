@@ -629,7 +629,6 @@
         messageDropSuccess: function() {
           var statePromise;
           console.log('messageDropSuccess');
-          idFlashFactory.nowAndDismiss('info', 'Message drop complete.', 3000);
           statePromise = $state.go('dialer.wrap');
           return statePromise["catch"]($window._errs.push);
         }
