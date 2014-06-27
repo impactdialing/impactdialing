@@ -4,11 +4,15 @@ describe 'Answering Machine Detection', js: true, admin: true do
   def save_campaign(campaign, field, value)
     click_button 'Save'
     visit edit_client_campaign_path(campaign)
-    checkbox = page.find("##{field}")
-    if value == '1'
-      checkbox.should be_checked
-    else
-      checkbox.should_not be_checked
+    el = page.find("##{field}")
+    if value == '1' or value == '0'
+      if value == '1'
+        el.should be_checked
+      else
+        el.should_not be_checked
+      end
+    elsif value == 'true' or value == 'false'
+      el.value.should eq value
     end
   end
 
@@ -47,26 +51,26 @@ describe 'Answering Machine Detection', js: true, admin: true do
       before do
         check "Auto-detect whether human or machine answers a call"
       end
-      it 'choose "Drop recorded message" and selecting a recording to auto-drop' do
-        choose "Drop recorded message"
-        save_campaign(campaign, 'campaign_use_recordings_true', '1')
+      it 'select "Drop message" and selecting a recording to auto-drop' do
+        select "Drop message", from: "When a machine is detected"
+        save_campaign(campaign, 'campaign_use_recordings', 'true')
       end
-      it 'choose "Hang-up" not auto-drop a recording' do
-        choose "Hang-up"
-        save_campaign(campaign, 'campaign_use_recordings_true', '0')
+      it 'select "Hang-up" not auto-drop a recording' do
+        select "Hang-up", from: "When a machine is detected"
+        save_campaign(campaign, 'campaign_use_recordings', 'false')
       end
 
       context "Calling back after leaving a message" do
         before do
-          choose "Drop recorded message"
+          select "Drop message", from: "When a machine is detected"
         end
         it 'is enabled by choosing "Call back after leaving message"' do
-          choose "Call back after dropping message BUT drop only one message"
-          save_campaign(campaign, 'campaign_call_back_after_voicemail_delivery_true', '1')
+          select "Call back", from: "After a message is dropped"
+          save_campaign(campaign, 'campaign_call_back_after_voicemail_delivery', 'true')
         end
         it 'is disabled by choosing "Do not call back after dropping message"' do
-          choose "Do not call back after dropping message"
-          save_campaign(campaign, 'campaign_call_back_after_voicemail_delivery_true', '0')
+          select "Do not call back", from: "After a message is dropped"
+          save_campaign(campaign, 'campaign_call_back_after_voicemail_delivery', 'false')
         end
       end
     end
