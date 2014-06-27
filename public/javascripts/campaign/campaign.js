@@ -76,7 +76,7 @@ Campaign.prototype.isDetectingMachines = function() {
 };
 
 Campaign.prototype.isAutoDroppingMessages = function() {
-  return $('#campaign_use_recordings').val() == '1';
+  return $('#campaign_use_recordings').val() == 'true';
 };
 
 Campaign.prototype.isUsingRecordings = function() {
