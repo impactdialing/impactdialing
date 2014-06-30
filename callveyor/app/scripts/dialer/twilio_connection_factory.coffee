@@ -7,8 +7,8 @@ mod = angular.module('idTwilioConnectionHandlers', [
 ])
 
 mod.factory('idTwilioConnectionFactory', [
-  '$rootScope', 'TwilioCache', 'idFlashFactory', 'idTwilioService',
-  ($rootScope,   TwilioCache,   idFlashFactory,   idTwilioService) ->
+  '$rootScope', '$window', 'TwilioCache', 'idFlashFactory', 'idTwilioService',
+  ($rootScope,   $window,   TwilioCache,   idFlashFactory,   idTwilioService) ->
     twilioParams = {}
 
     factory = {
@@ -41,6 +41,7 @@ mod.factory('idTwilioConnectionFactory', [
       error: (error) ->
         console.log 'Twilio Connection Error', error
         idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.')
+        $window._errs.push(error)
         if angular.isFunction(factory.afterError)
           factory.afterError()
 

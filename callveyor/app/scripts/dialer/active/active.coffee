@@ -93,7 +93,7 @@ active.controller('ActiveCtrl.buttons', [
       error = (resp) ->
         console.log 'error dropping message', resp
         idFlashFactory.now('danger', 'Error preparing message drop. Try again.')
-        _errs.push(resp)
+        $window._errs.push(resp)
         $scope.transitionInProgress = false
 
       promise.then(success, error)

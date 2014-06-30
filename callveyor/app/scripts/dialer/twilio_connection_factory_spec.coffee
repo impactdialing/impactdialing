@@ -4,6 +4,7 @@ describe 'idTwilioConnectionHandlers', ->
   $scope         = {}
   $state         = {}
   $cacheFactory  = {}
+  $window        = {}
   factory        = {}
   idFlashFactory = {}
   callStation    = {
@@ -26,14 +27,17 @@ describe 'idTwilioConnectionHandlers', ->
   beforeEach module 'idTwilioConnectionHandlers'
 
   beforeEach inject (_$injector_) ->
-    $injector      = _$injector_
-    $rootScope     = $injector.get('$rootScope')
-    $scope         = $rootScope
-    $cacheFactory  = $injector.get('$cacheFactory')
-    $state         = $injector.get('$state')
-    factory        = $injector.get('idTwilioConnectionFactory')
-    idFlashFactory = $injector.get('idFlashFactory')
-
+    $injector          = _$injector_
+    $rootScope         = $injector.get('$rootScope')
+    $scope             = $rootScope
+    $cacheFactory      = $injector.get('$cacheFactory')
+    $state             = $injector.get('$state')
+    $window            = $injector.get('$window')
+    factory            = $injector.get('idTwilioConnectionFactory')
+    idFlashFactory     = $injector.get('idFlashFactory')
+    $window._errs      = {
+      push: jasmine.createSpy('-$window._errs.push spy-')
+    }
     idFlashFactory.now = jasmine.createSpy('-idFlashFactory.now spy-')
     $state             = jasmine.createSpyObj('$state', ['go', 'catch'])
     $state.go.andReturn($state)
