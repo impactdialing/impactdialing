@@ -568,7 +568,7 @@
           console.log('success requesting to drop message', resp);
           boundEvents = [];
           caller = CallStationCache.get('caller');
-          idFlashFactory.nowAndDismiss('info', 'Message drop queued for processing...', 3000);
+          idFlashFactory.nowAndDismiss('info', 'Preparing message drop...', 3000);
           timeoutReached = function() {
             var obj;
             obj = new Error("Client timeout reached. Message drop queued successfully. Completion message not received.");
@@ -594,8 +594,8 @@
         };
         error = function(resp) {
           console.log('error dropping message', resp);
-          idFlashFactory.now('danger', 'Error dropping message. Try again.');
-          _errs.push(resp);
+          idFlashFactory.now('danger', 'Error preparing message drop. Try again.');
+          $window._errs.push(resp);
           return $scope.transitionInProgress = false;
         };
         return promise.then(success, error);

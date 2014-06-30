@@ -204,9 +204,10 @@
   mod = angular.module('pusherConnectionHandlers', ['idFlash', 'angularSpinner']);
 
   mod.factory('pusherConnectionHandlerFactory', [
-    '$rootScope', 'usSpinnerService', 'idFlashFactory', function($rootScope, usSpinnerService, idFlashFactory) {
+    '$rootScope', '$window', 'usSpinnerService', 'idFlashFactory', function($rootScope, $window, usSpinnerService, idFlashFactory) {
       var browserNotSupported, connectingIn, connectionFailure, connectionHandler, pusherError, reConnecting;
-      pusherError = function(wtf) {
+      pusherError = function(error) {
+        $window._errs.push(error);
         return idFlashFactory.now('danger', 'Something went wrong. We have been notified and will begin troubleshooting ASAP.');
       };
       reConnecting = function(wtf) {
@@ -246,7 +247,9 @@
           pusher.connection.bind('failed', browserNotSupported);
           return pusher.connection.bind('unavailable', connectionFailure);
         },
-        loadError: function() {
+        loadError: function(error) {
+          error || (error = new Error("Pusher service failed to resolve."));
+          $window._errs.push(error);
           return idFlashFactory.now('danger', 'Browser failed to load a required resource. Please try again and Report problem if error continues.');
         }
       };
@@ -265,7 +268,7 @@
   mod = angular.module('idTwilioConnectionHandlers', ['ui.router', 'idFlash', 'idTransition', 'idTwilio', 'idCacheFactories']);
 
   mod.factory('idTwilioConnectionFactory', [
-    '$rootScope', 'TwilioCache', 'idFlashFactory', 'idTwilioService', function($rootScope, TwilioCache, idFlashFactory, idTwilioService) {
+    '$rootScope', '$window', 'TwilioCache', 'idFlashFactory', 'idTwilioService', function($rootScope, $window, TwilioCache, idFlashFactory, idTwilioService) {
       var factory, twilioParams;
       twilioParams = {};
       factory = {
@@ -296,6 +299,7 @@
         error: function(error) {
           console.log('Twilio Connection Error', error);
           idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.');
+          $window._errs.push(error);
           if (angular.isFunction(factory.afterError)) {
             return factory.afterError();
           }
