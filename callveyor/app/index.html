@@ -141,7 +141,7 @@
     <!-- endbuild -->
     <![endif]-->
 
-    <!-- build:js /callveyor/scripts/vendor.js -->
+    <!-- build:js({.tmp,app}) /callveyor/scripts/scripts.js -->
     <!-- bower:js -->
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
@@ -150,16 +150,10 @@
     <script src="bower_components/spin.js/spin.js"></script>
     <script src="bower_components/angular-spinner/angular-spinner.js"></script>
     <!-- endbower -->
-    <script src="scripts/jquery.js"></script>
-    <!-- endbuild -->
 
-    <!-- build:js({.tmp,app}) /callveyor/scripts/config.js -->
+    <script src="scripts/jquery.js"></script>
     <script src="scripts/config.js"></script>
-    <!-- endbuild -->
-    <!-- build:js({.tmp,app}) /callveyor/scripts/app.js -->
     <script src="scripts/app.js"></script>
-    <!-- endbuild -->
-    <!-- build:js({.tmp,app}) /callveyor/scripts/utilities.js -->
     <script src="scripts/common/id_cache_factories/id_cache_factories.js"></script>
     <script src="scripts/common/transition_gateway/transition_gateway.js"></script>
     <script src="scripts/dialer/pusher_connection_factory.js"></script>
@@ -169,8 +163,6 @@
     <script src="scripts/services/id_twilio_client.js"></script>
     <script src="scripts/http_dialer/http_dialer.js"></script>
     <script src="scripts/common/id_flash/id_flash.js"></script>
-    <!-- endbuild -->
-    <!-- build:js({.tmp,app}) /callveyor/scripts/scripts.js -->
     <script src="scripts/dialer/dialer.js"></script>
     <script src="scripts/dialer/contact/contact.js"></script>
     <script src="scripts/survey/survey.js"></script>
