@@ -280,15 +280,25 @@ module.exports = function (grunt) {
       options: {
         // root: 'app/../..',
         dest: '<%= yeoman.dist %>',
-        // flow: {
-        //   html: {
-        //     steps: {
-        //       js: ['concat', 'uglifyjs'],
-        //       css: ['concat', 'cssmin']
-        //     },
-        //     post: {}
-        //   }
-        // }
+        flow: {
+          steps: {
+            js: ['concat', 'uglifyjs'],
+            css: ['concat', 'cssmin']
+          },
+          post: {
+            js: [{
+              name: 'uglify',
+              createConfig: function(context, block){
+                grunt.log.writeln('createConfig should run');
+                var generated = context.options.generated;
+                generated.options = {
+                  preserveComments: false,
+                  mangle: false
+                };
+              }
+            }]
+          }
+        }
       }
     },
 
@@ -475,32 +485,6 @@ module.exports = function (grunt) {
       ]
     },
 
-    // By default, your `index.html`'s <!-- Usemin block --> will take care of
-    // minification. These next options are pre-configured if you do not wish
-    // to use the Usemin blocks.
-    // cssmin: {
-    //   dist: {
-    //     files: {
-    //       '<%= yeoman.dist %>/styles/main.css': [
-    //         '.tmp/styles/{,*/}*.css',
-    //         '<%= yeoman.app %>/styles/{,*/}*.css'
-    //       ]
-    //     }
-    //   }
-    // },
-    // uglify: {
-    //   dist: {
-    //     files: {
-    //       '<%= yeoman.dist %>/scripts/scripts.js': [
-    //         '<%= yeoman.dist %>/scripts/scripts.js'
-    //       ]
-    //     }
-    //   }
-    // },
-    // concat: {
-    //   dist: {}
-    // },
-
     // Test settings
     karma: {
       unit: {
@@ -551,7 +535,7 @@ module.exports = function (grunt) {
     'autoprefixer',
     'ngtemplates',
     'concat',
-    'ngmin',
+    // 'ngmin',
     'copy:dist',
     // 'cdnify',
     'cssmin',
