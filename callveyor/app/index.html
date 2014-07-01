@@ -19,6 +19,44 @@
     <!-- build:css({.tmp,app}) /callveyor/styles/main.css -->
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
+
+    <!-- errorception -->
+    <script>
+      (function(_,e,rr,s){_errs=[s];var c=_.onerror;_.onerror=function(){var a=arguments;_errs.push(a);
+      c&&c.apply(this,a)};var b=function(){var c=e.createElement(rr),b=e.getElementsByTagName(rr)[0];
+      c.src="//beacon.errorception.com/"+s+".js";c.async=!0;b.parentNode.insertBefore(c,b)};
+      _.addEventListener?_.addEventListener("load",b,!1):_.attachEvent("onload",b)})
+      (window,document,"script","4fdd1d30eee3a7a4200000bf");
+    </script>
+    <!-- /errorception -->
+
+    <!-- UserSnap -->
+    <script>
+      var _usersnapconfig = {
+        apiKey: 'ee7280e5-4afa-4854-87a6-b19d6c1cf460',
+        valign: 'middle',
+        halign: 'left',
+        beforeSend: function(obj) {
+          obj.addInfo = window.idDebugData || {};
+        },
+        // errorHandler: function(message, code) {
+        //   var d = {},
+        //       k = 'usersnap-error-' + code.toString();
+        //   d[k] = message
+        // }
+      };
+
+      (function() {
+        var s = document.createElement("script");
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = '//api.usersnap.com/beta/'+
+               'ee7280e5-4afa-4854-87a6-b19d6c1cf460.js';
+        var x = document.getElementsByTagName('head')[0];
+        x.appendChild(s);
+      })();
+    </script>
+    <!-- /UserSnap -->
   </head>
   <body data-ng-app="callveyor">
     <!--[if lt IE 7]>
@@ -83,56 +121,6 @@
       </div>
     </footer>
     <!-- /Footer -->
-
-    <!-- errorception -->
-    <script>
-      (function(_,e,rr,s){_errs=[s];var c=_.onerror;_.onerror=function(){var a=arguments;_errs.push(a);
-      c&&c.apply(this,a)};var b=function(){var c=e.createElement(rr),b=e.getElementsByTagName(rr)[0];
-      c.src="//beacon.errorception.com/"+s+".js";c.async=!0;b.parentNode.insertBefore(c,b)};
-      _.addEventListener?_.addEventListener("load",b,!1):_.attachEvent("onload",b)})
-      (window,document,"script","4fdd1d30eee3a7a4200000bf");
-    </script>
-    <!-- /errorception -->
-
-    <!-- UserSnap -->
-    <script>
-      var _usersnapconfig = {
-        apiKey: 'ee7280e5-4afa-4854-87a6-b19d6c1cf460',
-        valign: 'middle',
-        halign: 'left',
-        beforeSend: function(obj) {
-          obj.addInfo = window.idDebugData || {};
-        },
-        // errorHandler: function(message, code) {
-        //   var d = {},
-        //       k = 'usersnap-error-' + code.toString();
-        //   d[k] = message
-        // }
-      };
-
-      (function() {
-        var s = document.createElement("script");
-        s.type = "text/javascript";
-        s.async = true;
-        s.src = '//api.usersnap.com/beta/'+
-               'ee7280e5-4afa-4854-87a6-b19d6c1cf460.js';
-        var x = document.getElementsByTagName('head')[0];
-        x.appendChild(s);
-      })();
-    </script>
-    <!-- /UserSnap -->
-
-    <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
-     <script>
-       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-       ga('create', 'UA-XXXXX-X');
-       ga('send', 'pageview');
-    </script>
-    <!-- /Google Analytics -->
 
     <!--[if lt IE 9]>
     <!-- build:js /callveyor/scripts/ie-lt-9.js -->

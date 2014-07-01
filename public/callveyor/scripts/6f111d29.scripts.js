@@ -33655,3 +33655,2140 @@ if ( typeof noGlobal === strundefined ) {
 return jQuery;
 
 }));
+
+angular.module("config", [])
+
+.constant("apiver", 0.1)
+
+.constant("serviceTokens", {
+	"pusher": "6f37f3288a3762e60f94"
+})
+
+;
+(function() {
+  'use strict';
+  var callveyor, idTransition;
+
+  idTransition = angular.module('idTransition', ['idCacheFactories', 'angularSpinner']);
+
+  idTransition.factory('idTransitionPrevented', [
+    '$rootScope', '$state', 'ErrorCache', 'FlashCache', 'usSpinnerService', function($rootScope, $state, ErrorCache, FlashCache, usSpinnerService) {
+      var fn, isFailedResolve;
+      isFailedResolve = function(err) {
+        return (err.config != null) && (err.config.url != null) && /(GET|POST)/.test(err.config.method);
+      };
+      fn = function(errObj) {
+        var key, val;
+        console.log('report this problem', errObj);
+        $rootScope.transitionInProgress = false;
+        usSpinnerService.stop('global-spinner');
+        if (isFailedResolve(errObj)) {
+          key = (new Date()).getTime();
+          val = {
+            error: errObj,
+            context: 'Remote $state dependency failed to resolve.'
+          };
+          ErrorCache.put(key, val);
+          FlashCache.put('error', errObj.data.message);
+          return $state.go('abort');
+        }
+      };
+      return fn;
+    }
+  ]);
+
+  callveyor = angular.module('callveyor', ['config', 'ui.bootstrap', 'ui.router', 'doowb.angular-pusher', 'pusherConnectionHandlers', 'idTwilio', 'idFlash', 'idTransition', 'idCacheFactories', 'angularSpinner', 'callveyor.dialer']);
+
+  callveyor.config([
+    '$stateProvider', 'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider', function($stateProvider, serviceTokens, idTwilioServiceProvider, PusherServiceProvider) {
+      idTwilioServiceProvider.setScriptUrl('//static.twilio.com/libs/twiliojs/1.2/twilio.js');
+      PusherServiceProvider.setPusherUrl('//d3dy5gmtp8yhk7.cloudfront.net/2.1/pusher.min.js');
+      PusherServiceProvider.setToken(serviceTokens.pusher);
+      return $stateProvider.state('abort', {
+        template: '',
+        controller: 'AppCtrl.abort'
+      });
+    }
+  ]);
+
+  callveyor.controller('AppCtrl.abort', [
+    '$http', 'TwilioCache', 'FlashCache', 'PusherService', 'idFlashFactory', function($http, TwilioCache, FlashCache, PusherService, idFlashFactory) {
+      var flash, twilioConnection;
+      flash = FlashCache.get('error');
+      idFlashFactory.now('danger', flash);
+      FlashCache.remove('error');
+      twilioConnection = TwilioCache.get('connection');
+      twilioConnection.disconnect();
+      return PusherService.then(function(p) {
+        return console.log('PusherService abort', p);
+      });
+    }
+  ]);
+
+  callveyor.controller('MetaCtrl', [
+    '$scope', function($scope) {
+      return $scope.currentYear = (new Date()).getFullYear();
+    }
+  ]);
+
+  callveyor.directive('idLogout', function() {
+    return {
+      restrict: 'A',
+      template: '<button class="btn btn-primary navbar-btn"' + 'data-ng-click="logout()">' + 'Logout' + '</button>',
+      controller: [
+        '$scope', '$http', 'ErrorCache', 'idFlashFactory', function($scope, $http, ErrorCache, idFlashFactory) {
+          return $scope.logout = function() {
+            var err, promise, suc;
+            promise = $http.post("/app/logout");
+            suc = function() {
+              return window.location.reload(true);
+            };
+            err = function(e) {
+              ErrorCache.put("logout.failed", e);
+              return idFlashFactory.now('danger', "Logout failed.");
+            };
+            return promise.then(suc, err);
+          };
+        }
+      ]
+    };
+  });
+
+  callveyor.controller('AppCtrl', [
+    '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'ContactCache', 'CallStationCache', function($rootScope, $scope, $state, $timeout, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented, TransitionCache, ContactCache, CallStationCache) {
+      var abortAllAndNotifyUser, getContact, getMeta, markPusherReady, transitionComplete, transitionError, transitionStart;
+      $rootScope.transitionInProgress = false;
+      getContact = function() {
+        var contact, id, phone;
+        contact = ContactCache.get('data');
+        phone = '';
+        id = '';
+        if ((contact != null) && (contact.fields != null)) {
+          id = contact.fields.id;
+          phone = contact.fields.phone;
+        }
+        return {
+          id: id,
+          phone: phone
+        };
+      };
+      getMeta = function() {
+        var caller, campaign;
+        caller = CallStationCache.get('caller');
+        campaign = CallStationCache.get('campaign');
+        return {
+          caller: caller,
+          campaign: campaign
+        };
+      };
+      transitionStart = function(event, toState, toParams, fromState, fromParams) {
+        var contact;
+        contact = getContact();
+        TransitionCache.put('$stateChangeStart', {
+          toState: toState.name,
+          fromState: fromState.name,
+          contact: contact
+        });
+        usSpinnerService.spin('global-spinner');
+        return $rootScope.transitionInProgress = true;
+      };
+      transitionComplete = function(event, toState, toParams, fromState, fromParams) {
+        var contact, meta;
+        contact = getContact();
+        meta = getMeta();
+        TransitionCache.put('$stateChangeSuccess', {
+          toState: toState.name,
+          fromState: fromState.name,
+          contact: contact,
+          meta: meta
+        });
+        $rootScope.transitionInProgress = false;
+        return usSpinnerService.stop('global-spinner');
+      };
+      transitionError = function(event, unfoundState, fromState, fromParams) {
+        var contact, meta;
+        console.error('Error transitioning $state', e, $state.current);
+        contact = getContact();
+        meta = getMeta();
+        TransitionCache.put('$stateChangeError', {
+          unfoundState: unfoundState.name,
+          fromState: fromState.name,
+          contact: contact,
+          meta: meta
+        });
+        return transitionComplete();
+      };
+      $rootScope.$on('$stateChangeStart', transitionStart);
+      $rootScope.$on('$stateChangeSuccess', transitionComplete);
+      $rootScope.$on('$stateChangeError', transitionError);
+      markPusherReady = function() {
+        var now;
+        now = function() {
+          var p;
+          p = $state.go('dialer.ready');
+          return p["catch"](idTransitionPrevented);
+        };
+        return $timeout(now, 300);
+      };
+      abortAllAndNotifyUser = function() {
+        console.log('Unsupported browser...');
+        return TransitionCache.put('pusher:bad_browser', '.');
+      };
+      $rootScope.$on('pusher:ready', markPusherReady);
+      $rootScope.$on('pusher:bad_browser', abortAllAndNotifyUser);
+      return PusherService.then(pusherConnectionHandlerFactory.success, pusherConnectionHandlerFactory.loadError);
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=app.js.map
+*/
+(function() {
+  var captureCache, simpleCache;
+
+  angular.module('idCacheFactories', []);
+
+  simpleCache = function(name) {
+    return angular.module('idCacheFactories').factory("" + name + "Cache", [
+      '$cacheFactory', function($cacheFactory) {
+        return $cacheFactory(name);
+      }
+    ]);
+  };
+
+  captureCache = function(name, isPruned) {
+    return angular.module('idCacheFactories').factory("" + name + "Cache", [
+      '$cacheFactory', '$window', function($cacheFactory, $window) {
+        var cache, data, debugCache, exportData, pruneData, simpleData, time;
+        cache = $cacheFactory(name);
+        data = {
+          navigator: {
+            language: navigator.language,
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            appVersion: navigator.appVersion,
+            vendor: navigator.vendor
+          }
+        };
+        $window._errs || ($window._errs = {});
+        simpleData = function() {
+          var d, flatten, k;
+          d = {};
+          k = [];
+          flatten = function(val, key) {
+            var newKey;
+            k.push("" + key);
+            if (angular.isObject(val || angular.isArray(val))) {
+              angular.forEach(val, flatten);
+            } else if (angular.isFunction(val)) {
+
+            } else {
+              newKey = k.join(':');
+              d[newKey] = val;
+            }
+            return k.pop();
+          };
+          angular.forEach($window.idDebugData, flatten);
+          return d;
+        };
+        exportData = function() {
+          if (isPruned) {
+            pruneData();
+          }
+          $window.idDebugData || ($window.idDebugData = {});
+          $window.idDebugData[name] = data;
+          return $window._errs.meta = simpleData();
+        };
+        pruneData = function() {
+          var deleteOldTimes;
+          deleteOldTimes = function(items) {
+            var deleteOld, isOld;
+            isOld = function(v, timestamp) {
+              var curTime, timeSinceCount;
+              curTime = time();
+              timeSinceCount = curTime - parseInt(timestamp);
+              return timeSinceCount > 300000;
+            };
+            deleteOld = function(v, timestamp) {
+              if (isOld(v, timestamp)) {
+                return delete items[timestamp];
+              }
+            };
+            return angular.forEach(items, deleteOld);
+          };
+          return deleteOldTimes(data);
+        };
+        time = function() {
+          return (new Date()).getTime();
+        };
+        debugCache = {
+          put: function(key, value) {
+            var t;
+            t = time();
+            data[t] = {};
+            data[t]["" + name + "Cache:" + key] = value;
+            exportData();
+            return cache.put(key, value);
+          },
+          get: function(key) {
+            return cache.get(key);
+          },
+          remove: function(key) {
+            return cache.remove(key);
+          }
+        };
+        return debugCache;
+      }
+    ]);
+  };
+
+  simpleCache('Twilio');
+
+  simpleCache('Contact');
+
+  simpleCache('Survey');
+
+  simpleCache('CallStation');
+
+  captureCache('Error', false);
+
+  captureCache('Transition', true);
+
+  simpleCache('Flash');
+
+  simpleCache('Call');
+
+  simpleCache('Transfer');
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=id_cache_factories.js.map
+*/
+(function() {
+  var mod;
+
+  mod = angular.module('transitionGateway', ['ui.router', 'angularSpinner', 'idCacheFactories']);
+
+  mod.constant('validTransitions', {
+    'root': ['dialer.ready'],
+    'abort': ['dialer.ready'],
+    'dialer.ready': ['abort', 'dialer.hold'],
+    'dialer.hold': ['abort', 'dialer.active', 'dialer.stop'],
+    'dialer.active': ['abort', 'dialer.wrap', 'dialer.stop', 'dialer.active.transfer.selected', 'dialer.active.transfer.reselected', 'dialer.active.transfer.conference'],
+    'dialer.active.transfer.selected': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference'],
+    'dialer.active.transfer.reselected': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference'],
+    'dialer.active.transfer.conference': ['abort', 'dialer.active', 'dialer.wrap'],
+    'dialer.wrap': ['abort', 'dialer.hold', 'dialer.stop', 'dialer.ready'],
+    'dialer.stop': ['abort', 'dialer.ready']
+  });
+
+  mod.factory('transitionValidator', [
+    '$rootScope', 'validTransitions', 'ErrorCache', 'ContactCache', 'usSpinnerService', function($rootScope, validTransitions, ErrorCache, ContactCache, usSpinnerService) {
+      return {
+        reviewTransition: function(eventObj, toState, toParams, fromState, fromParams) {
+          var contact, entry, fromName, getContact, getMeta, toName;
+          toName = toState.name;
+          fromName = fromState.name || 'root';
+          getContact = function() {
+            var contact, id, phone;
+            contact = ContactCache.get('data');
+            phone = '';
+            id = '';
+            if ((contact != null) && (contact.fields != null)) {
+              id = contact.fields.id;
+              phone = contact.fields.phone;
+            }
+            return {
+              id: id,
+              phone: phone
+            };
+          };
+          getMeta = function() {
+            var caller, campaign;
+            caller = CallStationCache.get('caller');
+            campaign = CallStationCache.get('campaign');
+            return {
+              caller: caller,
+              campaign: campaign
+            };
+          };
+          entry = validTransitions[fromName];
+          if ((entry == null) || entry.indexOf(toName) === -1) {
+            contact = getContact();
+            ErrorCache.put('InvalidTransition prevented', {
+              toName: toName,
+              fromName: fromName,
+              contact: contact
+            });
+            $rootScope.transitionInProgress = false;
+            usSpinnerService.stop('global-spinner');
+            return eventObj.preventDefault();
+          }
+        },
+        start: function() {
+          if (angular.isFunction(this.stop)) {
+            this.stop();
+          }
+          return this.stop = $rootScope.$on('$stateChangeStart', this.reviewTransition);
+        },
+        stop: function() {}
+      };
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=transition_gateway.js.map
+*/
+(function() {
+  'use strict';
+  var mod;
+
+  mod = angular.module('pusherConnectionHandlers', ['idFlash', 'angularSpinner']);
+
+  mod.factory('pusherConnectionHandlerFactory', [
+    '$rootScope', '$window', 'usSpinnerService', 'idFlashFactory', function($rootScope, $window, usSpinnerService, idFlashFactory) {
+      var browserNotSupported, connectingIn, connectionFailure, connectionHandler, pusherError, reConnecting;
+      pusherError = function(error) {
+        $window._errs.push(error);
+        return idFlashFactory.now('danger', 'Something went wrong. We have been notified and will begin troubleshooting ASAP.');
+      };
+      reConnecting = function(wtf) {
+        return idFlashFactory.now('warning', 'Your browser has lost its connection. Reconnecting...');
+      };
+      connectionFailure = function(wtf) {
+        return idFlashFactory.now('warning', 'Your browser could not re-connect.');
+      };
+      connectingIn = function(delay) {
+        return idFlashFactory.now('warning', "Your browser could not re-connect. Connecting in " + delay + " seconds.");
+      };
+      browserNotSupported = function(wtf) {
+        return $rootScope.$broadcast('pusher:bad_browser');
+      };
+      connectionHandler = {
+        success: function(pusher) {
+          var connecting, initialConnectedHandler, runTimeConnectedHandler;
+          connecting = function() {
+            idFlashFactory.now('info', 'Establishing real-time connection...');
+            pusher.connection.unbind('connecting', connecting);
+            pusher.connection.bind('connecting', reConnecting);
+            return usSpinnerService.spin('global-spinner');
+          };
+          initialConnectedHandler = function(wtf) {
+            usSpinnerService.stop('global-spinner');
+            pusher.connection.unbind('connected', initialConnectedHandler);
+            pusher.connection.bind('connected', runTimeConnectedHandler);
+            return $rootScope.$broadcast('pusher:ready');
+          };
+          runTimeConnectedHandler = function(obj) {
+            usSpinnerService.stop('global-spinner');
+            return idFlashFactory.now('success', 'Connected!', 4000);
+          };
+          pusher.connection.bind('connecting_in', connectingIn);
+          pusher.connection.bind('connecting', connecting);
+          pusher.connection.bind('connected', initialConnectedHandler);
+          pusher.connection.bind('failed', browserNotSupported);
+          return pusher.connection.bind('unavailable', connectionFailure);
+        },
+        loadError: function(error) {
+          error || (error = new Error("Pusher service failed to resolve."));
+          $window._errs.push(error);
+          return idFlashFactory.now('danger', 'Browser failed to load a required resource. Please try again and Report problem if error continues.');
+        }
+      };
+      return connectionHandler;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=pusher_connection_factory.js.map
+*/
+(function() {
+  var mod;
+
+  mod = angular.module('idTwilioConnectionHandlers', ['ui.router', 'idFlash', 'idTransition', 'idTwilio', 'idCacheFactories']);
+
+  mod.factory('idTwilioConnectionFactory', [
+    '$rootScope', '$window', 'TwilioCache', 'idFlashFactory', 'idTwilioService', function($rootScope, $window, TwilioCache, idFlashFactory, idTwilioService) {
+      var factory, twilioParams;
+      twilioParams = {};
+      factory = {
+        boundEvents: [],
+        boundEventsMissing: function(eventName) {
+          return factory.boundEvents.indexOf(eventName) === -1;
+        },
+        connect: function(params) {
+          twilioParams = params;
+          return idTwilioService.then(factory.resolved, factory.resolveError);
+        },
+        connected: function(connection) {
+          TwilioCache.put('connection', connection);
+          if (angular.isFunction(factory.afterConnected)) {
+            return factory.afterConnected();
+          }
+        },
+        disconnected: function(connection) {
+          var pending;
+          console.log('twilio disconnected', connection);
+          pending = TwilioCache.get('disconnect_pending');
+          if (pending == null) {
+            return idFlashFactory.now('danger', 'The browser phone has disconnected unexpectedly. Save any responses (you may need to click Hangup first), report the problem and reload the page.');
+          } else {
+            return TwilioCache.remove('disconnect_pending');
+          }
+        },
+        error: function(error) {
+          console.log('Twilio Connection Error', error);
+          idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.');
+          $window._errs.push(error);
+          if (angular.isFunction(factory.afterError)) {
+            return factory.afterError();
+          }
+        },
+        resolved: function(twilio) {
+          if (factory.boundEventsMissing('connect')) {
+            twilio.Device.connect(factory.connected);
+            factory.boundEvents.push('connect');
+          }
+          if (factory.boundEventsMissing('disconnect')) {
+            twilio.Device.disconnect(factory.disconnected);
+            factory.boundEvents.push('disconnect');
+          }
+          if (factory.boundEventsMissing('error')) {
+            twilio.Device.error(factory.error);
+            factory.boundEvents.push('error');
+          }
+          return twilio.Device.connect(twilioParams);
+        },
+        resolveError: function(err) {
+          return idFlashFactory.now('danger', 'Browser phone setup failed. Please dial-in to continue.');
+        }
+      };
+      return factory;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=twilio_connection_factory.js.map
+*/
+(function() {
+  'use strict';
+  var mod;
+
+  mod = angular.module('callveyor.call_flow', ['ui.router', 'idFlash', 'idTransition', 'idCacheFactories', 'callveyor.http_dialer']);
+
+  mod.factory('idCallFlow', [
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', function($rootScope, $state, $window, $cacheFactory, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache, TwilioCache) {
+      var beforeunloadBeenBound, handlers, isWarmTransfer;
+      isWarmTransfer = function() {
+        return /warm/i.test(TransferCache.get('type'));
+      };
+      beforeunloadBeenBound = false;
+      handlers = {
+        startCalling: function(data) {
+          var caller, stopFirst;
+          caller = CallStationCache.get('caller');
+          caller.session_id = data.caller_session_id;
+          if (!beforeunloadBeenBound) {
+            beforeunloadBeenBound = true;
+            stopFirst = function(ev) {
+              var caller_id, params;
+              caller_id = caller.id;
+              params = {};
+              params.session_id = caller.session_id;
+              return jQuery.ajax({
+                url: "/call_center/api/" + caller_id + "/stop_calling",
+                data: params,
+                type: "POST",
+                async: false,
+                success: function() {
+                  return console.log('Bye.');
+                }
+              });
+            };
+            return $window.addEventListener('beforeunload', stopFirst);
+          }
+        },
+        /*
+        LEGACY-way
+        - unset call_id on campaign call model
+        - clear & set contact (aka lead) info
+        - clear script form
+        - hide placeholder contact message
+        - render contact info
+        - update caller action buttons
+        */
+
+        conferenceStarted: function(contact) {
+          var caller, campaign, p;
+          campaign = CallStationCache.get('campaign');
+          campaign.type = contact.dialer;
+          delete contact.dialer;
+          if (contact.campaign_out_of_leads) {
+            TwilioCache.put('disconnect_pending', true);
+            FlashCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.');
+            ContactCache.put('data', {});
+            $rootScope.$broadcast('contact:changed');
+            p = $state.go('abort');
+            p["catch"](idTransitionPrevented);
+            return;
+          }
+          ContactCache.put('data', contact);
+          $rootScope.$broadcast('contact:changed');
+          p = $state.go('dialer.hold');
+          p["catch"](idTransitionPrevented);
+          if (campaign.type === 'Power') {
+            caller = CallStationCache.get('caller');
+            return idHttpDialerFactory.dialContact(caller.id, {
+              session_id: caller.session_id,
+              voter_id: contact.fields.id
+            });
+          }
+        },
+        /*
+        LEGACY-way
+        - unset call_id on campaign call model
+        - clear & set contact (aka lead) info
+        - clear script form
+        - show placeholder contact message
+        - hide contact info
+        - update caller action buttons
+        */
+
+        callerConnectedDialer: function() {
+          var p, transitionSuccess;
+          transitionSuccess = function() {
+            ContactCache.put('data', {});
+            return $rootScope.$broadcast('contact:changed');
+          };
+          p = $state.go('dialer.hold');
+          return p.then(transitionSuccess, idTransitionPrevented);
+        },
+        /*
+        LEGACY-way
+        - fetch script for new campaign, if successful then continue
+        - render new script
+        - clear & set contact (aka lead) info
+        - clear script form
+        - hide placeholder contact message
+        - show contact info
+        - update caller action buttons
+        - alert('You have been reassigned')
+        */
+
+        callerReassigned: function(contact) {
+          var campaign, deregister, update;
+          deregister = {};
+          campaign = CallStationCache.get('campaign');
+          campaign.type = contact.campaign_type;
+          campaign.id = contact.campaign_id;
+          delete contact.campaign_type;
+          delete contact.campaign_id;
+          update = function() {
+            deregister();
+            return handlers.conferenceStarted(contact);
+          };
+          deregister = $rootScope.$on('survey:load:success', update);
+          return $rootScope.$broadcast('survey:reload');
+        },
+        /*
+        LEGACY-way
+        - update caller action buttons
+        */
+
+        callingVoter: function() {
+          return console.log('calling_voter');
+        },
+        /*
+        LEGACY-way
+        - set call_id on campaign call model
+        - update caller action buttons
+        */
+
+        voterConnected: function(data) {
+          var p;
+          CallCache.put('id', data.call_id);
+          p = $state.go('dialer.active');
+          return p["catch"](idTransitionPrevented);
+        },
+        /*
+        LEGACY-way
+        - set call_id on campaign call model
+        - clear & set contact (aka lead) info
+        - clear script form
+        - hide placeholder contact message
+        - show contact info
+        - update caller action buttons
+        */
+
+        voterConnectedDialer: function(data) {
+          var p, transitionSuccess;
+          transitionSuccess = function() {
+            ContactCache.put('data', data.voter);
+            $rootScope.$broadcast('contact:changed');
+            return CallCache.put('id', data.call_id);
+          };
+          p = $state.go('dialer.active');
+          return p.then(transitionSuccess, idTransitionPrevented);
+        },
+        /*
+        LEGACY-way
+        - update caller action buttons
+        */
+
+        voterDisconnected: function() {
+          var p;
+          if (!isWarmTransfer()) {
+            p = $state.go('dialer.wrap');
+            return p["catch"](idTransitionPrevented);
+          } else {
+            return console.log('skipping transition');
+          }
+        },
+        callerDisconnected: function() {
+          var p;
+          if ($state.is('dialer.active')) {
+            idFlashFactory.now('warning', 'The browser lost its voice connection. Please save any responses and Report problem if needed.');
+            p = $state.go('dialer.wrap');
+            return p["catch"](idTransitionPrevented);
+          } else {
+            p = $state.go('dialer.ready');
+            return p["catch"](idTransitionPrevented);
+          }
+        },
+        callEnded: function(data) {
+          var campaign_type, hold, holdCache, msg, number, shouldReload, status;
+          console.log('call_ended', data);
+          status = data.status;
+          campaign_type = data.campaign_type;
+          number = data.number;
+          shouldReload = function() {
+            return status !== 'completed' && $state.is('dialer.hold') && campaign_type !== 'Predictive';
+          };
+          if (shouldReload()) {
+            console.log('reloading dialer.hold $state');
+            msg = "" + number + " " + status;
+            idFlashFactory.nowAndDismiss('info', msg, 3000);
+            holdCache = $cacheFactory.get('hold');
+            hold = holdCache.get('sharedScope');
+            return hold.reset();
+          }
+        },
+        /*
+        LEGACY-way
+        - update caller action buttons
+        */
+
+        transferBusy: function() {
+          return console.log('transfer_busy');
+        },
+        /*
+        LEGACY-way
+        - set transfer_type on campaign model to param.type
+        - set transfer_call_id on campaign model to campaign model call_id
+        */
+
+        transferConnected: function(data) {
+          console.log('transfer_connected', data);
+          return TransferCache.put('type', data.type);
+        },
+        contactJoinedTransferConference: function() {
+          var p;
+          console.log('contactJoinedTransferConference');
+          if (!isWarmTransfer()) {
+            p = $state.go('dialer.wrap');
+            return p["catch"](idTransitionPrevented);
+          }
+        },
+        callerJoinedTransferConference: function() {
+          var p;
+          console.log('callerJoinedTransferConference');
+          p = $state.go('dialer.active.transfer.conference');
+          return p["catch"](idTransitionPrevented);
+        },
+        /*
+        LEGACY-way
+        - iff transfer was disconnected by caller then trigger 'transfer.kicked' event
+        - otherwise, iff transfer was warm then update caller action buttons
+        - quietly unset 'kicking' property from campaign call model
+        - unset 'transfer_type' property from campaign call model
+        */
+
+        transferConferenceEnded: function() {
+          var isWarm, p;
+          console.log('transfer_conference_ended', $state.current);
+          isWarm = isWarmTransfer();
+          TransferCache.remove('type');
+          TransferCache.remove('selected');
+          if (!isWarm) {
+            return;
+          }
+          if ($state.is('dialer.active.transfer.conference')) {
+            p = $state.go('dialer.active');
+            return p["catch"](idTransitionPrevented);
+          }
+        },
+        /*
+        LEGACY-way
+        - update caller action buttons
+        */
+
+        warmTransfer: function() {
+          return console.log('warm_transfer deprecated');
+        },
+        /*
+        LEGACY-way
+        - update caller action buttons
+        */
+
+        coldTransfer: function() {
+          return console.log('cold_transfer deprecated');
+        },
+        /*
+        LEGACY-way
+        - update caller action buttons
+        */
+
+        callerKickedOff: function() {
+          var p;
+          p = $state.go('dialer.wrap');
+          return p["catch"](idTransitionPrevented);
+        },
+        callerWrapupVoiceHit: function() {
+          var hold, holdCache, p;
+          if ($state.is('dialer.hold')) {
+            holdCache = $cacheFactory.get('hold');
+            hold = holdCache.get('sharedScope');
+            hold.reset();
+          }
+          console.log('caller:wrapup:start');
+          p = $state.go('dialer.wrap');
+          return p["catch"](idTransitionPrevented);
+        },
+        messageDropError: function(data) {
+          console.log('messageDropError', data);
+          return idFlashFactory.now('danger', data.message, 7000);
+        },
+        messageDropSuccess: function() {
+          var statePromise;
+          console.log('messageDropSuccess');
+          statePromise = $state.go('dialer.wrap');
+          return statePromise["catch"]($window._errs.push);
+        }
+      };
+      return handlers;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=call_flow.js.map
+*/
+(function() {
+  'use strict';
+  var scriptLoader;
+
+  scriptLoader = angular.module('idScriptLoader', []);
+
+  scriptLoader.factory('idScriptLoader', [
+    '$window', '$document', function($window, $document) {
+      scriptLoader = {};
+      scriptLoader.createScriptTag = function(scriptId, scriptUrl, callback) {
+        var bodyTag, scriptTag;
+        scriptTag = $document[0].createElement('script');
+        scriptTag.type = 'text/javascript';
+        scriptTag.async = true;
+        scriptTag.id = scriptId;
+        scriptTag.src = scriptUrl;
+        scriptTag.onreadystatechange = function() {
+          if (this.readyState === 'complete') {
+            return callback();
+          }
+        };
+        scriptTag.onload = callback;
+        bodyTag = $document.find('body')[0];
+        return bodyTag.appendChild(scriptTag);
+      };
+      return scriptLoader;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=id_script_loader.js.map
+*/
+(function() {
+  'use strict';
+  var twilio;
+
+  twilio = angular.module('idTwilio', ['idScriptLoader']);
+
+  twilio.provider('idTwilioService', function() {
+    var _initOptions, _scriptId, _scriptUrl, _tokenUrl;
+    _scriptUrl = '//static.twilio.com/libs/twiliojs/1.2/twilio.js';
+    _scriptId = 'TwilioJS';
+    _tokenUrl = '/call_center/api/twilio_token.json';
+    _initOptions = {};
+    this.setOptions = function(opts) {
+      _initOptions = opts || _initOptions;
+      return this;
+    };
+    this.setScriptUrl = function(url) {
+      _scriptUrl = url || _scriptUrl;
+      return this;
+    };
+    this.setTokenUrl = function(url) {
+      return _tokenUrl = url || _tokenUrl;
+    };
+    this.$get = [
+      '$q', '$window', '$timeout', '$http', 'idScriptLoader', function($q, $window, $timeout, $http, idScriptLoader) {
+        var deferred, scriptLoaded, tokens, tokensFetchError, tokensFetched, twilioToken;
+        tokens = $http.get(_tokenUrl);
+        twilioToken = '';
+        deferred = $q.defer();
+        scriptLoaded = function(token) {
+          var _Twilio;
+          _Twilio = $window.Twilio;
+          new _Twilio.Device.setup(twilioToken, {
+            'debug': true
+          });
+          return $timeout(function() {
+            return deferred.resolve(_Twilio);
+          });
+        };
+        tokensFetched = function(token) {
+          twilioToken = token.data.twilio_token;
+          return idScriptLoader.createScriptTag(_scriptId, _scriptUrl, scriptLoaded);
+        };
+        tokensFetchError = function(e) {
+          return console.log('tokensFetchError', e);
+        };
+        tokens.then(tokensFetched, tokensFetchError);
+        return deferred.promise;
+      }
+    ];
+    return this;
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=id_twilio_client.js.map
+*/
+(function() {
+  'use strict';
+  var mod;
+
+  mod = angular.module('callveyor.http_dialer', ['idFlash', 'angularSpinner', 'idCacheFactories']);
+
+  mod.factory('idHttpDialerFactory', [
+    '$rootScope', '$timeout', '$http', 'idFlashFactory', 'usSpinnerService', 'TwilioCache', function($rootScope, $timeout, $http, idFlashFactory, usSpinnerService, TwilioCache) {
+      var dial, dialer, error, success;
+      dialer = {};
+      dial = function(url, params) {
+        usSpinnerService.spin('global-spinner');
+        return $http.post(url, params);
+      };
+      success = function(resp, status, headers, config) {
+        dialer.caller_id = void 0;
+        dialer.params = void 0;
+        dialer.retry = false;
+        return $rootScope.$broadcast('http_dialer:success', resp);
+      };
+      error = function(resp, status, headers, config) {
+        if (dialer.retry && /(408|500|504)/.test(resp.status)) {
+          $rootScope.$broadcast('http_dialer:retrying', resp);
+          return dialer[dialer.retry](dialer.caller_id, dialer.params, false);
+        } else {
+          return $rootScope.$broadcast('http_dialer:error', resp);
+        }
+      };
+      dialer.retry = false;
+      dialer.dialContact = function(caller_id, params, retry) {
+        var url;
+        if (!((caller_id != null) && (params != null) && (params.session_id != null) && (params.voter_id != null))) {
+          throw new Error("idHttpDialerFactory.dialContact(" + caller_id + ", " + (params || {}).session_id + ", " + (params || {}).voter_id + ") called with invalid arguments. caller_id, params.session_id and params.voter_id are all required");
+        }
+        if (retry) {
+          dialer.caller_id = caller_id;
+          dialer.params = params;
+          dialer.retry = 'dialContact';
+        } else {
+          dialer.caller_id = void 0;
+          dialer.params = void 0;
+          dialer.retry = false;
+        }
+        url = "/call_center/api/" + caller_id + "/call_voter";
+        return dial(url, params).then(success, error);
+      };
+      dialer.skipContact = function(caller_id, params) {
+        var url;
+        dialer.retry = false;
+        usSpinnerService.spin('global-spinner');
+        url = "/call_center/api/" + caller_id + "/skip_voter";
+        return $http.post(url, params);
+      };
+      dialer.dialTransfer = function(params, retry) {
+        var url;
+        dialer.retry = false;
+        url = "/call_center/api/transfer/dial";
+        return dial(url, params).then(success, error);
+      };
+      dialer.kick = function(caller, participant_type) {
+        var params, url;
+        usSpinnerService.spin('global-spinner');
+        params = {};
+        params.caller_session_id = caller.session_id;
+        params.participant_type = participant_type;
+        url = "/call_center/api/" + caller.id + "/kick";
+        return $http.post(url, params);
+      };
+      dialer.hangupTransfer = function(caller) {
+        dialer.retry = false;
+        return dialer.kick(caller, 'transfer');
+      };
+      dialer.hangup = function(call_id, transfer, caller) {
+        var url;
+        dialer.retry = false;
+        if ((transfer != null) && transfer.transfer_type === 'warm') {
+          return dialer.kick(caller, 'caller');
+        } else {
+          TwilioCache.put('disconnect_pending', 1);
+          url = "/call_center/api/" + call_id + "/hangup";
+          return $http.post(url);
+        }
+      };
+      dialer.dropMessage = function(call_id) {
+        var url;
+        usSpinnerService.spin('global-spinner');
+        url = "/call_center/api/" + call_id + "/drop_message";
+        return $http.post(url);
+      };
+      return dialer;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=http_dialer.js.map
+*/
+(function() {
+  'use strict';
+  var userMessages;
+
+  userMessages = angular.module('idFlash', []);
+
+  userMessages.factory('idFlashFactory', [
+    '$timeout', function($timeout) {
+      var flash;
+      flash = {
+        alerts: [],
+        nowAndDismiss: function(type, message, dismissIn) {
+          var autoDismiss, obj;
+          obj = {
+            type: type,
+            message: message
+          };
+          flash.alerts.push(obj);
+          autoDismiss = function() {
+            var index;
+            index = flash.alerts.indexOf(obj);
+            return flash.dismiss(index);
+          };
+          return $timeout(autoDismiss, dismissIn);
+        },
+        now: function(type, message) {
+          return flash.alerts.push({
+            type: type,
+            message: message
+          });
+        },
+        dismiss: function(index) {
+          return flash.alerts.splice(index, 1);
+        }
+      };
+      return flash;
+    }
+  ]);
+
+  userMessages.controller('idFlashCtrl', [
+    '$scope', 'idFlashFactory', function($scope, idFlashFactory) {
+      return $scope.flash = idFlashFactory;
+    }
+  ]);
+
+  userMessages.directive('idUserMessages', function() {
+    return {
+      restrict: 'A',
+      templateUrl: '/callveyor/common/id_flash/id_flash.tpl.html',
+      controller: 'idFlashCtrl'
+    };
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=id_flash.js.map
+*/
+(function() {
+  'use strict';
+  var dialer;
+
+  dialer = angular.module('callveyor.dialer', ['ui.router', 'doowb.angular-pusher', 'transitionGateway', 'callveyor.dialer.ready', 'callveyor.dialer.hold', 'callveyor.dialer.active', 'callveyor.dialer.wrap', 'callveyor.dialer.stop', 'survey', 'callveyor.contact', 'callveyor.call_flow', 'idTransition', 'idCacheFactories']);
+
+  dialer.config([
+    '$stateProvider', function($stateProvider) {
+      return $stateProvider.state('dialer', {
+        abstract: true,
+        templateUrl: '/callveyor/dialer/dialer.tpl.html',
+        resolve: {
+          callStation: function($http) {
+            return $http.post('/call_center/api/call_station.json');
+          }
+        },
+        controller: 'DialerCtrl'
+      });
+    }
+  ]);
+
+  dialer.controller('DialerCtrl', [
+    '$rootScope', 'Pusher', 'idCallFlow', 'transitionValidator', 'callStation', 'CallStationCache', function($rootScope, Pusher, idCallFlow, transitionValidator, callStation, CallStationCache) {
+      var channel, data;
+      data = callStation.data;
+      CallStationCache.put('caller', data.caller);
+      CallStationCache.put('campaign', data.campaign);
+      CallStationCache.put('call_station', data.call_station);
+      CallStationCache.put('permissions', data.permissions);
+      channel = data.caller.session_key;
+      transitionValidator.start();
+      Pusher.subscribe(channel, 'start_calling', idCallFlow.startCalling);
+      Pusher.subscribe(channel, 'conference_started', idCallFlow.conferenceStarted);
+      Pusher.subscribe(channel, 'caller_connected_dialer', idCallFlow.callerConnectedDialer);
+      Pusher.subscribe(channel, 'caller_reassigned', idCallFlow.callerReassigned);
+      Pusher.subscribe(channel, 'calling_voter', idCallFlow.callingVoter);
+      Pusher.subscribe(channel, 'voter_connected', idCallFlow.voterConnected);
+      Pusher.subscribe(channel, 'voter_connected_dialer', idCallFlow.voterConnectedDialer);
+      Pusher.subscribe(channel, 'voter_disconnected', idCallFlow.voterDisconnected);
+      Pusher.subscribe(channel, 'caller_disconnected', idCallFlow.callerDisconnected);
+      Pusher.subscribe(channel, 'transfer_busy', idCallFlow.transferBusy);
+      Pusher.subscribe(channel, 'transfer_connected', idCallFlow.transferConnected);
+      Pusher.subscribe(channel, 'transfer_conference_ended', idCallFlow.transferConferenceEnded);
+      Pusher.subscribe(channel, 'contact_joined_transfer_conference', idCallFlow.contactJoinedTransferConference);
+      Pusher.subscribe(channel, 'caller_joined_transfer_conference', idCallFlow.callerJoinedTransferConference);
+      Pusher.subscribe(channel, 'caller_kicked_off', idCallFlow.callerKickedOff);
+      Pusher.subscribe(channel, 'caller_wrapup_voice_hit', idCallFlow.callerWrapupVoiceHit);
+      Pusher.subscribe(channel, 'call_ended', idCallFlow.callEnded);
+      Pusher.subscribe(channel, 'message_drop_error', idCallFlow.messageDropError);
+      return Pusher.subscribe(channel, 'message_drop_success', idCallFlow.messageDropSuccess);
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=dialer.js.map
+*/
+(function() {
+  'strict';
+  var contact;
+
+  contact = angular.module('callveyor.contact', ['idCacheFactories']);
+
+  contact.controller('ContactCtrl', [
+    '$rootScope', '$scope', '$state', '$http', 'ContactCache', function($rootScope, $scope, $state, $http, ContactCache) {
+      var handleStateChange, updateFromCache;
+      contact = {};
+      contact.data = ContactCache.get('data');
+      handleStateChange = function(event, toState, toParams, fromState, fromParams) {
+        switch (toState.name) {
+          case 'dialer.stop':
+          case 'dialer.ready':
+            return contact.data = {};
+        }
+      };
+      updateFromCache = function() {
+        return contact.data = ContactCache.get('data');
+      };
+      $rootScope.$on('contact:changed', updateFromCache);
+      $rootScope.$on('$stateChangeSuccess', handleStateChange);
+      return $scope.contact = contact;
+    }
+  ]);
+
+  contact.directive('idContact', function() {
+    return {
+      restrict: 'A',
+      templateUrl: '/callveyor/dialer/contact/info.tpl.html'
+    };
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=contact.js.map
+*/
+(function() {
+  'use strict';
+  var surveyForm;
+
+  surveyForm = angular.module('survey', ['ui.router', 'angularSpinner', 'idFlash', 'idCacheFactories']);
+
+  surveyForm.factory('SurveyFormFieldsFactory', [
+    '$http', '$filter', '$sce', function($http, $filter, $sce) {
+      var fields;
+      return fields = {
+        data: {},
+        prepareSurveyForm: function(payload) {
+          var normalizeObj, normalizeSurvey, normalizedSurvey, selectNonEmpty;
+          selectNonEmpty = function(val) {
+            return val != null;
+          };
+          normalizeObj = function(object, type) {
+            var obj;
+            obj = {
+              id: object.id,
+              order: object.script_order,
+              type: '',
+              content: ''
+            };
+            switch (type) {
+              case 'notes':
+                obj.type = 'note';
+                obj.content = object.note;
+                break;
+              case 'script_texts':
+                obj.type = 'scriptText';
+                obj.content = $sce.trustAsHtml(object.markdown_content);
+                break;
+              case 'questions':
+                obj.type = 'question';
+                obj.content = object.text;
+                obj.possibleResponses = $filter('filter')(object.possible_responses, selectNonEmpty);
+            }
+            return obj;
+          };
+          normalizedSurvey = [];
+          normalizeSurvey = function(arr, type) {
+            switch (type) {
+              case 'notes':
+              case 'script_texts':
+              case 'questions':
+                return angular.forEach(arr, function(obj) {
+                  return normalizedSurvey.push(normalizeObj(obj, type));
+                });
+            }
+          };
+          angular.forEach(payload.data, function(obj, type) {
+            return normalizeSurvey(obj, type);
+          });
+          return fields.data = $filter('orderBy')(normalizedSurvey, 'order');
+        },
+        fetch: function() {
+          return $http.get('/call_center/api/survey_fields.json');
+        }
+      };
+    }
+  ]);
+
+  surveyForm.controller('SurveyFormCtrl', [
+    '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', function($rootScope, $scope, $filter, $state, $http, TransferCache, CallCache, TwilioCache, usSpinnerService, $timeout, SurveyFormFieldsFactory, idFlashFactory, SurveyCache) {
+      var cacheTransferList, fetchErr, handleStateChange, loadForm, prepForm, requestInProgress, survey;
+      survey = {
+        hideButtons: true
+      };
+      cacheTransferList = function(payload) {
+        var list;
+        list = payload.data.transfers;
+        return TransferCache.put('list', list);
+      };
+      fetchErr = function(e) {
+        ErrorCache.put('SurveyFormFieldsFactory.fetch.failed', e);
+        return idFlashFactory.now('danger', 'Survey failed to load. Please refresh the page to try again.');
+      };
+      prepForm = function(payload) {
+        SurveyFormFieldsFactory.prepareSurveyForm(payload);
+        survey.form = SurveyFormFieldsFactory.data;
+        cacheTransferList(payload);
+        return $rootScope.$broadcast('survey:load:success');
+      };
+      loadForm = function() {
+        return SurveyFormFieldsFactory.fetch().then(prepForm, fetchErr);
+      };
+      handleStateChange = function(event, toState, toParams, fromState, fromParams) {
+        switch (toState.name) {
+          case 'dialer.wrap':
+            return survey.hideButtons = false;
+          default:
+            return survey.hideButtons = true;
+        }
+      };
+      $rootScope.$on('$stateChangeSuccess', handleStateChange);
+      survey.responses = {
+        notes: {},
+        question: {}
+      };
+      requestInProgress = false;
+      survey.save = function($event, andContinue) {
+        var action, always, call_id, error, reset, success, successRan;
+        if (requestInProgress) {
+          console.log('survey.requestInProgress, returning');
+          return;
+        }
+        call_id = CallCache.get('id');
+        if (call_id == null) {
+          ErrorCache.put('survey.save.failed', "CallCache had no ID.");
+          idFlashFactory.now('danger', 'You found a bug! Please Report problem and we will have you up and running ASAP.');
+          return;
+        }
+        usSpinnerService.spin('global-spinner');
+        action = 'submit_result';
+        if (!andContinue) {
+          action += '_and_stop';
+          TwilioCache.put('disconnect_pending', 1);
+        }
+        successRan = false;
+        success = function(resp) {
+          reset();
+          $rootScope.$broadcast('survey:save:success', {
+            andContinue: andContinue
+          });
+          return successRan = true;
+        };
+        error = function(resp) {
+          var msg;
+          msg = '';
+          switch (resp.status) {
+            case 400:
+              msg += 'Bad request. Try again and Report problem if error continues.';
+              break;
+            case 408:
+            case 504:
+              msg += 'Browser took too long sending data. Verify internet connection and try again. Report problem if the error continues.';
+              break;
+            case 500:
+              msg += 'Server error. We have been notified and will update account holders soon. Report problem then Stop calling.';
+              break;
+            case 503:
+              msg += 'Minor maintenance in-progress. Try again in a minute or so. Report problem if the error continues.';
+              break;
+            default:
+              msg += 'Please try again and Report problem if the error continues.';
+          }
+          idFlashFactory.now('danger', msg);
+          return $rootScope.transitionInProgress = false;
+        };
+        always = function(resp) {
+          requestInProgress = false;
+          if (andContinue && successRan) {
+            usSpinnerService.spin('global-spinner');
+          } else {
+            usSpinnerService.stop('global-spinner');
+            $rootScope.transitionInProgress = false;
+          }
+          return $rootScope.$broadcast('survey:save:done', {
+            andContinue: andContinue
+          });
+        };
+        requestInProgress = true;
+        $rootScope.transitionInProgress = true;
+        $http.post("/call_center/api/" + call_id + "/" + action, survey.responses).then(success, error)["finally"](always);
+        return reset = function() {
+          return survey.responses = {
+            notes: {},
+            question: {}
+          };
+        };
+      };
+      if (!SurveyCache.get('eventsBound')) {
+        $rootScope.$on('survey:save:click', survey.save);
+        $rootScope.$on('survey:reload', loadForm);
+        SurveyCache.put('eventsBound', true);
+      }
+      loadForm();
+      return $scope.survey || ($scope.survey = survey);
+    }
+  ]);
+
+  surveyForm.directive('idSurvey', function() {
+    return {
+      restrict: 'A',
+      templateUrl: '/callveyor/survey/survey.tpl.html',
+      controller: 'SurveyFormCtrl'
+    };
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=survey.js.map
+*/
+(function() {
+  'use strict';
+  var ready;
+
+  ready = angular.module('callveyor.dialer.ready', ['ui.router', 'ui.bootstrap', 'idTwilioConnectionHandlers', 'idFlash', 'idCacheFactories']);
+
+  ready.config([
+    '$stateProvider', function($stateProvider) {
+      return $stateProvider.state('dialer.ready', {
+        views: {
+          callFlowButtons: {
+            templateUrl: '/callveyor/dialer/ready/callFlowButtons.tpl.html',
+            controller: 'ReadyCtrl.splash'
+          }
+        }
+      });
+    }
+  ]);
+
+  ready.factory('ReadyEventHandlers', [
+    '$rootScope', function($rootScope) {
+      var handlers;
+      handlers = {
+        bindCloseModal: function(event, modalInstance) {
+          if (handlers.boundCloseModal != null) {
+            handlers.boundCloseModal();
+          }
+          return handlers.boundCloseModal = $rootScope.$on(event, function() {
+            return modalInstance.close();
+          });
+        }
+      };
+      return handlers;
+    }
+  ]);
+
+  ready.controller('ReadyCtrl.splashModal', [
+    '$scope', '$state', '$modalInstance', 'ReadyEventHandlers', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory', 'idTransitionPrevented', function($scope, $state, $modalInstance, ReadyEventHandlers, CallStationCache, idTwilioConnectionFactory, idFlashFactory, idTransitionPrevented) {
+      var config, twilioParams;
+      config = {
+        caller: CallStationCache.get('caller'),
+        campaign: CallStationCache.get('campaign'),
+        call_station: CallStationCache.get('call_station')
+      };
+      twilioParams = {
+        'PhoneNumber': config.call_station.phone_number,
+        'campaign_id': config.campaign.id,
+        'caller_id': config.caller.id,
+        'session_key': config.caller.session_key
+      };
+      ReadyEventHandlers.bindCloseModal("" + config.caller.session_key + ":start_calling", $modalInstance);
+      idTwilioConnectionFactory.afterConnected = function() {
+        var p;
+        p = $state.go('dialer.hold');
+        return p["catch"](idTransitionPrevented);
+      };
+      idTwilioConnectionFactory.afterError = function() {
+        var p;
+        p = $state.go('dialer.ready');
+        return p["catch"](idTransitionPrevented);
+      };
+      ready = config || {};
+      ready.startCalling = function() {
+        $scope.transitionInProgress = true;
+        return idTwilioConnectionFactory.connect(twilioParams);
+      };
+      return $scope.ready = ready;
+    }
+  ]);
+
+  ready.controller('ReadyCtrl.splash', [
+    '$scope', '$rootScope', '$modal', '$window', 'idTwilioService', 'usSpinnerService', function($scope, $rootScope, $modal, $window, idTwilioService, usSpinnerService) {
+      var done, err, splash;
+      done = function() {
+        return $rootScope.transitionInProgress = false;
+      };
+      err = function() {
+        done();
+        throw Error("TwilioClient failed to load");
+      };
+      idTwilioService.then(done, err);
+      splash = {};
+      splash.getStarted = function() {
+        var openModal;
+        return openModal = $modal.open({
+          templateUrl: '/callveyor/dialer/ready/splash.tpl.html',
+          controller: 'ReadyCtrl.splashModal',
+          size: 'lg'
+        });
+      };
+      return $scope.splash = splash;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=ready.js.map
+*/
+(function() {
+  'use strict';
+  var hold;
+
+  hold = angular.module('callveyor.dialer.hold', ['ui.router', 'idCacheFactories']);
+
+  hold.config([
+    '$stateProvider', function($stateProvider) {
+      return $stateProvider.state('dialer.hold', {
+        views: {
+          callFlowButtons: {
+            templateUrl: "/callveyor/dialer/hold/callFlowButtons.tpl.html",
+            controller: 'HoldCtrl.buttons'
+          },
+          callStatus: {
+            templateUrl: '/callveyor/dialer/hold/callStatus.tpl.html',
+            controller: 'HoldCtrl.status'
+          }
+        }
+      });
+    }
+  ]);
+
+  hold.controller('HoldCtrl.buttons', [
+    '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', function($scope, $state, $timeout, $cacheFactory, callStation, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService) {
+      var holdCache;
+      holdCache = $cacheFactory.get('hold') || $cacheFactory('hold');
+      hold = holdCache.get('sharedScope');
+      if (hold == null) {
+        hold = {};
+        holdCache.put('sharedScope', hold);
+      }
+      hold.campaign = callStation.data.campaign;
+      hold.stopCalling = function() {
+        return $state.go('dialer.stop');
+      };
+      hold.reset = function() {
+        hold.callStatusText = 'Waiting to dial...';
+        return $scope.transitionInProgress = false;
+      };
+      hold.dial = function() {
+        var caller, contact, params;
+        params = {};
+        contact = (ContactCache.get('data') || {}).fields;
+        caller = callStation.data.caller || {};
+        params.session_id = caller.session_id;
+        params.voter_id = contact.id;
+        idHttpDialerFactory.dialContact(caller.id, params);
+        hold.callStatusText = 'Dialing...';
+        return $scope.transitionInProgress = true;
+      };
+      hold.skip = function() {
+        var always, caller, contact, params, promise, skipErr, skipSuccess;
+        params = {};
+        contact = (ContactCache.get('data') || {}).fields;
+        caller = callStation.data.caller || {};
+        params.session_id = caller.session_id;
+        params.voter_id = contact.id;
+        hold.callStatusText = 'Skipping...';
+        $scope.transitionInProgress = true;
+        promise = idHttpDialerFactory.skipContact(caller.id, params);
+        skipSuccess = function(payload) {
+          ContactCache.put('data', payload.data);
+          hold.callStatusText = 'Waiting to dial...';
+          return $scope.$emit('contact:changed');
+        };
+        skipErr = function(errObj) {
+          $scope.transitionInProgress = false;
+          hold.callStatusText = 'Error skipping.';
+          return usSpinnerService.stop('global-spinner');
+        };
+        always = function() {
+          $scope.transitionInProgress = false;
+          return usSpinnerService.stop('global-spinner');
+        };
+        return promise.then(skipSuccess, skipErr)["finally"](always);
+      };
+      return $scope.hold || ($scope.hold = hold);
+    }
+  ]);
+
+  hold.controller('HoldCtrl.status', [
+    '$scope', '$cacheFactory', 'callStation', function($scope, $cacheFactory, callStation) {
+      var holdCache;
+      holdCache = $cacheFactory.get('hold') || $cacheFactory('hold');
+      hold = holdCache.get('sharedScope');
+      if (hold == null) {
+        hold = {};
+        holdCache.put('sharedScope', hold);
+      }
+      hold.callStatusText = (function() {
+        switch (callStation.data.campaign.type) {
+          case 'Power':
+          case 'Predictive':
+            return 'Dialing...';
+          case 'Preview':
+            return 'Waiting to dial...';
+        }
+      })();
+      return $scope.hold = hold;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=hold.js.map
+*/
+(function() {
+  'use strict';
+  var active;
+
+  active = angular.module('callveyor.dialer.active', ['ui.router', 'callveyor.dialer.active.transfer', 'idFlash', 'idCacheFactories', 'callveyor.http_dialer']);
+
+  active.config([
+    '$stateProvider', function($stateProvider) {
+      return $stateProvider.state('dialer.active', {
+        views: {
+          callFlowButtons: {
+            templateUrl: '/callveyor/dialer/active/callFlowButtons.tpl.html',
+            controller: 'ActiveCtrl.buttons'
+          },
+          callStatus: {
+            templateUrl: '/callveyor/dialer/active/callStatus.tpl.html',
+            controller: 'ActiveCtrl.status'
+          },
+          callFlowDropdown: {
+            templateUrl: '/callveyor/dialer/active/transfer/dropdown.tpl.html',
+            controller: 'TransferCtrl.list'
+          },
+          transferContainer: {
+            templateUrl: '/callveyor/dialer/active/transfer/container.tpl.html',
+            controller: 'TransferCtrl.container'
+          }
+        }
+      });
+    }
+  ]);
+
+  active.controller('ActiveCtrl.status', [function() {}]);
+
+  active.controller('ActiveCtrl.buttons', [
+    '$rootScope', '$scope', '$state', '$http', '$timeout', '$window', 'CallCache', 'TransferCache', 'CallStationCache', 'idFlashFactory', 'idHttpDialerFactory', function($rootScope, $scope, $state, $http, $timeout, $window, CallCache, TransferCache, CallStationCache, idFlashFactory, idHttpDialerFactory) {
+      var permissions;
+      active = {};
+      permissions = CallStationCache.get('permissions');
+      active.permissions = permissions;
+      active.hangup = function() {
+        var call_id, caller, error, promise, success, transfer;
+        $scope.transitionInProgress = true;
+        call_id = CallCache.get('id');
+        transfer = TransferCache.get('selected');
+        caller = CallStationCache.get('caller');
+        promise = idHttpDialerFactory.hangup(call_id, transfer, caller);
+        success = function() {
+          var statePromise;
+          statePromise = $state.go('dialer.wrap');
+          return statePromise["catch"]($window._errs.push);
+        };
+        error = function(resp) {
+          console.log('error trying to stop calling', resp);
+          idFlashFactory.now('danger', 'Error hanging up. Try again.');
+          return $window._errs.push(resp);
+        };
+        return promise.then(success, error);
+      };
+      active.dropMessage = function() {
+        var call_id, error, promise, success;
+        if (active.permissions.can_drop_message_manually !== true) {
+          return;
+        }
+        $scope.transitionInProgress = true;
+        call_id = CallCache.get('id');
+        promise = idHttpDialerFactory.dropMessage(call_id);
+        success = function(resp) {
+          var boundEvents, caller, cancel, deregisterEvents, timeoutPromise, timeoutReached;
+          console.log('success requesting to drop message', resp);
+          boundEvents = [];
+          caller = CallStationCache.get('caller');
+          idFlashFactory.nowAndDismiss('info', 'Preparing message drop...', 3000);
+          timeoutReached = function() {
+            var obj;
+            obj = new Error("Client timeout reached. Message drop queued successfully. Completion message not received.");
+            $window._errs.push(obj);
+            idFlashFactory.nowAndDismiss('warning', 'Message drop outcome unclear.', 3000);
+            return $scope.transitionInProgress = false;
+          };
+          timeoutPromise = $timeout(timeoutReached, 10000);
+          deregisterEvents = function() {
+            var fn, _results;
+            _results = [];
+            while (fn = boundEvents.pop()) {
+              _results.push(fn());
+            }
+            return _results;
+          };
+          cancel = function(deregisterEvent) {
+            $timeout.cancel(timeoutPromise);
+            return deregisterEvents();
+          };
+          boundEvents.push($rootScope.$on("" + caller.session_key + ":message_drop_error", cancel));
+          return boundEvents.push($rootScope.$on("" + caller.session_key + ":message_drop_success", cancel));
+        };
+        error = function(resp) {
+          console.log('error dropping message', resp);
+          idFlashFactory.now('danger', 'Error preparing message drop. Try again.');
+          $window._errs.push(resp);
+          return $scope.transitionInProgress = false;
+        };
+        return promise.then(success, error);
+      };
+      return $scope.active = active;
+    }
+  ]);
+
+  active.controller('TransferCtrl.container', [
+    '$rootScope', '$scope', function($rootScope, $scope) {
+      return $rootScope.rootTransferCollapse = false;
+    }
+  ]);
+
+  active.controller('TransferCtrl.list', [
+    '$scope', '$state', '$filter', '$window', 'TransferCache', 'idFlashFactory', function($scope, $state, $filter, $window, TransferCache, idFlashFactory) {
+      var err, transfer;
+      transfer = {};
+      transfer.cache = TransferCache;
+      if (transfer.cache != null) {
+        transfer.list = transfer.cache.get('list') || [];
+      } else {
+        transfer.list = [];
+        err = new Error("TransferCtrl.list running but TransferCache is undefined.");
+        $window._errs.push(err);
+      }
+      transfer.select = function(id) {
+        var matchingID, p, s, targets;
+        matchingID = function(obj) {
+          return id === obj.id;
+        };
+        targets = $filter('filter')(transfer.list, matchingID);
+        if (targets[0] != null) {
+          transfer.cache.put('selected', targets[0]);
+          if ($state.is('dialer.active.transfer.selected')) {
+            p = $state.go('dialer.active.transfer.reselect');
+          } else {
+            p = $state.go('dialer.active.transfer.selected');
+          }
+          s = function(r) {
+            return console.log('success', r.stack, r.message);
+          };
+          return p.then(s, $window._errs.push);
+        } else {
+          return idFlashFactory.now('danger', 'Error loading selected transfer. Please try again and Report problem if error continues.');
+        }
+      };
+      return $scope.transfer = transfer;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=active.js.map
+*/
+(function() {
+  'use strict';
+  var transfer;
+
+  transfer = angular.module('callveyor.dialer.active.transfer', ['ui.router', 'callveyor.http_dialer', 'idCacheFactories', 'angularSpinner']);
+
+  transfer.config([
+    '$stateProvider', function($stateProvider) {
+      $stateProvider.state('dialer.active.transfer', {
+        abstract: true,
+        views: {
+          transferPanel: {
+            templateUrl: '/callveyor/dialer/active/transfer/panel.tpl.html',
+            controller: 'TransferPanelCtrl'
+          }
+        }
+      });
+      $stateProvider.state('dialer.active.transfer.selected', {
+        views: {
+          transferButtons: {
+            templateUrl: '/callveyor/dialer/active/transfer/selected/buttons.tpl.html',
+            controller: 'TransferButtonCtrl.selected'
+          },
+          transferInfo: {
+            templateUrl: '/callveyor/dialer/active/transfer/info.tpl.html',
+            controller: 'TransferInfoCtrl'
+          }
+        }
+      });
+      $stateProvider.state('dialer.active.transfer.reselect', {
+        views: {
+          transferButtons: {
+            templateUrl: '/callveyor/dialer/active/transfer/selected/buttons.tpl.html',
+            controller: 'TransferButtonCtrl.selected'
+          },
+          transferInfo: {
+            templateUrl: '/callveyor/dialer/active/transfer/info.tpl.html',
+            controller: 'TransferInfoCtrl'
+          }
+        }
+      });
+      return $stateProvider.state('dialer.active.transfer.conference', {
+        views: {
+          transferInfo: {
+            templateUrl: '/callveyor/dialer/active/transfer/info.tpl.html',
+            controller: 'TransferInfoCtrl'
+          },
+          transferButtons: {
+            templateUrl: '/callveyor/dialer/active/transfer/conference/buttons.tpl.html',
+            controller: 'TransferButtonCtrl.conference'
+          }
+        }
+      });
+    }
+  ]);
+
+  transfer.controller('TransferPanelCtrl', [
+    '$rootScope', '$scope', '$cacheFactory', function($rootScope, $scope, $cacheFactory) {
+      return $rootScope.transferStatus = 'Ready to dial...';
+    }
+  ]);
+
+  transfer.controller('TransferInfoCtrl', [
+    '$scope', 'TransferCache', function($scope, TransferCache) {
+      transfer = TransferCache.get('selected');
+      return $scope.transfer = transfer;
+    }
+  ]);
+
+  transfer.factory('TransferDialerEventFactory', [
+    '$rootScope', 'usSpinnerService', function($rootScope, usSpinnerService) {
+      var handlers;
+      handlers = {
+        httpSuccess: function($event, resp) {
+          console.log('http dialer success', resp);
+          return $rootScope.transferStatus = resp.data.status;
+        },
+        httpError: function($event, resp) {
+          console.log('http dialer error', resp);
+          usSpinnerService.stop('transfer-spinner');
+          $rootScope.transitionInProgress = false;
+          return $rootScope.transferStatus = 'Dial failed.';
+        }
+      };
+      $rootScope.$on('http_dialer:success', handlers.httpSuccess);
+      $rootScope.$on('http_dialer:error', handlers.httpError);
+      return handlers;
+    }
+  ]);
+
+  transfer.controller('TransferButtonCtrl.selected', [
+    '$rootScope', '$scope', '$state', 'TransferCache', 'TransferDialerEventFactory', 'CallCache', 'ContactCache', 'idHttpDialerFactory', 'usSpinnerService', 'CallStationCache', function($rootScope, $scope, $state, TransferCache, TransferDialerEventFactory, CallCache, ContactCache, idHttpDialerFactory, usSpinnerService, CallStationCache) {
+      var isWarmTransfer, selected, transfer_type;
+      transfer = {};
+      transfer.cache = TransferCache;
+      selected = transfer.cache.get('selected');
+      transfer_type = selected.transfer_type;
+      isWarmTransfer = function() {
+        return transfer_type === 'warm';
+      };
+      transfer.dial = function() {
+        var caller, contact, params;
+        params = {};
+        contact = (ContactCache.get('data') || {}).fields;
+        caller = CallStationCache.get('caller');
+        params.voter = contact.id;
+        params.call = CallCache.get('id');
+        params.caller_session = caller.session_id;
+        params.transfer = {
+          id: selected.id
+        };
+        $rootScope.transferStatus = 'Preparing to dial...';
+        idHttpDialerFactory.dialTransfer(params);
+        $rootScope.transitionInProgress = true;
+        return usSpinnerService.spin('transfer-spinner');
+      };
+      transfer.cancel = function() {
+        TransferCache.remove('selected');
+        return $state.go('dialer.active');
+      };
+      $rootScope.rootTransferCollapse = false;
+      return $scope.transfer = transfer;
+    }
+  ]);
+
+  transfer.controller('TransferButtonCtrl.conference', [
+    '$rootScope', '$scope', '$state', '$http', 'TransferCache', 'CallStationCache', 'idHttpDialerFactory', 'usSpinnerService', 'idFlashFactory', function($rootScope, $scope, $state, $http, TransferCache, CallStationCache, idHttpDialerFactory, usSpinnerService, idFlashFactory) {
+      transfer = {};
+      transfer.cache = TransferCache;
+      usSpinnerService.stop('transfer-spinner');
+      $rootScope.transferStatus = 'Transfer on call';
+      transfer.hangup = function() {
+        var caller, error, promise;
+        caller = CallStationCache.get('caller');
+        promise = idHttpDialerFactory.hangupTransfer(caller);
+        error = function(resp) {
+          return $rootScope.transferStatus = "Transfer on call (hangup failed)";
+        };
+        return promise["catch"](error);
+      };
+      return $scope.transfer = transfer;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=transfer.js.map
+*/
+(function() {
+  'use strict';
+  var wrap;
+
+  wrap = angular.module('callveyor.dialer.wrap', []);
+
+  wrap.config([
+    '$stateProvider', function($stateProvider) {
+      return $stateProvider.state('dialer.wrap', {
+        views: {
+          callStatus: {
+            templateUrl: '/callveyor/dialer/wrap/callStatus.tpl.html',
+            controller: 'WrapCtrl.status'
+          },
+          callFlowButtons: {
+            templateUrl: '/callveyor/dialer/wrap/callFlowButtons.tpl.html',
+            controller: 'WrapCtrl.buttons'
+          }
+        }
+      });
+    }
+  ]);
+
+  wrap.controller('WrapCtrl.status', [
+    '$rootScope', '$scope', function($rootScope, $scope) {
+      var doneStatus, saveSuccess, successStatus;
+      wrap = {};
+      wrap.status = 'Waiting for call results.';
+      saveSuccess = false;
+      successStatus = function() {
+        saveSuccess = true;
+        return wrap.status = 'Results saved.';
+      };
+      doneStatus = function() {
+        if (saveSuccess) {
+          wrap.status = "Results saved. Waiting for next contact from server.";
+        } else {
+          wrap.status = "Results failed to save.";
+        }
+        return saveSuccess = false;
+      };
+      $rootScope.$on('survey:save:success', successStatus);
+      $rootScope.$on('survey:save:done', doneStatus);
+      return $scope.wrap = wrap;
+    }
+  ]);
+
+  wrap.controller('WrapCtrl.buttons', [function() {}]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=wrap.js.map
+*/
+(function() {
+  'use strict';
+  var stop;
+
+  stop = angular.module('callveyor.dialer.stop', ['ui.router', 'idCacheFactories', 'idTransition']);
+
+  stop.config([
+    '$stateProvider', function($stateProvider) {
+      return $stateProvider.state('dialer.stop', {
+        views: {
+          callFlowButtons: {
+            templateUrl: "/callveyor/dialer/stop/callFlowButtons.tpl.html",
+            controller: 'StopCtrl.buttons'
+          },
+          callStatus: {
+            templateUrl: '/callveyor/dialer/stop/callStatus.tpl.html',
+            controller: 'StopCtrl.status'
+          }
+        }
+      });
+    }
+  ]);
+
+  stop.controller('StopCtrl.buttons', [
+    '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation', 'idTransitionPrevented', function($scope, $state, TwilioCache, $http, idTwilioService, callStation, idTransitionPrevented) {
+      var always, caller_id, connection, goToReady, params, stopPromise;
+      connection = TwilioCache.get('connection');
+      caller_id = callStation.data.caller.id;
+      params = {};
+      params.session_id = callStation.data.caller.session_id;
+      stopPromise = $http.post("/call_center/api/" + caller_id + "/stop_calling", params);
+      goToReady = function() {
+        var p;
+        console.log('going to "ready" $state');
+        p = $state.go('dialer.ready');
+        console.log('p = ', p, idTransitionPrevented);
+        return p["catch"](idTransitionPrevented);
+      };
+      always = function() {
+        if ((connection != null) && connection.status() === 'open') {
+          TwilioCache.put('disconnect_pending', true);
+          connection.disconnect(goToReady);
+          return connection.disconnectAll();
+        } else {
+          return goToReady();
+        }
+      };
+      return stopPromise["finally"](always);
+    }
+  ]);
+
+  stop.controller('StopCtrl.status', [
+    '$scope', function($scope) {
+      stop = {};
+      stop.callStatusText = 'Stopping...';
+      return $scope.stop = stop;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=stop.js.map
+*/
+angular.module('callveyor.dialer').run(['$templateCache', function($templateCache) {
+  'use strict';
+
+  $templateCache.put('/callveyor/dialer/dialer.tpl.html',
+    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\" data-ng-cloak=\"\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-6\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"global-spinner\"></span> <!-- callStatus ui-view --><div class=\"navbar-left status\"><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-6\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav add-gutter\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/hold/callFlowButtons.tpl.html',
+    "<button class=\"btn btn-primary navbar-btn\" data-ng-click=\"hold.stopCalling()\" data-ng-disabled=\"transitionInProgress\">Stop calling</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"hold.skip()\" data-ng-if=\"hold.campaign.type == 'Preview'\" data-ng-disabled=\"transitionInProgress\">Skip</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"hold.dial()\" data-ng-if=\"hold.campaign.type == 'Preview'\" data-ng-disabled=\"transitionInProgress\">Dial</button>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/hold/callStatus.tpl.html',
+    "<span class=\"navbar-text label label-info\">{{hold.callStatusText}}</span>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/ready/callFlowButtons.tpl.html',
+    "<button class=\"btn btn-primary navbar-btn\" data-ng-click=\"splash.getStarted()\">Start</button> <span data-id-logout=\"\"></span>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/ready/callInPhone.tpl.html',
+    "<p><b>Dial-in number:</b> {{ready.call_station.phone_number}} <b>PIN:</b> {{ready.caller.pin}}</p>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/ready/callStatus.tpl.html',
+    "<span class=\"navbar-text label label-info\">Start calling or Dial-in to begin.</span>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/ready/contactInfo.tpl.html',
+    "<p>Contact details will be listed here when available...</p>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/ready/splash.tpl.html',
+    "<div class=\"modal-header\"><h3 class=\"modal-title\">Choose your path</h3></div><div class=\"modal-body\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-sm-6\"><h4>Other Phone</h4><p><b>Dial:</b> {{ready.call_station.phone_number}}</p><p><b>PIN:</b> {{ready.caller.pin}}</p><p><b>Dial</b> the above number from a cell or landline then key in your <b>PIN</b> when prompted. Then press <b>*</b> to start calling.</p></div><div class=\"col-sm-6\"><h4>Browser Phone</h4><div class=\"btn-group btn-group-justified\"><div class=\"btn-group\"><button class=\"btn btn-primary navbar-btn\" data-ng-click=\"ready.startCalling()\" data-ng-disabled=\"transitionInProgress\">Start calling</button></div></div><div class=\"alert alert-info\"><p>Pre-flight checks<ol class=\"bump-left\"><li>Computer has a built-in microphone or a headset is plugged in</li><li>Internet speed received a 'B' or better from <a href=\"http://pingtest.net/\" target=\"_blank\">pingtest.net</a></li><li>Firewall(s) allow Voice over IP (VoIP) connections. Some firewalls call this 'Skype'. <a href=\"https://impactdialing.freshdesk.com/support/solutions/articles/1000016223-troubleshooting-call-quality\" target=\"_blank\">Read more...</a></li></ol></p></div><p class=\"alert alert-warning\"><em>Poor voice quality, dropped calls or connecting/disconnecting calls rapidly are symptoms of a mis-configured firewall or poor network conditions. Try the Other Phone path.</em></p></div></div></div></div>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/stop/callFlowButtons.tpl.html',
+    ""
+  );
+
+
+  $templateCache.put('/callveyor/dialer/stop/callStatus.tpl.html',
+    "<p class=\"navbar-text label label-info\">{{stop.callStatusText}}</p>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/wrap/callFlowButtons.tpl.html',
+    "<div data-ng-hide=\"survey.hideButtons\"><button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', false)\" data-ng-disabled=\"transitionInProgress\">Save &amp; stop calling</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"$emit('survey:save:click', true)\" data-ng-disabled=\"transitionInProgress\">Save &amp; continue</button></div>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/wrap/callStatus.tpl.html',
+    "<span class=\"navbar-text label label-info\">{{wrap.status}}</span>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/active/callFlowButtons.tpl.html',
+    "<button type=\"button\" class=\"btn btn-primary navbar-btn\" data-ng-click=\"active.hangup()\" data-ng-disabled=\"transitionInProgress\">Hangup</button> <button type=\"button\" class=\"btn btn-primary navbar-btn\" data-ng-click=\"active.dropMessage()\" data-ng-disabled=\"transitionInProgress\" data-ng-show=\"active.permissions.can_drop_message_manually\" title=\"Message will begin playing right away. Wait for the beep and then click to Drop message.\">Drop message</button>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/active/callStatus.tpl.html',
+    "<span class=\"navbar-text label label-info\">Contact on call</span>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/active/transfer/conference/buttons.tpl.html',
+    "<button class=\"btn btn-primary navbar-btn\" data-ng-click=\"transfer.hangup()\" data-ng-disabled=\"transitionInProgress\">Hangup</button>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/active/transfer/container.tpl.html',
+    "<div collapse=\"rootTransferCollapse\" data-ui-view=\"transferPanel\"></div>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/active/transfer/dropdown.tpl.html',
+    "<div class=\"btn-group\" data-ng-hide=\"transfer.list.length == 0\"><button type=\"button\" class=\"btn btn-default navbar-btn dropdown-toggle\">Transfer <b class=\"caret\"></b></button><ul class=\"dropdown-menu\" role=\"menu\"><li data-ng-repeat=\"target in transfer.list\"><a href=\"#\" data-ng-click=\"transfer.select(target.id)\">{{target.label}} ({{target.phone_number}}) <span class=\"label label-{{target.transfer_type == 'warm' ? 'danger' : 'info'}}\">{{target.transfer_type}}</span></a></li></ul></div>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/active/transfer/info.tpl.html',
+    "<span class=\"navbar-text\">{{transfer.label}} ({{transfer.phone_number}}) <span class=\"label label-{{transfer.transfer_type == 'warm' ? 'danger' : 'info'}}\">{{transfer.transfer_type}}</span></span>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/active/transfer/panel.tpl.html',
+    "<div class=\"col-xs-4\"><div class=\"navbar-left status\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"transfer-spinner\"></span> <span class=\"label label-info navbar-text\">{{transferStatus}}</span></div></div><div class=\"col-xs-4\" data-ui-view=\"transferInfo\"></div><div class=\"col-xs-4\"><div class=\"navbar-right\" data-ui-view=\"transferButtons\"></div></div>"
+  );
+
+
+  $templateCache.put('/callveyor/dialer/active/transfer/selected/buttons.tpl.html',
+    "<button class=\"btn btn-primary navbar-btn\" data-ng-click=\"transfer.cancel()\" data-ng-disabled=\"transitionInProgress\">Cancel</button> <button class=\"btn btn-primary navbar-btn\" data-ng-click=\"transfer.dial()\" data-ng-disabled=\"transitionInProgress\">Dial</button>"
+  );
+
+}]);
+
+angular.module('callveyor.contact').run(['$templateCache', function($templateCache) {
+  'use strict';
+
+  $templateCache.put('/callveyor/dialer/contact/info.tpl.html',
+    "<div class=\"row fixed-contact panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id || !contact.data.ID_flag\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id || !contact.data.ID_flag\">{{contact.data.fields.custom_id}}</dd><dt data-ng-hide=\"!contact.data.fields.first_name || !contact.data.FirstName_flag\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name || !contact.data.FirstName_flag\">{{contact.data.fields.first_name}}</dd><dt data-ng-hide=\"!contact.data.fields.middle_name || !contact.data.MiddleName_flag\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name || !contact.data.MiddleName_flag\">{{contact.data.fields.middle_name}}</dd><dt data-ng-hide=\"!contact.data.fields.last_name || !contact.data.LastName_flag\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name || !contact.data.LastName_flag\">{{contact.data.fields.last_name}}</dd><dt data-ng-hide=\"!contact.data.fields.suffix || !contact.data.Suffix_flag\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix || !contact.data.Suffix_flag\">{{contact.data.fields.suffix}}</dd><dt data-ng-hide=\"!contact.data.fields.address || !contact.data.Address_flag\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address || !contact.data.Address_flag\">{{contact.data.fields.address}}</dd><dt data-ng-hide=\"!contact.data.fields.city || !contact.data.City_flag\">City</dt><dd data-ng-hide=\"!contact.data.fields.city || !contact.data.City_flag\">{{contact.data.fields.city}}</dd><dt data-ng-hide=\"!contact.data.fields.state || !contact.data.State/Province_flag\">State</dt><dd data-ng-hide=\"!contact.data.fields.state || !contact.data.State/Province_flag\">{{contact.data.fields.state}}</dd><dt data-ng-hide=\"!contact.data.fields.zip_code || !contact.data.Zip/Postal_flag\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code || !contact.data.Zip/Postal_flag\">{{contact.data.fields.zip_code}}</dd><dt data-ng-hide=\"!contact.data.fields.country || !contact.data.Country_flag\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country || !contact.data.Country_flag\">{{contact.data.fields.country}}</dd><dt data-ng-hide=\"!contact.data.fields.phone || !contact.data.Phone_flag\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone || !contact.data.Phone_flag\">{{contact.data.fields.phone}}</dd><dt data-ng-hide=\"!contact.data.fields.email || !contact.data.Email_flag\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email || !contact.data.Email_flag\">{{contact.data.fields.email}}</dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"(field, value) in contact.data.custom_fields\">{{field}}</dt><dd data-ng-repeat-end=\"\">{{value}}</dd></dl></div></div>"
+  );
+
+}]);
+
+angular.module('idFlash').run(['$templateCache', function($templateCache) {
+  'use strict';
+
+  $templateCache.put('/callveyor/common/id_flash/id_flash.tpl.html',
+    "<div data-alert=\"\" data-ng-repeat=\"alert in flash.alerts\" type=\"alert.type\" close=\"flash.dismiss($index)\" class=\"slim-alert\">{{alert.message}}</div>"
+  );
+
+}]);
+
+angular.module('survey').run(['$templateCache', function($templateCache) {
+  'use strict';
+
+  $templateCache.put('/callveyor/survey/survey.tpl.html',
+    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"transitionInProgress\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><div data-ng-if=\"item.type == 'scriptText'\" data-ng-bind-html=\"item.content\"></div><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\"><option data-ng-repeat=\"response in item.possibleResponses\" value=\"{{response.id}}\">{{response.value}}</option></select></div></form></div>"
+  );
+
+}]);
