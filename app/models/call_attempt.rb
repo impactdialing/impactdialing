@@ -199,6 +199,32 @@ class CallAttempt < ActiveRecord::Base
     ALL = MAP.values
     RETRY = [NOANSWER, BUSY, FAILED]
     ANSWERED =  [INPROGRESS, SUCCESS]
+
+    def self.retry_list(campaign)
+      statuses = [BUSY, NOANSWER, HANGUP, Voter::Status::RETRY]
+
+      if campaign.call_back_after_voicemail_delivery?
+        statuses << VOICEMAIL
+      end
+
+      statuses
+    end
+
+    def self.completed_list(campaign)
+      statuses = [SUCCESS, FAILED]
+
+      # When campaign is set to call people back after dropping message
+      # then the fact a message was dropped does NOT indicate a completed call.
+      unless campaign.call_back_after_voicemail_delivery?
+        statuses << VOICEMAIL
+      end
+
+      statuses
+    end
+
+    def self.not_dialed_list
+      [RINGING, READY, Voter::Status::NOTCALLED]
+    end
   end
 
   def redirect_caller

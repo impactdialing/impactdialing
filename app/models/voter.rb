@@ -1,5 +1,9 @@
 require 'fiber'
 class Voter < ActiveRecord::Base
+  include Rails.application.routes.url_helpers
+  include CallAttempt::Status
+
+  acts_as_reportable
 
   UPLOAD_FIELDS = ["phone", "custom_id", "last_name", "first_name", "middle_name", "suffix", "email", "address", "city", "state","zip_code", "country"]
 
@@ -7,9 +11,6 @@ class Voter < ActiveRecord::Base
     NOTCALLED = "not called"
     RETRY = "retry"
   end
-
-  include Rails.application.routes.url_helpers
-  include CallAttempt::Status
 
   belongs_to :voter_list
   belongs_to :campaign
@@ -114,6 +115,25 @@ class Voter < ActiveRecord::Base
     ], 1).
     order('last_call_attempt_time, id')
   }
+
+  # New Shiny
+  scope :potential_for_retry, lambda {|campaign|
+    where('voters.status IN (?) OR call_back=?', CallAttempt::Status.retry_list(campaign), true)
+  }
+  scope :available_for_retry, lambda {|campaign|
+    potential_for_retry(campaign).recycle_rate_expired(campaign.recycle_rate)
+  }
+  scope :not_available_for_retry, lambda {|campaign|
+    potential_for_retry(campaign).recycle_rate_not_expired(campaign.recycle_rate)
+  }
+  scope :recycle_rate_expired, lambda {|recycle_rate|
+    where('last_call_attempt_time IS NOT NULL')
+    .where('last_call_attempt_time < ?', recycle_rate.hours.ago)
+  }
+  scope :recycle_rate_not_expired, lambda {|recycle_rate|
+    where('last_call_attempt_time IS NULL OR last_call_attempt_time >= ?', recycle_rate.hours.ago)
+  }
+  #/New Shiny
 
   before_validation :sanitize_phone
 
@@ -353,5 +373,4 @@ class Voter < ActiveRecord::Base
   def phone_validatation
     errors.add(:phone, 'should be at least 10 digits') unless Voter.phone_correct?(self.phone)
   end
-
 end

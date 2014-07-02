@@ -33,6 +33,13 @@ module Client
       @dials_report.compute_campaign_report(@campaign, @from_date, @to_date)
     end
 
+    def dials_ruport
+      authorize! :view_campaign_reports, @account
+      load_campaign
+      set_dates
+      @report = Report::DialsController.render(:html, campaign: @campaign)
+    end
+
     def answer
       authorize! :view_campaign_reports, @account
       load_campaign

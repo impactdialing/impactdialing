@@ -48,12 +48,18 @@ gem 'cancan', '~>1.6.10'
 gem 'stripe', '~>1.8.4'
 
 # monitoring
-gem 'librato-rails'
-gem 'rack-timing'
-gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
+group :production do
+  gem 'librato-rails'
+  gem 'rack-timing'
+  gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
+end
 
 # Text -> HTML processors
 gem 'redcarpet'
+
+# Reporting
+gem 'ruport'
+gem 'acts_as_reportable'
 
 group :development, :test, :e2e do
   gem 'rspec'

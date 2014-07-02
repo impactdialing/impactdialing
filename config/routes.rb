@@ -193,6 +193,7 @@ ImpactDialing::Application.routes.draw do
         get :usage
         get :answer
         get :dials
+        get :dials_ruport
         get :account_campaigns_usage
         get :account_callers_usage
       end

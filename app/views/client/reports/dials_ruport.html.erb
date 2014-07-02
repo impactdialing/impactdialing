@@ -1,0 +1,7 @@
+<h1><%= @campaign.name %> Dials</h1>
+
+<div role="main">
+  <%= @report.html_safe %>
+
+  <%= render partial: 'shared/date_picker_campaigns', locals: {target: dials_client_reports_path} %>
+</div>
