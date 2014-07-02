@@ -70,8 +70,9 @@ describe CallerCampaignReportStrategy do
     end
 
     it "should create the basic info for per dial" do
-      caller = create(:caller, username: "abc@hui.com")
-      voter = create(:voter)
+      caller       = create(:caller, username: "abc@hui.com")
+      voter        = create(:voter)
+      recording    = create(:recording)
       call_attempt = create(:call_attempt, {
         voter: voter,
         status: CallAttempt::Status::SUCCESS,
@@ -79,7 +80,9 @@ describe CallerCampaignReportStrategy do
         connecttime: Time.at(1338292476),
         call_end: Time.at(1338293196),
         recording_url: "xyz",
-        caller: caller
+        caller: caller,
+        recording_delivered_manually: false,
+        recording_id: recording.id
       })
       strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
       actual = strategy.call_attempt_info(call_attempt.attributes, {
@@ -100,7 +103,7 @@ describe CallerCampaignReportStrategy do
         'N/A', # transfer attempt start
         'N/A', # transfer attempt end
         'N/A', # transfer attempt duration
-        "No",
+        "Yes: automatically",
         "xyz.mp3"
       ]
       actual.should eq expected
