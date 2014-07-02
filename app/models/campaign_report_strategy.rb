@@ -70,7 +70,14 @@ class CampaignReportStrategy
       if call_attempt['recording_id'].blank?
         out << 'No'
       else
-        if call_attempt['recording_delivered_manually']
+        # argh, something magical this way lies...
+        # occasionally FixNum(0) or String(0) is converted
+        # to FalseClass and fails w/ NME when normalizing w/ .to_i
+        # e.g. `call_attempt['recording_delivered_manually'].to_i > 0`
+        #
+        # exception notifcation received from production w/ NME on .to_i July 1, 2014
+        manual_delivery = [1, '1', true, 'true'].include?(call_attempt['recording_delivered_manually'])
+        if manual_delivery
           out << 'Yes: caller dropped'
         else
           out << 'Yes: automatically'
