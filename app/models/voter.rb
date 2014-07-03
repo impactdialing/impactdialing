@@ -76,7 +76,7 @@ class Voter < ActiveRecord::Base
   scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
   scope(:not_called_or_retry_or_call_back,
         where(active: true).
-        where("status != ?", CallAttempt::Status::SUCCESS).
+        where("status <> ?", CallAttempt::Status::SUCCESS).
         where("status IN (?) OR call_back=1", [
           Status::NOTCALLED,
           Status::RETRY,
@@ -117,22 +117,29 @@ class Voter < ActiveRecord::Base
   }
 
   # New Shiny
-  scope :potential_for_retry, lambda {|campaign|
-    where('voters.status IN (?) OR call_back=?', CallAttempt::Status.retry_list(campaign), true)
+  scope :dialed, lambda{|campaign|
+    where(status: CallAttempt::Status.retry_list(campaign)).where('last_call_attempt_time IS NOT NULL')
   }
   scope :available_for_retry, lambda {|campaign|
-    potential_for_retry(campaign).recycle_rate_expired(campaign.recycle_rate)
+    enabled.active.
+    where('voters.status IN (?) OR call_back=? OR scheduled_date < ?',
+          CallAttempt::Status.retry_list(campaign),
+          true,
+          10.minutes.ago).
+    recycle_rate_expired(campaign.recycle_rate)
   }
   scope :not_available_for_retry, lambda {|campaign|
-    potential_for_retry(campaign).recycle_rate_not_expired(campaign.recycle_rate)
+    dialed(campaign).
+    where('active = ? OR enabled = ? OR last_call_attempt_time >= ?',
+          false,
+          false,
+          campaign.recycle_rate.hours.ago)
   }
   scope :recycle_rate_expired, lambda {|recycle_rate|
-    where('last_call_attempt_time IS NOT NULL')
-    .where('last_call_attempt_time < ?', recycle_rate.hours.ago)
+    where('last_call_attempt_time < ?', recycle_rate.hours.ago)
   }
-  scope :recycle_rate_not_expired, lambda {|recycle_rate|
-    where('last_call_attempt_time IS NULL OR last_call_attempt_time >= ?', recycle_rate.hours.ago)
-  }
+  scope :not_ringing, lambda{ where('voters.status <> ?', CallAttempt::Status::RINGING) }
+  scope :with_manual_message_drop, not_ringing.joins(:call_attempts).where('call_attempts.id=voters.last_call_attempt_id').where('call_attempts.recording_id IS NOT NULL').where(call_attempts: {recording_delivered_manually: true})
   #/New Shiny
 
   before_validation :sanitize_phone

@@ -1,11 +1,9 @@
 <h1><%= @campaign.name %> Dials</h1>
 
 <div role="main">
-  <% if @show_summary %>
-    <%= render partial: 'summary_dial', locals: { dials_report: @dials_report} %>
-  <% end %>
-  <%= render partial: 'leads_dial', locals: { dials_report: @dials_report} %>
-  <%= render partial: 'attempts_dial', locals: { dials_report: @dials_report} %>
+  <%= @overview.html_safe %>
+  <%= @by_contact.html_safe %>
+  <%= @by_attempt.html_safe %>
 
   <%= render partial: 'shared/date_picker_campaigns', locals: {target: dials_client_reports_path} %>
 </div>

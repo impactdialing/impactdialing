@@ -28,16 +28,32 @@ module Client
       authorize! :view_campaign_reports, @account
       load_campaign
       set_dates
-      @show_summary = true if params[:from_date].blank? || params[:to_date].blank?
-      @dials_report = DialReport.new
-      @dials_report.compute_campaign_report(@campaign, @from_date, @to_date)
-    end
 
-    def dials_ruport
-      authorize! :view_campaign_reports, @account
-      load_campaign
-      set_dates
-      @report = Report::DialsController.render(:html, campaign: @campaign)
+      if params[:from_date].blank? || params[:to_date].blank?
+        @overview = Report::Dials::SummaryController.render(:html, {
+          campaign: @campaign,
+          heading: 'Overview',
+          description: 'The data in the overview table gives the current state of the campaign.'
+        })
+      else
+        @overview = ''
+      end
+      @by_contact = Report::Dials::ByStatusController.render(:html, {
+        campaign: @campaign,
+        scoped_to: :all_voters,
+        from_date: @from_date,
+        to_date: @to_date,
+        heading: "Per lead",
+        description: "The data in the per lead table includes only the most recent status for each lead."
+      })
+      @by_attempt = Report::Dials::ByStatusController.render(:html, {
+        campaign: @campaign,
+        scoped_to: :call_attempts,
+        from_date: @from_date,
+        to_date: @to_date,
+        heading: "Per dial",
+        description: "The data in the per dial table includes every status for each lead."
+      })
     end
 
     def answer

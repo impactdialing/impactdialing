@@ -33,6 +33,10 @@ class CallAttempt < ActiveRecord::Base
   )
   scope :debit_pending, undebited.successful_call.with_time_and_duration
 
+  scope :with_recording, where('recording_id IS NOT NULL')
+  scope :with_manual_message_drop, with_recording.where('recording_delivered_manually=?', true)
+  scope :with_auto_message_drop, with_recording.where('recording_delivered_manually=?', false)
+  scope :not_ringing, lambda{ where('status <> ?', Status::RINGING) }
 
   def self.report_recording_url(url)
     "#{url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if url
@@ -201,7 +205,7 @@ class CallAttempt < ActiveRecord::Base
     ANSWERED =  [INPROGRESS, SUCCESS]
 
     def self.retry_list(campaign)
-      statuses = [BUSY, NOANSWER, HANGUP, Voter::Status::RETRY]
+      statuses = [ABANDONED, BUSY, NOANSWER, HANGUP, Voter::Status::RETRY]
 
       if campaign.call_back_after_voicemail_delivery?
         statuses << VOICEMAIL
@@ -224,6 +228,14 @@ class CallAttempt < ActiveRecord::Base
 
     def self.not_dialed_list
       [RINGING, READY, Voter::Status::NOTCALLED]
+    end
+
+    def self.answered_list
+      [SUCCESS, SCHEDULED, Voter::Status::RETRY]
+    end
+
+    def self.machine_answered_list
+      [HANGUP, VOICEMAIL]
     end
   end
 
