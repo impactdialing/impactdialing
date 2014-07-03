@@ -19,11 +19,12 @@ private
       {
         status: 'Dialed and complete',
         number: :dialed_and_complete_count
-      },
-      {
-        status: 'Total # of contacts in all campaign lists',
-        number: :all_voters_count
       }
+      # ,
+      # {
+      #   status: 'Total # of contacts in all campaign lists',
+      #   number: :all_voters_count
+      # }
     ]
   end
 
