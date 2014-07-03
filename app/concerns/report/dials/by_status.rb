@@ -44,7 +44,8 @@ private
       },
       {
         status: 'Total',
-        number: :total_count
+        number: :total_count,
+        hide_percent: true
       }
     ]
   end
@@ -79,6 +80,8 @@ public
         feeder.transform do |row|
           if tpl[:percent]
             row['Percent'] = @stats.send(tpl[:percent])
+          elsif tpl[:hide_percent]
+            row['Percent'] = ''
           else
             row['Percent'] = dials_perc(dials)
           end
