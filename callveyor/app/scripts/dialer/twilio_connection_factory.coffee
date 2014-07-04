@@ -41,7 +41,8 @@ mod.factory('idTwilioConnectionFactory', [
       error: (error) ->
         console.log 'Twilio Connection Error', error
         idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.')
-        $window._errs.push(error)
+        err = new Error("[#{error.code}] #{error.message} (#{error.info})")
+        $window._errs.push(err)
         if angular.isFunction(factory.afterError)
           factory.afterError()
 
