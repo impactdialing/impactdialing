@@ -35,14 +35,16 @@ module.exports = function (grunt) {
         name: 'config',
         dest: 'app/scripts/config.js',
         constants: {
-          apiver: 0.1
+          apiver: 0.1,
+          debug: false
         }
       },
       dev: {
         constants: {
           serviceTokens: {
             pusher: '1e93714ff1e5907aa618'
-          }
+          },
+          debug: true
         }
       },
       dist: {
@@ -56,7 +58,8 @@ module.exports = function (grunt) {
         constants: {
           serviceTokens: {
             pusher: 'blah'
-          }
+          },
+          debug: true
         }
       }
     },

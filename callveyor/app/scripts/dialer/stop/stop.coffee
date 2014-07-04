@@ -29,16 +29,18 @@ stop.controller('StopCtrl.buttons', [
     params.session_id = callStation.data.caller.session_id
     stopPromise  = $http.post("/call_center/api/#{caller_id}/stop_calling", params)
 
-    goToReady = ->
+    goTo = {}
+    goTo.ready = ->
       console.log 'going to "ready" $state'
       p = $state.go('dialer.ready')
-      console.log 'p = ', p, idTransitionPrevented
       p.catch(idTransitionPrevented)
+      if angular.isFunction(goTo.readyOff)
+        goTo.readyOff()
 
     always = ->
-      if connection? and connection.status() == 'open'
+      if connection? and connection.status() != 'offline'
         TwilioCache.put('disconnect_pending', true)
-        connection.disconnect(goToReady)
+        goTo.readyOff = connection.disconnect(goTo.ready)
         connection.disconnectAll()
       else
         goToReady()

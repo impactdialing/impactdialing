@@ -1,7 +1,41 @@
 'use strict'
 
 twilio = angular.module('idTwilio', [
-  'idScriptLoader'
+  'idScriptLoader',
+  'config'
+])
+
+twilio.factory('idTwilioConfig', [
+  '$http', '$window', 'TwilioCache', 'debug',
+  ($http,   $window,   TwilioCache,   debug) ->
+    token = ''
+
+    factory = {
+      token,
+      fetchToken: (successCallback, errorCallback) ->
+        p = $http.get(TwilioCache.get('tokenUrl'))
+        s = (resp) ->
+          factory.token = resp.data.twilio_token
+          factory.setupDevice()
+          if successCallback?
+            successCallback(resp)
+        e = (err) ->
+          $window._errs.push(err)
+          if errorCallback?
+            errorCallback(err)
+        p.then(s, e)
+      setupDevice: ->
+        if $window.Twilio?
+          new $window.Twilio.Device.setup(factory.token, {
+            'debug': debug
+          })
+        else
+          console.log 'setupDevice: Twilio not loaded.'
+    }
+
+    factory.debug = debug
+
+    factory
 ])
 
 twilio.provider('idTwilioService', ->
@@ -21,32 +55,31 @@ twilio.provider('idTwilioService', ->
   @setTokenUrl = (url) ->
     _tokenUrl = url || _tokenUrl
 
+  @tokenUrl = -> _tokenUrl
+
   @$get = [
-    '$q', '$window', '$timeout', '$http', 'idScriptLoader',
-    ($q,   $window,   $timeout,   $http,   idScriptLoader) ->
+    '$q', '$window', '$timeout', '$http', 'TwilioCache', 'idTwilioConfig', 'idScriptLoader',
+    ($q,   $window,   $timeout,   $http,   TwilioCache,   idTwilioConfig,   idScriptLoader) ->
       # todo: refactor $http.get(_tokenUrl) et al to factory
-      tokens = $http.get(_tokenUrl)
+      TwilioCache.put('tokenUrl', _tokenUrl)
       twilioToken = ''
 
       deferred = $q.defer()
 
       scriptLoaded = (token) ->
-        _Twilio = $window.Twilio
-        new _Twilio.Device.setup(twilioToken, {
-          'debug':true
-        })
+        idTwilioConfig.setupDevice()
         $timeout(->
-          deferred.resolve(_Twilio)
+          deferred.resolve($window.Twilio)
         )
 
       tokensFetched = (token) ->
-        twilioToken = token.data.twilio_token
         idScriptLoader.createScriptTag(_scriptId, _scriptUrl, scriptLoaded)
 
       tokensFetchError = (e) ->
-        console.log 'tokensFetchError', e
+        error = new Error("Error fetching tokens from idTwilioService. #{e.message}")
+        $window._errs.push(error)
 
-      tokens.then(tokensFetched, tokensFetchError)
+      idTwilioConfig.fetchToken(tokensFetched, tokensFetchError)
 
       deferred.promise
   ]

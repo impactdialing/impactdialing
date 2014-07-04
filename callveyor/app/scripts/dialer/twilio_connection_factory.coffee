@@ -7,15 +7,37 @@ mod = angular.module('idTwilioConnectionHandlers', [
 ])
 
 mod.factory('idTwilioConnectionFactory', [
-  '$rootScope', '$window', 'TwilioCache', 'idFlashFactory', 'idTwilioService',
-  ($rootScope,   $window,   TwilioCache,   idFlashFactory,   idTwilioService) ->
+  '$rootScope', '$window', '$http', 'TwilioCache', 'idFlashFactory', 'idTwilioService', 'idTwilioConfig',
+  ($rootScope,   $window,   $http,   TwilioCache,   idFlashFactory,   idTwilioService,   idTwilioConfig) ->
     twilioParams = {}
 
     factory = {
       boundEvents: []
 
+      isOffline: ->
+        connection = TwilioCache.get('connection')
+        if connection? and connection.status() == 'offline'
+          return true
+        else
+          return false
+
+      disconnectAll: ->
+        connection = TwilioCache.get('connection')
+        if connection?
+          TwilioCache.put('disconnect_pending', true)
+          connection.disconnectAll()
+
       boundEventsMissing: (eventName) ->
         factory.boundEvents.indexOf(eventName) == -1
+
+      recoverWithNewToken: (error) ->
+        if parseInt(error.code) == 31205
+          unless factory.isOffline()
+            factory.disconnectAll()
+          idTwilioConfig.fetchToken()
+          return true
+        else
+          return false
 
       connect: (params) ->
         twilioParams = params
@@ -38,11 +60,14 @@ mod.factory('idTwilioConnectionFactory', [
         else
           TwilioCache.remove('disconnect_pending')
 
+        TwilioCache.remove('connection')
+
       error: (error) ->
         console.log 'Twilio Connection Error', error
-        idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.')
-        err = new Error("[#{error.code}] #{error.message} (#{error.info})")
-        $window._errs.push(err)
+        unless factory.recoverWithNewToken(error)
+          idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.')
+          err = new Error("[#{error.code}] #{error.message} (#{error.info})")
+          $window._errs.push(err)
         if angular.isFunction(factory.afterError)
           factory.afterError()
 
@@ -58,6 +83,10 @@ mod.factory('idTwilioConnectionFactory', [
         if factory.boundEventsMissing('error')
           twilio.Device.error(factory.error)
           factory.boundEvents.push('error')
+
+        unless factory.isOffline()
+          factory.disconnectAll()
+
         twilio.Device.connect(twilioParams)
 
       resolveError: (err) ->

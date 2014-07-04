@@ -48,9 +48,12 @@ describe 'dialer.stop', ->
         $state.go    = jasmine.createSpy('-$state.go spy-').andReturn($state)
 
         twilioFake.connection = {
+          removeDisconnectCallback: ->
+            twilioFake.connection.disconnectCallback = undefined
           disconnectAll: jasmine.createSpy('-twilioFake.connection.disconnectAll spy-')
           disconnect: (fn) ->
             twilioFake.connection.disconnectCallback = fn
+            twilioFake.removeDisconnectCallback
           status: jasmine.createSpy('-twilioFake.connection.status spy-').andReturn('open')
         }
         TwilioCache.put('connection', twilioFake.connection)
