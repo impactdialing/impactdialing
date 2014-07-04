@@ -33660,6 +33660,8 @@ angular.module("config", [])
 
 .constant("apiver", 0.1)
 
+.constant("debug", false)
+
 .constant("serviceTokens", {
 	"pusher": "6f37f3288a3762e60f94"
 })
@@ -34115,13 +34117,41 @@ angular.module("config", [])
   mod = angular.module('idTwilioConnectionHandlers', ['ui.router', 'idFlash', 'idTransition', 'idTwilio', 'idCacheFactories']);
 
   mod.factory('idTwilioConnectionFactory', [
-    '$rootScope', '$window', 'TwilioCache', 'idFlashFactory', 'idTwilioService', function($rootScope, $window, TwilioCache, idFlashFactory, idTwilioService) {
+    '$rootScope', '$window', '$http', 'TwilioCache', 'idFlashFactory', 'idTwilioService', 'idTwilioConfig', function($rootScope, $window, $http, TwilioCache, idFlashFactory, idTwilioService, idTwilioConfig) {
       var factory, twilioParams;
       twilioParams = {};
       factory = {
         boundEvents: [],
+        isOffline: function() {
+          var connection;
+          connection = TwilioCache.get('connection');
+          if ((connection != null) && connection.status() === 'offline') {
+            return true;
+          } else {
+            return false;
+          }
+        },
+        disconnectAll: function() {
+          var connection;
+          connection = TwilioCache.get('connection');
+          if (connection != null) {
+            TwilioCache.put('disconnect_pending', true);
+            return connection.disconnectAll();
+          }
+        },
         boundEventsMissing: function(eventName) {
           return factory.boundEvents.indexOf(eventName) === -1;
+        },
+        recoverWithNewToken: function(error) {
+          if (parseInt(error.code) === 31205) {
+            if (!factory.isOffline()) {
+              factory.disconnectAll();
+            }
+            idTwilioConfig.fetchToken();
+            return true;
+          } else {
+            return false;
+          }
         },
         connect: function(params) {
           twilioParams = params;
@@ -34138,15 +34168,20 @@ angular.module("config", [])
           console.log('twilio disconnected', connection);
           pending = TwilioCache.get('disconnect_pending');
           if (pending == null) {
-            return idFlashFactory.now('danger', 'The browser phone has disconnected unexpectedly. Save any responses (you may need to click Hangup first), report the problem and reload the page.');
+            idFlashFactory.now('danger', 'The browser phone has disconnected unexpectedly. Save any responses (you may need to click Hangup first), report the problem and reload the page.');
           } else {
-            return TwilioCache.remove('disconnect_pending');
+            TwilioCache.remove('disconnect_pending');
           }
+          return TwilioCache.remove('connection');
         },
         error: function(error) {
+          var err;
           console.log('Twilio Connection Error', error);
-          idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.');
-          $window._errs.push(error);
+          if (!factory.recoverWithNewToken(error)) {
+            idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.');
+            err = new Error("[" + error.code + "] " + error.message + " (" + error.info + ")");
+            $window._errs.push(err);
+          }
           if (angular.isFunction(factory.afterError)) {
             return factory.afterError();
           }
@@ -34163,6 +34198,9 @@ angular.module("config", [])
           if (factory.boundEventsMissing('error')) {
             twilio.Device.error(factory.error);
             factory.boundEvents.push('error');
+          }
+          if (!factory.isOffline()) {
+            factory.disconnectAll();
           }
           return twilio.Device.connect(twilioParams);
         },
@@ -34531,7 +34569,46 @@ angular.module("config", [])
   'use strict';
   var twilio;
 
-  twilio = angular.module('idTwilio', ['idScriptLoader']);
+  twilio = angular.module('idTwilio', ['idScriptLoader', 'config']);
+
+  twilio.factory('idTwilioConfig', [
+    '$http', '$window', 'TwilioCache', 'debug', function($http, $window, TwilioCache, debug) {
+      var factory, token;
+      token = '';
+      factory = {
+        token: token,
+        fetchToken: function(successCallback, errorCallback) {
+          var e, p, s;
+          p = $http.get(TwilioCache.get('tokenUrl'));
+          s = function(resp) {
+            factory.token = resp.data.twilio_token;
+            factory.setupDevice();
+            if (successCallback != null) {
+              return successCallback(resp);
+            }
+          };
+          e = function(err) {
+            $window._errs.push(err);
+            if (errorCallback != null) {
+              return errorCallback(err);
+            }
+          };
+          return p.then(s, e);
+        },
+        setupDevice: function() {
+          if ($window.Twilio != null) {
+            return new $window.Twilio.Device.setup(factory.token, {
+              'debug': debug
+            });
+          } else {
+            return console.log('setupDevice: Twilio not loaded.');
+          }
+        }
+      };
+      factory.debug = debug;
+      return factory;
+    }
+  ]);
 
   twilio.provider('idTwilioService', function() {
     var _initOptions, _scriptId, _scriptUrl, _tokenUrl;
@@ -34550,30 +34627,30 @@ angular.module("config", [])
     this.setTokenUrl = function(url) {
       return _tokenUrl = url || _tokenUrl;
     };
+    this.tokenUrl = function() {
+      return _tokenUrl;
+    };
     this.$get = [
-      '$q', '$window', '$timeout', '$http', 'idScriptLoader', function($q, $window, $timeout, $http, idScriptLoader) {
-        var deferred, scriptLoaded, tokens, tokensFetchError, tokensFetched, twilioToken;
-        tokens = $http.get(_tokenUrl);
+      '$q', '$window', '$timeout', '$http', 'TwilioCache', 'idTwilioConfig', 'idScriptLoader', function($q, $window, $timeout, $http, TwilioCache, idTwilioConfig, idScriptLoader) {
+        var deferred, scriptLoaded, tokensFetchError, tokensFetched, twilioToken;
+        TwilioCache.put('tokenUrl', _tokenUrl);
         twilioToken = '';
         deferred = $q.defer();
         scriptLoaded = function(token) {
-          var _Twilio;
-          _Twilio = $window.Twilio;
-          new _Twilio.Device.setup(twilioToken, {
-            'debug': true
-          });
+          idTwilioConfig.setupDevice();
           return $timeout(function() {
-            return deferred.resolve(_Twilio);
+            return deferred.resolve($window.Twilio);
           });
         };
         tokensFetched = function(token) {
-          twilioToken = token.data.twilio_token;
           return idScriptLoader.createScriptTag(_scriptId, _scriptUrl, scriptLoaded);
         };
         tokensFetchError = function(e) {
-          return console.log('tokensFetchError', e);
+          var error;
+          error = new Error("Error fetching tokens from idTwilioService. " + e.message);
+          return $window._errs.push(error);
         };
-        tokens.then(tokensFetched, tokensFetchError);
+        idTwilioConfig.fetchToken(tokensFetched, tokensFetchError);
         return deferred.promise;
       }
     ];
@@ -35623,23 +35700,26 @@ angular.module("config", [])
 
   stop.controller('StopCtrl.buttons', [
     '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation', 'idTransitionPrevented', function($scope, $state, TwilioCache, $http, idTwilioService, callStation, idTransitionPrevented) {
-      var always, caller_id, connection, goToReady, params, stopPromise;
+      var always, caller_id, connection, goTo, params, stopPromise;
       connection = TwilioCache.get('connection');
       caller_id = callStation.data.caller.id;
       params = {};
       params.session_id = callStation.data.caller.session_id;
       stopPromise = $http.post("/call_center/api/" + caller_id + "/stop_calling", params);
-      goToReady = function() {
+      goTo = {};
+      goTo.ready = function() {
         var p;
         console.log('going to "ready" $state');
         p = $state.go('dialer.ready');
-        console.log('p = ', p, idTransitionPrevented);
-        return p["catch"](idTransitionPrevented);
+        p["catch"](idTransitionPrevented);
+        if (angular.isFunction(goTo.readyOff)) {
+          return goTo.readyOff();
+        }
       };
       always = function() {
-        if ((connection != null) && connection.status() === 'open') {
+        if ((connection != null) && connection.status() !== 'offline') {
           TwilioCache.put('disconnect_pending', true);
-          connection.disconnect(goToReady);
+          goTo.readyOff = connection.disconnect(goTo.ready);
           return connection.disconnectAll();
         } else {
           return goToReady();
