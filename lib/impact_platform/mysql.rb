@@ -1,10 +1,9 @@
 require 'uri'
 
-module Platform
+module ImpactPlatform
   module MySQL
     def self.connect(pool_size=5)
-      Rails.logger.info "MySQL.connect(#{pool_size})"
-      p "MySQL.connect(#{pool_size})"
+      STDOUT.puts "MySQL.connect(#{pool_size})"
       rails_config = Rails.application.config.database_configuration[Rails.env]
       rails_config['pool'] = pool_size
 
@@ -32,8 +31,7 @@ module Platform
     end
 
     def self.disconnect!
-      Rails.logger.info "MySQL.disconnect!"
-      p "MySQL.disconnect!"
+      STDOUT.puts "MySQL.disconnect!"
       ActiveRecord::Base.connection_pool.disconnect!
     end
 

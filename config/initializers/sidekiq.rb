@@ -15,9 +15,9 @@ Rails.application.config.after_initialize do
         :namespace => 'resque'
       }
 
-      require 'platform'
+      require 'impact_platform/mysql'
       min_pool_size = Sidekiq.options[:concurrency]
-      Platform::MySQL.reconnect!(min_pool_size)
+      ImpactPlatform::MySQL.reconnect!(min_pool_size)
     end
 
     Sidekiq.configure_client do |config|
