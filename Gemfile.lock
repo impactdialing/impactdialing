@@ -151,14 +151,6 @@ GEM
       thor (>= 0.14.6)
     guard-rspec (1.2.1)
       guard (>= 1.1)
-    heroku (2.39.5)
-      heroku-api (~> 0.3.7)
-      launchy (>= 0.3.2)
-      netrc (~> 0.7.7)
-      rest-client (~> 1.6.1)
-      rubyzip
-    heroku-api (0.3.15)
-      excon (~> 0.25.1)
     highline (1.6.19)
     hike (1.2.3)
     hirb (0.7.2)
@@ -219,7 +211,6 @@ GEM
     net-ssh (2.6.8)
     net-ssh-gateway (1.2.0)
       net-ssh (>= 2.6.5)
-    netrc (0.7.7)
     newrelic-redis (1.4.0)
       newrelic_rpm (~> 3.0)
       redis (< 4.0)
@@ -279,7 +270,6 @@ GEM
       ffi (>= 0.5.0)
     rdoc (3.12.2)
       json (~> 1.4)
-    recurly (2.1.9)
     redcarpet (3.1.2)
     redis (3.0.7)
     redis-namespace (1.3.0)
@@ -332,7 +322,6 @@ GEM
       rspec-mocks (~> 3.0.0)
       rspec-support (~> 3.0.0)
     rspec-support (3.0.2)
-    rubyzip (1.1.0)
     rufus-scheduler (2.0.23)
       tzinfo (>= 0.3.23)
     ruport (1.6.3)
@@ -444,7 +433,6 @@ DEPENDENCIES
   formtastic (~> 2.2.1)
   guard
   guard-rspec
-  heroku
   hirb
   hiredis (~> 0.4.5)
   jquery-rails (~> 3.0.4)
@@ -465,7 +453,6 @@ DEPENDENCIES
   rack-timing
   rails (~> 3.2.19)
   rb-fsevent
-  recurly (~> 2.1.9)
   redcarpet
   redis (~> 3.0.4)
   redis-objects (~> 0.7.0)
