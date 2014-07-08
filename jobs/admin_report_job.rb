@@ -3,7 +3,7 @@ require 'impact_platform/heroku'
 
 class AdminReportJob
   @queue = :upload_download
-  extend UploadDownloadHooks
+  extend ImpactPlatform::Heroku::UploadDownloadHooks
 
   def self.prepare_date(date)
     date.utc.strftime("%Y-%m-%d %H:%M:%S")

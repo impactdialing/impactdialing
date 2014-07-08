@@ -3,7 +3,7 @@ require 'impact_platform/heroku'
 
 class VoterListChangeJob
   @queue = :upload_download
-  extend UploadDownloadHooks
+  extend ImpactPlatform::Heroku::UploadDownloadHooks
 
   def self.perform(voter_list_id, enabled)
     begin
