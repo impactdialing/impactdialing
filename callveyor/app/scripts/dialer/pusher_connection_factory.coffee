@@ -13,7 +13,8 @@ mod.factory('pusherConnectionHandlerFactory', [
     pusherError = (error) ->
       # console.log 'pusherError', wtf
       $window._errs.push(error)
-      idFlashFactory.now('danger', 'Something went wrong. We have been notified and will begin troubleshooting ASAP.')
+      idFlashFactory.now('danger', 'Something went wrong. We are working
+to fix it.')
 
     reConnecting = (wtf) ->
       # console.log 'temporaryConnectionFailure', wtf
@@ -62,7 +63,7 @@ mod.factory('pusherConnectionHandlerFactory', [
       loadError: (error) ->
         error ||= new Error("Pusher service failed to resolve.")
         $window._errs.push(error)
-        idFlashFactory.now('danger', 'Browser failed to load a required resource. Please try again and Report problem if error continues.')
+        idFlashFactory.now('danger', 'An error occurred loading the page. Please refresh to try again.')
     }
 
     connectionHandler

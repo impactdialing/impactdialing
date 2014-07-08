@@ -56,7 +56,7 @@ mod.factory('idTwilioConnectionFactory', [
         console.log 'twilio disconnected', connection
         pending = TwilioCache.get('disconnect_pending')
         unless pending?
-          idFlashFactory.now('danger', 'The browser phone has disconnected unexpectedly. Save any responses (you may need to click Hangup first), report the problem and reload the page.')
+          idFlashFactory.now('danger', 'Your browser lost its voice connection. Submit your responses and reload the page.')
         else
           TwilioCache.remove('disconnect_pending')
 
@@ -65,7 +65,7 @@ mod.factory('idTwilioConnectionFactory', [
       error: (error) ->
         console.log 'Twilio Connection Error', error
         unless factory.recoverWithNewToken(error)
-          idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.')
+          idFlashFactory.now('danger', 'Voice connection failed. Refresh the page or dial-in to continue.')
           err = new Error("[#{error.code}] #{error.message} (#{error.info})")
           $window._errs.push(err)
         if angular.isFunction(factory.afterError)
@@ -91,7 +91,7 @@ mod.factory('idTwilioConnectionFactory', [
 
       resolveError: (err) ->
         # console.log 'idTwilioService error', err
-        idFlashFactory.now('danger', 'Browser phone setup failed. Please dial-in to continue.')
+        idFlashFactory.now('danger', 'Voice setup failed. Refresh the page or dial-in to continue.')
     }
 
     factory

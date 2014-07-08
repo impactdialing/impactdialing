@@ -50,12 +50,12 @@ en:
   csv_has_no_header_data: "The uploaded file contained no headers. Please verify the file contains a header and at least 1 row of data and try again."
   dialer:
     access:
-      denied: "Calling has been disabled for this account. Please contact your account admin for assistance."
+      denied: "Calling is disabled. Please contact your admin."
     account:
-      not_funded: "Your account is not funded. Please contact your account administrator."
+      not_funded: "Your account is not funded. Please contact your admin."
     campaign:
       out_of_numbers: "This campaign has run out of phone numbers."
-      time_period_exceeded: "You can only call this campaign between %{start_time} and %{end_time}. Please try back during those hours."
+      time_period_exceeded: "You can only call this campaign between %{start_time} and %{end_time}."
     message_drop:
       failed: "The message drop failed. If the other party is still connected, please try again. If the other party has already disconnected, please hang-up or save your call results to continue. We have been notified of the error."
 
