@@ -34223,8 +34223,41 @@ angular.module("config", [])
 
   mod = angular.module('callveyor.call_flow', ['ui.router', 'idFlash', 'idTransition', 'idCacheFactories', 'callveyor.http_dialer']);
 
+  mod.factory('CallerReassignedMessage', [
+    function() {
+      var callerReassignedMessage;
+      callerReassignedMessage = function(old_campaign, new_campaign) {
+        var isPower, isPredictive, isPreview, msg;
+        msg = ["An admin reassigned you to a new campaign!"];
+        if (old_campaign.type === new_campaign.type) {
+          return msg[0];
+        }
+        isPreview = function(t) {
+          return t.toLowerCase() === 'preview';
+        };
+        isPower = function(t) {
+          return t.toLowerCase() === 'power';
+        };
+        isPredictive = function(t) {
+          return t.toLowerCase() === 'predictive';
+        };
+        if (isPreview(old_campaign.type)) {
+          msg.push("Calls will now be dialed automatically.");
+        }
+        if (isPreview(new_campaign.type)) {
+          msg.push("Calls will not be dialed until the 'Dial' button is clicked.");
+        }
+        if (isPredictive(new_campaign.type)) {
+          msg.push("Contact info will not display until a call is answered.");
+        }
+        return msg.join(" ");
+      };
+      return callerReassignedMessage;
+    }
+  ]);
+
   mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', function($rootScope, $state, $window, $cacheFactory, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache, TwilioCache) {
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', function($rootScope, $state, $window, $cacheFactory, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache, TwilioCache, CallerReassignedMessage) {
       var beforeunloadBeenBound, handlers, isWarmTransfer;
       isWarmTransfer = function() {
         return /warm/i.test(TransferCache.get('type'));
@@ -34323,16 +34356,18 @@ angular.module("config", [])
         */
 
         callerReassigned: function(contact) {
-          var campaign, deregister, update;
+          var campaign, deregister, old_campaign, update;
           deregister = {};
           campaign = CallStationCache.get('campaign');
+          old_campaign = angular.copy(campaign);
           campaign.type = contact.campaign_type;
           campaign.id = contact.campaign_id;
           delete contact.campaign_type;
           delete contact.campaign_id;
           update = function() {
             deregister();
-            return handlers.conferenceStarted(contact);
+            handlers.conferenceStarted(contact);
+            return idFlashFactory.now('info', CallerReassignedMessage(old_campaign, campaign));
           };
           deregister = $rootScope.$on('survey:load:success', update);
           return $rootScope.$broadcast('survey:reload');
