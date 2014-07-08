@@ -146,8 +146,8 @@ module ImpactPlatform
           rules.reverse.detect{|rule| queue_size >= rule[:queue_size]}
         end
 
-        def queue_size(queue)
-          Resque.size(queue)
+        def queue_size
+          Resque.size(process)
         end
       end
     end
