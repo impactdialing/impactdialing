@@ -1,8 +1,9 @@
 require 'reports'
+require 'impact_platform/heroku'
 
 class ReportAccountUsageJob
   @queue = :upload_download
-
+  extend UploadDownloadHooks
   extend TimeZoneHelper
 
   def self.perform(report_type, user_id, from_date, to_date, internal_admin=false)
