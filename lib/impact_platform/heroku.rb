@@ -5,14 +5,14 @@ module ImpactPlatform
     module UploadDownloadHooks
       def after_enqueue_scale_workers(*args)
         process = 'upload_download'
-        rules   = BackgroundScaleRules.new(process)
+        rules   = ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process)
         scale   = ImpactPlatform::Heroku::Scale.new(process, rules.desired_quantity, Rails.env)
         scale.auto!
       end
 
       def after_perform_scale_workers(*args)
         process = 'upload_download'
-        rules   = BackgroundScaleRules.new(process)
+        rules   = ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process)
         scale   = ImpactPlatform::Heroku::Scale.new(process, rules.desired_quantity, Rails.env)
         scale.auto!
       end
