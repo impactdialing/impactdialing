@@ -151,6 +151,12 @@ GEM
       thor (>= 0.14.6)
     guard-rspec (1.2.1)
       guard (>= 1.1)
+    heroics (0.0.10)
+      erubis (~> 2.7.0)
+      excon
+      moneta
+      multi_json (>= 1.9.2)
+      netrc
     highline (1.6.19)
     hike (1.2.3)
     hirb (0.7.2)
@@ -199,6 +205,7 @@ GEM
     method_source (0.8.2)
     mime-types (1.25.1)
     mini_portile (0.6.0)
+    moneta (0.8.0)
     mono_logger (1.1.0)
     multi_json (1.10.1)
     multi_xml (0.5.4)
@@ -211,6 +218,7 @@ GEM
     net-ssh (2.6.8)
     net-ssh-gateway (1.2.0)
       net-ssh (>= 2.6.5)
+    netrc (0.7.7)
     newrelic-redis (1.4.0)
       newrelic_rpm (~> 3.0)
       redis (< 4.0)
@@ -446,6 +454,7 @@ DEPENDENCIES
   newrelic_rpm
   nokogiri (~> 1.6.0)
   paperclip (~> 3.5.0)
+  platform-api
   pry
   pry-debugger
   pusher (~> 0.11.3)
