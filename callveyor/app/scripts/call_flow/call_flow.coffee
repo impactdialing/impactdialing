@@ -19,9 +19,34 @@ mod = angular.module('callveyor.call_flow', [
   'callveyor.http_dialer'
 ])
 
+mod.factory('CallerReassignedMessage', [
+  ->
+    callerReassignedMessage = (old_campaign, new_campaign) ->
+      msg = ["An admin reassigned you to a new campaign!"]
+
+      return msg[0] if old_campaign.type == new_campaign.type
+
+      isPreview    = (t) -> t.toLowerCase() == 'preview'
+      isPower      = (t) -> t.toLowerCase() == 'power'
+      isPredictive = (t) -> t.toLowerCase() == 'predictive'
+
+      if isPreview(old_campaign.type)
+        msg.push("Calls will now be dialed automatically.")
+
+      if isPreview(new_campaign.type)
+        msg.push("Calls will not be dialed until the 'Dial' button is clicked.")
+
+      if isPredictive(new_campaign.type)
+        msg.push("Contact info will not display until a call is answered.")
+
+      msg.join(" ")
+
+    callerReassignedMessage
+])
+
 mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache',
-    ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache) ->
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage',
+    ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache,   CallerReassignedMessage) ->
       isWarmTransfer = -> /warm/i.test(TransferCache.get('type'))
 
       beforeunloadBeenBound = false
@@ -199,6 +224,7 @@ mod.factory('idCallFlow', [
           # console.log 'caller_reassigned', contact
           deregister    = {}
           campaign      = CallStationCache.get('campaign')
+          old_campaign  = angular.copy(campaign)
           campaign.type = contact.campaign_type
           campaign.id   = contact.campaign_id
           delete(contact.campaign_type)
@@ -207,6 +233,7 @@ mod.factory('idCallFlow', [
           update = ->
             deregister()
             handlers.conferenceStarted(contact)
+            idFlashFactory.now('info', CallerReassignedMessage(old_campaign, campaign))
 
           deregister = $rootScope.$on('survey:load:success', update)
           $rootScope.$broadcast('survey:reload')
