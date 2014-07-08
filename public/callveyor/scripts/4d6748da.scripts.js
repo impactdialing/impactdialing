@@ -34057,7 +34057,8 @@ angular.module("config", [])
       var browserNotSupported, connectingIn, connectionFailure, connectionHandler, pusherError, reConnecting;
       pusherError = function(error) {
         $window._errs.push(error);
-        return idFlashFactory.now('danger', 'Something went wrong. We have been notified and will begin troubleshooting ASAP.');
+        return idFlashFactory.now('danger', 'Something went wrong. We are working\
+to fix it.');
       };
       reConnecting = function(wtf) {
         return idFlashFactory.now('warning', 'Your browser has lost its connection. Reconnecting...');
@@ -34099,7 +34100,7 @@ angular.module("config", [])
         loadError: function(error) {
           error || (error = new Error("Pusher service failed to resolve."));
           $window._errs.push(error);
-          return idFlashFactory.now('danger', 'Browser failed to load a required resource. Please try again and Report problem if error continues.');
+          return idFlashFactory.now('danger', 'An error occurred loading the page. Please refresh to try again.');
         }
       };
       return connectionHandler;
@@ -34168,7 +34169,7 @@ angular.module("config", [])
           console.log('twilio disconnected', connection);
           pending = TwilioCache.get('disconnect_pending');
           if (pending == null) {
-            idFlashFactory.now('danger', 'The browser phone has disconnected unexpectedly. Save any responses (you may need to click Hangup first), report the problem and reload the page.');
+            idFlashFactory.now('danger', 'Your browser lost its voice connection. Submit your responses and reload the page.');
           } else {
             TwilioCache.remove('disconnect_pending');
           }
@@ -34178,7 +34179,7 @@ angular.module("config", [])
           var err;
           console.log('Twilio Connection Error', error);
           if (!factory.recoverWithNewToken(error)) {
-            idFlashFactory.now('danger', 'Browser phone could not connect to the call center. Please refresh the page or dial-in to continue.');
+            idFlashFactory.now('danger', 'Voice connection failed. Refresh the page or dial-in to continue.');
             err = new Error("[" + error.code + "] " + error.message + " (" + error.info + ")");
             $window._errs.push(err);
           }
@@ -34205,7 +34206,7 @@ angular.module("config", [])
           return twilio.Device.connect(twilioParams);
         },
         resolveError: function(err) {
-          return idFlashFactory.now('danger', 'Browser phone setup failed. Please dial-in to continue.');
+          return idFlashFactory.now('danger', 'Voice setup failed. Refresh the page or dial-in to continue.');
         }
       };
       return factory;
@@ -34429,7 +34430,7 @@ angular.module("config", [])
         callerDisconnected: function() {
           var p;
           if ($state.is('dialer.active')) {
-            idFlashFactory.now('warning', 'The browser lost its voice connection. Please save any responses and Report problem if needed.');
+            idFlashFactory.now('warning', 'Voice connection was lost. Save responses, report problem &amp; refresh page.');
             p = $state.go('dialer.wrap');
             return p["catch"](idTransitionPrevented);
           } else {
@@ -35781,7 +35782,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
   'use strict';
 
   $templateCache.put('/callveyor/dialer/dialer.tpl.html',
-    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\" data-ng-cloak=\"\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-6\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"global-spinner\"></span> <!-- callStatus ui-view --><div class=\"navbar-left status\"><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-6\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav add-gutter\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
+    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\" data-ng-cloak=\"\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-3\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"global-spinner\"></span> <!-- callStatus ui-view --><div class=\"navbar-left status\"><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-6\"><div data-id-user-messages=\"\"></div></div><div class=\"col-xs-3\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav add-gutter\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
   );
 
 
