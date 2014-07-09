@@ -178,6 +178,9 @@ ImpactDialing::Application.routes.draw do
 
 
     resources :campaigns, :only => [] do
+      member do
+        get :stats
+      end
       resources :reports do
         collection do
           get :download_report

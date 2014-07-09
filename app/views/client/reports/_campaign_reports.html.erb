@@ -1,33 +1,33 @@
 <table>
   <tr>
-    <th>Campaign reports</th>
-    <th></th>
-    <th></th>
-    <th></th>
-    <th></th>
-    <th>Downloaded reports</th>
+    <th colspan="6">Campaign reports</th>
+    <th>Ready for download</th>
   </tr>
   <% @campaigns.each_with_index do |c, index| %>
       <tr>
         <td><%= c.name %></td>
         <td <% if index == 0 %>
-              data-intro="The Dials report gives stats on all of the dials that you've made." data-step="1"
+              data-intro="Provides an overview of the current state of a campaign and breaks down the number of dials by outcome (answered, hung-up, etc)." data-step="1"
             <% end %>
             ><%= link_to "Dials", dials_client_reports_path(:campaign_id => c.id) %></td>
         <td <% if index == 0 %>
-              data-intro="The Answered report tells you the number and percentage of leads who responded to each question in the campaign's script." data-step="2"
+              data-intro="Provides a detailed view of conversation outcomes (how many responded and in what way)." data-step="2"
             <% end %>
-            ><%= link_to "Answered", answer_client_reports_path(:campaign_id => c.id) %></td>
+            ><%= link_to "Answers", answer_client_reports_path(:campaign_id => c.id) %></td>
         <td <% if index == 0 %>
-              data-intro="The Usage report gives stats on how much time your callers have spent making calls, and how they used that time." data-step="3"
+              data-intro="Provides general performance stats (dials per hour, etc)." data-step="3"
+            <% end %>
+            ><%= link_to "Stats", stats_client_campaign_path(c.id) %></td>
+        <td <% if index == 0 %>
+              data-intro="Provides billable and total minutes used." data-step="4"
             <% end %>
             ><%= link_to "Usage", usage_client_reports_path(:campaign_id => c.id) %></td>
         <td <% if index == 0 %>
-              data-intro="The Download report lets you export your data to a CSV file." data-step="4"
+              data-intro="Export your data to a CSV file (exports are automatically purged 24 hours from click)." data-step="5"
             <% end %>
             ><%= link_to "Download", download_report_client_campaign_reports_path(c) %><br/></td>
         <td <% if index == 0 %>
-              data-intro="This column tells you how many reports have been downloaded for each campaign in the last 24 hours, and lets you re-download the reports from the web interface." data-step="5"
+              data-intro="The number of exported CSV files available for download." data-step="6"
             <% end %>
             ><%= link_to "[#{@download_report_count[c.id.to_s] || 0 }]", downloaded_reports_client_campaign_reports_path(c) %></td>
       </tr>
