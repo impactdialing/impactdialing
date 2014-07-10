@@ -71,8 +71,7 @@ class Ability
   end
 
   def apply_feature_permissions
-    can :view_campaign_reports, Account
-    can :view_caller_reports, Account
+    can :view_reports, Account
 
     case plan
     when 'enterprise', 'per_minute', 'business', 'trial'

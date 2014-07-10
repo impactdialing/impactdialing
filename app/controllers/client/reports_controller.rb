@@ -25,7 +25,7 @@ module Client
     end
 
     def dials
-      authorize! :view_campaign_reports, @account
+      authorize! :view_reports, @account
       load_campaign
       set_dates
 
@@ -57,7 +57,7 @@ module Client
     end
 
     def answer
-      authorize! :view_campaign_reports, @account
+      authorize! :view_reports, @account
       load_campaign
       set_dates
       @results = @campaign.answers_result(@from_date, @to_date)
@@ -65,14 +65,14 @@ module Client
     end
 
     def usage
-      authorize! :view_campaign_reports, @account
+      authorize! :view_reports, @account
       load_campaign
       set_dates
       @campaign_usage = CampaignUsage.new(@campaign, @from_date, @to_date)
     end
 
     def download_report
-      authorize! :view_campaign_reports, @account
+      authorize! :view_reports, @account
       load_campaign
       set_dates
       @voter_fields = VoterList::VOTER_DATA_COLUMNS
@@ -80,7 +80,7 @@ module Client
     end
 
     def download
-      authorize! :view_campaign_reports, @account
+      authorize! :view_reports, @account
       load_campaign
       set_dates
       Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id,
@@ -101,7 +101,7 @@ module Client
     end
 
     def downloaded_reports
-      authorize! :view_campaign_reports, @account
+      authorize! :view_reports, @account
       load_campaign
       @downloaded_reports = DownloadedReport.active_reports(@campaign.id, session[:internal_admin])
     end

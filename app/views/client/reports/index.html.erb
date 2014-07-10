@@ -1,5 +1,5 @@
 <h1>Reports</h1>
-<% if can? :view_campaign_reports, @account %>
+<% if can? :view_reports, @account %>
   <% if @account.campaigns.empty? %>
      <p>You haven't created any campaigns yet.</p>
   <% else %>
@@ -7,7 +7,7 @@
   <% end %>
 <% end %>
 
-<% if can? :view_caller_reports, @account %>
+<% if can? :view_reports, @account %>
   <% if @account.callers.empty? %>
     <p>You haven't created any callers yet.</p>
   <% else %>
