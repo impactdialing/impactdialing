@@ -8,7 +8,6 @@ private
 
   def dials_count
     query = CallStats.call_attempts(record)
-    p "counting dials between #{from_date} and #{to_date}"
     CallStats.between(query, from_date, to_date).count
   end
 
@@ -18,7 +17,6 @@ private
   end
 
   def calling_hours_count
-    p "counting calling hours for #{record.class} #{record.id}"
     query = record.caller_sessions
     @calling_hours_count ||= CallStats.between(query, from_date, to_date).sum('tDuration') / 3600.0
   end
@@ -37,13 +35,11 @@ public
 
   def dial_rate
     return 0 if calling_hours_count.zero?
-    p "dials_count = #{dials_count} / calling_hours_count = #{calling_hours_count}"
     (dials_count / calling_hours_count).round
   end
 
   def answer_rate
     return 0 if calling_hours_count.zero?
-    p "answered_calls_count = #{answered_calls_count} / calling_hours_count = #{calling_hours_count}"
     (answered_calls_count / calling_hours_count).round
   end
 
