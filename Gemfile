@@ -61,21 +61,9 @@ gem 'redcarpet'
 gem 'ruport'
 gem 'acts_as_reportable'
 
-group :development, :test, :e2e do
-  gem 'rspec'
-  gem 'rspec-rails'
-  gem 'hirb', '~>0.7.1'
-  gem 'rspec-instafail', '~>0.2.4'
-  gem 'pry'
-  gem 'pry-debugger'
-  gem 'jasmine'
-  gem 'compass'
-end
-
 group :development do
   gem 'guard'
   gem 'guard-rspec'
-  gem 'guard-spork'
   gem 'rb-fsevent'
   gem 'showoff-io'
   gem 'foreman'
@@ -86,13 +74,20 @@ group :development do
   gem 'binding_of_caller'
 end
 
+group :development, :test, :e2e do
+  gem 'rspec-rails', '~>2.99.0' # todo: fix deprecations and upgrade to 3.0
+  gem 'hirb'
+  gem 'rspec-instafail'
+  gem 'pry'
+  gem 'pry-debugger'
+  gem 'compass'
+end
+
 group :test, :e2e do
   gem 'factory_girl_rails'
   gem 'shoulda'
   gem 'simplecov'
-  gem 'spork-rails'
   gem 'database_cleaner'
-  gem 'json_spec'
   gem 'capybara'
   gem 'launchy'
   gem 'timecop'
