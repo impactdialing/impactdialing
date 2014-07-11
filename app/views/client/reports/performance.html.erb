@@ -1,0 +1,9 @@
+<h1><%= @record.name %> Performance</h1>
+
+<div role="main">
+  <%=
+    # render partial: 'shared/date_picker_campaigns', locals: {target: dials_client_reports_path}
+  %>
+
+  <%= @velocity.html_safe %>
+</div>

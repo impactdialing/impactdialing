@@ -173,19 +173,23 @@ ImpactDialing::Application.routes.draw do
         get :call_details
       end
       member { put :reassign_to_campaign }
+
+      resources :reports do
+        collection do
+          get :performance
+        end
+      end
     end
 
 
 
     resources :campaigns, :only => [] do
-      member do
-        get :stats
-      end
       resources :reports do
         collection do
           get :download_report
           post :download
           get :downloaded_reports
+          get :performance
         end
       end
     end
@@ -196,7 +200,6 @@ ImpactDialing::Application.routes.draw do
         get :usage
         get :answer
         get :dials
-        get :dials_ruport
         get :account_campaigns_usage
         get :account_callers_usage
       end

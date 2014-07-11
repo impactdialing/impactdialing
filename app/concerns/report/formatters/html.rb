@@ -1,7 +1,10 @@
 ##
-class Report::Dials::Html < Ruport::Formatter::HTML
+class Report::Formatters::Html < Ruport::Formatter::HTML
 
-  renders :html, :for => [Report::Dials::SummaryController, Report::Dials::ByStatusController]
+  renders :html, :for => [
+    Report::Dials::SummaryController, Report::Dials::ByStatusController,
+    Report::Performance::VelocityController
+  ]
 
 private
   def markdown

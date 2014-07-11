@@ -3,7 +3,7 @@ module Client
   class ReportsController < ClientController
     include ApplicationHelper::TimeUtils
     include TimeZoneHelper
-    before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage]
+    before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage, :performance]
     before_filter :campaigns_and_callers_exist?
 
     around_filter :select_shard
@@ -38,6 +38,39 @@ module Client
       @campaigns = params[:id].blank? ? account.campaigns : Campaign.find(params[:id])
       @download_report_count = DownloadedReport.accounts_active_report_count(@campaigns.collect{|c| c.id}, session[:internal_admin])
       @callers = account.callers.active
+    end
+
+    def performance
+      authorize! :view_reports, @account
+
+      if params[:campaign_id].present?
+        load_campaign
+        @record = @campaign
+        set_dates
+
+        @from_date = from.beginning_of_day.utc
+        @to_date   = to.end_of_day.utc
+      else
+        @record    = Caller.find params[:caller_id]
+        time_zone  = @record.try(:as_time_zone)
+        if params[:from_date].present? and params[:to_date].present?
+          from = Time.strptime(params[:from_date], '%m/%d/%Y')
+          to   = Time.strptime(params[:to_date], '%m/%d/%Y')
+        else
+          from = @record.caller_sessions.first.try(:created_at) || Time.now
+          to   = @record.caller_sessions.last.try(:created_at) || Time.now
+        end
+
+        @from_date = from.beginning_of_day.utc
+        @to_date   = to.end_of_day.utc
+      end
+
+      @velocity = Report::Performance::VelocityController.render(:html, {
+        record: @record,
+        from_date: @from_date,
+        to_date: @to_date,
+        description: 'Here are some statistical averages to help you gain a general understanding of how a campaign is performing over time.'
+      })
     end
 
     def dials

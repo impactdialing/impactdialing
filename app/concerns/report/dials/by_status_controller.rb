@@ -1,7 +1,7 @@
 ##
 class Report::Dials::ByStatusController < Ruport::Controller
   # hack
-  Report::Dials::Html # ? formatters aren't loading => aren't declaring themselves to controllers
+  Report::Formatters::Html # ? formatters aren't loading => aren't declaring themselves to controllers
 
   stage :heading, :description, :table
 
