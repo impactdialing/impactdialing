@@ -64,6 +64,7 @@ module TimeZoneHelper
       begin
         Time.strptime("#{date} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if date
       rescue Exception => e
+        p "format_time Exception: #{e.message} for date: #{date} and time zone #{time_zone}"
         raise InvalidDateException
       end
     end
@@ -72,6 +73,7 @@ module TimeZoneHelper
       begin
         Time.strptime("#{date} #{time_zone.formatted_offset}", "%m/%d/%Y %H:%M  %:z") if date
       rescue Exception => e
+        p "format_date_time Exception: #{e.message} for date: #{date} and time zone #{time_zone}"
         raise InvalidDateException
       end
     end
