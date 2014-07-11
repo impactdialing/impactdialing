@@ -124,7 +124,9 @@ describe 'Customer Reports', admin: true do
       within 'nav' do
         click_on 'Reports'
       end
-      click_on 'Usage by campaign'
+      within 'tr:last-of-type' do
+        click_on 'Usage'
+      end
       page.should have_content 'Account usage'
     end
 
