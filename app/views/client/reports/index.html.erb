@@ -1,20 +1,82 @@
 <h1>Reports</h1>
-<% if can? :view_reports, @account %>
-  <% if @account.campaigns.empty? %>
-     <p>You haven't created any campaigns yet.</p>
-  <% else %>
-    <%= render 'campaign_reports' %>
-  <% end %>
-<% end %>
 
-<% if can? :view_reports, @account %>
-  <% if @account.callers.empty? %>
-    <p>You haven't created any callers yet.</p>
-  <% else %>
-    <%= render 'caller_reports' %>
+<table>
+  <tr>
+    <th colspan="6">Campaign reports</th>
+    <th>Ready for download</th>
+  </tr>
+  <% @campaigns.each_with_index do |c, index| %>
+  <tr>
+    <td><%= c.name %></td>
+    <td <% if index == 0 %>
+          data-step="1" data-intro="Provides billable and total minutes used."
+        <% end %>
+        ><%= link_to "Usage", usage_client_reports_path(:campaign_id => c.id) %></td>
+    <td <% if index == 0 %>
+           data-step="2" data-intro="Provides a detailed view of conversation outcomes (how many responded and in what way)."
+        <% end %>
+        ><%= link_to "Answers", answer_client_reports_path(:campaign_id => c.id) %></td>
+    <td <% if index == 0 %>
+          data-step="3" data-intro="Provides general performance stats (dials per hour, etc)."
+        <% end %>
+        ><%= link_to "Stats", performance_client_campaign_reports_path(c.id) %></td>
+    <td <% if index == 0 %>
+          data-step="4" data-intro="Provides an overview of the current state of a campaign and breaks down the number of dials by outcome (answered, hung-up, etc)."
+        <% end %>
+        ><%= link_to "Dials", dials_client_reports_path(:campaign_id => c.id) %></td>
+    <td <% if index == 0 %>
+          data-step="5" data-intro="Export your data to a CSV file (exports are automatically purged 24 hours from click)."
+        <% end %>
+        ><%= link_to "Download", download_report_client_campaign_reports_path(c) %><br/></td>
+    <td <% if index == 0 %>
+          data-step="6" data-intro="The number of exported CSV files available for download."
+        <% end %>
+        ><%= link_to "[#{@download_report_count[c.id.to_s] || 0 }]", downloaded_reports_client_campaign_reports_path(c) %></td>
+  </tr>
   <% end %>
-<% end %>
 
-<% if @account.callers.any? && @account.campaigns.any? %>
-  <%= render 'account_reports' %>
-<% end %>
+  <tr>
+    <th colspan="7">Caller reports</th>
+  </tr>
+  <% @callers.each_with_index do |caller, index| %>
+  <tr>
+    <td><%= caller.identity_name %></td>
+    <td <% if index == 0 %>
+          data-step="7" data-intro="Provides billable and total minutes used for a specific caller."
+        <% end %>
+        ><%= link_to("Usage", usage_client_caller_path(caller)) %></td>
+    <td <% if index == 0 %>
+          data-step="8" data-intro="Provides a detailed view of conversation outcomes (how many responded and in what way) for a specific caller."
+        <% end %>
+        ><%= link_to("Answers", call_details_client_caller_path(caller)) %></td>
+    <td colspan="4" <% if index == 0 %>
+          data-step="9" data-intro="Provides general performance stats (dials per hour, etc) for a specific caller."
+        <% end %>
+        ><%= link_to("Stats", performance_client_caller_reports_path(caller)) %></td>
+  </tr>
+  <% end %>
+
+  <tr>
+    <th colspan="7">Account-wide reports</th>
+  </tr>
+  <tr>
+    <td>By campaign</td>
+    <td colspan="6">
+      <a href="<%= client_account_usage_path(report_type: 'campaigns') %>"
+         data-step="10"
+         data-intro="Here, you can view the total usage for each campaign.">
+        Usage
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td>By caller</td>
+    <td colspan="6">
+      <a href="<%= client_account_usage_path(report_type: 'callers') %>"
+         data-step="11"
+         data-intro="And finally, you can view the total usage for each caller.">
+        Usage
+      </a>
+    </td>
+  </tr>
+</table>
