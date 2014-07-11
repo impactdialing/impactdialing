@@ -4,6 +4,8 @@ module Client
     include ApplicationHelper::TimeUtils
     include TimeZoneHelper
     before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage]
+    before_filter :campaigns_and_callers_exist?
+
     around_filter :select_shard
     respond_to :html, :json
 
@@ -13,6 +15,20 @@ module Client
         return params[:strategy]
       else
         'web-internal-admin'
+      end
+    end
+
+    def campaigns_and_callers_exist?
+      campaign_flag = account.campaigns.empty?
+      caller_flag   = account.callers.empty?
+      if campaign_flag or caller_flag
+        notice = ['Please create at least one campaign and one caller to load reports.']
+        notice << 'Missing:'
+        missing = []
+        missing << 'campaign' if campaign_flag
+        missing << 'caller' if caller_flag
+        notice << missing.join(', ')
+        redirect_to root_path, notice: notice.join(' ')
       end
     end
 
