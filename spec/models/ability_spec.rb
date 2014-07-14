@@ -21,7 +21,7 @@ describe Ability, :type => :model do
   end
 
   def take_all_seats
-    CallerSession.stub_chain(:on_call_in_campaigns, :count){ quota.callers_allowed + 1 }
+    allow(CallerSession).to receive_message_chain(:on_call_in_campaigns, :count){ quota.callers_allowed + 1 }
   end
 
   def set_minutes_allowed(n)

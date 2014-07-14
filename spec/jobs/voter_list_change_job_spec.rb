@@ -37,7 +37,7 @@ describe VoterListChangeJob do
 
   it 'properly requeues itself if the worker is stopped during a run' do
     expect(Resque).to receive(:enqueue).with(subject, voter_list.id, enabled)
-    Voter.stub_chain(:where, :update_all){ raise Resque::TermException, 'TERM' }
+    allow(Voter).to receive_message_chain(:where, :update_all){ raise Resque::TermException, 'TERM' }
     subject.perform(voter_list.id, enabled)
   end
 
@@ -51,7 +51,7 @@ describe VoterListChangeJob do
       })
     end
     before do
-      Voter.stub_chain(:where, :update_all){ raise ActiveRecord::StatementInvalid, msg }
+      allow(Voter).to receive_message_chain(:where, :update_all){ raise ActiveRecord::StatementInvalid, msg }
       allow(Resque).to receive(:enqueue).with(subject, voter_list.id, anything)
       allow(ExceptionMailer).to receive(:new){ mailer }
     end
@@ -69,7 +69,7 @@ describe VoterListChangeJob do
 
   context 'other exceptions' do
     before do
-      Voter.stub_chain(:where, :update_all){ raise ActiveRecord::StatementInvalid, "Syntax error" }
+      allow(Voter).to receive_message_chain(:where, :update_all){ raise ActiveRecord::StatementInvalid, "Syntax error" }
     end
     it 'fall through' do
       expect{subject.perform(voter_list.id, enabled)}.to raise_error(ActiveRecord::StatementInvalid)

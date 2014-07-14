@@ -83,7 +83,7 @@ describe Preview, :type => :model do
       blocked = ['1234567890', '0987654321']
       account = create(:account)
       campaign = create(:preview, {account: account})
-      account.stub_chain(:blocked_numbers, :for_campaign, :pluck){ blocked }
+      allow(account).to receive_message_chain(:blocked_numbers, :for_campaign, :pluck){ blocked }
       voter = create(:voter, :status => 'not called', :campaign => campaign, phone: blocked.first)
       priority_voter = create(:voter, :status => 'not called', :campaign => campaign, priority: "1", phone: blocked.second)
       caller_session = create(:caller_session)

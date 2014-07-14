@@ -67,7 +67,7 @@ describe ReportWebUIStrategy, :type => :model do
         describe '#response({campaign_name: "Some Name"})' do
           before do
             allow(AmazonS3).to receive(:new){ s3 }
-            DownloadedReport.stub_chain(:using, :create)
+            allow(DownloadedReport).to receive_message_chain(:using, :create)
           end
           after do
             obj.response(params)

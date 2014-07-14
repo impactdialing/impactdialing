@@ -94,7 +94,7 @@ describe VoterList, :type => :model do
       end
 
       it 'should handle windoze files' do
-        AmazonS3.stub_chain(:new, :read){ File.open(windoze_csv_file_upload).read }
+        allow(AmazonS3).to receive_message_chain(:new, :read){ File.open(windoze_csv_file_upload).read }
         actual = voter_list.import_leads(windoze_mappings, windoze_csv_file_upload, ",")
         expect(actual).to eq({
           successCount: 29,
@@ -276,7 +276,7 @@ describe VoterList, :type => :model do
       voter2 = create(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
       expect(voter1).to receive(:dial)
       expect(voter2).to receive(:dial)
-      Voter.stub_chain(:to_be_dialed, :find_in_batches).and_yield [ voter1, voter2 ]
+      allow(Voter).to receive_message_chain(:to_be_dialed, :find_in_batches).and_yield [ voter1, voter2 ]
       voter_list.dial
     end
 
