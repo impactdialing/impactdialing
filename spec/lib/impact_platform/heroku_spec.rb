@@ -72,3 +72,18 @@ describe ImpactPlatform::Heroku::Scale do
     end
   end
 end
+
+describe ImpactPlatform::Heroku::Scale::BackgroundScaleRules do
+  describe '#active_rule' do
+    let(:process){ 'queue_name' }
+    let(:rules){ ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process) }
+
+    before do
+      Resque.stub(:size).with(process){ 0 }
+    end
+
+    it 'returns first if queue size is zero' do
+      expect(rules.active_rule).to eq rules.default_rules.first
+    end
+  end
+end

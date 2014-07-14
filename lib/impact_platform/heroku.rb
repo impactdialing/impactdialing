@@ -143,6 +143,8 @@ module ImpactPlatform
         end
 
         def active_rule
+          return rules.first if queue_size.zero?
+
           rules.reverse.detect{|rule| queue_size >= rule[:queue_size]}
         end
 
