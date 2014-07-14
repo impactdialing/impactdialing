@@ -1,9 +1,27 @@
 <h1><%= @record.name %> Performance</h1>
+<h4><%= nice_date(@date_range.from) %> - <%= nice_date(@date_range.to) %></h4>
 
 <div role="main">
-  <%=
-    # render partial: 'shared/date_picker_campaigns', locals: {target: dials_client_reports_path}
-  %>
-
   <%= @velocity.html_safe %>
+
+<%= form_tag(@datepicker_path, :method => :get) do %>
+  <fieldset>
+    <legend>Date range:</legend>
+    <% if params[:campaign_id] %>
+    <input name="campaign_id" type="hidden" value="<%= params[:campaign_id] %>">
+    <% else %>
+    <input name="caller_id" type="hidden" value="<%= params[:caller_id] %>">
+    <% end %>
+    <p>
+      <label for="from_date">From:</label>
+      <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= date_as_slashes(@date_range.from) %>">
+    </p>
+    <p>
+      <label for="to_date">To:</label>
+      <input class="format-m-d-y divider-slash" id="to_date" name="to_date" type="text" value="<%= date_as_slashes(@date_range.to) %>">
+    </p>
+  </fieldset>
+
+  <div class="buttons"><button type="submit">Update date range</button></div>
+<% end %>
 </div>

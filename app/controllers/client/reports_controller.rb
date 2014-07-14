@@ -43,34 +43,38 @@ module Client
     def performance
       authorize! :view_reports, @account
 
+      from_date_pool = []
+      to_date_pool   = []
+
+      from_date_pool << params[:from_date]
+      to_date_pool   << params[:to_date]
+
       if params[:campaign_id].present?
         mode = :campaign
         load_campaign
         @record = @campaign
-        set_dates
-
-        @from_date = from.beginning_of_day.utc
-        @to_date   = to.end_of_day.utc
-      else
-        @record    = Caller.find params[:caller_id]
-        time_zone  = @record.try(:as_time_zone)
-        if params[:from_date].present? and params[:to_date].present?
-          from = Time.strptime(params[:from_date], '%m/%d/%Y')
-          to   = Time.strptime(params[:to_date], '%m/%d/%Y')
-        else
-          from = @record.caller_sessions.first.try(:created_at) || Time.now
-          to   = @record.caller_sessions.last.try(:created_at) || Time.now
-        mode = :caller
+        if @from_date.nil? or @to_date.nil?
+          from_date_pool << @campaign.created_at
         end
-
-        @from_date = from.beginning_of_day.utc
-        @to_date   = to.end_of_day.utc
+      else
+        mode = :caller
+        load_caller
+        @record = @caller
+        if @from_date.nil? or @to_date.nil?
+          from_date_pool << @record.caller_sessions.first.try(:created_at)
+          from_date_pool << @record.created_at
+        end
       end
+
+      @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool)
+      # backward compat for daterange_picker partial
+      @from_date = @date_range.from
+      @to_date = @date_range.to
 
       @velocity = Report::Performance::VelocityController.render(:html, {
         record: @record,
-        from_date: @from_date,
-        to_date: @to_date,
+        from_date: @date_range.from,
+        to_date: @date_range.to,
         mode: mode,
         description: 'Here are some statistical averages to help you gain a general understanding of how a campaign is performing over time.'
       })
@@ -164,6 +168,16 @@ module Client
       Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
         @campaign = Account.find(account).campaigns.find(params[:campaign_id])
       end
+      @datepicker_target = performance_client_campaign_reports_path({campaign_id: @campaign.id})
+      @campaign
+    end
+
+    def load_caller
+      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
+        @caller = Account.find(account).callers.find(params[:caller_id])
+      end
+      @datepicker_target = performance_client_caller_reports_path({caller_id: @caller.id})
+      @caller
     end
 
     def set_dates
