@@ -51,7 +51,7 @@ footer .container-fluid {
 
 /* Wrapper for .container.fluid */
 .fluid-wrap {
-    padding: 0 15px;
+    padding: 0 15px 60px 15px;
 }
 
 /* Scrollable content boxes */
@@ -118,6 +118,10 @@ ul.nav.navbar-nav.add-gutter {
     li {
         margin-left: 5px;
     }
+}
+
+.script {
+    padding-top: 10px;
 }
 
 .fixed-contact-container {
