@@ -75,7 +75,7 @@ group :development do
 end
 
 group :development, :test, :e2e do
-  gem 'rspec-rails', '~>2.99.0' # todo: fix deprecations and upgrade to 3.0
+  gem 'rspec-rails' #, '~>2.99.0' # todo: fix deprecations and upgrade to 3.0
   gem 'rspec-its' # its is not in rspec 3
   gem 'rspec-activemodel-mocks' # mock_model is not in rspec 3
   gem 'rspec-collection_matchers' # expect(collection).to have(1).thing is not in rspec 3
