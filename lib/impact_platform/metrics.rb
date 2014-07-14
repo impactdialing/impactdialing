@@ -9,7 +9,7 @@ module ImpactPlatform
 
     private
       def count(name, number)
-        ImpactPlatform::Metrics.count("autoscale.#{process}.#{name}", number)
+        ImpactPlatform::Metrics.count("#{self.class.to_s.underscore}.#{process}.#{name}", number)
       end
 
     public
@@ -31,6 +31,52 @@ module ImpactPlatform
 
       def error
         count('error', 1)
+      end
+    end
+
+    class JobStatus
+      attr_reader :process
+
+    private
+      def count(name, number)
+        ImpactPlatform::Metrics.count("#{self.class.to_s.underscore}.#{process}.#{name}", number)
+      end
+
+    public
+      def self.completed(process)
+        self.new(process).completed
+      end
+
+      def self.started(process)
+        self.new(process).started
+      end
+
+      def self.sigterm(process)
+        self.new(process).sigterm
+      end
+
+      def initialize(process)
+        @process = process
+      end
+
+      def completed
+        count('completed', 1)
+        self
+      end
+
+      def error
+        count('error', 1)
+        self
+      end
+
+      def started
+        count('started', 1)
+        self
+      end
+
+      def sigterm
+        count('sigterm', 1)
+        self
       end
     end
   end

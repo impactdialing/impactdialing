@@ -8,13 +8,13 @@ class UpdateStatsTransfersEm
   @queue = :twilio_stats
 
   def self.perform
+    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
+
     ActiveRecord::Base.verify_active_connections!
     results           = []
     stats             = []
     twillio_lib       = TwilioLib.new
     transfer_attempts = TransferAttempt.where("status in (?) and tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null ", ['Message delivered', 'Call completed with success.', 'Call abandoned', 'Hangup or answering machine']).limit(1000)
-    # Debugging ghost workers
-    Rails.logger.error "GITM: UpdateStatsTransfersEm #{transfer_attempts.count}/1000 missing call data"
 
     EM.synchrony do
       concurrency = 100
@@ -44,10 +44,7 @@ class UpdateStatsTransfersEm
       })
       EventMachine.stop
     end
-    if stats.all?{|s| s.respond_to? :num_inserts}
-      Rails.logger.error "GITM: UpdateStatsTransfersEm #{stats.map(&:num_inserts).inject(:+)} INSERTs"
-    else
-      Rails.logger.error "GITM: UpdateStatsTransfersEm NoMethod :num_inserts for stats items"
-    end
+
+    metrics.completed
   end
 end

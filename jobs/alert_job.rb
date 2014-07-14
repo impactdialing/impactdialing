@@ -4,15 +4,19 @@ class AlertJob
   include Resque::Plugins::UniqueJob
   @queue = :background_worker
 
-   def self.perform
-     Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
-       campaign_ids = CallerSession.campaigns_on_call.pluck(:id)
-       predictive_campaign_ids = Campaign.where("type = 'Predictive' and id in (?)", campaign_ids).pluck(:id)
-       alert_on_hold_callers(predictive_campaign_ids)
-       alert_not_simulated_campaigns(predictive_campaign_ids)
-       alert_dials_not_being_made_for_campaign(predictive_campaign_ids)
+  def self.perform
+    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
+
+    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
+      campaign_ids = CallerSession.campaigns_on_call.pluck(:id)
+      predictive_campaign_ids = Campaign.where("type = 'Predictive' and id in (?)", campaign_ids).pluck(:id)
+      alert_on_hold_callers(predictive_campaign_ids)
+      alert_not_simulated_campaigns(predictive_campaign_ids)
+      alert_dials_not_being_made_for_campaign(predictive_campaign_ids)
     end
-   end
+
+    metrics.completed
+  end
 
    def self.alert_dials_not_being_made_for_campaign(predictive_campaign_ids)
      calls_made_in_2_minutes = CallAttempt.where("campaign_id in (?)", predictive_campaign_ids).between(2.minutes.ago, Time.now).group("campaign_id").count

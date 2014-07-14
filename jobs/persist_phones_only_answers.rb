@@ -11,9 +11,8 @@ class PersistPhonesOnlyAnswers
     @queue = :persist_jobs
 
     def self.perform
-      puts 'PersistPhonesOnlyAnswers Started...'
-      success_count = 0
-      failed_count = 0
+      metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
+
       lists = []
       answers_list = multipop($redis_phones_ans_uri_connection, 'phones_only_answer_list', 4000).sort_by{|a| a['voter_id']}
       answers_list.each do |answer_list|
@@ -22,16 +21,16 @@ class PersistPhonesOnlyAnswers
           caller_session = CallerSession.find(answer_list['caller_session_id'])
           question = Question.find(answer_list['question_id'])
           lists << voter.answer(question, answer_list['digit'], caller_session)
-          success_count += 1
         rescue Exception => e
-          failed_count += 1
-          puts "PersistPhonesOnlyAnswers Exception Failure[#{failed_count}]: #{e.message}"
-          puts e.backtrace
+          metrics.error
+          Rails.logger.error("#{self} Exception: #{e.class}: #{e.message}")
+          Rails.logger.error("#{self} Exception Backtrace: #{e.backtrace}")
         end
       end
-      puts "PersistPhonesOnlyAnswers Results: Success[#{success_count}] Failed[#{failed_count}]"
+
       Answer.import lists.compact
-      puts 'PersistPhonesOnlyAnswers Done.'
+
+      metrics.completed
     end
 
     def self.multipop(connection, list_name, num)

@@ -8,13 +8,15 @@ class PersistCalls
   class << self
 
     def perform
-      puts 'PersistCalls Started...'
+      metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
+
       abandoned_calls(LIMIT)
       unanswered_calls(LIMIT*3)
       machine_calls(LIMIT)
       disconnected_calls(LIMIT)
       wrapped_up_calls(LIMIT)
-      puts 'PersistCalls Done.'
+
+      metrics.completed
     end
 
     def multipop(connection, list_name, num)
@@ -27,9 +29,11 @@ class PersistCalls
           result << JSON.parse(element) unless element.nil?
         rescue Resque::TermException => e
           Rails.logger.info "Shutting down. [multipop]"
+          ImpactPlatform::Metrics::JobStatus.sigterm(self.to_s.underscore)
         rescue Exception => e
-          Rails.logger.error "PersistCalls Exception: #{e.message}"
-          # raise e
+          ImpactPlatform::Metrics::JobStatus.error(self.to_s.underscore)
+          Rails.logger.error("#{self} Exception: #{e.class}: #{e.message}")
+          Rails.logger.error("#{self} Exception Backtrace: #{e.backtrace}")
         end
       end
       result
@@ -47,11 +51,13 @@ class PersistCalls
         yield data
       rescue Resque::TermException => e
         Rails.logger.info "Shutting down. Saving popped data. [safe_pop]"
+        ImpactPlatform::Metrics::JobStatus.sigterm(self.to_s.underscore)
         multipush(connection, list_name, data)
       rescue Exception => e
         multipush(connection, list_name, data)
-        Rails.logger.error "PersistCalls Exception: #{e.message}"
-        # raise e
+        ImpactPlatform::Metrics::JobStatus.error(self.to_s.underscore)
+        Rails.logger.error("#{self} Exception: #{e.class}: #{e.message}")
+        Rails.logger.error("#{self} Exception Backtrace: #{e.backtrace}")
       end
     end
 
@@ -137,8 +143,11 @@ class PersistCalls
             result << call_attempt
           rescue Resque::TermException => e
             Rails.logger.info "Shutting down. [wrapped_up_calls]"
+            ImpactPlatform::Metrics::JobStatus.sigterm(self.to_s.underscore)
           rescue Exception => e
-            Rails.logger.error "PersistCalls Exception: #{e.message}"
+            ImpactPlatform::Metrics::JobStatus.error(self.to_s.underscore)
+            Rails.logger.error("#{self} Exception: #{e.class}: #{e.message}")
+            Rails.logger.error("#{self} Exception Backtrace: #{e.backtrace}")
             # raise e
           end
         end

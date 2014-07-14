@@ -8,14 +8,13 @@ class UpdateStatsAttemptsEm
   @queue = :twilio_stats
 
   def self.perform
+    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
+
     ActiveRecord::Base.verify_active_connections!
     results = []
     stats = []
     twillio_lib = TwilioLib.new
     call_attempts = CallAttempt.where("status in (?) and tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null ", ['Message delivered', 'Call completed with success.', 'Call abandoned', 'Hangup or answering machine']).limit(10000)
-
-    # Debugging ghost workers
-    Rails.logger.error "GITM: UpdateStatsAttemptsEm #{call_attempts.count}/10000 missing call data"
 
     voxeo_call_attempts = call_attempts.select {|call_attempt| call_attempt.sid.starts_with?("VX")}
     voxeo_call_attempts.each do |attempt|
@@ -55,10 +54,6 @@ class UpdateStatsAttemptsEm
       EventMachine.stop
     end
 
-    if stats.all?{|s| s.respond_to? :num_inserts}
-      Rails.logger.error "GITM: UpdateStatsAttemptsEm #{stats.map(&:num_inserts).inject(:+)} INSERTs"
-    else
-      Rails.logger.error "GITM: UpdateStatsAttemptsEm NoMethod :num_inserts for stats items"
-    end
+    metrics.completed
   end
 end

@@ -4,6 +4,8 @@ class UpdateTwilioStatsCallerSession
   @queue = :twilio_stats
 
   def self.perform
+    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
+
     ActiveRecord::Base.verify_active_connections!
     caller_sessions = []
     twillio_lib = TwilioLib.new
@@ -39,6 +41,6 @@ class UpdateTwilioStatsCallerSession
     PhonesOnlyCallerSession.import caller_sessions, :on_duplicate_key_update=>[:tCallSegmentSid, :tAccountSid,
                                         :tCalled, :tCaller, :tPhoneNumberSid, :tStatus, :tStartTime, :tEndTime, :tDuration, :tPrice, :tFlags]
 
+    metrics.completed
   end
-
 end

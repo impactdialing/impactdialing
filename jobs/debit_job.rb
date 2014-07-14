@@ -23,6 +23,8 @@ class DebitJob
   end
 
   def self.perform
+    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
+
     ActiveRecord::Base.verify_active_connections!
 
     CALL_TIME_CLASSES.each do |klass_name, limit|
@@ -30,5 +32,7 @@ class DebitJob
       call_times = klass.debit_pending.includes({campaign: :account}).limit(limit)
       batch_process(klass, call_times)
     end
+
+    metrics.completed
   end
 end
