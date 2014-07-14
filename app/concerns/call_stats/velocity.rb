@@ -3,7 +3,8 @@ class CallStats::Velocity
 
 private
   def answered_calls
-    CallStats.call_attempts(record).where(status: CallAttempt::Status::SUCCESS)
+    query = CallStats.call_attempts(record).where(status: CallAttempt::Status::SUCCESS)
+    CallStats.between(query, from_date, to_date)
   end
 
   def dials_count
