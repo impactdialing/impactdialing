@@ -78,7 +78,7 @@ describe CallerController do
       end
 
       it 'redirects the Caller to continue_conf' do
-        pending 'review'
+        skip 'review'
         controller.should_receive(:enqueue_call_flow).with(RedirectCallerJob, [caller_session.id])
 
         post :skip_voter, valid_params

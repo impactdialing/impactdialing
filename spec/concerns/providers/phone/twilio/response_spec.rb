@@ -55,21 +55,21 @@ describe Providers::Phone::Twilio::Response do
   describe 'testing response success' do
     describe '#success?' do
       it 'returns true when status is 2xx' do
-        bodyless_response.success?.should be_true
+        bodyless_response.success?.should be_truthy
       end
 
       it 'returns false when RestException node is found' do
-        error_response.success?.should be_false
+        error_response.success?.should be_falsey
       end
     end
 
     describe '#error?' do
       it 'returns true when RestException node is found' do
-        error_response.error?.should be_true
+        error_response.error?.should be_truthy
       end
 
       it 'returns false when RestException node is not found' do
-        success_response.error?.should be_false
+        success_response.error?.should be_falsey
       end
     end
   end

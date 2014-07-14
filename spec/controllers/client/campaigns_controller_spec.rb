@@ -165,7 +165,7 @@ describe Client::CampaignsController do
           put :update , id: campaign.id, :campaign => {name: "def", :voter_lists_attributes=> {"0"=>{"id"=>"#{voter_list.id}", "enabled"=> "0"}}}, :api_key=> account.api_key, :format => "json"
         }.should change {account.reload.campaigns.size} .by(0)
         response.body.should  eq("{\"message\":\"Campaign updated\"}")
-        voter_list.reload.enabled.should be_false
+        voter_list.reload.enabled.should be_falsey
       end
 
 

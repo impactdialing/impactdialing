@@ -25,7 +25,7 @@ describe Call do
       end
 
       it "should start a conference in connected state with callsid if call not from twilio" do
-        pending "review & removal"
+        skip "review & removal"
         call = create(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
         RedisCall.set_request_params(call.id, call.attributes)
         RedisCallerSession.set_datacentre(@caller_session.id, DataCentre::Code::ORL)
@@ -201,13 +201,13 @@ end
     it "should return answered by machine" do
       call = create(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'disconnected')
       RedisCall.set_request_params(call.id, call.attributes)
-      call.answered_by_machine?.should be_true
+      call.answered_by_machine?.should be_truthy
     end
 
     it "should return answered by human" do
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
       RedisCall.set_request_params(call.id, call.attributes)
-      call.answered_by_human?.should be_true
+      call.answered_by_human?.should be_truthy
     end
 
     describe "answered_by_human_and_caller_available?"
@@ -223,47 +223,47 @@ end
     it "should return answered_by_human_and_caller_available?" do
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.answered_by_human_and_caller_available?.should be_true
+      call.answered_by_human_and_caller_available?.should be_truthy
     end
 
     it "should return false if not answered by human" do
       call = create(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.answered_by_human_and_caller_available?.should be_false
+      call.answered_by_human_and_caller_available?.should be_falsey
     end
 
     it "should return false if call status is not in progress" do
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "completed")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.answered_by_human_and_caller_available?.should be_false
+      call.answered_by_human_and_caller_available?.should be_falsey
     end
 
     it "should return false if caller session is nil" do
       @caller_session.update_attributes(attempt_in_progress: nil)
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.answered_by_human_and_caller_available?.should be_false
+      call.answered_by_human_and_caller_available?.should be_falsey
     end
 
     it "should return false if caller session is not available" do
       @caller_session.update_attributes(on_call: false)
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.answered_by_human_and_caller_available?.should be_false
+      call.answered_by_human_and_caller_available?.should be_falsey
     end
 
     it "should return true if caller session is nil" do
       @caller_session.update_attributes(attempt_in_progress: nil)
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.answered_by_human_and_caller_not_available?.should be_true
+      call.answered_by_human_and_caller_not_available?.should be_truthy
     end
 
     it "should return true if caller session is not available" do
       @caller_session.update_attributes(on_call: true, available_for_call: true)
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.answered_by_human_and_caller_not_available?.should be_true
+      call.answered_by_human_and_caller_not_available?.should be_truthy
     end
 
   end
@@ -273,25 +273,25 @@ end
     it "should return true if busy" do
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "busy")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.call_did_not_connect?.should be_true
+      call.call_did_not_connect?.should be_truthy
     end
 
     it "should return true if no answer" do
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "no-answer")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.call_did_not_connect?.should be_true
+      call.call_did_not_connect?.should be_truthy
     end
 
     it "should return true if failed" do
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "failed")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.call_did_not_connect?.should be_true
+      call.call_did_not_connect?.should be_truthy
     end
 
     it "should return false if completed" do
       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "completed")
       RedisCall.set_request_params(call.id, call.attributes)
-      call.call_did_not_connect?.should be_false
+      call.call_did_not_connect?.should be_falsey
     end
 
 

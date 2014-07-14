@@ -17,27 +17,27 @@ describe Caller do
     caller = create(:caller, caller_group_id: caller_group.id)
     campaign = create(:preview)
     caller.update_attributes(caller_group_id: nil, campaign: campaign)
-    caller.save.should be_true
+    caller.save.should be_truthy
   end
 
   it "should validate name for phones only callers" do
     caller_group = create(:caller_group)
     caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: true, name: "")
-    caller.save.should be_false
+    caller.save.should be_falsey
     caller.errors.messages.should eq({:name=>["can't be blank"]})
   end
 
   it "should validate username for web callers" do
     caller_group = create(:caller_group)
     caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "")
-    caller.save.should be_false
+    caller.save.should be_falsey
     caller.errors.messages.should eq({:username=>["can't be blank"]})
   end
 
   it "should validate username cant contain spces for web callers" do
     caller_group = create(:caller_group)
     caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "john doe")
-    caller.save.should be_false
+    caller.save.should be_falsey
     caller.errors.messages.should eq({:username=>["cannot contain blank space."]})
   end
 
@@ -67,7 +67,7 @@ describe Caller do
     campaign = create(:campaign, active: false)
     caller = create(:caller, campaign: campaign, active: false)
     caller.active = true
-    caller.save.should be_false
+    caller.save.should be_falsey
     caller.errors[:base].should == ['The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.']
   end
 

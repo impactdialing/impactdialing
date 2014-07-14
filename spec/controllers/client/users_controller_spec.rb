@@ -38,7 +38,7 @@ describe Client::UsersController do
     put :update_password, :user_id => user.id, :reset_code => 'xyz', :password => 'new_password'
     User.authenticate(user.email, 'new_password').should_not == user
     user.reload.password_reset_code.should_not be_nil
-    user.authenticate_with?("xyzzy").should be_true
+    user.authenticate_with?("xyzzy").should be_truthy
     flash[:error].should_not be_blank
   end
 

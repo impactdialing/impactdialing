@@ -18,7 +18,7 @@ describe CallAttempt do
     end
 
     it 'sets self.recording_delivered_manually to `delivered_manually` arg value' do
-      subject.recording_delivered_manually.should be_true
+      subject.recording_delivered_manually.should be_truthy
     end
 
     it 'calls update_voicemail_history! on associated voter' do
@@ -125,7 +125,7 @@ describe CallAttempt do
     now = Time.now
     call_attempt.wrapup_now(now, CallerSession::CallerType::TWILIO_CLIENT)
     call_attempt.wrapup_time.should eq(now)
-    call_attempt.voter_response_processed.should be_false
+    call_attempt.voter_response_processed.should be_falsey
   end
 
   it "should wrapup call phones" do
@@ -135,7 +135,7 @@ describe CallAttempt do
     now = Time.now
     call_attempt.wrapup_now(now, CallerSession::CallerType::PHONE)
     call_attempt.wrapup_time.should eq(now)
-    call_attempt.voter_response_processed.should be_true
+    call_attempt.voter_response_processed.should be_truthy
   end
 
   it "should wrapup call phones" do
@@ -145,7 +145,7 @@ describe CallAttempt do
     now = Time.now
     call_attempt.wrapup_now(now, CallerSession::CallerType::PHONE)
     call_attempt.wrapup_time.should eq(now)
-    call_attempt.voter_response_processed.should be_false
+    call_attempt.voter_response_processed.should be_falsey
   end
 
   it "should connect lead to caller" do

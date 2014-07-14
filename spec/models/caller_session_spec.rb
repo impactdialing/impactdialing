@@ -44,7 +44,7 @@ describe CallerSession do
     it "should be true" do
       caller = create(:caller, :campaign => create(:campaign))
       caller_session = create(:caller_session, campaign: create(:campaign), caller: caller, reassign_campaign: CallerSession::ReassignCampaign::YES)
-      caller_session.reassigned_to_another_campaign?.should be_true
+      caller_session.reassigned_to_another_campaign?.should be_truthy
     end
 
     it "handle reassign the caller_session to campaign should set reassign campaign to DONE" do
@@ -126,7 +126,7 @@ describe CallerSession do
       call_attempt = create(:call_attempt)
       campaign = create(:campaign)
       caller_session = create(:caller_session, on_call: false, available_for_call: false, attempt_in_progress: call_attempt, campaign: campaign,state: "conference_ended")
-      caller_session.disconnected?.should be_true
+      caller_session.disconnected?.should be_truthy
     end
   end
 

@@ -105,20 +105,20 @@ describe RedisCallerSession do
       end
       it 'returns true when party_count(transfer_session_key) is zero' do
         subject.add_party(transfer_session_key)
-        subject.pause?(caller_session_key, from_transfer_session_key).should be_true
+        subject.pause?(caller_session_key, from_transfer_session_key).should be_truthy
       end
 
       it 'returns true when transfer_session_key is nil' do
         subject.deactivate_transfer(caller_session_key)
-        subject.pause?(caller_session_key, from_transfer_session_key).should be_true
+        subject.pause?(caller_session_key, from_transfer_session_key).should be_truthy
       end
 
       it 'returns false when party_count(transfer_session_key) is NOT zero' do
-        subject.pause?(caller_session_key, from_transfer_session_key).should be_false
+        subject.pause?(caller_session_key, from_transfer_session_key).should be_falsey
         subject.redis.get(party_count_key).should eq "-1"
 
         3.times{ subject.add_party(transfer_session_key) }
-        subject.pause?(caller_session_key, from_transfer_session_key).should be_false
+        subject.pause?(caller_session_key, from_transfer_session_key).should be_falsey
       end
     end
 
@@ -126,7 +126,7 @@ describe RedisCallerSession do
       it 'returns true for freshly activated' do
         subject.activate_transfer(caller_session_key, transfer_session_key)
         subject.party_count(transfer_session_key).should eq -1
-        subject.any_active_transfers?(caller_session_key).should be_true
+        subject.any_active_transfers?(caller_session_key).should be_truthy
       end
 
       it 'returns true for populated' do
@@ -134,15 +134,15 @@ describe RedisCallerSession do
 
         subject.add_party(transfer_session_key) # => 0
         subject.add_party(transfer_session_key) # => 1
-        subject.any_active_transfers?(caller_session_key).should be_true
+        subject.any_active_transfers?(caller_session_key).should be_truthy
       end
 
       it 'returns false when none are found or all are zero' do
-        subject.any_active_transfers?(caller_session_key).should be_false
+        subject.any_active_transfers?(caller_session_key).should be_falsey
 
         subject.activate_transfer(caller_session_key, transfer_session_key)
         subject.add_party(transfer_session_key) # => 0
-        subject.any_active_transfers?(caller_session_key).should be_false
+        subject.any_active_transfers?(caller_session_key).should be_falsey
       end
     end
   end

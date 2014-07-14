@@ -288,27 +288,27 @@ describe VoterList do
 
   describe "valid file" do
      it "should consider csv file extension as valid" do
-       VoterList.valid_file?("abc.csv").should be_true
+       VoterList.valid_file?("abc.csv").should be_truthy
      end
 
      it "should consider CSV file extension as valid" do
-       VoterList.valid_file?("abc.CSV").should be_true
+       VoterList.valid_file?("abc.CSV").should be_truthy
      end
 
      it "should consider txt file extension as valid" do
-       VoterList.valid_file?("abc.txt").should be_true
+       VoterList.valid_file?("abc.txt").should be_truthy
      end
 
      it "should consider txt file extension as valid" do
-       VoterList.valid_file?("abc.txt").should be_true
+       VoterList.valid_file?("abc.txt").should be_truthy
      end
 
      it "should consider null fileas invalid" do
-       VoterList.valid_file?(nil).should be_false
+       VoterList.valid_file?(nil).should be_falsey
      end
 
      it "should consider non csv txt file as invalid" do
-       VoterList.valid_file?("abc.psd").should be_false
+       VoterList.valid_file?("abc.psd").should be_falsey
      end
   end
 
@@ -355,7 +355,7 @@ describe VoterList do
       voter = create(:voter, voter_list: voter_list, enabled: false)
       voter_list.enabled = true
       voter_list.save
-      voter.reload.enabled.should be_true
+      voter.reload.enabled.should be_truthy
     end
 
     it "should disable all voters when list disabled" do
@@ -363,7 +363,7 @@ describe VoterList do
       voter = create(:voter, voter_list: voter_list, enabled: true)
       voter_list.enabled = false
       voter_list.save
-      voter.reload.enabled.should be_false
+      voter.reload.enabled.should be_falsey
     end
 
   end

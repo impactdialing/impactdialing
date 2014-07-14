@@ -33,11 +33,11 @@ describe Account do
 
   it "can toggle the call_recording setting" do
     account = create(:account, :record_calls => true)
-    account.record_calls?.should be_true
+    account.record_calls?.should be_truthy
     account.toggle_call_recording!
-    account.record_calls?.should be_false
+    account.record_calls?.should be_falsey
     account.toggle_call_recording!
-    account.record_calls?.should be_true
+    account.record_calls?.should be_truthy
   end
 
   it "lists all custom fields" do

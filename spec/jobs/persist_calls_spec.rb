@@ -68,7 +68,7 @@ describe PersistCalls do
       subject { voter.reload }
 
       its(:status) { should == CallAttempt::Status::ABANDONED }
-      its(:call_back) { should be_false }
+      its(:call_back) { should be_falsey }
       its(:caller_session) { should be_nil }
       its(:caller_id) { should be_nil }
     end
@@ -98,7 +98,7 @@ describe PersistCalls do
       subject { voter.reload }
 
       its(:status) { should == CallAttempt::Status::BUSY }
-      its(:call_back) { should be_false }
+      its(:call_back) { should be_falsey }
     end
   end
 
@@ -180,7 +180,7 @@ describe PersistCalls do
 
         its(:status){ should eq CallAttempt::Status::VOICEMAIL }
         its(:voicemail_history){ should eq voter.campaign.recording.id.to_s }
-        its(:call_back){ should be_true }
+        its(:call_back){ should be_truthy }
       end
     end
   end

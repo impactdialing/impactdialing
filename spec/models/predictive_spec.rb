@@ -261,13 +261,13 @@ describe Predictive do
       campaign = create(:predictive, acceptable_abandon_rate: 0.03)
       10.times { create(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
       10.times { create(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
-      campaign.abandon_rate_acceptable?.should be_false
+      campaign.abandon_rate_acceptable?.should be_falsey
     end
     it "should return true if  acceptable" do
       campaign = create(:predictive, acceptable_abandon_rate: 0.03)
       40.times { create(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
       1.times { create(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
-      campaign.abandon_rate_acceptable?.should be_true
+      campaign.abandon_rate_acceptable?.should be_truthy
     end
 
     it "should only consider answered calls for abandonment rate" do
@@ -275,7 +275,7 @@ describe Predictive do
       9.times { create(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
       2.times { create(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::BUSY) }
       1.times { create(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
-      campaign.abandon_rate_acceptable?.should be_false
+      campaign.abandon_rate_acceptable?.should be_falsey
     end
   end
 

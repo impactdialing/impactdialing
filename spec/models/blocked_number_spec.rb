@@ -13,7 +13,7 @@ describe BlockedNumber do
   ['-', '(', ')', '+', ' '].each do |symbol|
     it "strips #{symbol} from the number" do
       blocked_number = build(:blocked_number, :number => "123#{symbol}456#{symbol}7890")
-      blocked_number.save.should be_true
+      blocked_number.save.should be_truthy
       blocked_number.reload.number.should == '1234567890'
     end
   end

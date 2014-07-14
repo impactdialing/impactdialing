@@ -49,7 +49,7 @@ describe Billing::SubscriptionManager do
     context 'upgrading from trial to anything' do
       it 'is not pro-rated' do
         ['basic', 'pro', 'business', 'per_minute'].each do |new_plan_id|
-          manager.prorate?(new_plan_id, 1).should be_false
+          manager.prorate?(new_plan_id, 1).should be_falsey
         end
       end
     end
@@ -58,7 +58,7 @@ describe Billing::SubscriptionManager do
         ['trial', 'basic', 'pro', 'business'].each do |old_plan_id|
           subscription.stub(:plan){ old_plan_id }
           manager = new_manager(subscription, quota)
-          manager.prorate?('per_minute').should be_false
+          manager.prorate?('per_minute').should be_falsey
         end
       end
     end
@@ -74,7 +74,7 @@ describe Billing::SubscriptionManager do
         plan_ids.each do |set|
           subscription.stub(:plan){ set[0] }
           manager = new_manager(subscription, quota)
-          manager.prorate?(set[1], 1).should be_true
+          manager.prorate?(set[1], 1).should be_truthy
         end
       end
       it 'even when reducing callers' do
@@ -82,7 +82,7 @@ describe Billing::SubscriptionManager do
           subscription.stub(:plan){set[0]}
           quota.stub(:callers_allowed){5}
           manager = new_manager(subscription, quota)
-          manager.prorate?(set[1], 3).should be_true
+          manager.prorate?(set[1], 3).should be_truthy
         end
       end
     end
@@ -92,7 +92,7 @@ describe Billing::SubscriptionManager do
           subscription.stub(:plan){ id }
           quota.stub(:callers_allowed){3}
           manager = new_manager(subscription, quota)
-          manager.prorate?(id, 5).should be_true
+          manager.prorate?(id, 5).should be_truthy
         end
       end
     end

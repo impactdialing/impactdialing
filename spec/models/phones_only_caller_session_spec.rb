@@ -170,14 +170,14 @@ describe PhonesOnlyCallerSession do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
         caller_session.should_receive(:predictive?).and_return(true)
         caller_session.ready_to_call(DataCentre::Code::TWILIO)
-        caller_session.on_call.should be_true
+        caller_session.on_call.should be_truthy
       end
 
       it "should set available_for_call to true" do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
         caller_session.should_receive(:predictive?).and_return(true)
         caller_session.ready_to_call(DataCentre::Code::TWILIO)
-        caller_session.available_for_call.should be_true
+        caller_session.available_for_call.should be_truthy
       end
 
       it "should set attempt_in_progress to nil" do

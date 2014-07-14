@@ -50,7 +50,7 @@ describe Script do
       script = create(:script)
       campaign = create(:campaign, script: script)
       script.active = false
-      script.save.should be_false
+      script.save.should be_falsey
       script.errors[:base].should == [I18n.t(:script_cannot_be_deleted)]
     end
 
@@ -58,7 +58,7 @@ describe Script do
       script = create(:script)
       campaign = create(:campaign)
       script.active = false
-      script.save.should be_true
+      script.save.should be_truthy
     end
   end
 end

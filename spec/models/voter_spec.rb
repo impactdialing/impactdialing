@@ -44,11 +44,11 @@ describe Voter do
 
     context '#yet_to_receive_voicemail?' do
       it 'returns true when voicemail_history is blank' do
-        voter.yet_to_receive_voicemail?.should be_true
+        voter.yet_to_receive_voicemail?.should be_truthy
       end
       it 'returns false otherwise' do
         voter.update_voicemail_history
-        voter.yet_to_receive_voicemail?.should be_false
+        voter.yet_to_receive_voicemail?.should be_falsey
       end
     end
   end
@@ -69,7 +69,7 @@ describe Voter do
     its(:status) { should eq CallAttempt::Status::SUCCESS }
     its(:caller_session) { should be_nil }
     its(:caller_id) { should eq caller_id }
-    its(:call_back) { should be_false }
+    its(:call_back) { should be_falsey }
   end
 
   it "can share the same number" do
@@ -245,16 +245,16 @@ describe Voter do
     it "checks, whether voter is called or not" do
       voter1 = create(:voter, :status => "not called")
       voter2 = create(:voter, :status => "success")
-      voter1.not_yet_called?("not called").should be_true
-      voter2.not_yet_called?("not called").should be_false
+      voter1.not_yet_called?("not called").should be_truthy
+      voter2.not_yet_called?("not called").should be_falsey
     end
 
     it "checks, call attemp made before 3 hours or not" do
       voter1 = create(:voter, :last_call_attempt_time => 4.hours.ago, :call_back => true)
       voter2 = create(:voter, :last_call_attempt_time => 2.hours.ago, :call_back => true)
-      voter1.call_attempted_before?(3.hours).should be_true
-      voter2.call_attempted_before?(3.hours).should be_false
-      voter2.call_attempted_before?(10.minutes).should be_true
+      voter1.call_attempted_before?(3.hours).should be_truthy
+      voter2.call_attempted_before?(3.hours).should be_falsey
+      voter2.call_attempted_before?(10.minutes).should be_truthy
     end
 
     it "returns all the voters to be call" do

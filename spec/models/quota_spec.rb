@@ -19,11 +19,11 @@ describe Quota do
       it 'returns true' do
         quota.minutes_used = 4
         quota.minutes_pending = 0
-        quota.minutes_available?.should be_true
+        quota.minutes_available?.should be_truthy
 
         quota.minutes_used = 0
         quota.minutes_pending = 4
-        quota.minutes_available?.should be_true
+        quota.minutes_available?.should be_truthy
       end
     end
 
@@ -31,15 +31,15 @@ describe Quota do
       it 'returns false' do
         quota.minutes_used = 4
         quota.minutes_pending = 6
-        quota.minutes_available?.should be_false
+        quota.minutes_available?.should be_falsey
 
         quota.minutes_pending = 0
         quota.minutes_used = 10
-        quota.minutes_available?.should be_false
+        quota.minutes_available?.should be_falsey
 
         quota.minutes_pending = 10
         quota.minutes_used = 0
-        quota.minutes_available?.should be_false
+        quota.minutes_available?.should be_falsey
       end
     end
   end
@@ -80,12 +80,12 @@ describe Quota do
     end
 
     it 'returns true on success' do
-      quota.debit(5).should be_true
+      quota.debit(5).should be_truthy
     end
 
     it 'returns false on failure' do
       quota.account_id = nil # make it invalid
-      quota.debit(5).should be_false
+      quota.debit(5).should be_falsey
     end
 
     context 'minutes_available >= minutes_to_charge' do

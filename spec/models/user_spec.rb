@@ -35,11 +35,11 @@ describe User do
   it "authenticates a User object with password" do
     user.new_password = "xyzzy123"
     user.save
-    user.authenticate_with?("xyzzy123").should be_true
+    user.authenticate_with?("xyzzy123").should be_truthy
   end
 
   it "does not authenticate a User nil password" do
-    user.authenticate_with?(nil).should be_false
+    user.authenticate_with?(nil).should be_falsey
   end
 
   it "delegates the domain to the account" do

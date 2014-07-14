@@ -22,7 +22,7 @@ describe AnsweringMachineAgent do
         campaign.update_attribute(:use_recordings, false)
       end
       it 'returns false' do
-        subject.leave_message?.should be_false
+        subject.leave_message?.should be_falsey
       end
     end
 
@@ -39,7 +39,7 @@ describe AnsweringMachineAgent do
             voter.update_attribute(:voicemail_history, '')
           end
           it 'returns true' do
-            subject.leave_message?.should be_true
+            subject.leave_message?.should be_truthy
           end
         end
 
@@ -48,14 +48,14 @@ describe AnsweringMachineAgent do
             voter.update_attribute(:voicemail_history, '12')
           end
           it 'returns false' do
-            subject.leave_message?.should be_false
+            subject.leave_message?.should be_falsey
           end
         end
       end
 
       context 'campaign is not set to call back after leaving a message' do
         it 'returns true' do
-          subject.leave_message?.should be_true
+          subject.leave_message?.should be_truthy
         end
       end
     end
@@ -71,7 +71,7 @@ describe AnsweringMachineAgent do
           campaign.update_attribute(:call_back_after_voicemail_delivery, true)
         end
         it 'returns true' do
-          subject.call_back?.should be_true
+          subject.call_back?.should be_truthy
         end
       end
       context 'campaign is not set to call back after leaving a message' do
@@ -79,7 +79,7 @@ describe AnsweringMachineAgent do
           campaign.update_attribute(:call_back_after_voicemail_delivery, false)
         end
         it 'returns false' do
-          subject.call_back?.should be_false
+          subject.call_back?.should be_falsey
         end
       end
     end
@@ -90,7 +90,7 @@ describe AnsweringMachineAgent do
           campaign.update_attribute(:call_back_after_voicemail_delivery, true)
         end
         it 'returns true' do
-          subject.call_back?.should be_true
+          subject.call_back?.should be_truthy
         end
       end
       context 'campaign is not set to call back after leaving a message' do
@@ -98,7 +98,7 @@ describe AnsweringMachineAgent do
           campaign.update_attribute(:call_back_after_voicemail_delivery, false)
         end
         it 'returns true' do
-          subject.call_back?.should be_true
+          subject.call_back?.should be_truthy
         end
       end
     end

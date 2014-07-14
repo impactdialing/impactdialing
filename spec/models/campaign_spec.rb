@@ -29,31 +29,31 @@ describe Campaign do
         campaign.answering_machine_detect           = true
         campaign.use_recordings                     = true
         campaign.save
-        campaign.use_recordings.should be_true
-        campaign.answering_machine_detect.should be_true
-        campaign.call_back_after_voicemail_delivery.should be_true
+        campaign.use_recordings.should be_truthy
+        campaign.answering_machine_detect.should be_truthy
+        campaign.call_back_after_voicemail_delivery.should be_truthy
       end
       it 'should set use_recordings & call_back_after_voicemail_delivery to false, if it is true and answering_machine_detect is false' do
         campaign.answering_machine_detect = false
         campaign.save
-        campaign.use_recordings.should be_false
-        campaign.answering_machine_detect.should be_false
-        campaign.call_back_after_voicemail_delivery.should be_false
+        campaign.use_recordings.should be_falsey
+        campaign.answering_machine_detect.should be_falsey
+        campaign.call_back_after_voicemail_delivery.should be_falsey
       end
 
       it 'should set call_back_after_voicemail_delivery to false, if it is true and use_recordings and caller_can_drop_message_manually are both false' do
         campaign.use_recordings = false
         campaign.save
-        campaign.call_back_after_voicemail_delivery.should be_false
-        campaign.answering_machine_detect.should be_true
-        campaign.use_recordings.should be_false
+        campaign.call_back_after_voicemail_delivery.should be_falsey
+        campaign.answering_machine_detect.should be_truthy
+        campaign.use_recordings.should be_falsey
       end
 
       it 'should not abort callback chain' do
         campaign.use_recordings = false
         campaign.caller_can_drop_message_manually = true
         campaign.save
-        campaign.caller_can_drop_message_manually.should be_true
+        campaign.caller_can_drop_message_manually.should be_truthy
       end
     end
   end
@@ -97,9 +97,9 @@ describe Campaign do
     it 'return validation error, if caller id is either blank, not a number or not a valid length' do
       campaign = build(:campaign, account: create(:account))
       campaign.save(:validate => false)
-      campaign.update_attributes(:caller_id => '23456yuiid').should be_false
+      campaign.update_attributes(:caller_id => '23456yuiid').should be_falsey
       campaign.errors[:base].should == ['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code']
-      campaign.update_attributes(:called_id => '').should be_false
+      campaign.update_attributes(:called_id => '').should be_falsey
       campaign.errors[:base].should == ['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code']
     end
 
@@ -114,7 +114,7 @@ describe Campaign do
       campaign = create(:preview)
       campaign.caller_sessions.create!(on_call: true, state: "initial")
       campaign.type = Campaign::Type::POWER
-      campaign.save.should be_false
+      campaign.save.should be_falsey
       campaign.errors[:base].should == ['You cannot change dialing modes while callers are logged in.']
       campaign.reload
       campaign.type.should eq(Campaign::Type::PREVIEW)
@@ -123,7 +123,7 @@ describe Campaign do
     it 'can change dialing mode when not on call' do
       campaign = create(:preview)
       campaign.type = Campaign::Type::POWER
-      campaign.save.should be_true
+      campaign.save.should be_truthy
       campaign.type.should eq(Campaign::Type::POWER)
     end
 
@@ -139,14 +139,14 @@ describe Campaign do
       campaign = create(:power, {answering_machine_detect: false})
       campaign.use_recordings = true
       campaign.save
-      campaign.use_recordings.should be_false
+      campaign.use_recordings.should be_falsey
     end
 
     it "sets call_back_after_voicemail_delivery to false when both use_recordings and caller_can_drop_message_manually are false" do
       campaign = create(:power, {use_recordings: false, caller_can_drop_message_manually: false})
       campaign.call_back_after_voicemail_delivery = true
       campaign.save
-      campaign.call_back_after_voicemail_delivery.should be_false
+      campaign.call_back_after_voicemail_delivery.should be_falsey
     end
 
     describe "delete campaign" do
@@ -155,7 +155,7 @@ describe Campaign do
         caller = create(:caller)
         campaign = create(:preview, callers: [caller])
         campaign.active = false
-        campaign.save.should be_false
+        campaign.save.should be_falsey
         campaign.errors[:base].should == ['There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.']
       end
 
@@ -163,14 +163,14 @@ describe Campaign do
         caller = create(:caller)
         campaign = create(:preview)
         campaign.active = false
-        campaign.save.should be_true
+        campaign.save.should be_truthy
       end
 
       it "should delete a campaign that has inactive callers assigned to it and change their campaign to nil" do
         campaign = create(:campaign)
         caller = create(:caller, campaign: campaign, active: false)
         campaign.active = false
-        campaign.save.should be_true
+        campaign.save.should be_truthy
       end
     end
 
@@ -272,29 +272,29 @@ describe Campaign do
     describe "contine on amd" do
       it "should return true if answering machine detect and recording present" do
         campaign = create(:preview, answering_machine_detect: true, use_recordings: true)
-        campaign.continue_on_amd.should be_true
+        campaign.continue_on_amd.should be_truthy
       end
 
       it "should return false if answering machine detect and recording not present" do
         campaign = create(:preview, answering_machine_detect: true, use_recordings: false)
-        campaign.continue_on_amd.should be_false
+        campaign.continue_on_amd.should be_falsey
       end
 
       it "should return false if answering machine detect false and recording  present" do
         campaign = create(:preview, answering_machine_detect: false, use_recordings: true)
-        campaign.continue_on_amd.should be_false
+        campaign.continue_on_amd.should be_falsey
       end
     end
 
     describe "hangup on amd" do
       it "should return true if answering machine detect and recording not present" do
         campaign = create(:preview, answering_machine_detect: true, use_recordings: false)
-        campaign.hangup_on_amd.should be_true
+        campaign.hangup_on_amd.should be_truthy
       end
 
       it "should return false if answering machine detect and recording  present" do
         campaign = create(:preview, answering_machine_detect: true, use_recordings: true)
-        campaign.hangup_on_amd.should be_false
+        campaign.hangup_on_amd.should be_falsey
       end
 
     end
@@ -502,21 +502,21 @@ describe Campaign do
     end
 
     it 'returns true iff obj.last_call_attempt_time > Campaign#recycle_rate.hours.ago' do
-      campaign.within_recycle_rate?(duck_in_recycle_rate1).should be_true
-      campaign.within_recycle_rate?(duck_in_recycle_rate2).should be_true
+      campaign.within_recycle_rate?(duck_in_recycle_rate1).should be_truthy
+      campaign.within_recycle_rate?(duck_in_recycle_rate2).should be_truthy
     end
 
     it 'returns true if obj.last_call_attempt_time = Campaign#recycle_rate.hours.ago' do
-      campaign.within_recycle_rate?(duck_in_recycle_rate3).should be_true
+      campaign.within_recycle_rate?(duck_in_recycle_rate3).should be_truthy
     end
 
     it 'returns false if obj.last_call_attempt_time < Campaign#recycle_rate.hours.ago' do
-      campaign.within_recycle_rate?(duck_available1).should be_false
-      campaign.within_recycle_rate?(duck_available2).should be_false
+      campaign.within_recycle_rate?(duck_available1).should be_falsey
+      campaign.within_recycle_rate?(duck_available2).should be_falsey
     end
 
     it 'returns false if obj.last_call_attempt_time.nil?' do
-      campaign.within_recycle_rate?(duck_available3).should be_false
+      campaign.within_recycle_rate?(duck_available3).should be_falsey
     end
 
     it 'raises ArgumentError if obj does not respond to last_call_attempt_time' do

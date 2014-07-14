@@ -55,7 +55,7 @@ describe Billing::Subscription do
         subscription.plan = plan
       end
       it 'returns true' do
-        subscription.active?.should be_true
+        subscription.active?.should be_truthy
       end
     end
     shared_examples_for 'not active subscription' do
@@ -63,7 +63,7 @@ describe Billing::Subscription do
         subscription.plan = plan
       end
       it 'returns false' do
-        subscription.active?.should be_false
+        subscription.active?.should be_falsey
       end
     end
     ['trial', 'enterprise', 'per_minute'].each do |plan_id|
@@ -122,7 +122,7 @@ describe Billing::Subscription do
     let(:account){ create(:account) }
     let(:subscription){ account.billing_subscription }
     before do
-      subscription.autorecharge_pending?.should be_false
+      subscription.autorecharge_pending?.should be_falsey
       subscription.autorecharge_pending!
     end
     it 'save! autorecharge_pending as 1' do
@@ -142,7 +142,7 @@ describe Billing::Subscription do
       end
 
       it 'returns true' do
-        subscription.is_renewal?(start_period, end_period).should be_true
+        subscription.is_renewal?(start_period, end_period).should be_truthy
       end
     end
 
@@ -152,7 +152,7 @@ describe Billing::Subscription do
         subscription.provider_end_period   = end_period
       end
       it 'returns false' do
-        subscription.is_renewal?(start_period, end_period).should be_false
+        subscription.is_renewal?(start_period, end_period).should be_falsey
       end
     end
   end

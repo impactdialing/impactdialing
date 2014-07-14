@@ -17,10 +17,10 @@ describe Providers::Phone::Jobs::DropMessageRecorder do
   end
 
   it 'stores whether recording was delivered manually or not' do
-    call_attempt.recording_delivered_manually?.should be_false
+    call_attempt.recording_delivered_manually?.should be_falsey
     subject.perform(call.id, 1)
 
-    call_attempt.reload.recording_delivered_manually?.should be_true
+    call_attempt.reload.recording_delivered_manually?.should be_truthy
   end
 
   it 'stores the recording id with the Voter' do

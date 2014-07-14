@@ -33,7 +33,7 @@ describe Client::CallersController do
       post :create, :caller => {:name => name, :is_phones_only => true, :campaign_id => "1234"}
       caller = Caller.find_by_name(name)
       caller.should_not be_nil
-      caller.is_phones_only.should be_true
+      caller.is_phones_only.should be_truthy
     end
 
     it "should create a phones only caller" do
@@ -41,7 +41,7 @@ describe Client::CallersController do
       post :create, :caller => {:username => username, :is_phones_only => false, :campaign_id => "1234"}
       caller = Caller.find_by_username(username)
       caller.should_not be_nil
-      caller.is_phones_only.should be_false
+      caller.is_phones_only.should be_falsey
     end
 
 
@@ -150,7 +150,7 @@ describe Client::CallersController do
       it 'marks the caller as inactive' do
         caller = create(:caller, account: account)
         delete :destroy, id: caller.id, api_key: account.api_key, format: 'json'
-        caller.reload.active.should be_false
+        caller.reload.active.should be_falsey
       end
 
       it 'will not delete a caller from another account' do
