@@ -1,5 +1,4 @@
 --colour
---drb
 --require ruby-debug
 --require rspec/instafail
 --format RSpec::Instafail

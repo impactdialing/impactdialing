@@ -64,6 +64,8 @@ gem 'acts_as_reportable'
 group :development do
   gem 'guard'
   gem 'guard-rspec'
+  gem 'spring'
+  gem 'spring-commands-rspec'
   gem 'rb-fsevent'
   gem 'showoff-io'
   gem 'foreman'
