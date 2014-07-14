@@ -149,7 +149,7 @@ module ImpactPlatform
         end
 
         def queue_size
-          Resque.size(process)
+          @queue_size ||= Resque.size(process)
         end
       end
     end
