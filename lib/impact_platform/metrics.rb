@@ -9,7 +9,7 @@ module ImpactPlatform
 
     private
       def count(name, number)
-        ImpactPlatform::Metrics.count("#{self.class.to_s.underscore}.#{process}.#{name}", number)
+        ImpactPlatform::Metrics.count("#{self.class.to_s.underscore.split('/').last}.#{process}.#{name}", number)
       end
 
     public
@@ -39,7 +39,7 @@ module ImpactPlatform
 
     private
       def count(name, number)
-        ImpactPlatform::Metrics.count("#{self.class.to_s.underscore}.#{process}.#{name}", number)
+        ImpactPlatform::Metrics.count("#{self.class.to_s.underscore.split('/').last}.#{process}.#{name}", number)
       end
 
     public
