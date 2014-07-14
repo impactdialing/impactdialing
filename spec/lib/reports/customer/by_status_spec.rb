@@ -64,7 +64,7 @@ describe Reports::Customer::ByStatus do
         CallAttempt::Status::HANGUP => hangup
       }
       actual = by_status.build
-      actual.should eq expected
+      expect(actual).to eq expected
     end
   end
 end

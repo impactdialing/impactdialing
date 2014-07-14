@@ -1,7 +1,7 @@
 require 'spec_helper'
 include JSHelpers
 
-describe 'Calling leads on a Preview campaign', caller_ui: true, e2e: true, js: true do
+describe 'Calling leads on a Preview campaign', type: :feature, caller_ui: true, e2e: true, js: true do
 
   def caller_login_as(caller)
     visit '/app/login'
@@ -27,13 +27,13 @@ describe 'Calling leads on a Preview campaign', caller_ui: true, e2e: true, js: 
   end
 
   it 'page has a contact info description' do
-    page.should have_content 'Contact details Name, phone, address, etc will be listed here when connected.'
+    expect(page).to have_content 'Contact details Name, phone, address, etc will be listed here when connected.'
   end
 
   it 'page has a logout link' do
     click_on 'Logout'
-    page.should have_content 'Username'
-    page.should have_content 'Password'
-    page.should have_content 'Log in'
+    expect(page).to have_content 'Username'
+    expect(page).to have_content 'Password'
+    expect(page).to have_content 'Log in'
   end
 end

@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe CallerCampaignReportStrategy do
+describe CallerCampaignReportStrategy, :type => :model do
 
   describe "csv header" do
     before (:each) do
@@ -13,18 +13,18 @@ describe CallerCampaignReportStrategy do
 
      it "should create csv headers" do
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Message Left", "Recording"])
+       expect(strategy.csv_header).to eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Message Left", "Recording"])
      end
 
      it "should create csv headers and not have Attempts if per dial" do
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording"])
+       expect(strategy.csv_header).to eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording"])
      end
 
      it "should manipulate headers" do
        selected_voter_fields = ["custom_id", "last_name", "first_name", "middle_name", "address", "city", "state", "zip_code", "country"]
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "Last name", "First name", "Middle name", "Address", "City", "State", "Zip code", "Country", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Message Left", "Recording"])
+       expect(strategy.csv_header).to eq(["ID", "Last name", "First name", "Middle name", "Address", "City", "State", "Zip code", "Country", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Attempts", "Message Left", "Recording"])
      end
 
      it "should create csv headers with question texts" do
@@ -33,7 +33,7 @@ describe CallerCampaignReportStrategy do
        answer1 = create(:answer, campaign: @campaign, question: question1 , voter: create(:voter), possible_response: create(:possible_response))
        answer2 = create(:answer, campaign: @campaign, question: question2, voter: create(:voter), possible_response: create(:possible_response))
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording", "Q1", "Q12"])
+       expect(strategy.csv_header).to eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording", "Q1", "Q12"])
      end
 
      it "should create csv headers with notes " do
@@ -42,7 +42,7 @@ describe CallerCampaignReportStrategy do
        note_response1 = create(:note_response, campaign: @campaign, note: note1 , voter: create(:voter))
        note_response2 = create(:note_response, campaign: @campaign, note: note2, voter: create(:voter))
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording", "note1", "note2"])
+       expect(strategy.csv_header).to eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording", "note1", "note2"])
      end
 
      it "should create csv headers with questions and  notes " do
@@ -56,7 +56,7 @@ describe CallerCampaignReportStrategy do
        note_response1 = create(:note_response, campaign: @campaign, note: note1 , voter: create(:voter))
        note_response2 = create(:note_response, campaign: @campaign, note: note2, voter: create(:voter))
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording", "Q1", "Q12", "note1", "note2"])
+       expect(strategy.csv_header).to eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Call Dialed", "Time Call Answered", "Time Call Ended", "Call Duration (seconds)", "Time Transfer Started", "Time Transfer Ended", "Transfer Duration (minutes)", "Message Left", "Recording", "Q1", "Q12", "note1", "note2"])
      end
   end
 
@@ -106,7 +106,7 @@ describe CallerCampaignReportStrategy do
         "Yes: automatically",
         "xyz.mp3"
       ]
-      actual.should eq expected
+      expect(actual).to eq expected
     end
 
     it "should create the basic info for per lead" do
@@ -144,7 +144,7 @@ describe CallerCampaignReportStrategy do
         "No",
         "xyz.mp3"
       ]
-      actual.should eq expected
+      expect(actual).to eq expected
     end
 
   end
@@ -211,21 +211,21 @@ describe CallerCampaignReportStrategy do
           "Test2",
           "Test1"
         ]
-        actual.should eq expected
+        expect(actual).to eq expected
       end
     end
 
     context "ringing" do
       let(:call_attempt) { create(:call_attempt, voter: voter, status: CallAttempt::Status::RINGING, caller: @caller) }
       it "should create the csv row convert ringing to not dialed" do
-        @strategy.call_attempt_details(call_attempt.attributes, @answers, @note_responses, {call_attempt.caller_id => call_attempt.caller.known_as}, {voter.id => 1}, @possible_responses).should eq([nil, "Not Dialed", "", "", "", "", "", [], []])
+        expect(@strategy.call_attempt_details(call_attempt.attributes, @answers, @note_responses, {call_attempt.caller_id => call_attempt.caller.known_as}, {voter.id => 1}, @possible_responses)).to eq([nil, "Not Dialed", "", "", "", "", "", [], []])
       end
     end
 
     context "ready" do
       let(:call_attempt) { create(:call_attempt, voter: voter, status: CallAttempt::Status::READY, caller: @caller) }
       it "should create the csv row convert ready to not dialed" do
-        @strategy.call_attempt_details(call_attempt.attributes, @answers, @note_responses, {call_attempt.caller_id => call_attempt.caller.known_as}, {voter.id => 1}, @possible_responses).should eq([nil, "Not Dialed", "", "", "", "", "", [], []])
+        expect(@strategy.call_attempt_details(call_attempt.attributes, @answers, @note_responses, {call_attempt.caller_id => call_attempt.caller.known_as}, {voter.id => 1}, @possible_responses)).to eq([nil, "Not Dialed", "", "", "", "", "", [], []])
       end
     end
   end
@@ -296,7 +296,7 @@ describe CallerCampaignReportStrategy do
         "Test2",
         "Test1"
       ]
-      actual.should eq expected
+      expect(actual).to eq expected
     end
   end
 
@@ -320,28 +320,28 @@ describe CallerCampaignReportStrategy do
       value1 = create(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
       value2 = create(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
       data = {'field1' => 'value1', 'field2' => 'value2'}
-      @strategy.selected_custom_fields(voter.attributes, [field1.name, field2.name], data).should == [value1.value, value2.value]
-      @strategy.selected_custom_fields(voter.attributes, [field2.name, field1.name], data).should == [value2.value, value1.value]
-      @strategy.selected_custom_fields(voter.attributes, nil, data).should == []
+      expect(@strategy.selected_custom_fields(voter.attributes, [field1.name, field2.name], data)).to eq([value1.value, value2.value])
+      expect(@strategy.selected_custom_fields(voter.attributes, [field2.name, field1.name], data)).to eq([value2.value, value1.value])
+      expect(@strategy.selected_custom_fields(voter.attributes, nil, data)).to eq([])
     end
 
     it "lists voters custom fields with selected field names" do
       data = {'field2' => 'value2'}
       value2 = create(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
-      @strategy.selected_custom_fields(voter.attributes, [field1.name, field2.name, field3.name], data).should == [nil, value2.value, nil]
+      expect(@strategy.selected_custom_fields(voter.attributes, [field1.name, field2.name, field3.name], data)).to eq([nil, value2.value, nil])
     end
 
     it "lists selected voter fields" do
       phone, custom_id, firstname = "39045098753", "24566", "first"
       voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
-      @strategy.selected_fields(voter.attributes, ["phone", "first_name", "last_name"]).should == [phone, firstname, nil]
-      @strategy.selected_fields(voter.attributes, ["phone", "last_name", "first_name"]).should == [phone, nil, firstname]
+      expect(@strategy.selected_fields(voter.attributes, ["phone", "first_name", "last_name"])).to eq([phone, firstname, nil])
+      expect(@strategy.selected_fields(voter.attributes, ["phone", "last_name", "first_name"])).to eq([phone, nil, firstname])
     end
 
     it "selects phone number if there are no selected fields" do
       phone, custom_id, firstname = "39045098753", "24566", "first"
       voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
-      @strategy.selected_fields(voter.attributes).should == [phone]
+      expect(@strategy.selected_fields(voter.attributes)).to eq([phone])
     end
 
   end
@@ -379,7 +379,7 @@ describe CallerCampaignReportStrategy do
        note_response2 = create(:note_response, campaign: @campaign, note: note2, voter: create(:voter), call_attempt: call_attempt, response: "Test1")
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL,
        @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_for(voter, {'field1' => 'value1', 'field2' => 'value2'}).should eq(["24566", "first", "39045098753", "value1", "value2", [nil, "Not Dialed", "", "", "", "", [], []]])
+       expect(strategy.csv_for(voter, {'field1' => 'value1', 'field2' => 'value2'})).to eq(["24566", "first", "39045098753", "value1", "value2", [nil, "Not Dialed", "", "", "", "", [], []]])
      end
 
   end
@@ -480,7 +480,7 @@ describe CallerCampaignReportStrategy do
             "Test1"
           ]
         ]
-        strategy.construct_csv.should eq expected
+        expect(strategy.construct_csv).to eq expected
       end
 
       it "should create the csv for download all per lead" do
@@ -556,7 +556,7 @@ describe CallerCampaignReportStrategy do
             "Test1"
           ]
         ]
-        strategy.construct_csv.should eq expected
+        expect(strategy.construct_csv).to eq expected
       end
    end
 end

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'Caller Management' do
+describe 'Caller Management', :type => :feature do
   let(:admin){ create(:user) }
   let(:account){ admin.account }
   let(:campaign){ create(:power, account: account, active: true) }
@@ -11,7 +11,7 @@ describe 'Caller Management' do
     end
 
     it 'can create callers and assign them to a campaign' do
-      account.campaigns.should include(campaign)
+      expect(account.campaigns).to include(campaign)
       web_login_as(admin)
       visit '/client/callers'
       click_on 'Add new caller'
@@ -20,9 +20,9 @@ describe 'Caller Management' do
       select campaign.name, from: 'Campaign'
       click_on 'Save'
 
-      page.should have_content 'Caller saved'
-      page.should have_content 'Displaying 1 Caller'
-      page.should have_content 'someguy'
+      expect(page).to have_content 'Caller saved'
+      expect(page).to have_content 'Displaying 1 Caller'
+      expect(page).to have_content 'someguy'
     end
   end
 end

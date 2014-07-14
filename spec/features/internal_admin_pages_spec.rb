@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'Internal Admin pages', admin: true do
+describe 'Internal Admin pages', type: :feature, admin: true do
   let(:admin) do
     create(:user)
   end
@@ -68,10 +68,10 @@ describe 'Internal Admin pages', admin: true do
           end
         end
 
-        page.should have_content "Account##{account.id} successfully upgraded to Enterprise."
+        expect(page).to have_content "Account##{account.id} successfully upgraded to Enterprise."
         within(main_table_css) do
           within(last_row) do
-            page.should have_content 'set account to trial'
+            expect(page).to have_content 'set account to trial'
           end
         end
       end
@@ -84,10 +84,10 @@ describe 'Internal Admin pages', admin: true do
             click_on 'set account to trial'
           end
         end
-        page.should have_content "Account##{account.id} successfully downgraded to Trial."
+        expect(page).to have_content "Account##{account.id} successfully downgraded to Trial."
         within(main_table_css) do
           within(last_row) do
-            page.should have_content 'set account to enterprise'
+            expect(page).to have_content 'set account to enterprise'
           end
         end
       end
@@ -101,8 +101,8 @@ describe 'Internal Admin pages', admin: true do
         click_on 'Account'
         click_on 'Billing'
 
-        page.should have_content "Your current plan is #{type}."
-        page.should have_content "Minutes left: #{minutes}"
+        expect(page).to have_content "Your current plan is #{type}."
+        expect(page).to have_content "Minutes left: #{minutes}"
       end
 
       it 'click "set account to enterprise" for the desired account row' do
@@ -126,10 +126,10 @@ describe 'Internal Admin pages', admin: true do
           end
         end
 
-        page.should have_content "Dialer access denied for Account##{account.id}."
+        expect(page).to have_content "Dialer access denied for Account##{account.id}."
         within(main_table_css) do
           within(last_row) do
-            page.should have_content 'Allow Dialer Access'
+            expect(page).to have_content 'Allow Dialer Access'
           end
         end
       end
@@ -143,10 +143,10 @@ describe 'Internal Admin pages', admin: true do
           end
         end
 
-        page.should have_content "Dialer access allowed for Account##{account.id}."
+        expect(page).to have_content "Dialer access allowed for Account##{account.id}."
         within(main_table_css) do
           within(last_row) do
-            page.should have_content 'Deny Dialer Access'
+            expect(page).to have_content 'Deny Dialer Access'
           end
         end
       end
@@ -170,10 +170,10 @@ describe 'Internal Admin pages', admin: true do
           end
         end
 
-        page.should have_content "Admin & dialer access denied for Account##{account.id}."
+        expect(page).to have_content "Admin & dialer access denied for Account##{account.id}."
         within(main_table_css) do
           within(last_row) do
-            page.should have_content allow_text
+            expect(page).to have_content allow_text
           end
         end
       end
@@ -187,10 +187,10 @@ describe 'Internal Admin pages', admin: true do
           end
         end
 
-        page.should have_content "Admin & dialer access allowed for Account##{account.id}."
+        expect(page).to have_content "Admin & dialer access allowed for Account##{account.id}."
         within(main_table_css) do
           within(last_row) do
-            page.should have_content deny_text
+            expect(page).to have_content deny_text
           end
         end
       end
@@ -223,20 +223,20 @@ describe 'Internal Admin pages', admin: true do
       end
 
       it 'lists total number of logged in callers' do
-        page.should have_content 'Logged in callers: 4'
+        expect(page).to have_content 'Logged in callers: 4'
       end
 
       it 'lists total number of campaigns w/ logged in callers' do
-        page.should have_content 'Logged in campaigns: 2'
+        expect(page).to have_content 'Logged in campaigns: 2'
       end
 
       it 'lists campaigns w/ logged in callers' do
         within main_table_css do
           within "#{first_row} #{first_cell}" do
-            page.should have_content "login #{campaign1.name}"
+            expect(page).to have_content "login #{campaign1.name}"
           end
           within "#{last_row} #{first_cell}" do
-            page.should have_content "login #{campaign2.name}"
+            expect(page).to have_content "login #{campaign2.name}"
           end
         end
       end
@@ -248,17 +248,17 @@ describe 'Internal Admin pages', admin: true do
           end
         end
         ['Dashboard', 'Active campaigns', 'Active callers'].each do |t|
-          page.should have_content t
+          expect(page).to have_content t
         end
       end
 
       it 'lists number of callers on calls in each campaign' do
         within main_table_css do
           within "#{first_row} #{last_cell}" do
-            page.should have_content "Callers Number: #{campaign1.caller_sessions.count}"
+            expect(page).to have_content "Callers Number: #{campaign1.caller_sessions.count}"
           end
           within "#{last_row} #{last_cell}" do
-            page.should have_content "Callers Number: #{campaign2.caller_sessions.count}"
+            expect(page).to have_content "Callers Number: #{campaign2.caller_sessions.count}"
           end
         end
       end
@@ -269,7 +269,7 @@ describe 'Internal Admin pages', admin: true do
             click_link "Callers Number: #{campaign2.caller_sessions.count}"
           end
         end
-        page.should have_content campaign2.caller_sessions.first.caller.name
+        expect(page).to have_content campaign2.caller_sessions.first.caller.name
       end
 
       it 'provides a form to change the Twilio Limit' do

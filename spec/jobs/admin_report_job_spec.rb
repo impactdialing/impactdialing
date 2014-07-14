@@ -7,8 +7,8 @@ describe AdminReportJob do
   let(:to){ (Time.now).to_date.to_s }
 
   before do
-    Reports::BillableMinutes.stub(:new){ billable_minutes }
-    Reports::Admin::EnterpriseByAccount.stub(:new){ report }
+    allow(Reports::BillableMinutes).to receive(:new){ billable_minutes }
+    allow(Reports::Admin::EnterpriseByAccount).to receive(:new){ report }
   end
 
   after do
@@ -16,15 +16,15 @@ describe AdminReportJob do
   end
 
   it 'instantiates a Reports::BillableMinutes obj with start & end dates' do
-    Reports::BillableMinutes.should_receive(:new).
+    expect(Reports::BillableMinutes).to receive(:new).
       with(Time.zone.parse(from).utc.beginning_of_day, Time.zone.parse(to).utc.end_of_day).
       and_return(billable_minutes)
   end
 
   it 'instantiates a Reports::Admin::EnterpriseByAccount obj' do
-    report.should_receive(:build)
+    expect(report).to receive(:build)
 
-    Reports::Admin::EnterpriseByAccount.should_receive(:new).
+    expect(Reports::Admin::EnterpriseByAccount).to receive(:new).
       with(billable_minutes).
       and_return(report)
   end

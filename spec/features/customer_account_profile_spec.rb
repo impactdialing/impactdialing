@@ -21,7 +21,7 @@ def fill_in_expiration
   page.execute_script('$("select[data-handler=\"selectMonth\"]").val("0")')
   page.execute_script('$("select[data-handler=\"selectYear\"]").val("2020")')
   page.execute_script('$("#expiration_date").datepicker("hide")')
-  page.find_field('Expiration date').value.should eq "01/2020"
+  expect(page.find_field('Expiration date').value).to eq "01/2020"
 end
 
 def add_valid_payment_info
@@ -30,7 +30,7 @@ def add_valid_payment_info
   fill_in 'CVC', with: 123
   fill_in_expiration
   click_on 'Update payment information'
-  page.should have_content I18n.t('subscriptions.update_billing.success')
+  expect(page).to have_content I18n.t('subscriptions.update_billing.success')
 end
 
 def go_to_billing
@@ -50,11 +50,11 @@ end
 
 def expect_monthly_cost_eq(expected_cost)
   within('#cost-subscription') do
-    page.should have_content "$#{expected_cost} per month"
+    expect(page).to have_content "$#{expected_cost} per month"
   end
 end
 
-describe 'Account profile', admin: true do
+describe 'Account profile', type: :feature, admin: true do
   let(:user){ create(:user) }
   before do
     web_login_as(user)
@@ -70,7 +70,7 @@ describe 'Account profile', admin: true do
       fill_in 'Email address', :with => user.email
       fill_in 'Pick a password', :with => user.new_password
       click_button 'Sign up'
-      page.should have_content 'Log out'
+      expect(page).to have_content 'Log out'
     end
   end
 
@@ -79,7 +79,7 @@ describe 'Account profile', admin: true do
       click_link 'Account'
       fill_in 'Email address', :with => 'new@email.com'
       click_button 'Update info'
-      page.should have_content 'Your information has been updated.'
+      expect(page).to have_content 'Your information has been updated.'
     end
 
     xit 'and changes their password' do
@@ -88,7 +88,7 @@ describe 'Account profile', admin: true do
       fill_in 'Current password', :with => user.new_password
       fill_in 'New password', :with => '1newpassword!'
       click_button 'Update password'
-      page.should have_content 'Your password has been changed.'
+      expect(page).to have_content 'Your password has been changed.'
     end
 
     xit 'and tries to change their password with an invalid password' do
@@ -96,7 +96,7 @@ describe 'Account profile', admin: true do
       fill_in 'Current password', :with => 'wrong'
       fill_in 'New password', :with => '1newpassword!'
       click_button 'Update password'
-      page.should have_content 'Your current password was not correct.'
+      expect(page).to have_content 'Your current password was not correct.'
     end
   end
 
@@ -104,7 +104,7 @@ describe 'Account profile', admin: true do
     it 'Upgrade button is disabled until payment info exists' do
       go_to_billing
 
-      page.should_not have_text 'Upgrade'
+      expect(page).not_to have_text 'Upgrade'
     end
 
     context 'Adding valid payment info' do
@@ -117,7 +117,7 @@ describe 'Account profile', admin: true do
         fill_in 'CVC', with: 123
         fill_in_expiration
         click_on 'Update payment information'
-        page.should have_content I18n.t('subscriptions.update_billing.success')
+        expect(page).to have_content I18n.t('subscriptions.update_billing.success')
       end
     end
 
@@ -129,7 +129,7 @@ describe 'Account profile', admin: true do
         enter_n_callers 2
         click_on 'Upgrade'
 
-        page.should have_content I18n.t('subscriptions.upgrade.success')
+        expect(page).to have_content I18n.t('subscriptions.upgrade.success')
       end
     end
 
@@ -147,7 +147,7 @@ describe 'Account profile', admin: true do
         fill_in_expiration
         select user.email, from: 'Who should we send invoices to?'
         click_on 'Update payment information'
-        page.should have_content I18n.t('subscriptions.update_billing.success')
+        expect(page).to have_content I18n.t('subscriptions.update_billing.success')
       end
     end
 
@@ -165,7 +165,7 @@ describe 'Account profile', admin: true do
         expect_monthly_cost_eq "#{cost * callers}"
         click_on 'Upgrade'
 
-        page.should have_content I18n.t('subscriptions.upgrade.success')
+        expect(page).to have_content I18n.t('subscriptions.upgrade.success')
       end
     end
 
@@ -184,7 +184,7 @@ describe 'Account profile', admin: true do
         expect_monthly_cost_eq "#{cost * callers}"
 
         click_on  'Upgrade'
-        page.should have_content I18n.t('subscriptions.upgrade.success')
+        expect(page).to have_content I18n.t('subscriptions.upgrade.success')
       end
     end
 
@@ -202,11 +202,11 @@ describe 'Account profile', admin: true do
       end
 
       it 'adds user designated amount of funds to the account' do
-        page.should have_content I18n.t('subscriptions.upgrade.success')
+        expect(page).to have_content I18n.t('subscriptions.upgrade.success')
       end
 
       it 'updates the account quota so only the purchased minutes are available, trial minutes are not' do
-        page.should have_content "Minutes left: #{minutes.to_i}"
+        expect(page).to have_content "Minutes left: #{minutes.to_i}"
       end
 
       describe 'with blank Add to balance field' do
@@ -224,7 +224,7 @@ describe 'Account profile', admin: true do
 
         it 'displays billing.plans.transition_errors.amount_paid' do
           error = I18n.t('billing.plans.transition_errors.amount_paid')
-          page.should have_content error
+          expect(page).to have_content error
         end
       end
     end
@@ -236,8 +236,8 @@ describe 'Account profile', admin: true do
         select_plan 'Pro'
         enter_n_callers 1
         click_on 'Upgrade'
-        page.should have_content "Minutes left: 2500"
-        page.should have_content I18n.t('subscriptions.upgrade.success')
+        expect(page).to have_content "Minutes left: 2500"
+        expect(page).to have_content I18n.t('subscriptions.upgrade.success')
       end
       it 'performs live update of monthly cost as plan and caller inputs change' do
         go_to_upgrade
@@ -245,7 +245,7 @@ describe 'Account profile', admin: true do
         enter_n_callers 1
         expect_monthly_cost_eq 49
         click_on 'Upgrade'
-        page.should have_content I18n.t('subscriptions.upgrade.success')
+        expect(page).to have_content I18n.t('subscriptions.upgrade.success')
       end
     end
 
@@ -276,8 +276,8 @@ describe 'Account profile', admin: true do
           subscription.plan_changed!('per_minute', provider_object, opts)
           quota.plan_changed!('per_minute', provider_object, opts)
         end
-        quota.minutes_available.should eq available_per_minute
-        subscription.plan.should eq 'per_minute'
+        expect(quota.minutes_available).to eq available_per_minute
+        expect(subscription.plan).to eq 'per_minute'
       end
 
       it 'will add remaining minutes from PerMinute purchase to total minutes of the selected recurring plan' do
@@ -285,7 +285,7 @@ describe 'Account profile', admin: true do
         select_plan 'Pro'
         enter_n_callers 1
         click_on 'Upgrade'
-        page.should have_content "Minutes left: #{available_per_minute + minutes_from_recurring}"
+        expect(page).to have_content "Minutes left: #{available_per_minute + minutes_from_recurring}"
       end
       context '10 days into Pro billing cycle' do
         # it_behaves_like 'customer keeps remaining minutes'
@@ -302,16 +302,16 @@ describe 'Account profile', admin: true do
         select_plan 'Per minute'
         fill_in 'Add to balance:', with: amount
         click_on 'Upgrade'
-        page.should have_content I18n.t('subscriptions.upgrade.success')
-        page.should have_content "Minutes left: #{minutes_purchased}"
+        expect(page).to have_content I18n.t('subscriptions.upgrade.success')
+        expect(page).to have_content "Minutes left: #{minutes_purchased}"
       end
 
       it 'Manually add funds' do
         go_to_billing
         fill_in 'Amount to add', with: 9
         click_on 'Add funds'
-        page.should have_content I18n.t('subscriptions.upgrade.success')
-        page.should have_content "Minutes left: #{minutes_purchased * 2}"
+        expect(page).to have_content I18n.t('subscriptions.upgrade.success')
+        expect(page).to have_content "Minutes left: #{minutes_purchased * 2}"
       end
 
       it 'Can be configured to automatically add funds' do
@@ -321,8 +321,8 @@ describe 'Account profile', admin: true do
         fill_in 'Then Add funds, spending', with: 45
         click_on 'Save'
 
-        page.should have_content I18n.t('subscriptions.autorecharge.update')
-        page.should have_content "$45 (500 minutes) will be automatically added when there are less than 100 Minutes left."
+        expect(page).to have_content I18n.t('subscriptions.autorecharge.update')
+        expect(page).to have_content "$45 (500 minutes) will be automatically added when there are less than 100 Minutes left."
       end
 
       it 'Can have automatic fund additions disabled' do
@@ -331,13 +331,13 @@ describe 'Account profile', admin: true do
         fill_in 'If Minutes left falls below', with: 100
         fill_in 'Then Add funds, spending', with: 45
         click_on 'Save'
-        page.should have_content I18n.t('subscriptions.autorecharge.update')
-        page.should have_content "$45 (500 minutes) will be automatically added when there are less than 100 Minutes left."
+        expect(page).to have_content I18n.t('subscriptions.autorecharge.update')
+        expect(page).to have_content "$45 (500 minutes) will be automatically added when there are less than 100 Minutes left."
 
         choose 'Off'
         click_on 'Save'
-        page.should have_content I18n.t('subscriptions.autorecharge.update')
-        page.should_not have_content "$45 (500 minutes) will be automatically added when there are less than 100 Minutes left."
+        expect(page).to have_content I18n.t('subscriptions.autorecharge.update')
+        expect(page).not_to have_content "$45 (500 minutes) will be automatically added when there are less than 100 Minutes left."
       end
     end
 
@@ -349,7 +349,7 @@ describe 'Account profile', admin: true do
         select_plan 'Pro'
         enter_n_callers 1
         click_on 'Upgrade'
-        page.should have_content "Minutes left: 2500"
+        expect(page).to have_content "Minutes left: 2500"
         go_to_billing
         click_on 'Cancel subscription'
         # should work to handle alerts/confirms on selenium, but not currently
@@ -357,8 +357,8 @@ describe 'Account profile', admin: true do
         # a.accept  # can also be a.dismiss
       end
       it 'displays flash notice when successful' do
-        page.should have_content I18n.t('subscriptions.cancelled')
-        page.should have_content "You have cancelled your subscription."
+        expect(page).to have_content I18n.t('subscriptions.cancelled')
+        expect(page).to have_content "You have cancelled your subscription."
       end
     end
   end

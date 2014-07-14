@@ -8,7 +8,7 @@ describe CsvMapping do
              "FIRSTName" => "LastName"
          })
     mapping.validate
-    mapping.errors.should include CsvMapping::ErrorMessages::MULTIPLE_MAPPING
+    expect(mapping.errors).to include CsvMapping::ErrorMessages::MULTIPLE_MAPPING
   end
 
   it "should not consider an unmapped column as a multiple mapping" do
@@ -18,7 +18,7 @@ describe CsvMapping do
              "bar" => "",
          })
     mapping.validate
-    mapping.errors.should_not include CsvMapping::ErrorMessages::MULTIPLE_MAPPING
+    expect(mapping.errors).not_to include CsvMapping::ErrorMessages::MULTIPLE_MAPPING
   end
 
   it "should mandatorily have a system mapping for Phone" do
@@ -27,14 +27,14 @@ describe CsvMapping do
              "FIRSTName" => "FirstName"
          })
     mapping.validate
-    mapping.errors.should include CsvMapping::ErrorMessages::NO_PHONE
+    expect(mapping.errors).to include CsvMapping::ErrorMessages::NO_PHONE
   end
   it "should give the csv column mapped to the given system column" do
     mapping = CsvMapping.new({
              "Xyz"      => "Phone",
              "FIRSTName" => "FirstName"
          })
-    mapping.csv_index_for("Phone").should == "Xyz"
+    expect(mapping.csv_index_for("Phone")).to eq("Xyz")
   end
   it "should reassign the system mapping for a given csv column" do
     mapping = CsvMapping.new({

@@ -36,7 +36,7 @@ describe VoterListChangeJob do
   end
 
   it 'properly requeues itself if the worker is stopped during a run' do
-    Resque.should_receive(:enqueue).with(subject, voter_list.id, enabled)
+    expect(Resque).to receive(:enqueue).with(subject, voter_list.id, enabled)
     Voter.stub_chain(:where, :update_all){ raise Resque::TermException, 'TERM' }
     subject.perform(voter_list.id, enabled)
   end
@@ -52,17 +52,17 @@ describe VoterListChangeJob do
     end
     before do
       Voter.stub_chain(:where, :update_all){ raise ActiveRecord::StatementInvalid, msg }
-      Resque.stub(:enqueue).with(subject, voter_list.id, anything)
-      ExceptionMailer.stub(:new){ mailer }
+      allow(Resque).to receive(:enqueue).with(subject, voter_list.id, anything)
+      allow(ExceptionMailer).to receive(:new){ mailer }
     end
 
     it 'are requeued' do
-      Resque.should_receive(:enqueue).with(subject, voter_list.id, anything)
+      expect(Resque).to receive(:enqueue).with(subject, voter_list.id, anything)
       subject.perform(voter_list.id, enabled)
     end
 
     it 'emails the innodb status' do
-      mailer.should_receive(:notify_if_deadlock_detected)
+      expect(mailer).to receive(:notify_if_deadlock_detected)
       subject.perform(voter_list.id, enabled)
     end
   end

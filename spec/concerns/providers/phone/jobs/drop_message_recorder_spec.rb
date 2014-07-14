@@ -13,19 +13,19 @@ describe Providers::Phone::Jobs::DropMessageRecorder do
   it 'stores recording id with the CallAttempt' do
     subject.perform(call.id, 1)
 
-    call_attempt.reload.recording_id.should eq recording.id
+    expect(call_attempt.reload.recording_id).to eq recording.id
   end
 
   it 'stores whether recording was delivered manually or not' do
-    call_attempt.recording_delivered_manually?.should be_falsey
+    expect(call_attempt.recording_delivered_manually?).to be_falsey
     subject.perform(call.id, 1)
 
-    call_attempt.reload.recording_delivered_manually?.should be_truthy
+    expect(call_attempt.reload.recording_delivered_manually?).to be_truthy
   end
 
   it 'stores the recording id with the Voter' do
     subject.perform(call.id, 1)
 
-    voter.reload.voicemail_history.should eq recording.id.to_s
+    expect(voter.reload.voicemail_history).to eq recording.id.to_s
   end
 end

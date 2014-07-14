@@ -30,8 +30,8 @@ describe EndCallerSessionJob do
 
   it "should set 'not called' status for all voters" do
     voters.each(&:reload)
-    voters.select { |v| v.status == 'not called' }.should have(110).items
-    voters.select { |v| v.status == CallAttempt::Status::SUCCESS }.should have(50).items
+    expect(voters.select { |v| v.status == 'not called' }).to have(110).items
+    expect(voters.select { |v| v.status == CallAttempt::Status::SUCCESS }).to have(50).items
   end
 
 end

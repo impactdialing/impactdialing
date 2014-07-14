@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe ReportWebUIStrategy do
+describe ReportWebUIStrategy, :type => :model do
   include ExceptionMethods
 
   describe 'a new instance' do
@@ -39,7 +39,7 @@ describe ReportWebUIStrategy do
     end
 
     before do
-      UserMailer.stub(:new){ mailer }
+      allow(UserMailer).to receive(:new){ mailer }
     end
 
     context '.new(result, user, campaign, exception)' do
@@ -49,10 +49,10 @@ describe ReportWebUIStrategy do
           ['failure',exception]
         ].each do |args|
           obj = ReportWebUIStrategy.new(args.first, user, campaign, args.last)
-          obj.instance_variable_get(:@result).should eq args.first
-          obj.instance_variable_get(:@user).should eq user
-          obj.instance_variable_get(:@campaign).should eq campaign
-          obj.instance_variable_get(:@exception).should eq args.last
+          expect(obj.instance_variable_get(:@result)).to eq args.first
+          expect(obj.instance_variable_get(:@user)).to eq user
+          expect(obj.instance_variable_get(:@campaign)).to eq campaign
+          expect(obj.instance_variable_get(:@exception)).to eq args.last
         end
       end
 
@@ -66,7 +66,7 @@ describe ReportWebUIStrategy do
 
         describe '#response({campaign_name: "Some Name"})' do
           before do
-            AmazonS3.stub(:new){ s3 }
+            allow(AmazonS3).to receive(:new){ s3 }
             DownloadedReport.stub_chain(:using, :create)
           end
           after do
@@ -74,21 +74,21 @@ describe ReportWebUIStrategy do
           end
 
           it 'retrieves the S3 download link that expires in 24 hours' do
-            s3_obj.should_receive(:url_for).with(:read, expires: 24.hours.to_i)
-            s3.should_receive(:object)
+            expect(s3_obj).to receive(:url_for).with(:read, expires: 24.hours.to_i)
+            expect(s3).to receive(:object)
               .with('download_reports', "#{campaign.name}.csv"){ s3_obj }
           end
 
           it 'creates a DownloadedReport obj' do
             downloaded_report = double
-            downloaded_report.should_receive(:create).with({
+            expect(downloaded_report).to receive(:create).with({
               link: s3_link.to_s, user: user, campaign_id: campaign.id
             })
-            DownloadedReport.should_receive(:using).with(:master){ downloaded_report }
+            expect(DownloadedReport).to receive(:using).with(:master){ downloaded_report }
           end
 
           it 'tells @mailer to deliver_download link' do
-            mailer.should_receive(:deliver_download).with(user, s3_link.to_s)
+            expect(mailer).to receive(:deliver_download).with(user, s3_link.to_s)
           end
         end
       end
@@ -108,12 +108,12 @@ describe ReportWebUIStrategy do
           end
 
           it 'tells @mailer to deliver_download_failure end-user notification' do
-            mailer.should_receive(:deliver_download_failure)
+            expect(mailer).to receive(:deliver_download_failure)
               .with(user, campaign)
           end
 
           it 'tells @mailer to deliver_exception_notification for devs etc' do
-            mailer.should_receive(:deliver_exception_notification)
+            expect(mailer).to receive(:deliver_exception_notification)
               .with("Campaign: #{campaign.name}; Account ID: #{campaign.account_id}", exception)
           end
         end

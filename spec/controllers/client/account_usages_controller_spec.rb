@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Client::AccountUsagesController do
+describe Client::AccountUsagesController, :type => :controller do
   let(:account) do
     create(:account)
   end
@@ -33,27 +33,27 @@ describe Client::AccountUsagesController do
   describe 'show' do
     it 'sets @from_date' do
       get :show
-      assigns[:from_date].should_not be_blank
+      expect(assigns[:from_date]).not_to be_blank
     end
 
     it 'sets @to_date' do
       get :show
-      assigns[:to_date].should_not be_blank
+      expect(assigns[:to_date]).not_to be_blank
     end
   end
 
   describe 'create, :from_date, :to_date, :report_type' do
     before do
-      Resque.stub(:enqueue)
+      allow(Resque).to receive(:enqueue)
     end
     it 'queues a new ReportAccountUsageJob' do
-      Resque.should_receive(:enqueue).
+      expect(Resque).to receive(:enqueue).
         with(ReportAccountUsageJob, report_type, user.id, db_from_date, db_to_date, nil)
       post :create, valid_params
     end
     it 'redirects to client_account_usage_path' do
       post :create, valid_params
-      response.should redirect_to client_account_usage_path
+      expect(response).to redirect_to client_account_usage_path
     end
   end
 end

@@ -62,17 +62,17 @@ describe ModeratedSession do
     end
 
     it 'loads a new instance of self' do
-      ModeratedSession.should_receive(:new){ moderated_session_double }
+      expect(ModeratedSession).to receive(:new){ moderated_session_double }
       ModeratedSession.switch_mode(moderator, caller_session, type)
     end
     it 'updates the moderator to the caller_session' do
-      moderator.caller_session_id.should_not eq caller_session.id
+      expect(moderator.caller_session_id).not_to eq caller_session.id
       ModeratedSession.switch_mode(moderator, caller_session, type)
-      moderator.caller_session_id.should eq caller_session.id
+      expect(moderator.caller_session_id).to eq caller_session.id
     end
     it 'adds the moderator in unmute mode' do
       ModeratedSession.switch_mode(moderator, caller_session, type)
-      @unmute_participant_request.should have_been_made
+      expect(@unmute_participant_request).to have_been_made
     end
     context 'status messages' do
       it 'when status of last voter call attempt is not "Call in progress" returns a Status message that the caller is not on a call' do
@@ -80,11 +80,11 @@ describe ModeratedSession do
         ca.status = 'Ringing'
         ca.save
         msg = ModeratedSession.switch_mode(moderator, caller_session, type)
-        msg.should eq 'Status: Caller is not connected to a lead.'
+        expect(msg).to eq 'Status: Caller is not connected to a lead.'
       end
       it 'when status of last voter call attempt is "Call in progress" returns a Status message w/ the caller identity and monitor mode' do
         msg = ModeratedSession.switch_mode(moderator, caller_session, type)
-        msg.should eq "Status: Monitoring in breakin mode on #{caller_session.caller.identity_name}."
+        expect(msg).to eq "Status: Monitoring in breakin mode on #{caller_session.caller.identity_name}."
       end
     end
     context 'type != "breakin"' do
@@ -94,7 +94,7 @@ describe ModeratedSession do
       end
       it 'adds the moderator in unmute mode' do
         ModeratedSession.switch_mode(moderator, caller_session, type)
-        @mute_participant_request.should have_been_made
+        expect(@mute_participant_request).to have_been_made
       end
     end
   end

@@ -16,7 +16,7 @@ describe Providers::Phone::Call::Params::Call do
   describe '#url' do
     it 'returns play_message_call_url(call, url_options' do
       params = param_class.new(call)
-      params.url.should eq play_message_call_url(call, url_opts)
+      expect(params.url).to eq play_message_call_url(call, url_opts)
     end
   end
 end

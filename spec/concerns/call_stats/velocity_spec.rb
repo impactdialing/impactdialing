@@ -39,7 +39,7 @@ describe CallStats::Velocity do
       calling_hours   = (calling_seconds / 3600.0)
       calling_hours   = calling_hours < 1 ? 1 : calling_hours
       expected        = (dials / calling_hours).round
-      subject.dial_rate.should eq expected
+      expect(subject.dial_rate).to eq expected
     end
 
     it 'can be limited to a date range via options to .new; e.g. .new(campaign, options)' do
@@ -56,7 +56,7 @@ describe CallStats::Velocity do
       expected        = (dials / calling_hours).round
 
       velocity = CallStats::Velocity.new(@campaign_for_all, {from_date: from_date, to_date: to_date})
-      velocity.dial_rate.should eq expected
+      expect(velocity.dial_rate).to eq expected
     end
   end
 
@@ -70,7 +70,7 @@ describe CallStats::Velocity do
       calling_hours   = (calling_seconds / 3600.0)
       expected        = (answers / calling_hours).round
 
-      subject.answer_rate.should eq expected
+      expect(subject.answer_rate).to eq expected
     end
   end
 
@@ -93,7 +93,7 @@ describe CallStats::Velocity do
       expected += "#{hours} #{'hour'.pluralize(hours)} " if hours > 0
       expected += "#{minutes} #{'minute'.pluralize(minutes)} #{seconds} #{'second'.pluralize(seconds)}"
 
-      subject.average_call_length.should eq expected
+      expect(subject.average_call_length).to eq expected
     end
   end
 end

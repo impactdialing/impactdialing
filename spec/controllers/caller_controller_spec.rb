@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe CallerController do
+describe CallerController, :type => :controller do
 
   before do
     WebMock.disable_net_connect!
@@ -27,8 +27,8 @@ describe CallerController do
 
     it "logs out" do
       post :logout
-      session[:caller].should be_nil
-      response.should redirect_to(caller_login_path)
+      expect(session[:caller]).to be_nil
+      expect(response).to redirect_to(caller_login_path)
     end
   end
 
@@ -70,16 +70,16 @@ describe CallerController do
 
     describe 'POST caller/:id/skip_voter, session_id:, voter_id:' do
       it 'marks the lead (voter) as skipped' do
-        current_voter.skipped_time.should be_nil
+        expect(current_voter.skipped_time).to be_nil
 
         post :skip_voter, valid_params
 
-        current_voter.reload.skipped_time.should_not be_nil
+        expect(current_voter.reload.skipped_time).not_to be_nil
       end
 
       it 'redirects the Caller to continue_conf' do
         skip 'review'
-        controller.should_receive(:enqueue_call_flow).with(RedirectCallerJob, [caller_session.id])
+        expect(controller).to receive(:enqueue_call_flow).with(RedirectCallerJob, [caller_session.id])
 
         post :skip_voter, valid_params
       end
@@ -93,11 +93,11 @@ describe CallerController do
       caller = create(:caller, campaign: campaign, account: account)
       caller_identity = create(:caller_identity)
       caller_session = create(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller, campaign: campaign)
-      Caller.should_receive(:find).and_return(caller)
-      caller.should_receive(:create_caller_session).and_return(caller_session)
-      RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)
+      expect(Caller).to receive(:find).and_return(caller)
+      expect(caller).to receive(:create_caller_session).and_return(caller_session)
+      expect(RedisPredictiveCampaign).to receive(:add).with(caller.campaign_id, caller.campaign.type)
       post :start_calling, caller_id: caller.id, session_key: caller_identity.session_key, CallSid: "abc"
-      response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{caller.id}/pause?session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
+      expect(response.body).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{caller.id}/pause?session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
     end
   end
 
@@ -109,8 +109,8 @@ describe CallerController do
       caller_identity = create(:caller_identity)
       voter = create(:voter, campaign: campaign)
       caller_session = create(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)
-      Caller.should_receive(:find).and_return(caller)
-      caller.should_receive(:calling_voter_preview_power)
+      expect(Caller).to receive(:find).and_return(caller)
+      expect(caller).to receive(:calling_voter_preview_power)
       post :call_voter, id: caller.id, voter_id: voter.id, session_id: caller_session.id
     end
   end
@@ -173,13 +173,13 @@ describe CallerController do
       end
 
       it 'kicks caller off conference' do
-        @kick_request.should have_been_made
+        expect(@kick_request).to have_been_made
       end
       it 'redirects caller to pause url' do
-        @redirect_request.should have_been_made
+        expect(@redirect_request).to have_been_made
       end
       it 'renders nothing' do
-        response.body.should be_blank
+        expect(response.body).to be_blank
       end
     end
 
@@ -191,10 +191,10 @@ describe CallerController do
       end
 
       it 'kicks transfer off conference' do
-        @kick_request.should have_been_made
+        expect(@kick_request).to have_been_made
       end
       it 'renders nothing' do
-        response.body.should be_blank
+        expect(response.body).to be_blank
       end
     end
   end
@@ -213,25 +213,25 @@ describe CallerController do
 
     context 'caller arrives here after disconnecting from the lead' do
       before do
-        RedisCallerSession.party_count(transfer_session_key).should eq 0
+        expect(RedisCallerSession.party_count(transfer_session_key)).to eq 0
         post :pause, session_id: session_id
       end
       it 'Says: "Please enter your call results."' do
-        response.body.should have_content 'Please enter your call results.'
+        expect(response.body).to have_content 'Please enter your call results.'
       end
     end
 
     context 'caller arrives here after dialing a warm transfer' do
       before do
         RedisCallerSession.activate_transfer(caller_session_key, transfer_session_key)
-        RedisCallerSession.party_count(transfer_session_key).should eq -1
+        expect(RedisCallerSession.party_count(transfer_session_key)).to eq -1
         post :pause, session_id: session_id
       end
       after do
         RedisCallerSession.deactivate_transfer(caller_session_key)
       end
       it 'Plays silence for 0.5 seconds' do
-        response.body.should include '<Play digits="w"/>'
+        expect(response.body).to include '<Play digits="w"/>'
       end
     end
 
@@ -239,14 +239,14 @@ describe CallerController do
       before do
         RedisCallerSession.activate_transfer(caller_session_key, transfer_session_key)
         RedisCallerSession.add_party(transfer_session_key)
-        RedisCallerSession.party_count(transfer_session_key).should eq 0
+        expect(RedisCallerSession.party_count(transfer_session_key)).to eq 0
         post :pause, session_id: session_id, clear_active_transfer: true
       end
       after do
         RedisCallerSession.deactivate_transfer(caller_session_key)
       end
       it 'Says: "Please enter your call results."' do
-        response.body.should have_content 'Please enter your call results.'
+        expect(response.body).to have_content 'Please enter your call results.'
       end
     end
   end

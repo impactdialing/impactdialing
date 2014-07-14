@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'cancan/matchers'
 
-describe Ability do
+describe Ability, :type => :model do
   let(:account){ create(:account) }
   let(:subscription){ account.billing_subscription }
   let(:quota){ account.quota }
@@ -47,10 +47,10 @@ describe Ability do
       end
       let(:ability){ Ability.new(account) }
       it 'can make payment' do
-        ability.should be_able_to :make_payment, subscription
+        expect(ability).to be_able_to :make_payment, subscription
       end
       it 'can change plans' do
-        ability.should be_able_to :change_plans, subscription
+        expect(ability).to be_able_to :change_plans, subscription
       end
       context 'plan is per minute' do
         before do
@@ -58,7 +58,7 @@ describe Ability do
         end
         let(:ability){ Ability.new(account) }
         it 'can add minutes' do
-          ability.should be_able_to :add_minutes, subscription
+          expect(ability).to be_able_to :add_minutes, subscription
         end
       end
       context 'plan is not per minute' do
@@ -66,7 +66,7 @@ describe Ability do
           ['trial', 'basic', 'pro', 'business'].each do |id|
             subscribe id
             ability = Ability.new(account)
-            ability.should_not be_able_to :add_minutes, subscription
+            expect(ability).not_to be_able_to :add_minutes, subscription
           end
         end
       end
@@ -75,13 +75,13 @@ describe Ability do
       let(:ability){ Ability.new(account) }
 
       it 'cannot make payment' do
-        ability.should_not be_able_to :make_payment, subscription
+        expect(ability).not_to be_able_to :make_payment, subscription
       end
       it 'cannot change plans' do
-        ability.should_not be_able_to :change_plans, subscription
+        expect(ability).not_to be_able_to :change_plans, subscription
       end
       it 'cannot add minutes' do
-        ability.should_not be_able_to :add_minutes, subscription
+        expect(ability).not_to be_able_to :add_minutes, subscription
       end
     end
     context 'plan is not trial and plan is not per minute and plan is not enterprise' do
@@ -89,7 +89,7 @@ describe Ability do
         ['basic', 'pro', 'business'].each do |id|
           subscribe id
           ability = Ability.new(account)
-          ability.should be_able_to :cancel_subscription, subscription
+          expect(ability).to be_able_to :cancel_subscription, subscription
         end
       end
     end
@@ -98,7 +98,7 @@ describe Ability do
         ['trial', 'per_minute', 'enterprise'].each do |id|
           subscribe id
           ability = Ability.new(account)
-          ability.should_not be_able_to :cancel_subscription, subscription
+          expect(ability).not_to be_able_to :cancel_subscription, subscription
         end
       end
     end
@@ -108,44 +108,44 @@ describe Ability do
     shared_examples_for 'dialer access denied' do
       let(:ability){ Ability.new(account) }
       it 'cannot start calling' do
-        ability.should_not be_able_to :start_calling, Caller
+        expect(ability).not_to be_able_to :start_calling, Caller
       end
       it 'cannot access dialer' do
-        ability.should_not be_able_to :access_dialer, Caller
+        expect(ability).not_to be_able_to :access_dialer, Caller
       end
       it 'cannot take seat' do
-        ability.should_not be_able_to :take_seat, Caller
+        expect(ability).not_to be_able_to :take_seat, Caller
       end
     end
     shared_examples_for 'dialer access granted' do
       let(:ability){ Ability.new(account) }
       it 'can access dialer' do
-        ability.should be_able_to :access_dialer, Caller
+        expect(ability).to be_able_to :access_dialer, Caller
       end
     end
     # acct is funded if minutes are available
     shared_examples_for 'account is funded' do
       let(:ability){ Ability.new(account) }
       it 'can access dialer' do
-        ability.should be_able_to :start_calling, Caller
+        expect(ability).to be_able_to :start_calling, Caller
       end
     end
     shared_examples_for 'account is not funded' do
       let(:ability){ Ability.new(account) }
       it 'can access dialer' do
-        ability.should_not be_able_to :start_calling, Caller
+        expect(ability).not_to be_able_to :start_calling, Caller
       end
     end
     shared_examples_for 'caller seats available' do
       let(:ability){ Ability.new(account) }
       it 'can take a seat' do
-        ability.should be_able_to :take_seat, Caller
+        expect(ability).to be_able_to :take_seat, Caller
       end
     end
     shared_examples_for 'no caller seats available' do
       let(:ability){ Ability.new(account) }
       it 'cannot take a seat' do
-        ability.should_not be_able_to :take_seat, Caller
+        expect(ability).not_to be_able_to :take_seat, Caller
       end
     end
     context 'enterprise' do
@@ -239,27 +239,27 @@ describe Ability do
         let(:ability){ Ability.new(account) }
 
         it 'can add transfers' do
-          ability.should be_able_to :add_transfer, Script
+          expect(ability).to be_able_to :add_transfer, Script
         end
         it 'can manager caller groups' do
-          ability.should be_able_to :manage, CallerGroup
+          expect(ability).to be_able_to :manage, CallerGroup
         end
         it 'can view campaign reports' do
-          ability.should be_able_to :view_reports, Account
+          expect(ability).to be_able_to :view_reports, Account
         end
         it 'can view caller reports' do
-          ability.should be_able_to :view_reports, Account
+          expect(ability).to be_able_to :view_reports, Account
         end
         it 'can view dashboard' do
-          ability.should be_able_to :view_dashboard, Account
+          expect(ability).to be_able_to :view_dashboard, Account
         end
         it 'can record calls' do
-          ability.should be_able_to :record_calls, Account
+          expect(ability).to be_able_to :record_calls, Account
         end
         it 'can manage Preview, Power and Predictive campaigns' do
-          ability.should be_able_to :manage, Preview
-          ability.should be_able_to :manage, Power
-          ability.should be_able_to :manage, Predictive
+          expect(ability).to be_able_to :manage, Preview
+          expect(ability).to be_able_to :manage, Power
+          expect(ability).to be_able_to :manage, Predictive
         end
       end
     end
@@ -269,27 +269,27 @@ describe Ability do
       end
       let(:ability){ Ability.new(account) }
       it 'can add transfers' do
-        ability.should be_able_to :add_transfer, Script
+        expect(ability).to be_able_to :add_transfer, Script
       end
       it 'can manager caller groups' do
-        ability.should be_able_to :manage, CallerGroup
+        expect(ability).to be_able_to :manage, CallerGroup
       end
       it 'can view campaign reports' do
-        ability.should be_able_to :view_reports, Account
+        expect(ability).to be_able_to :view_reports, Account
       end
       it 'can view caller reports' do
-        ability.should be_able_to :view_reports, Account
+        expect(ability).to be_able_to :view_reports, Account
       end
       it 'can view dashboard' do
-        ability.should be_able_to :view_dashboard, Account
+        expect(ability).to be_able_to :view_dashboard, Account
       end
       it 'cannot record calls' do
-        ability.should_not be_able_to :record_calls, Account
+        expect(ability).not_to be_able_to :record_calls, Account
       end
       it 'can manage Preview, Power and Predictive campaigns' do
-        ability.should be_able_to :manage, Preview
-        ability.should be_able_to :manage, Power
-        ability.should be_able_to :manage, Predictive
+        expect(ability).to be_able_to :manage, Preview
+        expect(ability).to be_able_to :manage, Power
+        expect(ability).to be_able_to :manage, Predictive
       end
     end
     context 'basic' do
@@ -298,29 +298,29 @@ describe Ability do
       end
       let(:ability){ Ability.new(account) }
       it 'cannot add transfers' do
-        ability.should_not be_able_to :add_transfer, Script
+        expect(ability).not_to be_able_to :add_transfer, Script
       end
       it 'cannot manage caller groups' do
-        ability.should_not be_able_to :manage, CallerGroup
+        expect(ability).not_to be_able_to :manage, CallerGroup
       end
       it 'can view campaign reports' do
-        ability.should be_able_to :view_reports, Account
+        expect(ability).to be_able_to :view_reports, Account
       end
       it 'can view caller reports' do
-        ability.should be_able_to :view_reports, Account
+        expect(ability).to be_able_to :view_reports, Account
       end
       it 'cannot view dashboard' do
-        ability.should_not be_able_to :view_dashboard, Account
+        expect(ability).not_to be_able_to :view_dashboard, Account
       end
       it 'cannot record calls' do
-        ability.should_not be_able_to :record_calls, Account
+        expect(ability).not_to be_able_to :record_calls, Account
       end
       it 'can manage Preview and Power campaigns' do
-        ability.should be_able_to :manage, Preview
-        ability.should be_able_to :manage, Power
+        expect(ability).to be_able_to :manage, Preview
+        expect(ability).to be_able_to :manage, Power
       end
       it 'cannot manage Predictive campaigns' do
-        ability.should_not be_able_to :manage, Predictive
+        expect(ability).not_to be_able_to :manage, Predictive
       end
     end
   end

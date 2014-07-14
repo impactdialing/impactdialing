@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe AccountUsageRender do
+describe AccountUsageRender, :type => :mailer do
   let(:values) do
     [23,46,58]
   end
@@ -44,18 +44,18 @@ describe AccountUsageRender do
       it 'renders the html template to a string: views/account_usage_mailer/by_campaigns' do
         t = @template.to_s
 
-        t.should =~ /<h1.*>Account usage by campaign<\/h1>/
-        t.should =~ /<th.*>Campaign<\/th>/
-        t.should =~ /<th.*>Billable minutes<\/th>/
+        expect(t).to match(/<h1.*>Account usage by campaign<\/h1>/)
+        expect(t).to match(/<th.*>Campaign<\/th>/)
+        expect(t).to match(/<th.*>Billable minutes<\/th>/)
 
-        t.should =~ /<td.*>Campaign 1<\/td>/
-        t.should =~ /<td.*>#{values.first}<\/td>/
+        expect(t).to match(/<td.*>Campaign 1<\/td>/)
+        expect(t).to match(/<td.*>#{values.first}<\/td>/)
 
-        t.should =~ /<td.*>Campaign 2<\/td>/
-        t.should =~ /<td.*>#{values.second}<\/td>/
+        expect(t).to match(/<td.*>Campaign 2<\/td>/)
+        expect(t).to match(/<td.*>#{values.second}<\/td>/)
 
-        t.should =~ /<td.*>Campaign 3<\/td>/
-        t.should =~ /<td.*>#{values.third}<\/td>/
+        expect(t).to match(/<td.*>Campaign 3<\/td>/)
+        expect(t).to match(/<td.*>#{values.third}<\/td>/)
       end
     end
 
@@ -67,19 +67,19 @@ describe AccountUsageRender do
       it 'renders the text template to a string: views/account_usage_mailer/by_campaigns' do
         t = @template.to_s
 
-        t.should_not =~ /<\w+>/
-        t.should =~ /Account usage by campaign/
-        t.should =~ /Campaign/
-        t.should =~ /Billable minutes/
+        expect(t).not_to match(/<\w+>/)
+        expect(t).to match(/Account usage by campaign/)
+        expect(t).to match(/Campaign/)
+        expect(t).to match(/Billable minutes/)
 
-        t.should =~ /Campaign 1/
-        t.should =~ /#{values.first}/
+        expect(t).to match(/Campaign 1/)
+        expect(t).to match(/#{values.first}/)
 
-        t.should =~ /Campaign 2/
-        t.should =~ /#{values.second}/
+        expect(t).to match(/Campaign 2/)
+        expect(t).to match(/#{values.second}/)
 
-        t.should =~ /Campaign 3/
-        t.should =~ /#{values.third}/
+        expect(t).to match(/Campaign 3/)
+        expect(t).to match(/#{values.third}/)
       end
     end
   end
@@ -123,27 +123,27 @@ describe AccountUsageRender do
       it 'renders the html template to a string: views/account_usage_mailer/by_callers' do
         t = @template.to_s
 
-        t.should =~ /<h1.*>Account usage by caller<\/h1>/
-        t.should =~ /<th.*>Caller<\/th>/
-        t.should =~ /<th.*>Billable minutes<\/th>/
+        expect(t).to match(/<h1.*>Account usage by caller<\/h1>/)
+        expect(t).to match(/<th.*>Caller<\/th>/)
+        expect(t).to match(/<th.*>Billable minutes<\/th>/)
 
-        t.should =~ /<td.*>Caller 1<\/td>/
-        t.should =~ /<td.*>#{values.first}<\/td>/
+        expect(t).to match(/<td.*>Caller 1<\/td>/)
+        expect(t).to match(/<td.*>#{values.first}<\/td>/)
 
-        t.should =~ /<td.*>Caller 2<\/td>/
-        t.should =~ /<td.*>#{values.second}<\/td>/
+        expect(t).to match(/<td.*>Caller 2<\/td>/)
+        expect(t).to match(/<td.*>#{values.second}<\/td>/)
 
-        t.should =~ /<td.*>Caller 3<\/td>/
-        t.should =~ /<td.*>#{values.third}<\/td>/
+        expect(t).to match(/<td.*>Caller 3<\/td>/)
+        expect(t).to match(/<td.*>#{values.third}<\/td>/)
 
-        t.should =~ /<td.*>Abandoned calls<\/td>/
-        t.should =~ /<td.*>#{status_values.first}<\/td>/
+        expect(t).to match(/<td.*>Abandoned calls<\/td>/)
+        expect(t).to match(/<td.*>#{status_values.first}<\/td>/)
 
-        t.should =~ /<td.*>Voicemails \/ Hangups<\/td>/
-        t.should =~ /<td.*>#{status_values.second + status_values.third}<\/td>/
+        expect(t).to match(/<td.*>Voicemails \/ Hangups<\/td>/)
+        expect(t).to match(/<td.*>#{status_values.second + status_values.third}<\/td>/)
 
-        t.should =~ /<td.*>Total<\/td>/
-        t.should =~ /<td.*>#{grand_total}<\/td>/
+        expect(t).to match(/<td.*>Total<\/td>/)
+        expect(t).to match(/<td.*>#{grand_total}<\/td>/)
       end
     end
 
@@ -155,27 +155,27 @@ describe AccountUsageRender do
       it 'renders the text template to a string: views/account_usage_mailer/by_callers' do
         t = @template.to_s
 
-        t.should =~ /Account usage by caller/
-        t.should =~ /Caller/
-        t.should =~ /Billable minutes/
+        expect(t).to match(/Account usage by caller/)
+        expect(t).to match(/Caller/)
+        expect(t).to match(/Billable minutes/)
 
-        t.should =~ /Caller 1/
-        t.should =~ /#{values.first}/
+        expect(t).to match(/Caller 1/)
+        expect(t).to match(/#{values.first}/)
 
-        t.should =~ /Caller 2/
-        t.should =~ /#{values.second}/
+        expect(t).to match(/Caller 2/)
+        expect(t).to match(/#{values.second}/)
 
-        t.should =~ /Caller 3/
-        t.should =~ /#{values.third}/
+        expect(t).to match(/Caller 3/)
+        expect(t).to match(/#{values.third}/)
 
-        t.should =~ /Abandoned calls/
-        t.should =~ /#{status_values.first}/
+        expect(t).to match(/Abandoned calls/)
+        expect(t).to match(/#{status_values.first}/)
 
-        t.should =~ /Voicemails \/ Hangups/
-        t.should =~ /#{status_values.second + status_values.third}/
+        expect(t).to match(/Voicemails \/ Hangups/)
+        expect(t).to match(/#{status_values.second + status_values.third}/)
 
-        t.should =~ /Total/
-        t.should =~ /#{grand_total}/
+        expect(t).to match(/Total/)
+        expect(t).to match(/#{grand_total}/)
       end
     end
   end

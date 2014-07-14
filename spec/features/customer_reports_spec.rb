@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'Customer Reports', admin: true do
+describe 'Customer Reports', type: :feature, admin: true do
   def caller_session_attrs(caller)
     {
       caller: caller,
@@ -127,13 +127,13 @@ describe 'Customer Reports', admin: true do
       within 'tr:last-of-type' do
         click_on 'Usage'
       end
-      page.should have_content 'Account usage'
+      expect(page).to have_content 'Account usage'
     end
 
     context 'all is right w/ the world' do
       it "says: #{I18n.translate('account_usages.create.success')}" do
         click_on 'Generate'
-        page.should have_content I18n.translate('account_usages.create.success')
+        expect(page).to have_content I18n.translate('account_usages.create.success')
       end
     end
 
@@ -141,7 +141,7 @@ describe 'Customer Reports', admin: true do
       it "says: #{I18n.translate('account_usages.create.report_type_required')}" do
         select 'Select a usage breakdown...'
         click_on 'Generate'
-        page.should have_content I18n.translate('account_usages.create.report_type_required')
+        expect(page).to have_content I18n.translate('account_usages.create.report_type_required')
       end
     end
 
@@ -149,7 +149,7 @@ describe 'Customer Reports', admin: true do
       it "says: #{I18n.translate('account_usages.create.from_date_required')}" do
         fill_in "From:", with: ''
         click_on 'Generate'
-        page.should have_content I18n.translate('account_usages.create.from_date_required')
+        expect(page).to have_content I18n.translate('account_usages.create.from_date_required')
       end
     end
 
@@ -157,7 +157,7 @@ describe 'Customer Reports', admin: true do
       it "says: #{I18n.translate('account_usages.create.to_date_required')}" do
         fill_in "To:", with: ''
         click_on 'Generate'
-        page.should have_content I18n.translate('account_usages.create.to_date_required')
+        expect(page).to have_content I18n.translate('account_usages.create.to_date_required')
       end
     end
   end

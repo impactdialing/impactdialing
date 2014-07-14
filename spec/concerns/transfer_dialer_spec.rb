@@ -73,52 +73,52 @@ describe TransferDialer do
       })
     end
     before do
-      Providers::Phone::Call.stub(:make){ success_response }
+      allow(Providers::Phone::Call).to receive(:make){ success_response }
     end
 
     it 'creates a transfer_attempt' do
-      transfer.transfer_attempts.should_receive(:create).with(expected_transfer_attempt_attrs){ transfer_attempt }
+      expect(transfer.transfer_attempts).to receive(:create).with(expected_transfer_attempt_attrs){ transfer_attempt }
       transfer_dialer.dial(caller_session, call, voter)
     end
 
     it 'activates the transfer' do
-      RedisCallerSession.should_receive(:activate_transfer).with(caller_session.session_key, transfer_attempt.session_key)
+      expect(RedisCallerSession).to receive(:activate_transfer).with(caller_session.session_key, transfer_attempt.session_key)
       transfer_dialer.dial(caller_session, call, voter)
     end
 
     it 'makes the call to connect the transfer' do
-      Providers::Phone::Call.should_receive(:make_for).with(transfer, :connect){ success_response }
+      expect(Providers::Phone::Call).to receive(:make_for).with(transfer, :connect){ success_response }
       transfer_dialer.dial(caller_session, call, voter)
     end
 
     it 'updates the new transfer_attempt' do
-      transfer_attempt.should_receive(:update_attributes)
+      expect(transfer_attempt).to receive(:update_attributes)
       transfer_dialer.dial(caller_session, call, voter)
     end
 
     it 'returns a hash {type: transfer_type, status: ''}' do
-      transfer_dialer.dial(caller_session, call, voter).should eq({type: transfer.transfer_type, status: nil})
+      expect(transfer_dialer.dial(caller_session, call, voter)).to eq({type: transfer.transfer_type, status: nil})
     end
 
     context 'the transfer succeeds' do
       it 'updates the transfer_attempt sid with the call_sid from the response' do
-        transfer_attempt.should_receive(:update_attributes).with({sid: success_response.call_sid})
+        expect(transfer_attempt).to receive(:update_attributes).with({sid: success_response.call_sid})
         transfer_dialer.dial(caller_session, call, voter)
       end
     end
 
     context 'the transfer fails' do
       before do
-        Providers::Phone::Call.stub(:make){ error_response }
+        allow(Providers::Phone::Call).to receive(:make){ error_response }
       end
 
       it 'deactivates the transfer' do
-        RedisCallerSession.should_not_receive(:activate_transfer)
+        expect(RedisCallerSession).not_to receive(:activate_transfer)
         transfer_dialer.dial(caller_session, call, voter)
       end
 
       it 'updates the transfer_attempt status with "Call failed"' do
-        transfer_attempt.should_receive(:update_attributes).with({status: 'Call failed'})
+        expect(transfer_attempt).to receive(:update_attributes).with({status: 'Call failed'})
         transfer_dialer.dial(caller_session, call, voter)
       end
     end

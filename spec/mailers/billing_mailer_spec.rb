@@ -1,18 +1,18 @@
 require "spec_helper"
 
-describe BillingMailer do
+describe BillingMailer, :type => :mailer do
   let(:account){ create(:account) }
   let(:invoice_recipient){ 'blah@test.com' }
   subject{ BillingMailer.new(account) }
 
   before do
-    subject.stub(:invoice_recipient){ invoice_recipient }
+    allow(subject).to receive(:invoice_recipient){ invoice_recipient }
     WebMock.disable_net_connect!
   end
 
   describe '#autorecharge_failed' do
     before do
-      subject.should_receive(:send_email).with({
+      expect(subject).to receive(:send_email).with({
         :subject => "Autorecharge payment failed",
         :text => anything,
         :from_name => 'Impact Dialing',
@@ -30,7 +30,7 @@ describe BillingMailer do
 
   describe '#autorenewal_failed' do
     before do
-      subject.should_receive(:send_email).with({
+      expect(subject).to receive(:send_email).with({
         :subject => "Subscription renewal failed",
         :text => anything,
         :from_name => 'Impact Dialing',

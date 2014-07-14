@@ -95,10 +95,10 @@ describe DebitJob do
   end
 
   it 'debits all subscriptions and records the debit action' do
-    CallAttempt.debit_pending.count.should eq 8
+    expect(CallAttempt.debit_pending.count).to eq 8
     DebitJob.perform
-    CallAttempt.where(debited: true).count.should eq 8
-    TransferAttempt.where(debited: true).count.should eq 6
-    CallerSession.where(debited: true).count.should eq 10
+    expect(CallAttempt.where(debited: true).count).to eq 8
+    expect(TransferAttempt.where(debited: true).count).to eq 6
+    expect(CallerSession.where(debited: true).count).to eq 10
   end
 end

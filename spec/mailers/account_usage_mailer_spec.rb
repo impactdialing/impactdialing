@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe AccountUsageMailer do
+describe AccountUsageMailer, :type => :mailer do
   include ExceptionMethods
 
   let(:white_labeled_email){ 'info@stonesphones.com' }
@@ -65,22 +65,22 @@ describe AccountUsageMailer do
     WebMock.allow_net_connect!
     @mandrill = double
     @mailer = AccountUsageMailer.new(user)
-    @mailer.stub(:email_domain).and_return({'email_addresses'=>['email@impactdialing.com', white_labeled_email]})
+    allow(@mailer).to receive(:email_domain).and_return({'email_addresses'=>['email@impactdialing.com', white_labeled_email]})
 
-    Reports::BillableMinutes.should_receive(:new).
+    expect(Reports::BillableMinutes).to receive(:new).
       with(from_date, to_date).
       and_return(billable_minutes)
   end
 
   it 'delivers account-wide campaign usage report as multipart text & html' do
-    Reports::Customer::ByCampaign.should_receive(:new).
+    expect(Reports::Customer::ByCampaign).to receive(:new).
       with(billable_minutes, account).
       and_return(campaign_report)
 
     expected_html = AccountUsageRender.new.by_campaigns(:html, billable_totals, grand_total, campaigns)
     expected_text = AccountUsageRender.new.by_campaigns(:text, billable_totals, grand_total, campaigns)
 
-    @mailer.should_receive(:send_email).with({
+    expect(@mailer).to receive(:send_email).with({
       :subject => "Campaign Usage Report: #{@mailer.send(:format_date, from_date)} - #{@mailer.send(:format_date, to_date)}",
       :html => expected_html,
       :text => expected_text,
@@ -94,17 +94,17 @@ describe AccountUsageMailer do
   end
 
   it 'delivers account-wide caller usage reports as multipart text & html' do
-    Reports::Customer::ByCaller.should_receive(:new).
+    expect(Reports::Customer::ByCaller).to receive(:new).
       with(billable_minutes, account).
       and_return(caller_report)
-    Reports::Customer::ByStatus.should_receive(:new).
+    expect(Reports::Customer::ByStatus).to receive(:new).
       with(billable_minutes, account).
       and_return(status_report)
 
     expected_html = AccountUsageRender.new.by_callers(:html, billable_totals, status_totals, grand_total, callers)
     expected_text = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, grand_total, callers)
 
-    @mailer.should_receive(:send_email).with({
+    expect(@mailer).to receive(:send_email).with({
       :subject => "Caller Usage Report: #{@mailer.send(:format_date, from_date)} - #{@mailer.send(:format_date, to_date)}",
       :html => expected_html,
       :text => expected_text,

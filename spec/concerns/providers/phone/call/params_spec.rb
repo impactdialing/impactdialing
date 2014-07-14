@@ -17,17 +17,17 @@ describe Providers::Phone::Call::Params do
     let(:type){ :default }
 
     before do
-      Providers::Phone::Call::Params::ARModel.stub(:new){ param_inst }
+      allow(Providers::Phone::Call::Params::ARModel).to receive(:new){ param_inst }
     end
 
     it 'instantiates a Params::ar_model.class' do
-      Providers::Phone::Call::Params::ARModel.should_receive(:new).with(ar_model, type)
+      expect(Providers::Phone::Call::Params::ARModel).to receive(:new).with(ar_model, type)
       Providers::Phone::Call::Params.for(ar_model, type)
     end
 
     it 'returns the new instance' do
       actual = Providers::Phone::Call::Params.for(ar_model, type)
-      actual.should eq param_inst
+      expect(actual).to eq param_inst
     end
 
     context 'ar_model.class =~ WebuiCallerSession|PhonesOnlyCallerSession' do
@@ -35,7 +35,7 @@ describe Providers::Phone::Call::Params do
       let(:phone_session){ create(:phones_only_caller_session) }
 
       after do
-        @actual.should be_instance_of Providers::Phone::Call::Params::CallerSession
+        expect(@actual).to be_instance_of Providers::Phone::Call::Params::CallerSession
       end
 
       it "loads Params::CallerSession when ar_model.class == WebuiCallerSession" do

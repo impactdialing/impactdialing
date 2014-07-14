@@ -34,28 +34,28 @@ describe PersistCalls do
       context "success" do
         before(:each) { PersistCalls.perform }
         it "should remove data from all redis lists" do
-          $redis_call_flow_connection.llen("abandoned_call_list").should == 0
-          $redis_call_end_connection.llen("not_answered_call_list").should == 0
-          $redis_call_flow_connection.llen("disconnected_call_list").should == 0
-          $redis_call_flow_connection.llen("wrapped_up_call_list").should == 0
-          $redis_call_flow_connection.llen("end_answered_by_machine_call_list").should == 0
+          expect($redis_call_flow_connection.llen("abandoned_call_list")).to eq(0)
+          expect($redis_call_end_connection.llen("not_answered_call_list")).to eq(0)
+          expect($redis_call_flow_connection.llen("disconnected_call_list")).to eq(0)
+          expect($redis_call_flow_connection.llen("wrapped_up_call_list")).to eq(0)
+          expect($redis_call_flow_connection.llen("end_answered_by_machine_call_list")).to eq(0)
         end
       end
 
       context "exception" do
         before(:each) do
-          Call.stub(:where) { raise 'exception' }
-          CallAttempt.stub(:where) { raise 'exception' }
+          allow(Call).to receive(:where) { raise 'exception' }
+          allow(CallAttempt).to receive(:where) { raise 'exception' }
           # expect{ PersistCalls.perform }.to raise_error{ 'exception' }
           PersistCalls.perform
         end
 
         it "should NOT remove data from all redis lists" do
-          $redis_call_flow_connection.llen("abandoned_call_list").should == 2
-          $redis_call_end_connection.llen("not_answered_call_list").should == 1
-          $redis_call_flow_connection.llen("disconnected_call_list").should == 3
-          $redis_call_flow_connection.llen("wrapped_up_call_list").should == 1
-          $redis_call_flow_connection.llen("end_answered_by_machine_call_list").should == 1
+          expect($redis_call_flow_connection.llen("abandoned_call_list")).to eq(2)
+          expect($redis_call_end_connection.llen("not_answered_call_list")).to eq(1)
+          expect($redis_call_flow_connection.llen("disconnected_call_list")).to eq(3)
+          expect($redis_call_flow_connection.llen("wrapped_up_call_list")).to eq(1)
+          expect($redis_call_flow_connection.llen("end_answered_by_machine_call_list")).to eq(1)
         end
       end
     end
@@ -170,7 +170,7 @@ describe PersistCalls do
         })
       end
       before do
-        AnsweringMachineAgent.should_receive(:new).with(voter).at_least(:twice){ agent }
+        expect(AnsweringMachineAgent).to receive(:new).with(voter).at_least(:twice){ agent }
         RedisCallFlow.processing_by_machine_call_hash.store(call.id, time)
         PersistCalls.machine_calls(100)
       end

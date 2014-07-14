@@ -25,7 +25,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        dial_report.dialed_and_complete_count.should eq(2)
+        expect(dial_report.dialed_and_complete_count).to eq(2)
       end
 
       it "should include all failed call attempts" do
@@ -46,7 +46,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        dial_report.dialed_and_complete_count.should eq(2)
+        expect(dial_report.dialed_and_complete_count).to eq(2)
       end
 
       it "should include all successful failed call attempts" do
@@ -67,7 +67,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        dial_report.dialed_and_complete_count.should eq(2)
+        expect(dial_report.dialed_and_complete_count).to eq(2)
       end
     end
 
@@ -82,7 +82,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        dial_report.dialed_and_available_for_retry_count.should eq(2)
+        expect(dial_report.dialed_and_available_for_retry_count).to eq(2)
       end
     end
 
@@ -98,7 +98,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        dial_report.dialed_and_not_available_for_retry_count.should eq(2)
+        expect(dial_report.dialed_and_not_available_for_retry_count).to eq(2)
       end
 
     end
@@ -117,7 +117,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        dial_report.not_dialed_count.should eq(3)
+        expect(dial_report.not_dialed_count).to eq(3)
       end
 
     end

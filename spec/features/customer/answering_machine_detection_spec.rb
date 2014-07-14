@@ -1,18 +1,18 @@
 require 'spec_helper'
 
-describe 'Answering Machine Detection', js: true, admin: true do
+describe 'Answering Machine Detection', type: :feature, js: true, admin: true do
   def save_campaign(campaign, field, value)
     click_button 'Save'
     visit edit_client_campaign_path(campaign)
     el = page.find("##{field}")
     if value == '1' or value == '0'
       if value == '1'
-        el.should be_checked
+        expect(el).to be_checked
       else
-        el.should_not be_checked
+        expect(el).not_to be_checked
       end
     elsif value == 'true' or value == 'false'
-      el.value.should eq value
+      expect(el.value).to eq value
     end
   end
 

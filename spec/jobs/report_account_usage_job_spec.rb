@@ -22,13 +22,13 @@ describe ReportAccountUsageJob do
   let(:internal_admin){ nil }
 
   before do
-    User.stub(:find).with(1){ user }
+    allow(User).to receive(:find).with(1){ user }
   end
 
   describe '.perform(report_type, account, user, from_date, to_date)' do
     describe 'report_type = "campaigns"' do
       it "calls .mail_campaigns_usage(account, user, from_date, to_date)" do
-        ReportAccountUsageJob.should_receive(:mail_campaigns_usage).
+        expect(ReportAccountUsageJob).to receive(:mail_campaigns_usage).
           with(user.id, from_date, to_date, internal_admin)
         ReportAccountUsageJob.perform('campaigns', user.id, from_date, to_date, internal_admin)
       end
@@ -36,7 +36,7 @@ describe ReportAccountUsageJob do
 
     describe 'report_type = "callers"' do
       it "calls .mail_callers_usage(account, user, from_date, to_date)" do
-        ReportAccountUsageJob.should_receive(:mail_callers_usage).
+        expect(ReportAccountUsageJob).to receive(:mail_callers_usage).
           with(user.id, from_date, to_date, internal_admin)
         ReportAccountUsageJob.perform('callers', user.id, from_date, to_date, internal_admin)
       end
@@ -62,13 +62,13 @@ describe ReportAccountUsageJob do
         })
       end
       before do
-        AccountUsageMailer.stub(:new).
+        allow(AccountUsageMailer).to receive(:new).
           with(user, nil).
           and_return(mailer)
       end
       describe '.mail_campaigns_usage(account, user, from_date, to_date)' do
         it "builds the email" do
-          mailer.should_receive(:by_campaigns).
+          expect(mailer).to receive(:by_campaigns).
             with(from_date, to_date)
           ReportAccountUsageJob.mail_campaigns_usage(user.id, from_date, to_date, internal_admin)
         end
@@ -76,12 +76,12 @@ describe ReportAccountUsageJob do
 
       describe '.mail_callers_usage(account, user, from_date, to_date)' do
         before do
-          AccountUsageMailer.stub(:new).
+          allow(AccountUsageMailer).to receive(:new).
             with(user).
             and_return(mailer)
         end
         it "builds that email" do
-          mailer.should_receive(:by_callers).
+          expect(mailer).to receive(:by_callers).
             with(from_date, to_date)
           ReportAccountUsageJob.mail_callers_usage(user.id, from_date, to_date, internal_admin)
         end

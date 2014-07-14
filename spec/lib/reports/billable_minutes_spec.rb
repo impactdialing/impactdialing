@@ -59,7 +59,7 @@ describe 'Reports::BillableMinutes' do
     it 'returns the total sum of all counts in the counts array' do
       expected = counts.inject(0){ |s,n| s + n.to_i }
       actual = billable_minutes.calculate_total(counts)
-      actual.should eq expected
+      expect(actual).to eq expected
     end
   end
 
@@ -76,7 +76,7 @@ describe 'Reports::BillableMinutes' do
         'group 2' => 5 * 5
       }
       actual = billable_minutes.calculate_group_total(grouped)
-      actual.should eq expected
+      expect(actual).to eq expected
     end
   end
 
@@ -86,7 +86,7 @@ describe 'Reports::BillableMinutes' do
       3.times do |i|
         expected = billable_minutes.send(:relations)[i]
         actual = billable_minutes.relation(types[i])
-        actual.should eq expected
+        expect(actual).to eq expected
       end
     end
   end

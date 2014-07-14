@@ -13,12 +13,12 @@ describe Providers::Phone::Jobs::DropMessage do
   subject{ Providers::Phone::Jobs::DropMessage.new }
 
   before do
-    Providers::Phone::Call.stub(:play_message_for){ response }
-    Providers::Phone::Call.stub(:redirect_for){ response }
+    allow(Providers::Phone::Call).to receive(:play_message_for){ response }
+    allow(Providers::Phone::Call).to receive(:redirect_for){ response }
   end
 
   it 'tells Providers::Phone::Call play_message_for call' do
-    Providers::Phone::Call.should_receive(:play_message_for).with(call){ response }
+    expect(Providers::Phone::Call).to receive(:play_message_for).with(call){ response }
     subject.perform(call.id)
   end
 
@@ -30,19 +30,19 @@ describe Providers::Phone::Jobs::DropMessage do
   context 'when message play fails' do
     let(:response2){ double('ResponseDeux') }
     before do
-      caller_session.stub(:publish_message_drop_error)
-      response.stub(:error?){ true }
-      response.stub(:response){ response2 }
-      subject.stub(:request_message_drop){ response }
+      allow(caller_session).to receive(:publish_message_drop_error)
+      allow(response).to receive(:error?){ true }
+      allow(response).to receive(:response){ response2 }
+      allow(subject).to receive(:request_message_drop){ response }
     end
     it 'notifies caller client of the error' do
-      subject.should_receive(:notify_client_of_error)
+      expect(subject).to receive(:notify_client_of_error)
       # odd error re: backtrace arguments when attempting to set expectation
       # on caller_session
       subject.perform(call.id)
     end
     it 'redirects caller voice to play_message_error' do
-      Providers::Phone::Call.should_receive(:redirect_for).with(caller_session, :play_message_error)
+      expect(Providers::Phone::Call).to receive(:redirect_for).with(caller_session, :play_message_error)
       subject.perform(call.id)
     end
   end

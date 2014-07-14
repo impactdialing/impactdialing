@@ -17,8 +17,8 @@ describe Providers::Phone::Call do
 
   describe '.redirect(call_sid, url)' do
     it 'forwards redirect message to .service obj' do
-      Providers::Phone::Call.stub(:service){ service_obj }
-      service_obj.should_receive(:redirect).with(call_sid, url)
+      allow(Providers::Phone::Call).to receive(:service){ service_obj }
+      expect(service_obj).to receive(:redirect).with(call_sid, url)
       Providers::Phone::Call.redirect(call_sid, url)
     end
 
@@ -31,9 +31,9 @@ describe Providers::Phone::Call do
                     :body => "",
                     :headers => {}
                   })
-      Providers::Phone::Twilio::Response.stub(:new){ valid_response }
+      allow(Providers::Phone::Twilio::Response).to receive(:new){ valid_response }
       Providers::Phone::Call.redirect(call_sid, url, {retry_up_to: 5})
-      request.should have_been_made.times(5)
+      expect(request).to have_been_made.times(5)
     end
   end
 
@@ -49,17 +49,17 @@ describe Providers::Phone::Call do
     end
     let(:type){ 'ar_url_name' }
     before do
-      Providers::Phone::Call::Params.stub(:for){ call_params }
-      Providers::Phone::Call.stub(:redirect)
+      allow(Providers::Phone::Call::Params).to receive(:for){ call_params }
+      allow(Providers::Phone::Call).to receive(:redirect)
     end
 
     it 'asks Call::Params for args to redirect' do
-      Providers::Phone::Call::Params.should_receive(:for).with(ar_model, type){ call_params }
+      expect(Providers::Phone::Call::Params).to receive(:for).with(ar_model, type){ call_params }
       Providers::Phone::Call.redirect_for(ar_model, type)
     end
 
     it 'sends itself .redirect(call_params.call_sid, call_params.url, {:retry_up_to => Integer})' do
-      Providers::Phone::Call.should_receive(:redirect).with(call_params.call_sid, call_params.url, {retry_up_to: anything})
+      expect(Providers::Phone::Call).to receive(:redirect).with(call_params.call_sid, call_params.url, {retry_up_to: anything})
       Providers::Phone::Call.redirect_for(ar_model, type)
     end
   end

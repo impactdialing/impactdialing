@@ -44,45 +44,45 @@ describe Providers::Phone::Twilio::Response do
   end
   describe 'new instance' do
     it 'sets @content to the value of TwilioResponse node' do
-      success_response.content.should eq valid_content['TwilioResponse']
+      expect(success_response.content).to eq valid_content['TwilioResponse']
     end
 
     it 'sets @content to the value of response.parsed_response w/out TwilioResponse node' do
-      bodyless_response.content.should be_nil
+      expect(bodyless_response.content).to be_nil
     end
   end
 
   describe 'testing response success' do
     describe '#success?' do
       it 'returns true when status is 2xx' do
-        bodyless_response.success?.should be_truthy
+        expect(bodyless_response.success?).to be_truthy
       end
 
       it 'returns false when RestException node is found' do
-        error_response.success?.should be_falsey
+        expect(error_response.success?).to be_falsey
       end
     end
 
     describe '#error?' do
       it 'returns true when RestException node is found' do
-        error_response.error?.should be_truthy
+        expect(error_response.error?).to be_truthy
       end
 
       it 'returns false when RestException node is not found' do
-        success_response.error?.should be_falsey
+        expect(success_response.error?).to be_falsey
       end
     end
   end
 
   describe '#call_sid' do
     it 'returns the value of content["Call"]["Sid"] node' do
-      success_response.call_sid.should eq valid_content['TwilioResponse']['Call']['Sid']
+      expect(success_response.call_sid).to eq valid_content['TwilioResponse']['Call']['Sid']
     end
   end
 
   describe '#status' do
     it 'returns httparty_response.code.to_i' do
-      success_response.status.should eq valid_content['TwilioResponse']['Status'].to_i
+      expect(success_response.status).to eq valid_content['TwilioResponse']['Status'].to_i
     end
   end
 end

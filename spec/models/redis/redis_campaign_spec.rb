@@ -1,13 +1,13 @@
 require "spec_helper"
 
-describe RedisPredictiveCampaign do
+describe RedisPredictiveCampaign, :type => :model do
   
   
   it "should add to running campaigns" do
     account = create(:account)
     campaign = create(:predictive, name: "test123", account: account)
     RedisPredictiveCampaign.add(campaign.id, campaign.type)
-    RedisPredictiveCampaign.running_campaigns.should eq(["#{campaign.id}"])
+    expect(RedisPredictiveCampaign.running_campaigns).to eq(["#{campaign.id}"])
   end
   
   it "should add the same running campaign once to the set" do
@@ -15,7 +15,7 @@ describe RedisPredictiveCampaign do
     campaign = create(:predictive, name: "test123", account: account)
     RedisPredictiveCampaign.add(campaign.id, campaign.type)
     RedisPredictiveCampaign.add(campaign.id, campaign.type)
-    RedisPredictiveCampaign.running_campaigns.should eq(["#{campaign.id}"])
+    expect(RedisPredictiveCampaign.running_campaigns).to eq(["#{campaign.id}"])
   end
   
   
@@ -25,7 +25,7 @@ describe RedisPredictiveCampaign do
     campaign2 = create(:predictive, name: "test456", account: account)
     RedisPredictiveCampaign.add(campaign1.id, campaign1.type)
     RedisPredictiveCampaign.add(campaign2.id, campaign2.type)    
-    RedisPredictiveCampaign.running_campaigns.should eq(["#{campaign1.id}", "#{campaign2.id}"])
+    expect(RedisPredictiveCampaign.running_campaigns).to eq(["#{campaign1.id}", "#{campaign2.id}"])
   end
   
   

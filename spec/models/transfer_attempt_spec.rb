@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe TransferAttempt do
+describe TransferAttempt, :type => :model do
 
   describe "conference" do
     it "should return the conference twiml" do
@@ -8,7 +8,7 @@ describe TransferAttempt do
       call_attempt = create(:call_attempt)
       transfer = create(:transfer, phone_number: "1234567890")
       transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-      transfer_attempt.conference.should_not be_nil
+      expect(transfer_attempt.conference).not_to be_nil
     end
   end
 
@@ -18,7 +18,7 @@ describe TransferAttempt do
       call_attempt = create(:call_attempt)
       transfer = create(:transfer, phone_number: "1234567890")
       transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-      transfer_attempt.fail.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say voice=\"man\" language=\"en\" loop=\"1\">The transfered call was not answered </Say><Hangup/></Response>")
+      expect(transfer_attempt.fail).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say voice=\"man\" language=\"en\" loop=\"1\">The transfered call was not answered </Say><Hangup/></Response>")
     end
   end
 
@@ -28,7 +28,7 @@ describe TransferAttempt do
       call_attempt = create(:call_attempt)
       transfer = create(:transfer, phone_number: "1234567890")
       transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-      transfer_attempt.hangup.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+      expect(transfer_attempt.hangup).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end
   end
 
@@ -42,7 +42,7 @@ describe TransferAttempt do
       transfer_attempt1 = create(:transfer_attempt, caller_session: caller_session, created_at: (now - 2.days), campaign_id: campaign.id, transfer_id: transfer.id)
       transfer_attempt2 = create(:transfer_attempt, caller_session: caller_session, created_at: (now + 1.days), campaign_id: campaign.id, transfer_id: transfer.id)
       transfer_attempt3 = create(:transfer_attempt, caller_session: caller_session, created_at:  (now + 10.hours), campaign_id: campaign.id, transfer_id: transfer.id)
-      TransferAttempt.within(now, now + 1.day, campaign.id).should eq([transfer_attempt2, transfer_attempt3])
+      expect(TransferAttempt.within(now, now + 1.day, campaign.id)).to eq([transfer_attempt2, transfer_attempt3])
     end
   end
 
@@ -60,15 +60,15 @@ describe TransferAttempt do
       transfer_attempt5 = create(:transfer_attempt, caller_session: caller_session, campaign_id: campaign.id, transfer_id: transfer2.id)
       transfer_attempt6 = create(:transfer_attempt, caller_session: caller_session, campaign_id: campaign.id, transfer_id: transfer1.id)
       result  = TransferAttempt.aggregate(campaign.transfer_attempts)
-      result[transfer1.id][:label].should eq("A")
-      result[transfer1.id][:number].should eq(3)
-      result[transfer1.id][:percentage].should eq(50)
-      result[transfer2.id][:label].should eq("B")
-      result[transfer2.id][:number].should eq(2)
-      result[transfer2.id][:percentage].should eq(33)
-      result[transfer3.id][:label].should eq("C")
-      result[transfer3.id][:number].should eq(1)
-      result[transfer3.id][:percentage].should eq(16)
+      expect(result[transfer1.id][:label]).to eq("A")
+      expect(result[transfer1.id][:number]).to eq(3)
+      expect(result[transfer1.id][:percentage]).to eq(50)
+      expect(result[transfer2.id][:label]).to eq("B")
+      expect(result[transfer2.id][:number]).to eq(2)
+      expect(result[transfer2.id][:percentage]).to eq(33)
+      expect(result[transfer3.id][:label]).to eq("C")
+      expect(result[transfer3.id][:number]).to eq(1)
+      expect(result[transfer3.id][:percentage]).to eq(16)
 
     end
   end

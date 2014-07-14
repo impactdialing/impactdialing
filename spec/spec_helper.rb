@@ -76,7 +76,7 @@ end
 include ActionDispatch::TestProcess
 
 def login_as(user)
-  @controller.stub(:current_user).and_return(user)
+  allow(@controller).to receive(:current_user).and_return(user)
   session[:user] = user.id
   session[:caller] = user.id
 end

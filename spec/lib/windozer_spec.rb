@@ -10,12 +10,12 @@ describe Windozer do
     it 'removes invalid UTF-16 characters' do
       blurged_file = File.open(windozed_file).read
 
-      lambda{ blurged_file.gsub('a', 'a') }.should raise_error ArgumentError
+      expect{ blurged_file.gsub('a', 'a') }.to raise_error ArgumentError
 
       cleaned = Windozer.to_unix(blurged_file)
 
       cleaned.gsub('a', 'a')
-      cleaned.should_not include("\r")
+      expect(cleaned).not_to include("\r")
     end
   end
 end

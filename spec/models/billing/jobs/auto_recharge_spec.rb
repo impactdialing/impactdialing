@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Billing::Jobs::AutoRecharge do
+describe Billing::Jobs::AutoRecharge, :type => :model do
   subject{ Billing::Jobs::AutoRecharge }
   let(:account_id){ 12 }
   let(:customer_id){ 'abc123' }
@@ -34,8 +34,8 @@ describe Billing::Jobs::AutoRecharge do
   end
 
   before do
-    Account.stub(:find).with(account_id){ account }
-    Billing::SubscriptionManager.stub(:new).with(customer_id, subscription, quota){ subscription_manager }
+    allow(Account).to receive(:find).with(account_id){ account }
+    allow(Billing::SubscriptionManager).to receive(:new).with(customer_id, subscription, quota){ subscription_manager }
   end
 
   shared_examples "no recharge needed" do
@@ -43,20 +43,20 @@ describe Billing::Jobs::AutoRecharge do
       subject.perform(account_id)
     end
     it 'tells billing_subscription_manager nothing' do
-      Billing::SubscriptionManager.should_not_receive(:new)
-      subscription_manager.should_not_receive(:update!)
+      expect(Billing::SubscriptionManager).not_to receive(:new)
+      expect(subscription_manager).not_to receive(:update!)
     end
   end
 
   context 'quota.minutes_available < autorecharge_trigger && not autorecharge_pending?' do
     before do
-      quota.stub(:minutes_available){ subscription.autorecharge_trigger - 4 }
+      allow(quota).to receive(:minutes_available){ subscription.autorecharge_trigger - 4 }
     end
     after do
       subject.perform(account_id)
     end
     it 'tells billing_subscription_manager update!(plan_id, {amount_paid: amount})' do
-      subscription_manager.should_receive(:update!).with('per_minute', {amount_paid: amount, autorecharge: anything})
+      expect(subscription_manager).to receive(:update!).with('per_minute', {amount_paid: amount, autorecharge: anything})
     end
   end
   context 'quota.minutes_available < autorecharge_trigger || autorecharge_pending?' do
@@ -64,8 +64,8 @@ describe Billing::Jobs::AutoRecharge do
   end
   context 'subscription.plan != per_minute' do
     before do
-      quota.stub(:minutes_available){ subscription.autorecharge_trigger - 4 }
-      subscription.stub(:plan){ 'business' }
+      allow(quota).to receive(:minutes_available){ subscription.autorecharge_trigger - 4 }
+      allow(subscription).to receive(:plan){ 'business' }
     end
     it_behaves_like 'no recharge needed'
   end

@@ -1,15 +1,15 @@
 require "spec_helper"
 
-describe Caller do
+describe Caller, :type => :model do
   include Rails.application.routes.url_helpers
 
-  it {should belong_to :caller_group}
+  it {is_expected.to belong_to :caller_group}
 
   it 'assigns itself to the campaign of its caller group' do
     campaign = create(:preview)
     caller_group = create(:caller_group, campaign_id: campaign.id)
     caller = create(:caller, caller_group_id: caller_group.id)
-    caller.campaign.should eq campaign
+    expect(caller.campaign).to eq campaign
   end
 
   it 'saves successfully if it does not have a caller group' do
@@ -17,28 +17,28 @@ describe Caller do
     caller = create(:caller, caller_group_id: caller_group.id)
     campaign = create(:preview)
     caller.update_attributes(caller_group_id: nil, campaign: campaign)
-    caller.save.should be_truthy
+    expect(caller.save).to be_truthy
   end
 
   it "should validate name for phones only callers" do
     caller_group = create(:caller_group)
     caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: true, name: "")
-    caller.save.should be_falsey
-    caller.errors.messages.should eq({:name=>["can't be blank"]})
+    expect(caller.save).to be_falsey
+    expect(caller.errors.messages).to eq({:name=>["can't be blank"]})
   end
 
   it "should validate username for web callers" do
     caller_group = create(:caller_group)
     caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "")
-    caller.save.should be_falsey
-    caller.errors.messages.should eq({:username=>["can't be blank"]})
+    expect(caller.save).to be_falsey
+    expect(caller.errors.messages).to eq({:username=>["can't be blank"]})
   end
 
   it "should validate username cant contain spces for web callers" do
     caller_group = create(:caller_group)
     caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "john doe")
-    caller.save.should be_falsey
-    caller.errors.messages.should eq({:username=>["cannot contain blank space."]})
+    expect(caller.save).to be_falsey
+    expect(caller.errors.messages).to eq({:username=>["cannot contain blank space."]})
   end
 
 
@@ -46,7 +46,7 @@ describe Caller do
   it "restoring makes it active" do
     caller_object = create(:caller, :active => false)
     caller_object.restore
-    caller_object.active?.should == true
+    expect(caller_object.active?).to eq(true)
   end
 
   it "sorts by the updated date" do
@@ -54,25 +54,25 @@ describe Caller do
     older_caller = create(:caller).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
     newer_caller = create(:caller).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
     Caller.record_timestamps = true
-    Caller.by_updated.all.should include(newer_caller, older_caller)
+    expect(Caller.by_updated.all).to include(newer_caller, older_caller)
   end
 
   it "lists active callers" do
     active_caller = create(:caller, :active => true)
     inactive_caller = create(:caller, :active => false)
-    Caller.active.should include(active_caller)
+    expect(Caller.active).to include(active_caller)
   end
 
   it "validates that a restored caller has an active campaign" do
     campaign = create(:campaign, active: false)
     caller = create(:caller, campaign: campaign, active: false)
     caller.active = true
-    caller.save.should be_falsey
-    caller.errors[:base].should == ['The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.']
+    expect(caller.save).to be_falsey
+    expect(caller.errors[:base]).to eq(['The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.'])
   end
 
   it "asks for pin" do
-    Caller.ask_for_pin(0, nil).should ==
+    expect(Caller.ask_for_pin(0, nil)).to eq(
         Twilio::Verb.new do |v|
           3.times do
             v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => 'http://', :attempt => 1), :method => "POST") do
@@ -80,23 +80,24 @@ describe Caller do
             end
           end
         end.response
+    )
   end
 
   it "asks for pin again" do
-    Caller.ask_for_pin(1,nil).should == Twilio::Verb.new do |v|
+    expect(Caller.ask_for_pin(1,nil)).to eq(Twilio::Verb.new do |v|
       3.times do
         v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => 'http://', :attempt => 2), :method => "POST") do
           v.say "Incorrect Pin. Please enter your pin and then press star."
         end
       end
-    end.response
+    end.response)
   end
 
   it "returns name for phone-only-caller, email for web-caller " do
     phones_only_caller = create(:caller, :is_phones_only => true, :name => "name", :username => "email1@gmail.com")
     web_caller = create(:caller, :is_phones_only => false, :name => "name", :username => "email2@gmail.com")
-    phones_only_caller.identity_name.should == "name"
-    web_caller.identity_name.should == "email2@gmail.com"
+    expect(phones_only_caller.identity_name).to eq("name")
+    expect(web_caller.identity_name).to eq("email2@gmail.com")
   end
 
 
@@ -116,15 +117,15 @@ describe Caller do
 
     describe "utilization" do
       it "lists time logged in" do
-        CallerSession.time_logged_in(caller, nil, from_time, time_now).should == 7919
+        expect(CallerSession.time_logged_in(caller, nil, from_time, time_now)).to eq(7919)
       end
 
       it "lists on call time" do
-        CallAttempt.time_on_call(caller, nil, from_time, time_now).should == 6727
+        expect(CallAttempt.time_on_call(caller, nil, from_time, time_now)).to eq(6727)
       end
 
       it "lists on wrapup time" do
-        CallAttempt.time_in_wrapup(caller, nil, from_time, time_now).should == 90
+        expect(CallAttempt.time_in_wrapup(caller, nil, from_time, time_now)).to eq(90)
       end
 
 
@@ -132,11 +133,11 @@ describe Caller do
 
     describe "billing" do
       it "lists caller time" do
-        CallerSession.caller_time(caller, nil, from_time, time_now).should == 31
+        expect(CallerSession.caller_time(caller, nil, from_time, time_now)).to eq(31)
       end
 
       it "lists lead time" do
-        CallAttempt.lead_time(caller, nil, from_time, time_now).should == 113
+        expect(CallAttempt.lead_time(caller, nil, from_time, time_now)).to eq(113)
       end
     end
 
@@ -154,7 +155,7 @@ describe Caller do
         2.times { create(:answer, :caller => caller, :voter => @voter, :question_id => @question.id, :possible_response => response_2, :campaign => campaign) }
         create(:answer, :caller => caller, :voter => @voter, :question => @question, :possible_response => response_1, :campaign => create(:campaign))
         stats = caller.answered_call_stats(from_time, time_now+1.day, campaign)
-        stats.should == {"what?"=>[{:answer=>"[No response]", :number=>0, :percentage=>0},{:answer=>"foo", :number=>3, :percentage=>60}, {:answer=>"bar", :number=>2, :percentage=>40}]}
+        expect(stats).to eq({"what?"=>[{:answer=>"[No response]", :number=>0, :percentage=>0},{:answer=>"foo", :number=>3, :percentage=>60}, {:answer=>"bar", :number=>2, :percentage=>40}]})
       end
     end
   end
@@ -163,7 +164,7 @@ describe Caller do
     it "should do nothing if campaign not changed" do
       campaign = create(:campaign)
       caller = create(:caller, campaign: campaign)
-      caller.should_not_receive(:is_phones_only?)
+      expect(caller).not_to receive(:is_phones_only?)
       caller.save
     end
 
@@ -173,7 +174,7 @@ describe Caller do
       caller_session = create(:caller_session, on_call: false)
       caller = create(:caller, campaign: campaign)
       caller.update_attributes(campaign_id: other_campaign.id)
-      caller_session.reassign_campaign.should eq(CallerSession::ReassignCampaign::NO)
+      expect(caller_session.reassign_campaign).to eq(CallerSession::ReassignCampaign::NO)
     end
 
     it "should set on call caller session to reassigned yes" do
@@ -182,7 +183,7 @@ describe Caller do
       caller = create(:caller, campaign: campaign, is_phones_only: true)
       caller_session = create(:caller_session, on_call: true, campaign: campaign, caller_id: caller.id)
       caller.update_attributes!(campaign: other_campaign)
-      caller_session.reload.reassign_campaign.should eq(CallerSession::ReassignCampaign::YES)
+      expect(caller_session.reload.reassign_campaign).to eq(CallerSession::ReassignCampaign::YES)
     end
 
     it "should set on ReassignedCallerSession campaign id" do
@@ -191,7 +192,7 @@ describe Caller do
       caller = create(:caller, campaign: campaign, is_phones_only: true)
       caller_session = create(:caller_session, on_call: true, campaign: campaign, caller_id: caller.id)
       caller.update_attributes!(campaign: other_campaign)
-      RedisReassignedCallerSession.campaign_id(caller_session.id).should eq(other_campaign.id.to_s)
+      expect(RedisReassignedCallerSession.campaign_id(caller_session.id)).to eq(other_campaign.id.to_s)
     end
 
 
@@ -203,8 +204,8 @@ describe Caller do
       campaign = create(:predictive)
       caller  = create(:caller, campaign: campaign)
       caller_session = create(:caller_session, caller: caller)
-      RedisPredictiveCampaign.should_receive(:add).with(campaign.id, campaign.type)
-      RedisStatus.should_receive(:set_state_changed_time).with(campaign.id, "On hold", caller_session.id)
+      expect(RedisPredictiveCampaign).to receive(:add).with(campaign.id, campaign.type)
+      expect(RedisStatus).to receive(:set_state_changed_time).with(campaign.id, "On hold", caller_session.id)
       caller.started_calling(caller_session)
     end
 
@@ -216,8 +217,8 @@ describe Caller do
       caller  = create(:caller, campaign: campaign)
       caller_session = create(:caller_session, caller: caller)
       voter = create(:voter)
-      caller.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_calling_voter"])
-      caller.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, voter.id])
+      expect(caller).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_calling_voter"])
+      expect(caller).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, voter.id])
       caller.calling_voter_preview_power(caller_session, voter.id)
     end
 

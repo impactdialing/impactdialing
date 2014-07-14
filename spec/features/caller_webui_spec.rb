@@ -1,7 +1,7 @@
 require 'spec_helper'
 include JSHelpers
 
-describe 'Calling leads on a Preview campaign', caller_ui: true, e2e: true, js: true do
+describe 'Calling leads on a Preview campaign', type: :feature, caller_ui: true, e2e: true, js: true do
   let(:account){ create(:account) }
   let(:campaign) do
     create(:preview, {
@@ -19,17 +19,17 @@ describe 'Calling leads on a Preview campaign', caller_ui: true, e2e: true, js: 
   end
 
   it 'page does not have account not funded error' do
-    page.should_not have_content 'Your account is not funded. Please contact your account administrator.'
+    expect(page).not_to have_content 'Your account is not funded. Please contact your account administrator.'
   end
 
   it 'page has a lead info description' do
-    page.should have_content 'Lead information When connected, lead information will appear here.'
+    expect(page).to have_content 'Lead information When connected, lead information will appear here.'
   end
 
   it 'page has a logout link' do
     click_on 'Log out'
-    page.should have_content 'Username'
-    page.should have_content 'Password'
-    page.should have_content 'Log in'
+    expect(page).to have_content 'Username'
+    expect(page).to have_content 'Password'
+    expect(page).to have_content 'Log in'
   end
 end

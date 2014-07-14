@@ -10,7 +10,7 @@ describe TwilioLib do
 
   describe '#create_http_request(url, params, server)' do
     before do
-      UserMailer.stub(:new){ mailer }
+      allow(UserMailer).to receive(:new){ mailer }
     end
     it 'retries 5 times on SocketError' do
       stub_request(:post, "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@api.twilio.com/nada").to_raise(SocketError).
@@ -27,7 +27,7 @@ describe TwilioLib do
           :headers => {}
         })
       response = twilio_lib.create_http_request('/nada', {}, 'api.twilio.com')
-      response.body.should eq 'fake twilio response'
+      expect(response.body).to eq 'fake twilio response'
     end
   end
 end

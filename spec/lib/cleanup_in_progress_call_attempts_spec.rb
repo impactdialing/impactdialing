@@ -33,23 +33,23 @@ describe CleanupInProgressCallAttempts do
     end
 
     it "should create 'not called'" do
-      Voter.where(:status => 'not called').count.should == 4 * @statuses.size
-      CallAttempt.where(:status => 'not called').count.should == 5 * @statuses.size
+      expect(Voter.where(:status => 'not called').count).to eq(4 * @statuses.size)
+      expect(CallAttempt.where(:status => 'not called').count).to eq(5 * @statuses.size)
     end
 
     it "should create 'No answer'" do
-      Voter.where(:status => 'No answer').count.should == 1 * @statuses.size
-      CallAttempt.where(:status => 'No answer').count.should == 1 * @statuses.size
+      expect(Voter.where(:status => 'No answer').count).to eq(1 * @statuses.size)
+      expect(CallAttempt.where(:status => 'No answer').count).to eq(1 * @statuses.size)
     end
 
     it "should create 'Call abandoned'" do
-      Voter.where(:status => 'Call abandoned').count.should == 1 * @statuses.size
-      CallAttempt.where(:status => 'Call abandoned').count.should == 1 * @statuses.size
+      expect(Voter.where(:status => 'Call abandoned').count).to eq(1 * @statuses.size)
+      expect(CallAttempt.where(:status => 'Call abandoned').count).to eq(1 * @statuses.size)
     end
 
     it "should create 'Call failed'" do
-      Voter.where(:status => 'Call failed').count.should == 2 * @statuses.size
-      CallAttempt.where(:status => 'Call failed').count.should == 2 * @statuses.size
+      expect(Voter.where(:status => 'Call failed').count).to eq(2 * @statuses.size)
+      expect(CallAttempt.where(:status => 'Call failed').count).to eq(2 * @statuses.size)
     end
   end
   
@@ -72,18 +72,18 @@ describe CleanupInProgressCallAttempts do
     end
     
     it "should create 'No answer'" do
-      Voter.where(:status => 'No answer').count.should == 1 * @statuses.size
-      CallAttempt.where(:status => 'No answer').count.should == 2 * @statuses.size
+      expect(Voter.where(:status => 'No answer').count).to eq(1 * @statuses.size)
+      expect(CallAttempt.where(:status => 'No answer').count).to eq(2 * @statuses.size)
     end
 
     it "should create 'Call abandoned'" do
-      Voter.where(:status => 'Call abandoned').count.should == 1 * @statuses.size
-      CallAttempt.where(:status => 'Call abandoned').count.should == 1 * @statuses.size
+      expect(Voter.where(:status => 'Call abandoned').count).to eq(1 * @statuses.size)
+      expect(CallAttempt.where(:status => 'Call abandoned').count).to eq(1 * @statuses.size)
     end
 
     it "should create 'Call failed'" do
-      Voter.where(:status => 'Call failed').count.should == 2 * @statuses.size
-      CallAttempt.where(:status => 'Call failed').count.should == 2 * @statuses.size
+      expect(Voter.where(:status => 'Call failed').count).to eq(2 * @statuses.size)
+      expect(CallAttempt.where(:status => 'Call failed').count).to eq(2 * @statuses.size)
     end
     
   end

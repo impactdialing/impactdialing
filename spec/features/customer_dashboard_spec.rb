@@ -12,7 +12,7 @@ def within_nth_caller_cell(row_n, cell_n, &block)
   end
 end
 
-describe 'Client Web Dashboard (/client/index)', admin: true do
+describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
   let(:auth_time){ Time.now }
   let(:user) do
     create(:user)
@@ -30,7 +30,7 @@ describe 'Client Web Dashboard (/client/index)', admin: true do
 
       click_on 'Turn call recording on'
 
-      page.should have_content 'Call recording turned on.'
+      expect(page).to have_content 'Call recording turned on.'
     end
 
     it 'should be able to turn off Call Recording' do
@@ -41,7 +41,7 @@ describe 'Client Web Dashboard (/client/index)', admin: true do
 
       click_on 'Turn call recording off'
 
-      page.should have_content 'Call recording turned off.'
+      expect(page).to have_content 'Call recording turned off.'
     end
 
     describe 'listing active campaigns and callers', js: true do
@@ -116,28 +116,28 @@ describe 'Client Web Dashboard (/client/index)', admin: true do
       context 'Active Campaigns' do
         it 'only lists campaigns w/ active callers logged in' do
           within '#campaigns-monitor' do
-            page.should have_content power_campaign.name
-            page.should_not have_content power_no_calls.name
+            expect(page).to have_content power_campaign.name
+            expect(page).not_to have_content power_no_calls.name
           end
         end
         it 'lists the number of callers logged in for the specified campaign' do
           within_nth_campaign_cell 2, 2 do
-            page.should have_content power_campaign.caller_sessions.count
+            expect(page).to have_content power_campaign.caller_sessions.count
           end
         end
         it 'lists the number of callers on call' do
           within_nth_campaign_cell 2, 3 do
-            page.should have_content 2
+            expect(page).to have_content 2
           end
         end
         it 'lists the number of callers in wrap up' do
           within_nth_campaign_cell 2, 4 do
-            page.should have_content 0
+            expect(page).to have_content 0
           end
         end
         it 'lists the number of callers on hold' do
           within_nth_campaign_cell 2, 5 do
-            page.should have_content 1
+            expect(page).to have_content 1
           end
         end
         it 'lists the number of ringing lines'
@@ -147,22 +147,22 @@ describe 'Client Web Dashboard (/client/index)', admin: true do
       context 'Active Callers' do
         it 'lists the caller email address' do
           within_nth_caller_cell 2, 1 do
-            page.should have_content callers.first.username
+            expect(page).to have_content callers.first.username
           end
         end
         it 'displays the campaign the caller is logged in for in a drop down menu' do
           within_nth_caller_cell 2, 2 do
-            page.find("select.reassign-campaign option[value='#{power_campaign.id}']").should be_selected
+            expect(page.find("select.reassign-campaign option[value='#{power_campaign.id}']")).to be_selected
           end
         end
         it 'lists the calls status e.g. on hold' do
           within_nth_caller_cell 2, 3 do
-            page.should have_content 'On call'
+            expect(page).to have_content 'On call'
           end
         end
         it 'lists the time the call has been in the current status' do
           within_nth_caller_cell 2, 4 do
-            page.body.should =~ /\d\d:\d\d:\d\d/
+            expect(page.body).to match(/\d\d:\d\d:\d\d/)
           end
         end
       end

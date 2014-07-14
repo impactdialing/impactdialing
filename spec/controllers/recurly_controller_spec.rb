@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe RecurlyController do
+describe RecurlyController, :type => :controller do
 
 end

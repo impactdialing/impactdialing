@@ -15,7 +15,7 @@ describe Providers::Phone::Conference do
     it 'returns the sid for named conference' do
       expected = 'CFww834eJSKDJFjs328JF92JSDFwe'
       actual = Providers::Phone::Conference.sid_for(conference_name)
-      actual.should eq expected
+      expect(actual).to eq expected
     end
   end
 
@@ -36,18 +36,18 @@ describe Providers::Phone::Conference do
     end
     it 'requests an update of the named conference call Mute property' do
       Providers::Phone::Conference.toggle_mute_for(conference_name, call_sid, {mute: true})
-      @mute_participant_request.should have_been_made
-      @unmute_participant_request.should_not have_been_made
+      expect(@mute_participant_request).to have_been_made
+      expect(@unmute_participant_request).not_to have_been_made
     end
     it 'returns the response of the request' do
       toggle_response = Providers::Phone::Conference.toggle_mute_for(conference_name, call_sid, {mute: true})
-      toggle_response.should be_instance_of Providers::Phone::Twilio::Response
+      expect(toggle_response).to be_instance_of Providers::Phone::Twilio::Response
     end
     context 'opts[:mute] is false' do
       it 'updates the Mute property to false' do
         Providers::Phone::Conference.toggle_mute_for(conference_name, call_sid, {mute: false})
-        @unmute_participant_request.should have_been_made
-        @mute_participant_request.should_not have_been_made
+        expect(@unmute_participant_request).to have_been_made
+        expect(@mute_participant_request).not_to have_been_made
       end
     end
   end

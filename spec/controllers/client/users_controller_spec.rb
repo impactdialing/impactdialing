@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Client::UsersController do
+describe Client::UsersController, :type => :controller do
   before(:each) do
     request.env['HTTP_REFERER'] = 'http://referer'
   end
@@ -9,17 +9,17 @@ describe Client::UsersController do
     user = create(:user)
     user.create_reset_code!
     get :reset_password, :reset_code => user.password_reset_code
-    flash[:error].should be_blank
-    assigns(:user).should == user
+    expect(flash[:error]).to be_blank
+    expect(assigns(:user)).to eq(user)
   end
 
   it "updates the password" do
     user = create(:user)
     user.create_reset_code!
     put :update_password, :user_id => user.id, :reset_code => user.password_reset_code, :password => 'new_password'
-    flash[:error].should be_blank
-    User.authenticate(user.email, 'new_password').should == user
-    user.reload.password_reset_code.should be_nil
+    expect(flash[:error]).to be_blank
+    expect(User.authenticate(user.email, 'new_password')).to eq(user)
+    expect(user.reload.password_reset_code).to be_nil
   end
 
 
@@ -27,29 +27,29 @@ describe Client::UsersController do
     user = create(:user)
     user.create_reset_code!
     put :update_password, :user_id => user.id, :reset_code => user.password_reset_code, :password => 'new_password'
-    flash[:error].should be_blank
-    User.authenticate(user.email, 'new_password').should == user
-    session[:user].should eq(user.id)
+    expect(flash[:error]).to be_blank
+    expect(User.authenticate(user.email, 'new_password')).to eq(user)
+    expect(session[:user]).to eq(user.id)
   end
 
   it "does not change the password if the reset code is invalid" do
     user = create(:user, :new_password => 'xyzzy')
     user.create_reset_code!
     put :update_password, :user_id => user.id, :reset_code => 'xyz', :password => 'new_password'
-    User.authenticate(user.email, 'new_password').should_not == user
-    user.reload.password_reset_code.should_not be_nil
-    user.authenticate_with?("xyzzy").should be_truthy
-    flash[:error].should_not be_blank
+    expect(User.authenticate(user.email, 'new_password')).not_to eq(user)
+    expect(user.reload.password_reset_code).not_to be_nil
+    expect(user.authenticate_with?("xyzzy")).to be_truthy
+    expect(flash[:error]).not_to be_blank
   end
 
   it "invites a new user to the current user's account" do
     user = create(:user).tap{|u| login_as u}
-    Resque.should_receive(:enqueue)
-    lambda {
+    expect(Resque).to receive(:enqueue)
+    expect {
       post :invite, :email => 'foo@bar.com', user: {role: "admin"}
-    }.should change(user.account.users.reload, :count).by(1)
-    user.account.users.reload.last.email.should == 'foo@bar.com'
-    response.should redirect_to(:back)
+    }.to change(user.account.users.reload, :count).by(1)
+    expect(user.account.users.reload.last.email).to eq('foo@bar.com')
+    expect(response).to redirect_to(:back)
   end
 
   describe 'destroy' do
@@ -58,7 +58,7 @@ describe Client::UsersController do
       user = create(:user, :email => 'foo@bar.com', :account => account)
       current_user = create(:user, :account => account).tap{|u| login_as u}
       post :destroy, :id => user.id
-      User.find_by_id(user.id).should_not be
+      expect(User.find_by_id(user.id)).not_to be
     end
   end
 end

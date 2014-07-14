@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Answer do
+describe Answer, :type => :model do
 
   let(:campaign) { create(:campaign) }
 
@@ -25,9 +25,9 @@ describe Answer do
   end
 
   it "should returns all the answers within the specified period" do
-    Answer.within(@now, @now + 1.day).should == [answer_3, answer_4]
-    Answer.within(@now + 2.day, @now + 3.day).should == []
-    Answer.within(@now, @now+1.day).should == [answer_3, answer_4]
+    expect(Answer.within(@now, @now + 1.day)).to eq([answer_3, answer_4])
+    expect(Answer.within(@now + 2.day, @now + 3.day)).to eq([])
+    expect(Answer.within(@now, @now+1.day)).to eq([answer_3, answer_4])
   end
 
   it "returns all answers for the given campaign" do
@@ -37,7 +37,7 @@ describe Answer do
                            :possible_response => create(:possible_response),
                            :question => create(:question, :script => create(:script)),
                            :created_at => @now+1.day, :caller => caller_2)
-    (Answer.with_campaign_id(campaign.id) - [answer_1, answer_2, answer_3, answer_4]).should be_empty
+    expect(Answer.with_campaign_id(campaign.id) - [answer_1, answer_2, answer_3, answer_4]).to be_empty
   end
 
   it "should return question ids for a campaign" do
@@ -47,7 +47,7 @@ describe Answer do
     question2 = create(:question, script: script)
     answer1 = create(:answer, campaign: campaign, question: question1 , voter: create(:voter), possible_response: create(:possible_response))
     answer2 = create(:answer, campaign: campaign, question: question2, voter: create(:voter), possible_response: create(:possible_response))
-    Answer.question_ids(campaign.id).should eq([question1.id, question2.id])
+    expect(Answer.question_ids(campaign.id)).to eq([question1.id, question2.id])
   end
 
 end

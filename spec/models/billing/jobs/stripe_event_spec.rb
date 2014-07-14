@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Billing::Jobs::StripeEvent do
+describe Billing::Jobs::StripeEvent, :type => :model do
   subject{ Billing::Jobs::StripeEvent }
 
   let(:stripe_event_id){ 'evt_123' }
@@ -55,12 +55,12 @@ describe Billing::Jobs::StripeEvent do
   end
 
   before do
-    quota.stub(:account){ account }
+    allow(quota).to receive(:account){ account }
     Timecop.freeze(Time.now)
-    relation.stub(:where).with(provider_id: stripe_event_id){ [stripe_event] }
-    Billing::StripeEvent.stub(:pending){ relation }
-    Account.stub(:find_by_billing_provider_customer_id){ account }
-    Billing::Jobs::StripeEvent.stub(:plans){ plans }
+    allow(relation).to receive(:where).with(provider_id: stripe_event_id){ [stripe_event] }
+    allow(Billing::StripeEvent).to receive(:pending){ relation }
+    allow(Account).to receive(:find_by_billing_provider_customer_id){ account }
+    allow(Billing::Jobs::StripeEvent).to receive(:plans){ plans }
   end
 
   after do
@@ -69,8 +69,8 @@ describe Billing::Jobs::StripeEvent do
 
   shared_examples 'processing completed' do
     it 'saves current time to stripe_event.processed' do
-      stripe_event.should_receive(:processed=).with(Time.now)
-      stripe_event.should_receive(:save!)
+      expect(stripe_event).to receive(:processed=).with(Time.now)
+      expect(stripe_event).to receive(:save!)
     end
   end
 
@@ -89,21 +89,21 @@ describe Billing::Jobs::StripeEvent do
       }
     end
     before do
-      stripe_event.stub(:name){ 'charge.succeeded' }
-      stripe_event.stub(:data){ event_data }
-      plan.stub(:per_minutes?){ true }
-      plan.stub(:price_per_quantity){ 0.09 }
+      allow(stripe_event).to receive(:name){ 'charge.succeeded' }
+      allow(stripe_event).to receive(:data){ event_data }
+      allow(plan).to receive(:per_minutes?){ true }
+      allow(plan).to receive(:price_per_quantity){ 0.09 }
     end
     context 'when triggered by autorecharge' do
       after do
         subject.perform(stripe_event_id)
       end
       it 'tells subscription autorecharge_paid!' do
-        subscription.should_receive(:autorecharge_paid!)
+        expect(subscription).to receive(:autorecharge_paid!)
       end
       it 'tells quota to add_minutes and save!' do
-        quota.should_receive(:add_minutes).with(plan, amount)
-        quota.should_receive(:save!)
+        expect(quota).to receive(:add_minutes).with(plan, amount)
+        expect(quota).to receive(:save!)
       end
       it_behaves_like 'processing completed'
     end
@@ -116,7 +116,7 @@ describe Billing::Jobs::StripeEvent do
         subject.perform(stripe_event_id)
       end
       it 'does not tell quota to add minutes' do
-        quota.should_not_receive(:add_minutes)
+        expect(quota).not_to receive(:add_minutes)
       end
       it_behaves_like 'processing completed'
     end
@@ -142,19 +142,19 @@ describe Billing::Jobs::StripeEvent do
       })
     end
     before do
-      stripe_event.stub(:data){ event_data }
-      stripe_event.stub(:name){ 'charge.failed' }
-      BillingMailer.stub(:new){ mailer }
+      allow(stripe_event).to receive(:data){ event_data }
+      allow(stripe_event).to receive(:name){ 'charge.failed' }
+      allow(BillingMailer).to receive(:new){ mailer }
     end
     after do
       subject.perform(stripe_event_id)
     end
     context 'when triggered by autorecharge' do
       it 'delivers BillingMailer.autorecharge_failed' do
-        mailer.should_receive(:autorecharge_failed)
+        expect(mailer).to receive(:autorecharge_failed)
       end
       it 'tells subscription, autorecharge_disable!' do
-        subscription.should_receive(:autorecharge_disable!)
+        expect(subscription).to receive(:autorecharge_disable!)
       end
       it_behaves_like 'processing completed'
     end
@@ -164,10 +164,10 @@ describe Billing::Jobs::StripeEvent do
         event_data[:object][:metadata][:autorecharge] = "0"
       end
       it 'delivers nothing' do
-        BillingMailer.should_not_receive(:new)
+        expect(BillingMailer).not_to receive(:new)
       end
       it 'tells subscription nothing' do
-        subscription.should_not_receive(:autorecharge_disable!)
+        expect(subscription).not_to receive(:autorecharge_disable!)
       end
       it_behaves_like 'processing completed'
     end
@@ -194,15 +194,15 @@ describe Billing::Jobs::StripeEvent do
       }
     end
     before do
-      stripe_event.stub(:name){ 'invoice.payment_succeeded' }
-      stripe_event.stub(:data){ event_data }
-      plan.stub(:per_minutes?){ false }
+      allow(stripe_event).to receive(:name){ 'invoice.payment_succeeded' }
+      allow(stripe_event).to receive(:data){ event_data }
+      allow(plan).to receive(:per_minutes?){ false }
     end
     context 'when triggered by autorenewal' do
       let(:start_period){ Time.now }
       let(:end_period){ start_period + 1.month }
       before do
-        subscription.stub(:is_renewal?){ true }
+        allow(subscription).to receive(:is_renewal?){ true }
         event_data[:object][:lines][:data][0][:period] = {
           :start => start_period,
           :end => end_period
@@ -212,31 +212,31 @@ describe Billing::Jobs::StripeEvent do
         subject.perform(stripe_event_id)
       end
       it 'tells subscription that it has been renewed!' do
-        subscription.should_receive(:renewed!).with(
+        expect(subscription).to receive(:renewed!).with(
           start_period,
           end_period,
           'active'
         )
       end
       it 'tells quota to reset and save!' do
-        quota.should_receive(:renewed).with(plan)
-        quota.should_receive(:save!)
+        expect(quota).to receive(:renewed).with(plan)
+        expect(quota).to receive(:save!)
       end
       it_behaves_like 'processing completed'
     end
 
     context 'when not triggered by autorenewal' do
       before do
-        subscription.stub(:is_renewal?){ false }
+        allow(subscription).to receive(:is_renewal?){ false }
       end
       after do
         subject.perform(stripe_event_id)
       end
       it 'does not tell subscription that it has been renewed!' do
-        subscription.should_not_receive(:renewed!)
+        expect(subscription).not_to receive(:renewed!)
       end
       it 'does not tell quota to reset' do
-        quota.should_not_receive(:renewed)
+        expect(quota).not_to receive(:renewed)
       end
       it_behaves_like 'processing completed'
     end
@@ -263,16 +263,16 @@ describe Billing::Jobs::StripeEvent do
       })
     end
     before do
-      stripe_event.stub(:data){ event_data }
-      stripe_event.stub(:name){ 'customer.subscription.updated' }
-      BillingMailer.stub(:new){ mailer }
+      allow(stripe_event).to receive(:data){ event_data }
+      allow(stripe_event).to receive(:name){ 'customer.subscription.updated' }
+      allow(BillingMailer).to receive(:new){ mailer }
     end
     after do
       subject.perform(stripe_event_id)
     end
     context 'when triggered by autorenewal' do
       before do
-        subscription.stub(:is_renewal?){ true }
+        allow(subscription).to receive(:is_renewal?){ true }
       end
 
       context 'with event object status of unpaid or past_due' do
@@ -280,19 +280,19 @@ describe Billing::Jobs::StripeEvent do
           event_data[:object][:status] = 'past_due'
         end
         it 'delivers BillingMailer.autorenewal_failed' do
-          mailer.should_receive(:autorenewal_failed)
+          expect(mailer).to receive(:autorenewal_failed)
         end
         it 'tells subscription cache_provider_status!(status)' do
-          subscription.should_receive(:cache_provider_status!).with(event_data[:object][:status])
+          expect(subscription).to receive(:cache_provider_status!).with(event_data[:object][:status])
         end
         it_behaves_like 'processing completed'
       end
       context 'with event object status other than unpaid or past_due' do
         it 'does not deliver BillingMailer.autorenewal_failed' do
-          mailer.should_not_receive(:autorenewal_failed)
+          expect(mailer).not_to receive(:autorenewal_failed)
         end
         it 'tells subscription cache_provider_status!(status)' do
-          subscription.should_receive(:cache_provider_status!).with(event_data[:object][:status])
+          expect(subscription).to receive(:cache_provider_status!).with(event_data[:object][:status])
         end
         it_behaves_like 'processing completed'
       end
@@ -300,13 +300,13 @@ describe Billing::Jobs::StripeEvent do
 
     context 'when not triggered by autorenewal' do
       before do
-        subscription.stub(:is_renewal?){ false }
+        allow(subscription).to receive(:is_renewal?){ false }
       end
       it 'delivers nothing' do
-        mailer.should_not_receive(:autorenewal_failed)
+        expect(mailer).not_to receive(:autorenewal_failed)
       end
       it 'tells subscription cache_provider_status!(status)' do
-        subscription.should_receive(:cache_provider_status!).with(event_data[:object][:status])
+        expect(subscription).to receive(:cache_provider_status!).with(event_data[:object][:status])
       end
       it_behaves_like 'processing completed'
     end

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'Caller Group Management', rack: true do
+describe 'Caller Group Management', type: :feature, rack: true do
   let(:customer) do
     create(:user)
   end
@@ -10,7 +10,7 @@ describe 'Caller Group Management', rack: true do
   it 'displays a link on the callers index page' do
     visit '/client/callers'
     click_on 'Manage caller groups'
-    page.should have_content 'Caller Groups'
+    expect(page).to have_content 'Caller Groups'
     click_on 'Add new caller group' # double-check it is the right page
   end
 

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Billing::Subscription do
+describe Billing::Subscription, :type => :model do
   let(:valid_settings) do
     {enabled: 1, amount: 3, trigger: 5, pending: 0}
   end
@@ -12,39 +12,39 @@ describe Billing::Subscription do
         ['trial', 'basic', 'pro', 'business', 'per_minute', 'enterprise']
       end
       before do
-        ::Billing::Plans.stub(:list){ valid_plans }
+        allow(::Billing::Plans).to receive(:list){ valid_plans }
       end
       it 'must be present' do
-        subscription.should have(2).errors_on :plan
+        expect(subscription).to have(2).errors_on :plan
       end
       it 'must be included in ::Billing::Plans.list' do
         subscription.plan = 'borg'
-        subscription.should have(1).error_on :plan
-        subscription.errors[:plan].first.should eq "is not included in the list"
+        expect(subscription).to have(1).error_on :plan
+        expect(subscription.errors[:plan].first).to eq "is not included in the list"
       end
     end
   end
 
   describe ':settings' do
     it 'is serialized as HashWithIndifferentAccess' do
-      subscription.settings.should be_kind_of HashWithIndifferentAccess
+      expect(subscription.settings).to be_kind_of HashWithIndifferentAccess
     end
 
     describe 'autorecharge_settings' do
       it 'has an :enabled key' do
-        subscription.autorecharge_settings.should have_key :enabled
+        expect(subscription.autorecharge_settings).to have_key :enabled
       end
       it 'has an :amount key' do
-        subscription.autorecharge_settings.should have_key :amount
+        expect(subscription.autorecharge_settings).to have_key :amount
       end
       it 'has a :trigger key' do
-        subscription.autorecharge_settings.should have_key :trigger
+        expect(subscription.autorecharge_settings).to have_key :trigger
       end
       it 'has a :pending key' do
-        subscription.autorecharge_settings.should have_key :pending
+        expect(subscription.autorecharge_settings).to have_key :pending
       end
       it 'defaults to disabled' do
-        subscription.autorecharge_settings[:enabled].should eq 0
+        expect(subscription.autorecharge_settings[:enabled]).to eq 0
       end
     end
   end
@@ -55,7 +55,7 @@ describe Billing::Subscription do
         subscription.plan = plan
       end
       it 'returns true' do
-        subscription.active?.should be_truthy
+        expect(subscription.active?).to be_truthy
       end
     end
     shared_examples_for 'not active subscription' do
@@ -63,7 +63,7 @@ describe Billing::Subscription do
         subscription.plan = plan
       end
       it 'returns false' do
-        subscription.active?.should be_falsey
+        expect(subscription.active?).to be_falsey
       end
     end
     ['trial', 'enterprise', 'per_minute'].each do |plan_id|
@@ -105,7 +105,7 @@ describe Billing::Subscription do
       valid_settings = {'enabled' => 1, 'amount' => 1, 'trigger' => 1}
       subscription.update_autorecharge_settings!(valid_settings)
       subscription.reload
-      subscription.autorecharge_settings.should eq valid_settings
+      expect(subscription.autorecharge_settings).to eq valid_settings
     end
   end
 
@@ -114,7 +114,7 @@ describe Billing::Subscription do
     let(:subscription){ account.billing_subscription }
     it 'returns an Integer' do
       subscription.update_autorecharge_settings!(valid_settings)
-      subscription.autorecharge_amount.should eql 3
+      expect(subscription.autorecharge_amount).to eql 3
     end
   end
 
@@ -122,11 +122,11 @@ describe Billing::Subscription do
     let(:account){ create(:account) }
     let(:subscription){ account.billing_subscription }
     before do
-      subscription.autorecharge_pending?.should be_falsey
+      expect(subscription.autorecharge_pending?).to be_falsey
       subscription.autorecharge_pending!
     end
     it 'save! autorecharge_pending as 1' do
-      subscription.reload.autorecharge_pending.should eql 1
+      expect(subscription.reload.autorecharge_pending).to eql 1
     end
   end
 
@@ -142,7 +142,7 @@ describe Billing::Subscription do
       end
 
       it 'returns true' do
-        subscription.is_renewal?(start_period, end_period).should be_truthy
+        expect(subscription.is_renewal?(start_period, end_period)).to be_truthy
       end
     end
 
@@ -152,7 +152,7 @@ describe Billing::Subscription do
         subscription.provider_end_period   = end_period
       end
       it 'returns false' do
-        subscription.is_renewal?(start_period, end_period).should be_falsey
+        expect(subscription.is_renewal?(start_period, end_period)).to be_falsey
       end
     end
   end
@@ -168,13 +168,13 @@ describe Billing::Subscription do
       subscription.renewed!(start_period, end_period, status)
       actual = Time.at(subscription.reload.provider_start_period).utc
       expected = start_period.utc
-      actual.should be_within(1).of(expected)
+      expect(actual).to be_within(1).of(expected)
     end
     it 'sets provider_end_period to end_period' do
       subscription.renewed!(start_period, end_period, status)
       actual = Time.at(subscription.reload.provider_end_period).utc
       expected = end_period.utc
-      actual.should be_within(1).of(expected)
+      expect(actual).to be_within(1).of(expected)
     end
     context 'when invalid' do
       it 'raises ActiveRecord::RecordInvalid' do
@@ -193,7 +193,7 @@ describe Billing::Subscription do
 
     it 'sets provider_status to status' do
       subscription.cache_provider_status!(status)
-      subscription.provider_status.should eq status
+      expect(subscription.provider_status).to eq status
     end
     context 'when invalid' do
       it 'raises ActiveRecord::RecordInvalid' do

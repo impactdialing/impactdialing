@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe VoterListsHelper do
+describe VoterListsHelper, :type => :helper do
   describe 'system column headers' do
     before(:each) do
       @original_columns = VoterList::VOTER_DATA_COLUMNS
@@ -13,13 +13,13 @@ describe VoterListsHelper do
     end
 
     it "returns a list of all available voter attributes as well as not available" do
-      helper.system_column_headers("foo",@account).should == [["(Discard this column)", nil], ["foo", "foo"], ["Barbaz", "barbaz"], ["Add custom field...", "custom"]]
+      expect(helper.system_column_headers("foo",@account)).to eq([["(Discard this column)", nil], ["foo", "foo"], ["Barbaz", "barbaz"], ["Add custom field...", "custom"]])
     end
 
     it "returns a list of all custom fields along with the others" do
       custom_field = "baz"
       create(:custom_voter_field, :name => "baz", :account => @account)
-      helper.system_column_headers("foo",@account).should == [["(Discard this column)", nil], ["foo", "foo"],["Barbaz", "barbaz"], ["#{custom_field}", custom_field], ["Add custom field...", "custom"]]
+      expect(helper.system_column_headers("foo",@account)).to eq([["(Discard this column)", nil], ["foo", "foo"],["Barbaz", "barbaz"], ["#{custom_field}", custom_field], ["Add custom field...", "custom"]])
     end
   end
 end

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Monitors::CallersController do
+describe Monitors::CallersController, :type => :controller do
   # include TwilioRequestStubs
 
   let(:account){ create(:account) }
@@ -35,29 +35,29 @@ describe Monitors::CallersController do
 
     it 'should be a success w/ valid params' do
       put :switch_mode, valid_params
-      response.should be_success
+      expect(response).to be_success
     end
 
     it 'loads CallerSession' do
-      CallerSession.should_receive(:find).at_least(:once){ caller_session }
+      expect(CallerSession).to receive(:find).at_least(:once){ caller_session }
       put :switch_mode, valid_params
     end
     it 'loads Moderator' do
-      Moderator.should_receive(:find){ moderator }
+      expect(Moderator).to receive(:find){ moderator }
       put :switch_mode, valid_params
     end
     it 'updates Moderator#caller_session_id' do
       put :switch_mode, valid_params
       moderator.reload
-      moderator.caller_session_id.should eq caller_session.id
+      expect(moderator.caller_session_id).to eq caller_session.id
     end
     it 'requests the conference_id for CallerSession' do
       put :switch_mode, valid_params
-      @conf_by_name_request.should have_been_made
+      expect(@conf_by_name_request).to have_been_made
     end
     it 'renders not connected message if caller is not on a call' do
       put :switch_mode, valid_params
-      response.body.should eq "Status: Caller is not connected to a lead."
+      expect(response.body).to eq "Status: Caller is not connected to a lead."
     end
 
     context 'a caller is on a call' do
@@ -74,17 +74,17 @@ describe Monitors::CallersController do
 
       it 'renders a message with monitoring type and caller identity info when caller is on a call' do
         put :switch_mode, valid_params
-        response.body.should eq "Status: Monitoring in eavesdrop mode on #{caller_session.caller.identity_name}."
+        expect(response.body).to eq "Status: Monitoring in eavesdrop mode on #{caller_session.caller.identity_name}."
       end
       it 'when params[:type] != "breakin" it adds muted moderator' do
         put :switch_mode, valid_params
-        @mute_participant_request.should have_been_made
-        @unmute_participant_request.should_not have_been_made
+        expect(@mute_participant_request).to have_been_made
+        expect(@unmute_participant_request).not_to have_been_made
       end
       it 'when params[:type] == "breakin" it adds unmuted moderator' do
         put :switch_mode, valid_params.merge({type: 'breakin'})
-        @unmute_participant_request.should have_been_made
-        @mute_participant_request.should_not have_been_made
+        expect(@unmute_participant_request).to have_been_made
+        expect(@mute_participant_request).not_to have_been_made
       end
     end
   end

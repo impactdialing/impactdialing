@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Quota do
+describe Quota, :type => :model do
 
   def prorated_minutes(provider_object, minutes_per_caller)
     total          = provider_object.current_period_end - provider_object.current_period_start
@@ -19,11 +19,11 @@ describe Quota do
       it 'returns true' do
         quota.minutes_used = 4
         quota.minutes_pending = 0
-        quota.minutes_available?.should be_truthy
+        expect(quota.minutes_available?).to be_truthy
 
         quota.minutes_used = 0
         quota.minutes_pending = 4
-        quota.minutes_available?.should be_truthy
+        expect(quota.minutes_available?).to be_truthy
       end
     end
 
@@ -31,15 +31,15 @@ describe Quota do
       it 'returns false' do
         quota.minutes_used = 4
         quota.minutes_pending = 6
-        quota.minutes_available?.should be_falsey
+        expect(quota.minutes_available?).to be_falsey
 
         quota.minutes_pending = 0
         quota.minutes_used = 10
-        quota.minutes_available?.should be_falsey
+        expect(quota.minutes_available?).to be_falsey
 
         quota.minutes_pending = 10
         quota.minutes_used = 0
-        quota.minutes_available?.should be_falsey
+        expect(quota.minutes_available?).to be_falsey
       end
     end
   end
@@ -52,22 +52,22 @@ describe Quota do
     end
 
     it 'returns an Integer number of minutes available, calculated as (minutes_allowed - minutes_used - minutes_pending)' do
-      quota._minutes_available.should eq quota.minutes_allowed
+      expect(quota._minutes_available).to eq quota.minutes_allowed
 
       quota.minutes_used = 10
-      quota._minutes_available.should eq quota.minutes_allowed - 10
+      expect(quota._minutes_available).to eq quota.minutes_allowed - 10
 
       quota.minutes_used = 39
-      quota._minutes_available.should eq quota.minutes_allowed - 39
+      expect(quota._minutes_available).to eq quota.minutes_allowed - 39
 
       quota.minutes_pending = 10
-      quota._minutes_available.should eq quota.minutes_allowed - 39 - 10
+      expect(quota._minutes_available).to eq quota.minutes_allowed - 39 - 10
     end
 
     it 'never returns an Integer < 0' do
       quota.minutes_used = quota.minutes_allowed
       quota.minutes_pending = 12
-      quota._minutes_available.should eq 0
+      expect(quota._minutes_available).to eq 0
     end
   end
 
@@ -80,12 +80,12 @@ describe Quota do
     end
 
     it 'returns true on success' do
-      quota.debit(5).should be_truthy
+      expect(quota.debit(5)).to be_truthy
     end
 
     it 'returns false on failure' do
       quota.account_id = nil # make it invalid
-      quota.debit(5).should be_falsey
+      expect(quota.debit(5)).to be_falsey
     end
 
     context 'minutes_available >= minutes_to_charge' do
@@ -95,10 +95,10 @@ describe Quota do
         quota.debit(minutes_to_charge)
       end
       it 'adds minutes_to_charge to minutes_used' do
-        quota._minutes_available.should eq(quota.minutes_allowed - 300)
+        expect(quota._minutes_available).to eq(quota.minutes_allowed - 300)
       end
       it 'leaves minutes_pending unchanged' do
-        quota.minutes_pending.should eq(quota.minutes_pending)
+        expect(quota.minutes_pending).to eq(quota.minutes_pending)
       end
     end
 
@@ -118,17 +118,17 @@ describe Quota do
       end
 
       it 'adds (minutes_to_charge - minutes_available) to minutes_used' do
-        quota.minutes_used.should eq minutes_allowed
+        expect(quota.minutes_used).to eq minutes_allowed
       end
 
       it 'adds any remaining minutes to minutes_pending' do
-        quota.minutes_pending.should eq expected_minutes_pending
+        expect(quota.minutes_pending).to eq expected_minutes_pending
 
         quota.debit(7)
-        quota.minutes_pending.should eq expected_minutes_pending + minutes_to_charge
+        expect(quota.minutes_pending).to eq expected_minutes_pending + minutes_to_charge
 
         quota.debit(7)
-        quota.minutes_pending.should eq expected_minutes_pending + (minutes_to_charge * 2)
+        expect(quota.minutes_pending).to eq expected_minutes_pending + (minutes_to_charge * 2)
       end
     end
   end
@@ -165,13 +165,13 @@ describe Quota do
         end
 
         it 'sets minutes_allowed to the minutes purchased + minutes_available' do
-          quota.minutes_allowed.should eq minutes_purchased + minutes_available
+          expect(quota.minutes_allowed).to eq minutes_purchased + minutes_available
         end
         it 'sets minutes_used to zero' do
-          quota.minutes_used.should eq 0
+          expect(quota.minutes_used).to eq 0
         end
         it 'sets minutes_pending to zero' do
-          quota.minutes_pending.should eq 0
+          expect(quota.minutes_pending).to eq 0
         end
       end
       context 'w/ all minutes used' do
@@ -187,13 +187,13 @@ describe Quota do
         end
 
         it 'sets minutes_allowed to the minutes purchased' do
-          quota.minutes_allowed.should eq minutes_purchased
+          expect(quota.minutes_allowed).to eq minutes_purchased
         end
         it 'sets minutes_used to zero' do
-          quota.minutes_used.should eq 0
+          expect(quota.minutes_used).to eq 0
         end
         it 'sets minutes_pending to zero' do
-          quota.minutes_pending.should eq 0
+          expect(quota.minutes_pending).to eq 0
         end
       end
       context 'w/ all minutes used and minutes_pending' do
@@ -209,13 +209,13 @@ describe Quota do
             quota.add_minutes(plan, 'per_minute', amount)
           end
           it 'sets minutes_allowed to minutes_purchased' do
-            quota.minutes_allowed.should eq minutes_purchased
+            expect(quota.minutes_allowed).to eq minutes_purchased
           end
           it 'sets minutes_pending to (minutes_pending - minutes_purchased)' do
-            quota.minutes_pending.should eq (minutes_pending - minutes_purchased)
+            expect(quota.minutes_pending).to eq (minutes_pending - minutes_purchased)
           end
           it 'sets minutes_used to minutes_purchased' do
-            quota.minutes_used.should eq minutes_purchased
+            expect(quota.minutes_used).to eq minutes_purchased
           end
         end
         context 'minutes_pending < minutes_purchased' do
@@ -230,13 +230,13 @@ describe Quota do
             quota.add_minutes(plan, 'per_minute', amount)
           end
           it 'sets minutes_allowed to minutes_purchased' do
-            quota.minutes_allowed.should eq minutes_purchased
+            expect(quota.minutes_allowed).to eq minutes_purchased
           end
           it 'sets minutes_used to minutes_pending' do
-            quota.minutes_used.should eq minutes_pending
+            expect(quota.minutes_used).to eq minutes_pending
           end
           it 'sets minutes_pending to 0' do
-            quota.minutes_pending.should eq 0
+            expect(quota.minutes_pending).to eq 0
           end
         end
       end
@@ -269,7 +269,7 @@ describe Quota do
       quantity = 1
       actual = quota.prorated_minutes(basic_plan, provider_object, quantity)
       expected = 1000 / 2
-      actual.should be_within(10).of(expected)
+      expect(actual).to be_within(10).of(expected)
     end
   end
 
@@ -287,16 +287,16 @@ describe Quota do
       quota.renewed(plan)
     end
     it 'sets minutes_used to zero' do
-      quota.minutes_used.should eq 0
+      expect(quota.minutes_used).to eq 0
     end
     it 'sets minutes_pending to zero' do
-      quota.minutes_pending.should eq 0
+      expect(quota.minutes_pending).to eq 0
     end
     it 'sets does not touch minutes_allowed' do
-      quota.minutes_allowed.should eq 5000
+      expect(quota.minutes_allowed).to eq 5000
     end
     it 'does not touch callers_allowed' do
-      quota.callers_allowed.should eq 2
+      expect(quota.callers_allowed).to eq 2
     end
   end
 
@@ -334,18 +334,18 @@ describe Quota do
         before do
           quota.update_attribute(:minutes_used, 45)
           quota.reload
-          quota.minutes_allowed.should eq 50
-          quota.callers_allowed.should eq 5
+          expect(quota.minutes_allowed).to eq 50
+          expect(quota.callers_allowed).to eq 5
           quota.change_plans_or_callers(basic_plan, provider_object, opts)
         end
         it 'sets callers_allowed to provider_object.quantity' do
-          quota.callers_allowed.should eq 1
+          expect(quota.callers_allowed).to eq 1
         end
         it 'sets minutes_allowed to the product of plan.minutes_per_quantity and quantity' do
-          quota.minutes_allowed.should eq 1000
+          expect(quota.minutes_allowed).to eq 1000
         end
         it 'sets minutes_used to zero' do
-          quota.minutes_used.should eq 0
+          expect(quota.minutes_used).to eq 0
         end
       end
       context 'Pro -> Basic +1 caller (21 days into billing cycle)' do
@@ -357,7 +357,7 @@ describe Quota do
         let(:allowed){ 2500 }
         let(:callers){ 1 }
         before do
-          provider_object.stub(:quantity){ 2 }
+          allow(provider_object).to receive(:quantity){ 2 }
           quota.update_attributes!({
             minutes_used: used,
             minutes_allowed: allowed,
@@ -370,13 +370,13 @@ describe Quota do
           quota.change_plans_or_callers(basic_plan, provider_object, opts)
         end
         it 'sets callers_allowed to provider_object.quantity' do
-          quota.callers_allowed.should eq provider_object.quantity
+          expect(quota.callers_allowed).to eq provider_object.quantity
         end
         it 'does not touch minutes_allowed' do
-          quota.minutes_allowed.should eq allowed
+          expect(quota.minutes_allowed).to eq allowed
         end
         it 'does not touch minutes_used' do
-          quota.minutes_used.should eq used
+          expect(quota.minutes_used).to eq used
         end
       end
       context 'Basic -> Basic' do
@@ -391,8 +391,8 @@ describe Quota do
         let(:available){ 250 }
         let(:callers){ 1 }
         before do
-          provider_object.stub(:current_period_start){ 7.days.ago }
-          provider_object.stub(:current_period_end){ 21.days.from_now }
+          allow(provider_object).to receive(:current_period_start){ 7.days.ago }
+          allow(provider_object).to receive(:current_period_end){ 21.days.from_now }
           quota.update_attributes!({
             minutes_used: used,
             minutes_allowed: allowed,
@@ -406,20 +406,20 @@ describe Quota do
           quota.change_plans_or_callers(basic_plan, provider_object, opts)
         end
         it 'sets callers_allowed to provider_object.quantity' do
-          quota.callers_allowed.should eq provider_object.quantity
+          expect(quota.callers_allowed).to eq provider_object.quantity
         end
         context '+1 caller' do
           before do
-            provider_object.stub(:quantity){ 2 }
+            allow(provider_object).to receive(:quantity){ 2 }
             quota.change_plans_or_callers(basic_plan, provider_object, opts)
           end
           it 'sets minutes_allowed to prorated number of minutes based on billing cycle' do
             minutes_to_add           = prorated_minutes(provider_object, 1000)
             expected_minutes_allowed = minutes_to_add + allowed
-            quota.minutes_allowed.should be_within(10).of(expected_minutes_allowed)
+            expect(quota.minutes_allowed).to be_within(10).of(expected_minutes_allowed)
           end
           it 'sets callers_allowed to provider_object.quantity' do
-            quota.callers_allowed.should eq provider_object.quantity
+            expect(quota.callers_allowed).to eq provider_object.quantity
           end
         end
         context 'removing callers - verify this only changes callers_allowed because this action is not prorated. Minute quotas are updated via stripe event and so' do
@@ -427,7 +427,7 @@ describe Quota do
           let(:allowed){ 3000 }
           let(:callers){ 3 }
           before do
-            provider_object.stub(:quantity){ 1 }
+            allow(provider_object).to receive(:quantity){ 1 }
             quota.update_attributes!({
               minutes_used: used,
               minutes_allowed: allowed,
@@ -440,13 +440,13 @@ describe Quota do
             quota.change_plans_or_callers(basic_plan, provider_object, opts)
           end
           it 'sets callers_allowed to provider_object.quantity' do
-            quota.callers_allowed.should eq provider_object.quantity
+            expect(quota.callers_allowed).to eq provider_object.quantity
           end
           it 'does not touch minutes_allowed' do
-            quota.minutes_allowed.should eq allowed
+            expect(quota.minutes_allowed).to eq allowed
           end
           it 'does not touch minutes_used' do
-            quota.minutes_used.should eq used
+            expect(quota.minutes_used).to eq used
           end
         end
       end
@@ -455,7 +455,7 @@ describe Quota do
         let(:allowed){ 1000 }
         let(:callers){ 1 }
         before do
-          provider_object.stub(:quantity){ callers }
+          allow(provider_object).to receive(:quantity){ callers }
           quota.update_attributes!({
             minutes_used: used,
             minutes_allowed: allowed,
@@ -465,13 +465,13 @@ describe Quota do
           quota.change_plans_or_callers(basic_plan, provider_object, opts)
         end
         it 'does not touch minutes_allowed because this action is not prorated' do
-          quota.minutes_allowed.should eq allowed
+          expect(quota.minutes_allowed).to eq allowed
         end
         it 'does not touch callers_allowed because this action is not prorated' do
-          quota.callers_allowed.should eq callers
+          expect(quota.callers_allowed).to eq callers
         end
         it 'does not touch minutes_used because this action is not prorated' do
-          quota.minutes_used.should eq used
+          expect(quota.minutes_used).to eq used
         end
       end
     end
@@ -486,15 +486,15 @@ describe Quota do
           }
         end
         before do
-          provider_object.stub(:quantity){ callers_allowed }
+          allow(provider_object).to receive(:quantity){ callers_allowed }
         end
         it 'sets `callers_allowed` to opts[:callers_allowed]' do
           quota.plan_changed!('basic', provider_object, opts)
-          quota.callers_allowed.should eq callers_allowed
+          expect(quota.callers_allowed).to eq callers_allowed
         end
         it 'sets `minutes_allowed` to callers_allowed * plan.minutes_per_quantity' do
           quota.plan_changed!('basic', provider_object, opts)
-          quota.minutes_allowed.should eq callers_allowed * 1000
+          expect(quota.minutes_allowed).to eq callers_allowed * 1000
         end
       end
       context 'Basic -> Business (upgrade 5 days into billing cycle, caller does not change)' do
@@ -507,9 +507,9 @@ describe Quota do
           }
         end
         before do
-          provider_object.stub(:quantity){ callers_allowed }
-          provider_object.stub(:current_period_start){ 5.days.ago }
-          provider_object.stub(:current_period_end){ 25.days.from_now }
+          allow(provider_object).to receive(:quantity){ callers_allowed }
+          allow(provider_object).to receive(:current_period_start){ 5.days.ago }
+          allow(provider_object).to receive(:current_period_end){ 25.days.from_now }
           quota.update_attributes!({
             callers_allowed: callers_allowed,
             minutes_allowed: 1000,
@@ -519,13 +519,13 @@ describe Quota do
         end
         it 'sets minutes_allowed = prorated(provider_object.quantity * 6000)' do
           minutes_to_add = prorated_minutes(provider_object, 6000)
-          quota.minutes_allowed.should eq callers_allowed * minutes_to_add
+          expect(quota.minutes_allowed).to eq callers_allowed * minutes_to_add
         end
         it 'sets callers_allowed = provider_object.quantity' do
-          quota.callers_allowed.should eq callers_allowed
+          expect(quota.callers_allowed).to eq callers_allowed
         end
         it 'sets minutes_used = 0' do
-          quota.minutes_used.should be_zero
+          expect(quota.minutes_used).to be_zero
         end
       end
       context 'Business -> Pro (downgrade 12 days into billing cycle, caller does not change)' do
@@ -537,8 +537,8 @@ describe Quota do
           }
         end
         before do
-          provider_object.stub(:current_period_start){ 12.days.ago }
-          provider_object.stub(:current_period_end){ (30 - 12).days.from_now }
+          allow(provider_object).to receive(:current_period_start){ 12.days.ago }
+          allow(provider_object).to receive(:current_period_end){ (30 - 12).days.from_now }
           quota.update_attributes!({
             callers_allowed: callers_allowed,
             minutes_allowed: 1000,
@@ -548,13 +548,13 @@ describe Quota do
         end
         context 'immediately' do
           it 'sets callers_allowed = provider_object.quantity' do
-            quota.callers_allowed.should eq callers_allowed
+            expect(quota.callers_allowed).to eq callers_allowed
           end
           it 'does not touch minutes_allowed' do
-            quota.minutes_allowed.should eq 1000
+            expect(quota.minutes_allowed).to eq 1000
           end
           it 'does not touch minutes_used' do
-            quota.minutes_used.should eq 234
+            expect(quota.minutes_used).to eq 234
           end
         end
         context 'eventually (once provider event is received and processed)' do
@@ -571,9 +571,9 @@ describe Quota do
           }
         end
         before do
-          provider_object.stub(:quantity){ opts[:callers_allowed] }
-          provider_object.stub(:current_period_start){ 9.days.ago }
-          provider_object.stub(:current_period_end){ (30 - 9).days.from_now }
+          allow(provider_object).to receive(:quantity){ opts[:callers_allowed] }
+          allow(provider_object).to receive(:current_period_start){ 9.days.ago }
+          allow(provider_object).to receive(:current_period_end){ (30 - 9).days.from_now }
           quota.update_attributes!({
             callers_allowed: callers_allowed,
             minutes_allowed: 6000,
@@ -583,13 +583,13 @@ describe Quota do
         end
         context 'immediately' do
           it 'sets callers_allowed = provider_object.quantity' do
-            quota.callers_allowed.should eq provider_object.quantity
+            expect(quota.callers_allowed).to eq provider_object.quantity
           end
           it 'does not touch minutes_allowed' do
-            quota.minutes_allowed.should eq 6000
+            expect(quota.minutes_allowed).to eq 6000
           end
           it 'does not touch minutes_used' do
-            quota.minutes_used.should eq 2345
+            expect(quota.minutes_used).to eq 2345
           end
         end
         context 'eventually (once provider event is received and processed)' do
@@ -606,9 +606,9 @@ describe Quota do
           }
         end
         before do
-          provider_object.stub(:quantity){ opts[:callers_allowed] }
-          provider_object.stub(:current_period_start){ 3.days.ago }
-          provider_object.stub(:current_period_end){ (30 - 3).days.from_now }
+          allow(provider_object).to receive(:quantity){ opts[:callers_allowed] }
+          allow(provider_object).to receive(:current_period_start){ 3.days.ago }
+          allow(provider_object).to receive(:current_period_end){ (30 - 3).days.from_now }
           quota.update_attributes!({
             callers_allowed: callers_allowed,
             minutes_allowed: 6000,
@@ -618,13 +618,13 @@ describe Quota do
         end
         context 'immediately' do
           it 'sets callers_allowed = provider_object.quantity' do
-            quota.callers_allowed.should eq provider_object.quantity
+            expect(quota.callers_allowed).to eq provider_object.quantity
           end
           it 'does not touch minutes_allowed' do
-            quota.minutes_allowed.should eq 6000
+            expect(quota.minutes_allowed).to eq 6000
           end
           it 'does not touch minutes_used' do
-            quota.minutes_used.should eq 2345
+            expect(quota.minutes_used).to eq 2345
           end
         end
         context 'eventually (once provider event is received and processed)' do
@@ -644,9 +644,9 @@ describe Quota do
           }
         end
         before do
-          provider_object.stub(:current_period_start){ 17.days.ago }
-          provider_object.stub(:current_period_end){ (30 - 17).days.from_now }
-          provider_object.stub(:quantity){ opts[:callers_allowed] }
+          allow(provider_object).to receive(:current_period_start){ 17.days.ago }
+          allow(provider_object).to receive(:current_period_end){ (30 - 17).days.from_now }
+          allow(provider_object).to receive(:quantity){ opts[:callers_allowed] }
           quota.update_attributes!({
             callers_allowed: callers_allowed,
             minutes_allowed: allowed,
@@ -655,13 +655,13 @@ describe Quota do
           quota.plan_changed!('business', provider_object, opts)
         end
         it 'sets minutes_allowed = prorated(provider_object.quantity * 6000)' do
-          quota.minutes_allowed.should eq prorated_minutes(provider_object, (6000 * provider_object.quantity))
+          expect(quota.minutes_allowed).to eq prorated_minutes(provider_object, (6000 * provider_object.quantity))
         end
         it 'sets callers_allowed = provider_object.quantity' do
-          quota.callers_allowed.should eq provider_object.quantity
+          expect(quota.callers_allowed).to eq provider_object.quantity
         end
         it 'sets minutes_used to zero' do
-          quota.minutes_used.should be_zero
+          expect(quota.minutes_used).to be_zero
         end
       end
       context 'Pro -> Business -2 callers (upgrade & remove callers 13 days into billing cycle)' do
@@ -676,9 +676,9 @@ describe Quota do
           }
         end
         before do
-          provider_object.stub(:current_period_start){ 13.days.ago }
-          provider_object.stub(:current_period_end){ (30 - 13).days.from_now }
-          provider_object.stub(:quantity){ opts[:callers_allowed] }
+          allow(provider_object).to receive(:current_period_start){ 13.days.ago }
+          allow(provider_object).to receive(:current_period_end){ (30 - 13).days.from_now }
+          allow(provider_object).to receive(:quantity){ opts[:callers_allowed] }
           quota.update_attributes!({
             callers_allowed: callers_allowed,
             minutes_allowed: allowed,
@@ -687,13 +687,13 @@ describe Quota do
           quota.plan_changed!('business', provider_object, opts)
         end
         it 'sets minutes_allowed = prorated(provider_object.quantity * 6000)' do
-          quota.minutes_allowed.should eq prorated_minutes(provider_object, (6000 * provider_object.quantity))
+          expect(quota.minutes_allowed).to eq prorated_minutes(provider_object, (6000 * provider_object.quantity))
         end
         it 'sets callers_allowed = provider_object.quantity' do
-          quota.callers_allowed.should eq provider_object.quantity
+          expect(quota.callers_allowed).to eq provider_object.quantity
         end
         it 'sets minutes_used to zero' do
-          quota.minutes_used.should be_zero
+          expect(quota.minutes_used).to be_zero
         end
       end
       context 'Business -> +3 callers (29 days into billing cycle)' do
@@ -708,9 +708,9 @@ describe Quota do
           }
         end
         before do
-          provider_object.stub(:current_period_start){ 29.days.ago }
-          provider_object.stub(:current_period_end){ 1.day.from_now }
-          provider_object.stub(:quantity){ opts[:callers_allowed] }
+          allow(provider_object).to receive(:current_period_start){ 29.days.ago }
+          allow(provider_object).to receive(:current_period_end){ 1.day.from_now }
+          allow(provider_object).to receive(:quantity){ opts[:callers_allowed] }
           quota.update_attributes!({
             callers_allowed: callers_allowed,
             minutes_allowed: allowed,
@@ -719,13 +719,13 @@ describe Quota do
           quota.plan_changed!('business', provider_object, opts)
         end
         it 'sets minutes_allowed += prorated(added_caller_count * 6000)' do
-          quota.minutes_allowed.should eq prorated_minutes(provider_object, (6000 * 3)) + allowed
+          expect(quota.minutes_allowed).to eq prorated_minutes(provider_object, (6000 * 3)) + allowed
         end
         it 'sets callers_allowed = provider_object.quantity' do
-          quota.callers_allowed.should eq provider_object.quantity
+          expect(quota.callers_allowed).to eq provider_object.quantity
         end
         it 'sets minutes_used to zero' do
-          quota.minutes_used.should eq used
+          expect(quota.minutes_used).to eq used
         end
       end
     end

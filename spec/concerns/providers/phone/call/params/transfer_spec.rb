@@ -37,48 +37,48 @@ describe Providers::Phone::Call::Params::Transfer do
   describe 'returning urls on type requested' do
     it 'returns end_transfer_url when type == :end' do
       params = param_class.new(transfer, :end)
-      params.url.should eq end_transfer_url(transfer_attempt, url_opts)
+      expect(params.url).to eq end_transfer_url(transfer_attempt, url_opts)
     end
 
     it 'returns connect_transfer_url when type == :connect' do
       params = param_class.new(transfer, :connect)
-      params.url.should eq connect_transfer_url(transfer_attempt, url_opts)
+      expect(params.url).to eq connect_transfer_url(transfer_attempt, url_opts)
     end
 
     it 'returns callee_transfer_index_url when type == :callee' do
       params = param_class.new(transfer, :callee)
-      params.url.should eq callee_transfer_index_url(url_opts)
+      expect(params.url).to eq callee_transfer_index_url(url_opts)
     end
 
     it 'returns caller_transfer_index_url when type == :caller' do
       params = param_class.new(transfer, :caller)
       opts = url_opts.merge({caller_session: transfer_attempt.caller_session.id})
-      params.url.should eq caller_transfer_index_url(opts)
+      expect(params.url).to eq caller_transfer_index_url(opts)
     end
   end
 
   describe 'returning call_sid on type requested' do
     it 'returns call_attempt.sid when type == :callee' do
       params = param_class.new(transfer, :callee)
-      params.call_sid.should eq call_attempt.sid
+      expect(params.call_sid).to eq call_attempt.sid
     end
 
     it 'returns caller_transfer_index_url when type == :caller' do
       params = param_class.new(transfer, :caller)
-      params.call_sid.should eq caller_session.sid
+      expect(params.call_sid).to eq caller_session.sid
     end
   end
 
   describe 'returning url_options on type requested' do
     it 'includes :session_key when type == :callee' do
       params = param_class.new(transfer, :callee)
-      params.callee_url_options[:session_key].should eq transfer_attempt.session_key
+      expect(params.callee_url_options[:session_key]).to eq transfer_attempt.session_key
     end
 
     it 'includes :session_key and :caller_session' do
       params = param_class.new(transfer, :caller)
-      params.caller_url_options[:session_key].should eq transfer_attempt.session_key
-      params.caller_url_options[:caller_session].should eq caller_session.id
+      expect(params.caller_url_options[:session_key]).to eq transfer_attempt.session_key
+      expect(params.caller_url_options[:caller_session]).to eq caller_session.id
     end
   end
 end

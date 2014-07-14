@@ -1,13 +1,13 @@
 require "spec_helper"
 
-describe Question do
+describe Question, :type => :model do
   include Rails.application.routes.url_helpers
 
   context 'validations' do
-    it {should validate_presence_of :text}
-    it {should validate_presence_of :script}
-    it {should validate_presence_of :script_order}
-    it {should validate_numericality_of :script_order}
+    it {is_expected.to validate_presence_of :text}
+    it {is_expected.to validate_presence_of :script}
+    it {is_expected.to validate_presence_of :script_order}
+    it {is_expected.to validate_numericality_of :script_order}
   end
 
   let(:script) { create(:script) }
@@ -21,9 +21,9 @@ describe Question do
     answer2 = create(:answer, :voter => voter, campaign: campaign, :possible_response => create(:possible_response), :question => question, :created_at => (now - 1.days))
     answer3 = create(:answer, :voter => voter, campaign: campaign, :possible_response => create(:possible_response), :question => question, :created_at => (now + 1.minute))
     answer4 = create(:answer, :voter => voter, campaign: campaign, :possible_response => create(:possible_response), :question => question, :created_at => (now + 1.day))
-    question.answered_within(now, now + 1.day, campaign.id).should == [answer3, answer4]
-    question.answered_within(now + 2.days, now + 3.days, campaign.id).should == []
-    question.answered_within(now, now + 1.day, campaign.id).should == [answer3, answer4]
+    expect(question.answered_within(now, now + 1.day, campaign.id)).to eq([answer3, answer4])
+    expect(question.answered_within(now + 2.days, now + 3.days, campaign.id)).to eq([])
+    expect(question.answered_within(now, now + 1.day, campaign.id)).to eq([answer3, answer4])
 
   end
 
@@ -31,20 +31,20 @@ describe Question do
     answered_question = create(:question, :script => script, :text => "Q1?")
     pending_question = create(:question, :script => script, :text => "Q2?")
     create(:answer, :voter => voter, :possible_response => create(:possible_response), :question => answered_question, :created_at => (Time.now - 2.days))
-    Question.answered_by(voter).should == [answered_question]
+    expect(Question.answered_by(voter)).to eq([answered_question])
   end
 
   it "returns all questions unanswered when voter has not answered any question" do
     q1 = create(:question, :script => script, :text => "Q1?")
     q2 = create(:question, :script => script, :text => "Q2?")
-    script.questions.not_answered_by(voter).should == [q1, q2]
+    expect(script.questions.not_answered_by(voter)).to eq([q1, q2])
   end
 
   it "returns questions not answered by a voter" do
     answered_question = create(:question, :script => script, :text => "Q1?")
     pending_question = create(:question, :script => script, :text => "Q2?")
     create(:answer, :voter => voter, :possible_response => create(:possible_response), :question => answered_question, :created_at => (Time.now - 2.days))
-    script.questions.not_answered_by(voter).should == [pending_question]
+    expect(script.questions.not_answered_by(voter)).to eq([pending_question])
   end
 
   describe "question texts" do
@@ -55,19 +55,19 @@ describe Question do
     it "should return the text of all questions not deleted" do
       question1 = create(:question, text: "Q1", script: script)
       question2 = create(:question, text: "Q12", script: script)
-      Question.question_texts([question1.id, question2.id]).should eq(["Q1", "Q12"])
+      expect(Question.question_texts([question1.id, question2.id])).to eq(["Q1", "Q12"])
     end
 
     it "should return the text of all questions not deleted in correct order" do
       question1 = create(:question, text: "Q1", script: script)
       question2 = create(:question, text: "Q12", script: script)
-      Question.question_texts([question2.id, question1.id]).should eq(["Q12", "Q1"])
+      expect(Question.question_texts([question2.id, question1.id])).to eq(["Q12", "Q1"])
     end
 
     it "should return the blank text for questions that dont exist" do
       question1 = create(:question, text: "Q1", script: script)
       question2 = create(:question, text: "Q12", script: script)
-      Question.question_texts([question2.id, 12343 ,question1.id]).should eq(["Q12","", "Q1"])
+      expect(Question.question_texts([question2.id, 12343 ,question1.id])).to eq(["Q12","", "Q1"])
     end
 
 

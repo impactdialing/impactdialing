@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Client::ReportsController do
+describe Client::ReportsController, :type => :controller do
   let!(:account) { create(:account)}
   let!(:user) { create(:user, :account => account) }
   let(:time_zone){ ActiveSupport::TimeZone.new("Pacific Time (US & Canada)") }
@@ -17,7 +17,7 @@ describe Client::ReportsController do
       it "lists all callers" do
         3.times{create(:caller, account: account, campaign: campaign, active: true)}
         get :index
-        assigns(:callers).should == account.callers.active
+        expect(assigns(:callers)).to eq(account.callers.active)
       end
     end
 
@@ -41,19 +41,19 @@ describe Client::ReportsController do
         end
 
         it "billable minutes" do
-          CallAttempt.lead_time(nil, campaign, from_time, time_now).should == 113
+          expect(CallAttempt.lead_time(nil, campaign, from_time, time_now)).to eq(113)
         end
 
         it "billable voicemails" do
-          assigns(:campaign).voicemail_time(from_time, time_now).should == 3
+          expect(assigns(:campaign).voicemail_time(from_time, time_now)).to eq(3)
         end
 
         it "billable abandoned calls" do
-          assigns(:campaign).abandoned_calls_time(from_time, time_now).should == 2
+          expect(assigns(:campaign).abandoned_calls_time(from_time, time_now)).to eq(2)
         end
 
         it "billable transfer calls" do
-          assigns(:campaign).transfer_time(from_time, time_now).should == 13
+          expect(assigns(:campaign).transfer_time(from_time, time_now)).to eq(13)
         end
 
       end
@@ -71,19 +71,19 @@ describe Client::ReportsController do
         end
 
         it "logged in caller session" do
-          CallerSession.time_logged_in(nil, campaign, from_time, time_now).should == 7919
+          expect(CallerSession.time_logged_in(nil, campaign, from_time, time_now)).to eq(7919)
         end
 
         it "on call time" do
-          CallAttempt.time_on_call(nil, campaign, from_time, time_now).should == 6727
+          expect(CallAttempt.time_on_call(nil, campaign, from_time, time_now)).to eq(6727)
         end
 
         it "on wrapup time" do
-          CallAttempt.time_in_wrapup(nil, campaign, from_time, time_now).should == 90
+          expect(CallAttempt.time_in_wrapup(nil, campaign, from_time, time_now)).to eq(90)
         end
 
         it "minutes" do
-          CallerSession.caller_time(nil, campaign, from_time, time_now).should == 31
+          expect(CallerSession.caller_time(nil, campaign, from_time, time_now)).to eq(31)
         end
 
       end
@@ -92,19 +92,19 @@ describe Client::ReportsController do
 
     describe "download report" do
       it "pulls up report downloads page" do
-        Resque.should_receive(:enqueue)
+        expect(Resque).to receive(:enqueue)
         get :download, :campaign_id => campaign.id, format: 'html'
-        response.should redirect_to 'http://test.host/client/reports'
+        expect(response).to redirect_to 'http://test.host/client/reports'
       end
 
       it "sets the default date range according to the campaign's time zone" do
         Time.stub(:now => Time.utc(2012, 2, 13, 0, 0, 0))
         get :download_report, :campaign_id => campaign.id
-        response.should be_ok
-        assigns(:from_date).to_s.should == "2012-02-12 08:00:00 UTC"
-        assigns(:to_date).to_s.should == "2012-02-13 07:59:59 UTC"
+        expect(response).to be_ok
+        expect(assigns(:from_date).to_s).to eq("2012-02-12 08:00:00 UTC")
+        expect(assigns(:to_date).to_s).to eq("2012-02-13 07:59:59 UTC")
 
-        Time.unstub :now
+        allow(Time).to receive(:now).and_call_original
       end
 
     end
@@ -113,11 +113,11 @@ describe Client::ReportsController do
   context 'campaign(s) or caller(s) do not exist' do
     it 'redirects to root_path' do
       get :index
-      response.should redirect_to client_root_path
+      expect(response).to redirect_to client_root_path
     end
     it 'with a notice' do
       get :index
-      flash[:notice].should_not be_empty
+      expect(flash[:notice]).not_to be_empty
     end
   end
 end

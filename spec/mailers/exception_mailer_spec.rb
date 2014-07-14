@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe ExceptionMailer do
+describe ExceptionMailer, :type => :mailer do
   describe 'mailer = ExceptionMailer.new(exception)' do
     it 'sets exception on the instance' do
-      ExceptionMailer.new('Blah').exception.should eq 'Blah'
+      expect(ExceptionMailer.new('Blah').exception).to eq 'Blah'
     end
   end
 
@@ -21,14 +21,14 @@ describe ExceptionMailer do
       [['INNODB STATUS OUTPUT', 'LATEST DETECTED DEADLOCK']]
     end
     before do
-      ActiveRecord::Base.connection.stub(:execute).
+      allow(ActiveRecord::Base.connection).to receive(:execute).
         with('SHOW ENGINE INNODB STATUS').
         and_return(status_msg)
     end
     it 'sends an email to EXCEPTION_EMAIL with the exception message and innodb status' do
       email_text = "#{msg}\n#{status_msg.first.join("\n")}"
       email_html = "<p>#{msg}</p><pre>#{status_msg.first.join("\n")}</pre>"
-      mailer.should_receive(:send_email).with({
+      expect(mailer).to receive(:send_email).with({
         :subject => anything,
         :html => email_html,
         :text => email_text,

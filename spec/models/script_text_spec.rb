@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe ScriptText do
+describe ScriptText, :type => :model do
   context 'validations' do
-    it {should validate_presence_of :content}
-    it {should validate_presence_of :script}
-    it {should validate_presence_of :script_order}
-    it {should validate_numericality_of :script_order}
+    it {is_expected.to validate_presence_of :content}
+    it {is_expected.to validate_presence_of :script}
+    it {is_expected.to validate_presence_of :script_order}
+    it {is_expected.to validate_numericality_of :script_order}
   end
 
   context '#markdown_content' do
@@ -49,37 +49,37 @@ describe ScriptText do
 
     it 'handles headings' do
       subject.content = '# Hello'
-      subject.markdown_content.should eq "\n<h1>Hello</h1>\n"
+      expect(subject.markdown_content).to eq "\n<h1>Hello</h1>\n"
     end
     it 'handles paragraph quotes' do
       subject.content = '> paragraph'
-      subject.markdown_content.should eq "\n<blockquote>\n<p>paragraph</p>\n</blockquote>\n"
+      expect(subject.markdown_content).to eq "\n<blockquote>\n<p>paragraph</p>\n</blockquote>\n"
     end
     it 'handles bulleted lists' do
       subject.content = '- hello'
-      subject.markdown_content.should eq "\n<ul>\n<li>hello</li>\n</ul>\n"
+      expect(subject.markdown_content).to eq "\n<ul>\n<li>hello</li>\n</ul>\n"
     end
     it 'handles numbered lists' do
       subject.content = '1. hi'
-      subject.markdown_content.should eq "\n<ol>\n<li>hi</li>\n</ol>\n"
+      expect(subject.markdown_content).to eq "\n<ol>\n<li>hi</li>\n</ol>\n"
     end
     it 'handles italicize' do
       subject.content = '*italic*'
-      subject.markdown_content.should eq "\n<p><em>italic</em></p>\n"
+      expect(subject.markdown_content).to eq "\n<p><em>italic</em></p>\n"
     end
     it 'handles bold' do
       subject.content = '**bold**'
-      subject.markdown_content.should eq "\n<p><strong>bold</strong></p>\n"
+      expect(subject.markdown_content).to eq "\n<p><strong>bold</strong></p>\n"
     end
     it 'does not handle anything else' do
       subject.content = unsupported
-      subject.markdown_content.should eq expected_unsupported
+      expect(subject.markdown_content).to eq expected_unsupported
     end
     it 'does not cause segfaults when triple emphasis markers are used' do
       content = "Hi is __________there? Hi, this is_________."
       expected = "\n<p>Hi is________<strong>there? Hi, this is</strong>_______.</p>\n"
       subject.content = content
-      subject.markdown_content.should eq expected
+      expect(subject.markdown_content).to eq expected
     end
   end
 end

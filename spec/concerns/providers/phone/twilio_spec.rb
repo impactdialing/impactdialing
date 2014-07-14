@@ -20,11 +20,11 @@ describe Providers::Phone::Twilio do
       @response = Providers::Phone::Twilio.redirect(call_sid, url)
     end
     it 'makes redirect request to Twilio' do
-      @redirect_request.should have_been_made
+      expect(@redirect_request).to have_been_made
     end
 
     it 'returns a Response instance' do
-      @response.should be_instance_of Providers::Phone::Twilio::Response
+      expect(@response).to be_instance_of Providers::Phone::Twilio::Response
     end
   end
 
@@ -37,11 +37,11 @@ describe Providers::Phone::Twilio do
       @response = Providers::Phone::Twilio.make(from, to, twilio_calls_url, {})
     end
     it 'starts a new call' do
-      @new_call_request.should have_been_made
+      expect(@new_call_request).to have_been_made
     end
 
     it 'returns a Response instance' do
-      @response.should be_instance_of Providers::Phone::Twilio::Response
+      expect(@response).to be_instance_of Providers::Phone::Twilio::Response
     end
   end
 
@@ -52,11 +52,11 @@ describe Providers::Phone::Twilio do
     end
 
     it 'requests a list of conferences' do
-      @conference_list_request.should have_been_made
+      expect(@conference_list_request).to have_been_made
     end
 
     it 'returns a Response instance' do
-      @response.should be_instance_of Providers::Phone::Twilio::Response
+      expect(@response).to be_instance_of Providers::Phone::Twilio::Response
     end
 
     context 'search_options hash is not empty' do
@@ -70,7 +70,7 @@ describe Providers::Phone::Twilio do
       end
 
       it 'requests conferences that match search_options' do
-        @conf_by_name_request.should have_been_made
+        expect(@conf_by_name_request).to have_been_made
       end
     end
   end
@@ -85,11 +85,11 @@ describe Providers::Phone::Twilio do
     end
 
     it 'removes call w/ call_sid from conference w/ conference_sid' do
-      @kick_request.should have_been_made
+      expect(@kick_request).to have_been_made
     end
 
     it 'returns Response instance' do
-      @response.should be_instance_of Providers::Phone::Twilio::Response
+      expect(@response).to be_instance_of Providers::Phone::Twilio::Response
     end
   end
 
@@ -108,10 +108,10 @@ describe Providers::Phone::Twilio do
       end
 
       it 'updates Mute property to true for identified call on named conference' do
-        @mute_participant_request.should have_been_made
+        expect(@mute_participant_request).to have_been_made
       end
       it 'returns Response instance' do
-        @response.should be_instance_of Providers::Phone::Twilio::Response
+        expect(@response).to be_instance_of Providers::Phone::Twilio::Response
       end
     end
 
@@ -122,10 +122,10 @@ describe Providers::Phone::Twilio do
       end
 
       it 'updates Mute property to false for identified call on named conference' do
-        @unmute_participant_request.should have_been_made
+        expect(@unmute_participant_request).to have_been_made
       end
       it 'returns Response instance' do
-        @response.should be_instance_of Providers::Phone::Twilio::Response
+        expect(@response).to be_instance_of Providers::Phone::Twilio::Response
       end
     end
   end
