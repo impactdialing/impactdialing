@@ -44,6 +44,7 @@ module Client
       authorize! :view_reports, @account
 
       if params[:campaign_id].present?
+        mode = :campaign
         load_campaign
         @record = @campaign
         set_dates
@@ -59,6 +60,7 @@ module Client
         else
           from = @record.caller_sessions.first.try(:created_at) || Time.now
           to   = @record.caller_sessions.last.try(:created_at) || Time.now
+        mode = :caller
         end
 
         @from_date = from.beginning_of_day.utc
@@ -69,6 +71,7 @@ module Client
         record: @record,
         from_date: @from_date,
         to_date: @to_date,
+        mode: mode,
         description: 'Here are some statistical averages to help you gain a general understanding of how a campaign is performing over time.'
       })
     end

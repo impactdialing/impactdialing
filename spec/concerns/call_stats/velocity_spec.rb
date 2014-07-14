@@ -3,6 +3,10 @@ require 'spec_helper'
 describe CallStats::Velocity do
   # let(:campaign){ create(:power) }
   before(:all) do
+    Campaign.destroy_all
+    CallerSession.destroy_all
+    CallAttempt.destroy_all
+
     @campaign_for_all = create(:power)
     create_list(:caller, rand(10) + 2, {
       campaign: @campaign_for_all
