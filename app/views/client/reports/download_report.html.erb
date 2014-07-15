@@ -1,5 +1,5 @@
-
-<script>
+<% content_for :javascripts do %>
+<script type="text/javascript">
   $(function () {
     $('#download_all_voters_submit').click(function(){
       $('#download_all_voters').attr('checked','checked');
@@ -9,7 +9,7 @@
     });
 
     $('#selectAll').click(function () {
-     $('#fields').find(':checkbox').attr('checked', this.checked);
+      $('#fields').find(':checkbox').prop('checked', this.checked);
     });
 
     $('#fields input[name^= "voter_fields[]"]').change(function(){
@@ -29,8 +29,8 @@
       }
     }
   });
-
 </script>
+<% end %>
 
 <h1>Download <%= @campaign.name %></h1>
 
@@ -44,7 +44,11 @@
         <option value="dial">One row for each dial</option>
       </select>
         <ul>
-          <li><input type="checkbox" value="0" id="selectAll">&nbsp;Select all</li>
+          <li>
+            <label for="selectAll">
+              <input type="checkbox" value="0" id="selectAll">&nbsp;Select all
+            </label>
+          </li>
         <% @voter_fields.try(:each_pair) do |key, value| %>
           <li>
             <label for="voter_fields_<%= key.underscore.downcase %>">
