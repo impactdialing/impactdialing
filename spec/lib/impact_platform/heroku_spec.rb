@@ -31,7 +31,7 @@ describe ImpactPlatform::Heroku::Scale do
   before do
     WebMock.disable_net_connect!
     ENV['HEROKU_AUTOSCALE_OAUTH_TOKEN'] = 'foobar'
-    ImpactPlatform::Metrics.stub(:new){ metrics }
+    allow(ImpactPlatform::Metrics).to receive(:new){ metrics }
     stub_request(:get, formation_url).to_return(formation_info_response)
     stub_request(:patch, formation_url).to_return(formation_update_response)
   end
@@ -42,8 +42,8 @@ describe ImpactPlatform::Heroku::Scale do
 
       it 'does nothing' do
         subject.auto!
-        WebMock.should_not have_requested(:patch, formation_url)
-        WebMock.should_not have_requested(:get, formation_url)
+        expect(WebMock).to_not have_requested(:patch, formation_url)
+        expect(WebMock).to_not have_requested(:get, formation_url)
       end
     end
 
@@ -54,10 +54,10 @@ describe ImpactPlatform::Heroku::Scale do
 
         it 'does nothing' do
           scale = ImpactPlatform::Heroku::Scale.new(process, desired_quantity, 'test')
-          scale.desired_quantity.should eq desired_quantity
+          expect(scale.desired_quantity).to eq desired_quantity
           scale.auto!
 
-          WebMock.should_not have_requested(:patch, formation_url)
+          expect(WebMock).to_not have_requested(:patch, formation_url)
         end
       end
 
@@ -66,7 +66,7 @@ describe ImpactPlatform::Heroku::Scale do
         it 'requests that dynos for process name be scaled to #desired_quantity' do
           scale = ImpactPlatform::Heroku::Scale.new(process, desired_quantity, 'test')
           scale.auto!
-          WebMock.should have_requested(:patch, formation_url)
+          expect(WebMock).to have_requested(:patch, formation_url)
         end
       end
     end
@@ -79,7 +79,7 @@ describe ImpactPlatform::Heroku::Scale::BackgroundScaleRules do
     let(:rules){ ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process) }
 
     before do
-      Resque.stub(:size).with(process){ 0 }
+      allow(Resque).to receive(:size).with(process){ 0 }
     end
 
     it 'returns first if queue size is zero' do
