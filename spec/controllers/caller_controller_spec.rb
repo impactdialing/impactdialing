@@ -28,7 +28,7 @@ describe CallerController, :type => :controller do
     it "logs out" do
       post :logout
       expect(session[:caller]).to be_nil
-      expect(response).to redirect_to(caller_login_path)
+      expect(response).to redirect_to(callveyor_login_path)
     end
   end
 

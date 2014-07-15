@@ -43,6 +43,23 @@ class CallerController < ApplicationController
 
   before_filter :find_session, :only => [:end_session]
 
+  def logout
+    session[:caller]=nil
+    redirect_to callveyor_login_path
+  end
+
+  def login
+    redirect_to callveyor_path and return
+  end
+
+  def index
+    redirect_to callveyor_path if @caller.campaign
+  end
+
+  def v1
+    redirect_to callveyor_path and return
+  end
+
   def start_calling
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
@@ -194,16 +211,6 @@ class CallerController < ApplicationController
     render json: info[:data].to_json
   end
 
-
-  def index
-    redirect_to callveyor_path if @caller.campaign
-  end
-
-  # todo: remove when old caller app can be retired.
-  def v1
-    redirect_to callers_campaign_calls_path + "/" + @caller.campaign.id.to_s if @caller.campaign
-  end
-
   def check_login
     if session[:caller].blank?
       redirect_to caller_login_path
@@ -213,25 +220,6 @@ class CallerController < ApplicationController
       @caller = Caller.find(session[:caller])
     rescue
       logout
-    end
-  end
-
-  def logout
-    session[:caller]=nil
-    redirect_to caller_login_path
-  end
-
-  def login
-    if !params[:username].blank?
-      @caller = Caller.find_by_username_and_password(params[:username], params[:password])
-      if @caller.blank?
-        flash_now(:error, "Wrong username or password.")
-      elsif !@caller.active?
-        flash_now(:error, "Your account has been deleted.")
-      else
-        session[:caller]= @caller.id
-        redirect_to callers_campaign_call_path(@caller.campaign)
-      end
     end
   end
 
