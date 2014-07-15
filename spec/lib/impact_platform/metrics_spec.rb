@@ -7,7 +7,7 @@ describe ImpactPlatform::Metrics do
       metric_name = 'blah.diggity'
       number      = 1
       expected    = "count##{metric_name}=#{number}"
-      STDOUT.should_receive(:puts).with(expected)
+      expect(STDOUT).to receive(:puts).with(expected)
 
       ImpactPlatform::Metrics.count(metric_name, number)
     end
@@ -22,29 +22,63 @@ describe ImpactPlatform::Metrics::Autoscale do
 
   describe '#total' do
     it "counts #{prefix}.{process}.total=1" do
-      ImpactPlatform::Metrics.should_receive(:count).with("autoscale.#{process}.total", number)
+      expect(ImpactPlatform::Metrics).to receive(:count).with("autoscale.#{process}.total", number)
       subject.total
     end
   end
 
   describe '#up' do
     it "counts #{prefix}.{process}.up=1" do
-      ImpactPlatform::Metrics.should_receive(:count).with("autoscale.#{process}.up", number)
+      expect(ImpactPlatform::Metrics).to receive(:count).with("autoscale.#{process}.up", number)
       subject.up
     end
   end
 
   describe '#down' do
     it "counts #{prefix}.{process}.down=1" do
-      ImpactPlatform::Metrics.should_receive(:count).with("autoscale.#{process}.down", number)
+      expect(ImpactPlatform::Metrics).to receive(:count).with("autoscale.#{process}.down", number)
       subject.down
     end
   end
 
   describe '#error' do
     it "counts #{prefix}.{process}.error=1" do
-      ImpactPlatform::Metrics.should_receive(:count).with("autoscale.#{process}.error", number)
+      expect(ImpactPlatform::Metrics).to receive(:count).with("autoscale.#{process}.error", number)
       subject.error
+    end
+  end
+end
+
+describe ImpactPlatform::Metrics::JobStatus do
+  let(:process){ 'my_job_class' }
+  subject{ ImpactPlatform::Metrics::JobStatus }
+
+  describe '.error(process)' do
+    it 'prints error count' do
+      expected = "count#job_status.#{process}.error=1"
+      expect(STDOUT).to receive(:puts).with(expected)
+      subject.error(process)
+    end
+  end
+  describe '.sigterm(process)' do
+    it 'prints sigterm count' do
+      expected = "count#job_status.#{process}.sigterm=1"
+      expect(STDOUT).to receive(:puts).with(expected)
+      subject.sigterm(process)
+    end
+  end
+  describe '.completed(process)' do
+    it 'prints completed count' do
+      expected = "count#job_status.#{process}.completed=1"
+      expect(STDOUT).to receive(:puts).with(expected)
+      subject.completed(process)
+    end
+  end
+  describe '.started(process)' do
+    it 'prints started count' do
+      expected = "count#job_status.#{process}.started=1"
+      expect(STDOUT).to receive(:puts).with(expected)
+      subject.started(process)
     end
   end
 end

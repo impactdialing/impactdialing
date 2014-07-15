@@ -51,6 +51,10 @@ module ImpactPlatform
         self.new(process).started
       end
 
+      def self.error(process)
+        self.new(process).error
+      end
+
       def self.sigterm(process)
         self.new(process).sigterm
       end
