@@ -262,5 +262,6 @@ class Quota < ActiveRecord::Base
   #
   def renewed(plan)
     zero_usage_minutes
+    self.minutes_allowed = callers_allowed * plan.minutes_per_quantity
   end
 end

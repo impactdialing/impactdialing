@@ -279,7 +279,7 @@ describe Quota, :type => :model do
       Quota.new({
         callers_allowed: 2,
         minutes_used: 1200,
-        minutes_allowed: 5000,
+        minutes_allowed: 2350,
         minutes_pending: 12
       })
     end
@@ -292,7 +292,7 @@ describe Quota, :type => :model do
     it 'sets minutes_pending to zero' do
       expect(quota.minutes_pending).to eq 0
     end
-    it 'sets does not touch minutes_allowed' do
+    it 'sets minutes_allowed to callers_allowed * plan.per_quantity (this ensures proper minutes available if e.g. customer upgrades in previous cycle and is allotted some prorated minutes)' do
       expect(quota.minutes_allowed).to eq 5000
     end
     it 'does not touch callers_allowed' do
