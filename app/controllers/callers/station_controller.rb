@@ -6,7 +6,13 @@ module Callers
 
     skip_before_filter :verify_authenticity_token, only: [:create]
 
+    before_filter :disable_header_cache, only: [:show]
+
 private
+    def disable_header_cache
+      expires_now
+    end
+
     def current_ability
       @current_ability ||= Ability.new(@caller.account)
     end
