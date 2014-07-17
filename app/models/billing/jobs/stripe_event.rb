@@ -156,8 +156,6 @@ class Billing::Jobs::StripeEvent
     subscription = quota.account.billing_subscription
 
     subscription.autorecharge_paid!
-    quota.add_minutes(plan, amount)
-    quota.save!
   end
 
   def self.charge_failed!(stripe_event)

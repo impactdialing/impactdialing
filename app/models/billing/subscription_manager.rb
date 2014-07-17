@@ -59,9 +59,9 @@ class Billing::SubscriptionManager
     payment_gateway.cancel_subscription
   end
 
-  def buy_minutes!(amount_paid)
+  def buy_minutes!(amount_paid, autorecharge)
     cancel_recurring_subscription!
-    return payment_gateway.create_charge(amount_paid)
+    return payment_gateway.create_charge(amount_paid, autorecharge)
   end
 
   def run_callbacks(provider_object, opts, &block)
@@ -90,7 +90,7 @@ public
 
     # plans are either recurring or buying minutes.
     provider_object = update_recurring_subscription!(new_plan, opts[:callers_allowed])
-    provider_object ||= buy_minutes!(opts[:amount_paid])
+    provider_object ||= buy_minutes!(opts[:amount_paid], opts[:autorecharge])
 
     if provider_object.present?
       opts.merge!({

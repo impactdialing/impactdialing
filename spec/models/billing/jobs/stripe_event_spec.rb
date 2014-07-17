@@ -92,6 +92,7 @@ describe Billing::Jobs::StripeEvent, :type => :model do
       allow(stripe_event).to receive(:name){ 'charge.succeeded' }
       allow(stripe_event).to receive(:data){ event_data }
       allow(plan).to receive(:per_minutes?){ true }
+      allow(plan).to receive(:id){ 'per_minute' }
       allow(plan).to receive(:price_per_quantity){ 0.09 }
     end
     context 'when triggered by autorecharge' do
@@ -101,9 +102,9 @@ describe Billing::Jobs::StripeEvent, :type => :model do
       it 'tells subscription autorecharge_paid!' do
         expect(subscription).to receive(:autorecharge_paid!)
       end
-      it 'tells quota to add_minutes and save!' do
-        expect(quota).to receive(:add_minutes).with(plan, amount)
-        expect(quota).to receive(:save!)
+      it 'does not tell quota to add_minutes (quota minutes are added when Billing::Jobs::Autorecharge successfully creates a charge)' do
+        expect(quota).to_not receive(:add_minutes)
+        expect(quota).to_not receive(:save!)
       end
       it_behaves_like 'processing completed'
     end

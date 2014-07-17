@@ -228,8 +228,14 @@ describe Billing::SubscriptionManager, :type => :model do
       end
       it 'tells `payment_gateway` to create a charge' do
         allow(subscription).to receive(:plan){ 'trial' }
-        expect(payment_gateway).to receive(:create_charge).with(valid_amount_paid)
+        expect(payment_gateway).to receive(:create_charge).with(valid_amount_paid, nil)
         manager.update!('per_minute', {amount_paid: valid_amount_paid})
+      end
+      it 'passes an autorecharge boolean flag as 2nd arg to `payment_gateway.create_charge`' do
+        allow(subscription).to receive(:plan){ 'trial' }
+        expect(payment_gateway).to receive(:create_charge).with(valid_amount_paid, 1)
+        opts = {amount_paid: valid_amount_paid, autorecharge: 1}
+        manager.update!('per_minute', opts)
       end
     end
   end
