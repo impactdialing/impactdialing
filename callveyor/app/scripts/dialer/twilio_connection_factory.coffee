@@ -66,10 +66,12 @@ mod.factory('idTwilioConnectionFactory', [
         console.log 'Twilio Connection Error', error
         unless factory.recoverWithNewToken(error)
           idFlashFactory.now('danger', 'Voice connection failed. Refresh the page or dial-in to continue.')
-          err = new Error("[#{error.code}] #{error.message} (#{error.info})")
+          err = new Error("Error refreshing Twilio Capability Token. [#{error.code}] #{error.message} (#{error.info})")
           $window._errs.push(err)
         if angular.isFunction(factory.afterError)
           factory.afterError()
+
+        TwilioCache.remove('connection')
 
       resolved: (twilio) ->
         # console.log 'idTwilioService resolved', twilio
