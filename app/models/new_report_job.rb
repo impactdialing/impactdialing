@@ -28,6 +28,8 @@ class NewReportJob
       notify_success
     rescue Exception => e
       on_failure_report(e)
+      Rails.logger.error("NewReportJob#perform raised #{e.class}: #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
       raise e
     end
   end
