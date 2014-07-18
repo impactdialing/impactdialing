@@ -67,16 +67,16 @@
     <div class="fluid-wrap">
       <div class="container-fluid" data-ng-controller="AppCtrl">
         <!-- dialer ui-view -->
-        <div data-ui-view>
-          <nav class="navbar navbar-default navbar-fixed-top ng-cloak" role="navigation">
-            <div class="container-fluid">
-              <div class="row">
-                <div class="col-sm-10"></div>
-                <div data-id-logout class="col-sm-2 navbar-right"></div>
+        <nav class="navbar navbar-default navbar-fixed-top ng-cloak" role="navigation" data-ui-view>
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-xs-9"></div>
+              <div class="col-xs-3">
+                <span data-id-logout class="navbar-right"></span>
               </div>
             </div>
-          </nav>
-        </div>
+          </div>
+        </nav>
         <!-- /dialer ui-view -->
         <div class="row">
           <div class="col-sm-4" data-ng-controller="ContactCtrl">
