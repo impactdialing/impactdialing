@@ -85,7 +85,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
 
   def get_voicemail_history(voter_ids)
     query = CallAttempt.where(voter_id: voter_ids).
-      select("voter_id, recording_id, recording_delivered_manually").where('recording_id is not null').group(:voter_id).to_sql
+      select("voter_id, recording_id, recording_delivered_manually").group(:voter_id).to_sql
     @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
       memo[hash['voter_id']] = {
         message_left_text: message_left_text(hash['recording_id'], hash['recording_delivered_manually'])
