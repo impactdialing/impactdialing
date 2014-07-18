@@ -19,59 +19,12 @@ captureCache = (name, isPruned) ->
     '$cacheFactory', '$window',
     ($cacheFactory,   $window) ->
       cache = $cacheFactory(name)
-      data = {
-        navigator: {
-          language: navigator.language
-          userAgent: navigator.userAgent
-          platform: navigator.platform
-          appVersion: navigator.appVersion
-          vendor: navigator.vendor
-        }
-      }
+      data  = {}
       $window._errs ||= {}
 
-      simpleData = ->
-        d = {}
-        k = []
-
-        flatten = (val, key) ->
-          k.push("#{key}")
-
-          if angular.isObject val or angular.isArray val
-            angular.forEach(val, flatten)
-          else if angular.isFunction val
-            # noop
-          else
-            newKey    = k.join(':')
-            d[newKey] = val
-
-          k.pop()
-
-        angular.forEach($window.idDebugData, flatten)
-        d
-
       exportData = ->
-        if isPruned
-          pruneData()
-
-        $window.idDebugData ||= {}
+        $window.idDebugData     ||= {}
         $window.idDebugData[name] = data
-        $window._errs.meta  = simpleData()
-
-      pruneData = ->
-        deleteOldTimes = (items) ->
-          isOld = (v, timestamp) ->
-            curTime        = time()
-            timeSinceCount = curTime - parseInt(timestamp)
-            timeSinceCount > 300000 # keep them around for 5 minutes
-
-          deleteOld = (v, timestamp) ->
-            if isOld(v, timestamp)
-              delete(items[timestamp])
-
-          angular.forEach(items, deleteOld)
-
-        deleteOldTimes(data)
 
       time = -> (new Date()).getTime()
 
@@ -108,10 +61,10 @@ simpleCache('CallStation')
 
 # stores error info for processing once all $state
 # transitions have completed
-captureCache('Error', false)
+simpleCache('Error')
 
 # stores transition history for debugging
-captureCache('Transition', true)
+simpleCache('Transition')
 
 # stores error msg to display once all $state
 # transitions have completed
