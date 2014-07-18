@@ -66,9 +66,8 @@ callveyor.controller('AppCtrl.abort', [
 
     twilioConnection = TwilioCache.get('connection')
 
-    # whenDisconnected = ->
-    # connection.disconnect(whenDisconnected)
-    twilioConnection.disconnect()
+    if twilioConnection?
+      twilioConnection.disconnect()
 
     PusherService.then((p) ->
       console.log 'PusherService abort', p
@@ -135,7 +134,7 @@ callveyor.controller('AppCtrl', [
       usSpinnerService.stop('global-spinner')
     transitionError = (event, unfoundState, fromState, fromParams) ->
       # todo: submit error to error collection tool
-      console.error 'Error transitioning $state', e, $state.current
+      console.error 'Error transitioning $state', event, unfoundState, fromState, fromParams
       contact = getContact()
       meta  = getMeta()
       TransitionCache.put('$stateChangeError', {unfoundState: unfoundState.name, fromState: fromState.name, contact, meta})
@@ -143,7 +142,8 @@ callveyor.controller('AppCtrl', [
       # if e.message == 'transition prevented'
       #   # something called .preventDefault, probably the transitionGateway
       #   console.log 'todo: report transition prevented error to collection tool'
-      transitionComplete()
+      $rootScope.transitionInProgress = false
+      usSpinnerService.stop('global-spinner')
 
     $rootScope.$on('$stateChangeStart', transitionStart)
     $rootScope.$on('$stateChangeSuccess', transitionComplete)

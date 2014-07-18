@@ -73,8 +73,8 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 # - survey:reload - triggers re-fetch/load of survey form data & transfer list
 #
 surveyForm.controller('SurveyFormCtrl', [
-  '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache',
-  ($rootScope,   $scope,   $filter,   $state,   $http,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache) ->
+  '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache',
+  ($rootScope,   $scope,   $filter,   $state,   $http,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache) ->
     # Init public
     survey = {
       hideButtons: true
@@ -90,6 +90,7 @@ surveyForm.controller('SurveyFormCtrl', [
     # :endtmp:
 
     fetchErr = (e) ->
+      console.log 'SurveyFormFieldsFactory.fetch.failed', e
       ErrorCache.put('SurveyFormFieldsFactory.fetch.failed', e)
       idFlashFactory.now('danger', 'Survey failed to load. Please refresh the page to try again.')
     prepForm = (payload) ->
