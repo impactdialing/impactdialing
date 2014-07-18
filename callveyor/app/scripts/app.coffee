@@ -27,8 +27,17 @@ idTransition.factory('idTransitionPrevented', [
     fn
 ])
 
+angular.module('exceptionOverride', []).factory('$exceptionHandler', [
+  '$window'
+  ($window) ->
+    (exception, cause) ->
+      err = new Error("#{exception.message} (caused by #{cause})")
+      $window._errs.push(err)
+])
+
 callveyor = angular.module('callveyor', [
   'config',
+  'exceptionOverride',
   'ui.bootstrap',
   'ui.router',
   'doowb.angular-pusher',
@@ -69,8 +78,9 @@ callveyor.controller('AppCtrl.abort', [
     if twilioConnection?
       twilioConnection.disconnect()
 
-    PusherService.then((p) ->
-      console.log 'PusherService abort', p
+    PusherService.then((pusher) ->
+      if pusher.connection.state == 'connected' 
+        pusher.disconnect()
     )
 ])
 
@@ -105,8 +115,8 @@ callveyor.directive('idLogout', ->
 )
 
 callveyor.controller('AppCtrl', [
-  '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'ContactCache', 'CallStationCache',
-  ($rootScope,   $scope,   $state,   $timeout,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache,   ContactCache,   CallStationCache) ->
+  '$rootScope', '$scope', '$state', '$timeout', '$window', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'ContactCache', 'CallStationCache', 'ErrorCache',
+  ($rootScope,   $scope,   $state,   $timeout,   $window,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache,   ContactCache,   CallStationCache,   ErrorCache) ->
     $rootScope.transitionInProgress = false
     getContact = ->
       contact = ContactCache.get('data')
@@ -122,22 +132,25 @@ callveyor.controller('AppCtrl', [
       {caller, campaign}
     # handle generic state change conditions
     transitionStart = (event, toState, toParams, fromState, fromParams) ->
-      contact = getContact()
-      TransitionCache.put('$stateChangeStart', {toState: toState.name, fromState: fromState.name, contact})
       usSpinnerService.spin('global-spinner')
       $rootScope.transitionInProgress = true
     transitionComplete = (event, toState, toParams, fromState, fromParams) ->
-      contact = getContact()
-      meta  = getMeta()
-      TransitionCache.put('$stateChangeSuccess', {toState: toState.name, fromState: fromState.name, contact, meta})
       $rootScope.transitionInProgress = false
       usSpinnerService.stop('global-spinner')
     transitionError = (event, unfoundState, fromState, fromParams) ->
-      # todo: submit error to error collection tool
-      console.error 'Error transitioning $state', event, unfoundState, fromState, fromParams
+      console.error 'Error transitioning $state', event #, unfoundState, fromState, fromParams
       contact = getContact()
       meta  = getMeta()
-      TransitionCache.put('$stateChangeError', {unfoundState: unfoundState.name, fromState: fromState.name, contact, meta})
+      
+      err = new Error("$state change failed to transition")
+      $window._errs.meta = {
+        'To': unfoundState.name,
+        'From': fromState.name,
+        'ErrorCache': angular.toJson(ErrorCache),
+        'Contact': angular.toJson(contact),
+        'Meta': angular.toJson(meta)
+      }
+      $window._errs.push(err)
       # hmm: $stateChangeError seems to not be thrown when preventDefault is called
       # if e.message == 'transition prevented'
       #   # something called .preventDefault, probably the transitionGateway
