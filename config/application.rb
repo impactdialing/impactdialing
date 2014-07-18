@@ -1,3 +1,4 @@
+require 'resolv' # minimize DNS failures w/ better caching
 require File.expand_path('../boot', __FILE__)
 
 require "rails/all"

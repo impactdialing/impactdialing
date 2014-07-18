@@ -1,5 +1,25 @@
 class CampaignReportStrategy
 
+private
+  def message_left_text(recording_id, recording_delivered_manually)
+    return "No" if recording_id.nil? or recording_delivered_manually.nil?
+
+    # argh, something magical this way lies...
+    # occasionally FixNum(0) or String(0) is converted
+    # to FalseClass and fails w/ NME when normalizing w/ .to_i
+    # e.g. `call_attempt['recording_delivered_manually'].to_i > 0`
+    #
+    # exception notifcation received from production w/ NME on .to_i July 1, 2014
+    manual_delivery = [1, '1', true, 'true'].include?(recording_delivered_manually)
+
+    if manual_delivery
+      return "Yes: caller dropped"
+    else
+      return "Yes: automatically"
+    end
+  end
+
+public
   module Mode
     PER_LEAD = "lead"
     PER_DIAL = "dial"
@@ -47,7 +67,7 @@ class CampaignReportStrategy
     @csv
   end
 
-  def call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt={}, voter={})
+  def call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt={}, voter={}, voicemail_history={})
     out = [
       caller_names[call_attempt['caller_id']],
       CampaignReportStrategy.map_status(call_attempt['status']),
@@ -59,31 +79,12 @@ class CampaignReportStrategy
       transfer_times(transfer_attempt, 'tEndTime'),
       transfer_times(transfer_attempt, 'tDuration')
     ]
+    
     if @mode == CampaignReportStrategy::Mode::PER_LEAD
       out << attempt_numbers[call_attempt['voter_id']][:cnt]
-      if voter['voicemail_history'].blank?
-        out << 'No'
-      else
-        out << 'Yes'
-      end
-    elsif @mode == CampaignReportStrategy::Mode::PER_DIAL
-      if call_attempt['recording_id'].blank?
-        out << 'No'
-      else
-        # argh, something magical this way lies...
-        # occasionally FixNum(0) or String(0) is converted
-        # to FalseClass and fails w/ NME when normalizing w/ .to_i
-        # e.g. `call_attempt['recording_delivered_manually'].to_i > 0`
-        #
-        # exception notifcation received from production w/ NME on .to_i July 1, 2014
-        manual_delivery = [1, '1', true, 'true'].include?(call_attempt['recording_delivered_manually'])
-        if manual_delivery
-          out << 'Yes: caller dropped'
-        else
-          out << 'Yes: automatically'
-        end
-      end
     end
+
+    out << voicemail_history[call_attempt['voter_id']][:message_left_text]
     out << CallAttempt.report_recording_url(call_attempt['recording_url'])
     out.flatten
   end

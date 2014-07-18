@@ -84,15 +84,22 @@ describe CallerCampaignReportStrategy, :type => :model do
         recording_delivered_manually: false,
         recording_id: recording.id
       })
+      attempt_numbers = {
+        voter.id => {
+          cnt: 12,
+          last_id: call_attempt.id
+        }
+      }
+
+      voicemail_history = {
+        voter.id => {
+          message_left_text: 'Yes: automatically'
+        }
+      }
       strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
       actual = strategy.call_attempt_info(call_attempt.attributes, {
                 call_attempt.caller_id => call_attempt.caller.known_as
-               }, {
-                voter.id => {
-                  cnt: 1,
-                  last_id: call_attempt.id
-                }
-               })
+               }, attempt_numbers, {}, voter.attributes, voicemail_history)
       expected = [
         "a caller",
         "Answered",
@@ -121,15 +128,21 @@ describe CallerCampaignReportStrategy, :type => :model do
         recording_url: "xyz",
         caller: caller
       })
+      attempt_numbers = {
+        voter.id => {
+          cnt: 12,
+          last_id: call_attempt.id
+        }
+      }
+      voicemail_history = {
+        voter.id => {
+          message_left_text: 'No'
+        }
+      }
       strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
       actual = strategy.call_attempt_info(call_attempt.attributes, {
         call_attempt.caller_id => call_attempt.caller.known_as
-      }, {
-        voter.id => {
-          cnt: 1,
-          last_id: call_attempt.id
-        }
-      })
+      }, attempt_numbers, {}, voter.attributes, voicemail_history)
       expected = [
         "a caller",
         "Answered",
@@ -140,8 +153,8 @@ describe CallerCampaignReportStrategy, :type => :model do
         'N/A', # transfer attempt start
         'N/A', # transfer attempt end
         'N/A', # transfer attempt duration
-        1,
-        "No",
+        attempt_numbers[voter.id][:cnt],
+        voicemail_history[voter.id][:message_left_text],
         "xyz.mp3"
       ]
       expect(actual).to eq expected
@@ -188,12 +201,27 @@ describe CallerCampaignReportStrategy, :type => :model do
                )
       end
 
+      let(:attempt_numbers) do
+        {
+          voter.id => {
+            cnt: 12,
+            last_id: call_attempt.id
+          }
+        }
+      end
+
+      let(:voicemail_history) do
+        {
+          voter.id => {
+            message_left_text: 'No'
+          }
+        }
+      end
+
       it "should create the csv row" do
         actual = @strategy.call_attempt_details(call_attempt.attributes, @answers, @note_responses, {
           call_attempt.caller_id => call_attempt.caller.known_as
-        }, {
-          voter.id => 1
-        }, @possible_responses)
+        }, attempt_numbers, @possible_responses, {}, voter.attributes, voicemail_history)
         expected = [
           "a caller",
           "Answered",
@@ -204,7 +232,7 @@ describe CallerCampaignReportStrategy, :type => :model do
           'N/A', # transfer attempt start
           'N/A', # transfer attempt end
           'N/A', # transfer attempt duration
-          "No",
+          voicemail_history[voter.id][:message_left_text],
           "xyz.mp3",
           "Hey",
           "Wee",
@@ -273,11 +301,20 @@ describe CallerCampaignReportStrategy, :type => :model do
         possible_response2.id => 'Wee',
         possible_response3.id => 'Tree'
       }
+      attempt_numbers = {
+        voter.id => {
+          cnt: 12,
+          last_id: call_attempt.id
+        }
+      }
+      voicemail_history = {
+        voter.id => {
+          message_left_text: 'Yes: automatically'
+        }
+      }
       actual = strategy.call_attempt_details(call_attempt, answers, responses, {
         call_attempt.caller_id => call_attempt.caller.known_as
-      }, {
-        voter.id => 1
-      }, possible_responses_data)
+      }, attempt_numbers, possible_responses_data, {}, voter.attributes, voicemail_history)
       expected = [
         "a caller",
         "Answered",
@@ -288,7 +325,7 @@ describe CallerCampaignReportStrategy, :type => :model do
         'N/A', # transfer attempt start
         'N/A', # transfer attempt end
         'N/A', # transfer attempt duration
-        "No",
+        voicemail_history[voter.id][:message_left_text],
         "xyz.mp3",
         "Hey",
         "Wee",
@@ -413,7 +450,9 @@ describe CallerCampaignReportStrategy, :type => :model do
           call_end: Time.at(1338293196),
           recording_url: "xyz",
           campaign: @campaign,
-          caller: caller
+          caller: caller,
+          recording_id: 42,
+          recording_delivered_manually: false
         })
         transfer_attempt = create(:transfer_attempt, {
           tStartTime: Time.at(1338292576),
@@ -471,7 +510,7 @@ describe CallerCampaignReportStrategy, :type => :model do
             transfer_attempt.tStartTime.in_time_zone(@campaign.time_zone),
             transfer_attempt.tEndTime.in_time_zone(@campaign.time_zone),
             1,
-            "No",
+            "Yes: automatically",
             "xyz.mp3",
             "Hey",
             "Wee",
@@ -494,7 +533,18 @@ describe CallerCampaignReportStrategy, :type => :model do
         value1 = create(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
         value2 = create(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
 
-        call_attempt = create(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), connecttime: Time.at(1338292476), call_end: Time.at(1338293196), recording_url: "xyz",campaign: @campaign, caller: caller)
+        call_attempt = create(:call_attempt, {
+          voter: voter,
+          status: CallAttempt::Status::SUCCESS,
+          call_start: Time.at(1338292076),
+          connecttime: Time.at(1338292476),
+          call_end: Time.at(1338293196),
+          recording_url: "xyz",
+          campaign: @campaign,
+          caller: caller,
+          recording_id: 42,
+          recording_delivered_manually: false
+        })
         question1 = create(:question, text: "Q1", script: @script)
         question2 = create(:question, text: "Q12", script: @script)
         answer1 = create(:answer, campaign: @campaign, question_id: question1.id , voter: voter, possible_response: create(:possible_response, question_id: question1.id, value: "Hey"), call_attempt: call_attempt)
@@ -547,7 +597,7 @@ describe CallerCampaignReportStrategy, :type => :model do
             'N/A', # transfer attempt end
             'N/A', # transfer attempt duration
             1,
-            "No",
+            "Yes: automatically",
             "xyz.mp3",
             "Hey",
             "Wee",

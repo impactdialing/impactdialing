@@ -76,7 +76,20 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     query = CallAttempt.where(voter_id: voter_ids).
       select("voter_id, count(id) as cnt, max(id) as last_id").group(:voter_id).to_sql
     @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
-      memo[hash['voter_id']] = {cnt: hash['cnt'], last_id: hash['last_id']}
+      memo[hash['voter_id']] = {
+        cnt: hash['cnt'],
+        last_id: hash['last_id']
+      }
+    end
+  end
+
+  def get_voicemail_history(voter_ids)
+    query = CallAttempt.where(voter_id: voter_ids).
+      select("voter_id, recording_id, recording_delivered_manually").where('recording_id is not null').group(:voter_id).to_sql
+    @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
+      memo[hash['voter_id']] = {
+        message_left_text: message_left_text(hash['recording_id'], hash['recording_delivered_manually'])
+      }
     end
   end
 
@@ -104,11 +117,12 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   end
 
   def process_voters(voters)
-    data = {}
-    call_attempt_ids = []
-    voter_ids = voters.map { |v| v['id'] }
-    attempt_numbers = get_call_attempts_number(voter_ids)
+    data               = {}
+    call_attempt_ids   = []
+    voter_ids          = voters.map { |v| v['id'] }
+    attempt_numbers    = get_call_attempts_number(voter_ids)
     voter_field_values = get_custom_voter_field_values(voter_ids)
+    voicemail_history  = get_voicemail_history(voter_ids)
     voters.each do |voter|
       data[voter['id']] = csv_for(voter, voter_field_values[voter['id']])
       call_attempt_ids << attempt_numbers[voter['id']][:last_id] if attempt_numbers[voter['id']]
@@ -121,7 +135,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     transfer_attempts = get_transfer_attempts(attempts)
     attempts.each do |a|
       voter                   = voters.find{|v| v['id'] == a['voter_id']}
-      data[a['voter_id']][-1] = call_attempt_details(a, answers[a['id']], note_responses[a['id']], caller_names, attempt_numbers, @possible_responses, transfer_attempts[a['id']], voter)
+      data[a['voter_id']][-1] = call_attempt_details(a, answers[a['id']], note_responses[a['id']], caller_names, attempt_numbers, @possible_responses, transfer_attempts[a['id']], voter, voicemail_history)
     end
     data.values.each do |o|
       @csv << o.flatten
@@ -136,15 +150,15 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       attempt_ids << a['id']
     end
 
-    conn = OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2))
-    voters = conn.execute(Voter.where(id: voter_ids).to_sql).each(as: :hash).each_with_object({}) { |x, memo| memo[x['id']] = x }
+    conn               = OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2))
+    voters             = conn.execute(Voter.where(id: voter_ids).to_sql).each(as: :hash).each_with_object({}) { |x, memo| memo[x['id']] = x }
     voter_field_values = get_custom_voter_field_values(voter_ids)
-
-    answers = get_answers(attempt_ids)
-    note_responses = get_note_responses(attempt_ids)
-    caller_names = get_callers_names(attempts)
-    attempt_numbers = get_call_attempts_number(voter_ids)
-    transfer_attempts = get_transfer_attempts(attempts)
+    answers            = get_answers(attempt_ids)
+    note_responses     = get_note_responses(attempt_ids)
+    caller_names       = get_callers_names(attempts)
+    attempt_numbers    = get_call_attempts_number(voter_ids)
+    voicemail_history  = get_voicemail_history(voter_ids)
+    transfer_attempts  = get_transfer_attempts(attempts)
 
     attempts.each do |attempt|
       voter_id   = attempt['voter_id']
@@ -152,7 +166,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       data       = csv_for(voters[voter_id], voter_field_values[voter_id])
       Rails.logger.error "process_attempts - #{voters.class}"
       voter      = voters[voter_id]
-      data[-1]   = call_attempt_details(attempt, answers[attempt_id], note_responses[attempt_id], caller_names, attempt_numbers, @possible_responses, transfer_attempts[attempt_id], voter)
+      data[-1]   = call_attempt_details(attempt, answers[attempt_id], note_responses[attempt_id], caller_names, attempt_numbers, @possible_responses, transfer_attempts[attempt_id], voter, voicemail_history)
       @csv << data.flatten
     end
   end
@@ -199,11 +213,11 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     end
   end
 
-  def call_attempt_details(call_attempt, answers, note_responses, caller_names, attempt_numbers, possible_responses, transfer_attempt={}, voter={})
+  def call_attempt_details(call_attempt, answers, note_responses, caller_names, attempt_numbers, possible_responses, transfer_attempt={}, voter={}, voicemail_history={})
     if [CallAttempt::Status::RINGING, CallAttempt::Status::READY].include?(call_attempt['status'])
       [nil, "Not Dialed","","","","", "", [], []]
     else
-      [call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt, voter), PossibleResponse.possible_response_text(@question_ids, answers, possible_responses), NoteResponse.response_texts(@note_ids, note_responses)].flatten
+      [call_attempt_info(call_attempt, caller_names, attempt_numbers, transfer_attempt, voter, voicemail_history), PossibleResponse.possible_response_text(@question_ids, answers, possible_responses), NoteResponse.response_texts(@note_ids, note_responses)].flatten
     end
   end
 
