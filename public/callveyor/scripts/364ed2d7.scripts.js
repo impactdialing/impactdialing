@@ -33681,7 +33681,7 @@ angular.module("config", [])
       };
       fn = function(errObj) {
         var key, val;
-        console.log('report this problem', errObj);
+        console.log('Transition Prevented.', errObj);
         $rootScope.transitionInProgress = false;
         usSpinnerService.stop('global-spinner');
         if (isFailedResolve(errObj)) {
@@ -33699,7 +33699,40 @@ angular.module("config", [])
     }
   ]);
 
-  callveyor = angular.module('callveyor', ['config', 'ui.bootstrap', 'ui.router', 'doowb.angular-pusher', 'pusherConnectionHandlers', 'idTwilio', 'idFlash', 'idTransition', 'idCacheFactories', 'angularSpinner', 'callveyor.dialer']);
+  angular.module('exceptionOverride', []).factory('$exceptionHandler', [
+    '$window', function($window) {
+      return function(exception, cause) {
+        var err;
+        err = new Error("" + exception.message + " (caused by " + cause + ")");
+        return $window._errs.push(err);
+      };
+    }
+  ]);
+
+  angular.module('HttpErrors', []).factory('idHttpError', [
+    '$window', '$state', 'FlashCache', function($window, $state, FlashCache) {
+      var httpError;
+      httpError = function(resp) {
+        var err;
+        if ((resp.status != null) && /^5\d\d/.test(resp.status)) {
+          err = new Error("Survey fields failed to load");
+          $window._errs.meta = {
+            'Status': resp.status,
+            'StatusText': resp.statusText,
+            'Data': resp.data
+          };
+          return $window._errs.push(err);
+        } else if (resp.message != null) {
+          console.log('Error', resp.message);
+          FlashCache.put('error', resp.message);
+          return $state.go('abort');
+        }
+      };
+      return httpError;
+    }
+  ]);
+
+  callveyor = angular.module('callveyor', ['config', 'exceptionOverride', 'ui.bootstrap', 'ui.router', 'doowb.angular-pusher', 'pusherConnectionHandlers', 'idTwilio', 'idFlash', 'idTransition', 'idCacheFactories', 'angularSpinner', 'callveyor.dialer']);
 
   callveyor.config([
     '$stateProvider', 'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider', function($stateProvider, serviceTokens, idTwilioServiceProvider, PusherServiceProvider) {
@@ -33716,13 +33749,18 @@ angular.module("config", [])
   callveyor.controller('AppCtrl.abort', [
     '$http', 'TwilioCache', 'FlashCache', 'PusherService', 'idFlashFactory', function($http, TwilioCache, FlashCache, PusherService, idFlashFactory) {
       var flash, twilioConnection;
+      console.log('AppCtrl.abort', FlashCache.get('error'), FlashCache.info());
       flash = FlashCache.get('error');
       idFlashFactory.now('danger', flash);
       FlashCache.remove('error');
       twilioConnection = TwilioCache.get('connection');
-      twilioConnection.disconnect();
-      return PusherService.then(function(p) {
-        return console.log('PusherService abort', p);
+      if (twilioConnection != null) {
+        twilioConnection.disconnect();
+      }
+      return PusherService.then(function(pusher) {
+        if (pusher.connection.state === 'connected') {
+          return pusher.disconnect();
+        }
       });
     }
   ]);
@@ -33757,7 +33795,7 @@ angular.module("config", [])
   });
 
   callveyor.controller('AppCtrl', [
-    '$rootScope', '$scope', '$state', '$timeout', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'ContactCache', 'CallStationCache', function($rootScope, $scope, $state, $timeout, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented, TransitionCache, ContactCache, CallStationCache) {
+    '$rootScope', '$scope', '$state', '$timeout', '$window', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'ContactCache', 'CallStationCache', 'ErrorCache', function($rootScope, $scope, $state, $timeout, $window, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented, TransitionCache, ContactCache, CallStationCache, ErrorCache) {
       var abortAllAndNotifyUser, getContact, getMeta, markPusherReady, transitionComplete, transitionError, transitionStart;
       $rootScope.transitionInProgress = false;
       getContact = function() {
@@ -33784,41 +33822,29 @@ angular.module("config", [])
         };
       };
       transitionStart = function(event, toState, toParams, fromState, fromParams) {
-        var contact;
-        contact = getContact();
-        TransitionCache.put('$stateChangeStart', {
-          toState: toState.name,
-          fromState: fromState.name,
-          contact: contact
-        });
         usSpinnerService.spin('global-spinner');
         return $rootScope.transitionInProgress = true;
       };
       transitionComplete = function(event, toState, toParams, fromState, fromParams) {
-        var contact, meta;
-        contact = getContact();
-        meta = getMeta();
-        TransitionCache.put('$stateChangeSuccess', {
-          toState: toState.name,
-          fromState: fromState.name,
-          contact: contact,
-          meta: meta
-        });
         $rootScope.transitionInProgress = false;
         return usSpinnerService.stop('global-spinner');
       };
       transitionError = function(event, unfoundState, fromState, fromParams) {
-        var contact, meta;
-        console.error('Error transitioning $state', e, $state.current);
+        var contact, err, meta;
+        console.error('Error transitioning $state', event);
         contact = getContact();
         meta = getMeta();
-        TransitionCache.put('$stateChangeError', {
-          unfoundState: unfoundState.name,
-          fromState: fromState.name,
-          contact: contact,
-          meta: meta
-        });
-        return transitionComplete();
+        err = new Error("$state change failed to transition");
+        $window._errs.meta = {
+          'To': unfoundState.name,
+          'From': fromState.name,
+          'ErrorCache': angular.toJson(ErrorCache, true),
+          'Contact': angular.toJson(contact, true),
+          'Meta': angular.toJson(meta, true)
+        };
+        $window._errs.push(err);
+        $rootScope.transitionInProgress = false;
+        return usSpinnerService.stop('global-spinner');
       };
       $rootScope.$on('$stateChangeStart', transitionStart);
       $rootScope.$on('$stateChangeSuccess', transitionComplete);
@@ -33863,64 +33889,13 @@ angular.module("config", [])
   captureCache = function(name, isPruned) {
     return angular.module('idCacheFactories').factory("" + name + "Cache", [
       '$cacheFactory', '$window', function($cacheFactory, $window) {
-        var cache, data, debugCache, exportData, pruneData, simpleData, time;
+        var cache, data, debugCache, exportData, time;
         cache = $cacheFactory(name);
-        data = {
-          navigator: {
-            language: navigator.language,
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            appVersion: navigator.appVersion,
-            vendor: navigator.vendor
-          }
-        };
+        data = {};
         $window._errs || ($window._errs = {});
-        simpleData = function() {
-          var d, flatten, k;
-          d = {};
-          k = [];
-          flatten = function(val, key) {
-            var newKey;
-            k.push("" + key);
-            if (angular.isObject(val || angular.isArray(val))) {
-              angular.forEach(val, flatten);
-            } else if (angular.isFunction(val)) {
-
-            } else {
-              newKey = k.join(':');
-              d[newKey] = val;
-            }
-            return k.pop();
-          };
-          angular.forEach($window.idDebugData, flatten);
-          return d;
-        };
         exportData = function() {
-          if (isPruned) {
-            pruneData();
-          }
           $window.idDebugData || ($window.idDebugData = {});
-          $window.idDebugData[name] = data;
-          return $window._errs.meta = simpleData();
-        };
-        pruneData = function() {
-          var deleteOldTimes;
-          deleteOldTimes = function(items) {
-            var deleteOld, isOld;
-            isOld = function(v, timestamp) {
-              var curTime, timeSinceCount;
-              curTime = time();
-              timeSinceCount = curTime - parseInt(timestamp);
-              return timeSinceCount > 300000;
-            };
-            deleteOld = function(v, timestamp) {
-              if (isOld(v, timestamp)) {
-                return delete items[timestamp];
-              }
-            };
-            return angular.forEach(items, deleteOld);
-          };
-          return deleteOldTimes(data);
+          return $window.idDebugData[name] = data;
         };
         time = function() {
           return (new Date()).getTime();
@@ -33954,9 +33929,9 @@ angular.module("config", [])
 
   simpleCache('CallStation');
 
-  captureCache('Error', false);
+  simpleCache('Error');
 
-  captureCache('Transition', true);
+  simpleCache('Transition');
 
   simpleCache('Flash');
 
@@ -34180,12 +34155,13 @@ to fix it.');
           console.log('Twilio Connection Error', error);
           if (!factory.recoverWithNewToken(error)) {
             idFlashFactory.now('danger', 'Voice connection failed. Refresh the page or dial-in to continue.');
-            err = new Error("[" + error.code + "] " + error.message + " (" + error.info + ")");
+            err = new Error("Error refreshing Twilio Capability Token. [" + error.code + "] " + error.message + " (" + error.info + ")");
             $window._errs.push(err);
           }
           if (angular.isFunction(factory.afterError)) {
-            return factory.afterError();
+            factory.afterError();
           }
+          return TwilioCache.remove('connection');
         },
         resolved: function(twilio) {
           if (factory.boundEventsMissing('connect')) {
@@ -34858,7 +34834,7 @@ to fix it.');
   'use strict';
   var dialer;
 
-  dialer = angular.module('callveyor.dialer', ['ui.router', 'doowb.angular-pusher', 'transitionGateway', 'callveyor.dialer.ready', 'callveyor.dialer.hold', 'callveyor.dialer.active', 'callveyor.dialer.wrap', 'callveyor.dialer.stop', 'survey', 'callveyor.contact', 'callveyor.call_flow', 'idTransition', 'idCacheFactories']);
+  dialer = angular.module('callveyor.dialer', ['ui.router', 'doowb.angular-pusher', 'transitionGateway', 'callveyor.dialer.ready', 'callveyor.dialer.hold', 'callveyor.dialer.active', 'callveyor.dialer.wrap', 'callveyor.dialer.stop', 'survey', 'callveyor.contact', 'callveyor.call_flow', 'idTransition', 'idCacheFactories', 'HttpErrors']);
 
   dialer.config([
     '$stateProvider', function($stateProvider) {
@@ -34866,9 +34842,23 @@ to fix it.');
         abstract: true,
         templateUrl: '/callveyor/dialer/dialer.tpl.html',
         resolve: {
-          callStation: function($http) {
-            return $http.post('/call_center/api/call_station.json');
-          }
+          callStation: [
+            '$q', '$http', 'idHttpError', function($q, $http, idHttpError) {
+              var deferred, prom;
+              deferred = $q.defer();
+              prom = $http.post('/call_center/api/call_station.json');
+              prom.error(function(resp) {
+                console.log('error response', resp);
+                idHttpError(resp);
+                return deferred.reject(resp);
+              });
+              prom.success(function(resp) {
+                console.log('success response', resp);
+                return deferred.resolve(resp);
+              });
+              return deferred.promise;
+            }
+          ]
         },
         controller: 'DialerCtrl'
       });
@@ -34878,7 +34868,10 @@ to fix it.');
   dialer.controller('DialerCtrl', [
     '$rootScope', 'Pusher', 'idCallFlow', 'transitionValidator', 'callStation', 'CallStationCache', function($rootScope, Pusher, idCallFlow, transitionValidator, callStation, CallStationCache) {
       var channel, data;
-      data = callStation.data;
+      data = callStation;
+      if (data == null) {
+        return;
+      }
       CallStationCache.put('caller', data.caller);
       CallStationCache.put('campaign', data.campaign);
       CallStationCache.put('call_station', data.call_station);
@@ -35015,7 +35008,7 @@ to fix it.');
   ]);
 
   surveyForm.controller('SurveyFormCtrl', [
-    '$rootScope', '$scope', '$filter', '$state', '$http', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', function($rootScope, $scope, $filter, $state, $http, TransferCache, CallCache, TwilioCache, usSpinnerService, $timeout, SurveyFormFieldsFactory, idFlashFactory, SurveyCache) {
+    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', function($rootScope, $scope, $filter, $state, $http, $window, TransferCache, CallCache, TwilioCache, usSpinnerService, $timeout, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache) {
       var cacheTransferList, fetchErr, handleStateChange, loadForm, prepForm, requestInProgress, survey;
       survey = {
         hideButtons: true
@@ -35026,7 +35019,14 @@ to fix it.');
         return TransferCache.put('list', list);
       };
       fetchErr = function(e) {
-        ErrorCache.put('SurveyFormFieldsFactory.fetch.failed', e);
+        var err;
+        err = new Error("Survey fields failed to load");
+        $window._errs.meta = {
+          'Status': e.status,
+          'StatusText': e.statusText,
+          'Data': e.data
+        };
+        $window._errs.push(err);
         return idFlashFactory.now('danger', 'Survey failed to load. Please refresh the page to try again.');
       };
       prepForm = function(payload) {
@@ -35277,7 +35277,7 @@ to fix it.');
         hold = {};
         holdCache.put('sharedScope', hold);
       }
-      hold.campaign = callStation.data.campaign;
+      hold.campaign = callStation.campaign;
       hold.stopCalling = function() {
         return $state.go('dialer.stop');
       };
@@ -35289,7 +35289,7 @@ to fix it.');
         var caller, contact, params;
         params = {};
         contact = (ContactCache.get('data') || {}).fields;
-        caller = callStation.data.caller || {};
+        caller = callStation.caller || {};
         params.session_id = caller.session_id;
         params.voter_id = contact.id;
         idHttpDialerFactory.dialContact(caller.id, params);
@@ -35300,7 +35300,7 @@ to fix it.');
         var always, caller, contact, params, promise, skipErr, skipSuccess;
         params = {};
         contact = (ContactCache.get('data') || {}).fields;
-        caller = callStation.data.caller || {};
+        caller = callStation.caller || {};
         params.session_id = caller.session_id;
         params.voter_id = contact.id;
         hold.callStatusText = 'Skipping...';
@@ -35336,7 +35336,7 @@ to fix it.');
         holdCache.put('sharedScope', hold);
       }
       hold.callStatusText = (function() {
-        switch (callStation.data.campaign.type) {
+        switch (callStation.campaign.type) {
           case 'Power':
           case 'Predictive':
             return 'Dialing...';
@@ -35738,9 +35738,9 @@ to fix it.');
     '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation', 'idTransitionPrevented', function($scope, $state, TwilioCache, $http, idTwilioService, callStation, idTransitionPrevented) {
       var always, caller_id, connection, goTo, params, stopPromise;
       connection = TwilioCache.get('connection');
-      caller_id = callStation.data.caller.id;
+      caller_id = callStation.caller.id;
       params = {};
-      params.session_id = callStation.data.caller.session_id;
+      params.session_id = callStation.caller.session_id;
       stopPromise = $http.post("/call_center/api/" + caller_id + "/stop_calling", params);
       goTo = {};
       goTo.ready = function() {
@@ -35782,7 +35782,7 @@ angular.module('callveyor.dialer').run(['$templateCache', function($templateCach
   'use strict';
 
   $templateCache.put('/callveyor/dialer/dialer.tpl.html',
-    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\" data-ng-cloak=\"\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-3\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"global-spinner\"></span> <!-- callStatus ui-view --><div class=\"navbar-left status\"><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-6\"><div data-id-user-messages=\"\"></div></div><div class=\"col-xs-3\"><!-- callFlowButtons ui-view --><div class=\"navbar-right\"><ul class=\"nav navbar-nav add-gutter\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div><!-- /callFlowButtons ui-view --></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
+    "<!-- Fixed top nav --><nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\" data-ng-cloak=\"\"><div class=\"container-fluid\"><div class=\"row\"><div class=\"col-xs-3\"><span data-us-spinner=\"{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}\" data-spinner-key=\"global-spinner\"></span> <!-- callStatus ui-view --><div class=\"navbar-left status\"><div data-ui-view=\"callStatus\"><p class=\"navbar-text label label-info\"></p></div></div><!-- /callStatus ui-view --></div><div class=\"col-xs-6\"><div data-id-user-messages=\"\"></div></div><div class=\"col-xs-3\"><div class=\"navbar-right\"><ul class=\"nav navbar-nav add-gutter\"><li class=\"dropdown\" data-ui-view=\"callFlowDropdown\"></li><li data-ui-view=\"callFlowButtons\"></li></ul></div></div></div><div class=\"row border-top-thin\" data-ui-view=\"transferContainer\"></div></div></nav><!-- /Fixed top nav --><!-- callInPhone ui-view --><div class=\"call-in-phone\" data-ui-view=\"callInPhone\"></div><!-- /callInPhone ui-view -->"
   );
 
 
