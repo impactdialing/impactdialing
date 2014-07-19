@@ -97,7 +97,7 @@ surveyForm.controller('SurveyFormCtrl', [
         'Data': e.data
       }
       $window._errs.push(err)
-      idFlashFactory.now('error', 'Survey failed to load. Please refresh the page to try again.')
+      idFlashFactory.now('danger', 'Survey failed to load. Please refresh the page to try again.')
     prepForm = (payload) ->
       SurveyFormFieldsFactory.prepareSurveyForm(payload)
       survey.form = SurveyFormFieldsFactory.data

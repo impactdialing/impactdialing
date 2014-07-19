@@ -11,7 +11,7 @@ idTransition.factory('idTransitionPrevented', [
       err.config? and err.config.url? and /(GET|POST)/.test(err.config.method)
 
     fn = (errObj) ->
-      console.log 'report this problem', errObj
+      console.log 'Transition Prevented.', errObj
       $rootScope.transitionInProgress = false
       usSpinnerService.stop('global-spinner')
 
@@ -32,7 +32,31 @@ angular.module('exceptionOverride', []).factory('$exceptionHandler', [
   ($window) ->
     (exception, cause) ->
       err = new Error("#{exception.message} (caused by #{cause})")
+      # console.log 'Sending to pusher', err
+      # console.log err.stack
       $window._errs.push(err)
+])
+
+angular.module('HttpErrors', []).factory('idHttpError', [
+  '$window', '$state', 'FlashCache',
+  ($window,   $state,   FlashCache) ->
+    httpError = (resp) ->
+      if resp.status? and /^5\d\d/.test(resp.status)
+        err = new Error("Survey fields failed to load")
+        $window._errs.meta = {
+          'Status': resp.status,
+          'StatusText': resp.statusText,
+          'Data': resp.data
+        }
+        # console.log 'Sending to pusher', err
+        # console.log err.stack
+        $window._errs.push(err)
+      else if resp.message?
+        console.log 'Error', resp.message
+        FlashCache.put('error', resp.message)
+        $state.go('abort')
+
+    httpError
 ])
 
 callveyor = angular.module('callveyor', [
@@ -67,7 +91,7 @@ callveyor.config([
 callveyor.controller('AppCtrl.abort', [
   '$http', 'TwilioCache', 'FlashCache', 'PusherService', 'idFlashFactory',
   ($http,   TwilioCache,   FlashCache,   PusherService,   idFlashFactory) ->
-    # console.log 'AppCtrl.abort', FlashCache.get('error'), FlashCache.info()
+    console.log 'AppCtrl.abort', FlashCache.get('error'), FlashCache.info()
     flash = FlashCache.get('error')
     idFlashFactory.now('danger', flash)
     FlashCache.remove('error')
@@ -146,10 +170,12 @@ callveyor.controller('AppCtrl', [
       $window._errs.meta = {
         'To': unfoundState.name,
         'From': fromState.name,
-        'ErrorCache': angular.toJson(ErrorCache),
-        'Contact': angular.toJson(contact),
-        'Meta': angular.toJson(meta)
+        'ErrorCache': angular.toJson(ErrorCache, true),
+        'Contact': angular.toJson(contact, true),
+        'Meta': angular.toJson(meta, true)
       }
+      # console.log 'Sending to pusher', err
+      # console.log err.stack
       $window._errs.push(err)
       # hmm: $stateChangeError seems to not be thrown when preventDefault is called
       # if e.message == 'transition prevented'

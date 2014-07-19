@@ -4,14 +4,12 @@ describe 'dialer.hold', ->
   flashFake   = {}
   spinnerFake = {}
   callStation = {
-    data: {
-      caller: {
-        id: 42
-        session_id: 12
-      }
-      campaign: {
-        type: 'Power'
-      }
+    caller: {
+      id: 42
+      session_id: 12
+    }
+    campaign: {
+      type: 'Power'
     }
   }
   contact = {
@@ -51,8 +49,8 @@ describe 'dialer.hold', ->
         $controller('HoldCtrl.buttons', {$scope, callStation})
     ))
 
-    it 'assigns callStation.data.campaign to $scope.hold.campaign', ->
-      expect($scope.hold.campaign).toEqual(callStation.data.campaign)
+    it 'assigns callStation.campaign to $scope.hold.campaign', ->
+      expect($scope.hold.campaign).toEqual(callStation.campaign)
 
     describe '$scope.hold.stopCalling()', ->
       it 'transitions to dialer.stop', ->
@@ -75,10 +73,10 @@ describe 'dialer.hold', ->
           expect($scope.transitionInProgress).toBeTruthy()
 
         it 'calls idHttpDialerFactory.dialContact(caller_id, {session_id: Num, voter_id: Num})', ->
-          caller_id = callStation.data.caller.id
+          caller_id = callStation.caller.id
           params = {
             voter_id: contact.data.fields.id
-            session_id: callStation.data.caller.session_id
+            session_id: callStation.caller.session_id
           }
           $scope.hold.dial()
           expect(dialerFake.dialContact).toHaveBeenCalledWith(caller_id, params)

@@ -28,7 +28,7 @@ hold.controller('HoldCtrl.buttons', [
       hold = {}
       holdCache.put('sharedScope', hold)
 
-    hold.campaign = callStation.data.campaign
+    hold.campaign = callStation.campaign
     hold.stopCalling = ->
       $state.go('dialer.stop')
 
@@ -41,7 +41,7 @@ hold.controller('HoldCtrl.buttons', [
       params            = {}
 
       contact           = (ContactCache.get('data') || {}).fields
-      caller            = callStation.data.caller || {}
+      caller            = callStation.caller || {}
       params.session_id = caller.session_id
       params.voter_id   = contact.id
 
@@ -54,7 +54,7 @@ hold.controller('HoldCtrl.buttons', [
       params            = {}
 
       contact           = (ContactCache.get('data') || {}).fields
-      caller            = callStation.data.caller || {}
+      caller            = callStation.caller || {}
       params.session_id = caller.session_id
       params.voter_id   = contact.id
 
@@ -88,7 +88,7 @@ hold.controller('HoldCtrl.status', [
       hold = {}
       holdCache.put('sharedScope', hold)
 
-    hold.callStatusText = switch callStation.data.campaign.type
+    hold.callStatusText = switch callStation.campaign.type
                             when 'Power', 'Predictive'
                               'Dialing...'
                             when 'Preview'

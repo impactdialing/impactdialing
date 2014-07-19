@@ -9,19 +9,17 @@ describe 'idTwilioConnectionHandlers', ->
   idFlashFactory = {}
   idTwilioConfig = {}
   callStation    = {
-    data: {
-      caller: {
-        id: 42
-        session_id: 12
-        session_key: 'caller-session-key'
-      }
-      campaign: {
-        id: 18
-        type: 'Power'
-      }
-      call_station: {
-        phone_number: '5552341958'
-      }
+    caller: {
+      id: 42
+      session_id: 12
+      session_key: 'caller-session-key'
+    }
+    campaign: {
+      id: 18
+      type: 'Power'
+    }
+    call_station: {
+      phone_number: '5552341958'
     }
   }
 
@@ -64,10 +62,10 @@ describe 'idTwilioConnectionHandlers', ->
   describe 'resolved(twilio)', ->
     twilio = {}
     twilioParams = {
-      'PhoneNumber': callStation.data.call_station.phone_number
-      'campaign_id': callStation.data.campaign.id
-      'caller_id': callStation.data.caller.id
-      'session_key': callStation.data.caller.session_key
+      'PhoneNumber': callStation.call_station.phone_number
+      'campaign_id': callStation.campaign.id
+      'caller_id': callStation.caller.id
+      'session_key': callStation.caller.session_key
     }
     beforeEach ->
       twilio.then = jasmine.createSpy('-idTwilioService.then spy-')

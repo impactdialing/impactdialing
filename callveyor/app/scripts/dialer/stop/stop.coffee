@@ -24,9 +24,9 @@ stop.controller('StopCtrl.buttons', [
   '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation', 'idTransitionPrevented'
   ($scope,   $state,   TwilioCache,   $http,   idTwilioService,   callStation,   idTransitionPrevented) ->
     connection   = TwilioCache.get('connection')
-    caller_id    = callStation.data.caller.id
+    caller_id    = callStation.caller.id
     params       = {}
-    params.session_id = callStation.data.caller.session_id
+    params.session_id = callStation.caller.session_id
     stopPromise  = $http.post("/call_center/api/#{caller_id}/stop_calling", params)
 
     goTo = {}

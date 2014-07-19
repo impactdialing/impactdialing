@@ -4,14 +4,12 @@ describe 'dialer.stop', ->
   flashFake   = {}
   spinnerFake = {}
   callStation = {
-    data: {
-      caller: {
-        id: 42
-        session_id: 12
-      }
-      campaign: {
-        type: 'Power'
-      }
+    caller: {
+      id: 42
+      session_id: 12
+    }
+    campaign: {
+      type: 'Power'
     }
   }
 
@@ -42,7 +40,7 @@ describe 'dialer.stop', ->
         $cacheFactory = _$cacheFactory_
         TwilioCache   = _TwilioCache_
 
-        $httpBackend.whenPOST("/call_center/api/#{callStation.data.caller.id}/stop_calling").respond(200)
+        $httpBackend.whenPOST("/call_center/api/#{callStation.caller.id}/stop_calling").respond(200)
 
         $state.catch = jasmine.createSpy('-$state promise.catch spy-')
         $state.go    = jasmine.createSpy('-$state.go spy-').andReturn($state)
@@ -62,8 +60,8 @@ describe 'dialer.stop', ->
     ))
 
     it 'POSTs to /call_center/api/:caller_id/stop_calling w/ session_id param', ->
-      params = {session_id: callStation.data.caller.session_id}
-      $httpBackend.expectPOST("/call_center/api/#{callStation.data.caller.id}/stop_calling", params).respond(200)
+      params = {session_id: callStation.caller.session_id}
+      $httpBackend.expectPOST("/call_center/api/#{callStation.caller.id}/stop_calling", params).respond(200)
       $controller('StopCtrl.buttons', {$scope, callStation})
       $httpBackend.flush()
       $httpBackend.verifyNoOutstandingExpectation()

@@ -15,10 +15,8 @@ pusherEvents = ['start_calling', 'conference_started', 'caller_connected_dialer'
 
 describe 'callveyor.dialer module', ->
   callStation   = {
-    data: {
-      caller: {
-        session_key: 'caller-session-key'
-      }
+    caller: {
+      session_key: 'caller-session-key'
     }
   }
 
@@ -72,21 +70,21 @@ describe 'callveyor.dialer module', ->
     afterEach ->
       $httpBackend.verifyNoOutstandingRequest()
 
-    it 'puts resolved callStation.data.caller into "caller" prop of "callStation" cache', ->
+    it 'puts resolved callStation.caller into "caller" prop of "callStation" cache', ->
       cache = $cacheFactory.get('CallStation')
-      expect(cache.get('caller')).toEqual(callStation.data.caller)
+      expect(cache.get('caller')).toEqual(callStation.caller)
 
-    it 'puts callStation.data.campaign into "campaign" prop of "callStation" cache', ->
+    it 'puts callStation.campaign into "campaign" prop of "callStation" cache', ->
       cache = $cacheFactory.get('CallStation')
-      expect(cache.get('campaign')).toEqual(callStation.data.campaign)
+      expect(cache.get('campaign')).toEqual(callStation.campaign)
 
-    it 'puts callStation.data.call_station into "call_station" prop of "callStation" cache', ->
+    it 'puts callStation.call_station into "call_station" prop of "callStation" cache', ->
       cache = $cacheFactory.get('CallStation')
-      expect(cache.get('call_station')).toEqual(callStation.data.call_station)
+      expect(cache.get('call_station')).toEqual(callStation.call_station)
 
-    it "subscribes appropriate idCallFlow handler to corresponding event on the callStation.data.caller.session_key channel", ->
+    it "subscribes appropriate idCallFlow handler to corresponding event on the callStation.caller.session_key channel", ->
       for event in pusherEvents
-        expect(FakePusher.subscribe).toHaveBeenCalledWith(callStation.data.caller.session_key, event, idCallFlow[camelCase(event)])
+        expect(FakePusher.subscribe).toHaveBeenCalledWith(callStation.caller.session_key, event, idCallFlow[camelCase(event)])
 
     it 'starts the transitionValidator', ->
       expect(transitionValidator.start).toHaveBeenCalled()

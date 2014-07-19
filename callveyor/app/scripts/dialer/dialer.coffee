@@ -13,7 +13,8 @@ dialer = angular.module('callveyor.dialer', [
   'callveyor.contact',
   'callveyor.call_flow',
   'idTransition',
-  'idCacheFactories'
+  'idCacheFactories',
+  'HttpErrors'
 ])
 
 dialer.config([
@@ -23,7 +24,24 @@ dialer.config([
       abstract: true
       templateUrl: '/callveyor/dialer/dialer.tpl.html'
       resolve:
-        callStation: ($http) -> $http.post('/call_center/api/call_station.json')
+        callStation: [
+          '$q', '$http', 'idHttpError',
+          ($q,   $http,   idHttpError) ->
+            deferred = $q.defer()
+
+            prom = $http.post('/call_center/api/call_station.json')
+            prom.error((resp) ->
+              console.log 'error response', resp
+              idHttpError(resp)
+              deferred.reject(resp)
+            )
+            prom.success((resp) ->
+              console.log 'success response', resp
+              deferred.resolve(resp)
+            )
+
+            deferred.promise
+        ]
       controller: 'DialerCtrl'
     })
 ])
@@ -31,7 +49,11 @@ dialer.config([
 dialer.controller('DialerCtrl', [
   '$rootScope', 'Pusher', 'idCallFlow', 'transitionValidator', 'callStation', 'CallStationCache'
   ($rootScope,   Pusher,   idCallFlow,   transitionValidator,   callStation,   CallStationCache) ->
-    data = callStation.data
+    data = callStation
+
+    unless data?
+      return
+
     CallStationCache.put('caller', data.caller)
     CallStationCache.put('campaign', data.campaign)
     CallStationCache.put('call_station', data.call_station)
