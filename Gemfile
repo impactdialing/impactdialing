@@ -62,6 +62,9 @@ gem 'redcarpet'
 gem 'ruport'
 gem 'acts_as_reportable'
 
+# Non-blocking DNS look-ups for EventMachine
+gem 'em-resolv-replace'
+
 group :development do
   gem 'guard'
   gem 'guard-rspec'
