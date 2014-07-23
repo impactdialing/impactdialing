@@ -90,6 +90,9 @@ group :development, :test, :e2e do
   gem 'pry'
   gem 'pry-debugger'
   gem 'compass'
+  # cli tool to reload app when files change, whether background, web, initializer, etc
+  # usage e.g. rerun foreman start
+  gem 'rerun'
 end
 
 group :test, :e2e do

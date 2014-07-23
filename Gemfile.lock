@@ -287,6 +287,8 @@ GEM
       redis (~> 3.0.0)
     redis-objects (0.7.0)
       redis (>= 3.0.2)
+    rerun (0.8.1)
+      listen (>= 1.0.3)
     resque (1.24.1)
       mono_logger (~> 1.0)
       multi_json (~> 1.0)
@@ -469,6 +471,7 @@ DEPENDENCIES
   redcarpet
   redis (~> 3.0.4)
   redis-objects (~> 0.7.0)
+  rerun
   resque (~> 1.24.1)
   resque-lock (~> 1.1.0)
   resque-loner (~> 1.2.1)
