@@ -133,7 +133,7 @@ surveyForm.controller('SurveyFormCtrl', [
       call_id = CallCache.get('id')
       unless call_id?
         ErrorCache.put('survey.save.failed', "CallCache had no ID.")
-        idFlashFactory.now('danger', 'You found a bug! Please Report problem and we will have you up and running ASAP.')
+        idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.')
         return
 
       usSpinnerService.spin('global-spinner')
@@ -154,7 +154,7 @@ surveyForm.controller('SurveyFormCtrl', [
         msg = ''
         switch resp.status
           when 400 # bad request, try again and contact support
-            msg += 'Bad request. Try again and Report problem if error continues.'
+            msg += 'Bad request. Try again and report problem if error continues.'
           when 408, 504 # server/gatewa timeout, try again and contact support
             msg += 'Browser took too long sending data. Verify internet connection and try again. Report problem if the error continues.'
           when 500 # server error, try again and contact support

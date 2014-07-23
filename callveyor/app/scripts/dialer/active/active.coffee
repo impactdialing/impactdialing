@@ -133,7 +133,7 @@ active.controller('TransferCtrl.list', [
         s = (r) -> console.log 'success', r.stack, r.message
         p.then(s,$window._errs.push)
       else
-        idFlashFactory.now('danger', 'Error loading selected transfer. Please try again and Report problem if error continues.')
+        idFlashFactory.now('danger', 'Error loading selected transfer. Please try again and report problem if error continues.')
 
     $scope.transfer = transfer
 ])
