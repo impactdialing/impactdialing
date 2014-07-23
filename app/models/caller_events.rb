@@ -4,55 +4,70 @@ module CallerEvents
   end
 
   module InstanceMethods
+  private
+    def pushit(event_name, event_data={})
+      RescueRetryNotify.on(Pusher::HTTPError, 1) do
+        Pusher[session_key].trigger(event_name, event_data)
+      end
+    end
+
+  public
     def publish_start_calling
-      publish_sync('start_calling', {caller_session_id: id})
+      pushit('start_calling', {caller_session_id: id, dialer: campaign.type})
     end
 
     def publish_voter_connected(call_id)
-      call = Call.find(call_id)
-      unless caller.is_phones_only?
-        event_hash = campaign.voter_connected_event(call)
-        Pusher[session_key].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
-      end
+      return if caller.is_phones_only?
+
+      call       = Call.find(call_id)
+      event_hash = campaign.voter_connected_event(call)
+
+      pushit(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
     end
 
     def publish_voter_disconnected
-      unless caller.is_phones_only?
-        Pusher.trigger(session_key, "voter_disconnected", {})
-      end
+      return if caller.is_phones_only?
+
+      pushit("voter_disconnected", {})
     end
 
     def publish_caller_conference_started
-      unless caller.is_phones_only?
-        event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))
-        Pusher[session_key].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
-      end
+      return if caller.is_phones_only?
+
+      event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))
+
+      pushit(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
     end
 
     def publish_calling_voter
-      Pusher[session_key].trigger!('calling_voter', {}) unless caller.is_phones_only?
+      return if caller.is_phones_only?
+
+      pushit('calling_voter', {})
     end
 
     def publish_caller_disconnected
-      Pusher[session_key].trigger!("caller_disconnected", {pusher_key: Pusher.key}) unless caller.is_phones_only?
+      return if caller.is_phones_only?
+
+      pushit("caller_disconnected", {pusher_key: Pusher.key})
     end
 
     def publish_caller_reassigned
-      unless caller.is_phones_only?
-        event_hash = campaign.caller_conference_started_event(nil)
-        Pusher[session_key].trigger!("caller_reassigned", event_hash[:data].merge!({
-          dialer: campaign.type,
-          campaign_name: campaign.name,
-          campaign_id: campaign.id,
-          campaign_type: campaign.type
-        }))
-      end
+      return if caller.is_phones_only?
+
+      event_hash = campaign.caller_conference_started_event(nil)
+
+      pushit("caller_reassigned", event_hash[:data].merge!({
+        dialer: campaign.type,
+        campaign_name: campaign.name,
+        campaign_id: campaign.id,
+        campaign_type: campaign.type
+      }))
     end
 
     def publish_call_ended(params)
       return if caller.is_phones_only?
 
-      Pusher[session_key].trigger('call_ended', {
+      pushit('call_ended', {
         status: params['CallStatus'],
         campaign_type: params['campaign_type'],
         number: params['To']
@@ -62,13 +77,13 @@ module CallerEvents
     def publish_message_drop_error(message, data={})
       return if caller.is_phones_only?
 
-      Pusher[session_key].trigger('message_drop_error', data.merge({message: message}))
+      pushit('message_drop_error', data.merge({message: message}))
     end
 
     def publish_message_drop_success
       return if caller.is_phones_only?
 
-      Pusher[session_key].trigger('message_drop_success', {})
+      pushit('message_drop_success', {})
     end
   end
 
