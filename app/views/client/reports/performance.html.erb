@@ -1,7 +1,7 @@
-<h1><%= @record.name %> Performance</h1>
-<h4><%= nice_date(@date_range.from) %> - <%= nice_date(@date_range.to) %> <%= @date_range.time_zone.name %></h4>
-
 <div role="main">
+  <h1><%= @record.name %> Performance</h1>
+  <h4><%= nice_date(@date_range.from) %> - <%= nice_date(@date_range.to) %> <%= @date_range.time_zone.name %></h4>
+
   <%= @velocity.html_safe %>
 
   <%= render('selective_date_range_picker', {

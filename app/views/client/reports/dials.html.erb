@@ -1,7 +1,7 @@
-<h1><%= @campaign.name %> Dials</h1>
-<h4><%= nice_date(@date_range.from) %> - <%= nice_date(@date_range.to) %> <%= @date_range.time_zone.name %></h4>
-
 <div role="main">
+  <h1><%= @campaign.name %> Dials</h1>
+  <h4><%= nice_date(@date_range.from) %> - <%= nice_date(@date_range.to) %> <%= @date_range.time_zone.name %></h4>
+
   <%= @overview.html_safe %>
   <%= @by_contact.html_safe %>
   <%= @by_attempt.html_safe %>
