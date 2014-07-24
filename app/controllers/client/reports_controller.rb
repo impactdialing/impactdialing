@@ -53,23 +53,18 @@ module Client
         mode = :campaign
         load_campaign
         @record = @campaign
-        if @from_date.nil? or @to_date.nil?
-          from_date_pool << @campaign.created_at
-        end
+        from_date_pool << @campaign.created_at
+        time_zone = @record.time_zone
       else
         mode = :caller
         load_caller
         @record = @caller
-        if @from_date.nil? or @to_date.nil?
-          from_date_pool << @record.caller_sessions.first.try(:created_at)
-          from_date_pool << @record.created_at
-        end
+        from_date_pool << @record.caller_sessions.first.try(:created_at)
+        from_date_pool << @record.created_at
+        time_zone = @record.campaign.time_zone
       end
 
-      @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool)
-      # backward compat for daterange_picker partial
-      @from_date = @date_range.from
-      @to_date = @date_range.to
+      @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, time_zone)
 
       @velocity = Report::Performance::VelocityController.render(:html, {
         record: @record,

@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Report::SelectiveDateRange do
   let(:from_pool){ [nil, 10.days.ago, nil, 2.days.ago] }
   let(:to_pool){ [nil,4.days.ago,nil,1.day.ago] }
+  let(:default_time_zone){ ActiveSupport::TimeZone.new("Pacific Time (US & Canada)") }
 
   describe '.new(from_date_pool, to_date_pool)' do
     it 'uses the first non-nil element from each pool' do
@@ -19,7 +20,7 @@ describe Report::SelectiveDateRange do
 
     it 'parses any String elements (e.g. mm/dd/yy) to Date objects' do
       from_pool[0]  = '02/17/1982'
-      expected_from = Time.utc(1982, 2, 17, 0, 0, 0)
+      expected_from = Time.new(1982, 2, 17, 0, 0, 0).in_time_zone(default_time_zone)
       date_range    = Report::SelectiveDateRange.new(from_pool)
 
       expect(date_range.from).to eq expected_from
@@ -30,7 +31,7 @@ describe Report::SelectiveDateRange do
     describe '#from' do
       it 'returns normalized copy the first non-nil date element to midnight of the same day UTC' do
         date_range = Report::SelectiveDateRange.new(from_pool)
-        expected   = 10.days.ago.beginning_of_day.utc
+        expected   = 10.days.ago.in_time_zone(default_time_zone).beginning_of_day
 
         expect(date_range.from).to eq expected
       end
@@ -39,7 +40,7 @@ describe Report::SelectiveDateRange do
       it 'returns the current datetime, normalized to 11:59PM UTC' do
         Timecop.freeze(Time.now) do
           date_range    = Report::SelectiveDateRange.new(from_pool)
-          expected_to   = Time.now.utc.end_of_day
+          expected_to   = Time.now.in_time_zone(default_time_zone).end_of_day
           expect(date_range.to).to eq expected_to
         end
       end
@@ -54,7 +55,7 @@ describe Report::SelectiveDateRange do
     let(:campaign){ create(:power, time_zone: "Pacific Time (US & Canada)") }
 
     it 'normalizes to include records from the start of the day' do
-      campaign.created_at = Time.now.end_of_day - 1.minute
+      campaign.created_at = Time.now.in_time_zone(campaign.time_zone).end_of_day
       campaign.save!
 
       pool       = [campaign.created_at]
@@ -65,7 +66,7 @@ describe Report::SelectiveDateRange do
     end
 
     it 'normalizes to include records from the beginning of the day' do
-      campaign.created_at = Time.now.beginning_of_day + 1.minute
+      campaign.created_at = Time.now.in_time_zone(default_time_zone).beginning_of_day
       campaign.save!
 
       pool       = [campaign.created_at]

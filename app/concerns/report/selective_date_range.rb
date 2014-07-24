@@ -1,21 +1,22 @@
 class Report::SelectiveDateRange
-  attr_reader :timezone, :from_pool, :to_pool
+  attr_reader :time_zone, :from_pool, :to_pool
 
 private
   def normalize(datetime)
     if datetime.kind_of?(String)
       month, day, year = datetime.split('/')
       if month and day and year
-        return Time.utc(year, month, day)
+        return Time.new(year, month, day, 12, 0, 0, @time_zone.formatted_offset)
       end
     end
-    datetime.utc
+    datetime.in_time_zone(@time_zone)
   end
 
 public
-  def initialize(from_pool, to_pool=[])
+  def initialize(from_pool, to_pool=[], time_zone=nil)
     @from_pool = from_pool
     @to_pool   = to_pool
+    @time_zone = ActiveSupport::TimeZone.new(time_zone || "Pacific Time (US & Canada)")
   end
 
   def from_before_normalize
