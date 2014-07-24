@@ -78,7 +78,11 @@ module Client
     def dials
       authorize! :view_reports, @account
       load_campaign
-      set_dates
+
+      from_date_pool = []
+      to_date_pool   = []
+
+      # set_dates
 
       if params[:from_date].blank? || params[:to_date].blank?
         @overview = Report::Dials::SummaryController.render(:html, {
@@ -88,20 +92,27 @@ module Client
         })
       else
         @overview = ''
+        from_date_pool << params[:from_date]
+        to_date_pool << params[:to_date]
       end
+
+      from_date_pool << @campaign.created_at
+      
+      @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
+
       @by_contact = Report::Dials::ByStatusController.render(:html, {
         campaign: @campaign,
         scoped_to: :all_voters,
-        from_date: @from_date,
-        to_date: @to_date,
+        from_date: @date_range.from,
+        to_date: @date_range.to,
         heading: "Per lead",
         description: "The data in the per lead table includes only the most recent status for each lead."
       })
       @by_attempt = Report::Dials::ByStatusController.render(:html, {
         campaign: @campaign,
         scoped_to: :call_attempts,
-        from_date: @from_date,
-        to_date: @to_date,
+        from_date: @date_range.from,
+        to_date: @date_range.to,
         heading: "Per dial",
         description: "The data in the per dial table includes every status for each lead."
       })

@@ -1,9 +1,15 @@
 <h1><%= @campaign.name %> Dials</h1>
+<h4><%= nice_date(@date_range.from) %> - <%= nice_date(@date_range.to) %> <%= @date_range.time_zone.name %></h4>
 
 <div role="main">
   <%= @overview.html_safe %>
   <%= @by_contact.html_safe %>
   <%= @by_attempt.html_safe %>
 
-  <%= render partial: 'shared/date_picker_campaigns', locals: {target: dials_client_reports_path} %>
+  <%= render('selective_date_range_picker', {
+    datepicker_path: dials_client_reports_path,
+    campaign_id: @campaign.try(:id),
+    from_date: @date_range.from,
+    to_date: @date_range.to
+  }) %>
 </div>
