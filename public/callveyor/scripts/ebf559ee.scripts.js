@@ -35061,7 +35061,7 @@ to fix it.');
         call_id = CallCache.get('id');
         if (call_id == null) {
           ErrorCache.put('survey.save.failed', "CallCache had no ID.");
-          idFlashFactory.now('danger', 'You found a bug! Please Report problem and we will have you up and running ASAP.');
+          idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.');
           return;
         }
         usSpinnerService.spin('global-spinner');
@@ -35083,7 +35083,7 @@ to fix it.');
           msg = '';
           switch (resp.status) {
             case 400:
-              msg += 'Bad request. Try again and Report problem if error continues.';
+              msg += 'Bad request. Try again and report problem if error continues.';
               break;
             case 408:
             case 504:
@@ -35496,7 +35496,7 @@ to fix it.');
           };
           return p.then(s, $window._errs.push);
         } else {
-          return idFlashFactory.now('danger', 'Error loading selected transfer. Please try again and Report problem if error continues.');
+          return idFlashFactory.now('danger', 'Error loading selected transfer. Please try again and report problem if error continues.');
         }
       };
       return $scope.transfer = transfer;
