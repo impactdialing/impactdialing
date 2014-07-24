@@ -32,6 +32,16 @@ module Client
       end
     end
 
+    def build_date_pool(param_name, record_pool=[])
+      date_pool = []
+      date_pool << params[param_name]
+      record_pool.each do |record|
+        next if record.nil?
+        date_pool << record.created_at
+      end
+      date_pool
+    end
+
   public
 
     def index
@@ -43,26 +53,21 @@ module Client
     def performance
       authorize! :view_reports, @account
 
-      from_date_pool = []
-      to_date_pool   = []
-
-      from_date_pool << params[:from_date]
-      to_date_pool   << params[:to_date]
-
       if params[:campaign_id].present?
         mode = :campaign
         load_campaign
         @record = @campaign
-        from_date_pool << @campaign.created_at
+        from_date_pool = build_date_pool(:from_date, [@campaign])
         time_zone = @record.time_zone
       else
         mode = :caller
         load_caller
         @record = @caller
-        from_date_pool << @record.caller_sessions.first.try(:created_at)
-        from_date_pool << @record.created_at
+        from_date_pool = build_date_pool(:from_date, [@record.caller_sessions.first, @record])
         time_zone = @record.campaign.time_zone
       end
+
+      to_date_pool = build_date_pool(:to_date)
 
       @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, time_zone)
 
@@ -79,11 +84,6 @@ module Client
       authorize! :view_reports, @account
       load_campaign
 
-      from_date_pool = []
-      to_date_pool   = []
-
-      # set_dates
-
       if params[:from_date].blank? || params[:to_date].blank?
         @overview = Report::Dials::SummaryController.render(:html, {
           campaign: @campaign,
@@ -92,11 +92,10 @@ module Client
         })
       else
         @overview = ''
-        from_date_pool << params[:from_date]
-        to_date_pool << params[:to_date]
       end
 
-      from_date_pool << @campaign.created_at
+      from_date_pool = build_date_pool(:from_date, [@campaign])
+      to_date_pool   = build_date_pool(:to_date)
 
       @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
 
@@ -130,11 +129,8 @@ module Client
       authorize! :view_reports, @account
       load_campaign
 
-      from_date_pool  = []
-      to_date_pool    = []
-      from_date_pool  << params[:from_date]
-      to_date_pool    << params[:to_date]
-      from_date_pool  << @campaign.created_at
+      from_date_pool = build_date_pool(:from_date, [@campaign])
+      to_date_pool = build_date_pool(:to_date)
 
       @date_range     = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
       @campaign_usage = CampaignUsage.new(@campaign, @date_range.from, @date_range.to)
