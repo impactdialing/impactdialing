@@ -1,9 +1,15 @@
 <div role="main">
   <h1><%= @campaign.name %> Usage</h1>
+  <h4><%= nice_date(@date_range.from) %> - <%= nice_date(@date_range.to) %> <%= @date_range.time_zone.name %></h4>
 
   <%= render :partial => 'shared/utilization', :locals => {:report => @campaign, :usage=> @campaign_usage} %>
 
   <%= render :partial => 'billable', :locals => {:usage=> @campaign_usage} %>
 
-  <%= render partial: 'shared/date_picker_campaigns', locals: {target: usage_client_reports_path} %>
+  <%= render('selective_date_range_picker', {
+    datepicker_path: usage_client_reports_path,
+    campaign_id: @campaign.try(:id),
+    from_date: @date_range.from,
+    to_date: @date_range.to
+  }) %>
 </div>

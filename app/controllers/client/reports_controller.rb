@@ -97,7 +97,7 @@ module Client
       end
 
       from_date_pool << @campaign.created_at
-      
+
       @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
 
       @by_contact = Report::Dials::ByStatusController.render(:html, {
@@ -129,8 +129,15 @@ module Client
     def usage
       authorize! :view_reports, @account
       load_campaign
-      set_dates
-      @campaign_usage = CampaignUsage.new(@campaign, @from_date, @to_date)
+
+      from_date_pool  = []
+      to_date_pool    = []
+      from_date_pool  << params[:from_date]
+      to_date_pool    << params[:to_date]
+      from_date_pool  << @campaign.created_at
+
+      @date_range     = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
+      @campaign_usage = CampaignUsage.new(@campaign, @date_range.from, @date_range.to)
     end
 
     def download_report
