@@ -66,6 +66,7 @@ gem 'acts_as_reportable'
 gem 'em-resolv-replace'
 
 group :development do
+  gem 'annotate'
   gem 'guard'
   gem 'guard-rspec'
   gem 'spring'

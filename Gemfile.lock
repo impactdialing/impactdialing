@@ -50,6 +50,9 @@ GEM
       ruport (>= 1.6.0)
     addressable (2.3.6)
     aggregate (0.2.2)
+    annotate (2.6.5)
+      activerecord (>= 2.3.0)
+      rake (>= 0.8.7)
     arel (3.0.3)
     aws-sdk (1.11.1)
       json (~> 1.4)
@@ -422,6 +425,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord-import (~> 0.4.1)
   acts_as_reportable
+  annotate
   ar-octopus!
   aws-sdk
   better_errors
