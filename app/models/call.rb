@@ -126,3 +126,26 @@ class Call < ActiveRecord::Base
     RedisCallerSession.datacentre(call_attempt.caller_session_id)
   end
 end
+
+# ## Schema Information
+#
+# Table name: `calls`
+#
+# ### Columns
+#
+# Name                      | Type               | Attributes
+# ------------------------- | ------------------ | ---------------------------
+# **`id`**                  | `integer`          | `not null, primary key`
+# **`call_attempt_id`**     | `integer`          |
+# **`state`**               | `string(255)`      |
+# **`call_sid`**            | `string(255)`      |
+# **`call_status`**         | `string(255)`      |
+# **`answered_by`**         | `string(255)`      |
+# **`recording_duration`**  | `integer`          |
+# **`recording_url`**       | `string(255)`      |
+# **`created_at`**          | `datetime`         |
+# **`updated_at`**          | `datetime`         |
+# **`questions`**           | `text`             |
+# **`notes`**               | `text`             |
+# **`all_states`**          | `text`             |
+#

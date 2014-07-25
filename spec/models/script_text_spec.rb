@@ -83,3 +83,17 @@ describe ScriptText, :type => :model do
     end
   end
 end
+
+# ## Schema Information
+#
+# Table name: `script_texts`
+#
+# ### Columns
+#
+# Name                | Type               | Attributes
+# ------------------- | ------------------ | ---------------------------
+# **`id`**            | `integer`          | `not null, primary key`
+# **`script_id`**     | `integer`          |
+# **`content`**       | `text`             |
+# **`script_order`**  | `integer`          |
+#

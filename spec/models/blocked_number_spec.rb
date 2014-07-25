@@ -33,3 +33,25 @@ describe BlockedNumber, :type => :model do
   end
 
 end
+
+# ## Schema Information
+#
+# Table name: `blocked_numbers`
+#
+# ### Columns
+#
+# Name               | Type               | Attributes
+# ------------------ | ------------------ | ---------------------------
+# **`id`**           | `integer`          | `not null, primary key`
+# **`number`**       | `string(255)`      |
+# **`account_id`**   | `integer`          |
+# **`created_at`**   | `datetime`         |
+# **`updated_at`**   | `datetime`         |
+# **`campaign_id`**  | `integer`          |
+#
+# ### Indexes
+#
+# * `index_blocked_numbers_account_id_campaign_id`:
+#     * **`account_id`**
+#     * **`campaign_id`**
+#

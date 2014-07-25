@@ -22,3 +22,28 @@ describe NoteResponse, :type => :model do
   end
 
 end
+
+# ## Schema Information
+#
+# Table name: `note_responses`
+#
+# ### Columns
+#
+# Name                   | Type               | Attributes
+# ---------------------- | ------------------ | ---------------------------
+# **`id`**               | `integer`          | `not null, primary key`
+# **`voter_id`**         | `integer`          | `not null`
+# **`note_id`**          | `integer`          | `not null`
+# **`response`**         | `string(255)`      |
+# **`call_attempt_id`**  | `integer`          |
+# **`campaign_id`**      | `integer`          |
+#
+# ### Indexes
+#
+# * `call_attempt_id`:
+#     * **`call_attempt_id`**
+#     * **`id`**
+# * `voter_id`:
+#     * **`voter_id`**
+#     * **`note_id`**
+#

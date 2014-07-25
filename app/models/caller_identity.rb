@@ -11,3 +11,25 @@ def self.create_uniq_pin
  end
  
 end
+
+# ## Schema Information
+#
+# Table name: `caller_identities`
+#
+# ### Columns
+#
+# Name                     | Type               | Attributes
+# ------------------------ | ------------------ | ---------------------------
+# **`id`**                 | `integer`          | `not null, primary key`
+# **`session_key`**        | `string(255)`      |
+# **`caller_session_id`**  | `integer`          |
+# **`caller_id`**          | `integer`          |
+# **`pin`**                | `string(255)`      |
+# **`created_at`**         | `datetime`         |
+# **`updated_at`**         | `datetime`         |
+#
+# ### Indexes
+#
+# * `index_caller_identities_pin`:
+#     * **`pin`**
+#

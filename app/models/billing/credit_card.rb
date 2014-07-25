@@ -23,3 +23,26 @@ public
     end
   end
 end
+
+# ## Schema Information
+#
+# Table name: `billing_credit_cards`
+#
+# ### Columns
+#
+# Name               | Type               | Attributes
+# ------------------ | ------------------ | ---------------------------
+# **`id`**           | `integer`          | `not null, primary key`
+# **`account_id`**   | `integer`          | `not null`
+# **`exp_month`**    | `string(255)`      | `not null`
+# **`exp_year`**     | `string(255)`      | `not null`
+# **`last4`**        | `string(255)`      | `not null`
+# **`provider_id`**  | `string(255)`      | `not null`
+# **`created_at`**   | `datetime`         | `not null`
+# **`updated_at`**   | `datetime`         | `not null`
+#
+# ### Indexes
+#
+# * `index_billing_credit_cards_on_account_id`:
+#     * **`account_id`**
+#

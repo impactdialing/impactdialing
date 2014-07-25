@@ -23,3 +23,20 @@ class Transfer < ActiveRecord::Base
     COLD = "cold"
   end
 end
+
+# ## Schema Information
+#
+# Table name: `transfers`
+#
+# ### Columns
+#
+# Name                 | Type               | Attributes
+# -------------------- | ------------------ | ---------------------------
+# **`id`**             | `integer`          | `not null, primary key`
+# **`label`**          | `string(255)`      |
+# **`phone_number`**   | `string(255)`      |
+# **`transfer_type`**  | `string(255)`      |
+# **`script_id`**      | `integer`          |
+# **`created_at`**     | `datetime`         |
+# **`updated_at`**     | `datetime`         |
+#

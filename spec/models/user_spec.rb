@@ -48,3 +48,27 @@ describe User, :type => :model do
     expect(user.domain).to eq('foo.com')
   end
 end
+
+# ## Schema Information
+#
+# Table name: `users`
+#
+# ### Columns
+#
+# Name                       | Type               | Attributes
+# -------------------------- | ------------------ | ---------------------------
+# **`id`**                   | `integer`          | `not null, primary key`
+# **`fname`**                | `string(255)`      |
+# **`lname`**                | `string(255)`      |
+# **`orgname`**              | `string(255)`      |
+# **`email`**                | `string(255)`      |
+# **`active`**               | `boolean`          | `default(TRUE)`
+# **`created_at`**           | `datetime`         |
+# **`updated_at`**           | `datetime`         |
+# **`hashed_password`**      | `string(255)`      |
+# **`salt`**                 | `string(255)`      |
+# **`password_reset_code`**  | `string(255)`      |
+# **`phone`**                | `string(255)`      |
+# **`account_id`**           | `integer`          |
+# **`role`**                 | `string(255)`      |
+#

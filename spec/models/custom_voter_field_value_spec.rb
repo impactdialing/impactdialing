@@ -21,3 +21,22 @@ describe CustomVoterFieldValue, :type => :model do
   it { is_expected.to validate_presence_of :voter_id }
   it { is_expected.to validate_presence_of :custom_voter_field_id }
 end
+
+# ## Schema Information
+#
+# Table name: `custom_voter_field_values`
+#
+# ### Columns
+#
+# Name                         | Type               | Attributes
+# ---------------------------- | ------------------ | ---------------------------
+# **`id`**                     | `integer`          | `not null, primary key`
+# **`voter_id`**               | `integer`          |
+# **`custom_voter_field_id`**  | `integer`          |
+# **`value`**                  | `string(255)`      |
+#
+# ### Indexes
+#
+# * `index_custom_voter_field_values_on_voter_id`:
+#     * **`voter_id`**
+#

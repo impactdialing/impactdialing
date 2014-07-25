@@ -73,3 +73,49 @@ describe TransferAttempt, :type => :model do
     end
   end
 end
+
+# ## Schema Information
+#
+# Table name: `transfer_attempts`
+#
+# ### Columns
+#
+# Name                     | Type               | Attributes
+# ------------------------ | ------------------ | ---------------------------
+# **`id`**                 | `integer`          | `not null, primary key`
+# **`transfer_id`**        | `integer`          |
+# **`caller_session_id`**  | `integer`          |
+# **`call_attempt_id`**    | `integer`          |
+# **`script_id`**          | `integer`          |
+# **`campaign_id`**        | `integer`          |
+# **`call_start`**         | `datetime`         |
+# **`call_end`**           | `datetime`         |
+# **`status`**             | `string(255)`      |
+# **`connecttime`**        | `datetime`         |
+# **`sid`**                | `string(255)`      |
+# **`session_key`**        | `string(255)`      |
+# **`created_at`**         | `datetime`         |
+# **`updated_at`**         | `datetime`         |
+# **`transfer_type`**      | `string(255)`      |
+# **`tPrice`**             | `float`            |
+# **`tStatus`**            | `string(255)`      |
+# **`tCallSegmentSid`**    | `string(255)`      |
+# **`tAccountSid`**        | `string(255)`      |
+# **`tCalled`**            | `string(255)`      |
+# **`tCaller`**            | `string(255)`      |
+# **`tPhoneNumberSid`**    | `string(255)`      |
+# **`tStartTime`**         | `datetime`         |
+# **`tEndTime`**           | `datetime`         |
+# **`tDuration`**          | `integer`          |
+# **`tFlags`**             | `integer`          |
+# **`debited`**            | `boolean`          | `default(FALSE)`
+#
+# ### Indexes
+#
+# * `index_transfer_attempts_debit`:
+#     * **`debited`**
+#     * **`status`**
+#     * **`tStartTime`**
+#     * **`tEndTime`**
+#     * **`tDuration`**
+#

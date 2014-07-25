@@ -187,3 +187,30 @@ end
 #   CANCELED = "Canceled"
 #   CURRENT = [TRIAL,UPGRADED,DOWNGRADED,CALLERS_ADDED,CALLERS_REMOVED]
 # end
+
+# ## Schema Information
+#
+# Table name: `billing_subscriptions`
+#
+# ### Columns
+#
+# Name                         | Type               | Attributes
+# ---------------------------- | ------------------ | ---------------------------
+# **`id`**                     | `integer`          | `not null, primary key`
+# **`account_id`**             | `integer`          | `not null`
+# **`provider_id`**            | `string(255)`      |
+# **`provider_status`**        | `string(255)`      |
+# **`plan`**                   | `string(255)`      | `not null`
+# **`settings`**               | `text`             |
+# **`created_at`**             | `datetime`         | `not null`
+# **`updated_at`**             | `datetime`         | `not null`
+# **`provider_start_period`**  | `integer`          |
+# **`provider_end_period`**    | `integer`          |
+#
+# ### Indexes
+#
+# * `index_billing_subscriptions_on_account_id`:
+#     * **`account_id`**
+# * `index_billing_subscriptions_on_provider_id`:
+#     * **`provider_id`**
+#

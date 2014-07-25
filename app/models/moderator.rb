@@ -38,3 +38,33 @@ class Moderator < ActiveRecord::Base
   end
 
 end
+
+# ## Schema Information
+#
+# Table name: `moderators`
+#
+# ### Columns
+#
+# Name                     | Type               | Attributes
+# ------------------------ | ------------------ | ---------------------------
+# **`id`**                 | `integer`          | `not null, primary key`
+# **`caller_session_id`**  | `integer`          |
+# **`call_sid`**           | `string(255)`      |
+# **`created_at`**         | `datetime`         |
+# **`updated_at`**         | `datetime`         |
+# **`session`**            | `string(255)`      |
+# **`active`**             | `string(255)`      |
+# **`account_id`**         | `integer`          |
+#
+# ### Indexes
+#
+# * `active_moderators`:
+#     * **`session`**
+#     * **`active`**
+#     * **`account_id`**
+#     * **`created_at`**
+# * `index_active_moderators`:
+#     * **`account_id`**
+#     * **`active`**
+#     * **`created_at`**
+#

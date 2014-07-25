@@ -224,3 +224,25 @@ describe Caller, :type => :model do
 
   end
 end
+
+# ## Schema Information
+#
+# Table name: `callers`
+#
+# ### Columns
+#
+# Name                   | Type               | Attributes
+# ---------------------- | ------------------ | ---------------------------
+# **`id`**               | `integer`          | `not null, primary key`
+# **`name`**             | `string(255)`      |
+# **`username`**         | `string(255)`      |
+# **`pin`**              | `string(255)`      |
+# **`account_id`**       | `integer`          |
+# **`active`**           | `boolean`          | `default(TRUE)`
+# **`created_at`**       | `datetime`         |
+# **`updated_at`**       | `datetime`         |
+# **`password`**         | `string(255)`      |
+# **`is_phones_only`**   | `boolean`          | `default(FALSE)`
+# **`campaign_id`**      | `integer`          |
+# **`caller_group_id`**  | `integer`          |
+#

@@ -20,3 +20,17 @@ class Note < ActiveRecord::Base
     texts
   end
 end
+
+# ## Schema Information
+#
+# Table name: `notes`
+#
+# ### Columns
+#
+# Name                | Type               | Attributes
+# ------------------- | ------------------ | ---------------------------
+# **`id`**            | `integer`          | `not null, primary key`
+# **`note`**          | `text`             | `default(""), not null`
+# **`script_id`**     | `integer`          | `not null`
+# **`script_order`**  | `integer`          |
+#

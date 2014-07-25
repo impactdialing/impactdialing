@@ -221,3 +221,94 @@ describe CallAttempt, :type => :model do
     end
   end
 end
+
+# ## Schema Information
+#
+# Table name: `call_attempts`
+#
+# ### Columns
+#
+# Name                                | Type               | Attributes
+# ----------------------------------- | ------------------ | ---------------------------
+# **`id`**                            | `integer`          | `not null, primary key`
+# **`voter_id`**                      | `integer`          |
+# **`sid`**                           | `string(255)`      |
+# **`status`**                        | `string(255)`      |
+# **`campaign_id`**                   | `integer`          |
+# **`call_start`**                    | `datetime`         |
+# **`call_end`**                      | `datetime`         |
+# **`caller_id`**                     | `integer`          |
+# **`connecttime`**                   | `datetime`         |
+# **`caller_session_id`**             | `integer`          |
+# **`created_at`**                    | `datetime`         |
+# **`updated_at`**                    | `datetime`         |
+# **`result`**                        | `string(255)`      |
+# **`result_digit`**                  | `string(255)`      |
+# **`tCallSegmentSid`**               | `string(255)`      |
+# **`tAccountSid`**                   | `string(255)`      |
+# **`tCalled`**                       | `string(255)`      |
+# **`tCaller`**                       | `string(255)`      |
+# **`tPhoneNumberSid`**               | `string(255)`      |
+# **`tStatus`**                       | `string(255)`      |
+# **`tDuration`**                     | `integer`          |
+# **`tFlags`**                        | `integer`          |
+# **`tStartTime`**                    | `datetime`         |
+# **`tEndTime`**                      | `datetime`         |
+# **`tPrice`**                        | `float`            |
+# **`dialer_mode`**                   | `string(255)`      |
+# **`scheduled_date`**                | `datetime`         |
+# **`recording_url`**                 | `string(255)`      |
+# **`recording_duration`**            | `integer`          |
+# **`wrapup_time`**                   | `datetime`         |
+# **`call_id`**                       | `integer`          |
+# **`voter_response_processed`**      | `boolean`          | `default(FALSE)`
+# **`debited`**                       | `boolean`          | `default(FALSE)`
+# **`recording_id`**                  | `integer`          |
+# **`recording_delivered_manually`**  | `boolean`          | `default(FALSE)`
+#
+# ### Indexes
+#
+# * `index_call_attempts_debit`:
+#     * **`debited`**
+#     * **`status`**
+#     * **`tStartTime`**
+#     * **`tEndTime`**
+#     * **`tDuration`**
+# * `index_call_attempts_on_call_end`:
+#     * **`call_end`**
+# * `index_call_attempts_on_call_id`:
+#     * **`call_id`**
+# * `index_call_attempts_on_caller_id_and_wrapup_time`:
+#     * **`caller_id`**
+#     * **`wrapup_time`**
+# * `index_call_attempts_on_caller_session_id`:
+#     * **`caller_session_id`**
+# * `index_call_attempts_on_campaign_created_id`:
+#     * **`campaign_id`**
+#     * **`created_at`**
+#     * **`id`**
+# * `index_call_attempts_on_campaign_id`:
+#     * **`campaign_id`**
+# * `index_call_attempts_on_campaign_id_and_call_end`:
+#     * **`campaign_id`**
+#     * **`call_end`**
+# * `index_call_attempts_on_campaign_id_and_wrapup_time`:
+#     * **`campaign_id`**
+#     * **`wrapup_time`**
+# * `index_call_attempts_on_campaign_id_created_at_status`:
+#     * **`campaign_id`**
+#     * **`created_at`**
+#     * **`status`**
+# * `index_call_attempts_on_created_at`:
+#     * **`created_at`**
+# * `index_call_attempts_on_voter_id`:
+#     * **`voter_id`**
+# * `index_call_attempts_on_voter_response_processed_and_status`:
+#     * **`voter_response_processed`**
+#     * **`status`**
+# * `index_sync_calls`:
+#     * **`status`**
+#     * **`tPrice`**
+#     * **`tStatus`**
+#     * **`sid`**
+#

@@ -765,3 +765,97 @@ describe Voter, :type => :model do
     end
   end
 end
+
+# ## Schema Information
+#
+# Table name: `voters`
+#
+# ### Columns
+#
+# Name                          | Type               | Attributes
+# ----------------------------- | ------------------ | ---------------------------
+# **`id`**                      | `integer`          | `not null, primary key`
+# **`phone`**                   | `string(255)`      |
+# **`custom_id`**               | `string(255)`      |
+# **`last_name`**               | `string(255)`      |
+# **`first_name`**              | `string(255)`      |
+# **`middle_name`**             | `string(255)`      |
+# **`suffix`**                  | `string(255)`      |
+# **`email`**                   | `string(255)`      |
+# **`result`**                  | `string(255)`      |
+# **`caller_session_id`**       | `integer`          |
+# **`campaign_id`**             | `integer`          |
+# **`account_id`**              | `integer`          |
+# **`active`**                  | `boolean`          | `default(TRUE)`
+# **`created_at`**              | `datetime`         |
+# **`updated_at`**              | `datetime`         |
+# **`status`**                  | `string(255)`      | `default("not called")`
+# **`voter_list_id`**           | `integer`          |
+# **`call_back`**               | `boolean`          | `default(FALSE)`
+# **`caller_id`**               | `integer`          |
+# **`result_digit`**            | `string(255)`      |
+# **`attempt_id`**              | `integer`          |
+# **`result_date`**             | `datetime`         |
+# **`last_call_attempt_id`**    | `integer`          |
+# **`last_call_attempt_time`**  | `datetime`         |
+# **`num_family`**              | `integer`          | `default(1)`
+# **`family_id_answered`**      | `integer`          |
+# **`result_json`**             | `text`             |
+# **`scheduled_date`**          | `datetime`         |
+# **`address`**                 | `string(255)`      |
+# **`city`**                    | `string(255)`      |
+# **`state`**                   | `string(255)`      |
+# **`zip_code`**                | `string(255)`      |
+# **`country`**                 | `string(255)`      |
+# **`skipped_time`**            | `datetime`         |
+# **`priority`**                | `string(255)`      |
+# **`lock_version`**            | `integer`          | `default(0)`
+# **`enabled`**                 | `boolean`          | `default(TRUE)`
+# **`voicemail_history`**       | `string(255)`      |
+#
+# ### Indexes
+#
+# * `index_priority_voters`:
+#     * **`campaign_id`**
+#     * **`enabled`**
+#     * **`priority`**
+#     * **`status`**
+# * `index_voters_caller_id_campaign_id`:
+#     * **`caller_id`**
+#     * **`campaign_id`**
+# * `index_voters_customid_campaign_id`:
+#     * **`custom_id`**
+#     * **`campaign_id`**
+# * `index_voters_on_Phone_and_voter_list_id`:
+#     * **`phone`**
+#     * **`voter_list_id`**
+# * `index_voters_on_attempt_id`:
+#     * **`attempt_id`**
+# * `index_voters_on_caller_session_id`:
+#     * **`caller_session_id`**
+# * `index_voters_on_campaign_id_and_active_and_status_and_call_back`:
+#     * **`campaign_id`**
+#     * **`active`**
+#     * **`status`**
+#     * **`call_back`**
+# * `index_voters_on_campaign_id_and_status_and_id`:
+#     * **`campaign_id`**
+#     * **`status`**
+#     * **`id`**
+# * `index_voters_on_status`:
+#     * **`status`**
+# * `index_voters_on_voter_list_id`:
+#     * **`voter_list_id`**
+# * `report_query`:
+#     * **`campaign_id`**
+#     * **`id`**
+# * `voters_campaign_status_time`:
+#     * **`campaign_id`**
+#     * **`status`**
+#     * **`last_call_attempt_time`**
+# * `voters_enabled_campaign_time_status`:
+#     * **`enabled`**
+#     * **`campaign_id`**
+#     * **`last_call_attempt_time`**
+#     * **`status`**
+#

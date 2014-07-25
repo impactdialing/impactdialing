@@ -23,3 +23,19 @@ class DownloadedReport < ActiveRecord::Base
     query.group("campaign_id").count
   end
 end
+
+# ## Schema Information
+#
+# Table name: `downloaded_reports`
+#
+# ### Columns
+#
+# Name               | Type               | Attributes
+# ------------------ | ------------------ | ---------------------------
+# **`id`**           | `integer`          | `not null, primary key`
+# **`user_id`**      | `integer`          |
+# **`link`**         | `string(255)`      |
+# **`created_at`**   | `datetime`         |
+# **`updated_at`**   | `datetime`         |
+# **`campaign_id`**  | `string(255)`      |
+#

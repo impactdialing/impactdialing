@@ -24,3 +24,23 @@ describe Recording, :type => :model do
     expect(Recording.active).to eq([active_recording])
   end
 end
+
+# ## Schema Information
+#
+# Table name: `recordings`
+#
+# ### Columns
+#
+# Name                     | Type               | Attributes
+# ------------------------ | ------------------ | ---------------------------
+# **`id`**                 | `integer`          | `not null, primary key`
+# **`account_id`**         | `integer`          |
+# **`active`**             | `integer`          | `default(1)`
+# **`name`**               | `string(255)`      |
+# **`created_at`**         | `datetime`         |
+# **`updated_at`**         | `datetime`         |
+# **`file_file_name`**     | `string(255)`      |
+# **`file_content_type`**  | `string(255)`      |
+# **`file_file_size`**     | `string(255)`      |
+# **`file_updated_at`**    | `datetime`         |
+#

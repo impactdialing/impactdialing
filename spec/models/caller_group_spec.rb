@@ -22,3 +22,19 @@ describe CallerGroup, :type => :model do
     # caller.campaign.should eq new_campaign
   end
 end
+
+# ## Schema Information
+#
+# Table name: `caller_groups`
+#
+# ### Columns
+#
+# Name               | Type               | Attributes
+# ------------------ | ------------------ | ---------------------------
+# **`id`**           | `integer`          | `not null, primary key`
+# **`name`**         | `string(255)`      | `not null`
+# **`campaign_id`**  | `integer`          | `not null`
+# **`created_at`**   | `datetime`         | `not null`
+# **`updated_at`**   | `datetime`         | `not null`
+# **`account_id`**   | `integer`          | `not null`
+#

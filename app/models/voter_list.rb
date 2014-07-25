@@ -134,3 +134,32 @@ class VoterList < ActiveRecord::Base
   end
 
 end
+
+# ## Schema Information
+#
+# Table name: `voter_lists`
+#
+# ### Columns
+#
+# Name                      | Type               | Attributes
+# ------------------------- | ------------------ | ---------------------------
+# **`id`**                  | `integer`          | `not null, primary key`
+# **`name`**                | `string(255)`      |
+# **`account_id`**          | `string(255)`      |
+# **`active`**              | `boolean`          | `default(TRUE)`
+# **`created_at`**          | `datetime`         |
+# **`updated_at`**          | `datetime`         |
+# **`campaign_id`**         | `integer`          |
+# **`enabled`**             | `boolean`          | `default(TRUE)`
+# **`separator`**           | `string(255)`      |
+# **`headers`**             | `text`             |
+# **`csv_to_system_map`**   | `text`             |
+# **`s3path`**              | `text`             |
+# **`uploaded_file_name`**  | `string(255)`      |
+#
+# ### Indexes
+#
+# * `index_voter_lists_on_user_id_and_name` (_unique_):
+#     * **`account_id`**
+#     * **`name`**
+#

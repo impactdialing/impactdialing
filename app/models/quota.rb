@@ -265,3 +265,28 @@ class Quota < ActiveRecord::Base
     self.minutes_allowed = callers_allowed * plan.minutes_per_quantity
   end
 end
+
+# ## Schema Information
+#
+# Table name: `quotas`
+#
+# ### Columns
+#
+# Name                   | Type               | Attributes
+# ---------------------- | ------------------ | ---------------------------
+# **`id`**               | `integer`          | `not null, primary key`
+# **`account_id`**       | `integer`          | `not null`
+# **`minutes_used`**     | `integer`          | `default(0), not null`
+# **`minutes_pending`**  | `integer`          | `default(0), not null`
+# **`minutes_allowed`**  | `integer`          | `default(0), not null`
+# **`callers_allowed`**  | `integer`          | `default(0), not null`
+# **`disable_calling`**  | `boolean`          | `default(FALSE), not null`
+# **`created_at`**       | `datetime`         | `not null`
+# **`updated_at`**       | `datetime`         | `not null`
+# **`disable_access`**   | `boolean`          | `default(FALSE)`
+#
+# ### Indexes
+#
+# * `index_quotas_on_account_id`:
+#     * **`account_id`**
+#

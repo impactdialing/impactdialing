@@ -74,3 +74,18 @@ describe Question, :type => :model do
   end
 
 end
+
+# ## Schema Information
+#
+# Table name: `questions`
+#
+# ### Columns
+#
+# Name                     | Type               | Attributes
+# ------------------------ | ------------------ | ---------------------------
+# **`id`**                 | `integer`          | `not null, primary key`
+# **`script_id`**          | `integer`          | `not null`
+# **`text`**               | `text`             | `default(""), not null`
+# **`script_order`**       | `integer`          |
+# **`external_id_field`**  | `string(255)`      |
+#

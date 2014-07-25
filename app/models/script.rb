@@ -105,3 +105,20 @@ class Script < ActiveRecord::Base
 
 
 end
+
+# ## Schema Information
+#
+# Table name: `scripts`
+#
+# ### Columns
+#
+# Name                | Type               | Attributes
+# ------------------- | ------------------ | ---------------------------
+# **`id`**            | `integer`          | `not null, primary key`
+# **`name`**          | `string(255)`      |
+# **`active`**        | `boolean`          | `default(TRUE)`
+# **`account_id`**    | `integer`          |
+# **`created_at`**    | `datetime`         |
+# **`updated_at`**    | `datetime`         |
+# **`voter_fields`**  | `text(2147483647)`  |
+#

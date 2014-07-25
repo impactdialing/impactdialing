@@ -16,3 +16,45 @@ class Answer < ActiveRecord::Base
   end
   
 end
+
+# ## Schema Information
+#
+# Table name: `answers`
+#
+# ### Columns
+#
+# Name                        | Type               | Attributes
+# --------------------------- | ------------------ | ---------------------------
+# **`id`**                    | `integer`          | `not null, primary key`
+# **`voter_id`**              | `integer`          | `not null`
+# **`question_id`**           | `integer`          | `not null`
+# **`possible_response_id`**  | `integer`          | `not null`
+# **`created_at`**            | `datetime`         |
+# **`campaign_id`**           | `integer`          |
+# **`caller_id`**             | `integer`          |
+# **`call_attempt_id`**       | `integer`          |
+#
+# ### Indexes
+#
+# * `call_attempt_id`:
+#     * **`call_attempt_id`**
+#     * **`question_id`**
+# * `index_answers_campaign_id_caller_id`:
+#     * **`campaign_id`**
+#     * **`caller_id`**
+# * `index_answers_count_possible_response_campaign`:
+#     * **`possible_response_id`**
+#     * **`campaign_id`**
+#     * **`caller_id`**
+#     * **`created_at`**
+# * `index_answers_on_campaign_created_at_possible_response`:
+#     * **`campaign_id`**
+#     * **`created_at`**
+#     * **`possible_response_id`**
+# * `index_answers_on_voter_id_and_question_id`:
+#     * **`voter_id`**
+#     * **`question_id`**
+# * `index_distinct_question`:
+#     * **`question_id`**
+#     * **`campaign_id`**
+#

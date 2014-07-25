@@ -65,3 +65,18 @@ class Question < ActiveRecord::Base
       possible_responses: possible_responses.as_json({root: false})}
   end
 end
+
+# ## Schema Information
+#
+# Table name: `questions`
+#
+# ### Columns
+#
+# Name                     | Type               | Attributes
+# ------------------------ | ------------------ | ---------------------------
+# **`id`**                 | `integer`          | `not null, primary key`
+# **`script_id`**          | `integer`          | `not null`
+# **`text`**               | `text`             | `default(""), not null`
+# **`script_order`**       | `integer`          |
+# **`external_id_field`**  | `string(255)`      |
+#

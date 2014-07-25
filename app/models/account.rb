@@ -174,3 +174,28 @@ public
     secure_digest(Time.now, (1..10).map{ rand.to_s })
   end
 end
+
+# ## Schema Information
+#
+# Table name: `accounts`
+#
+# ### Columns
+#
+# Name                                | Type               | Attributes
+# ----------------------------------- | ------------------ | ---------------------------
+# **`id`**                            | `integer`          | `not null, primary key`
+# **`created_at`**                    | `datetime`         |
+# **`updated_at`**                    | `datetime`         |
+# **`domain_name`**                   | `string(255)`      |
+# **`activated`**                     | `boolean`          | `default(FALSE)`
+# **`record_calls`**                  | `boolean`          | `default(FALSE)`
+# **`lock_version`**                  | `integer`          | `default(0)`
+# **`status`**                        | `string(255)`      |
+# **`abandonment`**                   | `string(255)`      |
+# **`caller_password`**               | `text`             |
+# **`caller_hashed_password_salt`**   | `text`             |
+# **`api_key`**                       | `string(255)`      | `default("")`
+# **`tos_accepted_date`**             | `datetime`         |
+# **`billing_provider_customer_id`**  | `string(255)`      |
+# **`billing_provider`**              | `string(255)`      |
+#

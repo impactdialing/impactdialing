@@ -75,3 +75,27 @@ describe PossibleResponse, :type => :model do
 
 
 end
+
+# ## Schema Information
+#
+# Table name: `possible_responses`
+#
+# ### Columns
+#
+# Name                           | Type               | Attributes
+# ------------------------------ | ------------------ | ---------------------------
+# **`id`**                       | `integer`          | `not null, primary key`
+# **`question_id`**              | `integer`          |
+# **`keypad`**                   | `integer`          |
+# **`value`**                    | `string(255)`      |
+# **`retry`**                    | `boolean`          | `default(FALSE)`
+# **`possible_response_order`**  | `integer`          |
+# **`external_id_field`**        | `string(255)`      |
+#
+# ### Indexes
+#
+# * `index_possible_responses_question_keypad_possible_response_order`:
+#     * **`question_id`**
+#     * **`keypad`**
+#     * **`possible_response_order`**
+#
