@@ -71,7 +71,12 @@
     <input type="checkbox" style="display:none" id="download_all_voters" name="download_all_voters"></input>
     <div class="buttons"><button type="submit" id="download_all_voters_submit">Download entire campaign</button></div>
 
-    <%= render 'shared/date_picker' %>
+    <%= render('selective_date_range_picker', {
+      campaign_id: @campaign.try(:id),
+      from_date: @date_range.from,
+      to_date: @date_range.to,
+      embedded: true
+    }) %>
     <div class="buttons"><button id="range_voters_submit" type="submit">Download just this date range</button></div>
   <% end %>
 </div>

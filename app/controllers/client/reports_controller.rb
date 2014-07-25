@@ -139,21 +139,25 @@ module Client
     def download_report
       authorize! :view_reports, @account
       load_campaign
-      set_dates
-      @voter_fields = VoterList::VOTER_DATA_COLUMNS
+      from_date_pool       = build_date_pool(:from_date, [@campaign])
+      to_date_pool         = build_date_pool(:to_date)
+      @date_range          = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
+      @voter_fields        = VoterList::VOTER_DATA_COLUMNS
       @custom_voter_fields = @user.account.custom_voter_fields.collect{ |field| field.name}
     end
 
     def download
       authorize! :view_reports, @account
       load_campaign
-      set_dates
+      from_date_pool = build_date_pool(:from_date, [@campaign])
+      to_date_pool   = build_date_pool(:to_date)
+      @date_range    = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
       Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id,
         params[:voter_fields],
         params[:custom_voter_fields],
         params[:download_all_voters],
         params[:lead_dial],
-        @from_date, @to_date, params[:callback_url], report_response_strategy
+        @date_range.from, @date_range.to, params[:callback_url], report_response_strategy
       )
       respond_with(@campaign, location:  client_reports_url) do |format|
         format.html {

@@ -1,20 +1,28 @@
-<%= form_tag(datepicker_path, :method => :get) do %>
-  <fieldset>
-    <legend>Date range:</legend>
-    <% if(defined?(campaign_id)) %>
-    <input name="campaign_id" type="hidden" value="<%= campaign_id %>">
-    <% else %>
-    <input name="caller_id" type="hidden" value="<%= caller_id %>">
-    <% end %>
-    <p>
-      <label for="from_date">From:</label>
-      <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= date_as_slashes(from_date) %>">
-    </p>
-    <p>
-      <label for="to_date">To:</label>
-      <input class="format-m-d-y divider-slash" id="to_date" name="to_date" type="text" value="<%= date_as_slashes(to_date) %>">
-    </p>
-  </fieldset>
+<%= content_for(:datepicker_fields) do %>
+<fieldset>
+  <legend>Date range:</legend>
+  <% if(defined?(campaign_id)) %>
+  <input name="campaign_id" type="hidden" value="<%= campaign_id %>">
+  <% else %>
+  <input name="caller_id" type="hidden" value="<%= caller_id %>">
+  <% end %>
+  <p>
+    <label for="from_date">From:</label>
+    <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= date_as_slashes(from_date) %>">
+  </p>
+  <p>
+    <label for="to_date">To:</label>
+    <input class="format-m-d-y divider-slash" id="to_date" name="to_date" type="text" value="<%= date_as_slashes(to_date) %>">
+  </p>
+</fieldset>
+<% end %>
 
-  <div class="buttons"><button type="submit">Update date range</button></div>
+<% if defined?(embedded) and embedded %>
+  <%= yield :datepicker_fields %>
+<% else %>
+  <%= form_tag(datepicker_path, :method => :get) do %>
+    <%= yield :datepicker_fields %>
+
+    <div class="buttons"><button type="submit">Update date range</button></div>
+  <% end %>
 <% end %>
