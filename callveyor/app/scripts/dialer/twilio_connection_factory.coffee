@@ -25,7 +25,7 @@ mod.factory('idTwilioConnectionFactory', [
         connection = TwilioCache.get('connection')
         if connection?
           TwilioCache.put('disconnect_pending', true)
-          connection.disconnectAll()
+          connection.disconnect()
 
       boundEventsMissing: (eventName) ->
         factory.boundEvents.indexOf(eventName) == -1
