@@ -1,3 +1,8 @@
+##
+# This class manages peristence for responses to multiple choice questions.
+# Currently, response data is imported periodically via Voter#persist_answers.
+#
+# See also +Note+ and its cousin Voter#persist_notes.
 class Answer < ActiveRecord::Base
   belongs_to :voter
   belongs_to :caller

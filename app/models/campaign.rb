@@ -246,6 +246,7 @@ public
 
 
   def answers_result(from_date, to_date)
+    # load question ids related to the campaign, from answers
     question_ids = Answer.where(campaign_id: self.id).uniq.pluck(:question_id)
     answer_count = Answer.select("possible_response_id").from('answers use index (index_answers_on_campaign_created_at_possible_response)').
         where("campaign_id = ?", self.id).within(from_date, to_date).group("possible_response_id").count

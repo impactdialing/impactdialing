@@ -347,20 +347,27 @@ class Voter < ActiveRecord::Base
   end
 
   def persist_answers(questions, call_attempt)
-     return if questions.nil?
-     question_answers = JSON.parse(questions)
-     retry_response = nil
-     question_answers.try(:each_pair) do |question_id, answer_id|
-       begin
-         voters_response = PossibleResponse.find(answer_id)
-         answers.create(possible_response: voters_response, question: Question.find(question_id), created_at: call_attempt.created_at, campaign: Campaign.find(campaign_id), caller: call_attempt.caller, call_attempt_id: call_attempt.id)
-         retry_response ||= voters_response if voters_response.retry?
-       rescue Exception => e
-         Rails.logger.info "Persisting_Answers_Exception #{e.to_s}"
-         Rails.logger.info "Voter #{self.inspect}"
-       end
-     end
-     update_attributes(:status => Voter::Status::RETRY) if retry_response
+    return if questions.nil?
+    question_answers = JSON.parse(questions)
+    retry_response = nil
+    question_answers.try(:each_pair) do |question_id, answer_id|
+      begin
+        voters_response = PossibleResponse.find(answer_id)
+        answers.create({
+          possible_response: voters_response,
+          question: Question.find(question_id),
+          created_at: call_attempt.created_at,
+          campaign: Campaign.find(campaign_id),
+          caller: call_attempt.caller,
+          call_attempt_id: call_attempt.id
+        })
+        retry_response ||= voters_response if voters_response.retry?
+      rescue Exception => e
+        Rails.logger.info "Persisting_Answers_Exception #{e.to_s}"
+        Rails.logger.info "Voter #{self.inspect}"
+      end
+    end
+    update_attributes(:status => Voter::Status::RETRY) if retry_response
    end
 
   def persist_notes(notes_json, call_attempt)
