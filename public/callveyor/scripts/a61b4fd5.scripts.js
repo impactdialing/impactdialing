@@ -34112,7 +34112,7 @@ to fix it.');
           connection = TwilioCache.get('connection');
           if (connection != null) {
             TwilioCache.put('disconnect_pending', true);
-            return connection.disconnectAll();
+            return connection.disconnect();
           }
         },
         boundEventsMissing: function(eventName) {
