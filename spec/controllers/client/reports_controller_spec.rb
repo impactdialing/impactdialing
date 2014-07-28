@@ -98,13 +98,16 @@ describe Client::ReportsController, :type => :controller do
       end
 
       it "sets the default date range according to the campaign's time zone" do
-        allow(Time).to receive_messages(:now => Time.utc(2012, 2, 13, 0, 0, 0))
-        get :download_report, :campaign_id => campaign.id
-        expect(response).to be_ok
-        expect(assigns(:from_date).to_s).to eq("2012-02-12 08:00:00 UTC")
-        expect(assigns(:to_date).to_s).to eq("2012-02-13 07:59:59 UTC")
+        Timecop.freeze do
+          expected_from = Time.now.in_time_zone(campaign.time_zone).beginning_of_day
+          expected_to = Time.now.in_time_zone(campaign.time_zone).end_of_day
 
-        allow(Time).to receive(:now).and_call_original
+          get :download_report, :campaign_id => campaign.id
+
+          expect(response).to be_ok
+          expect(assigns(:date_range).from.to_s).to eq(expected_from.to_s)
+          expect(assigns(:date_range).to.to_s).to eq(expected_to.to_s)
+        end
       end
 
     end
