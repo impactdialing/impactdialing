@@ -30,6 +30,7 @@ RSpec.configure do |config|
 
   config.include FactoryGirl::Syntax::Methods
   config.include TwilioRequestStubs
+  config.include FactoryGirlImportHelpers
 
   config.before(:each) do
     $redis_call_flow_connection.flushALL

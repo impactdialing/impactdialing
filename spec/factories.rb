@@ -9,7 +9,7 @@ FactoryGirl.define do
   end
 
   sequence :name do |n|
-    "user#{n}"
+    "ObjectName#{n}"
   end
 
   sequence :phonenumber do |n|
@@ -24,6 +24,11 @@ FactoryGirl.define do
     "sid#{n}"
   end
 
+  sequence :random_string do |n|
+    chars = ('a'..'z').to_a
+    chars.sample(n + 7).join
+  end
+
   factory :account do
     tos_accepted_date Time.now
     record_calls false
@@ -36,15 +41,30 @@ FactoryGirl.define do
     role "admin"
   end
 
-  factory :admin_user, :parent => :user do
-    email 'michael@impactdialing.com'
-  end
-
   factory :script do
     name 'a script'
     created_at Time.now
     updated_at Time.now
     account
+  end
+
+  factory :question do
+    text "question text"
+    script_order '1'
+    script
+  end
+
+  factory :possible_response do
+    value "no_response"
+    possible_response_order '1'
+    question
+    keypad ""
+  end
+
+  factory :answer do
+    caller
+    possible_response
+    question
   end
 
   factory :campaign do
@@ -130,7 +150,6 @@ FactoryGirl.define do
     updated_at Time.now
   end
 
-
   factory :caller_session do
     campaign
     caller
@@ -151,13 +170,11 @@ FactoryGirl.define do
     updated_at Time.now
   end
 
-
   factory :caller_identity do |s|
     caller
     created_at Time.now
     updated_at Time.now
   end
-
 
   factory :call_attempt do
     campaign
@@ -186,26 +203,6 @@ FactoryGirl.define do
 
   factory :script_text do
     content "abc"
-  end
-
-  factory :question do
-    text "question text"
-    script_order '1'
-    script
-
-  end
-
-  factory :possible_response do
-    value "no_response"
-    possible_response_order '1'
-    question
-    keypad ""
-  end
-
-  factory :answer do
-    caller
-    possible_response
-    question
   end
 
   factory :caller_campaign do

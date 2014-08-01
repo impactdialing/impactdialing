@@ -6,28 +6,32 @@
   <% if @results.empty? %>
     <p>This campaign has not had any calls answered yet.</p>
   <% else %>
+    <% si = 1 %>
     <% @results.each do |script, data| %>
-      <h2><%= "Script: #{data[:script]}" %></h2>
+      <h2 id="script_heading_<%= si %>"><%= "Script: #{data[:script]}" %></h2>
       <% i = 1 %>
       <% data[:questions].each do |question, stats| %>
-        <h3>Question <%= i %>: <%= question %></h3>
-         <table>
+        <h3 id="question_heading_<%= i %>">Question <%= i %>: <%= question %></h3>
+         <table id="question_<%= i %>">
            <tr>
              <th>Answer</th>
              <th>Number</th>
              <th>Percentage</th>
            </tr>
+           <% ii = 1 %>
            <% stats.each do |answers| %>
             <% total_answers += answers[:number].to_i %>
-            <tr>
+            <tr id="question_<%= i %>_answer_<%= ii %>">
               <td><%= answers[:answer]%></td>
               <td><%= answers[:number]%></td>
               <td><%= answers[:percentage]%> %</td>
             </tr>
+            <% ii += 1 %>
             <% end %>
          </table>
         <% i += 1 %>
       <% end %>
+      <% si += 1 %>
     <% end %>
 
     <% unless @transfers.blank? %>
@@ -38,12 +42,14 @@
           <th>Number</th>
           <th>Percentage</th>
         </tr>
+        <% i = 1 %>
         <% @transfers.each_pair do |key, value| %>
-          <tr>
+          <tr id="transfer_<%= i %>">
             <td><%= value[:label] %></td>
             <td><%= value[:number] %></td>
             <td><%= value[:percentage] %> %</td>
           </tr>
+          <% i += 1 %>
         <% end %>
       </table>
     <% end %>
@@ -59,16 +65,23 @@
                       where('recording_delivered_manually=?', true).
                       where(campaign_id: @campaign.id)
          recording_ids = drops.map(&:recording_id)
-         messages = Recording.where(id: recording_ids) %>
+         messages = Recording.where(id: recording_ids)
+         i = 1 %>
       <% messages.each do |message| %>
-        <tr>
+        <tr id="recording_<%= i %>">
           <td><%= message.name %></td>
           <td><%= drops.count %></td>
           <td><%= ((drops.count / total_answers.to_f) * 100.0).to_i %>%</td>
         </tr>
+        <% i += 1 %>
       <% end %>
     </table>
 
-    <%= render partial: 'shared/date_picker_campaigns', locals: {target: answer_client_reports_path} %>
+    <%= render('selective_date_range_picker', {
+      datepicker_path: answer_client_reports_path,
+      campaign_id: @campaign.try(:id),
+      from_date: @date_range.from,
+      to_date: @date_range.to
+    }) %>
   <% end %>
 </div>
