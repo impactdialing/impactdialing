@@ -86,6 +86,7 @@ group :development, :test, :e2e do
   gem 'rspec-its' # its is not in rspec 3
   gem 'rspec-activemodel-mocks' # mock_model is not in rspec 3
   gem 'rspec-collection_matchers' # expect(collection).to have(1).thing is not in rspec 3
+  gem 'forgery', '0.6.0'
   gem 'hirb'
   gem 'rspec-instafail'
   gem 'pry'
