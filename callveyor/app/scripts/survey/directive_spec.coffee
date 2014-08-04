@@ -22,7 +22,13 @@ describe 'idSurvey directive', ->
     $httpBackend.whenGET('/call_center/api/survey_fields.json').respond({})
     @tpl = '<div data-id-survey></div>'
     scope = $rootScope
-    scope.survey = {}
+    scope.survey = {
+      responses: {
+        question: {
+          'myQuestion': 'resp_1'
+        }
+      }
+    }
     ele = $compile(@tpl)(scope)
     scope.$digest()
   ))
@@ -53,12 +59,12 @@ describe 'idSurvey directive', ->
 
   it 'binds <input> to survey.responses.notes[item.id]', ->
     scope.$apply("survey.form = [{type: 'note', id: 'myNote'}]")
-    scope.$apply("survey.responses = {notes: {myNote: 'notes are neat'}}")
+    scope.$apply("survey.responses.notes = {myNote: 'notes are neat'}")
     el = angular.element(ele.find('input')[0])
     expect(el.val()).toEqual('notes are neat')
 
   it 'renders <select/> w/ id of item_{{item.id}} for question type items', ->
-    scope.$apply("survey.form = [{type: 'question', id: 'myQuestion'}]")
+    scope.$apply("survey.form = [{type: 'question', id: 'myQuestion', possibleResponses: [{value: 'Blah', id: 23}]}]")
     el = angular.element(ele.find('select')[0])
     expect(el.attr('id')).toEqual('item_myQuestion')
 
@@ -71,15 +77,17 @@ describe 'idSurvey directive', ->
         {id: 'resp_2', value: 'Green'}
       ]
     }]")
-    expect(ele.find('option').length).toEqual(3)
-    el = angular.element(ele.find('option')[1])
+    scope.$apply("survey.responses.question['myQuestion'] = survey.form[0].possibleResponses[1]")
+    expect(ele.find('option').length).toEqual(2)
+    el = angular.element(ele.find('option')[0])
     expect(el.attr('value')).toEqual('resp_1')
     expect(el.text()).toEqual('Blue')
-    el = angular.element(ele.find('option')[2])
+    el = angular.element(ele.find('option')[1])
     expect(el.attr('value')).toEqual('resp_2')
     expect(el.text()).toEqual('Green')
 
   it 'binds <select/> to survey.responses.question[item.id]', ->
+    # mimic controller behavior of selecting default response
     scope.$apply("survey.form = [{
       type: 'question',
       id: 'myQuestion',
@@ -88,9 +96,9 @@ describe 'idSurvey directive', ->
         {id: 'resp_2', value: 'Green'}
       ]
     }]")
-    scope.$apply("survey.responses = {question: {myQuestion: 'resp_2'}}")
-    el = angular.element(ele.find('select')[0])
-    expect(el.val()).toEqual('resp_2')
+    angular.element(ele.find('select')[0]).val('resp_2')
+
+    expect(scope.survey.responses.question).toEqual({'myQuestion': 'resp_2'})
 
   it 'drops the veil when transitionInProgress is true', ->
     # sanity check

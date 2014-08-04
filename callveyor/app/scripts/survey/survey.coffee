@@ -15,8 +15,6 @@ surveyForm.factory('SurveyFormFieldsFactory', [
     fields = {
       data: {}
       prepareSurveyForm: (payload) ->
-        selectNonEmpty = (val) -> val?
-
         normalizeObj = (object, type) ->
           obj = {
             id: object.id
@@ -34,7 +32,7 @@ surveyForm.factory('SurveyFormFieldsFactory', [
             when 'questions'
               obj.type = 'question'
               obj.content = object.text
-              obj.possibleResponses = $filter('filter')(object.possible_responses, selectNonEmpty)
+              obj.possibleResponses = object.possible_responses
           obj
 
         normalizedSurvey = []
@@ -48,7 +46,7 @@ surveyForm.factory('SurveyFormFieldsFactory', [
         angular.forEach(payload.data, (obj, type) ->
           normalizeSurvey(obj, type)
         )
-
+        console.log 'normal survey', normalizedSurvey
         fields.data = $filter('orderBy')(normalizedSurvey, 'order')
 
       fetch: ->
@@ -73,12 +71,38 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 # - survey:reload - triggers re-fetch/load of survey form data & transfer list
 #
 surveyForm.controller('SurveyFormCtrl', [
-  '$rootScope', '$scope', '$filter', '$state', '$http', '$window', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache',
-  ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   $timeout,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache) ->
-    # Init public
+  '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache',
+  ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   $timeout,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache) ->
+    # Public 
     survey = {
       hideButtons: true
+      responses: {
+        notes: {}
+        question: {}
+      }
     }
+
+    selectDefaults = ->
+      console.log 'selectDefaults'
+      # :ngupsetting:
+      # set default value to avoid displaying blank options
+      angular.forEach(survey.form, (item) ->
+        console.log 'item', item
+        if item.type == 'question' and !survey.responses.question[item.id]?
+          console.log "setting #{item.id} = #{item.possibleResponses[0].id}"
+          survey.responses.question["#{item.id}"] = item.possibleResponses[0]
+      )
+      $timeout(-> $scope.$digest())
+      # :endngupsetting:
+
+    reset = ->
+      console.log 'reset survey'
+      survey.responses = {
+        notes: {}
+        question: {}
+      }
+
+      selectDefaults()
 
     # :tmp: to maintain back compat (where transfers are sent alongside call script data)
     # todo: move transfer data out of survey related modules to dialer
@@ -101,6 +125,7 @@ surveyForm.controller('SurveyFormCtrl', [
     prepForm = (payload) ->
       SurveyFormFieldsFactory.prepareSurveyForm(payload)
       survey.form = SurveyFormFieldsFactory.data
+      selectDefaults()
       # :tmp:
       cacheTransferList(payload)
       # :endtmp:
@@ -117,12 +142,6 @@ surveyForm.controller('SurveyFormCtrl', [
           survey.hideButtons = true
 
     $rootScope.$on('$stateChangeSuccess', handleStateChange)
-
-    # Public API
-    survey.responses = {
-      notes: {}
-      question: {}
-    }
 
     requestInProgress = false
     survey.save = ($event, andContinue) ->
@@ -183,12 +202,6 @@ surveyForm.controller('SurveyFormCtrl', [
       $http.post("/call_center/api/#{call_id}/#{action}", survey.responses)
       .then(success, error).finally(always)
 
-      reset = ->
-        survey.responses = {
-          notes: {}
-          question: {}
-        }
-
     unless SurveyCache.get('eventsBound')
       $rootScope.$on('survey:save:click', survey.save)
       $rootScope.$on('survey:reload', loadForm)
@@ -197,6 +210,8 @@ surveyForm.controller('SurveyFormCtrl', [
     loadForm()
 
     $scope.survey ||= survey
+
+    console.log 'controller done, final survey obj', $scope.survey
 ])
 
 surveyForm.directive('idSurvey', ->

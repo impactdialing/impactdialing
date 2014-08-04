@@ -14,9 +14,8 @@
 
       <select id="item_{{item.id}}" class="form-control"
               data-ng-if="item.type == 'question'"
-              data-ng-model="survey.responses.question[item.id]">
-        <option data-ng-repeat="response in item.possibleResponses"
-                value="{{response.id}}">{{response.value}}</option>
+              data-ng-model="survey.responses.question[item.id]"
+              data-ng-options="response.value for response in item.possibleResponses track by response.id">
       </select>
     </div>
   </form>
