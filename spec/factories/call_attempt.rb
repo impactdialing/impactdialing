@@ -19,6 +19,12 @@ FactoryGirl.define do
       tDuration { Forgery(:basic).number(at_least: 30, at_most: 180) }
     end
 
+    trait :machine_answered do
+      status 'Message delivered'
+      tStatus 'completed'
+      tDuration { Forgery(:basic).number(at_least: 30, at_most: 180) }
+    end
+
     trait :past_recycle_time do
       created_at 25.hours.ago
     end
@@ -26,5 +32,6 @@ FactoryGirl.define do
     factory :past_recycle_time_failed_call_attempt, traits: [:failed, :past_recycle_time]
     factory :past_recycle_time_busy_call_attempt, traits: [:busy, :past_recycle_time]
     factory :past_recycle_time_completed_call_attempt, traits: [:completed, :past_recycle_time]
+    factory :past_recycle_time_machine_answered_call_attempt, traits: [:machine_answered, :past_recycle_time]
   end
 end

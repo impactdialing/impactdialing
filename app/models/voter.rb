@@ -111,7 +111,8 @@ class Voter < ActiveRecord::Base
     where('(status NOT IN (?) AND priority IS NULL) OR call_back=?', [
       CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING,
       CallAttempt::Status::READY, CallAttempt::Status::SUCCESS,
-      CallAttempt::Status::FAILED
+      CallAttempt::Status::FAILED, CallAttempt::Status::VOICEMAIL,
+      CallAttempt::Status::HANGUP
     ], 1).
     order('last_call_attempt_time, id')
   }

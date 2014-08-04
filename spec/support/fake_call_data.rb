@@ -17,20 +17,41 @@ module FakeCallData
     })
   end
 
-  def attach_call_attempt(type, voter)
+  def attach_call_attempt(type, voter, caller=nil)
     campaign = voter.campaign
+    caller   ||= campaign.callers.sample
 
     call_attempt = create(type, {
       campaign: campaign,
       dialer_mode: campaign.type,
-      voter: voter
+      voter: voter,
+      caller: caller
     })
 
+    # mimicing Twillio.setup_call
     voter.update_attributes({
       last_call_attempt_id: call_attempt.id,
-      last_call_attempt_time: call_attempt.created_at,
-      status: call_attempt.status
+      last_call_attempt_time: call_attempt.created_at
     })
+
+    # mimicing PersistCalls job
+    case type
+    when :past_recycle_time_failed_call_attempt
+      voter.end_unanswered_call(call_attempt.status)
+    when :past_recycle_time_busy_call_attempt
+      call_attempt.call = create(:bare_call)
+      voter.end_unanswered_call(call_attempt.status)
+    when :past_recycle_time_completed_call_attempt
+      call_attempt.call = create(:bare_call)
+      voter.disconnect_call(call_attempt.caller_id)
+    when :past_recycle_time_machine_answered_call_attempt
+      call_attempt.call = create(:bare_call)
+      voter.end_answered_by_machine
+    else
+      raise "Unknown CallAttempt factory type for FakeCallData#attach_call_attempt: #{type}"
+    end
+
+    voter.save!
 
     call_attempt
   end
@@ -57,7 +78,14 @@ module FakeCallData
     [voters, callers, call_attempts]
   end
 
-  def create_campaign_with_script(type, account)
+  def call_and_leave_messages(voters, autodropped=0)
+    voters.each do |voter|
+      call_attempt = attach_call_attempt(:past_recycle_time_machine_answered_call_attempt, voter)
+      call_attempt.update_recording!(autodropped)
+    end
+  end
+
+  def create_campaign_with_script(type, account, campaign_attrs={})
     # Setup script, questions and possible responses
     script = create(:bare_script, {
       account: account
@@ -73,10 +101,10 @@ module FakeCallData
       }
     end
 
-    campaign = create(type, {
+    campaign = create(type, campaign_attrs.merge({
       account: account,
       script: script
-    })
+    }))
 
     [script, questions, campaign]
   end

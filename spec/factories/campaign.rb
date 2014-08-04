@@ -7,4 +7,34 @@ FactoryGirl.define do
     end_time     (Time.now - 6.hours)
     time_zone    "Pacific Time (US & Canada)"
   end
+
+  factory :bare_campaign, class: 'Campaign' do
+    name         { Forgery(:name).company_name }
+    caller_id    '1234567890'
+    recycle_rate 1
+    start_time   (Time.now - 6.hours)
+    end_time     (Time.now - 6.hours)
+    time_zone    "Pacific Time (US & Canada)"
+
+    trait :preview do
+      type 'Preview'
+    end
+
+    trait :power do
+      type 'Power'
+    end
+
+    trait :predictive do
+      type 'Predictive'
+      acceptable_abandon_rate 0.03
+    end
+
+    trait :with_recording do
+      recording
+    end
+
+    factory :predictive_with_recording, traits: [:predictive, :with_recording], class: 'Predictive'
+    factory :power_with_recording, traits: [:power, :with_recording], class: 'Power'
+    factory :preview_with_recording, traits: [:preview, :with_recording], class: 'Preview'
+  end
 end
