@@ -247,10 +247,6 @@ class Voter < ActiveRecord::Base
   def end_answered_by_machine
     agent = AnsweringMachineAgent.new(self)
 
-    if agent.leave_message?
-      self.update_voicemail_history
-    end
-
     self.caller_session = nil
     self.status         = agent.call_status
     self.call_back      = agent.call_back?

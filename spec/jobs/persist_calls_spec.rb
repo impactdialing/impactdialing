@@ -156,7 +156,6 @@ describe PersistCalls do
         subject { voter.reload }
         its(:status) { should == CallAttempt::Status::HANGUP }
         # we want to call voters back if answered by a machine and we hangup
-        # voters who hangup on us will have a different status so currently no worry of cross-over
         its(:call_back) { should == true }
       end
     end
@@ -179,7 +178,6 @@ describe PersistCalls do
         subject{ voter.reload }
 
         its(:status){ should eq CallAttempt::Status::VOICEMAIL }
-        its(:voicemail_history){ should eq voter.campaign.recording.id.to_s }
         its(:call_back){ should be_truthy }
       end
     end
