@@ -120,9 +120,13 @@ module Client
     def answer
       authorize! :view_reports, @account
       load_campaign
-      set_dates
-      @results = @campaign.answers_result(@from_date, @to_date)
-      @transfers = @campaign.transfers(@from_date, @to_date)
+      
+      from_date_pool = build_date_pool(:from_date, [@campaign])
+      to_date_pool   = build_date_pool(:to_date)
+      @date_range    = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
+
+      @results   = @campaign.answers_result(@date_range.from, @date_range.to)
+      @transfers = @campaign.transfers(@date_range.from, @date_range.to)
     end
 
     def usage
