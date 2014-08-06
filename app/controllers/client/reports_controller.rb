@@ -28,7 +28,7 @@ module Client
         missing << 'campaign' if campaign_flag
         missing << 'caller' if caller_flag
         notice << missing.join(', ')
-        redirect_to client_root_path, notice: notice.join(' ')
+        redirect_to client_root_path, notice: notice
       end
     end
 
