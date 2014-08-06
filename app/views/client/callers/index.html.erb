@@ -10,6 +10,26 @@
 <% if @callers.empty? %>
   <p>No callers entered.</p>
 <% else %>
+
+  <p>
+    <strong>
+      Your callers can
+      <a href=<%="#{request.protocol}caller.#{request.domain}" %>
+         target="_blank"
+         data-intro="Click this link to go the page where your callers can log in."
+         data-step="6">log in here</a>
+      or dial <em><%= number_to_phone(Settings.callin_phone) %></em>
+    </strong>
+    <span
+      data-intro="If your callers cannot use a headset (or are using the phones-only system), we provide a (415) area code call-in number. If you need a number in a different area code, contact support."
+      data-step="7">
+        If you are using phones-only mode or need a local area phone number to call into, contact support.
+    </span>
+  </p>
+  <p>
+    Phones-only callers in Preview and Power mode campaigns will be read the lead&#39s name before dialing; in Predictive mode, they won&#39t know the lead&#39s name.
+  </p>
+
   <table data-intro="This is a list of all the caller logins you have created." data-step="3">
     <tr>
       <th>Name</th>
@@ -32,14 +52,6 @@
   </table>
   <p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
 <% end %>
-
-<p><strong><a href=<%="#{request.protocol}caller.#{request.domain}" %>
-              target="_blank"
-              data-intro="Click this link to go the page where your callers can log in."
-              data-step="6">Your callers can log in here.</a></strong>
-    <span data-intro="If your callers cannot use a headset (or are using the phones-only system), we provide a (415) area code call-in number. If you need a number in a different area code, contact support."
-          data-step="7">If you are using phones-only mode or need a local area phone number to call into, contact support.</span></p>
-<p>Phones-only callers in Preview and Power mode campaigns will be read the lead&#39s name before dialing; in Predictive mode, they won&#39t know the lead&#39s name.</p>
 
 <p class="actions"><%= link_to 'Add new caller',
                                new_client_caller_path,
