@@ -37,6 +37,8 @@ private
   end
 
   def perc(n)
+    return '0%' if total_voters.zero?
+
     n ||= 0
     quo = n / total_voters.to_f
     "#{(quo * 100).round}%"

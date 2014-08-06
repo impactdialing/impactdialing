@@ -59,6 +59,8 @@ private
   end
 
   def dials_perc(dials)
+    return '0%' if total.zero?
+    
     dials ||= 0
     quo = dials / total.to_f
     "#{(quo * 100).round}%"
