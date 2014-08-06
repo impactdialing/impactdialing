@@ -12,24 +12,19 @@
 <% else %>
 
   <p>
-    <strong>
-      Your callers can
-      <a href=<%="#{request.protocol}caller.#{request.domain}" %>
-         target="_blank"
-         data-intro="Click this link to go the page where your callers can log in."
-         data-step="6">log in here</a>
-      or dial <em><%= number_to_phone(Settings.callin_phone) %></em> to begin placing calls.
-    </strong>
-  </p>
-  <p>
+    Callers can
+    <a href=<%="#{request.protocol}caller.#{request.domain}" %>
+       target="_blank"
+       data-intro="Click this link to go the page where your callers can log in."
+       data-step="6">log in here</a>.
     <span
       data-intro="If your callers cannot use a headset (or are using the phones-only system), we provide a (415) area code call-in number. If you need a number in a different area code, contact support."
       data-step="7">
-        If you are using phones-only mode or need a local area phone number to call into, please <a href="mailto:support@impactdialing.com">contact support</a>.
+        Callers can also dial <strong><%= number_to_phone(Settings.callin_phone) %></strong> to begin placing calls if you are using phones-only mode. If you need a local area phone number to call into, please <a href="mailto:support@impactdialing.com">contact support</a>.
     </span>
   </p>
   <p>
-    Phones-only callers in Preview and Power mode campaigns will be read the lead&#39s name before dialing; in Predictive mode, the lead name will display at the same time the lead answers.
+    Phones-only callers in Preview and Power mode campaigns will be read the lead&#39s name before dialing; in Predictive mode, the lead name will display when the lead answers.
   </p>
 
   <table data-intro="This is a list of all the caller logins you have created." data-step="3">
