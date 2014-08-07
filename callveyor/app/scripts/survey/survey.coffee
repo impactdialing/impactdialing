@@ -143,6 +143,13 @@ surveyForm.controller('SurveyFormCtrl', [
 
     $rootScope.$on('$stateChangeSuccess', handleStateChange)
 
+    normalizeQuestion = ->
+      normalized = {}
+      for question_id, response of survey.responses.question
+        normalized[question_id] = response.id
+
+      normalized
+
     requestInProgress = false
     survey.save = ($event, andContinue) ->
       if requestInProgress
@@ -198,8 +205,12 @@ surveyForm.controller('SurveyFormCtrl', [
 
       requestInProgress               = true
       $rootScope.transitionInProgress = true
+      
       # make a request, get a promise
-      $http.post("/call_center/api/#{call_id}/#{action}", survey.responses)
+      $http.post("/call_center/api/#{call_id}/#{action}", {
+        notes: survey.responses.notes,
+        question: normalizeQuestion()
+      })
       .then(success, error).finally(always)
 
     unless SurveyCache.get('eventsBound')

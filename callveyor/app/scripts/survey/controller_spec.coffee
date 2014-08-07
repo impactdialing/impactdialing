@@ -51,8 +51,8 @@ describe 'survey controller', ->
       $httpBackend.whenPOST("/call_center/api/#{call.id}/submit_result").respond(400, {})
       usSpinnerService.spin = jasmine.createSpy('-usSpinnerService.spin Spy-')
       usSpinnerService.stop = jasmine.createSpy('-usSpinnerService.stop Spy-')
-      @notes = {"42": 367}
-      @question = {"73": 91}
+      @notes = {"42": "some notes"}
+      @question = {"73": {id: 12, value: "Yes"}}
 
     it 'stops the global spinner', ->
       $scope.survey.save({}, true)
@@ -77,8 +77,8 @@ describe 'survey controller', ->
       $httpBackend.whenPOST("/call_center/api/#{call.id}/submit_result_and_stop").respond(200, {})
       usSpinnerService.spin = jasmine.createSpy('-usSpinnerService.spin Spy-')
       usSpinnerService.stop = jasmine.createSpy('-usSpinnerService.stop Spy-')
-      @notes = {"42": 367}
-      @question = {"73": 91}
+      @notes = {"42": "some notes"}
+      @question = {"73": {id: 12, value: "Yes"}}
 
     it 'is a no-op if survey.requestInProgress is true', ->
       $scope.survey.save()
@@ -182,11 +182,15 @@ describe 'survey controller', ->
         $httpBackend.verifyNoOutstandingExpectation()
 
       it 'POSTs survey.responses to /call_center/api/:call_id/submit_result', ->
-        expectedData = {
-          question: {"1": 321},
+        responses = {
+          question: {"1": {id: 321, value: 'Yes'}},
           notes: {"1": "Some text"}
         }
-        $scope.survey.responses = expectedData
+        expectedData = {
+          question: {"1": responses.question["1"].id},
+          notes: responses.notes
+        }
+        $scope.survey.responses = responses
         $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result", expectedData).respond(200, {})
         $scope.survey.save({}, true)
 
