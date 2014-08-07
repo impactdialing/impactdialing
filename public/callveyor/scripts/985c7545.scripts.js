@@ -34956,10 +34956,7 @@ to fix it.');
       return fields = {
         data: {},
         prepareSurveyForm: function(payload) {
-          var normalizeObj, normalizeSurvey, normalizedSurvey, selectNonEmpty;
-          selectNonEmpty = function(val) {
-            return val != null;
-          };
+          var normalizeObj, normalizeSurvey, normalizedSurvey;
           normalizeObj = function(object, type) {
             var obj;
             obj = {
@@ -34980,7 +34977,7 @@ to fix it.');
               case 'questions':
                 obj.type = 'question';
                 obj.content = object.text;
-                obj.possibleResponses = $filter('filter')(object.possible_responses, selectNonEmpty);
+                obj.possibleResponses = object.possible_responses;
             }
             return obj;
           };
@@ -34998,6 +34995,7 @@ to fix it.');
           angular.forEach(payload.data, function(obj, type) {
             return normalizeSurvey(obj, type);
           });
+          console.log('normal survey', normalizedSurvey);
           return fields.data = $filter('orderBy')(normalizedSurvey, 'order');
         },
         fetch: function() {
@@ -35008,10 +35006,35 @@ to fix it.');
   ]);
 
   surveyForm.controller('SurveyFormCtrl', [
-    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', '$timeout', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', function($rootScope, $scope, $filter, $state, $http, $window, TransferCache, CallCache, TwilioCache, usSpinnerService, $timeout, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache) {
-      var cacheTransferList, fetchErr, handleStateChange, loadForm, prepForm, requestInProgress, survey;
+    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', function($rootScope, $scope, $filter, $state, $http, $window, $timeout, TransferCache, CallCache, TwilioCache, usSpinnerService, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache) {
+      var cacheTransferList, fetchErr, handleStateChange, loadForm, normalizeQuestion, prepForm, requestInProgress, reset, selectDefaults, survey;
       survey = {
-        hideButtons: true
+        hideButtons: true,
+        responses: {
+          notes: {},
+          question: {}
+        }
+      };
+      selectDefaults = function() {
+        console.log('selectDefaults');
+        angular.forEach(survey.form, function(item) {
+          console.log('item', item);
+          if (item.type === 'question' && (survey.responses.question[item.id] == null)) {
+            console.log("setting " + item.id + " = " + item.possibleResponses[0].id);
+            return survey.responses.question["" + item.id] = item.possibleResponses[0];
+          }
+        });
+        return $timeout(function() {
+          return $scope.$digest();
+        });
+      };
+      reset = function() {
+        console.log('reset survey');
+        survey.responses = {
+          notes: {},
+          question: {}
+        };
+        return selectDefaults();
       };
       cacheTransferList = function(payload) {
         var list;
@@ -35032,6 +35055,7 @@ to fix it.');
       prepForm = function(payload) {
         SurveyFormFieldsFactory.prepareSurveyForm(payload);
         survey.form = SurveyFormFieldsFactory.data;
+        selectDefaults();
         cacheTransferList(payload);
         return $rootScope.$broadcast('survey:load:success');
       };
@@ -35047,13 +35071,19 @@ to fix it.');
         }
       };
       $rootScope.$on('$stateChangeSuccess', handleStateChange);
-      survey.responses = {
-        notes: {},
-        question: {}
+      normalizeQuestion = function() {
+        var normalized, question_id, response, _ref;
+        normalized = {};
+        _ref = survey.responses.question;
+        for (question_id in _ref) {
+          response = _ref[question_id];
+          normalized[question_id] = response.id;
+        }
+        return normalized;
       };
       requestInProgress = false;
       survey.save = function($event, andContinue) {
-        var action, always, call_id, error, reset, success, successRan;
+        var action, always, call_id, error, success, successRan;
         if (requestInProgress) {
           console.log('survey.requestInProgress, returning');
           return;
@@ -35115,13 +35145,10 @@ to fix it.');
         };
         requestInProgress = true;
         $rootScope.transitionInProgress = true;
-        $http.post("/call_center/api/" + call_id + "/" + action, survey.responses).then(success, error)["finally"](always);
-        return reset = function() {
-          return survey.responses = {
-            notes: {},
-            question: {}
-          };
-        };
+        return $http.post("/call_center/api/" + call_id + "/" + action, {
+          notes: survey.responses.notes,
+          question: normalizeQuestion()
+        }).then(success, error)["finally"](always);
       };
       if (!SurveyCache.get('eventsBound')) {
         $rootScope.$on('survey:save:click', survey.save);
@@ -35129,7 +35156,8 @@ to fix it.');
         SurveyCache.put('eventsBound', true);
       }
       loadForm();
-      return $scope.survey || ($scope.survey = survey);
+      $scope.survey || ($scope.survey = survey);
+      return console.log('controller done, final survey obj', $scope.survey);
     }
   ]);
 
@@ -35904,7 +35932,7 @@ angular.module('survey').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('/callveyor/survey/survey.tpl.html',
-    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"transitionInProgress\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><div data-ng-if=\"item.type == 'scriptText'\" data-ng-bind-html=\"item.content\"></div><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\"><option data-ng-repeat=\"response in item.possibleResponses\" value=\"{{response.id}}\">{{response.value}}</option></select></div></form></div>"
+    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"transitionInProgress\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><div data-ng-if=\"item.type == 'scriptText'\" data-ng-bind-html=\"item.content\"></div><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\" data-ng-options=\"response as response.value for response in item.possibleResponses\"></select></div></form></div>"
   );
 
 }]);
