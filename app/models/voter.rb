@@ -2,6 +2,7 @@ require 'fiber'
 class Voter < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallAttempt::Status
+  include ERB::Util
 
   acts_as_reportable
 
@@ -148,6 +149,27 @@ class Voter < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
+private
+  def autolink(text)
+    domain_regex = /[\w]+[\w\.-]?(\.[a-z]){1,2}/i
+    email_regex  = /[\w-\.]+[\w-\+\.]?@/i
+    proto_regex  = /\bhttp(s)?:\/\//i
+    space_regex  = /\s+/
+
+    if text =~ domain_regex and text !~ space_regex
+      # it looks like a domain, is it an email?
+      if text =~ email_regex
+        return "<a target=\"_blank\" href=\"mailto:#{html_escape(text)}\">#{html_escape(text)}</a>"
+      else
+        proto = text =~ proto_regex ? '' : 'http://'
+        return "<a target=\"_blank\" href=\"#{proto}#{html_escape(text)}\">#{html_escape(text)}</a>"
+      end
+    end
+
+    text
+  end
+
+public
   ##
   # Select the next voter.
   #
@@ -171,7 +193,6 @@ class Voter < ActiveRecord::Base
   # A voter is a retry if it has been dialed but the call was not connected for
   # whatever reason.
   #
-
   def self.next_voter(voters, recycle_rate, blocked_numbers, current_voter_id)
     not_dialed_queue = voters.not_dialed.without(blocked_numbers).enabled
     retry_queue      = voters.next_in_recycled_queue(recycle_rate, blocked_numbers)
@@ -294,10 +315,17 @@ class Voter < ActiveRecord::Base
   end
 
   def info
+    fields = {}
+    f      = self.attributes.reject{|k,v| k =~ /(created|updated)_at/}
+
+    custom_fields = Hash[ *self.selected_custom_voter_field_values.try(:collect) { |cvfv| [cvfv.custom_voter_field.name, autolink(cvfv.value)] }.try(:flatten) ]
+
+    f.each{|k,v| fields[k] = autolink(v)}
+
     {
-      :fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") },
-      :custom_fields => Hash[ *self.selected_custom_voter_field_values.try(:collect) { |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.try(:flatten) ]
-    }.merge!(campaign.script ? campaign.script.selected_fields_json : {})
+      fields: fields,
+      custom_fields: custom_fields
+    }.merge!(campaign.script.selected_fields_json)
   end
 
   def not_yet_called?(call_status)

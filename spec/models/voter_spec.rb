@@ -20,6 +20,151 @@ describe Voter, :type => :model do
 
   include Rails.application.routes.url_helpers
 
+  describe '#info' do
+    include FakeCallData
+
+    shared_context 'Voter#info setup' do
+      def setup_custom_fields(account, script, voter, voter_fields)
+        script.update_attributes!(voter_fields: voter_fields)
+
+        custom_field = create(:custom_voter_field, {
+          account: account,
+          name: 'ImportedFromOldSystem'
+        })
+        create(:custom_voter_field_value, {
+          voter: voter,
+          custom_voter_field: custom_field
+        })
+        custom_field = create(:custom_voter_field, {
+          account: account,
+          name: 'MoreInfo'
+        })
+        create(:custom_voter_field_value, {
+          voter: voter,
+          custom_voter_field: custom_field,
+          value: 'test.com'
+        })
+      end
+
+      let(:admin) do
+        create(:user)
+      end
+      let(:account) do
+        admin.account
+      end
+      let(:script_questions_campaign) do
+        create_campaign_with_script(:bare_preview, account)
+      end
+      let(:script) do
+        script_questions_campaign.first
+      end
+      let(:campaign) do
+        script_questions_campaign.last
+      end
+      let(:voter) do
+        create(:realistic_voter, {
+          account: account,
+          campaign: campaign
+        })
+      end
+      let(:expected_fields) do
+        one = voter.attributes.reject{|k,v| k =~ /(created|updated)_at/}
+        one.merge({
+          'email' => "<a target=\"_blank\" href=\"mailto:#{voter.email}\">#{voter.email}</a>"
+        })
+      end
+    end
+
+    shared_context 'Voter#info with custom fields' do
+      let(:voter_fields) do
+        "[\"Phone\", \"FirstName\", \"LastName\", \"Email\", \"ImportedFromOldSystem\", \"MoreInfo\"]"
+      end
+    end
+
+    shared_examples 'voter info with fields' do
+      before do
+        expect(expected_fields).to_not be_empty
+      end
+
+      it 'returns a hash with key :fields, value Voter#attributes sans created_at & updated_at' do
+        expect(voter.info[:fields]).to eq expected_fields
+      end
+
+      it 'always flags Phone number for display' do
+        expect(voter.info['Phone_flag']).to be_truthy
+      end
+
+      it 'flags Script#voter_fields for display' do
+        script.update_attributes!(voter_fields: '["FirstName"]')
+        flags = voter.info.reject{|k,v| k !~ /\w+_flag/ or k =~ /Phone_flag/}
+        expect(voter.info['FirstName_flag']).to be_truthy
+      end
+    end
+
+    include_context 'Voter#info setup'
+    it_behaves_like 'voter info with fields'
+
+    describe 'voter info with autolinking of URLs and emails' do
+      include_context 'Voter#info with custom fields'
+
+      before do
+        setup_custom_fields(account, script, voter, voter_fields)
+      end
+
+      it 'converts plain text email addresses (e.g. joe@test.com) to links' do
+        expect(voter.info[:fields]['email']).to eq "<a target=\"_blank\" href=\"mailto:#{voter.email}\">#{voter.email}</a>"
+      end
+
+      it 'converts plain text URLs (e.g. www.test.com or test.com) to links' do
+        expect(voter.info[:custom_fields]['MoreInfo']).to eq "<a target=\"_blank\" href=\"http://test.com\">test.com</a>"
+      end
+
+      it 'makes best effort to ignore typos that look like domains' do
+        voter.email = 'No-email.Please use phone'
+        voter.save!
+        expect(voter.info[:fields]['email']).to eq voter.email
+      end
+
+      it 'makes best effort to ignore typos that look like emails' do
+        voter.email = 'Holla-@twit'
+        voter.save!
+        expect(voter.info[:fields]['email']).to eq voter.email
+      end
+    end
+
+    context 'Script#voter_fields is nil' do
+      before do
+        expect(script.voter_fields).to be_nil
+      end
+
+      it_behaves_like 'voter info with fields'
+    end
+
+    context 'Script#voter_fields is not nil' do
+      context 'Script#selected_custom_fields is nil' do
+        before do
+          expect(script.selected_custom_fields).to be_nil
+        end
+
+        it_behaves_like 'voter info with fields'
+      end
+
+      context 'Script#selected_custom_fields is not nil' do
+        include_context 'Voter#info with custom fields'
+
+        before do
+          setup_custom_fields(account, script, voter, voter_fields)
+        end
+
+        it_behaves_like 'voter info with fields'
+
+        it 'includes custom fields for showing under the :custom_fields key' do
+          expect(voter.info[:custom_fields].keys).to include 'ImportedFromOldSystem'
+        end
+      end
+    end
+  end
+
   describe 'voicemail_history' do
     let(:campaign) do
       create(:campaign, {
