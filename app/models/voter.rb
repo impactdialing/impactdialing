@@ -166,7 +166,7 @@ private
       end
     end
 
-    text
+    html_escape(text)
   end
 
 public

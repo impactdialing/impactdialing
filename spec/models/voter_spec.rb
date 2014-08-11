@@ -69,7 +69,9 @@ describe Voter, :type => :model do
       end
       let(:expected_fields) do
         one = voter.attributes.reject{|k,v| k =~ /(created|updated)_at/}
-        one.merge({
+        two = {}
+        one.each{|k,v| two[k] = v.to_s}
+        two.merge({
           'email' => "<a target=\"_blank\" href=\"mailto:#{voter.email}\">#{voter.email}</a>"
         })
       end
@@ -78,6 +80,26 @@ describe Voter, :type => :model do
     shared_context 'Voter#info with custom fields' do
       let(:voter_fields) do
         "[\"Phone\", \"FirstName\", \"LastName\", \"Email\", \"ImportedFromOldSystem\", \"MoreInfo\"]"
+      end
+    end
+
+    shared_examples 'non-autolinked fields' do
+      include ERB::Util
+
+      it 'html encodes all `fields`' do
+        voter.first_name = '<script>alert("blah");</script>'
+        voter.save!
+        actual = voter.info[:fields]['first_name']
+        expect(actual).to eq html_escape(voter.first_name)
+      end
+
+      it 'html encodes all `custom_fields`' do
+        field = CustomVoterField.where(name: 'ImportedFromOldSystem').first
+        value = field.custom_voter_field_values.first
+        value.value = '<script>alert("blah");</script>'
+        value.save!
+        actual = voter.info[:custom_fields]['ImportedFromOldSystem']
+        expect(actual).to eq html_escape(value.value)
       end
     end
 
@@ -130,6 +152,10 @@ describe Voter, :type => :model do
         voter.save!
         expect(voter.info[:fields]['email']).to eq voter.email
       end
+
+      it 'performs html escaping on all fields'
+
+      it 'performs html escaping on all custom fields'
     end
 
     context 'Script#voter_fields is nil' do
@@ -157,6 +183,7 @@ describe Voter, :type => :model do
         end
 
         it_behaves_like 'voter info with fields'
+        it_behaves_like 'non-autolinked fields'
 
         it 'includes custom fields for showing under the :custom_fields key' do
           expect(voter.info[:custom_fields].keys).to include 'ImportedFromOldSystem'
