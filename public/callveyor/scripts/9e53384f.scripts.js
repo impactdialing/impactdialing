@@ -34912,7 +34912,7 @@ to fix it.');
   contact = angular.module('callveyor.contact', ['idCacheFactories']);
 
   contact.controller('ContactCtrl', [
-    '$rootScope', '$scope', '$state', '$http', 'ContactCache', function($rootScope, $scope, $state, $http, ContactCache) {
+    '$rootScope', '$scope', '$state', '$http', '$sce', 'ContactCache', function($rootScope, $scope, $state, $http, $sce, ContactCache) {
       var handleStateChange, updateFromCache;
       contact = {};
       contact.data = ContactCache.get('data');
@@ -34924,7 +34924,21 @@ to fix it.');
         }
       };
       updateFromCache = function() {
-        return contact.data = ContactCache.get('data');
+        var data, trustedCustomFields, trustedFields;
+        data = angular.copy(ContactCache.get('data'));
+        trustedFields = {};
+        angular.forEach(data.fields, function(value, key) {
+          return trustedFields[key] = $sce.trustAsHtml(value);
+        });
+        trustedCustomFields = [];
+        angular.forEach(data.custom_fields, function(value, key) {
+          var trusted;
+          trusted = [$sce.trustAsHtml(key), $sce.trustAsHtml(value)];
+          return trustedCustomFields.push(trusted);
+        });
+        data.fields = trustedFields;
+        data.custom_fields = trustedCustomFields;
+        return contact.data = data;
       };
       $rootScope.$on('contact:changed', updateFromCache);
       $rootScope.$on('$stateChangeSuccess', handleStateChange);
@@ -35914,7 +35928,7 @@ angular.module('callveyor.contact').run(['$templateCache', function($templateCac
   'use strict';
 
   $templateCache.put('/callveyor/dialer/contact/info.tpl.html',
-    "<div class=\"row fixed-contact panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id || !contact.data.ID_flag\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id || !contact.data.ID_flag\">{{contact.data.fields.custom_id}}</dd><dt data-ng-hide=\"!contact.data.fields.first_name || !contact.data.FirstName_flag\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name || !contact.data.FirstName_flag\">{{contact.data.fields.first_name}}</dd><dt data-ng-hide=\"!contact.data.fields.middle_name || !contact.data.MiddleName_flag\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name || !contact.data.MiddleName_flag\">{{contact.data.fields.middle_name}}</dd><dt data-ng-hide=\"!contact.data.fields.last_name || !contact.data.LastName_flag\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name || !contact.data.LastName_flag\">{{contact.data.fields.last_name}}</dd><dt data-ng-hide=\"!contact.data.fields.suffix || !contact.data.Suffix_flag\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix || !contact.data.Suffix_flag\">{{contact.data.fields.suffix}}</dd><dt data-ng-hide=\"!contact.data.fields.address || !contact.data.Address_flag\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address || !contact.data.Address_flag\">{{contact.data.fields.address}}</dd><dt data-ng-hide=\"!contact.data.fields.city || !contact.data.City_flag\">City</dt><dd data-ng-hide=\"!contact.data.fields.city || !contact.data.City_flag\">{{contact.data.fields.city}}</dd><dt data-ng-hide=\"!contact.data.fields.state || !contact.data.State/Province_flag\">State</dt><dd data-ng-hide=\"!contact.data.fields.state || !contact.data.State/Province_flag\">{{contact.data.fields.state}}</dd><dt data-ng-hide=\"!contact.data.fields.zip_code || !contact.data.Zip/Postal_flag\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code || !contact.data.Zip/Postal_flag\">{{contact.data.fields.zip_code}}</dd><dt data-ng-hide=\"!contact.data.fields.country || !contact.data.Country_flag\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country || !contact.data.Country_flag\">{{contact.data.fields.country}}</dd><dt data-ng-hide=\"!contact.data.fields.phone || !contact.data.Phone_flag\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone || !contact.data.Phone_flag\">{{contact.data.fields.phone}}</dd><dt data-ng-hide=\"!contact.data.fields.email || !contact.data.Email_flag\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email || !contact.data.Email_flag\">{{contact.data.fields.email}}</dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"(field, value) in contact.data.custom_fields\">{{field}}</dt><dd data-ng-repeat-end=\"\">{{value}}</dd></dl></div></div>"
+    "<div class=\"row fixed-contact panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id || !contact.data.ID_flag\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id || !contact.data.ID_flag\" data-ng-bind-html=\"contact.data.fields.custom_id\"></dd><dt data-ng-hide=\"!contact.data.fields.first_name || !contact.data.FirstName_flag\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name || !contact.data.FirstName_flag\" data-ng-bind-html=\"contact.data.fields.first_name\"></dd><dt data-ng-hide=\"!contact.data.fields.middle_name || !contact.data.MiddleName_flag\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name || !contact.data.MiddleName_flag\" data-ng-bind-html=\"contact.data.fields.middle_name\"></dd><dt data-ng-hide=\"!contact.data.fields.last_name || !contact.data.LastName_flag\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name || !contact.data.LastName_flag\" data-ng-bind-html=\"contact.data.fields.last_name\"></dd><dt data-ng-hide=\"!contact.data.fields.suffix || !contact.data.Suffix_flag\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix || !contact.data.Suffix_flag\" data-ng-bind-html=\"contact.data.fields.suffix\"></dd><dt data-ng-hide=\"!contact.data.fields.address || !contact.data.Address_flag\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address || !contact.data.Address_flag\" data-ng-bind-html=\"contact.data.fields.address\"></dd><dt data-ng-hide=\"!contact.data.fields.city || !contact.data.City_flag\">City</dt><dd data-ng-hide=\"!contact.data.fields.city || !contact.data.City_flag\" data-ng-bind-html=\"contact.data.fields.city\"></dd><dt data-ng-hide=\"!contact.data.fields.state || !contact.data.State/Province_flag\">State</dt><dd data-ng-hide=\"!contact.data.fields.state || !contact.data.State/Province_flag\" data-ng-bind-html=\"contact.data.fields.state\"></dd><dt data-ng-hide=\"!contact.data.fields.zip_code || !contact.data.Zip/Postal_flag\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code || !contact.data.Zip/Postal_flag\" data-ng-bind-html=\"contact.data.fields.zip_code\"></dd><dt data-ng-hide=\"!contact.data.fields.country || !contact.data.Country_flag\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country || !contact.data.Country_flag\" data-ng-bind-html=\"contact.data.fields.country\"></dd><dt data-ng-hide=\"!contact.data.fields.phone || !contact.data.Phone_flag\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone || !contact.data.Phone_flag\" data-ng-bind-html=\"contact.data.fields.phone\"></dd><dt data-ng-hide=\"!contact.data.fields.email || !contact.data.Email_flag\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email || !contact.data.Email_flag\" data-ng-bind-html=\"contact.data.fields.email\"></dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"tuple in contact.data.custom_fields\" data-ng-bind-html=\"tuple[0]\"></dt><dd data-ng-repeat-end=\"\" data-ng-bind-html=\"tuple[1]\"></dd></dl></div></div>"
   );
 
 }]);
