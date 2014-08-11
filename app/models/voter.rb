@@ -151,8 +151,8 @@ class Voter < ActiveRecord::Base
 
 private
   def autolink(text)
-    domain_regex = /[\w]+[\w\.-]?(\.[a-z]){1,2}/i
-    email_regex  = /[\w-\.]+[\w-\+\.]?@/i
+    domain_regex = /[\w]+[\w\.\-]?(\.[a-z]){1,2}/i
+    email_regex  = /[\w\-\.]+[\w\-\+\.]?@/i
     proto_regex  = /\bhttp(s)?:\/\//i
     space_regex  = /\s+/
 
