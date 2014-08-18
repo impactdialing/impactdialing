@@ -22,13 +22,13 @@ module Client
       campaign_flag = account.campaigns.empty?
       caller_flag   = account.callers.empty?
       if campaign_flag or caller_flag
-        notice = ['Please create at least one campaign and one caller to load reports.']
-        notice << 'Missing:'
+        notice = 'Please create at least one campaign and one caller before loading reports. '
+        notice << 'Missing: '
         missing = []
-        missing << 'campaign' if campaign_flag
-        missing << 'caller' if caller_flag
-        notice << missing.join(', ')
-        redirect_to client_root_path, notice: notice
+        missing << 'campaigns' if campaign_flag
+        missing << 'callers' if caller_flag
+        notice << missing.to_sentence
+        redirect_to client_root_path, notice: [notice]
       end
     end
 
