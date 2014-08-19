@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-context 'Message Drops' do
+context 'Message Drops', data_heavy: true do
   include FakeCallData
   let(:admin){ create(:user) }
   let(:account){ admin.account }
 
-  feature 'Do not call back after dropping message' do
+  describe 'Do not call back after dropping message' do
     let(:campaign) do
       create_campaign_with_script(:power_with_recording, account, {
         answering_machine_detect: true,
@@ -19,7 +19,7 @@ context 'Message Drops' do
       add_callers(campaign, 1)
     end
 
-    scenario 'When all contacts have received a message automatically' do
+    it 'When all contacts have received a message automatically' do
       call_and_leave_messages(voters, true)
 
       actual = campaign.next_voter_in_dial_queue(voters.last)
@@ -27,7 +27,7 @@ context 'Message Drops' do
       expect(actual).to be_nil
     end
 
-    scenario 'When all but one contact have received a message automatically' do
+    it 'When all but one contact have received a message automatically' do
       remaining = voters.pop
 
       call_and_leave_messages(voters, true)
@@ -37,7 +37,7 @@ context 'Message Drops' do
       expect(actual).to eq remaining
     end
 
-    scenario 'When all contacts have received a message manually' do
+    it 'When all contacts have received a message manually' do
       call_and_leave_messages(voters, false)
 
       actual = campaign.next_voter_in_dial_queue(voters.last)
@@ -45,7 +45,7 @@ context 'Message Drops' do
       expect(actual).to be_nil
     end
 
-    scenario 'When all but one contact have received a message manually' do
+    it 'When all but one contact have received a message manually' do
       remaining = voters.pop
 
       call_and_leave_messages(voters, false)
@@ -56,7 +56,7 @@ context 'Message Drops' do
     end
   end
 
-  feature 'Call back after dropping message' do
+  describe 'Call back after dropping message' do
     let(:campaign) do
       create_campaign_with_script(:power_with_recording, account, {
         answering_machine_detect: true,
@@ -70,7 +70,7 @@ context 'Message Drops' do
       add_callers(campaign, 1)
     end
 
-    scenario 'When all contacts have received a message automatically' do
+    it 'When all contacts have received a message automatically' do
       call_and_leave_messages(voters, true)
 
       actual = campaign.next_voter_in_dial_queue(voters.last)
@@ -78,7 +78,7 @@ context 'Message Drops' do
       expect(actual).to eq voters.first
     end
 
-    scenario 'When all but one contact have received a message automatically' do
+    it 'When all but one contact have received a message automatically' do
       remaining = voters.pop
 
       call_and_leave_messages(voters, true)
@@ -88,7 +88,7 @@ context 'Message Drops' do
       expect(actual).to eq remaining
     end
 
-    scenario 'When all contacts have received a message manually' do
+    it 'When all contacts have received a message manually' do
       call_and_leave_messages(voters, false)
 
       actual = campaign.next_voter_in_dial_queue(voters.last)
@@ -96,7 +96,7 @@ context 'Message Drops' do
       expect(actual).to eq voters.first
     end
 
-    scenario 'When all but one contact have received a message manually' do
+    it 'When all but one contact have received a message manually' do
       remaining = voters.pop
 
       call_and_leave_messages(voters, false)
@@ -106,7 +106,7 @@ context 'Message Drops' do
       expect(actual).to eq remaining
     end
 
-    scenario 'Drop no further messages automatically' do
+    it 'Drop no further messages automatically' do
       call_and_leave_messages(voters, true)
 
       voter = campaign.next_voter_in_dial_queue(nil)
@@ -126,7 +126,7 @@ context 'Machine Detection without Message Drops' do
   let(:admin){ create(:user) }
   let(:account){ admin.account }
 
-  feature 'Call back after machine detected' do
+  describe 'Call back after machine detected' do
     let(:campaign) do
       create_campaign_with_script(:power_with_recording, account, {
         answering_machine_detect: true
@@ -150,7 +150,7 @@ context 'Machine Detection without Message Drops' do
       end
     end
 
-    scenario 'When the first pass is done and machines were detected for some voters, cycle through those voters again' do
+    it 'When the first pass is done and machines were detected for some voters, cycle through those voters again' do
       call_and_answer_by_human([voters[1], voters[3]])
       call_and_hangup_on_machine([voters[0], voters[2], voters[4]])
 

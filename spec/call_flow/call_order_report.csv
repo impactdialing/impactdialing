@@ -1,0 +1,91 @@
+Voter ID, Pass, Status, Total Attempts, Total Passes
+1, 1, Call failed, 1, 1
+2, 1, not called, 5, 6
+3, 1, No answer busy signal, 2, 2
+4, 1, No answer busy signal, 2, 3
+5, 1, Call completed with success., 1, 1
+6, 1, Call failed, 1, 1
+7, 1, not called, 1, 2
+8, 1, No answer busy signal, 3, 3
+9, 1, No answer busy signal, 3, 4
+10, 1, Call completed with success., 1, 1
+11, 1, Call failed, 1, 1
+12, 1, not called, 1, 2
+13, 1, No answer busy signal, 2, 2
+14, 1, No answer busy signal, 2, 2
+15, 1, Call completed with success., 1, 1
+16, 1, Call failed, 1, 1
+17, 1, not called, 6, 10
+18, 1, No answer busy signal, 2, 3
+19, 1, No answer busy signal, 5, 6
+20, 1, Call completed with success., 1, 1
+21, 1, Call failed, 1, 1
+22, 1, not called, 3, 5
+23, 1, No answer busy signal, 4, 4
+24, 1, No answer busy signal, 2, 2
+25, 1, Call completed with success., 1, 1
+26, 1, Call failed, 1, 1
+27, 1, not called, 4, 5
+28, 1, No answer busy signal, 2, 2
+29, 1, No answer busy signal, 3, 4
+30, 1, Call completed with success., 1, 1
+31, 1, Call failed, 1, 1
+32, 1, not called, 1, 2
+33, 1, No answer busy signal, 3, 3
+34, 1, No answer busy signal, 3, 3
+35, 1, Call completed with success., 1, 1
+36, 1, Call failed, 1, 1
+37, 1, not called, 1, 2
+38, 1, No answer busy signal, 2, 2
+39, 1, No answer busy signal, 2, 2
+40, 1, Call completed with success., 1, 1
+41, 1, Call failed, 1, 1
+42, 1, not called, 2, 4
+43, 1, No answer busy signal, 2, 3
+44, 1, No answer busy signal, 3, 5
+45, 1, Call completed with success., 1, 1
+46, 1, Call failed, 1, 1
+47, 1, not called, 3, 6
+48, 1, No answer busy signal, 4, 4
+49, 1, No answer busy signal, 2, 2
+50, 1, Call completed with success., 1, 1
+2, 2, No answer busy signal, 5, 6
+3, 2, Call failed, 2, 2
+4, 2, not called, 2, 3
+7, 2, Call completed with success., 1, 2
+8, 2, Call failed, 3, 3
+9, 2, not called, 3, 4
+12, 2, Call failed, 1, 2
+13, 2, Call completed with success., 2, 2
+14, 2, Call failed, 2, 2
+17, 2, No answer busy signal, 6, 10
+18, 2, Call completed with success., 2, 3
+19, 2, Call failed, 5, 6
+22, 2, not called, 3, 5
+23, 2, Call completed with success., 4, 4
+24, 2, Call completed with success., 2, 2
+27, 2, No answer busy signal, 4, 5
+28, 2, Call failed, 2, 2
+29, 2, No answer busy signal, 3, 4
+32, 2, Call completed with success., 1, 2
+33, 2, Call completed with success., 3, 3
+34, 2, Call failed, 3, 3
+37, 2, Call failed, 1, 2
+38, 2, Call completed with success., 2, 2
+39, 2, Call failed, 2, 2
+42, 2, Call completed with success., 2, 4
+43, 2, not called, 2, 3
+44, 2, not called, 3, 5
+47, 2, No answer busy signal, 3, 6
+48, 2, Call failed, 4, 4
+49, 2, Call completed with success., 2, 2
+2, 3, Call failed, 5, 6
+4, 3, Call completed with success., 2, 3
+9, 3, Call failed, 3, 4
+17, 3, Call completed with success., 6, 10
+22, 3, Call completed with success., 3, 5
+27, 3, Call failed, 4, 5
+29, 3, Call completed with success., 3, 4
+43, 3, Call failed, 2, 3
+44, 3, Call failed, 3, 5
+47, 3, Call completed with success., 3, 6
