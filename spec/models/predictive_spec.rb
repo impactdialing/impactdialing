@@ -23,6 +23,18 @@ describe Predictive do
       expect(campaign.choose_voters_to_dial(1)).to eq([voter.id])
     end
 
+    it 'does not load deleted (not active) voters' do
+      voter = create(:realistic_voter, :deleted, {campaign: campaign})
+
+      expect(campaign.choose_voters_to_dial(1)).to be_empty
+    end
+
+    it 'does not load disabled (not enabled) voters' do
+      voter = create(:realistic_voter, :disabled, {campaign: campaign})
+
+      expect(campaign.choose_voters_to_dial(1)).to be_empty
+    end
+
     xit "should properly choose limit of voters to dial" do
       voter_list = create(:voter_list, campaign: campaign, active: true)
       priority_voter = create(:voter, campaign: campaign, :status=>"not called", voter_list: voter_list, account: account, priority: "1")
