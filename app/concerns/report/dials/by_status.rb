@@ -13,10 +13,6 @@ private
         number: :caller_left_message_count,
         percent: :caller_left_message_percent
       },
-      # {
-      #   status: 'Ringing',
-      #   number: :ringing_count
-      # },
       {
         status: 'No answer',
         number: :not_answered_count
