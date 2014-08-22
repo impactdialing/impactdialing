@@ -47,22 +47,30 @@ class Predictive < Campaign
 
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
+    # ^^ this and `limit_voters = ...` are doing similar checks,
+    # which one to use?
 
-    limit_voters = num_voters <= 0 ? 0 : num_voters
-    blocked      = account.blocked_numbers.for_campaign(self).pluck(:number)
-    voter_query  = all_voters.active.enabled.without(blocked).limit(limit_voters)
-    not_dialed   = voter_query.not_dialed.where(:call_back => false).pluck(:id)
+    if check_campaign_fit_to_dial
+      limit_voters = num_voters <= 0 ? 0 : num_voters
+      # ^^ this and return [] if num_voters < 1 are redundant, which one to use?
 
-    if not_dialed.size > 0
-      voters = not_dialed
+      blocked      = account.blocked_numbers.for_campaign(self).pluck(:number)
+      voter_query  = all_voters.active.enabled.without(blocked).limit(limit_voters)
+      not_dialed   = voter_query.not_dialed.where(:call_back => false).pluck(:id)
+
+      if not_dialed.size > 0
+        voters = not_dialed
+      else
+        voters = voter_query.last_call_attempt_before_recycle_rate(recycle_rate).
+                  to_be_dialed.pluck(:id)
+      end
+
+      set_voter_status_to_read_for_dial!(voters)
     else
-      voters = voter_query.last_call_attempt_before_recycle_rate(recycle_rate).
-                to_be_dialed.pluck(:id)
+      voters = []
     end
 
-    set_voter_status_to_read_for_dial!(voters)
     check_campaign_out_of_numbers(voters)
-    check_campaign_fit_to_dial
     voters
   end
 
@@ -71,15 +79,17 @@ class Predictive < Campaign
       caller_sessions.available.each do |cs|
         Providers::Phone::Call.redirect_for(cs, :account_has_no_funds)
       end
-      return
+      return false
     end
 
     if time_period_exceeded?
       caller_sessions.available.each do |cs|
         Providers::Phone::Call.redirect_for(cs, :time_period_exceeded)
       end
-      return
+      return false
     end
+
+    return true
   end
 
   def set_voter_status_to_read_for_dial!(voters)

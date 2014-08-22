@@ -70,6 +70,24 @@ FactoryGirl.define do
         skipped_time 5.minutes.ago
       end
 
+      trait :scheduled do
+        status CallAttempt::Status::SCHEDULED
+      end
+
+      trait :scheduled_soon do
+        :scheduled
+        scheduled_date 1.minute.from_now
+      end
+
+      trait :scheduled_later do
+        :scheduled
+        scheduled_date 30.minutes.from_now
+      end
+
+      trait :high_priority do
+        priority "1"
+      end
+
       trait :recently_dialed do
         last_call_attempt_time { 5.minutes.ago }
       end

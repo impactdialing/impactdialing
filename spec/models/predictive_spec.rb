@@ -16,7 +16,27 @@ describe Predictive do
     })
   end
 
-  describe "choose voter" do
+  describe '#choose_voters_to_dial(number_of_voters)' do
+    describe 'return empty array before loading any voters when campaign is not fit to dial' do
+      let!(:voter){ create(:realistic_voter, {campaign: campaign}) }
+
+      it 'out of funds' do
+        account.quota.update_attributes!(minutes_allowed: 0)
+
+        actual = campaign.choose_voters_to_dial(1)
+
+        expect(actual).to be_empty
+      end
+
+      it 'outside calling hours' do
+        campaign.update_attributes!(start_time: 1.hour.from_now, end_time: 2.hours.from_now)
+
+        actual = campaign.choose_voters_to_dial(1)
+
+        expect(actual).to be_empty
+      end
+    end
+
     it "load next voter to dial" do
       voter = create(:realistic_voter, {campaign: campaign, account: account})
 
@@ -35,13 +55,14 @@ describe Predictive do
       expect(campaign.choose_voters_to_dial(1)).to be_empty
     end
 
-    xit "should properly choose limit of voters to dial" do
-      voter_list = create(:voter_list, campaign: campaign, active: true)
-      priority_voter = create(:voter, campaign: campaign, :status=>"not called", voter_list: voter_list, account: account, priority: "1")
-      scheduled_voter = create(:voter, status: CallAttempt::Status::SCHEDULED, last_call_attempt_time: 2.hours.ago, :scheduled_date => 1.minute.from_now, campaign: campaign)
-      voter = create(:voter, campaign: campaign, :status=>"not called", voter_list: voter_list, account: account)
+    it 'gives precedence to Voter w/ priority set, then scheduled, then not called' do
+      priority_voter  = create(:realistic_voter, :high_priority, campaign: campaign)
+      scheduled_voter = create(:realistic_voter, :scheduled_soon, :recently_dialed, campaign: campaign)
+      voter           = create(:realistic_voter, campaign: campaign)
+      expected        = [priority_voter.id, voter.id]
+      actual          = campaign.choose_voters_to_dial(3)
 
-      expect(campaign.choose_voters_to_dial(1)).to eq([priority_voter.id])
+      expect(actual).to eq(expected)
     end
 
     xit "should properly choose limit of voters to dial for scheduled and priority" do
@@ -149,7 +170,7 @@ describe Predictive do
       expect(campaign.choose_voters_to_dial(20)).to include(voter.id)
      end
 
-     it "should redirect caller to campaign has no voters if numbers run out" do
+     it "queues CampaignOutOfNumbersJob when an empty result is returned" do
        caller_session = create(:webui_caller_session, caller: create(:caller), on_call: true, available_for_call: true, campaign: campaign, state: "connected", voter_in_progress: nil)
        voter = create(:voter, campaign: campaign, status: CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 2.hours)
        create(:call_attempt, :voter => voter, status: CallAttempt::Status::BUSY)
