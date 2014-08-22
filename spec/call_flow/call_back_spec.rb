@@ -13,7 +13,7 @@ context 'Message Drops', data_heavy: true do
         caller_can_drop_message_manually: true
       }).last
     end
-    let(:voters){ add_voters(campaign, 5) }
+    let(:voters){ add_voters(campaign, :bare_voter, 5) }
 
     before do
       add_callers(campaign, 1)
@@ -64,7 +64,7 @@ context 'Message Drops', data_heavy: true do
         caller_can_drop_message_manually: true
       }).last
     end
-    let(:voters){ add_voters(campaign, 5) }
+    let(:voters){ add_voters(campaign, :bare_voter, 5) }
 
     before do
       add_callers(campaign, 1)
@@ -132,7 +132,7 @@ context 'Machine Detection without Message Drops' do
         answering_machine_detect: true
       }).last
     end
-    let(:voters){ add_voters(campaign, 5) }
+    let(:voters){ add_voters(campaign, :bare_voter, 5) }
 
     before do
       add_callers(campaign, 1)

@@ -204,13 +204,18 @@ class CallAttempt < ActiveRecord::Base
     ANSWERED =  [INPROGRESS, SUCCESS]
 
     def self.retry_list(campaign)
-      statuses = [ABANDONED, BUSY, NOANSWER, HANGUP, Voter::Status::RETRY]
+      statuses = [ABANDONED, BUSY, NOANSWER, HANGUP, Voter::Status::RETRY, Voter::Status::SKIPPED]
 
       if campaign.call_back_after_voicemail_delivery?
         statuses << VOICEMAIL
       end
 
       statuses
+    end
+
+    def self.not_available_list(campaign)
+      statuses = [INPROGRESS, RINGING, READY]
+      statuses + completed_list(campaign)
     end
 
     def self.completed_list(campaign)

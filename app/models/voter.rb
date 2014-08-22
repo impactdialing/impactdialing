@@ -9,8 +9,9 @@ class Voter < ActiveRecord::Base
   UPLOAD_FIELDS = ["phone", "custom_id", "last_name", "first_name", "middle_name", "suffix", "email", "address", "city", "state","zip_code", "country"]
 
   module Status
-    NOTCALLED = "not called"
-    RETRY = "retry"
+    NOTCALLED = 'not called'
+    RETRY     = 'retry'
+    SKIPPED   = 'skipped'
   end
 
   belongs_to :voter_list
@@ -39,7 +40,13 @@ class Voter < ActiveRecord::Base
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
-  scope :yet_to_call, enabled.where('status not in (?) and priority is null', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED])
+  scope :yet_to_call, enabled.where('status not in (?) and priority is null', [
+    CallAttempt::Status::INPROGRESS,
+    CallAttempt::Status::RINGING,
+    CallAttempt::Status::READY,
+    CallAttempt::Status::SUCCESS,
+    CallAttempt::Status::FAILED
+  ])
   scope :last_call_attempt_before_recycle_rate, lambda {|recycle_rate|
     where('last_call_attempt_time IS NULL OR last_call_attempt_time < ? ', recycle_rate.hours.ago)
   }
@@ -61,9 +68,8 @@ class Voter < ActiveRecord::Base
             Voter::Status::RETRY
           ])
   }
-  scope :not_dialed, where('last_call_attempt_time IS NULL').where(status: Status::NOTCALLED)
+  scope :not_dialed, where('last_call_attempt_time IS NULL')
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
-  scope :randomly, order('rand()')
   scope :to_callback, where(:call_back => true)
   scope :scheduled, enabled.where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :limit, lambda { |n| {:limit => n} }
@@ -120,22 +126,22 @@ class Voter < ActiveRecord::Base
 
   # New Shiny
   scope :dialed, lambda{|campaign|
-    where(status: CallAttempt::Status.retry_list(campaign)).where('last_call_attempt_time IS NOT NULL')
+    where('status <> ?', Voter::Status::NOTCALLED).where('last_call_attempt_time IS NOT NULL')
   }
   scope :available_for_retry, lambda {|campaign|
     enabled.active.
-    where('voters.status IN (?) OR call_back=? OR scheduled_date < ?',
+    where('voters.status IN (?) OR call_back=?',
           CallAttempt::Status.retry_list(campaign),
-          true,
-          10.minutes.ago).
+          true).
     recycle_rate_expired(campaign.recycle_rate)
   }
   scope :not_available_for_retry, lambda {|campaign|
-    dialed(campaign).
-    where('active = ? OR enabled = ? OR last_call_attempt_time >= ?',
-          false,
-          false,
-          campaign.recycle_rate.hours.ago)
+    where('(voters.status IN (?)) OR voters.active = ? OR voters.enabled = ? OR (voters.last_call_attempt_time IS NOT NULL AND voters.last_call_attempt_time >= ?)',
+      CallAttempt::Status.not_available_list(campaign),
+      false,
+      false,
+      campaign.recycle_rate.hours.ago
+    )
   }
   scope :recycle_rate_expired, lambda {|recycle_rate|
     where('last_call_attempt_time < ?', recycle_rate.hours.ago)
@@ -191,7 +197,8 @@ public
   # no caller has clicked the Skip button when viewing that voter's info.
   #
   # A voter is a retry if it has been dialed but the call was not connected for
-  # whatever reason.
+  # whatever reason OR the call was connected but the caller selected a response that
+  # is configured to set the call_back flag to true.
   #
   def self.next_voter(voters, recycle_rate, blocked_numbers, current_voter_id)
     not_dialed_queue = voters.not_dialed.without(blocked_numbers).enabled
@@ -355,9 +362,8 @@ public
   end
 
   def skip
-    update_attributes(skipped_time: Time.now, status: 'not called')
+    update_attributes(skipped_time: Time.now, status: Voter::Status::SKIPPED)
   end
-
 
   def answer(question, response, recorded_by_caller = nil)
     possible_response = question.possible_responses.where(:keypad => response).first

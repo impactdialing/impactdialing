@@ -1,8 +1,8 @@
 module FakeCallData
-  def add_voters(campaign, n=25)
+  def add_voters(campaign, type=:bare_voter, n=25)
     account = campaign.account
 
-    build_and_import_list(:bare_voter, n, {
+    build_and_import_list(type, n, {
       account: account,
       campaign: campaign
     })
@@ -37,10 +37,10 @@ module FakeCallData
     # mimicing PersistCalls job
     case type
     when :past_recycle_time_failed_call_attempt
-      voter.end_unanswered_call(call_attempt.status)
+      voter.end_unanswered_call(call_attempt.tStatus)
     when :past_recycle_time_busy_call_attempt
       call_attempt.call = create(:bare_call)
-      voter.end_unanswered_call(call_attempt.status)
+      voter.end_unanswered_call(call_attempt.tStatus)
     when :past_recycle_time_completed_call_attempt
       call_attempt.call = create(:bare_call)
       voter.disconnect_call(call_attempt.caller_id)
@@ -101,7 +101,7 @@ module FakeCallData
       }
     end
 
-    campaign = create(type, campaign_attrs.merge({
+    campaign = create(type, campaign_attrs.merge!({
       account: account,
       script: script
     }))

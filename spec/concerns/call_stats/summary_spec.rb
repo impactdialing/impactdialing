@@ -88,24 +88,28 @@ describe CallStats::Summary do
 
     describe "dialed_and_not_available_for_retry_count" do
 
-      it "should consider not available for retry now" do
+      before do
         @campaign = create(:predictive, recycle_rate: 3)
         voter1 = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, last_call_attempt_time: Time.now - 2.hours)
         voter2 = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS)
         voter3 = create(:voter, campaign: @campaign, last_call_attempt_time: 2.hours.ago, status: CallAttempt::Status::HANGUP)
         voter4 = create(:voter, campaign: @campaign, last_call_attempt_time: 1.hours.ago, status: CallAttempt::Status::HANGUP)
         voter7 = create(:voter, campaign: @campaign, last_call_attempt_time: 4.hours.ago, status: CallAttempt::Status::ABANDONED)
-
-        dial_report = CallStats::Summary.new(@campaign)
-
-        expect(dial_report.dialed_and_not_available_for_retry_count).to eq(2)
+        @dial_report = CallStats::Summary.new(@campaign)
       end
 
+      it "should consider not available for retry now" do
+        expect(@dial_report.dialed_and_not_available_for_retry_count).to eq 4
+      end
+
+      it 'considers the remaining as available for retry' do
+        expect(@dial_report.dialed_and_available_for_retry_count).to eq 1
+      end
     end
 
     describe "leads_not_dialed" do
 
-      it "should consider not dialed ringing read to dial" do
+      it "should consider not dialed, ringing & ready to dial" do
         @campaign = create(:predictive, recycle_rate: 3)
         voter1 = create(:voter, campaign: @campaign, status: 'not called')
         voter2 = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS)

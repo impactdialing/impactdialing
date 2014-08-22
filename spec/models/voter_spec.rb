@@ -20,6 +20,18 @@ describe Voter, :type => :model do
 
   include Rails.application.routes.url_helpers
 
+  describe 'Voter::Status' do
+    it 'defines NOTCALLED as "not called"' do
+      expect(Voter::Status::NOTCALLED).to eq 'not called'
+    end
+    it 'defines RETRY as "retry"' do
+      expect(Voter::Status::RETRY).to eq 'retry'
+    end
+    it 'defines SKIPPED as "skipped"' do
+      expect(Voter::Status::SKIPPED).to eq 'skipped'
+    end
+  end
+
   describe '#info' do
     include FakeCallData
 
@@ -222,6 +234,29 @@ describe Voter, :type => :model do
         voter.update_voicemail_history
         expect(voter.yet_to_receive_voicemail?).to be_falsey
       end
+    end
+  end
+
+  describe '#skip' do
+    let(:voter) do
+      create(:realistic_voter)
+    end
+
+    before do
+      Timecop.freeze
+      voter.skip
+    end
+
+    after do
+      Timecop.return
+    end
+
+    it 'sets skipped_time to Time.now' do
+      expect(voter.skipped_time).to eq Time.now
+    end
+
+    it 'sets status to Voter::Status::SKIPPED' do
+      expect(voter.status).to eq Voter::Status::SKIPPED
     end
   end
 
@@ -717,10 +752,169 @@ describe Voter, :type => :model do
       expect(Voter.not_avialable_to_be_retried(campaign.recycle_rate)).to eq([])
     end
 
-    it "should   consider voters who last call attempt is not within recycle rate for hangup status" do
+    it "should consider voters who last call attempt is not within recycle rate for hangup status" do
       campaign = create(:campaign, recycle_rate: 3)
       voter = create(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
       expect(Voter.not_avialable_to_be_retried(campaign.recycle_rate)).to eq([voter])
+    end
+  end
+
+  describe '.not_dialed' do
+    it 'returns Voters w/ last_call_attempt_time of NULL' do
+      create(:realistic_voter, :not_recently_dialed, status: Voter::Status::SKIPPED) # dialed then skipped
+      create(:realistic_voter) # not dialed
+      create(:realistic_voter, :skipped) # not dialed and skipped
+      create(:realistic_voter, :abandoned, :not_recently_dialed) # dialed and abandoned
+
+      not_dialed = Voter.not_dialed
+      actual     = not_dialed.count
+
+      expect(actual).to(eq(2), [
+        "Statuses: #{not_dialed.map(&:status).to_sentence}",
+        "Last Call Attempt: #{not_dialed.map(&:last_call_attempt_time).to_sentence}"
+      ].join("\n"))
+    end
+  end
+
+  describe 'retry availability' do
+    include FakeCallData
+
+    describe '.not_available_for_retry(campaign)' do
+      before(:all) do
+        admin     = create(:user)
+        account   = admin.account
+        @campaign = create_campaign_with_script(:bare_power, account).last
+
+        add_voters(@campaign, :ringing_voter, 10)
+        add_voters(@campaign, :queued_voter, 2)
+        add_voters(@campaign, :in_progress_voter, 3)
+        create_list(:failed_voter, 5, :not_recently_dialed)
+        create_list(:realistic_voter, 10, :not_recently_dialed, :disabled)
+        create_list(:realistic_voter, 10, :not_recently_dialed, :deleted)
+        create_list(:realistic_voter, 10, :recently_dialed, :busy)
+        add_voters(@campaign, :realistic_voter, 25)
+
+        @voters = Voter.not_available_for_retry(@campaign)
+      end
+
+      after(:all) do
+        Voter.destroy_all
+      end
+
+      context 'includes' do
+        it 'disabled' do
+          all_disabled_flags = @voters.select{|f| !f.enabled?}
+          expect(all_disabled_flags.size).to eq 10
+        end
+        it 'deleted' do
+          all_deleted_flags = @voters.select{|f| !f.active?}
+          expect(all_deleted_flags.size).to eq 10
+        end
+        it 'within recycle rate threshold' do
+          @voters.where(status: CallAttempt::Status::BUSY).count.should eq 10
+        end
+        it 'ringing' do
+          expected = Voter.where(status: CallAttempt::Status::RINGING).count
+          actual = @voters.where(status: CallAttempt::Status::RINGING).count
+
+          expect(actual).to eq expected
+        end
+        it 'in dial queue' do
+          expected = Voter.where(status: CallAttempt::Status::READY).count
+          actual = @voters.where(status: CallAttempt::Status::READY).count
+
+          expect(actual).to eq expected
+        end
+        it 'completed' do
+          expected = Voter.where(status: CallAttempt::Status::SUCCESS).count
+          actual = @voters.where(status: CallAttempt::Status::SUCCESS).count
+
+          expect(actual).to eq expected
+        end
+        it 'failed' do
+          expected = Voter.where(status: CallAttempt::Status::FAILED).count
+          actual = @voters.where(status: CallAttempt::Status::FAILED).count
+
+          expect(actual).to eq expected
+        end
+      end
+
+      context 'does not include' do
+        it 'not called unless the not called voter is deleted or inactive' do
+          not_called = @voters.where(status: Voter::Status::NOTCALLED)
+
+          not_called.each do |voter|
+            expect(voter.active && voter.enabled).to be_falsey
+          end
+        end
+      end
+    end
+
+    describe '.available_for_retry(campaign)' do
+      context 'past recycle rate' do
+        before(:all) do
+          admin     = create(:user)
+          account   = admin.account
+          @campaign = create_campaign_with_script(:bare_power, account, {
+            call_back_after_voicemail_delivery: true,
+            caller_can_drop_message_manually: true
+          }).last
+
+          add_voters(@campaign, :ringing_voter, 10)
+          add_voters(@campaign, :queued_voter, 2)
+          add_voters(@campaign, :in_progress_voter, 3)
+          create_list(:failed_voter, 5, :not_recently_dialed)
+          create_list(:realistic_voter, 10, :not_recently_dialed, :disabled)
+          create_list(:realistic_voter, 10, :not_recently_dialed, :deleted)
+          create_list(:realistic_voter, 10, :not_recently_dialed, :busy)
+          create_list(:realistic_voter, 10, :not_recently_dialed, :abandoned)
+          create_list(:realistic_voter, 10, :not_recently_dialed, :no_answer)
+          create_list(:realistic_voter, 10, :not_recently_dialed, :hangup)
+          create_list(:realistic_voter, 10, :not_recently_dialed, :voicemail)
+          create_list(:realistic_voter, 10, :not_recently_dialed, :call_back)
+          create_list(:realistic_voter, 10, :recently_dialed, :call_back)
+          add_voters(@campaign, :realistic_voter, 25)
+          
+          @voters = Voter.available_for_retry(@campaign)
+        end
+
+        after(:all) do
+          Voter.destroy_all
+        end
+
+        let(:expected){ 10 }
+
+        it 'busy' do
+          actual   = @voters.where(status: CallAttempt::Status::BUSY).count
+
+          expect(actual).to eq expected
+        end
+        it 'abandoned' do
+          actual   = @voters.where(status: CallAttempt::Status::ABANDONED).count
+
+          expect(actual).to eq expected
+        end
+        it 'no answer' do
+          actual   = @voters.where(status: CallAttempt::Status::NOANSWER).count
+
+          expect(actual).to eq expected
+        end
+        it 'hangup' do 
+          actual   = @voters.where(status: CallAttempt::Status::HANGUP).count
+
+          expect(actual).to eq expected
+        end
+        it 'voicemail (when campaign set to call back after voicemail delivery)' do
+          actual   = @voters.where(status: CallAttempt::Status::VOICEMAIL).count
+
+          expect(actual).to eq expected
+        end
+        it 'call back' do
+          actual   = @voters.where(call_back: true).count
+
+          expect(actual).to eq expected
+        end
+      end
     end
   end
 
@@ -790,7 +984,7 @@ describe Voter, :type => :model do
     end
 
     def skip_voters(voters)
-      voters.each{|v| v.update_attribute('skipped_time', 20.minutes.ago) }
+      voters.each{|v| v.update_attributes(skipped_time: 20.minutes.ago, status: Voter::Status::SKIPPED) }
     end
 
     def attempt_calls(voters)

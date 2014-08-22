@@ -4,22 +4,23 @@ describe 'Voters (Contacts) are called in the order they are uploaded', data_hea
   include FakeCallData
 
   it '1 caller on Preview' do
+    expect(Voter.count).to eq 0
     admin       = create(:user)
     account     = admin.account
     campaign    = create_campaign_with_script(:bare_preview, account).last
-    voters      = add_voters(campaign, 50)
+    voters      = add_voters(campaign, :bare_voter, 50)
     callers     = add_callers(campaign, 1)
-
-    data   = {}
-    passes = {}
 
     full_passes = 3
     prev_voter  = nil
     action_pass = 1
+    completed   = []
+    failed      = []
+    skipped     = []
+    busy        = []
+
     full_passes.times do |outer_pass|
       outer_pass += 1
-
-      data[outer_pass] = {}
 
       if outer_pass > 1
         campaign.reload
@@ -29,27 +30,21 @@ describe 'Voters (Contacts) are called in the order they are uploaded', data_hea
         expect(campaign.call_attempts).to include(v.last_call_attempt)
       end
 
-      if defined?(completed) and defined?(failed)
+      if !completed.empty? and !failed.empty?
         sans = completed.size + failed.size
+        completed   = []
+        failed      = []
+        skipped     = []
+        busy        = []
       else
         sans = 0
       end
-
-      completed   = []
-      failed      = []
-      skipped     = []
-      busy        = []
-
+      last_action_pass = 0
       (voters.count - sans).times do |inner_pass|
         inner_pass += 1
 
         voter = campaign.next_voter_in_dial_queue(prev_voter)
         next if voter.nil?
-
-        passes[voter.id] ||= 0
-        passes[voter.id] += 1
-        data[outer_pass][voter.id] = []
-        # expect(voters[inner_pass-1]).to eq voter
         
         case action_pass
         when 1
@@ -73,80 +68,59 @@ describe 'Voters (Contacts) are called in the order they are uploaded', data_hea
         action_pass  = 1 if action_pass > 5
         prev_voter   = voter
 
-        data[outer_pass][voter.id] << {status: voter.status}
+        last_action_pass = action_pass
       end
 
-      # case outer_pass
-      # when 1
-      #   v = Voter.first
-      #   expect(v.status).to eq 'Call failed'
-      #   expect(campaign.call_attempts).to include(v.last_call_attempt)
+      # try to fail early
+      case outer_pass
+      when 1
+        v = Voter.first
+        expect(v.status).to eq 'Call failed'
+        expect(campaign.call_attempts).to include(v.last_call_attempt)
 
-      #   expect(failed.size).to eq 10
-      #   expect(completed.size).to eq 10
-      #   expect(skipped.size).to eq 10
-      #   expect(busy.size).to eq 20
+        expect(failed.size).to eq 10
+        expect(completed.size).to eq 10
+        expect(skipped.size).to eq 10
+        expect(busy.size).to eq 20
 
-      #   expect(campaign.call_attempts.count).to eq 50 - skipped.size
-      #   expect(voters.inject(0){|m,v| m += v.call_attempts.count}).to eq 50 - skipped.size
-      # when 2
-      #   expect(failed.size).to eq 6
-      #   expect(completed.size).to eq 6
-      #   expect(busy.size).to eq 12
-      #   expect(skipped.size).to eq 6
+        expect(campaign.call_attempts.count).to eq 50 - skipped.size
+        expect(voters.inject(0){|m,v| m += v.call_attempts.count}).to eq 50 - skipped.size
+      when 2
+        expect(failed.size).to eq 6
+        expect(completed.size).to eq 6
+        expect(busy.size).to eq 12
+        expect(skipped.size).to eq 6
 
-      #   expect(campaign.call_attempts).to eq 40 + (30 - skipped.size)
-
-      #   [failed, skipped, busy, completed].each do |ids|
-      #     vtrs = Voter.where(id: ids)
-      #     cnts = vtrs.inject(0){|m,v| m += v.call_attempts.count}
-      #     expect(cnts).to eq 2 * vtrs.count
-      #   end
-        
-      # when 3
-      #   expect(failed.size).to eq 4
-      #   expect(completed.size).to eq 3
-      #   expect(busy.size).to eq 7
-      #   expect(skipped.size).to eq 4
-
-      #   expect(campaign.call_attempts).to eq 50 + 30 + 18
-      # end
-    end
-
-    # voters = Voter.includes(:call_attempts).all
-    # total_attempts = 0
-    # data = voters.map do |voter|
-    #   total_attempts += voter.call_attempts.count
-
-    #   {
-    #     id: voter.id,
-    #     attempts: {
-    #       count: voter.call_attempts.count,
-    #       statuses: voter.call_attempts.map(&:status).join('; ')
-    #     }
-    #   }
-    # end
-    
-    # print "Voter ID, Attempts Counted, Attempt Statuses\n"
-    # data.each do |item|
-    #   print "#{item[:id]}, #{item[:attempts][:count]}, #{item[:attempts][:statuses]}\n"
-    # end
-    # print "Total Attempts Counted: #{total_attempts}\n"
-    # print "Total Attempts Saved: #{campaign.call_attempts.count}\n"
-
-    print "Voter ID, Pass, Status, Total Attempts, Total Passes\n"
-    data.sort.each do |pass_voter_tuples|
-      pass   = pass_voter_tuples[0]
-      voters = pass_voter_tuples[1]
-
-      voters.sort.each do |attempt_tuple|
-        voter_id = attempt_tuple[0]
-        items    = attempt_tuple[1]
-
-        items.each do |item|
-          print "#{voter_id}, #{pass}, #{item[:status]}, #{Voter.find(voter_id).call_attempts.count}, #{passes[voter_id]}\n"
-        end
+        expect(campaign.call_attempts.count).to eq 40 + (30 - skipped.size)
       end
+
+      actual   = Voter.available_for_retry(campaign).count + Voter.not_dialed.count
+      expected = [nil,30,18,3][outer_pass]
+      expect(actual).to eq(expected), [
+        "Incorrect number of voters available for retry",
+        "expected: #{expected}",
+        "got: #{actual}",
+        "outer_pass: #{outer_pass}",
+        "last_action_pass: #{last_action_pass}",
+        "sans: #{sans}",
+        "available for retry count: #{Voter.available_for_retry(campaign).count}",
+        "NOT available for retry count: #{Voter.not_available_for_retry(campaign).count}",
+        "not dialed count: #{Voter.not_dialed.count}"
+      ].join("\n")
+
+      actual   = Voter.not_available_for_retry(campaign).count
+      expected = [nil,20,32,47][outer_pass]
+      expect(actual).to eq(expected), [
+        "Incorrect number of voters NOT available for retry",
+        "expected: #{expected}",
+        "got: #{actual}",
+        "outer_pass: #{outer_pass}",
+        "last_action_pass: #{last_action_pass}",
+        "sans: #{sans}",
+        "available for retry count: #{Voter.available_for_retry(campaign).count}",
+        "NOT available for retry count: #{Voter.not_available_for_retry(campaign).count}",
+        "not dialed count: #{Voter.not_dialed.count}"
+      ].join("\n")
     end
   end
 end
