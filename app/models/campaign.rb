@@ -312,14 +312,6 @@ public
     [wrap_up, ringing_lines, live_lines]
   end
 
-  def leads_available_now
-    sanitize_dials(all_voters.enabled.avialable_to_be_retried(recycle_rate).count + all_voters.enabled.scheduled.count + all_voters.enabled.by_status(CallAttempt::Status::ABANDONED).count)
-  end
-
-  def sanitize_dials(dial_count)
-    dial_count.nil? ? 0 : dial_count
-  end
-
   def current_status
     current_caller_sessions = caller_sessions.on_call.includes(:attempt_in_progress)
     callers_logged_in = current_caller_sessions.size
