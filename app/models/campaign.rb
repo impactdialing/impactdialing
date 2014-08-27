@@ -128,6 +128,7 @@ public
   end
 
   def new_campaign
+    raise "Deprecated: Campaign#new_campaign"
     new_record?
   end
 
@@ -171,6 +172,7 @@ public
   end
 
   def is_preview_or_power
+    raise "Deprecated: Campaign#is_preview_or_power"
     type == Type::PREVIEW || type == Type::PROGRESSIVE
   end
 
@@ -195,7 +197,6 @@ public
     end
   end
 
-
   def callers_log_in?
     caller_sessions.on_call.size > 0
   end
@@ -213,11 +214,14 @@ public
   end
 
   def voters_called
+    raise "Deprecated: Campaign#voters_called"
     Voter.find_all_by_campaign_id(self.id, :select=>"id", :conditions=>"status <> 'not called'")
   end
 
 
   def voters_count(status=nil, include_call_retries=true)
+    raise "Deprecated: Campaign#voters_count"
+
     active_lists_ids = VoterList.where(campaign_id: self.id, active: true, enabled: true).pluck(:id)
     return [] if active_lists_ids.empty?
     Voter.where(active: true, voter_list_id: active_lists_ids).
@@ -226,6 +230,8 @@ public
 
 
   def voters(status=nil, include_call_retries=true, limit=300)
+    raise "Deprecated: Campaign#voters"
+
     voters_returned = []
     return voters_returned if !self.account.activated? || self.caller_id.blank?
     active_list_ids = VoterList.active_voter_list_ids(self.id)
@@ -236,15 +242,18 @@ public
 
 
   def callers_available_for_call
+    raise "Deprecated: Campaign#callers_available_for_call"
     RedisAvailableCaller.count(self.id)
   end
 
-
   def average(array)
-  array.sum.to_f / array.size
+    raise "Deprecated: Campaign#average"
+    array.sum.to_f / array.size
   end
 
-
+  ##
+  # Reporting methods
+  #
   def answers_result(from_date, to_date)
     # load question ids related to the campaign, from answers
     question_ids = Answer.where(campaign_id: self.id).uniq.pluck(:question_id)
@@ -293,8 +302,8 @@ public
     dial_count.nil? ? 0 : dial_count
   end
 
-
   def cost_per_minute
+    raise "Deprecated: Campaign#cost_per_minute"
     0.09
   end
 
@@ -306,6 +315,8 @@ public
   end
 
   def call_status
+    raise "Deprecated: Campaign#call_status"
+
     wrap_up = call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::SUCCESS).not_wrapped_up.size
     ringing_lines = call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
     live_lines = call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::INPROGRESS).size
