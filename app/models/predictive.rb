@@ -1,7 +1,6 @@
 class Predictive < Campaign
   include SidekiqEvents
 
-
   def dial_resque
     set_calculate_dialing
     Resque.enqueue(CalculateDialsJob, self.id)
@@ -16,17 +15,18 @@ class Predictive < Campaign
     Resque.redis.exists("dial_calculate:#{self.id}")
   end
 
-
   def increment_campaign_dial_count(counter)
+    raise "Deprecated: Predictive#increment_campaign_dial_count"
     Resque.redis.incrby("dial_count:#{self.id}", counter)
   end
 
-
   def decrement_campaign_dial_count(decrement_counter)
+    raise "Deprecated: Predictive#decrement_campaign_dial_count"
     Resque.redis.decrby("dial_count:#{self.id}", decrement_counter)
   end
 
   def self.dial_campaign?(campaign_id)
+    raise "Deprecated: Predictive.dial_campaign?"
     Resque.redis.exists("dial_campaign:#{campaign_id}")
   end
 
@@ -90,11 +90,11 @@ class Predictive < Campaign
   end
 
   def check_campaign_out_of_numbers(voters)
+    raise "Deprecated: Predictive#check_campaign_out_of_numbers"
     if voters.blank?
       caller_sessions.available.pluck(:id).each { |id| enqueue_call_flow(CampaignOutOfNumbersJob, [id]) }
     end
   end
-
 
   def abandon_rate_acceptable?
     answered_dials = call_attempts.between(Time.at(1334561385) , Time.now).with_status([CallAttempt::Status::SUCCESS, CallAttempt::Status::SCHEDULED]).size
@@ -110,9 +110,9 @@ class Predictive < Campaign
   end
 
   def self.do_not_call_in_production?(campaign_id)
+    raise "Deprecated: Predictive.do_not_call_in_production?"
     !Resque.redis.exists("do_not_call:#{campaign_id}")
   end
-
 
   def best_dials_simulated
     simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > TwilioLimit.get ? TwilioLimit.get : simulated_values.best_dials.ceil
@@ -139,11 +139,9 @@ class Predictive < Campaign
   end
 
   def call_answered_machine_event(call_attempt)
+    raise "Deprecated: Predictive#call_answered_machine_event"
     Hash.new
   end
-
-
-
 end
 
 # ## Schema Information
