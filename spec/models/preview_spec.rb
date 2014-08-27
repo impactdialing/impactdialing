@@ -26,7 +26,7 @@ describe Preview, :type => :model do
       voters.each{|v| v.update_attribute('skipped_time', 20.minutes.ago) }
     end
 
-    it "returns priority  not called voter first" do
+    xit "returns priority not called voter first" do
       campaign = create(:preview)
       voter = create(:voter, status: 'not called', campaign: campaign)
       priority_voter = create(:voter, status: 'not called', campaign: campaign, priority: "1")
@@ -42,7 +42,7 @@ describe Preview, :type => :model do
       expect(campaign.next_voter_in_dial_queue(nil)).to eq(uncalled_voter)
     end
 
-    it "returns any scheduled voter within a ten minute window before an uncalled voter" do
+    xit "returns any scheduled voter within a ten minute window before an uncalled voter" do
       campaign = create(:preview)
       caller_session = create(:caller_session)
       scheduled_voter = create(:voter, status: CallAttempt::Status::SCHEDULED, last_call_attempt_time: 2.hours.ago, scheduled_date: 1.minute.from_now, campaign: campaign)
@@ -50,7 +50,7 @@ describe Preview, :type => :model do
       expect(campaign.next_voter_in_dial_queue(nil)).to eq(scheduled_voter)
     end
 
-    it "returns next voter in list if scheduled voter is more than 10 minutes away from call" do
+    xit "returns next voter in list if scheduled voter is more than 10 minutes away from call" do
       campaign = create(:preview)
       caller_session = create(:caller_session)
       scheduled_voter = create(:voter, status: CallAttempt::Status::SCHEDULED, last_call_attempt_time: 2.hours.ago, scheduled_date: 20.minute.from_now, campaign: campaign)

@@ -2,8 +2,8 @@ module PreviewPowerCampaign
   def next_voter_in_dial_queue(current_voter_id = nil)
     do_not_call_numbers = account.blocked_numbers.for_campaign(self).pluck(:number)
     begin
-      voter = all_voters.next_in_priority_or_scheduled_queues(do_not_call_numbers).first
-      voter ||= Voter.next_voter(all_voters, recycle_rate, do_not_call_numbers, current_voter_id)
+      # voter = all_voters.next_in_priority_or_scheduled_queues(do_not_call_numbers).first
+      voter = Voter.next_voter(all_voters, recycle_rate, do_not_call_numbers, current_voter_id)
 
       Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] NextVoter[#{voter.try(:id)}]"
 

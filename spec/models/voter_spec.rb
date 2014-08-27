@@ -538,19 +538,17 @@ describe Voter, :type => :model do
   end
 
 
-  it "lists scheduled voters" do
+  xit "lists scheduled voters" do
     recent_voter = create(:voter, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
     really_old_voter = create(:voter, :scheduled_date => 2.hours.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
     recent_but_unscheduled_voter = create(:voter, :scheduled_date => 1.minute.ago, :status => nil)
     expect(Voter.scheduled).to eq([recent_voter])
   end
 
-
   it "limits voters when listing them" do
     10.times { create(:voter) }
     expect(Voter.limit(5)).to have(5).voters
   end
-
 
   it "excludes specific numbers" do
     unblocked_voter = create(:voter, :phone => "1234567890")
@@ -922,7 +920,7 @@ describe Voter, :type => :model do
   describe '.next_in_priority_or_scheduled_queues(blocked_numbers)' do
     let(:campaign){ create(:campaign) }
 
-    it 'loads voters w/ priority=1 and status=Voter::Status::NOTCALLED' do
+    xit 'loads voters w/ priority=1 and status=Voter::Status::NOTCALLED' do
       expected = [create(:voter, campaign: campaign, status: Voter::Status::NOTCALLED, priority: true)]
       create(:voter, campaign: campaign, status: nil, priority: true)
       create(:voter, campaign: campaign, status: Voter::Status::RETRY, priority: true)
@@ -930,7 +928,7 @@ describe Voter, :type => :model do
       expect(actual.all).to eq expected
     end
 
-    it 'OR voters scheduled to be called back in the last or next 10 minutes' do
+    xit 'OR voters scheduled to be called back in the last or next 10 minutes' do
       expected = [
         create(:voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 5.minutes.ago),
         create(:voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 5.minutes.from_now)
@@ -941,7 +939,7 @@ describe Voter, :type => :model do
       expect(actual.all).to eq expected
     end
 
-    it 'excludes voters w/ phone numbers in the list of blocked numbers' do
+    xit 'excludes voters w/ phone numbers in the list of blocked numbers' do
       blocked = ['1234567890', '0987654321']
       expected = [
         create(:voter, {
