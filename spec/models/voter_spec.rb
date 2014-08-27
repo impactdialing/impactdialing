@@ -34,6 +34,7 @@ describe Voter, :type => :model do
 
   describe '#info' do
     include FakeCallData
+    include ERB::Util
 
     shared_context 'Voter#info setup' do
       def setup_custom_fields(account, script, voter, voter_fields)
@@ -82,7 +83,7 @@ describe Voter, :type => :model do
       let(:expected_fields) do
         one = voter.attributes.reject{|k,v| k =~ /(created|updated)_at/}
         two = {}
-        one.each{|k,v| two[k] = v.to_s}
+        one.each{|k,v| two[html_escape(k)] = html_escape(v.to_s)}
         two.merge({
           'email' => "<a target=\"_blank\" href=\"mailto:#{voter.email}\">#{voter.email}</a>"
         })
