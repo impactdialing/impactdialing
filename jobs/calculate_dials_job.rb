@@ -6,6 +6,7 @@ require 'resque-loner'
 
 class CalculateDialsJob
   include Resque::Plugins::UniqueJob
+  extend SidekiqEvents::InstanceMethods
 
   @queue = :dialer_worker
 
@@ -15,24 +16,48 @@ class CalculateDialsJob
 
     begin
       campaign = Campaign.find(campaign_id)
+
+      unless campaign.check_campaign_fit_to_dial
+        stop_calculating(campaign_id)
+        metrics.completed
+        return
+      end
+
+      # here is potential for predictive dialing to slow down erroneously.
+      # given some voters w/ status of READY that haven't actually been dialed
+      # and some number of voters to dial
+      # the actual dialed amount is reduced by the stale READY voters
       num_to_call = campaign.number_of_voters_to_dial - campaign.dialing_count
       
+      # todo: track predictive calculated number of voters to call in librato compatible way
       Rails.logger.info "Campaign: #{campaign.id} - num_to_call #{num_to_call}"
 
       if num_to_call <= 0
-        Resque.redis.del("dial_calculate:#{campaign.id}")
+        stop_calculating(campaign_id)
+        metrics.completed
         return
       end
+
       voters_to_dial = campaign.choose_voters_to_dial(num_to_call)
-      Resque.enqueue(DialerJob, campaign.id, voters_to_dial)
-    rescue Exception => e
-      metrics.error
-      Rails.logger.error("#{self} Exception: #{e.class}: #{e.message}")
-      Rails.logger.error("#{self} Exception Backtrace: #{e.backtrace}")
+      unless voters_to_dial.empty?
+        Resque.enqueue(DialerJob, campaign_id, voters_to_dial)
+      else
+        campaign.caller_sessions.available.pluck(:id).each do |id|
+          enqueue_call_flow(CampaignOutOfNumbersJob, [id])
+        end
+      end
+    rescue Resque::TermException => e
+      metrics.sigterm
+      raise e
+
     ensure
-      Resque.redis.del("dial_calculate:#{campaign.id}")
+      stop_calculating(campaign_id)
     end
 
     metrics.completed
+  end
+
+  def self.stop_calculating(campaign_id)
+    Resque.redis.del("dial_calculate:#{campaign_id}")
   end
 end

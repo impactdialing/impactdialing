@@ -8,9 +8,18 @@ FactoryGirl.define do
       tStatus 'failed'
     end
 
+    trait :ready do
+      status CallAttempt::Status::READY
+    end
+
     trait :busy do
       status 'No answer busy signal'
       tStatus 'busy'
+    end
+
+    trait :abandoned do
+      status CallAttempt::Status::ABANDONED
+      tStatus 'completed'
     end
 
     trait :completed do
