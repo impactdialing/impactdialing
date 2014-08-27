@@ -1,5 +1,4 @@
 module PreviewPowerCampaign
-
   def next_voter_in_dial_queue(current_voter_id = nil)
     do_not_call_numbers = account.blocked_numbers.for_campaign(self).pluck(:number)
     begin
@@ -21,7 +20,6 @@ module PreviewPowerCampaign
     voter.update_attributes(status: CallAttempt::Status::READY) unless voter.nil?
   end
 
-
   def caller_conference_started_event(current_voter_id)
     next_voter = next_voter_in_dial_queue(current_voter_id)
     info = next_voter.nil? ? {campaign_out_of_leads: true} : next_voter.info
@@ -33,10 +31,8 @@ module PreviewPowerCampaign
   end
 
   def call_answered_machine_event(call_attempt)
+    raise "Deprecated: PreviewPowerCampaign#call_answered_machine_event"
     next_voter = next_voter_in_dial_queue(call_attempt.voter.id)
     {event: 'dial_next_voter', data: next_voter.nil? ? {} : next_voter.info}
   end
-
-
-
 end
