@@ -33,7 +33,6 @@ module Client
       new_script
       save_script
       load_voter_fields
-      persist_in_redis
       respond_with @script, location: client_scripts_path
     end
 
@@ -50,7 +49,6 @@ module Client
       else
         save_script
         load_voter_fields
-        persist_in_redis
         respond_with @script,  location: client_scripts_path do |format|
           format.json { render :json => {message: "Script updated" }, :status => :ok } if @script.errors.empty?
         end
@@ -128,19 +126,6 @@ module Client
         params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
       end
       flash_message(:notice, "Script saved") if @script.update_attributes(params[:script])
-    end
-    
-    def persist_in_redis
-      $redis_question_pr_uri_connection.multi do
-        RedisQuestion.clear_list(@script.id)
-        @script.questions.reverse.each do|question|
-          RedisQuestion.persist_questions(@script.id, question.id, question.text)
-          RedisPossibleResponse.clear_list(question.id)
-          question.possible_responses.reverse.each do |possible_response|
-            RedisPossibleResponse.persist_possible_response(question.id, possible_response.keypad, possible_response.value)
-          end
-        end      
-      end
     end
   end
 end

@@ -1,5 +1,4 @@
 class RedisQuestion
-  
   def self.persist_questions(script_id, question_id, question_text)
     $redis_question_pr_uri_connection.lpush "question_list:script:#{script_id}", {id: question_id, question_text: question_text}.to_json
   end
@@ -19,7 +18,4 @@ class RedisQuestion
   def self.clear_list(script_id)
     $redis_question_pr_uri_connection.del("question_list:script:#{script_id}")
   end
-  
-  
-  
 end
