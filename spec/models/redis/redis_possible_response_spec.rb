@@ -1,8 +1,6 @@
 require "spec_helper"
 
 describe RedisPossibleResponse, :type => :model do
-  
-  
   it "should give possible responses for a question" do
     RedisPossibleResponse.persist_possible_response(1, 1, "test")
     RedisPossibleResponse.persist_possible_response(1, 2, "test1")

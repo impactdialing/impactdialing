@@ -87,8 +87,7 @@ module Client
       end
     end
 
-    private
-
+  private
     def load_and_verify_script
       begin
         @script = Script.find(params[:id] || params[:script_id])
@@ -101,7 +100,6 @@ module Client
         return
       end
     end
-
 
     def new_script
       @script = account.scripts.new
