@@ -24,7 +24,7 @@ class CachePhonesOnlyScriptQuestions
   end
 
   def self.update_cache(script)
-    cache!(script) # unless cache_empty?(script.id)
+    cache!(script) unless cache_empty?(script.id)
   end
 
   def self.cache!(script, ttl=nil)

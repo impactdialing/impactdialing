@@ -60,7 +60,7 @@ describe 'CachePhonesOnlyScriptQuestions' do
   describe '.queue(script_id, action)' do
     it 'can queue itself, whynot?' do
       expect(Resque).to receive(:enqueue).with(CachePhonesOnlyScriptQuestions, 42, 'mice')
-      
+
       CachePhonesOnlyScriptQuestions.queue(42, 'mice')
     end
   end
@@ -156,9 +156,22 @@ describe 'CachePhonesOnlyScriptQuestions' do
     end
 
     context 'questions or possible responses have changed but do not exist in cache' do
-      it 'does not populate questions cache (cache is populated at CallinController#identify)'
+      before do
+        CachePhonesOnlyScriptQuestions.perform(@script.id, 'update')
+      end
+      it 'does not seed questions cache (cache is seeded at CallinController#identify)' do
+        actual = RedisQuestion.cached?(@script.id)
+        expect(actual).to be_falsey
+      end
 
-      it 'does not populate possible responses cache (cache is populated at CallinController#identify)'
+      it 'does not seed possible responses cache (cache is seeded at CallinController#identify)' do
+        @script.questions.each do |question|
+          oops   = "Expected RedisPossibleResponse to not have an entry for question: #{question.id}"
+          actual = RedisPossibleResponse.cached?(question.id)
+
+          expect(actual).to(be_falsey, oops)
+        end
+      end
     end
   end
 end
