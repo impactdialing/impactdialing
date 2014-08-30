@@ -1,9 +1,15 @@
 class Script < ActiveRecord::Base
 
   include Deletable
+  # validations
   validates_presence_of :name
   validate :no_campaign_using_on_deletion
   validate :check_subscription_type_for_transfers
+
+  # callbacks
+  after_update :update_questions_and_possible_responses_cache
+
+  # associations
   belongs_to :account
   has_many :script_texts, :inverse_of => :script
   has_many :questions, :inverse_of => :script
@@ -48,8 +54,6 @@ class Script < ActiveRecord::Base
     end
   end
 
-
-
   def selected_custom_fields
     unless voter_fields.nil?
       JSON.parse(voter_fields).select{ |field| !VoterList::VOTER_DATA_COLUMNS.values.include?(field) }
@@ -87,7 +91,6 @@ class Script < ActiveRecord::Base
     answer_count == 0
   end
 
-
   def as_json(options)
     json = super options.merge({
       :include => [
@@ -103,7 +106,11 @@ class Script < ActiveRecord::Base
     json["script"].merge({questions: questions_possible_responses})
   end
 
-
+  def update_questions_and_possible_responses_cache
+    if active?
+      CachePhonesOnlyScriptQuestions.queue(id, 'update')
+    end
+  end
 end
 
 # ## Schema Information

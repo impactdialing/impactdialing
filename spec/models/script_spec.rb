@@ -2,6 +2,20 @@ require "spec_helper"
 
 describe Script, :type => :model do
 
+  describe 'after_update' do
+    include FakeCallData
+
+    it 'queues job to update redis cache (job will only alter cache if data already cached and does not match fresh data)' do
+      admin   = create(:user)
+      account = admin.account
+      script  = create_campaign_with_script(:bare_power, account).first
+
+      expect(CachePhonesOnlyScriptQuestions).to receive(:queue).with(script.id, 'update')
+      
+      script.update_attributes(name: 'Updated Script Name')
+    end
+  end
+
   it 'returns transfer_types according to Ability' do
     user    = create(:user)
     account = user.account
