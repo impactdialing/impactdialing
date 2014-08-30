@@ -7,6 +7,10 @@ class RedisQuestion
     "question_list:script:#{script_id}"
   end
 
+  def self.expire(script_id, ttl)
+    redis.expire(key(script_id), ttl)
+  end
+
   def self.persist_questions(script_id, question_id, question_text)
     redis.lpush key(script_id), {id: question_id, question_text: question_text}.to_json
   end
