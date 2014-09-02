@@ -10,9 +10,12 @@ class CachePhonesOnlyScriptQuestions
   end
 
   def self.perform(script_id, action='update')
-    script = Script.find script_id
+    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
 
+    script  = Script.find script_id
     send("#{action}_cache", script)
+
+    metrics.completed
   end
 
   def self._ttl
@@ -43,7 +46,7 @@ class CachePhonesOnlyScriptQuestions
     current_hash = sum(content)
     cached_hash  = RedisQuestion.get_checksum(script.id)
 
-    return false unless current_hash != cached_hash
+    return false if current_hash == cached_hash
 
     redis.multi do
       RedisQuestion.clear_list(script.id)
