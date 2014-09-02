@@ -11,8 +11,8 @@ class RedisPossibleResponse
     redis.expire(key(script_id), ttl)
   end
 
-  def self.persist_possible_response(question_id, keypad, value)
-    redis.lpush key(question_id), {id: question_id, keypad: keypad, value: value}.to_json
+  def self.persist_possible_response(question_id, possible_response)
+    redis.lpush key(question_id), {id: question_id, keypad: possible_response.keypad, value: possible_response.value}.to_json
   end
   
   def self.possible_responses(question_id)
