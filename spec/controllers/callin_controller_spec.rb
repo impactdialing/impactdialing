@@ -55,6 +55,16 @@ describe CallinController, :type => :controller do
       end.response)
     end
 
+    it 'seeds redis script questions cache' do
+      campaign.account = account
+      campaign.save!
+      caller = create(:caller, account: account, campaign: campaign, is_phones_only: true)
+      caller_session = create(:phones_only_caller_session, {caller: caller, campaign: campaign})
+      allow(CallerIdentity).to receive(:find_by_pin).and_return(build(:caller_identity, {caller: caller, caller_session_id: caller_session.id}))
+      allow(CallerSession).to receive(:find_by_id_cached){ caller_session }
+      expect(Resque).to receive(:enqueue).with(CachePhonesOnlyScriptQuestions, anything, 'seed')
+      post :identify, :Digits => 1234
+    end
   end
 
 
