@@ -142,20 +142,37 @@ describe Caller, :type => :model do
     end
 
     describe "campaign" do
-
-
       it "gets stats for answered calls" do
         @voter =  create(:voter)
         @script = create(:script)
         @question = create(:question, :text => "what?", script: @script)
-        response_1 = create(:possible_response, :value => "foo", question: @question)
-        response_2 = create(:possible_response, :value => "bar", question: @question)
+        response_1 = create(:possible_response, :value => "foo", question: @question, possible_response_order: 1)
+        response_2 = create(:possible_response, :value => "bar", question: @question, possible_response_order: 2)
         campaign = create(:campaign, script: @script)
         3.times { create(:answer, :caller => caller, :voter => @voter, :question_id => @question.id, :possible_response => response_1, :campaign => campaign) }
         2.times { create(:answer, :caller => caller, :voter => @voter, :question_id => @question.id, :possible_response => response_2, :campaign => campaign) }
         create(:answer, :caller => caller, :voter => @voter, :question => @question, :possible_response => response_1, :campaign => create(:campaign))
         stats = caller.answered_call_stats(from_time, time_now+1.day, campaign)
-        expect(stats).to eq({"what?"=>[{:answer=>"[No response]", :number=>0, :percentage=>0},{:answer=>"foo", :number=>3, :percentage=>60}, {:answer=>"bar", :number=>2, :percentage=>40}]})
+
+        expect(stats).to eq({
+          "what?" => [
+            {
+              :answer=>"[No response]",
+              :number=>0,
+              :percentage=>0
+            },
+            {
+              :answer=>"foo",
+              :number=>3,
+              :percentage=>60
+            },
+            {
+              :answer=>"bar",
+              :number=>2,
+              :percentage=>40
+            }
+          ]
+        })
       end
     end
   end

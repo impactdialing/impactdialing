@@ -112,7 +112,7 @@ class Caller < ActiveRecord::Base
       within(from, to).group("question_id").count
     questions = Question.where(id: question_ids)
     questions.each do |question|
-      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(answer_count, total_answers) }
+      result[question.text] = question.possible_responses.order('possible_response_order').collect { |possible_response| possible_response.stats(answer_count, total_answers) }
       result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
     end
     result
