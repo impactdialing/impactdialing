@@ -4,6 +4,9 @@
 class WebuiCallerSession < CallerSession
   include Rails.application.routes.url_helpers
 
+  def abort_calling_with(reason)
+    Providers::Phone::Call.redirect_for(self, reason)
+  end
 
   def start_conf
     return calling_is_disabled_twiml if ability.cannot?(:access_dialer, caller)
@@ -24,7 +27,7 @@ class WebuiCallerSession < CallerSession
     connected_twiml
   end
 
-  def disonnected
+  def disconnected
     disonnected_twiml
   end
 

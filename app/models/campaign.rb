@@ -188,6 +188,14 @@ public
     answering_machine_detect && !use_recordings
   end
 
+  def fit_to_dial?
+    account.funds_available? && within_calling_hours?
+  end
+
+  def within_calling_hours?
+    not time_period_exceeded?
+  end
+
   def time_period_exceeded?
     return true if start_time.nil? || end_time.nil?
     if start_time.hour < end_time.hour
@@ -196,6 +204,7 @@ public
       !(start_time.hour >= Time.now.utc.in_time_zone(time_zone).hour || end_time.hour < Time.now.utc.in_time_zone(time_zone).hour)
     end
   end
+  alias :outside_calling_hours? :time_period_exceeded?
 
   def callers_log_in?
     caller_sessions.on_call.size > 0

@@ -74,33 +74,60 @@ describe PhonesOnlyCallerSession, :type => :model do
   end
 
   describe "ready_to_call" do
+    before do
+      admin           = create(:user)
+      @account        = admin.account
+      @script         = create(:script, {account: @account})
+      @preview        = create(:preview, script: @script, account: @account)
+      @power          = create(:power, script: @script, account: @account)
+    end
 
-    describe "caller reassigned to campaign" do
-      before(:each) do
-        @script = create(:script)
-        @campaign =  create(:power, script: @script)
-        @caller = create(:caller, campaign: @campaign)
+    shared_examples 'not fit to dial' do
+      it 'not funded twiml' do
+        @campaign.account.quota.update_attributes!(minutes_allowed: 0)
+
+        caller_session = CallerSession.find @caller_session.id
+        
+        actual   = caller_session.ready_to_call DataCentre::Code::TWILIO
+        expected = caller_session.account_has_no_funds_twiml
+
+        expect(actual).to eq expected
       end
 
+      it 'outside calling hours twiml' do
+        @campaign.update_attributes(start_time: Time.now - 3.hours, end_time: Time.now - 2.hours)
 
-      xit "should render twiml for reassigned campaign when voters present" do
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
-        expect(caller_session).to receive(:funds_not_available?).and_return(false)
-        expect(caller_session).to receive(:caller_reassigned_to_another_campaign?).and_return(true)
-        expect(caller_session.ready_to_call).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You have been re-assigned to a campaign.</Say><Redirect>http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?Digits=%2A&amp;event=callin_choice&amp;session_id=#{caller_session.id}</Redirect></Response>")
+        caller_session = CallerSession.find @caller_session.id
+
+        actual   = caller_session.ready_to_call DataCentre::Code::TWILIO
+        expected = caller_session.time_period_exceeded
+
+        expect(actual).to eq expected
       end
 
+      it 'account disabled' do
+        @campaign.account.quota.update_attributes!(disable_calling: true)
+
+        caller_session = CallerSession.find @caller_session.id
+
+        actual = caller_session.ready_to_call DataCentre::Code::TWILIO
+        expected = caller_session.calling_is_disabled_twiml
+        p actual
+        expect(actual).to eq expected
+      end
     end
 
     describe "choose voter for preview" do
       before(:each) do
-        @script = create(:script)
-        @campaign =  create(:preview, script: @script)
-        @callers_campaign =  create(:preview, script: @script)
-        @caller = create(:caller, campaign: @campaign)
-        @voter = create(:voter, campaign: @campaign)
+        @script           = create(:script)
+        @campaign         = @preview
+        @callers_campaign = @campaign
+        @caller           = create(:caller, campaign: @campaign, account: @account)
+        @caller_session   = create(:bare_caller_session, :phones_only, :available, {caller: @caller, campaign: @campaign})
+        @voter            = create(:voter, campaign: @campaign)
       end
 
+      it_behaves_like 'not fit to dial'
 
       it "should set voter in progress for session" do
         call_attempt = create(:call_attempt)
@@ -132,7 +159,6 @@ describe PhonesOnlyCallerSession, :type => :model do
         @caller = create(:caller, campaign: @campaign)
         @voter = create(:voter, campaign: @campaign)
       end
-
 
       it "should set voter in progress" do
         call_attempt = create(:call_attempt)
@@ -310,16 +336,15 @@ describe PhonesOnlyCallerSession, :type => :model do
 
   describe "conference_started_phones_only_predictive" do
 
+    before(:each) do
+      @script = create(:script)
+      @campaign =  create(:predictive, script: @script)
+      @caller = create(:caller, campaign: @campaign)
+      @voter = create(:voter)
+      @question = create(:question, script: @script, text: "How do you like Impactdialing")
+    end
+
     describe "gather_response to read_next_question" do
-      before(:each) do
-        @script = create(:script)
-        @campaign =  create(:predictive, script: @script)
-        @caller = create(:caller, campaign: @campaign)
-        @voter = create(:voter)
-        @question = create(:question, script: @script, text: "How do you like Impactdialing")
-      end
-
-
       it "should render correct twiml" do
         call_attempt = create(:call_attempt, voter: @voter)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0, script_id: @script.id)
@@ -332,14 +357,13 @@ describe PhonesOnlyCallerSession, :type => :model do
     end
 
     describe "run out of phone numbers" do
-
       it "should render hangup twiml" do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "conference_started_phones_only_predictive", voter_in_progress: nil)
+        @campaign.caller_sessions << caller_session
+        @campaign.save!
         expect(caller_session.campaign_out_of_phone_numbers).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>This campaign has run out of phone numbers.</Say><Hangup/></Response>")
       end
-
     end
-
   end
 
 

@@ -13,42 +13,6 @@ private
       expires_now
     end
 
-    def current_ability
-      @current_ability ||= Ability.new(@caller.account)
-    end
-
-    def abort_json
-      if cannot?(:access_dialer, @caller)
-        return({json: {message: I18n.t('dialer.access.denied')}, status: 403})
-      end
-      if cannot? :start_calling, @caller
-        return({json: {message: I18n.t('dialer.account.not_funded')}, status: 402})
-      end
-      if @caller.campaign.time_period_exceeded?
-        start_time = if @caller.campaign.start_time.hour <= 12
-                       "#{@caller.campaign.start_time.hour} AM"
-                     else
-                      "#{@caller.campaign.start_time.hour-12} PM"
-                     end
-        end_time = if @caller.campaign.end_time.hour <= 12
-                     "#{@caller.campaign.end_time.hour} AM"
-                   else
-                     "#{@caller.campaign.end_time.hour-12} PM"
-                   end
-        return({
-          json: {
-            message: I18n.t('dialer.campaign.time_period_exceeded', {
-              start_time: start_time,
-              end_time: end_time
-            })
-          },
-          status: 403
-        })
-      end
-
-      {}
-    end
-
     def check_login
       if session[:caller].blank?
         redirect_to callveyor_login_path

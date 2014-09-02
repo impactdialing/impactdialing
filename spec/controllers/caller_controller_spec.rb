@@ -36,7 +36,7 @@ describe CallerController, :type => :controller do
     let(:campaign) do
       create(:preview, {
         start_time: Time.now - 6.hours,
-        end_time: Time.now + 6.hours,
+        end_time: Time.now - 6.hours,
         account: account
       })
     end
@@ -47,16 +47,17 @@ describe CallerController, :type => :controller do
     end
     let(:caller_session) do
       create(:webui_caller_session, {
-        caller: caller
+        caller: caller,
+        campaign: campaign
       })
     end
     let(:current_voter) do
-      create(:voter, {
+      create(:realistic_voter, {
         campaign: campaign
       })
     end
     let(:next_voter) do
-      create(:voter, {
+      create(:realistic_voter, {
         campaign: campaign
       })
     end
@@ -69,19 +70,57 @@ describe CallerController, :type => :controller do
     end
 
     describe 'POST caller/:id/skip_voter, session_id:, voter_id:' do
-      it 'marks the lead (voter) as skipped' do
-        expect(current_voter.skipped_time).to be_nil
+      before do
+        current_voter
+        next_voter
+        login_as(caller)
+      end
+      shared_examples 'mark the lead (voter) as skipped' do
+        it 'sets Voter#skipped_time' do
+          expect(current_voter.skipped_time).to be_nil
 
-        post :skip_voter, valid_params
+          post :skip_voter, valid_params
 
-        expect(current_voter.reload.skipped_time).not_to be_nil
+          expect(current_voter.reload.skipped_time).not_to be_nil
+        end
       end
 
-      it 'redirects the Caller to continue_conf' do
-        skip 'review'
-        expect(controller).to receive(:enqueue_call_flow).with(RedirectCallerJob, [caller_session.id])
+      context 'when fit to dial' do
+        it_behaves_like 'mark the lead (voter) as skipped'
 
-        post :skip_voter, valid_params
+        it 'renders next lead (voter) data' do
+          post :skip_voter, valid_params
+          expect(response.body).to eq next_voter.reload.info.to_json
+        end
+      end
+
+      context 'when not fit to dial' do
+        before do
+          campaign.update_attributes!(start_time: Time.now - 3.hours, end_time: Time.now - 2.hours)
+        end
+
+        it_behaves_like 'mark the lead (voter) as skipped'
+
+        it 'queues RedirectCallerJob, relying on calculated redirect url to return :dialing_prohibited' do
+          expect(Voter.count).to eq 2
+          expect(Sidekiq::Client).to receive(:push).with('queue' => 'call_flow', 'class' => RedirectCallerJob, 'args' => [caller_session.id])
+          post :skip_voter, valid_params
+        end
+
+        it 'renders abort json' do
+          campaign.reload
+
+          expected_json = {
+            message: I18n.t('dialer.campaign.time_period_exceeded', {
+              start_time: "#{campaign.start_time.strftime('%l %p').strip}",
+              end_time: "#{campaign.end_time.strftime('%l %p').strip}"
+            })
+          }.to_json
+
+          post :skip_voter, valid_params
+          expect(response.body).to eq(expected_json)
+          expect(response.status).to eq 403
+        end
       end
     end
   end
@@ -108,7 +147,12 @@ describe CallerController, :type => :controller do
       caller = create(:caller, campaign: campaign, account: account)
       caller_identity = create(:caller_identity)
       voter = create(:voter, campaign: campaign)
-      caller_session = create(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)
+      caller_session = create(:webui_caller_session, {
+        session_key: caller_identity.session_key,
+        caller_type: CallerSession::CallerType::TWILIO_CLIENT,
+        caller: caller,
+        campaign: campaign
+      })
       expect(Caller).to receive(:find).and_return(caller)
       expect(caller).to receive(:calling_voter_preview_power)
       post :call_voter, id: caller.id, voter_id: voter.id, session_id: caller_session.id

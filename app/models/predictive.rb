@@ -66,7 +66,7 @@ class Predictive < Campaign
 
   def abort_available_callers_for(twilio_redirect)
     caller_sessions.available.each do |cs|
-      Providers::Phone::Call.redirect_for(cs, twilio_redirect)
+      cs.abort_calling_with(twilio_redirect)
     end
     caller_sessions.available.update_all(available_for_call: false)
   end

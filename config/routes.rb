@@ -53,6 +53,11 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
+  namespace 'twiml' do
+    resources :caller_sessions, only: [] do
+      post :dialing_prohibited
+    end
+  end
 
   namespace "callers" do
     resources :campaign_calls do

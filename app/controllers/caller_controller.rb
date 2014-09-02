@@ -1,4 +1,4 @@
-class CallerController < ApplicationController
+class CallerController < TwimlController
   include SidekiqEvents
   layout "caller"
   skip_before_filter :verify_authenticity_token, :only =>[
@@ -17,7 +17,7 @@ class CallerController < ApplicationController
 
   before_filter :check_login, :except=>[
     :login, :feedback, :end_session, :start_calling,
-    :phones_only, :call_voter, :skip_voter, :stop_calling,
+    :phones_only, :call_voter, :stop_calling,
     :ready_to_call, :continue_conf, :pause, :run_out_of_numbers,
     :callin_choice, :read_instruction_options,
     :conference_started_phones_only_preview,
@@ -43,6 +43,45 @@ class CallerController < ApplicationController
 
   before_filter :find_session, :only => [:end_session]
 
+private
+  def current_ability
+    @current_ability ||= Ability.new(@caller.account)
+  end
+
+  def abort_json
+    if cannot?(:access_dialer, @caller)
+      return({json: {message: I18n.t('dialer.access.denied')}, status: 403})
+    end
+    if cannot? :start_calling, @caller
+      return({json: {message: I18n.t('dialer.account.not_funded')}, status: 402})
+    end
+    if @caller.campaign.time_period_exceeded?
+      start_time = if @caller.campaign.start_time.hour <= 12
+                     "#{@caller.campaign.start_time.hour} AM"
+                   else
+                    "#{@caller.campaign.start_time.hour-12} PM"
+                   end
+      end_time = if @caller.campaign.end_time.hour <= 12
+                   "#{@caller.campaign.end_time.hour} AM"
+                 else
+                   "#{@caller.campaign.end_time.hour-12} PM"
+                 end
+      return({
+        json: {
+          message: I18n.t('dialer.campaign.time_period_exceeded', {
+            start_time: start_time,
+            end_time: end_time
+          })
+        },
+        status: 403
+      })
+    end
+
+    {}
+  end
+
+public
+
   def logout
     session[:caller]=nil
     redirect_to callveyor_login_path
@@ -65,18 +104,26 @@ class CallerController < ApplicationController
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
     load_caller_session = CallerSession.find_by_id_cached(session.id)
-    caller.started_calling(load_caller_session)
-    RedisDataCentre.set_datacentres_used(load_caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
-    render xml: load_caller_session.start_conf
+
+    render_abort_twiml_unless_fit_to(:start_calling, load_caller_session) do
+      caller.started_calling(load_caller_session)
+      RedisDataCentre.set_datacentres_used(load_caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
+      render xml: load_caller_session.start_conf
+    end
   end
 
   def ready_to_call
-    RedisDataCentre.set_datacentres_used(@caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
-    render xml: @caller_session.ready_to_call(DataCentre.code(params[:caller_dc]))
+    # render abort 'dial' twiml here and 'start_calling' twiml at Callin#identify
+    render_abort_twiml_unless_fit_to(:dial, @caller_session) do
+      RedisDataCentre.set_datacentres_used(@caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
+      render xml: @caller_session.ready_to_call(DataCentre.code(params[:caller_dc]))
+    end
   end
 
   def continue_conf
-    render xml: @caller_session.continue_conf
+    render_abort_twiml_unless_fit_to(:dial, @caller_session) do
+      render xml: @caller_session.continue_conf
+    end
   end
 
   # This is the Dial:action for most caller TwiML
@@ -166,23 +213,24 @@ class CallerController < ApplicationController
     render xml: xml
   end
 
+  ##
+  # Used by Preview & Power dial modes to dial a number.
+  # We do not perform any 'fit to dial' checks here because
+  # by the time the client is ready to hit this endpoint, the
+  # Voter identified by params[:voter_id] will already be
+  # marked READY and we do not currently have a reliable way
+  # to revert Voter#status to previous value.
   def call_voter
     caller = Caller.find(params[:id])
     campaign = caller.campaign
     caller_session = caller.caller_sessions.find(params[:session_id])
 
-    Rails.logger.error "RecycleRate Caller#call_voter #{campaign.try(:type) || 'Campaign'}[#{campaign.try(:id)}] CallerSession[#{caller_session.id}] Voter[#{params[:voter_id]}]"
-
     if params[:voter_id].present?
       voter = Voter.find params[:voter_id]
     end
     if params[:voter_id].blank? || (params[:voter_id].present? && campaign.within_recycle_rate?(voter))
-      Rails.logger.error "RecycleRate Caller#call_voter #{campaign.try(:type) || 'Campaign'}[#{campaign.try(:id)}] CallerSession[#{caller_session.id}] Voter[#{params[:voter_id]}] - queueing conference_started"
       enqueue_call_flow(CallerPusherJob, [caller_session.id,  "publish_caller_conference_started"])
     else
-      # publish_calling_voter &
-      # queue PreviewPowerDialJob
-      Rails.logger.error "RecycleRate Caller#call_voter #{campaign.try(:type) || 'Campaign'}[#{campaign.try(:id)}] CallerSession[#{caller_session.id}] Voter[#{params[:voter_id]}] - queueing calling_voter & PreviewPowerDialJob"
       caller.calling_voter_preview_power(caller_session, params[:voter_id])
     end
     render :nothing => true
@@ -206,9 +254,14 @@ class CallerController < ApplicationController
     caller_session = caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
-    info = caller.campaign.caller_conference_started_event(voter.id)
 
-    render json: info[:data].to_json
+    if caller_session.fit_to_dial?
+      info = caller.campaign.caller_conference_started_event(voter.id)
+      render json: info[:data].to_json
+    else
+      enqueue_call_flow(RedirectCallerJob, [caller_session.id])
+      render abort_json
+    end
   end
 
   def check_login

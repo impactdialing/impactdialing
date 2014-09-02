@@ -125,15 +125,17 @@ describe WebuiCallerSession, :type => :model do
     end
 
     describe "run out of phone numbers" do
-
+      before(:each) do
+        @script = create(:script)
+        @campaign =  create(:preview, script: @script)
+        @caller = create(:caller, campaign: @campaign, account: create(:account))
+        @call_attempt = create(:call_attempt)
+      end
       it "should render hangup twiml" do
         caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
         expect(caller_session.campaign_out_of_phone_numbers).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>This campaign has run out of phone numbers.</Say><Hangup/></Response>")
       end
-
-
     end
-
   end
 
   describe "paused state" do

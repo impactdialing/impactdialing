@@ -29,6 +29,8 @@ class Providers::Phone::Call::Params::CallerSession
   end
 
   def default_url
+    return dialing_prohibited_url unless caller_session.fit_to_dial?
+
     if caller.is_phones_only?
       return ready_to_call_caller_url(caller, url_options)
     else
@@ -38,6 +40,13 @@ class Providers::Phone::Call::Params::CallerSession
 
   def pause_url
     return pause_caller_url(caller, url_options)
+  end
+
+  def dialing_prohibited_url
+    # use default options since this url embeds the session id
+    default_options = Providers::Phone::Call::Params.default_url_options
+
+    return twiml_caller_session_dialing_prohibited_url(caller_session, default_options)
   end
 
   def play_message_error_url

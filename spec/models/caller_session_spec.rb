@@ -130,12 +130,12 @@ describe CallerSession, :type => :model do
     end
   end
 
-  it "should start a call in initial state" do
-    caller_session = create(:caller_session)
-    expect(caller_session.state).to eq('initial')
-  end
-
   describe "initial state" do
+    it "should start a call in initial state" do
+      caller_session = create(:caller_session)
+      expect(caller_session.state).to eq('initial')
+    end
+
     describe "subscription limit exceeded" do
       before(:each) do
         @account = create(:account)

@@ -52,6 +52,9 @@ class CallerSession < ActiveRecord::Base
 
   delegate :subscription_allows_caller?, :to => :caller
   delegate :funds_available?, :to => :caller
+  delegate :time_period_exceeded?, :to => :campaign
+  delegate :within_calling_hours?, :to => :campaign
+  delegate :fit_to_dial?, :to => :campaign
 
 private
   def _account
@@ -69,22 +72,60 @@ public
     self.tDuration/60.ceil
   end
 
+  def dialer_access_allowed?
+    ability.can?(:access_dialer, caller)
+  end
+
+  def dialer_access_denied?
+    not dialer_access_allowed?
+  end
+
   def start_conf
-    return calling_is_disabled_twiml if ability.cannot?(:access_dialer, caller)
+    return calling_is_disabled_twiml if dialer_access_denied?
     return account_has_no_funds_twiml if funds_not_available?
     return subscription_limit_twiml if subscription_limit_exceeded?
     return time_period_exceeded_twiml if time_period_exceeded?
   end
 
+  def abort_start_calling_twiml
+    send("#{abort_start_calling_reason}_twiml")
+  end
+
+  def abort_dial_twiml
+    send("#{abort_dial_reason}_twiml")
+  end
+
+  def account_settled?
+    dialer_access_allowed? && funds_available?
+  end
+
+  def account_not_settled?
+    not account_settled?
+  end
+
+  def abort_dial_reason
+    return :calling_is_disabled if dialer_access_denied?
+    return :account_has_no_funds if account_not_settled?
+    return :time_period_exceeded if time_period_exceeded?
+  end
+
+  def abort_start_calling_reason
+    return :subscription_limit if subscription_limit_exceeded?
+    abort_dial_reason
+  end
+
   def campaign_out_of_phone_numbers
+    end_caller_session
     campaign_out_of_phone_numbers_twiml
   end
 
   def time_period_exceeded
+    end_caller_session
     time_period_exceeded_twiml
   end
 
   def account_has_no_funds
+    end_caller_session
     account_has_no_funds_twiml
   end
 
@@ -96,7 +137,10 @@ public
   def end_caller_session
     begin
       end_session
-      enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])
+
+      unless caller.is_phones_only?
+        enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])
+      end
     rescue ActiveRecord::StaleObjectError => exception
       RedisCallerSession.add_phantom_callers(self.id)
     end

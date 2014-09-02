@@ -76,7 +76,7 @@ class Call < ActiveRecord::Base
   end
 
   def wrapup_and_continue
-    RedisCallFlow.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
+    RedisCallFlow.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT)
     call_attempt.redirect_caller
     unless cached_caller_session.nil?
       RedisStatus.set_state_changed_time(call_attempt.campaign_id, "On hold", cached_caller_session.id)
@@ -84,10 +84,9 @@ class Call < ActiveRecord::Base
   end
 
   def wrapup_and_stop
-    RedisCallFlow.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
+    RedisCallFlow.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT)
     end_caller_session
   end
-
 
   def answered_by_machine?
     RedisCall.answered_by(self.id) == "machine"

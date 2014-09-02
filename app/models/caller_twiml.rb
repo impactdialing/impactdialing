@@ -164,7 +164,6 @@ module CallerTwiml
     Twilio::TwiML::Response.new do |r|
       r.Redirect(next_call_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", :session_id => self.id))
     end.text
-
   end
  end
   def self.included(receiver)

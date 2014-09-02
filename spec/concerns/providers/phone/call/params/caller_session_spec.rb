@@ -13,7 +13,8 @@ describe Providers::Phone::Call::Params::CallerSession do
     mock_model('CallerSession', {
       sid: '123123',
       caller: caller,
-      campaign: campaign
+      campaign: campaign,
+      fit_to_dial?: true
     })
   end
   let(:param_class) do

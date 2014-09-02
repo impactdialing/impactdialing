@@ -15,8 +15,12 @@ class PhonesOnlyCallerSession < CallerSession
   end
 
   def ready_to_call(callerdc)
-    return conference_started_phones_only_predictive(callerdc) if  predictive?
-    return choosing_voter_to_dial if  preview?
+    # CalculateDialsJob determines whether dialing is allowed
+    return conference_started_phones_only_predictive(callerdc) if predictive?
+
+    # abort call before loading voters
+    return abort_dial_twiml if !fit_to_dial?
+    return choosing_voter_to_dial if preview?
     return choosing_voter_and_dial if  power?
   end
 
@@ -35,7 +39,6 @@ class PhonesOnlyCallerSession < CallerSession
     enqueue_call_flow(PreviewPowerDialJob, [self.id, voter_in_progress.id])
     conference_started_phones_only_twiml
   end
-
 
   def conference_started_phones_only_preview
     if pound_selected?
@@ -80,13 +83,13 @@ class PhonesOnlyCallerSession < CallerSession
 
   def wrapup_call
     wrapup_call_attempt
+
     wrapup_call_twiml
   end
 
   def next_call
     ready_to_call(RedisCallerSession.datacentre(self.id))
   end
-
 
   def skip_all_questions?
     redis_digit == "999"
@@ -98,8 +101,6 @@ class PhonesOnlyCallerSession < CallerSession
       RedisCallFlow.push_to_wrapped_up_call_list(attempt_in_progress.id, CallerSession::CallerType::PHONE);
     end
   end
-
-
 
   def more_questions_to_be_answered?
     RedisQuestion.more_questions_to_be_answered?(script_id, redis_question_number)

@@ -5,14 +5,11 @@ module PreviewPowerCampaign
       # voter = all_voters.next_in_priority_or_scheduled_queues(do_not_call_numbers).first
       voter = Voter.next_voter(all_voters, recycle_rate, do_not_call_numbers, current_voter_id)
 
-      Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] NextVoter[#{voter.try(:id)}]"
-
       update_voter_status_to_ready(voter)
     rescue ActiveRecord::StaleObjectError => e
       Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] StaleObjectError - retrying..."
       retry
     end
-    Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] Returning[#{voter.try(:id)}:#{voter.try(:status)}]"
     return voter
   end
 
