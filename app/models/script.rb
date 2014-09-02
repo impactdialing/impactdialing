@@ -108,7 +108,7 @@ class Script < ActiveRecord::Base
 
   def update_questions_and_possible_responses_cache
     if active?
-      CachePhonesOnlyScriptQuestions.queue(id, 'update')
+      CachePhonesOnlyScriptQuestions.add_to_queue(id, 'update')
     end
   end
 end

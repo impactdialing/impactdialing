@@ -4,7 +4,7 @@ class CachePhonesOnlyScriptQuestions
   include Resque::Plugins::UniqueJob
   @queue = :persist_jobs
 
-  def self.queue(script_id, action)
+  def self.add_to_queue(script_id, action)
     Resque.enqueue(self, script_id, action)
   end
 

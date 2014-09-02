@@ -57,11 +57,11 @@ describe 'CachePhonesOnlyScriptQuestions' do
     end
   end
 
-  describe '.queue(script_id, action)' do
+  describe '.add_to_queue(script_id, action)' do
     it 'can queue itself, whynot?' do
       expect(Resque).to receive(:enqueue).with(CachePhonesOnlyScriptQuestions, 42, 'mice')
 
-      CachePhonesOnlyScriptQuestions.queue(42, 'mice')
+      CachePhonesOnlyScriptQuestions.add_to_queue(42, 'mice')
     end
   end
 

@@ -10,8 +10,8 @@ describe Script, :type => :model do
       account = admin.account
       script  = create_campaign_with_script(:bare_power, account).first
 
-      expect(CachePhonesOnlyScriptQuestions).to receive(:queue).with(script.id, 'update')
-      
+      expect(CachePhonesOnlyScriptQuestions).to receive(:add_to_queue).with(script.id, 'update')
+
       script.update_attributes(name: 'Updated Script Name')
     end
   end
