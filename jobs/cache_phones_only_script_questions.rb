@@ -1,3 +1,4 @@
+require 'digest/sha1'
 require 'resque-loner'
 
 class CachePhonesOnlyScriptQuestions
@@ -18,6 +19,10 @@ class CachePhonesOnlyScriptQuestions
     6.hours
   end
 
+  def self.sum(content)
+    Digest::SHA1.hexdigest(content)
+  end
+
   def self.seed_cache(script, ttl=nil)
     ttl ||= _ttl
     cache!(script, ttl) if cache_empty?(script.id)
@@ -28,6 +33,18 @@ class CachePhonesOnlyScriptQuestions
   end
 
   def self.cache!(script, ttl=nil)
+    content            = ''
+    questions          = script.questions.reverse
+    possible_responses = questions.map(&:possible_responses).flatten.reverse
+
+    content = questions.map{|question| "#{question.id}:#{question.text}"}.join(';')
+    content += possible_responses.map{|possible_response| "#{possible_response.id}:#{possible_response.keypad}:#{possible_response.value}"}.join(';')
+
+    current_hash = sum(content)
+    cached_hash  = RedisQuestion.get_checksum(script.id)
+
+    return false unless current_hash != cached_hash
+
     redis.multi do
       RedisQuestion.clear_list(script.id)
 
@@ -44,6 +61,7 @@ class CachePhonesOnlyScriptQuestions
       end
 
       RedisQuestion.expire(script.id, ttl) unless ttl.nil?
+      RedisQuestion.set_checksum(script.id, current_hash, (ttl || _ttl))
     end
   end
 

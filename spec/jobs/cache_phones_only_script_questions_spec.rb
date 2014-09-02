@@ -55,6 +55,7 @@ describe 'CachePhonesOnlyScriptQuestions' do
     @script.questions.pluck(:id).each do |question_id|
       RedisPossibleResponse.clear_list(question_id)
     end
+    RedisQuestion.redis.del(RedisQuestion.checksum_key(@script.id))
   end
 
   describe '.add_to_queue(script_id, action)' do
@@ -150,9 +151,16 @@ describe 'CachePhonesOnlyScriptQuestions' do
     end
 
     context 'neither questions nor possible responses have changed and exist in cache' do
-      it 'does not update questions cache'
+      before do
+        CachePhonesOnlyScriptQuestions.perform(@script.id, 'seed')
+      end
+      it 'does not modify the cache' do
+        expect(RedisQuestion.cached?(@script.id)).to be_truthy
+        expect(RedisQuestion).to_not receive(:persist_questions)
+        expect(RedisPossibleResponse).to_not receive(:persist_possible_response)
 
-      it 'does not update possible responses cache'
+        CachePhonesOnlyScriptQuestions.perform(@script.id, 'update')
+      end
     end
 
     context 'questions or possible responses have changed but do not exist in cache' do
