@@ -112,7 +112,6 @@ describe PhonesOnlyCallerSession, :type => :model do
 
         actual = caller_session.ready_to_call DataCentre::Code::TWILIO
         expected = caller_session.calling_is_disabled_twiml
-        p actual
         expect(actual).to eq expected
       end
     end
