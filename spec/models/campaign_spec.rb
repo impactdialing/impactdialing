@@ -2,22 +2,31 @@ require "spec_helper"
 
 describe Campaign, :type => :model do
 
-  describe "voters" do
+  describe '#fit_to_dial?' do
+    include FakeCallData
 
-   xit "should return zero voters, if active_voter_list_ids is empty" do
-     campaign = create(:campaign, :account => create(:account, :activated => true), type: Campaign::Type::PREVIEW)
-     expect(VoterList).to receive(:active_voter_list_ids).with(campaign.id).and_return([])
-     expect(campaign.voters("not called")).to eq([])
-   end
+    let(:account) do
+      create(:user).account
+    end
+    let(:campaign) do
+      create_campaign_with_script(:bare_predictive, account).last
+    end
+    context 'return false when' do
+      it 'account not funded' do
+        campaign.account.quota.update_attributes!(minutes_allowed: 0)
+        expect(campaign.fit_to_dial?).to be_falsey
+      end
 
-   xit "should return voters to be call" do
-     campaign = create(:campaign, :account => create(:account, :activated => true), recycle_rate: 3,type: Campaign::Type::PREVIEW)
-     expect(VoterList).to receive(:active_voter_list_ids).with(campaign.id).and_return([12, 123])
-     expect(Voter).to receive(:to_be_called).with(campaign.id, [12, 123], "not called", 3).and_return(["v1", "v2", "v3", "v2"])
-     expect(Voter).not_to receive(:just_called_voters_call_back).with(campaign.id, [12, 123])
-     expect(campaign.voters("not called").length).to eq(3)
-   end
+      it 'outside calling hours' do
+        campaign.update_attributes!(start_time: 3.hours.ago, end_time: 2.hours.ago)
+        expect(campaign.fit_to_dial?).to be_falsey
+      end
 
+      it 'calling disabled' do
+        campaign.account.quota.update_attributes!(disable_calling: true)
+        expect(campaign.fit_to_dial?).to be_falsey
+      end
+    end
   end
 
   describe 'callbacks' do
@@ -377,13 +386,6 @@ describe Campaign, :type => :model do
      end
   end
 
-  describe "cost_per_minute" do
-    xit "should be .09" do
-      campaign = create(:preview)
-      expect(campaign.cost_per_minute).to eq(0.09)
-    end
-  end
-
   describe "callers_status" do
 
     before (:each) do
@@ -405,29 +407,6 @@ describe Campaign, :type => :model do
     end
 
 
-  end
-
-  describe "call_status" do
-    xit "should return attempts in wrapup" do
-      campaign = create(:preview)
-      caller_attempt1 = create(:call_attempt, wrapup_time: nil, created_at: 3.minutes.ago, status:  CallAttempt::Status::SUCCESS, campaign_id: campaign.id)
-      caller_attempt2 = create(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::SUCCESS, campaign_id: campaign.id)
-      expect(campaign.call_status[0]).to eq(1)
-    end
-
-    xit "should return live calls" do
-      campaign = create(:preview)
-      caller_attempt1 = create(:call_attempt, wrapup_time: nil, created_at: 3.minutes.ago, status:  CallAttempt::Status::INPROGRESS, campaign_id: campaign.id)
-      caller_attempt2 = create(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::INPROGRESS, campaign_id: campaign.id)
-      expect(campaign.call_status[2]).to eq(1)
-    end
-
-    xit "should return ringing_lines" do
-      campaign = create(:preview)
-      caller_attempt1 = create(:call_attempt, wrapup_time: nil, created_at: 12.seconds.ago, status:  CallAttempt::Status::RINGING, campaign_id: campaign.id)
-      caller_attempt2 = create(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::RINGING, campaign_id: campaign.id)
-      expect(campaign.call_status[1]).to eq(1)
-    end
   end
 
   describe "current status" do

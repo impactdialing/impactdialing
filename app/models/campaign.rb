@@ -133,7 +133,7 @@ public
   end
 
   def ability
-    @ability ||= Ability.new(account)
+    @ability = Ability.new(account)
   end
 
   def campaign_type_based_on_subscription
@@ -189,7 +189,7 @@ public
   end
 
   def fit_to_dial?
-    account.funds_available? && within_calling_hours?
+    account.funds_available? && within_calling_hours? && ability.can?(:access_dialer, Caller)
   end
 
   def within_calling_hours?
