@@ -16,7 +16,37 @@ describe Predictive do
     })
   end
 
-  describe 'abort_available_callers_for(twilio_redirect)' do
+  describe 'check_campaign_fit_to_dial' do
+    context 'campaign is fit to dial' do
+      it 'returns true' do
+        expect(campaign.check_campaign_fit_to_dial).to be_truthy
+      end
+    end
+
+    context 'campaign is not fit to dial' do
+      context 'aborting available callers' do
+        before do
+          expect(campaign).to receive(:abort_available_callers_with).with(:dialing_prohibited)
+        end
+        it 'account not funded' do
+          campaign.account.quota.update_attributes!(minutes_allowed: 0)
+          expect(campaign.check_campaign_fit_to_dial).to be_falsey
+        end
+
+        it 'outside calling hours' do
+          campaign.update_attributes!(start_time: 3.hours.ago, end_time: 2.hours.ago)
+          expect(campaign.check_campaign_fit_to_dial).to be_falsey
+        end
+
+        it 'calling disabled' do
+          campaign.account.quota.update_attributes!(disable_calling: true)
+          expect(campaign.check_campaign_fit_to_dial).to be_falsey
+        end
+      end
+    end
+  end
+
+  describe 'abort_available_callers_with(twilio_redirect)' do
     before do
       allow(Providers::Phone::Call).to receive(:redirect_for)
       create_list(:bare_caller_session, 3, :available, :webui, {campaign: campaign})
@@ -24,7 +54,7 @@ describe Predictive do
     it 'updates each available session so available_for_call is false' do
       twilio_redirect = :account_has_no_funds
       
-      campaign.abort_available_callers_for(twilio_redirect)
+      campaign.abort_available_callers_with(twilio_redirect)
       actual = CallerSession.all.map(&:available_for_call)
       expect(actual.uniq).to eq [false]
     end
@@ -35,7 +65,7 @@ describe Predictive do
       campaign.caller_sessions.each do |cs|
         expect(Providers::Phone::Call).to receive(:redirect_for).with(cs, twilio_redirect)
       end
-      campaign.abort_available_callers_for(twilio_redirect)
+      campaign.abort_available_callers_with(twilio_redirect)
     end
   end
 

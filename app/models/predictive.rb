@@ -64,25 +64,23 @@ class Predictive < Campaign
     voters
   end
 
-  def abort_available_callers_for(twilio_redirect)
+  def abort_calling_with(caller_session, reason)
+    Providers::Phone::Call.redirect_for(caller_session, reason)
+  end
+
+  def abort_available_callers_with(twilio_redirect)
     caller_sessions.available.each do |cs|
-      cs.abort_calling_with(twilio_redirect)
+      abort_calling_with(cs, twilio_redirect)
     end
     caller_sessions.available.update_all(available_for_call: false)
   end
 
   def check_campaign_fit_to_dial
-    if !account.funds_available?
-      abort_available_callers_for(:account_has_no_funds)
-      return false
-    end
+    return true if fit_to_dial?
 
-    if time_period_exceeded?
-      abort_available_callers_for(:time_period_exceeded)
-      return false
-    end
+    abort_available_callers_with(:dialing_prohibited)
 
-    return true
+    return false
   end
 
   def set_voter_status_to_read_for_dial!(voters)
