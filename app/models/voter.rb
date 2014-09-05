@@ -129,7 +129,7 @@ class Voter < ActiveRecord::Base
 
   # New Shiny
   scope :dialed, lambda{|campaign|
-    where('status <> ?', Voter::Status::NOTCALLED).where('last_call_attempt_time IS NOT NULL')
+    where('last_call_attempt_time IS NOT NULL')
   }
   scope :available_for_retry, lambda {|campaign|
     enabled.active.
