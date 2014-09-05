@@ -62,12 +62,15 @@ private
     end
 
     def auto_reassign_caller_campaign!
+      return if @caller.campaign_id == params[:campaign_id].try(:to_i)
+      
       begin
         campaign = @caller.account.campaigns.find params[:campaign_id]
       rescue ActiveRecord::RecordNotFound => e
         logger.error("Exception ActiveRecord::RecordNotFound when auto-reassign caller campaign attempted. Caller[#{@caller.id}] CurrentCampaign[#{@caller.campaign.id}] RequestedCampaign[#{params[:campaign_id]}]")
         return
       end
+
       prev_campaign_id = @caller.campaign_id
       @caller.update_attributes!(campaign_id: campaign.id)
       logger.info("Auto-reassigned Caller[#{@caller.id}] PrevCampaign[#{prev_campaign_id}] NewCampaign[#{@caller.campaign_id}]")
