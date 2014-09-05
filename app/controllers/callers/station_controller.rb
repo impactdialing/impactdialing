@@ -61,9 +61,22 @@ private
       end
     end
 
+    def auto_reassign_caller_campaign!
+      begin
+        campaign = @caller.account.campaigns.find params[:campaign_id]
+      rescue ActiveRecord::RecordNotFound => e
+        logger.error("Exception ActiveRecord::RecordNotFound when auto-reassign caller campaign attempted. Caller[#{@caller.id}] CurrentCampaign[#{@caller.campaign.id}] RequestedCampaign[#{params[:campaign_id]}]")
+        return
+      end
+      prev_campaign_id = @caller.campaign_id
+      @caller.update_attributes!(campaign_id: campaign.id)
+      logger.info("Auto-reassigned Caller[#{@caller.id}] PrevCampaign[#{prev_campaign_id}] NewCampaign[#{@caller.campaign_id}]")
+    end
+
 public
     # draft new html/client entry point
     def show
+      auto_reassign_caller_campaign! if params[:campaign_id].present?
     end
 
     def logout
@@ -79,8 +92,14 @@ public
         elsif !@caller.active?
           flash_now(:error, "That account has been deleted.")
         else
+          # pass campaign_id along to #show to enable auto-reassignment
+          pass_along_params = {}
+          if params[:campaign_id]
+            pass_along_params[:campaign_id] = params[:campaign_id]
+          end
+          # /pass campaign_id along to #show to enable auto-reassignment
           session[:caller] = @caller.id
-          redirect_to callveyor_path
+          redirect_to callveyor_path(pass_along_params)
         end
       end
     end
