@@ -118,7 +118,7 @@ class Voter < ActiveRecord::Base
 
   scope :next_in_recycled_queue, lambda {|recycle_rate, blocked_numbers|
     enabled.without(blocked_numbers).
-    last_call_attempt_before_recycle_rate(recycle_rate).
+    recycle_rate_expired(recycle_rate).
     where('status NOT IN (?) OR call_back=?', [
       CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING,
       CallAttempt::Status::READY, CallAttempt::Status::SUCCESS,
@@ -129,8 +129,12 @@ class Voter < ActiveRecord::Base
   }
 
   # New Shiny
-  scope :dialed, lambda{|campaign|
-    where('last_call_attempt_time IS NOT NULL')
+  scope :dialed, where('last_call_attempt_time IS NOT NULL')
+  scope :recently_dialed_households, lambda{ |recycle_rate|
+    dialed.
+    group('phone').
+    order('last_call_attempt_time ASC').
+    where('last_call_attempt_time > ?', recycle_rate.hours.ago)
   }
   scope :available_for_retry, lambda {|campaign|
     enabled.active.
@@ -207,8 +211,11 @@ public
   # is configured to set the call_back flag to true.
   #
   def self.next_voter(voters, recycle_rate, blocked_numbers, current_voter_id)
-    not_dialed_queue = voters.not_dialed.without(blocked_numbers).enabled
-    retry_queue      = voters.next_in_recycled_queue(recycle_rate, blocked_numbers)
+    recently_dialed_household_numbers = recently_dialed_households(recycle_rate).pluck(:phone)
+    without_numbers                   = blocked_numbers + recently_dialed_household_numbers
+
+    not_dialed_queue = voters.not_dialed.without(without_numbers).enabled
+    retry_queue      = voters.next_in_recycled_queue(recycle_rate, without_numbers)
     _not_skipped     = not_dialed_queue.not_skipped.first
     _not_skipped     ||= retry_queue.not_skipped.first
 
