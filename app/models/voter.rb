@@ -147,7 +147,9 @@ class Voter < ActiveRecord::Base
     )
   }
   scope :recycle_rate_expired, lambda {|recycle_rate|
-    where('last_call_attempt_time < ?', recycle_rate.hours.ago)
+    where('last_call_attempt_time < ? OR '+
+          '(skipped_time IS NOT NULL AND status = ?)',
+          recycle_rate.hours.ago, Status::SKIPPED)
   }
   scope :not_ringing, lambda{ where('voters.status <> ?', CallAttempt::Status::RINGING) }
   scope :with_manual_message_drop, not_ringing.joins(:call_attempts).where('call_attempts.id=voters.last_call_attempt_id').where('call_attempts.recording_id IS NOT NULL').where(call_attempts: {recording_delivered_manually: true})

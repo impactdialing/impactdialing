@@ -872,6 +872,7 @@ describe Voter, :type => :model do
           create_list(:realistic_voter, 10, :not_recently_dialed, :voicemail)
           create_list(:realistic_voter, 10, :not_recently_dialed, :call_back)
           create_list(:realistic_voter, 10, :recently_dialed, :call_back)
+          create_list(:realistic_voter, 10, :skipped)
           add_voters(@campaign, :realistic_voter, 25)
           
           @voters = Voter.available_for_retry(@campaign)
@@ -912,6 +913,11 @@ describe Voter, :type => :model do
           actual   = @voters.where(call_back: true).count
 
           expect(actual).to eq expected
+        end
+        it 'skipped' do
+          actual = @voters.where(status: Voter::Status::SKIPPED).count
+
+          expect(actual).to eq 10
         end
       end
     end

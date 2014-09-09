@@ -94,7 +94,7 @@ describe 'Voters (Contacts) are called in the order they are uploaded', data_hea
         expect(campaign.call_attempts.count).to eq 40 + (30 - skipped.size)
       end
 
-      actual   = Voter.available_for_retry(campaign).count + Voter.not_dialed.count
+      actual   = Voter.available_for_retry(campaign).count
       expected = [nil,30,18,3][outer_pass]
       expect(actual).to eq(expected), [
         "Incorrect number of voters available for retry",

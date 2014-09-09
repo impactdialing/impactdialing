@@ -70,6 +70,11 @@ FactoryGirl.define do
         skipped_time 5.minutes.ago
       end
 
+      trait :not_recently_skipped do
+        status Voter::Status::SKIPPED
+        skipped_time 25.hours.ago
+      end
+
       trait :scheduled do
         status CallAttempt::Status::SCHEDULED
       end
