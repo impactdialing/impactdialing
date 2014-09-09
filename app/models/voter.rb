@@ -89,6 +89,7 @@ class Voter < ActiveRecord::Base
         where("status IN (?) OR call_back=1", [
           Status::NOTCALLED,
           Status::RETRY,
+          Status::SKIPPED,
           CallAttempt::Status::BUSY,
           CallAttempt::Status::NOANSWER,
           CallAttempt::Status::ABANDONED,
