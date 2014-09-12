@@ -113,9 +113,7 @@ class PhonesOnlyCallerSession < CallerSession
 
   def select_voter(old_voter)
     voter = campaign.next_voter_in_dial_queue(old_voter.try(:[], 'id'))
-    unless voter.nil?
-      self.update_attributes(voter_in_progress: voter)
-    end
+    self.update_attributes(voter_in_progress: voter)
     voter
   end
 

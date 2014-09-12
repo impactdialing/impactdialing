@@ -135,6 +135,14 @@ describe PhonesOnlyCallerSession, :type => :model do
         expect(caller_session.voter_in_progress.id).to eq(@voter.id)
       end
 
+      it 'should unset voter in progress for session when Campaign#next_voter_in_dial_queue returns nil' do
+        caller_session = CallerSession.find @caller_session.id
+        caller_session.update_attributes!(voter_in_progress: @voter)
+        @voter.update_attributes!(last_call_attempt_time: 10.minutes.ago)
+        caller_session.ready_to_call(DataCentre::Code::TWILIO)
+        expect(caller_session.voter_in_progress).to be_nil
+      end
+
       it "should render twiml for preview when voters present" do
         call_attempt = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
