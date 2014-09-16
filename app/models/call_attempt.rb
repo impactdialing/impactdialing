@@ -213,6 +213,10 @@ class CallAttempt < ActiveRecord::Base
       statuses
     end
 
+    def self.in_progress_list
+      [RINGING, READY, INPROGRESS]
+    end
+
     def self.not_available_list(campaign)
       statuses = [INPROGRESS, RINGING, READY]
       statuses + completed_list(campaign)

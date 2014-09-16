@@ -1039,6 +1039,14 @@ describe Voter, :type => :model do
           actual = Voter.next_voter(@voters, 1, [], nil)
           expect(actual).to eq expected
         end
+
+        it 'does not return voters marked READY' do
+          attempt_calls @voters[3..7]
+          @voters[0].update_attributes!(status: CallAttempt::Status::READY, last_call_attempt_time: nil)
+          expected = @voters[1]
+          actual = Voter.next_voter(@voters, 1, [], nil)
+          expect(actual).to eq expected
+        end
       end
     end
 

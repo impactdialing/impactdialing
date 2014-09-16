@@ -68,7 +68,7 @@ class Voter < ActiveRecord::Base
             Voter::Status::RETRY
           ])
   }
-  scope :not_dialed, where('last_call_attempt_time IS NULL')
+  scope :not_dialed, where('last_call_attempt_time IS NULL').where('status NOT IN (?)', CallAttempt::Status.in_progress_list)
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
   scope :to_callback, where(:call_back => true)
   # scope :scheduled, enabled.where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
