@@ -12,6 +12,7 @@ ENV['VOIP_API_URL'] ||= 'test.com'
 ENV['TWILIO_CALLBACK_PORT'] ||= '80'
 ENV['RECORDING_ENV'] = 'test'
 ENV['CALLIN_PHONE'] ||= '5555551234'
+ENV['DIAL_QUEUE_AVAILABLE_LIMIT'] ||= '10'
 
 # require 'rubygems'
 require File.expand_path("../../config/environment", __FILE__)
