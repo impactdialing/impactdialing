@@ -28,7 +28,7 @@ module PreviewPowerCampaign
   end
 
   def call_answered_machine_event(call_attempt)
-    raise "Deprecated: PreviewPowerCampaign#call_answered_machine_event"
+    Rails.logger.info "Deprecated ImpactDialing Method: PreviewPowerCampaign#call_answered_machine_event"
     next_voter = next_voter_in_dial_queue(call_attempt.voter.id)
     {event: 'dial_next_voter', data: next_voter.nil? ? {} : next_voter.info}
   end

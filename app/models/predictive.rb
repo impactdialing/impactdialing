@@ -16,17 +16,17 @@ class Predictive < Campaign
   end
 
   def increment_campaign_dial_count(counter)
-    raise "Deprecated: Predictive#increment_campaign_dial_count"
+    Rails.logger.info "Deprecated ImpactDialing Method: Predictive#increment_campaign_dial_count"
     Resque.redis.incrby("dial_count:#{self.id}", counter)
   end
 
   def decrement_campaign_dial_count(decrement_counter)
-    raise "Deprecated: Predictive#decrement_campaign_dial_count"
+    Rails.logger.info "Deprecated ImpactDialing Method: Predictive#decrement_campaign_dial_count"
     Resque.redis.decrby("dial_count:#{self.id}", decrement_counter)
   end
 
   def self.dial_campaign?(campaign_id)
-    raise "Deprecated: Predictive.dial_campaign?"
+    Rails.logger.info "Deprecated ImpactDialing Method: Predictive.dial_campaign?"
     Resque.redis.exists("dial_campaign:#{campaign_id}")
   end
 
@@ -88,7 +88,7 @@ class Predictive < Campaign
   end
 
   def check_campaign_out_of_numbers(voters)
-    raise "Deprecated: Predictive#check_campaign_out_of_numbers"
+    Rails.logger.info "Deprecated ImpactDialing Method: Predictive#check_campaign_out_of_numbers"
     if voters.blank?
       caller_sessions.available.pluck(:id).each { |id| enqueue_call_flow(CampaignOutOfNumbersJob, [id]) }
     end
@@ -108,7 +108,7 @@ class Predictive < Campaign
   end
 
   def self.do_not_call_in_production?(campaign_id)
-    raise "Deprecated: Predictive.do_not_call_in_production?"
+    Rails.logger.info "Deprecated ImpactDialing Method: Predictive.do_not_call_in_production?"
     !Resque.redis.exists("do_not_call:#{campaign_id}")
   end
 
@@ -137,7 +137,7 @@ class Predictive < Campaign
   end
 
   def call_answered_machine_event(call_attempt)
-    raise "Deprecated: Predictive#call_answered_machine_event"
+    Rails.logger.info "Deprecated ImpactDialing Method: Predictive#call_answered_machine_event"
     Hash.new
   end
 end

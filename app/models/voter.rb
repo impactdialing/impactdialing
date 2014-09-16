@@ -72,7 +72,7 @@ class Voter < ActiveRecord::Base
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
   scope :to_callback, where(:call_back => true)
   # scope :scheduled, enabled.where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
-  scope :scheduled, lambda{raise "Deprecated: Voter.scheduled"}
+  scope :scheduled, lambda{raise "Deprecated ImpactDialing Method: Voter.scheduled"}
   scope :limit, lambda { |n| {:limit => n} }
   scope :without, lambda { |numbers| where('phone not in (?)', numbers << -1) }
   scope :not_skipped, where('skipped_time IS NULL')
@@ -82,7 +82,7 @@ class Voter < ActiveRecord::Base
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from..to)) }
   scope :call_attempts_within, lambda {|from, to| where('call_attempts.created_at' => (from..to)).includes('call_attempts')}
   # scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
-  scope :priority_voters, lambda{raise "Deprecated: Voter.priority_voters"}
+  scope :priority_voters, lambda{raise "Deprecated ImpactDialing Method: Voter.priority_voters"}
   scope(:not_called_or_retry_or_call_back,
         where(active: true).
         where("status <> ?", CallAttempt::Status::SUCCESS).
@@ -114,7 +114,7 @@ class Voter < ActiveRecord::Base
   #     10.minutes.ago, 10.minutes.from_now, CallAttempt::Status::SCHEDULED
   #   ])
   # }
-  scope :next_in_priority_or_scheduled_queues, lambda {|blocked_numbers| raise "Deprecated: Voter.next_in_recycled_queue"}
+  scope :next_in_priority_or_scheduled_queues, lambda {|blocked_numbers| raise "Deprecated ImpactDialing Method: Voter.next_in_recycled_queue"}
 
   scope :next_in_recycled_queue, lambda {|recycle_rate, blocked_numbers|
     enabled.without(blocked_numbers).
@@ -300,7 +300,7 @@ public
   end
 
   def schedule_for_later(date)
-    raise "Deprecated: Voter#schedule_for_later"
+    Rails.logger.info "Deprecated ImpactDialing Method: Voter#schedule_for_later"
 
     scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
     self.status = Status::SCHEDULED
