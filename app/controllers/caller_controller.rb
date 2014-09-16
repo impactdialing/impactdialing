@@ -56,16 +56,8 @@ private
       return({json: {message: I18n.t('dialer.account.not_funded')}, status: 402})
     end
     if @caller.campaign.time_period_exceeded?
-      start_time = if @caller.campaign.start_time.hour <= 12
-                     "#{@caller.campaign.start_time.hour} AM"
-                   else
-                    "#{@caller.campaign.start_time.hour-12} PM"
-                   end
-      end_time = if @caller.campaign.end_time.hour <= 12
-                   "#{@caller.campaign.end_time.hour} AM"
-                 else
-                   "#{@caller.campaign.end_time.hour-12} PM"
-                 end
+      start_time = @caller.campaign.start_time.strftime('%l %p').strip
+      end_time   = @caller.campaign.end_time.strftime('%l %p').strip
       return({
         json: {
           message: I18n.t('dialer.campaign.time_period_exceeded', {

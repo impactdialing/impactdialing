@@ -62,7 +62,7 @@ describe 'CalculateDialsJob' do
 
       context 'outside calling hours' do
         before do
-          campaign.update_attributes(start_time: 4.hours.ago, end_time: 3.hours.ago)
+          campaign.update_attributes(start_time: Time.now.end_of_day - 12.hours, end_time: Time.now.end_of_day - 6.hours)
         end
 
         it_behaves_like 'very early returning calculate dial jobs'
