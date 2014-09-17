@@ -16,6 +16,10 @@ describe Predictive do
     })
   end
 
+  before do
+    ENV['DIAL_QUEUE_AVAILABLE_LIMIT'] = '100'
+  end
+
   describe 'check_campaign_fit_to_dial' do
     context 'campaign is fit to dial' do
       it 'returns true' do
@@ -70,6 +74,23 @@ describe Predictive do
   end
 
   describe '#choose_voters_to_dial(num_voters)' do
+    def cache_voters
+      dial_queue = CallFlow::DialQueue.new(campaign)
+      dial_queue.prepend :available
+      dial_queue
+    end
+    def create_and_cache_voter(*args)
+      voter = create(*args)
+      cache_voters
+      voter
+    end
+
+    def create_and_cache_voter_list(*args)
+      voters = create_list(*args)
+      cache_voters
+      voters
+    end
+
     context 'Given num_voters is zero or less' do
       it 'returns an empty array' do
         actual = campaign.choose_voters_to_dial(0)
@@ -84,26 +105,31 @@ describe Predictive do
     end
 
     it "load next voter to dial" do
-      voter = create(:realistic_voter, {campaign: campaign, account: account})
+      # voter = create(:realistic_voter, {campaign: campaign, account: account})
+      voter = create_and_cache_voter(:realistic_voter, {campaign: campaign, account: account})
 
       expect(campaign.choose_voters_to_dial(1)).to eq([voter.id])
     end
 
     it 'does not load deleted (not active) voters' do
-      voter = create(:realistic_voter, :deleted, {campaign: campaign})
+      # voter = create(:realistic_voter, :deleted, {campaign: campaign})
+      voter = create_and_cache_voter(:realistic_voter, :deleted, {campaign: campaign})
 
       expect(campaign.choose_voters_to_dial(1)).to be_empty
     end
 
     it 'does not load disabled (not enabled) voters' do
-      voter = create(:realistic_voter, :disabled, {campaign: campaign})
+      # voter = create(:realistic_voter, :disabled, {campaign: campaign})
+      voter = create_and_cache_voter(:realistic_voter, :disabled, {campaign: campaign})
 
       expect(campaign.choose_voters_to_dial(1)).to be_empty
     end
 
     it "dials enabled voters only" do
-       voter1 = create(:realistic_voter, campaign: campaign, enabled: true)
-       voter2 = create(:realistic_voter, campaign: campaign, enabled: false)
+       # voter1 = create(:realistic_voter, campaign: campaign, enabled: true)
+       voter1 = create_and_cache_voter(:realistic_voter, campaign: campaign, enabled: true)
+       # voter2 = create(:realistic_voter, campaign: campaign, enabled: false)
+       voter2 = create_and_cache_voter(:realistic_voter, campaign: campaign, enabled: false)
 
        expect(campaign.choose_voters_to_dial(2)).to eq([voter1.id])
     end
@@ -112,6 +138,7 @@ describe Predictive do
       unblocked_voter = create(:realistic_voter, campaign: campaign, account: account)
       blocked_voter   = create(:realistic_voter, campaign: campaign, account: account)
       create(:blocked_number, number: blocked_voter.phone, account: account, campaign: nil)
+      cache_voters
  
       expect(campaign.choose_voters_to_dial(10)).to eq([unblocked_voter.id])
     end
@@ -122,19 +149,32 @@ describe Predictive do
       blocked_voter = create(:voter, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
       create(:blocked_number, number: blocked_voter.phone, account: account, campaign: campaign)
       create(:blocked_number, number: unblocked_voter.phone, account: account, campaign: create(:campaign))
+      cache_voters
 
       expect(campaign.choose_voters_to_dial(10)).to eq([unblocked_voter.id])
     end
 
     it "always dials numbers that have not been dialed first" do
       create_list(:voter, 40, campaign: campaign, status: Voter::Status::NOTCALLED)
+      dial_queue = cache_voters
+
       voters = Voter.all
+      dial_queue.next(5) # pretend caller skips these
+      dial_queue.next(5) # and these are dialed
       voters[5..10].each{|v| v.update_attribute(:last_call_attempt_time, 30.minutes.ago)}
+
+      dial_queue.next(5) # pretend caller skips these
+      dial_queue.next(10) # and these are dialed
       voters[15..25].each{|v| v.update_attribute(:last_call_attempt_time, 30.minutes.ago)}
+
+      dial_queue.next(10) # pretend caller skips these
+      dial_queue.next(5) # and these are dialed
       voters[35..39].each{|v| v.update_attribute(:last_call_attempt_time, 30.minutes.ago)}
 
-      actual = campaign.choose_voters_to_dial(20)
+      dial_queue.reload_if_below_threshold :available
 
+      actual = campaign.choose_voters_to_dial(20)
+      # binding.pry
       [
        voters[0..4],
        voters[11..14],
@@ -154,24 +194,26 @@ describe Predictive do
 
     it "does not redial a voter that was called successfully" do
       voter = create(:realistic_voter, :success, :not_recently_dialed, {campaign: campaign})
-
+      cache_voters
       expect(campaign.choose_voters_to_dial(20)).not_to include(voter.id)
     end
 
     it "does not redial a voter that is in progress" do
       voter = create(:realistic_voter, :in_progress, {campaign: campaign})
-
+      cache_voters
       expect(campaign.choose_voters_to_dial(20)).not_to include(voter.id)
     end
 
     it "does not dial voter who has been just dialed recycle rate" do
       voter = create(:voter, campaign: campaign, status: CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 1.hour)
+      cache_voters
       create(:call_attempt, :voter => voter, status: CallAttempt::Status::BUSY)
       expect(campaign.choose_voters_to_dial(20)).not_to include(voter.id)
     end
 
     it "dials voter who has been dialed passed recycle rate" do
       voter = create(:voter, campaign: campaign, status: CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 4.hours)
+      cache_voters
       create(:call_attempt, :voter => voter, status: CallAttempt::Status::BUSY)
       expect(campaign.choose_voters_to_dial(20)).to include(voter.id)
     end

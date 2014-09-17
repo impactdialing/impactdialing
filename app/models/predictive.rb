@@ -59,10 +59,14 @@ class Predictive < Campaign
     #             to_be_dialed.pluck(:id)
     # end
 
-    voters = Voter.next(self, num_voters)
-    set_voter_status_to_read_for_dial!(voters)
+    dial_queue = CallFlow::DialQueue.new(self)
+    voter_ids  = dial_queue.next(num_voters).map{|v| v['id'].to_i}
 
-    voters
+    set_voter_status_to_read_for_dial!(voter_ids)
+
+    dial_queue.reload_if_below_threshold(:available)
+
+    voter_ids
   end
 
   def abort_calling_with(caller_session, reason)
@@ -84,8 +88,8 @@ class Predictive < Campaign
     return false
   end
 
-  def set_voter_status_to_read_for_dial!(voters)
-    Voter.where(id: voters).update_all(status: CallAttempt::Status::READY)
+  def set_voter_status_to_read_for_dial!(voter_ids)
+    Voter.where(id: voter_ids).update_all(status: CallAttempt::Status::READY)
   end
 
   def check_campaign_out_of_numbers(voters)
