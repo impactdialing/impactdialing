@@ -24,9 +24,14 @@ describe 'CalculateDialsJob' do
   end
 
   describe '.perform(campaign_id)' do
+    let(:dial_queue) do
+      CallFlow::DialQueue.new(campaign)
+    end
+
     before do
       add_voters(campaign, :realistic_voter, 25)
       add_callers(campaign, 5)
+      dial_queue.prepend(:available)
     end
 
     after do
@@ -132,6 +137,9 @@ describe 'CalculateDialsJob' do
           create_list(:bare_caller_session, 5, :available, :webui, {
             campaign: campaign, caller: campaign.callers.first
           })
+
+          dial_queue = CallFlow::DialQueue.new(campaign)
+          dial_queue.next(Voter.count)
           Voter.update_all({last_call_attempt_time: 20.minutes.ago})
         end
 
@@ -139,6 +147,7 @@ describe 'CalculateDialsJob' do
 
         it 'queues CampaignOutOfNumbersJob for all available callers' do
           expect(campaign.caller_sessions.available.count).to eq 5
+          expect(CallFlow::DialQueue.new(campaign).size(:available)).to be_zero
 
           CalculateDialsJob.perform(campaign.id)
 
