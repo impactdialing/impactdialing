@@ -60,18 +60,19 @@ private
     # campaign.reload
     dnc_numbers      = campaign.account.blocked_numbers.for_campaign(campaign).pluck(:number)
     available_voters = campaign.all_voters.available_list(campaign).without(dnc_numbers)
-
+    # binding.pry
     voters = available_voters.where('id > ?', last_loaded_id).limit(voter_limit).select([:id, :phone])
     if voters.count.zero?
-      print "Zero available_voters w/ id > #{last_loaded_id}\n"
+      # print "Zero available_voters w/ id > #{last_loaded_id}\n"
       voters = available_voters.where('id NOT IN (?)', active_ids).limit(voter_limit).select([:id, :phone])
     end
-    print "Returning #{voters.count} voters\n"
+    # print "Returning #{voters.count} voters without #{active_ids}\n"
     voters
   end
 
   def active_ids
-    peak(:active).map{|v| JSON.parse(v)['id']}
+    # -1 entry here ensures consistent results when there are no active ids
+    [-1] + peak(:active).map{|v| JSON.parse(v)['id']}
   end
 
   def last_loaded_id
