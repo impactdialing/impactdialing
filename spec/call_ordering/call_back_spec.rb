@@ -14,14 +14,18 @@ context 'Message Drops', data_heavy: true do
       }).last
     end
     let(:voters){ add_voters(campaign, :bare_voter, 5) }
+    let(:dial_queue) do
+      voters
+      CallFlow::DialQueue.new(campaign)
+    end
 
     before do
       add_callers(campaign, 1)
+      dial_queue.prepend(:available)
     end
 
     it 'When all contacts have received a message automatically' do
-      call_and_leave_messages(voters, true)
-
+      call_and_leave_messages(dial_queue, voters.size, true)
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
       expect(actual).to be_nil
@@ -29,17 +33,14 @@ context 'Message Drops', data_heavy: true do
 
     it 'When all but one contact have received a message automatically' do
       remaining = voters.pop
-
-      call_and_leave_messages(voters, true)
-
+      call_and_leave_messages(dial_queue, voters.size, true)
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
       expect(actual).to eq remaining
     end
 
     it 'When all contacts have received a message manually' do
-      call_and_leave_messages(voters, false)
-
+      call_and_leave_messages(dial_queue, voters.size, false)
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
       expect(actual).to be_nil
@@ -48,7 +49,7 @@ context 'Message Drops', data_heavy: true do
     it 'When all but one contact have received a message manually' do
       remaining = voters.pop
 
-      call_and_leave_messages(voters, false)
+      call_and_leave_messages(dial_queue, voters.size, false)
 
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
@@ -65,32 +66,37 @@ context 'Message Drops', data_heavy: true do
       }).last
     end
     let(:voters){ add_voters(campaign, :bare_voter, 5) }
+    let(:dial_queue) do
+      voters
+      CallFlow::DialQueue.new(campaign)
+    end
 
     before do
       add_callers(campaign, 1)
+      dial_queue.prepend(:available)
     end
 
     it 'When all contacts have received a message automatically' do
-      call_and_leave_messages(voters, true)
-
+      call_and_leave_messages(dial_queue, voters.size, true)
+      binding.pry
+      dial_queue.reload_if_below_threshold :available
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
-      expect(actual).to eq voters.first
+      expect(actual).to eq voters.first.reload
     end
 
     it 'When all but one contact have received a message automatically' do
       remaining = voters.pop
-
-      call_and_leave_messages(voters, true)
-
+      call_and_leave_messages(dial_queue, voters.size, true)
+      dial_queue.reload_if_below_threshold :available
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
       expect(actual).to eq remaining
     end
 
     it 'When all contacts have received a message manually' do
-      call_and_leave_messages(voters, false)
-
+      call_and_leave_messages(dial_queue, voters.size, false)
+      dial_queue.reload_if_below_threshold :available
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
       expect(actual).to eq voters.first
@@ -99,16 +105,16 @@ context 'Message Drops', data_heavy: true do
     it 'When all but one contact have received a message manually' do
       remaining = voters.pop
 
-      call_and_leave_messages(voters, false)
-
+      call_and_leave_messages(dial_queue, voters.size, false)
+      dial_queue.reload_if_below_threshold :available
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
       expect(actual).to eq remaining
     end
 
     it 'Drop no further messages automatically' do
-      call_and_leave_messages(voters, true)
-
+      call_and_leave_messages(dial_queue, voters.size, true)
+      dial_queue.reload_if_below_threshold :available
       voter = campaign.next_voter_in_dial_queue(nil)
 
       # mimic /calls/:id/incoming
@@ -129,13 +135,19 @@ context 'Machine Detection without Message Drops' do
   describe 'Call back after machine detected' do
     let(:campaign) do
       create_campaign_with_script(:power_with_recording, account, {
-        answering_machine_detect: true
+        answering_machine_detect: true,
+        use_recordings: false
       }).last
     end
     let(:voters){ add_voters(campaign, :bare_voter, 5) }
+    let(:dial_queue) do
+      voters
+      CallFlow::DialQueue.new(campaign)
+    end
 
     before do
       add_callers(campaign, 1)
+      dial_queue.prepend(:available)
     end
 
     def call_and_hangup_on_machine(voters)
@@ -153,6 +165,9 @@ context 'Machine Detection without Message Drops' do
     it 'When the first pass is done and machines were detected for some voters, cycle through those voters again' do
       call_and_answer_by_human([voters[1], voters[3]])
       call_and_hangup_on_machine([voters[0], voters[2], voters[4]])
+
+      dial_queue.clear :available
+      dial_queue.prepend :available
 
       actual = campaign.next_voter_in_dial_queue(nil)
 
