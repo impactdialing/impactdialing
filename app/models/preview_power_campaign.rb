@@ -1,11 +1,19 @@
 module PreviewPowerCampaign
   def next_voter_in_dial_queue(current_voter_id = nil)
-    do_not_call_numbers = account.blocked_numbers.for_campaign(self).pluck(:number)
+    # do_not_call_numbers = account.blocked_numbers.for_campaign(self).pluck(:number)
     begin
       # voter = all_voters.next_in_priority_or_scheduled_queues(do_not_call_numbers).first
-      voter = Voter.next_voter(all_voters, recycle_rate, do_not_call_numbers, current_voter_id)
+      # voter = Voter.next_voter(all_voters, recycle_rate, do_not_call_numbers, current_voter_id)
 
-      update_voter_status_to_ready(voter)
+      dial_queue  = CallFlow::DialQueue.new(self)
+      voter_attrs = dial_queue.next(1).first
+      
+      return nil if voter_attrs.nil?
+
+      voter = Voter.find voter_attrs['id']
+      voter.update_attributes!(status: CallAttempt::Status::READY)
+      dial_queue.reload_if_below_threshold(:available)
+
     rescue ActiveRecord::StaleObjectError => e
       Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] StaleObjectError - retrying..."
       retry

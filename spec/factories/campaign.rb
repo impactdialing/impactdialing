@@ -21,6 +21,7 @@ FactoryGirl.define do
     end
 
     trait :with_recording do
+      use_recordings true
       recording
     end
 

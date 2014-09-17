@@ -48,17 +48,18 @@ class Predictive < Campaign
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
 
-    blocked     = account.blocked_numbers.for_campaign(self).pluck(:number)
-    voter_query = all_voters.active.enabled.without(blocked).limit(num_voters)
-    not_dialed  = voter_query.not_dialed.where(:call_back => false).pluck(:id)
+    # blocked     = account.blocked_numbers.for_campaign(self).pluck(:number)
+    # voter_query = all_voters.active.enabled.without(blocked).limit(num_voters)
+    # not_dialed  = voter_query.not_dialed.where(:call_back => false).pluck(:id)
 
-    if not_dialed.size > 0
-      voters = not_dialed
-    else
-      voters = voter_query.last_call_attempt_before_recycle_rate(recycle_rate).
-                to_be_dialed.pluck(:id)
-    end
+    # if not_dialed.size > 0
+    #   voters = not_dialed
+    # else
+    #   voters = voter_query.last_call_attempt_before_recycle_rate(recycle_rate).
+    #             to_be_dialed.pluck(:id)
+    # end
 
+    voters = Voter.next(self, num_voters)
     set_voter_status_to_read_for_dial!(voters)
 
     voters

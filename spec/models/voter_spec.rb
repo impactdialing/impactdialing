@@ -989,7 +989,7 @@ describe Voter, :type => :model do
     end
 
     def skip_voters(voters)
-      voters.each{|v| v.update_attributes(skipped_time: 20.minutes.ago, status: Voter::Status::SKIPPED) }
+      voters.each{|v| v.update_attributes!(skipped_time: 20.minutes.ago, status: Voter::Status::SKIPPED) }
     end
 
     def attempt_calls(voters)
@@ -1015,6 +1015,7 @@ describe Voter, :type => :model do
       context 'one voter has not been skipped' do
         it 'returns the first unskipped voter' do
           skip_voters @voters[0..8]
+          @voters[9].update_attributes!(last_call_attempt_time: nil, status: Voter::Status::NOTCALLED)
           expected = @voters[9]
           actual = Voter.next_voter(@voters, 1, [], nil)
           expect(actual).to eq expected
@@ -1096,6 +1097,7 @@ describe Voter, :type => :model do
           skip_voters @voters[0..2]
           skip_voters @voters[4..7]
           skip_voters [@voters[9]]
+          @voters[8].update_attributes!(last_call_attempt_time: nil)
           expected = @voters[8]
           actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
           expect(actual).to eq expected
@@ -1113,9 +1115,11 @@ describe Voter, :type => :model do
           @current_voter = @voters[8]
           attempt_calls @voters[0..2]
           attempt_calls @voters[4..9]
+          @voters[3].update_attributes!(last_call_attempt_time: nil)
           expected = @voters[3]
-          expected.update_attribute(:last_call_attempt_time, nil)
           actual = Voter.next_voter(@voters, 1, [], @current_voter.id)
+
+          # binding.pry
           expect(actual).to eq expected
         end
       end

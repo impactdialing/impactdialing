@@ -68,6 +68,7 @@ class Voter < ActiveRecord::Base
             Voter::Status::RETRY
           ])
   }
+
   scope :not_dialed, where('last_call_attempt_time IS NULL').where('status NOT IN (?)', CallAttempt::Status.in_progress_list)
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
   scope :to_callback, where(:call_back => true)
@@ -130,6 +131,7 @@ class Voter < ActiveRecord::Base
 
   # New Shiny
   scope :dialed, where('last_call_attempt_time IS NOT NULL')
+  scope :available, lambda{|campaign| where('status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
   scope :recently_dialed_households, lambda{ |recycle_rate|
     dialed.
     group('phone').
@@ -152,12 +154,26 @@ class Voter < ActiveRecord::Base
     )
   }
   scope :recycle_rate_expired, lambda {|recycle_rate|
-    where('last_call_attempt_time < ? OR '+
+    where('last_call_attempt_time IS NULL OR '+
+          'last_call_attempt_time < ? OR '+
           '(skipped_time IS NOT NULL AND status = ?)',
           recycle_rate.hours.ago, Status::SKIPPED)
   }
   scope :not_ringing, lambda{ where('voters.status <> ?', CallAttempt::Status::RINGING) }
   scope :with_manual_message_drop, not_ringing.joins(:call_attempts).where('call_attempts.id=voters.last_call_attempt_id').where('call_attempts.recording_id IS NOT NULL').where(call_attempts: {recording_delivered_manually: true})
+
+  scope :available_list, lambda{ |campaign|
+    active.enabled.
+    where('status NOT IN (?) OR (status = ? AND call_back = ?)',
+      CallAttempt::Status.not_available_list(campaign), 
+      CallAttempt::Status::SUCCESS,
+      true
+    ).
+    recycle_rate_expired(campaign.recycle_rate).
+    order('id, last_call_attempt_time, skipped_time, call_back')
+  }
+
+  scope :skipped, where('status = ?', Status::SKIPPED)
   #/New Shiny
 
   before_validation :sanitize_phone
@@ -214,34 +230,49 @@ public
     recently_dialed_household_numbers = recently_dialed_households(recycle_rate).pluck(:phone)
     without_numbers                   = blocked_numbers + recently_dialed_household_numbers
 
-    not_dialed_queue = voters.not_dialed.without(without_numbers).enabled
-    retry_queue      = voters.next_in_recycled_queue(recycle_rate, without_numbers)
-    _not_skipped     = not_dialed_queue.not_skipped.first
-    _not_skipped     ||= retry_queue.not_skipped.first
+    # not_dialed_queue = voters.not_dialed.without(without_numbers).enabled
+    # retry_queue      = voters.next_in_recycled_queue(recycle_rate, without_numbers)
+    # _not_skipped     = not_dialed_queue.not_skipped.first
+    # _not_skipped     ||= retry_queue.not_skipped.first
 
-    if _not_skipped.nil?
-      if current_voter_id.present?
-        voter = not_dialed_queue.where(["id > ?", current_voter_id]).first
-      end
-      voter ||= not_dialed_queue.first
+    # if _not_skipped.nil?
+    #   if current_voter_id.present?
+    #     voter = not_dialed_queue.where(["id > ?", current_voter_id]).first
+    #   end
+    #   voter ||= not_dialed_queue.first
 
-      if current_voter_id.present?
-        voter ||= retry_queue.where(["id > ?", current_voter_id]).first
-      end
-      voter ||= retry_queue.first
-    else
-      if current_voter_id.present?
-        voter = not_dialed_queue.where(["id > ?", current_voter_id]).not_skipped.first
-      end
-      voter ||= not_dialed_queue.not_skipped.first
+    #   if current_voter_id.present?
+    #     voter ||= retry_queue.where(["id > ?", current_voter_id]).first
+    #   end
+    #   voter ||= retry_queue.first
+    # else
+    #   if current_voter_id.present?
+    #     voter = not_dialed_queue.where(["id > ?", current_voter_id]).not_skipped.first
+    #   end
+    #   voter ||= not_dialed_queue.not_skipped.first
 
-      if current_voter_id.present?
-        voter ||= retry_queue.where(["id > ?", current_voter_id]).not_skipped.first
-      end
-      voter ||= _not_skipped
-    end
+    #   if current_voter_id.present?
+    #     voter ||= retry_queue.where(["id > ?", current_voter_id]).not_skipped.first
+    #   end
+    #   voter ||= _not_skipped
+    # end
+    available_voters = voters.available_list(voters.first.campaign).without(without_numbers)
+    undialed         = available_voters.not_dialed
+
+    voter = undialed.where('id > ?', current_voter_id).first if current_voter_id.present?
+    voter ||= undialed.first
+    voter ||= available_voters.where('id > ?', current_voter_id).first if current_voter_id.present?
+    voter ||= available_voters.first
 
     return voter
+  end
+
+  def self.next(campaign, n)
+    dial_queue = CallFlow::DialQueue.new(campaign)
+    # binding.pry
+    voters     = dial_queue.next(n)
+    # binding.pry
+    find voters.map{|voter| voter['id']}
   end
 
   def self.sanitize_phone(phonenumber)

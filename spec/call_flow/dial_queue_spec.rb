@@ -57,9 +57,14 @@ describe 'CallFlow::DialQueue' do
     end
 
     it 'removes retrieved voter(s) from queue' do
-      @dial_queue.next(5)
-
-      expect(@dial_queue.size(:available)).to eq 5
+      voters     = @dial_queue.next(5)
+      Voter.where(id: voters.map{|v| v['id']}).update_all(last_call_attempt_time: Time.now, status: CallAttempt::Status::BUSY)
+      actual     = @dial_queue.queues[:available].peak.map{|v| JSON.parse(v)['id']}
+      unexpected = voters.map{|v| v['id']}
+      # binding.pry
+      unexpected.each do |un|
+        expect(actual).to_not include un
+      end
     end
   end
 

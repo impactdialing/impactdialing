@@ -2,6 +2,12 @@ class CallFlow::DialQueue
   attr_reader :campaign, :queues
 
 public
+  def self.next(campaign, n)
+    dial_queue  = CallFlow::DialQueue.new(campaign)
+    next_voters = dial_queue.next(n)
+    Voter.find next_voters.map{|voter| voter['id']}
+  end
+
   def initialize(campaign)
     if campaign.nil? or campaign.id.nil?
       raise ArgumentError, "Campaign must not be nil and must have an id."
@@ -31,5 +37,9 @@ public
 
   def next(n)
     queues[:available].next(n)
+  end
+
+  def reload_if_below_threshold(queue)
+    queues[queue].reload_if_below_threshold
   end
 end

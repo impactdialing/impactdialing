@@ -1,3 +1,14 @@
+##
+# Class for caching list of voters available for dialing right now.
+# 
+# Experiments show caching the id and phone as json list items for approx. 560,000 voters
+# takes approx. 45-50KB. Extrapolating, I expect 100KB usage for ~1 million entries and
+# ~100MB usage for ~1 billion entries.
+#
+# Based on the above numbers, there should be no issue with storing all available voters
+# in the redis list for each campaign for the day. At the end of the calling hours for
+# the campaign, the appropriate list should be removed.
+#
 class CallFlow::DialQueue::Available
   attr_reader :campaign
 
@@ -46,26 +57,39 @@ private
     # end
 
     # return voter
+    # campaign.reload
+    dnc_numbers      = campaign.account.blocked_numbers.for_campaign(campaign).pluck(:number)
+    available_voters = campaign.all_voters.available_list(campaign).without(dnc_numbers)
 
-    dnc_numbers = campaign.account.blocked_numbers.for_campaign(campaign).pluck(:number)
+    voters = available_voters.where('id > ?', last_loaded_id).limit(voter_limit).select([:id, :phone])
+    if voters.count.zero?
+      print "Zero available_voters w/ id > #{last_loaded_id}\n"
+      voters = available_voters.where('id NOT IN (?)', active_ids).limit(voter_limit).select([:id, :phone])
+    end
+    print "Returning #{voters.count} voters\n"
+    voters
+  end
 
-    all_voters  = campaign.all_voters.enabled.active.without(dnc_numbers) #.available(campaign)
-    cache_queue = all_voters.not_dialed.where('id > ?', last_loaded_id).limit(voter_limit)
-
-    return cache_queue.select([:id, :phone]) if cache_queue.count == voter_limit
-
-    extras_limit = voter_limit - cache_queue.count
-    extras       = all_voters.next_in_recycled_queue(campaign.recycle_rate, dnc_numbers).limit(extras_limit)
-
-    cache_queue.select([:id, :phone]) + extras.select([:id, :phone])
+  def active_ids
+    peak(:active).map{|v| JSON.parse(v)['id']}
   end
 
   def last_loaded_id
-    redis.get(keys[:last_loaded_id]) || 0
-  end
-
-  def last_loaded_id=(id)
-    redis.set(keys[:last_loaded_id], id)
+    last_active_item = redis.lrange(keys[:active], 0, 1)
+    if last_active_item.first.present?
+      id = JSON.parse(last_active_item.first)['id']
+      # print "last_loaded_id returning active #{id}\n\n"
+      return id
+    end
+    
+    last_processing_item = redis.lrange(keys[:processing], 0, 1)
+    if last_processing_item.first.present?
+      id = JSON.parse(last_processing_item.first)['id']
+      # print "last_loaded_id returning processing #{id}\n\n"
+      return id
+    end
+    
+    0
   end
 
   def keys
@@ -94,14 +118,11 @@ public
   end
 
   def prepend
-    voters_to_prepend   = next_voters.reverse
-    # binding.pry
+    voters_to_prepend = next_voters
     return if voters_to_prepend.empty?
 
-    self.last_loaded_id = voters_to_prepend.first.id
-
     expire keys[:active] do
-      redis.rpush keys[:active], voters_to_prepend.map{|voter| voter.to_json(root: false)}
+      redis.lpush keys[:active], voters_to_prepend.map{|voter| voter.to_json(root: false)}
     end
   end
 
@@ -119,10 +140,12 @@ public
     n.times do
       result << redis.rpoplpush(keys[:active], keys[:processing])
     end
-    
-    prepend if size <= voter_reload_threshold
 
     result.map{|r| JSON.parse(r)}
+  end
+
+  def reload_if_below_threshold
+    prepend if size <= voter_reload_threshold
   end
 
   def clear

@@ -78,7 +78,9 @@ module FakeCallData
     [voters, callers, call_attempts]
   end
 
-  def call_and_leave_messages(voters, autodropped=0)
+  def call_and_leave_messages(dial_queue, voter_count, autodropped=0)
+    voters = Voter.find(dial_queue.next(voter_count).map{|v| v['id']})
+
     voters.each do |voter|
       call_attempt = attach_call_attempt(:past_recycle_time_machine_answered_call_attempt, voter)
       call_attempt.update_recording!(autodropped)
