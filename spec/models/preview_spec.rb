@@ -2,6 +2,7 @@ require "spec_helper"
 
 
 describe Preview, :type => :model do
+  include FakeCallData
 
   describe "next voter to be dialed" do
     def setup_voters(campaign_opts={}, voter_opts={})
@@ -20,6 +21,7 @@ describe Preview, :type => :model do
         v.update_attribute(:last_call_attempt_time, last_call_time)
         last_call_time += 1.hour
       end
+      @dial_queue = cache_available_voters(@campaign)
     end
 
     def skip_voters(voters)
@@ -39,6 +41,7 @@ describe Preview, :type => :model do
       caller_session = create(:caller_session)
       create(:voter, status: CallAttempt::Status::SUCCESS, last_call_attempt_time: 2.hours.ago, campaign: campaign)
       uncalled_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
+      cache_available_voters(campaign)
       expect(campaign.next_voter_in_dial_queue(nil)).to eq(uncalled_voter)
     end
 
@@ -66,6 +69,9 @@ describe Preview, :type => :model do
       uncalled_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
       current_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
       next_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
+      dial_queue = cache_available_voters(campaign)
+      dial_queue.next(2) # pop the uncalled & current voter off the list, this test is a bit silly
+                         # todo: fix or remove this test
       expect(campaign.next_voter_in_dial_queue(current_voter.id)).to eq(next_voter)
     end
 
@@ -104,6 +110,7 @@ describe Preview, :type => :model do
       context 'one voter has not been skipped' do
         it 'returns the first unskipped voter' do
           skip_voters @voters[0..7]
+          @dial_queue.next(8) # pop first 8 voters off the list
           expected = @voters[8]
           actual = @campaign.next_voter_in_dial_queue(nil)
           expect(actual).to eq expected
@@ -127,6 +134,7 @@ describe Preview, :type => :model do
       context 'all voters have been skipped' do
         it 'returns the voter with id > current_voter_id' do
           skip_voters @voters
+          @dial_queue.next(4) # pop first 4 voters (up to @voters[3])
           expected = @voters[4]
           actual = @campaign.next_voter_in_dial_queue(@current_voter.id)
           expect(actual).to eq expected
@@ -137,6 +145,7 @@ describe Preview, :type => :model do
           skip_voters @voters[0..2]
           skip_voters @voters[4..7]
           skip_voters [@voters[9]]
+          @dial_queue.next(8)
           expected = @voters[8]
           actual = @campaign.next_voter_in_dial_queue(@current_voter.id)
           expect(actual).to eq expected
@@ -146,6 +155,7 @@ describe Preview, :type => :model do
         it 'returns the first unskipped voter with id > current_voter_id' do
           skip_voters @voters[0..2]
           skip_voters @voters[5..6]
+          @dial_queue.next(4)
           expected = @voters[4]
           actual = @campaign.next_voter_in_dial_queue(@current_voter.id)
           expect(actual).to eq expected
@@ -182,6 +192,7 @@ describe Preview, :type => :model do
       vone = create(:voter, vopt)
       vtwo = create(:voter, vopt)
       vthr = create(:voter, vopt)
+      cache_available_voters(campaign)
 
       expect(campaign.next_voter_in_dial_queue(nil)).to eq vone
 
