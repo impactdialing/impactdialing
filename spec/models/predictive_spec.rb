@@ -74,20 +74,17 @@ describe Predictive do
   end
 
   describe '#choose_voters_to_dial(num_voters)' do
-    def cache_voters
-      dial_queue = CallFlow::DialQueue.new(campaign)
-      dial_queue.prepend :available
-      dial_queue
-    end
+    include FakeCallData
+    
     def create_and_cache_voter(*args)
       voter = create(*args)
-      cache_voters
+      cache_available_voters(campaign)
       voter
     end
 
     def create_and_cache_voter_list(*args)
       voters = create_list(*args)
-      cache_voters
+      cache_available_voters(campaign)
       voters
     end
 
@@ -138,7 +135,7 @@ describe Predictive do
       unblocked_voter = create(:realistic_voter, campaign: campaign, account: account)
       blocked_voter   = create(:realistic_voter, campaign: campaign, account: account)
       create(:blocked_number, number: blocked_voter.phone, account: account, campaign: nil)
-      cache_voters
+      cache_available_voters(campaign)
  
       expect(campaign.choose_voters_to_dial(10)).to eq([unblocked_voter.id])
     end
@@ -149,14 +146,14 @@ describe Predictive do
       blocked_voter = create(:voter, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
       create(:blocked_number, number: blocked_voter.phone, account: account, campaign: campaign)
       create(:blocked_number, number: unblocked_voter.phone, account: account, campaign: create(:campaign))
-      cache_voters
+      cache_available_voters(campaign)
 
       expect(campaign.choose_voters_to_dial(10)).to eq([unblocked_voter.id])
     end
 
     it "always dials numbers that have not been dialed first" do
       create_list(:voter, 40, campaign: campaign, status: Voter::Status::NOTCALLED)
-      dial_queue = cache_voters
+      dial_queue = cache_available_voters(campaign)
 
       voters = Voter.all
       dial_queue.next(5) # pretend caller skips these
@@ -194,26 +191,26 @@ describe Predictive do
 
     it "does not redial a voter that was called successfully" do
       voter = create(:realistic_voter, :success, :not_recently_dialed, {campaign: campaign})
-      cache_voters
+      cache_available_voters(campaign)
       expect(campaign.choose_voters_to_dial(20)).not_to include(voter.id)
     end
 
     it "does not redial a voter that is in progress" do
       voter = create(:realistic_voter, :in_progress, {campaign: campaign})
-      cache_voters
+      cache_available_voters(campaign)
       expect(campaign.choose_voters_to_dial(20)).not_to include(voter.id)
     end
 
     it "does not dial voter who has been just dialed recycle rate" do
       voter = create(:voter, campaign: campaign, status: CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 1.hour)
-      cache_voters
+      cache_available_voters(campaign)
       create(:call_attempt, :voter => voter, status: CallAttempt::Status::BUSY)
       expect(campaign.choose_voters_to_dial(20)).not_to include(voter.id)
     end
 
     it "dials voter who has been dialed passed recycle rate" do
       voter = create(:voter, campaign: campaign, status: CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 4.hours)
-      cache_voters
+      cache_available_voters(campaign)
       create(:call_attempt, :voter => voter, status: CallAttempt::Status::BUSY)
       expect(campaign.choose_voters_to_dial(20)).to include(voter.id)
     end

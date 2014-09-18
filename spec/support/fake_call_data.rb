@@ -8,6 +8,12 @@ module FakeCallData
     })
   end
 
+  def cache_available_voters(campaign)
+    dial_queue = CallFlow::DialQueue.new(campaign)
+    dial_queue.prepend :available
+    dial_queue
+  end
+
   def add_callers(campaign, n=5)
     account = campaign.account
 
