@@ -170,7 +170,7 @@ class Voter < ActiveRecord::Base
       true
     ).
     recycle_rate_expired(campaign.recycle_rate).
-    order('id, last_call_attempt_time, skipped_time, call_back')
+    order('last_call_attempt_time, skipped_time, id, call_back')
   }
 
   scope :skipped, where('status = ?', Status::SKIPPED)
