@@ -117,6 +117,8 @@ describe PhonesOnlyCallerSession, :type => :model do
     end
 
     describe "choose voter for preview" do
+      include FakeCallData
+
       before(:each) do
         @script           = create(:script)
         @campaign         = @preview
@@ -124,6 +126,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         @caller           = create(:caller, campaign: @campaign, account: @account)
         @caller_session   = create(:bare_caller_session, :phones_only, :available, {caller: @caller, campaign: @campaign})
         @voter            = create(:voter, campaign: @campaign)
+        @dial_queue       = cache_available_voters(@campaign)
       end
 
       it_behaves_like 'not fit to dial'
@@ -139,6 +142,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         caller_session = CallerSession.find @caller_session.id
         caller_session.update_attributes!(voter_in_progress: @voter)
         @voter.update_attributes!(last_call_attempt_time: 10.minutes.ago)
+        @dial_queue.next(1) # pop the just called voter off the list
         caller_session.ready_to_call(DataCentre::Code::TWILIO)
         expect(caller_session.voter_in_progress).to be_nil
       end
@@ -160,11 +164,14 @@ describe PhonesOnlyCallerSession, :type => :model do
     end
 
     describe "choose voter for power" do
+      include FakeCallData
+
       before(:each) do
-        @script = create(:script)
-        @campaign =  create(:power, script: @script)
-        @caller = create(:caller, campaign: @campaign)
-        @voter = create(:voter, campaign: @campaign)
+        @script     = create(:script)
+        @campaign   = create(:power, script: @script)
+        @caller     = create(:caller, campaign: @campaign)
+        @voter      = create(:voter, campaign: @campaign)
+        @dial_queue = cache_available_voters(@campaign)
       end
 
       it "should set voter in progress" do
