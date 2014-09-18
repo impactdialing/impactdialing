@@ -70,9 +70,13 @@ describe CallerController, :type => :controller do
     end
 
     describe 'POST caller/:id/skip_voter, session_id:, voter_id:' do
+      include FakeCallData
+
       before do
         current_voter
         next_voter
+        dial_queue = cache_available_voters(campaign)
+        dial_queue.next(1) # pop the current_voter off the list
         login_as(caller)
       end
       shared_examples 'mark the lead (voter) as skipped' do
