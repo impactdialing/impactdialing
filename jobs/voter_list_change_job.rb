@@ -18,6 +18,9 @@ class VoterListChangeJob
       handle_exception(voter_list_id, enabled, exception)
     end
 
+    dial_queue = CallFlow::DialQueue.new(voter_list.campaign)
+    dial_queue.refresh(:available)
+
     metrics.completed
   end
 

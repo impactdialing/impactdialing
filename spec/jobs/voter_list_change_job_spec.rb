@@ -35,6 +35,13 @@ describe VoterListChangeJob do
     Voter.destroy_all
   end
 
+  it 'refreshes the available voter queue' do
+    dial_queue = double('DialQueue')
+    allow(CallFlow::DialQueue).to receive(:new){ dial_queue }
+    expect(dial_queue).to receive(:refresh).with(:available)
+    subject.perform(voter_list.id, enabled)
+  end
+
   it 'properly requeues itself if the worker is stopped during a run' do
     expect(Resque).to receive(:enqueue).with(subject, voter_list.id, enabled)
     allow(Voter).to receive_message_chain(:where, :update_all){ raise Resque::TermException, 'TERM' }

@@ -85,7 +85,7 @@ public
     if voters_to_prepend.empty?
       voters_to_prepend = next_voters(voter_limit)
     end
-    
+
     return if voters_to_prepend.empty?
 
     expire keys[:active] do
@@ -101,6 +101,15 @@ public
     return if seeded?
 
     prepend(next_voters(seed_limit))
+  end
+
+  def refresh
+    return if not seeded?
+    
+    redis.multi do
+      redis.del keys[:active]
+      prepend
+    end
   end
 
   def size

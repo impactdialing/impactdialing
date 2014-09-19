@@ -27,6 +27,10 @@ public
     queues[queue].seed
   end
 
+  def refresh(queue)
+    queues[queue].refresh
+  end
+
   def size(queue)
     queues[queue].size
   end
