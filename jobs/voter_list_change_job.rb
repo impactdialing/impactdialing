@@ -6,14 +6,17 @@ class VoterListChangeJob
   extend ImpactPlatform::Heroku::UploadDownloadHooks
 
   def self.perform(voter_list_id, enabled)
+    metrics = ImpactPlatform::Metrics::JobStatus.started(self.class.to_s.underscore)
+
     begin
-      p "VoterListChangeJob performing..."
       voter_list = VoterList.find(voter_list_id)
       voter_list.voter_ids.each_slice(500) do |ids|
         Voter.where(id: ids).update_all(enabled: enabled)
       end
-      p "VoterListChangeJob done."
+
+      metrics.completed
     rescue Resque::TermException, ActiveRecord::StatementInvalid => exception
+      metrics.error
       handle_exception(voter_list_id, enabled, exception)
     end
   end
