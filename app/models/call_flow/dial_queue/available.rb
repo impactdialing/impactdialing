@@ -17,21 +17,25 @@ private
     $redis_call_flow_connection
   end
 
+  def seed_limit
+    (ENV['DIAL_QUEUE_AVAILABLE_SEED_LIMIT'] || 10).to_i
+  end
+
   def voter_limit
-    (ENV['DIAL_QUEUE_AVAILABLE_LIMIT'] || 100).to_i
+    (ENV['DIAL_QUEUE_AVAILABLE_LIMIT'] || 1000).to_i
   end
 
   def voter_reload_threshold
-    (ENV['DIAL_QUEUE_AVAILABLE_RELOAD_THRESHOLD'] || 10).to_i
+    (ENV['DIAL_QUEUE_AVAILABLE_RELOAD_THRESHOLD'] || seed_limit).to_i
   end
 
-  def next_voters
+  def next_voters(limit)
     dnc_numbers      = campaign.account.blocked_numbers.for_campaign(campaign).pluck(:number)
     available_voters = campaign.all_voters.available_list(campaign).where('id NOT IN (?)', active_ids).without(dnc_numbers)
 
-    voters = available_voters.where('id > ?', last_loaded_id).limit(voter_limit)
+    voters = available_voters.where('id > ?', last_loaded_id).limit(limit)
     if voters.count.zero?
-      voters = available_voters.limit(voter_limit)
+      voters = available_voters.limit(limit)
     end
     voters.select([:id])
   end
@@ -77,13 +81,26 @@ public
     @campaign = campaign
   end
 
-  def prepend
-    voters_to_prepend = next_voters
+  def prepend(voters_to_prepend=[])
+    if voters_to_prepend.empty?
+      voters_to_prepend = next_voters(voter_limit)
+    end
+    
     return if voters_to_prepend.empty?
 
     expire keys[:active] do
       redis.lpush keys[:active], voters_to_prepend.map{|voter| voter.to_json(root: false)}
     end
+  end
+
+  def seeded?
+    (not size.nil?) and (not size.zero?)
+  end
+
+  def seed
+    return if seeded?
+
+    prepend(next_voters(seed_limit))
   end
 
   def size

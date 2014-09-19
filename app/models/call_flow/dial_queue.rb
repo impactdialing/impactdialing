@@ -23,6 +23,10 @@ public
     queues[queue].prepend
   end
 
+  def seed(queue)
+    queues[queue].seed
+  end
+
   def size(queue)
     queues[queue].size
   end

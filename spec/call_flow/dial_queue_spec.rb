@@ -7,6 +7,7 @@ describe 'CallFlow::DialQueue' do
   let(:account){ admin.account }
 
   before do
+    ENV['DIAL_QUEUE_AVAILABLE_SEED_LIMIT'] = '5'
     ENV['DIAL_QUEUE_AVAILABLE_LIMIT'] = '10'
     @campaign = create_campaign_with_script(:bare_preview, account).last
     create_list(:realistic_voter, 100, {campaign: @campaign, account: account})
@@ -25,7 +26,7 @@ describe 'CallFlow::DialQueue' do
     end
 
     it 'preserves ordering of voters' do
-      expected = @campaign.all_voters.select([:id, :phone]).order('id DESC').all[-10..-1].map{|voter| voter.to_json(root: false)}
+      expected = @campaign.all_voters.select([:id]).order('id DESC').all[-10..-1].map{|voter| voter.to_json(root: false)}
       actual   = @dial_queue.peak(:available)
       expect(actual).to eq expected
     end
@@ -43,14 +44,14 @@ describe 'CallFlow::DialQueue' do
 
   describe 'retrieving voters' do
     it 'retrieve one voter' do
-      expected = [Voter.order('id').select([:id, :phone]).first.attributes]
+      expected = [Voter.order('id').select([:id]).first.attributes]
       actual   = @dial_queue.next(1)
 
       expect(actual).to eq expected
     end
 
     it 'retrieves multiple voters' do
-      expected = Voter.order('id').select([:id, :phone]).limit(10).map(&:attributes)
+      expected = Voter.order('id').select([:id]).limit(10).map(&:attributes)
       actual   = @dial_queue.next(10)
 
       expect(actual).to eq expected
@@ -65,6 +66,16 @@ describe 'CallFlow::DialQueue' do
       unexpected.each do |un|
         expect(actual).to_not include un
       end
+    end
+  end
+
+  describe 'seed' do
+    before do
+      @dial_queue.clear :available
+    end
+    it 'loads voters limited by ENV["DIAL_QUEUE_AVAILABLE_SEED_LIMIT"] which should be a small number to keep startup time fast' do
+      @dial_queue.seed :available
+      expect(@dial_queue.size(:available)).to eq 5
     end
   end
 
