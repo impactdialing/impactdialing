@@ -49,10 +49,23 @@ RSpec.configure do |config|
       DatabaseCleaner.strategy = :transaction
     end
     DatabaseCleaner.clean_with :truncation
+
+    module ImpactPlatform::Heroku::UploadDownloadHooks
+      alias_method :real_after_enqueue_scale_workers, :after_enqueue_scale_workers
+      alias_method :real_after_perform_scale_workers, :after_perform_scale_workers
+
+      def after_enqueue_scale_workers(*args); end
+      def after_perform_scale_workers(*args); end
+    end
   end
 
   config.after(:suite) do
     DatabaseCleaner.clean
+    
+    module ImpactPlatform::Heroku::UploadDownloadHooks
+      alias_method :after_enqueue_scale_workers, :real_after_enqueue_scale_workers
+      alias_method :after_perform_scale_workers, :real_after_perform_scale_workers
+    end
   end
 
   config.before(:each) do

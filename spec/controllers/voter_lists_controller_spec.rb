@@ -116,8 +116,11 @@ describe VoterListsController, :type => :controller do
         end
 
         it "renders voter_list attributes as json" do
-          expect(Resque).to receive(:enqueue)
+          allow(Resque).to receive(:enqueue).once.with(VoterListChangeJob, anything, anything)
+          expect(Resque).to receive(:enqueue).at_least(:once).with(VoterListUploadJob, anything, anything, anything, anything)
+
           post :create, params.merge(upload: csv_upload)
+          
           expect(response.body).to match(/\{\"voter_list\":\{\"enabled\":true,\"id\":(.*),\"name\":\"abc.csv\"\}\}/)
         end
       end
