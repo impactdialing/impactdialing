@@ -26,48 +26,14 @@ private
   end
 
   def next_voters
-    # recently_dialed_household_numbers = Voter.recently_dialed_households(recycle_rate).pluck(:phone)
-    # without_numbers                   = blocked_numbers + recently_dialed_household_numbers
-
-    # not_dialed_queue = voters.not_dialed.without(without_numbers).enabled
-    # retry_queue      = voters.next_in_recycled_queue(recycle_rate, without_numbers)
-    # _not_skipped     = not_dialed_queue.not_skipped.first
-    # _not_skipped     ||= retry_queue.not_skipped.first
-
-    # if _not_skipped.nil?
-    #   if current_voter_id.present?
-    #     voter = not_dialed_queue.where(["id > ?", current_voter_id]).first
-    #   end
-    #   voter ||= not_dialed_queue.first
-
-    #   if current_voter_id.present?
-    #     voter ||= retry_queue.where(["id > ?", current_voter_id]).first
-    #   end
-    #   voter ||= retry_queue.first
-    # else
-    #   if current_voter_id.present?
-    #     voter = not_dialed_queue.where(["id > ?", current_voter_id]).not_skipped.first
-    #   end
-    #   voter ||= not_dialed_queue.not_skipped.first
-
-    #   if current_voter_id.present?
-    #     voter ||= retry_queue.where(["id > ?", current_voter_id]).not_skipped.first
-    #   end
-    #   voter ||= _not_skipped
-    # end
-
-    # return voter
-    # campaign.reload
     dnc_numbers      = campaign.account.blocked_numbers.for_campaign(campaign).pluck(:number)
-    available_voters = campaign.all_voters.available_list(campaign).without(dnc_numbers)
-    # binding.pry
-    voters = available_voters.where('id > ?', last_loaded_id).limit(voter_limit).select([:id, :phone])
+    available_voters = campaign.all_voters.available_list(campaign).where('id NOT IN (?)', active_ids).without(dnc_numbers)
+
+    voters = available_voters.where('id > ?', last_loaded_id).limit(voter_limit)
     if voters.count.zero?
-      # print "Zero available_voters w/ id > #{last_loaded_id}\n"
-      voters = available_voters.where('id NOT IN (?)', active_ids).limit(voter_limit).select([:id, :phone])
+      voters = available_voters.limit(voter_limit)
     end
-    # print "Returning #{voters.count} voters without #{active_ids}\n"
-    voters
+    voters.select([:id])
   end
 
   def active_ids
@@ -76,28 +42,17 @@ private
   end
 
   def last_loaded_id
+    id = 0
     last_active_item = redis.lrange(keys[:active], 0, 1)
     if last_active_item.first.present?
       id = JSON.parse(last_active_item.first)['id']
-      # print "last_loaded_id returning active #{id}\n\n"
-      return id
     end
-    
-    last_processing_item = redis.lrange(keys[:processing], 0, 1)
-    if last_processing_item.first.present?
-      id = JSON.parse(last_processing_item.first)['id']
-      # print "last_loaded_id returning processing #{id}\n\n"
-      return id
-    end
-    
-    0
+    id
   end
 
   def keys
     {
-      active: "dial_queue:available:active:#{campaign.id}",
-      processing: "dial_queue:available:processing:#{campaign.id}",
-      last_loaded_id: "dial_queue:available:last_loaded_id:#{campaign.id}"
+      active: "dial_queue:available:active:#{campaign.id}"
     }
   end
 
@@ -143,10 +98,14 @@ public
     result = []
     n = size if n > size
     n.times do
-      result << redis.rpoplpush(keys[:active], keys[:processing])
+      result << redis.rpop(keys[:active])
     end
 
     result.map{|r| JSON.parse(r)}
+  end
+
+  def last
+    redis.lindex keys[:active], 0
   end
 
   def reload_if_below_threshold
@@ -156,8 +115,6 @@ public
   def clear
     redis.multi do
       redis.del keys[:active]
-      redis.del keys[:processing]
-      redis.del keys[:last_loaded_id]
     end
   end
 end
