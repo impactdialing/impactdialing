@@ -44,6 +44,10 @@ public
     # draft new html/client entry point
     def show
       auto_reassign_caller_campaign! if params[:campaign_id].present?
+
+      # cache available voters if none cached yet
+      dial_queue = CallFlow::DialQueue.new(@caller.campaign)
+      dial_queue.seed(:available)
     end
 
     def logout
