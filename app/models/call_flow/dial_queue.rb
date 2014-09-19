@@ -35,6 +35,10 @@ public
     queues[queue].peak
   end
 
+  def last(queue)
+    queues[queue].last
+  end
+
   def clear(queue)
     queues[queue].clear
   end

@@ -2,10 +2,15 @@ module FakeCallData
   def add_voters(campaign, type=:bare_voter, n=25)
     account = campaign.account
 
-    build_and_import_list(type, n, {
+    list = build_and_import_list(type, n, {
       account: account,
       campaign: campaign
     })
+
+    cache = CallFlow::DialQueue.new(campaign)
+    cache.seed(:available)
+
+    list
   end
 
   def cache_available_voters(campaign)
@@ -41,20 +46,20 @@ module FakeCallData
     })
 
     # mimicing PersistCalls job
-    case type
-    when :past_recycle_time_failed_call_attempt
+    case type.to_s
+    when /past_recycle_time_failed_call_attempt|failed_call_attempt/
       voter.end_unanswered_call(call_attempt.tStatus)
-    when :past_recycle_time_busy_call_attempt
+    when /past_recycle_time_busy_call_attempt|busy_call_attempt/
       call_attempt.call = create(:bare_call)
       voter.end_unanswered_call(call_attempt.tStatus)
-    when :past_recycle_time_completed_call_attempt
+    when /past_recycle_time_completed_call_attempt|completed_call_attempt/
       call_attempt.call = create(:bare_call)
       voter.disconnect_call(call_attempt.caller_id)
-    when :past_recycle_time_machine_answered_call_attempt
+    when /past_recycle_time_machine_answered_call_attempt/
       call_attempt.call = create(:bare_call)
       voter.end_answered_by_machine
     else
-      raise "Unknown CallAttempt factory type for FakeCallData#attach_call_attempt: #{type}"
+      puts "Unknown CallAttempt factory type for FakeCallData#attach_call_attempt: #{type}"
     end
 
     voter.save!

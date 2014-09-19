@@ -78,7 +78,7 @@ context 'Message Drops', data_heavy: true do
 
     it 'When all contacts have received a message automatically' do
       call_and_leave_messages(dial_queue, voters.size, true)
-      binding.pry
+      # binding.pry
       dial_queue.reload_if_below_threshold :available
       actual = campaign.next_voter_in_dial_queue(voters.last)
 

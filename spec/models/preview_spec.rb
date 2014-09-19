@@ -4,6 +4,108 @@ require "spec_helper"
 describe Preview, :type => :model do
   include FakeCallData
 
+  let(:admin){ create(:user) }
+  let(:account){ admin.account }
+  let(:campaign) do
+    create_campaign_with_script(:bare_preview, account).last
+  end
+  let(:caller) do
+    create(:caller)
+  end
+
+  def skip_voters(voters)
+    voters.each{|v| v.skip; v.save! }
+  end
+
+  def dial_all_one_at_a_time(campaign, &block)
+    campaign.all_voters.available_list(campaign).count.times do
+      voter = campaign.next_in_dial_queue
+      yield voter
+    end
+  end
+
+  def dial_one_at_a_time(campaign, n, &block)
+    n.times do 
+      voter = campaign.next_in_dial_queue
+      yield voter
+    end
+  end
+
+  describe 'dialing' do
+    before do
+      add_voters(campaign, :realistic_voter, 5)
+    end
+    let(:dial_queue) do
+      CallFlow::DialQueue.new(campaign)
+    end
+    context 'skipped voters' do
+      it 'are moved to the end of the list' do
+        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
+
+        dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:busy_call_attempt, voter, caller)}
+
+        # in real-world, skipping a voter causes next voter to load right away, so check for skipped voter
+        # to be re-added to list after following voter is dialed
+        last_on_queue = JSON.parse(dial_queue.last(:available))
+        expect(last_on_queue['id'].to_i).to eq Voter.first.id
+
+        dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:completed_call_attempt, voter, caller)}
+
+        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
+
+        dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:failed_call_attempt, voter, caller)}
+
+        last_on_queue = JSON.parse(dial_queue.last(:available))
+        penultimate_on_queue = JSON.parse(dial_queue.peak(:available)[1])
+        expect(last_on_queue['id'].to_i).to eq Voter.all[3].id
+        expect(penultimate_on_queue['id'].to_i).to eq Voter.first.id 
+      end
+
+      it 'are cycled through until called; ie the campaign does not run out of numbers while some voters have been skipped' do
+        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
+
+        dial_one_at_a_time(campaign, 4){|voter| attach_call_attempt(:completed_call_attempt, voter, caller)}
+
+        # make 3 more passes through the list. this really means reloading the same voter
+        # each time it's skipped since all other voters have been called.
+        3.times do
+          voter = campaign.next_in_dial_queue
+          expect(voter).to eq Voter.first
+          skip_voters([voter])
+        end
+
+        # 4th pass, call voter this time
+        voter = campaign.next_in_dial_queue
+        expect(voter).to eq Voter.first
+        attach_call_attempt(:completed_call_attempt, voter, caller)
+
+        # 5th pass should return nil, since all voters have now been dialed
+        voter = campaign.next_in_dial_queue
+        expect(voter).to be_nil
+      end
+
+      it 'that have never been called are presented first when other voters that have been called are past the recycle rate expiry' do
+        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
+        dial_one_at_a_time(campaign, 2){|voter| attach_call_attempt(:busy_call_attempt, voter, caller)}
+        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
+        dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:completed_call_attempt, voter, caller)}
+
+        # fake like everyone stops calling then starts later, after recycle rate expiry
+        Voter.where('last_call_attempt_time is not null').each do |voter|
+          voter.update_attributes!(last_call_attempt_time: 25.hours.ago + voter.id.minutes)
+        end
+
+        first_skipped = campaign.next_in_dial_queue
+        expect(first_skipped).to eq Voter.where('skipped_time is not null').order('id').first
+        attach_call_attempt(:busy_call_attempt, first_skipped, caller)
+
+        second_skipped = campaign.next_in_dial_queue
+        expect(second_skipped).to eq Voter.where('skipped_time is not null').order('id').last
+        attach_call_attempt(:completed_call_attempt, second_skipped, caller)
+      end
+    end
+  end
+
   describe "next voter to be dialed" do
     def setup_voters(campaign_opts={}, voter_opts={})
       @campaign = create(:preview, campaign_opts.merge({
@@ -22,10 +124,6 @@ describe Preview, :type => :model do
         last_call_time += 1.hour
       end
       @dial_queue = cache_available_voters(@campaign)
-    end
-
-    def skip_voters(voters)
-      voters.each{|v| v.update_attribute('skipped_time', 20.minutes.ago) }
     end
 
     xit "returns priority not called voter first" do

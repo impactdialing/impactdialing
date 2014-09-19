@@ -1,11 +1,10 @@
 module PreviewPowerCampaign
   def next_voter_in_dial_queue(current_voter_id = nil)
-    # do_not_call_numbers = account.blocked_numbers.for_campaign(self).pluck(:number)
     begin
-      # voter = all_voters.next_in_priority_or_scheduled_queues(do_not_call_numbers).first
-      # voter = Voter.next_voter(all_voters, recycle_rate, do_not_call_numbers, current_voter_id)
-
       dial_queue  = CallFlow::DialQueue.new(self)
+      # try to reload before loading next voter to allow
+      # looping through a single voter (use case: skipping voters in preview)
+      dial_queue.reload_if_below_threshold(:available)
       voter_attrs = dial_queue.next(1).first
       
       return nil if voter_attrs.nil?
@@ -19,6 +18,10 @@ module PreviewPowerCampaign
       retry
     end
     return voter
+  end
+
+  def next_in_dial_queue
+    next_voter_in_dial_queue
   end
 
   def update_voter_status_to_ready(voter)
