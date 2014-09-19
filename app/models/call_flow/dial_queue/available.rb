@@ -106,7 +106,11 @@ private
     out        = yield
 
     if set_expire
-      redis.expireat key, campaign.end_time.in_time_zone(campaign.time_zone).end_of_day.to_i
+      # expire this key at 23:59 tonight in the appropriate time zone
+      today       = Date.today
+      # campaign.end_time only stores the hour
+      expire_time = Time.mktime(today.year, today.month, today.day, campaign.end_time.hour)
+      redis.expireat key, expire_time.in_time_zone(campaign.time_zone).end_of_day.to_i
     end
 
     return out
