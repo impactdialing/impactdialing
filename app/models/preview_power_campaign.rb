@@ -2,9 +2,9 @@ module PreviewPowerCampaign
   def next_voter_in_dial_queue(current_voter_id = nil)
     begin
       dial_queue  = CallFlow::DialQueue.new(self)
-      # try to reload before loading next voter to allow
+      # try to re-seed before loading next voter to allow
       # looping through a single voter (use case: skipping voters in preview)
-      dial_queue.reload_if_below_threshold(:available)
+      dial_queue.seed(:available)
       voter_attrs = dial_queue.next(1).first
       
       return nil if voter_attrs.nil?
