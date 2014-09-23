@@ -1,6 +1,6 @@
 module PreviewPowerCampaign
   def next_voter_in_dial_queue(current_voter_id = nil)
-    bench_start = Time.now.utc.to_i
+    bench_start = Time.now
     namespace   = [self.type.downcase]
 
     if CallFlow::DialQueue.enabled?
@@ -11,7 +11,7 @@ module PreviewPowerCampaign
       namespace << 'mysql'
     end
 
-    bench_end = Time.now.utc.to_i
+    bench_end = Time.now
     puts "measure##{namespace.join('.')}.next_voter=#{bench_end - bench_start}ms"
 
     return voter

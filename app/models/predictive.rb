@@ -48,7 +48,7 @@ class Predictive < Campaign
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
 
-    bench_start = Time.now.utc.to_i
+    bench_start = Time.now
     namespace   = [self.type.downcase]
 
     if CallFlow::DialQueue.enabled?
@@ -59,7 +59,7 @@ class Predictive < Campaign
       namespace << 'mysql'
     end
 
-    bench_end = Time.now.utc.to_i
+    bench_end = Time.now
     puts "measure##{namespace.join('.')}.choose_voters=#{bench_end - bench_start}ms"
 
     return voter_ids
@@ -69,7 +69,7 @@ class Predictive < Campaign
     dial_queue = CallFlow::DialQueue.new(self)
     # cache available voters if none cached yet
     dial_queue.seed(:available)
-    
+
     voter_ids  = dial_queue.next(num_voters).map{|v| v['id'].to_i}
 
     set_voter_status_to_read_for_dial!(voter_ids)
