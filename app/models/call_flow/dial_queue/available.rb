@@ -139,7 +139,7 @@ public
   # This works regardless of the order of errors. For
   # example, the 1st voter may load successfully,
   # the 2nd fail and the 3rd load successfully resulting
-  # in 2 voters return (1st & 3rd), the 2nd voter
+  # in 2 voters returned (1st & 3rd), the 2nd voter
   # will be loaded the next time the cache needs populating.
   def next(n)
     n        = size if n > size
