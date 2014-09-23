@@ -67,6 +67,51 @@ describe 'CallFlow::DialQueue' do
         expect(actual).to_not include un
       end
     end
+
+    describe 'robust to network failure' do
+      context 'one or more result(s) were returned from redis server' do
+        before do
+          times_called = 0
+          redis        = @dial_queue.queues[:available].send(:redis)
+
+          allow(redis).to receive(:rpop).exactly(:three) do
+            times_called += 1
+            if times_called == 1
+              Voter.select([:id]).first.attributes
+            elsif times_called >= 2
+              raise [Redis::TimeoutError, Redis::ConnectionError, Redis::CannotConnectError].sample
+            end
+          end
+        end
+
+        it 'returns the result(s)' do
+          expected_size = 1
+          expected_val  = [Voter.select([:id]).first.attributes]
+          actual        = @dial_queue.next(3)
+
+          expect(actual.size).to eq expected_size
+          expect(actual).to eq expected_val
+        end
+      end
+
+      context 'no results returned from server' do
+        before do
+          redis = @dial_queue.queues[:available].send(:redis)
+          @times_called = 0
+          allow(redis).to receive(:rpop).exactly(:nine) do
+            @times_called += 1
+            raise [Redis::TimeoutError, Redis::ConnectionError, Redis::CannotConnectError].sample
+          end
+        end
+        after do
+          expect(@times_called).to eq 9
+        end
+
+        it 're-raises exception' do
+          expect{ @dial_queue.next(3) }.to raise_error(Redis::BaseConnectionError)
+        end
+      end
+    end
   end
 
   describe 'seed' do
