@@ -931,6 +931,33 @@ describe Voter, :type => :model do
     end
   end
 
+  describe '.generally_available(campaign)' do
+    let(:campaign){ create(:power) }
+    it 'loads active & enabled records excluding those with status in `not_available_list` AND with phone numbers with matching BlockedNumber records BUT including completed if call_back=true' do
+      create(:disabled_voter, {campaign: campaign})
+      create(:deleted_voter, {campaign: campaign})
+      create(:in_progress_voter, {campaign: campaign})
+      create(:ringing_voter, {campaign: campaign})
+      create(:queued_voter, {campaign: campaign})
+      create(:success_voter, {campaign: campaign})
+      create(:failed_voter, {campaign: campaign})
+      blocked_voter = create(:realistic_voter, {campaign: campaign})
+      create(:blocked_number, {campaign: campaign, account: campaign.account, number: blocked_voter.phone})
+      excluded_count = Voter.count
+
+      create(:realistic_voter, {campaign: campaign})
+      create(:busy_voter, {campaign: campaign})
+      create(:abandoned_voter, {campaign: campaign})
+      create(:no_answer_voter, {campaign: campaign})
+      create(:skipped_voter, {campaign: campaign})
+      create(:hangup_voter, {campaign: campaign})
+      included_count = Voter.count - excluded_count
+
+      available_count = Voter.where(campaign_id: campaign.id).available_list(campaign).count
+      expect(available_count).to eq included_count
+    end
+  end
+
   describe '.next_voter(recycle_rate, blocked_numbers, current_voter_id)' do
     def setup_voters(campaign_opts={}, voter_opts={}, count=10)
       @campaign = create(:preview, campaign_opts.merge({

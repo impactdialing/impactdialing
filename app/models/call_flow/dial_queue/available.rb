@@ -130,7 +130,7 @@ public
   # before moving on to the next load attempt. So for
   # each requested voter, we give redis client X
   # chances to return from rpop w/out a network error.
-
+  #
   # If 3 voters are requested and 3 network errors occur
   # each for the first 2 voters requested but no network
   # error (or less than X network errors) occur when

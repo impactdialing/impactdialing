@@ -114,6 +114,12 @@ FactoryGirl.define do
         call_back true
       end
 
+      factory :abandoned_voter, traits: [:abandoned]
+      factory :busy_voter, traits: [:busy]
+      factory :no_answer_voter, traits: [:no_answer]
+      factory :skipped_voter, traits: [:skipped]
+      factory :hangup_voter, traits: [:hangup]
+      factory :success_voter, traits: [:success]
       factory :ringing_voter, traits: [:ringing]
       factory :queued_voter, traits: [:queued]
       factory :failed_voter, traits: [:failed]
