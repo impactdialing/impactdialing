@@ -1150,39 +1150,39 @@ describe Voter, :type => :model do
         end
       end
       context '(householding) more than one voter has the same phone number' do
-        before do
-          @householders = []
-          3.times do |i|
-            # update last, second and fourth voters
-            n = i == 0 ? -1 : i == 1 ? i : i + 1
-            @voters[n].update_attributes!(phone: '5551234567')
-            @householders << @voters[n]
-          end
-          attempted = [@voters[0], @voters[1], @voters[2]]
-          not_called = @voters[3..-1]
-          attempt_recent_calls(attempted)
-          not_called.each{|v| v.update_attributes!(last_call_attempt_time: nil, status: Voter::Status::NOTCALLED)}
-          @current_voter = attempted.last
-        end
+        # before do
+        #   @householders = []
+        #   3.times do |i|
+        #     # update last, second and fourth voters
+        #     n = i == 0 ? -1 : i == 1 ? i : i + 1
+        #     @voters[n].update_attributes!(phone: '5551234567')
+        #     @householders << @voters[n]
+        #   end
+        #   attempted = [@voters[0], @voters[1], @voters[2]]
+        #   not_called = @voters[3..-1]
+        #   attempt_recent_calls(attempted)
+        #   not_called.each{|v| v.update_attributes!(last_call_attempt_time: nil, status: Voter::Status::NOTCALLED)}
+        #   @current_voter = attempted.last
+        # end
 
-        context 'first voter in household has been called less than recycle_rate.hours.ago' do
-          it 'does not load the second voter in the household' do
-            expected = @voters[4]
-            actual = Voter.next_voter(@voters, @campaign.recycle_rate, [], @current_voter.id)
+        # context 'first voter in household has been called less than recycle_rate.hours.ago' do
+        #   it 'does not load the second voter in the household' do
+        #     expected = @voters[4]
+        #     actual = Voter.next_voter(@voters, @campaign.recycle_rate, [], @current_voter.id)
 
-            expect(actual).to eq expected
-          end
-        end
+        #     expect(actual).to eq expected
+        #   end
+        # end
 
-        context 'first voter in household has been called more than recycle_rate.hours.ago' do
-          it 'loads the second voter in the household' do
-            attempt_calls([@voters[1]])
-            expected = @voters[3]
-            actual = Voter.next_voter(@voters, @campaign.recycle_rate, [], @current_voter.id)
+        # context 'first voter in household has been called more than recycle_rate.hours.ago' do
+        #   it 'loads the second voter in the household' do
+        #     attempt_calls([@voters[1]])
+        #     expected = @voters[3]
+        #     actual = Voter.next_voter(@voters, @campaign.recycle_rate, [], @current_voter.id)
 
-            expect(actual).to eq expected
-          end
-        end
+        #     expect(actual).to eq expected
+        #   end
+        # end
       end
     end
   end
