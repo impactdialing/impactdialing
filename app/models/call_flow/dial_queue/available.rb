@@ -183,7 +183,7 @@ public
   def reload_if_below_threshold
     # prepend if size <= voter_reload_threshold
     return unless below_threshold?
-    Resque.enqueue(CacheAvailableVoters, campaign.id)
+    Resque.enqueue(CallFlow::Jobs::CacheAvailableVoters, campaign.id)
   end
 
   def clear

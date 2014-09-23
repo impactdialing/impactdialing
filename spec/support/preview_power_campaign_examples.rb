@@ -4,7 +4,7 @@ shared_examples 'Preview/Power#next_voter_in_dial_queue' do
   it 're-populates queue via background job' do
     dial_queue.clear(:available)
     dial_queue.reload_if_below_threshold(:available)
-    expected = {'class' => 'CacheAvailableVoters', 'args' => [campaign.id]}
+    expected = {'class' => 'CallFlow::Jobs::CacheAvailableVoters', 'args' => [campaign.id]}
     expect(Resque.peek(:dialer_worker)).to eq expected
   end
 
