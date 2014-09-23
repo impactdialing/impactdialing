@@ -40,6 +40,8 @@ describe 'CallFlow::DialQueue' do
       actual = @dial_queue.size(:available)
       expect(actual).to eq expected
     end
+
+    it 'occurs in background (not in same execution path as retrieving voters)'
   end
 
   describe 'retrieving voters' do
@@ -132,5 +134,9 @@ describe 'CallFlow::DialQueue' do
 
       expect(actual).to eq expected
     end
+  end
+
+  describe 'refreshing cache' do
+    it 'is robust to network failure'
   end
 end
