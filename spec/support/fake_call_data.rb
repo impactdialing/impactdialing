@@ -1,4 +1,8 @@
 module FakeCallData
+  def reload_dial_queue(campaign)
+    CacheAvailableVoters.perform(campaign.id)
+  end
+  
   def add_voters(campaign, type=:bare_voter, n=25)
     account = campaign.account
 

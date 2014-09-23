@@ -168,7 +168,7 @@ describe Predictive do
       dial_queue.next(5) # and these are dialed
       voters[35..39].each{|v| v.update_attribute(:last_call_attempt_time, 30.minutes.ago)}
 
-      dial_queue.reload_if_below_threshold :available
+      reload_dial_queue(campaign)
 
       actual = campaign.choose_voters_to_dial(20)
       # binding.pry

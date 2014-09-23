@@ -44,6 +44,9 @@ describe Preview, :type => :model do
 
         dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:busy_call_attempt, voter, caller)}
 
+        # reloading is done via background job
+        reload_dial_queue(campaign)
+
         # in real-world, skipping a voter causes next voter to load right away, so check for skipped voter
         # to be re-added to list after following voter is dialed
         last_on_queue = JSON.parse(dial_queue.last(:available))
@@ -54,6 +57,8 @@ describe Preview, :type => :model do
         dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
 
         dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:failed_call_attempt, voter, caller)}
+
+        reload_dial_queue(campaign)
 
         last_on_queue = JSON.parse(dial_queue.last(:available))
         penultimate_on_queue = JSON.parse(dial_queue.peak(:available)[1])
@@ -126,73 +131,9 @@ describe Preview, :type => :model do
       @dial_queue = cache_available_voters(@campaign)
     end
 
-    xit "returns priority not called voter first" do
-      campaign = create(:preview)
-      voter = create(:voter, status: 'not called', campaign: campaign)
-      priority_voter = create(:voter, status: 'not called', campaign: campaign, priority: "1")
-      caller_session = create(:caller_session)
-      expect(campaign.next_voter_in_dial_queue(nil)).to eq(priority_voter)
-    end
-
-    it "returns uncalled voter before called voter" do
-      campaign = create(:preview)
-      caller_session = create(:caller_session)
-      create(:voter, status: CallAttempt::Status::SUCCESS, last_call_attempt_time: 2.hours.ago, campaign: campaign)
-      uncalled_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
-      cache_available_voters(campaign)
-      expect(campaign.next_voter_in_dial_queue(nil)).to eq(uncalled_voter)
-    end
-
-    xit "returns any scheduled voter within a ten minute window before an uncalled voter" do
-      campaign = create(:preview)
-      caller_session = create(:caller_session)
-      scheduled_voter = create(:voter, status: CallAttempt::Status::SCHEDULED, last_call_attempt_time: 2.hours.ago, scheduled_date: 1.minute.from_now, campaign: campaign)
-      create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
-      expect(campaign.next_voter_in_dial_queue(nil)).to eq(scheduled_voter)
-    end
-
-    xit "returns next voter in list if scheduled voter is more than 10 minutes away from call" do
-      campaign = create(:preview)
-      caller_session = create(:caller_session)
-      scheduled_voter = create(:voter, status: CallAttempt::Status::SCHEDULED, last_call_attempt_time: 2.hours.ago, scheduled_date: 20.minute.from_now, campaign: campaign)
-      current_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
-      next_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
-      expect(campaign.next_voter_in_dial_queue(current_voter.id)).to eq(next_voter)
-    end
-
-
-    it "returns voter with respect to a current voter" do
-      campaign = create(:preview)
-      caller_session = create(:caller_session)
-      uncalled_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
-      current_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
-      next_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
-      dial_queue = cache_available_voters(campaign)
-      dial_queue.next(2) # pop the uncalled & current voter off the list, this test is a bit silly
-                         # todo: fix or remove this test
-      expect(campaign.next_voter_in_dial_queue(current_voter.id)).to eq(next_voter)
-    end
-
-    it "returns no number if only voter to be called a retry and last called time is within campaign recycle rate" do
-      campaign        = create(:preview, recycle_rate: 2)
-      scheduled_voter = create(:voter, first_name: 'scheduled voter', status: CallAttempt::Status::SCHEDULED, last_call_attempt_time: 119.minutes.ago, scheduled_date: 20.minutes.from_now, campaign: campaign)
-      retry_voter     = create(:realistic_voter, :voicemail, :recently_dialed, campaign: campaign)
-      current_voter   = create(:realistic_voter, :success, :not_recently_dialed, campaign: campaign)
-      actual          = campaign.next_voter_in_dial_queue(current_voter.id)
-
-      expect(actual).to be_nil
-    end
-
-    it 'does not return any voter w/ a phone number in the blocked number list' do
-      blocked = ['1234567890', '0987654321']
-      account = create(:account)
-      campaign = create(:preview, {account: account})
-      allow(account).to receive_message_chain(:blocked_numbers, :for_campaign, :pluck){ blocked }
-      voter = create(:voter, status: 'not called', campaign: campaign, phone: blocked.first)
-      priority_voter = create(:voter, status: 'not called', campaign: campaign, priority: "1", phone: blocked.second)
-      caller_session = create(:caller_session)
-      expect(campaign.next_voter_in_dial_queue(nil)).to be_nil
-    end
+    let(:campaign){ create(:preview) }
+    let(:dial_queue){ CallFlow::DialQueue.new(campaign) }
+    it_behaves_like 'Preview/Power#next_voter_in_dial_queue'
 
     context 'current_voter_id is not present' do
       before do

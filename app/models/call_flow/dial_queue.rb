@@ -51,6 +51,10 @@ public
     queues[:available].next(n)
   end
 
+  def below_threshold?(queue)
+    queues[queue].below_threshold?
+  end
+
   def reload_if_below_threshold(queue)
     queues[queue].reload_if_below_threshold
   end

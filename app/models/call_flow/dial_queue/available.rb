@@ -176,8 +176,14 @@ public
     redis.lindex keys[:active], 0
   end
 
+  def below_threshold?
+    size <= voter_reload_threshold
+  end
+
   def reload_if_below_threshold
-    prepend if size <= voter_reload_threshold
+    # prepend if size <= voter_reload_threshold
+    return unless below_threshold?
+    Resque.enqueue(CacheAvailableVoters, campaign.id)
   end
 
   def clear

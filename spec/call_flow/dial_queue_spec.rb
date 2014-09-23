@@ -40,8 +40,6 @@ describe 'CallFlow::DialQueue' do
       actual = @dial_queue.size(:available)
       expect(actual).to eq expected
     end
-
-    it 'occurs in background (not in same execution path as retrieving voters)'
   end
 
   describe 'retrieving voters' do
@@ -130,7 +128,12 @@ describe 'CallFlow::DialQueue' do
     it 'expires queues at the appropriate Campaign#end_time' do
       key      = @dial_queue.queues[:available].send(:keys)[:active]
       actual   = @dial_queue.queues[:available].send(:redis).ttl key
-      expected = @campaign.end_time.in_time_zone(@campaign.time_zone).end_of_day.to_i - Time.now.in_time_zone(@campaign.time_zone).to_i
+
+      today       = Date.today
+      # campaign.end_time only stores the hour
+      expire_time = Time.mktime(today.year, today.month, today.day, @campaign.end_time.hour)
+
+      expected = expire_time.in_time_zone(@campaign.time_zone).end_of_day.to_i - Time.now.in_time_zone(@campaign.time_zone).to_i
 
       expect(actual).to eq expected
     end
