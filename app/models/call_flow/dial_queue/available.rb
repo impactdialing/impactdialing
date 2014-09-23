@@ -56,7 +56,7 @@ private
 
   def keys
     {
-      active: "dial_queue:available:active:#{campaign.id}"
+      active: "dial_queue:active:#{campaign.id}"
     }
   end
 
@@ -105,7 +105,7 @@ public
 
   def refresh
     return if not seeded?
-    
+
     redis.multi do
       redis.del keys[:active]
       prepend
