@@ -106,10 +106,10 @@ public
   def refresh
     return if not seeded?
 
-    redis.multi do
+    # redis.multi do
       redis.del keys[:active]
       prepend
-    end
+    # end
   end
 
   def size
