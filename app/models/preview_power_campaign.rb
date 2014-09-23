@@ -1,10 +1,20 @@
 module PreviewPowerCampaign
   def next_voter_in_dial_queue(current_voter_id = nil)
+    bench_start = Time.now.utc.to_i
+    namespace   = [self.type.downcase]
+
     if CallFlow::DialQueue.enabled?
-      redis_next_voter_in_dial_queue
+      voter = redis_next_voter_in_dial_queue
+      namespace << 'redis'
     else
-      mysql_next_voter_in_dial_queue(current_voter_id)
+      voter = mysql_next_voter_in_dial_queue(current_voter_id)
+      namespace << 'mysql'
     end
+
+    bench_end = Time.now.utc.to_i
+    puts "measure##{namespace.join('.')}.next_voter=#{bench_end - bench_start}ms"
+
+    return voter
   end
 
   def redis_next_voter_in_dial_queue

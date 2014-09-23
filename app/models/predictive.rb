@@ -48,11 +48,21 @@ class Predictive < Campaign
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
 
+    bench_start = Time.now.utc.to_i
+    namespace   = [self.type.downcase]
+
     if CallFlow::DialQueue.enabled?
-      redis_choose_voters_to_dial(num_voters)
+      voter_ids = redis_choose_voters_to_dial(num_voters)
+      namespace << 'redis'
     else
-      mysql_choose_voters_to_dial(num_voters)
+      voter_ids = mysql_choose_voters_to_dial(num_voters)
+      namespace << 'mysql'
     end
+
+    bench_end = Time.now.utc.to_i
+    puts "measure##{namespace.join('.')}.choose_voters=#{bench_end - bench_start}ms"
+
+    return voter_ids
   end
 
   def redis_choose_voters_to_dial(num_voters)
