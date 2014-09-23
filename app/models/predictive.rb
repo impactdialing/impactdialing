@@ -67,6 +67,9 @@ class Predictive < Campaign
 
   def redis_choose_voters_to_dial(num_voters)
     dial_queue = CallFlow::DialQueue.new(self)
+    # cache available voters if none cached yet
+    dial_queue.seed(:available)
+    
     voter_ids  = dial_queue.next(num_voters).map{|v| v['id'].to_i}
 
     set_voter_status_to_read_for_dial!(voter_ids)
