@@ -230,16 +230,32 @@ public
   # is configured to set the call_back flag to true.
   #
   def self.next_voter(voters, recycle_rate, blocked_numbers, current_voter_id)
-    recently_dialed_household_numbers = recently_dialed_households(recycle_rate).pluck(:phone)
-    without_numbers                   = blocked_numbers + recently_dialed_household_numbers
+    not_dialed_queue = voters.not_dialed.without(blocked_numbers).enabled
+    retry_queue      = voters.next_in_recycled_queue(recycle_rate, blocked_numbers)
+    _not_skipped     = not_dialed_queue.not_skipped.first
+    _not_skipped     ||= retry_queue.not_skipped.first
 
-    available_voters = voters.available_list(voters.first.campaign).without(without_numbers)
-    undialed         = available_voters.not_dialed
+    if _not_skipped.nil?
+      if current_voter_id.present?
+        voter = not_dialed_queue.where(["id > ?", current_voter_id]).first
+      end
+      voter ||= not_dialed_queue.first
 
-    voter = undialed.where('id > ?', current_voter_id).first if current_voter_id.present?
-    voter ||= undialed.first
-    voter ||= available_voters.where('id > ?', current_voter_id).first if current_voter_id.present?
-    voter ||= available_voters.first
+      if current_voter_id.present?
+        voter ||= retry_queue.where(["id > ?", current_voter_id]).first
+      end
+      voter ||= retry_queue.first
+    else
+      if current_voter_id.present?
+        voter = not_dialed_queue.where(["id > ?", current_voter_id]).not_skipped.first
+      end
+      voter ||= not_dialed_queue.not_skipped.first
+
+      if current_voter_id.present?
+        voter ||= retry_queue.where(["id > ?", current_voter_id]).not_skipped.first
+      end
+      voter ||= _not_skipped
+    end
 
     return voter
   end

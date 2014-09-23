@@ -48,17 +48,14 @@ class Predictive < Campaign
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
 
-    # blocked     = account.blocked_numbers.for_campaign(self).pluck(:number)
-    # voter_query = all_voters.active.enabled.without(blocked).limit(num_voters)
-    # not_dialed  = voter_query.not_dialed.where(:call_back => false).pluck(:id)
+    if CallFlow::DialQueue.enabled?
+      redis_choose_voters_to_dial(num_voters)
+    else
+      mysql_choose_voters_to_dial(num_voters)
+    end
+  end
 
-    # if not_dialed.size > 0
-    #   voters = not_dialed
-    # else
-    #   voters = voter_query.last_call_attempt_before_recycle_rate(recycle_rate).
-    #             to_be_dialed.pluck(:id)
-    # end
-
+  def redis_choose_voters_to_dial(num_voters)
     dial_queue = CallFlow::DialQueue.new(self)
     voter_ids  = dial_queue.next(num_voters).map{|v| v['id'].to_i}
 
@@ -67,6 +64,19 @@ class Predictive < Campaign
     dial_queue.reload_if_below_threshold(:available)
 
     voter_ids
+  end
+
+  def mysql_choose_voters_to_dial(num_voters)
+    blocked     = account.blocked_numbers.for_campaign(self).pluck(:number)
+    voter_query = all_voters.active.enabled.without(blocked).limit(num_voters)
+    not_dialed  = voter_query.not_dialed.where(:call_back => false).pluck(:id)
+
+    if not_dialed.size > 0
+      voters = not_dialed
+    else
+      voters = voter_query.last_call_attempt_before_recycle_rate(recycle_rate).
+                to_be_dialed.pluck(:id)
+    end
   end
 
   def abort_calling_with(caller_session, reason)

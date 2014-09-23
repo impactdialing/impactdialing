@@ -1,5 +1,13 @@
 module PreviewPowerCampaign
   def next_voter_in_dial_queue(current_voter_id = nil)
+    if CallFlow::DialQueue.enabled?
+      redis_next_voter_in_dial_queue
+    else
+      mysql_next_voter_in_dial_queue(current_voter_id)
+    end
+  end
+
+  def redis_next_voter_in_dial_queue
     begin
       dial_queue  = CallFlow::DialQueue.new(self)
       # try to re-seed before loading next voter to allow
@@ -13,6 +21,19 @@ module PreviewPowerCampaign
       voter.update_attributes!(status: CallAttempt::Status::READY)
       dial_queue.reload_if_below_threshold(:available)
 
+    rescue ActiveRecord::StaleObjectError => e
+      Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] StaleObjectError - retrying..."
+      retry
+    end
+    return voter
+  end
+
+  def mysql_next_voter_in_dial_queue(current_voter_id=nil)
+    do_not_call_numbers = account.blocked_numbers.for_campaign(self).pluck(:number)
+    begin
+      voter = Voter.next_voter(all_voters, recycle_rate, do_not_call_numbers, current_voter_id)
+
+      update_voter_status_to_ready(voter)
     rescue ActiveRecord::StaleObjectError => e
       Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] StaleObjectError - retrying..."
       retry

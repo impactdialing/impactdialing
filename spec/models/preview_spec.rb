@@ -33,6 +33,7 @@ describe Preview, :type => :model do
 
   describe 'dialing' do
     before do
+      ENV['USE_REDIS_DIAL_QUEUE'] = '1'
       add_voters(campaign, :realistic_voter, 5)
     end
     let(:dial_queue) do

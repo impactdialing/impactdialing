@@ -2,6 +2,10 @@ class CallFlow::DialQueue
   attr_reader :campaign, :queues
 
 public
+  def self.enabled?
+    (ENV['USE_REDIS_DIAL_QUEUE'] || '').to_i > 0
+  end
+
   def self.next(campaign, n)
     dial_queue  = CallFlow::DialQueue.new(campaign)
     next_voters = dial_queue.next(n)
