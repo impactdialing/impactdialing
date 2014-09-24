@@ -30,27 +30,14 @@ mod.factory('idTwilioConnectionFactory', [
       boundEventsMissing: (eventName) ->
         factory.boundEvents.indexOf(eventName) == -1
 
-      recoverWithNewToken: (error) ->
-        if parseInt(error.code) == 31205
-          unless factory.isOffline()
-            factory.disconnectAll()
-          idTwilioConfig.fetchToken()
-          return true
-        else
-          return false
-
       connect: (params) ->
         twilioParams = params
         idTwilioService.then(factory.resolved, factory.resolveError)
 
       connected: (connection) ->
-        # console.log 'connected', connection
         TwilioCache.put('connection', connection)
         if angular.isFunction(factory.afterConnected)
           factory.afterConnected()
-
-      # ready: (device) ->
-      #   console.log 'twilio connection ready', device
 
       disconnected: (connection) ->
         console.log 'twilio disconnected', connection
@@ -63,22 +50,18 @@ mod.factory('idTwilioConnectionFactory', [
         TwilioCache.remove('connection')
 
       error: (error) ->
-        console.log 'Twilio Connection Error', error
-        unless factory.recoverWithNewToken(error)
-          idFlashFactory.now('danger', 'Voice connection failed. Refresh the page or dial-in to continue.')
-          err = new Error("Error refreshing Twilio Capability Token. [#{error.code}] #{error.message} (#{error.info})")
-          $window._errs.push(err)
+        # ignore expired token errors... (new token is fetched when calling initiated)
+        return if parseInt(error.code) == 31205
+        err = new Error("Twilio Error. [#{error.code}] #{error.message} (#{error.info})")
+        $window._errs.push(err)
+
         if angular.isFunction(factory.afterError)
           factory.afterError()
 
-        TwilioCache.remove('connection')
-
       resolved: (twilio) ->
-        # console.log 'idTwilioService resolved', twilio
         if factory.boundEventsMissing('connect')
           twilio.Device.connect(factory.connected)
           factory.boundEvents.push('connect')
-          # twilio.Device.ready(handlers.ready)
         if factory.boundEventsMissing('disconnect')
           twilio.Device.disconnect(factory.disconnected)
           factory.boundEvents.push('disconnect')
@@ -89,10 +72,15 @@ mod.factory('idTwilioConnectionFactory', [
         unless factory.isOffline()
           factory.disconnectAll()
 
-        twilio.Device.connect(twilioParams)
+        tokenFetchSuccess = ->
+          twilio.Device.connect(twilioParams)
+        tokenFetchFail = (err) ->
+          console.log 'tokenFetchError'
+          idFLashFactory.now('danger', 'Error establishing voice connection. Please refresh and try again.')
+
+        idTwilioConfig.fetchToken(tokenFetchSuccess, tokenFetchFail)
 
       resolveError: (err) ->
-        # console.log 'idTwilioService error', err
         idFlashFactory.now('danger', 'Voice setup failed. Refresh the page or dial-in to continue.')
     }
 
