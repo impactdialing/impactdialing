@@ -34172,7 +34172,7 @@ to fix it.');
           };
           tokenFetchFail = function(err) {
             console.log('tokenFetchError');
-            return idFLashFactory.now('danger', 'Error establishing voice connection. Please refresh and try again.');
+            return idFlashFactory.now('danger', 'Error establishing voice connection. Please refresh and try again.');
           };
           return idTwilioConfig.fetchToken(tokenFetchSuccess, tokenFetchFail);
         },
