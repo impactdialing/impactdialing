@@ -34118,17 +34118,6 @@ to fix it.');
         boundEventsMissing: function(eventName) {
           return factory.boundEvents.indexOf(eventName) === -1;
         },
-        recoverWithNewToken: function(error) {
-          if (parseInt(error.code) === 31205) {
-            if (!factory.isOffline()) {
-              factory.disconnectAll();
-            }
-            idTwilioConfig.fetchToken();
-            return true;
-          } else {
-            return false;
-          }
-        },
         connect: function(params) {
           twilioParams = params;
           return idTwilioService.then(factory.resolved, factory.resolveError);
@@ -34152,18 +34141,17 @@ to fix it.');
         },
         error: function(error) {
           var err;
-          console.log('Twilio Connection Error', error);
-          if (!factory.recoverWithNewToken(error)) {
-            idFlashFactory.now('danger', 'Voice connection failed. Refresh the page or dial-in to continue.');
-            err = new Error("Error refreshing Twilio Capability Token. [" + error.code + "] " + error.message + " (" + error.info + ")");
-            $window._errs.push(err);
+          if (parseInt(error.code) === 31205) {
+            return;
           }
+          err = new Error("Twilio Error. [" + error.code + "] " + error.message + " (" + error.info + ")");
+          $window._errs.push(err);
           if (angular.isFunction(factory.afterError)) {
-            factory.afterError();
+            return factory.afterError();
           }
-          return TwilioCache.remove('connection');
         },
         resolved: function(twilio) {
+          var tokenFetchFail, tokenFetchSuccess;
           if (factory.boundEventsMissing('connect')) {
             twilio.Device.connect(factory.connected);
             factory.boundEvents.push('connect');
@@ -34179,7 +34167,14 @@ to fix it.');
           if (!factory.isOffline()) {
             factory.disconnectAll();
           }
-          return twilio.Device.connect(twilioParams);
+          tokenFetchSuccess = function() {
+            return twilio.Device.connect(twilioParams);
+          };
+          tokenFetchFail = function(err) {
+            console.log('tokenFetchError');
+            return idFLashFactory.now('danger', 'Error establishing voice connection. Please refresh and try again.');
+          };
+          return idTwilioConfig.fetchToken(tokenFetchSuccess, tokenFetchFail);
         },
         resolveError: function(err) {
           return idFlashFactory.now('danger', 'Voice setup failed. Refresh the page or dial-in to continue.');
