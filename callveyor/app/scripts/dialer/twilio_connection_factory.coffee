@@ -76,7 +76,7 @@ mod.factory('idTwilioConnectionFactory', [
           twilio.Device.connect(twilioParams)
         tokenFetchFail = (err) ->
           console.log 'tokenFetchError'
-          idFLashFactory.now('danger', 'Error establishing voice connection. Please refresh and try again.')
+          idFlashFactory.now('danger', 'Error establishing voice connection. Please refresh and try again.')
 
         idTwilioConfig.fetchToken(tokenFetchSuccess, tokenFetchFail)
 
