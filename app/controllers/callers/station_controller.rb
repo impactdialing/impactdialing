@@ -82,7 +82,7 @@ public
       twilio_capability.allow_client_outgoing(TWILIO_APP_SID)
 
       render json: {
-        twilio_token: twilio_capability.generate
+        twilio_token: twilio_capability.generate(5)
       }
     end
 
