@@ -30,6 +30,10 @@ class Twillio
     call_attempt = setup_call(voter, caller_session, campaign)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     http_response = twilio_lib.make_call(campaign, voter, call_attempt)
+    handle_response(http_response, voter, call_attempt, caller_session)
+  end
+  
+  def self.handle_response(http_response, voter, call_attempt, caller_session)
     response = JSON.parse(http_response)
     if error_response_codes.include?(response["status"])
       handle_failed_call(call_attempt, caller_session, voter, response)
@@ -38,40 +42,65 @@ class Twillio
     end
   end
 
+  def self.dial(voter, caller_session)
+    campaign      = caller_session.campaign
+    call_attempt  = setup_call(voter, caller_session, campaign)
+    twilio_lib    = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    http_response = twilio_lib.make_call(campaign, voter, call_attempt)
+    handle_response(http_response, voter, call_attempt, caller_session)
+  end
+
   def self.dial_predictive_em(iter, voter, dc)
-    campaign = voter.campaign
+    campaign     = voter.campaign
     call_attempt = setup_call_predictive(voter, campaign, dc)
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    twilio_lib   = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+
     Rails.logger.info "#{call_attempt.id} - before call"
     http = twilio_lib.make_call_em(campaign, voter, call_attempt, dc)
     http.callback {
       Rails.logger.info "#{call_attempt.id} - after call"
-      response = JSON.parse(http.response)
-      if error_response_codes.include?(response["status"])
-        handle_failed_call(call_attempt, nil, voter, response)
-      else
-        handle_succeeded_call(call_attempt, nil, voter, response)
-      end
+      handle_response(http.response)
       iter.return(http)
-       }
+    }
     http.errback { iter.return(http) }
-
   end
 
-  def self.setup_call_predictive(voter, campaign, dc)
-    attempt = voter.call_attempts.create(campaign:  campaign, dialer_mode:  campaign.type, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
-    voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, status: CallAttempt::Status::RINGING)
+  def self.create_call_attempt(voter, campaign, caller_session=nil)
+    attempt_attrs = {
+      campaign: campaign,
+      dialer_mode: campaign.type,
+      status: CallAttempt::Status::RINGING,
+      call_start: Time.now
+    }
+    if caller_session.present?
+      attempt_attrs.merge!({
+        caller_session: caller_session,
+        caller: caller_session.caller
+      })
+    end
+    # create the call attempt
+    attempt = voter.call_attempts.create(attempt_attrs)
+
+    # update voter state
+    voter.update_attributes({
+      last_call_attempt_id: attempt.id,
+      last_call_attempt_time: Time.now,
+      status: CallAttempt::Status::RINGING
+    })
+
+    # create the call record
     Call.create(call_attempt: attempt, state: "initial")
+
     attempt
   end
 
-
+  def self.setup_call_predictive(voter, campaign, dc)
+    create_call_attempt(voter, campaign)
+  end
 
   def self.setup_call(voter, caller_session, campaign)
-    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => caller_session, :caller => caller_session.caller, call_start:  Time.now)
-    voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, :caller_session_id => caller_session.id, status: CallAttempt::Status::RINGING)
+    attempt = create_call_attempt(voter, campaign, caller_session)
     caller_session.update_attributes(on_call: true, available_for_call: false, attempt_in_progress: attempt, voter_in_progress: voter)
-    Call.create(call_attempt: attempt, state: "initial")
     attempt
   end
 
