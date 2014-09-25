@@ -39,7 +39,7 @@ class VoterListChangeJob
     end
 
     dial_queue = CallFlow::DialQueue.new(voter_list.campaign)
-    dial_queue.refresh(:available)
+    dial_queue.refresh
   end
 
   def self.requeue(voter_list_id, enabled)

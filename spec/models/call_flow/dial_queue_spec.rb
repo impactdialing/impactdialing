@@ -12,7 +12,7 @@ describe 'CallFlow::DialQueue' do
     @campaign = create_campaign_with_script(:bare_preview, account).last
     create_list(:realistic_voter, 100, {campaign: @campaign, account: account})
     @dial_queue = CallFlow::DialQueue.new(@campaign)
-    @dial_queue.prepend(:available)
+    @dial_queue.prepend
   end
   after do
     @dial_queue.clear(:available)
@@ -34,7 +34,7 @@ describe 'CallFlow::DialQueue' do
     it 'only caches voters that can be dialed right away' do
       @dial_queue.clear(:available)
       Voter.order('id DESC').limit(95).update_all(status: CallAttempt::Status::READY)
-      @dial_queue.prepend(:available)
+      @dial_queue.prepend
 
       expected = 5
       actual = @dial_queue.size(:available)
@@ -60,7 +60,7 @@ describe 'CallFlow::DialQueue' do
     it 'removes retrieved voter(s) from queue' do
       voters     = @dial_queue.next(5)
       Voter.where(id: voters.map{|v| v['id']}).update_all(last_call_attempt_time: Time.now, status: CallAttempt::Status::BUSY)
-      actual     = @dial_queue.queues[:available].peak.map{|v| JSON.parse(v)['id']}
+      actual     = @dial_queue.available.peak.map{|v| JSON.parse(v)['id']}
       unexpected = voters.map{|v| v['id']}
       # binding.pry
       unexpected.each do |un|
@@ -68,11 +68,15 @@ describe 'CallFlow::DialQueue' do
       end
     end
 
+    it 'does not return household members when one member has been dialed recently (within recycle rate)' do
+      
+    end
+
     describe 'robust to network failure' do
       context 'one or more result(s) were returned from redis server' do
         before do
           times_called = 0
-          redis        = @dial_queue.queues[:available].send(:redis)
+          redis        = @dial_queue.available.send(:redis)
 
           allow(redis).to receive(:rpop).exactly(:three) do
             times_called += 1
@@ -96,7 +100,7 @@ describe 'CallFlow::DialQueue' do
 
       context 'no results returned from server' do
         before do
-          redis = @dial_queue.queues[:available].send(:redis)
+          redis = @dial_queue.available.send(:redis)
           @times_called = 0
           allow(redis).to receive(:rpop).exactly(:nine) do
             @times_called += 1
@@ -119,15 +123,15 @@ describe 'CallFlow::DialQueue' do
       @dial_queue.clear :available
     end
     it 'loads voters limited by ENV["DIAL_QUEUE_AVAILABLE_SEED_LIMIT"] which should be a small number to keep startup time fast' do
-      @dial_queue.seed :available
+      @dial_queue.seed
       expect(@dial_queue.size(:available)).to eq 5
     end
   end
 
   describe 'clean up' do
     it 'expires queues at 10 minutes past the appropriate Campaign#end_time' do
-      key      = @dial_queue.queues[:available].send(:keys)[:active]
-      actual   = @dial_queue.queues[:available].send(:redis).ttl key
+      key      = @dial_queue.available.send(:keys)[:active]
+      actual   = @dial_queue.available.send(:redis).ttl key
 
       today       = Date.today
       # campaign.end_time only stores the hour

@@ -1,5 +1,13 @@
 class CallFlow::DialQueue
-  attr_reader :campaign, :queues
+  attr_reader :campaign
+
+  delegate :next, :prepend, :seed, :refresh, :below_threshold?, :reload_if_below_threshold, to: :available
+
+private
+
+  def load_if_nil(queue)
+    send(queue) if queues[queue].nil?
+  end
 
 public
   def self.enabled?
@@ -18,48 +26,25 @@ public
     end
 
     @campaign = campaign
-
-    @queues = {}
-    @queues[:available] = CallFlow::DialQueue::Available.new(campaign)
   end
 
-  def prepend(queue)
-    queues[queue].prepend
-  end
-
-  def seed(queue)
-    queues[queue].seed
-  end
-
-  def refresh(queue)
-    queues[queue].refresh
+  def available
+    @available ||= CallFlow::DialQueue::Available.new(campaign)
   end
 
   def size(queue)
-    queues[queue].size
+    send(queue).size
   end
 
   def peak(queue)
-    queues[queue].peak
+    send(queue).peak
   end
 
   def last(queue)
-    queues[queue].last
+    send(queue).last
   end
 
   def clear(queue)
-    queues[queue].clear
-  end
-
-  def next(n)
-    queues[:available].next(n)
-  end
-
-  def below_threshold?(queue)
-    queues[queue].below_threshold?
-  end
-
-  def reload_if_below_threshold(queue)
-    queues[queue].reload_if_below_threshold
+    send(queue).clear
   end
 end

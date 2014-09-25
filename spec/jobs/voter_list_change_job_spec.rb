@@ -88,7 +88,7 @@ describe VoterListChangeJob do
   it 'refreshes the available voter queue' do
     dial_queue = double('DialQueue')
     allow(CallFlow::DialQueue).to receive(:new){ dial_queue }
-    expect(dial_queue).to receive(:refresh).with(:available)
+    expect(dial_queue).to receive(:refresh)
     subject.perform(voter_list.id, enabled)
   end
 

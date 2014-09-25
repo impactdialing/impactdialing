@@ -8,8 +8,8 @@ module CallFlow::Jobs
       campaign   = Campaign.find campaign_id
       dial_queue = CallFlow::DialQueue.new(campaign)
 
-      if dial_queue.below_threshold?(:available)
-        dial_queue.prepend(:available)
+      if dial_queue.below_threshold?
+        dial_queue.prepend
       end
       metrics.completed
     end

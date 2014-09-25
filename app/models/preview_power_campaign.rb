@@ -25,14 +25,14 @@ module PreviewPowerCampaign
       dial_queue  = CallFlow::DialQueue.new(self)
       # try to re-seed before loading next voter to allow
       # looping through a single voter (use case: skipping voters in preview)
-      dial_queue.seed(:available)
+      dial_queue.seed
       voter_attrs = dial_queue.next(1).first
       
       return nil if voter_attrs.nil?
 
       voter = Voter.find voter_attrs['id']
       voter.update_attributes!(status: CallAttempt::Status::READY)
-      dial_queue.reload_if_below_threshold(:available)
+      dial_queue.reload_if_below_threshold
 
     rescue ActiveRecord::StaleObjectError => e
       Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] StaleObjectError - retrying..."
