@@ -34145,10 +34145,7 @@ to fix it.');
             return;
           }
           err = new Error("Twilio Error. [" + error.code + "] " + error.message + " (" + error.info + ")");
-          $window._errs.push(err);
-          if (angular.isFunction(factory.afterError)) {
-            return factory.afterError();
-          }
+          return $window._errs.push(err);
         },
         resolved: function(twilio) {
           var tokenFetchFail, tokenFetchSuccess;
@@ -34164,14 +34161,10 @@ to fix it.');
             twilio.Device.error(factory.error);
             factory.boundEvents.push('error');
           }
-          if (!factory.isOffline()) {
-            factory.disconnectAll();
-          }
           tokenFetchSuccess = function() {
             return twilio.Device.connect(twilioParams);
           };
           tokenFetchFail = function(err) {
-            console.log('tokenFetchError');
             return idFlashFactory.now('danger', 'Error establishing voice connection. Please refresh and try again.');
           };
           return idTwilioConfig.fetchToken(tokenFetchSuccess, tokenFetchFail);
@@ -35237,11 +35230,6 @@ to fix it.');
       idTwilioConnectionFactory.afterConnected = function() {
         var p;
         p = $state.go('dialer.hold');
-        return p["catch"](idTransitionPrevented);
-      };
-      idTwilioConnectionFactory.afterError = function() {
-        var p;
-        p = $state.go('dialer.ready');
         return p["catch"](idTransitionPrevented);
       };
       ready = config || {};
