@@ -55,9 +55,6 @@ mod.factory('idTwilioConnectionFactory', [
         err = new Error("Twilio Error. [#{error.code}] #{error.message} (#{error.info})")
         $window._errs.push(err)
 
-        if angular.isFunction(factory.afterError)
-          factory.afterError()
-
       resolved: (twilio) ->
         if factory.boundEventsMissing('connect')
           twilio.Device.connect(factory.connected)
@@ -69,13 +66,9 @@ mod.factory('idTwilioConnectionFactory', [
           twilio.Device.error(factory.error)
           factory.boundEvents.push('error')
 
-        unless factory.isOffline()
-          factory.disconnectAll()
-
         tokenFetchSuccess = ->
           twilio.Device.connect(twilioParams)
         tokenFetchFail = (err) ->
-          console.log 'tokenFetchError'
           idFlashFactory.now('danger', 'Error establishing voice connection. Please refresh and try again.')
 
         idTwilioConfig.fetchToken(tokenFetchSuccess, tokenFetchFail)

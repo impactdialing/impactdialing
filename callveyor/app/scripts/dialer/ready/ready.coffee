@@ -54,10 +54,6 @@ ready.controller('ReadyCtrl.splashModal', [
       p = $state.go('dialer.hold')
       p.catch(idTransitionPrevented)
 
-    idTwilioConnectionFactory.afterError = ->
-      p = $state.go('dialer.ready')
-      p.catch(idTransitionPrevented)
-
     ready = config || {}
     ready.startCalling = ->
       $scope.transitionInProgress = true

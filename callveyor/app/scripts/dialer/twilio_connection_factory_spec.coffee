@@ -55,9 +55,9 @@ describe 'idTwilioConnectionHandlers', ->
       expect(factory.afterConnected).toHaveBeenCalled()
 
   describe 'error(error)', ->
-    it 'displays an error to user, that self-destructs in some seconds', ->
-      factory.error({message: 'Bad twilio', stack: {}})
-      expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
+    it 'returns early when error.code == 31205 (Twilio Token Expired), we ignore this error because it happens frequently and we generate tokens each time calling is initiated', ->
+      factory.error({message: 'Token Expired', code: 31205, stack: {}})
+      expect($window._errs.push).not.toHaveBeenCalled()
 
   describe 'resolved(twilio)', ->
     twilio = {}
@@ -77,6 +77,11 @@ describe 'idTwilioConnectionHandlers', ->
       expect(twilio.Device.connect).toHaveBeenCalledWith(jasmine.any(Function))
       expect(twilio.Device.error).toHaveBeenCalledWith(jasmine.any(Function))
 
-    it 'calls Twilio.Device.connect(twilioParams)', ->
+    it 'fetches a new twilio capability token', ->
       factory.resolved(twilio)
+      expect(idTwilioConfig.fetchToken).toHaveBeenCalled()
+
+    it 'connects once twilio capability token fetch is successful', ->
+      factory.resolved(twilio)
+      idTwilioConfig.fetchToken.calls[0].args[0]()
       expect(twilio.Device.connect).toHaveBeenCalledWith(twilioParams)
