@@ -125,13 +125,13 @@ describe 'CallFlow::DialQueue' do
   end
 
   describe 'clean up' do
-    it 'expires queues at the appropriate Campaign#end_time' do
+    it 'expires queues at 10 minutes past the appropriate Campaign#end_time' do
       key      = @dial_queue.queues[:available].send(:keys)[:active]
       actual   = @dial_queue.queues[:available].send(:redis).ttl key
 
       today       = Date.today
       # campaign.end_time only stores the hour
-      expire_time = Time.mktime(today.year, today.month, today.day, @campaign.end_time.hour)
+      expire_time = Time.mktime(today.year, today.month, today.day, @campaign.end_time.hour, 10)
 
       expected = expire_time.in_time_zone(@campaign.time_zone).end_of_day.to_i - Time.now.in_time_zone(@campaign.time_zone).to_i
 
