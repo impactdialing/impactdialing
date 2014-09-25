@@ -80,9 +80,9 @@ public
     def twilio_token
       twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       twilio_capability.allow_client_outgoing(TWILIO_APP_SID)
-
+      token_expiry = ENV['TWILIO_CAPABILITY_TOKEN_TTL'].nil? ? 60 : ENV['TWILIO_CAPABILITY_TOKEN_TTL'].to_i
       render json: {
-        twilio_token: twilio_capability.generate(5)
+        twilio_token: twilio_capability.generate(token_expiry)
       }
     end
 
