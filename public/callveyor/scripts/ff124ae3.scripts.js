@@ -34148,7 +34148,6 @@ to fix it.');
           return $window._errs.push(err);
         },
         resolved: function(twilio) {
-          var tokenFetchFail, tokenFetchSuccess;
           if (factory.boundEventsMissing('connect')) {
             twilio.Device.connect(factory.connected);
             factory.boundEvents.push('connect');
@@ -34161,13 +34160,7 @@ to fix it.');
             twilio.Device.error(factory.error);
             factory.boundEvents.push('error');
           }
-          tokenFetchSuccess = function() {
-            return twilio.Device.connect(twilioParams);
-          };
-          tokenFetchFail = function(err) {
-            return idFlashFactory.now('danger', 'Error establishing voice connection. Please refresh and try again.');
-          };
-          return idTwilioConfig.fetchToken(tokenFetchSuccess, tokenFetchFail);
+          return twilio.Device.connect(twilioParams);
         },
         resolveError: function(err) {
           return idFlashFactory.now('danger', 'Voice setup failed. Refresh the page or dial-in to continue.');
@@ -34582,7 +34575,6 @@ to fix it.');
           p = $http.get(TwilioCache.get('tokenUrl'));
           s = function(resp) {
             factory.token = resp.data.twilio_token;
-            factory.setupDevice();
             if (successCallback != null) {
               return successCallback(resp);
             }
@@ -34637,9 +34629,9 @@ to fix it.');
         twilioToken = '';
         deferred = $q.defer();
         scriptLoaded = function(token) {
-          idTwilioConfig.setupDevice();
           return $timeout(function() {
-            return deferred.resolve($window.Twilio);
+            deferred.resolve($window.Twilio);
+            return idTwilioConfig.setupDevice();
           });
         };
         tokensFetched = function(token) {
