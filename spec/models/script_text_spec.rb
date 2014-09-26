@@ -46,6 +46,18 @@ describe ScriptText, :type => :model do
 <p>*<strong>other things</strong>*</p>
 """
     end
+    let(:segfaulting_text) do
+      [
+        "Hi this is ",
+        "____Your Name____.   ",
+        "Is __Resident Name_ at home?\r\n\r\n", # segfaults
+        "Is _Resident Name_ at home?\r\n\r\n", # segfaults
+        "Hi, my name is ",
+        "_Your Name___. ", # segfaults
+        "I am a local resident calling for the “Bonaccorsi for Fremont City Council” Campaign.\r\n\r\n",
+        "David Bonaccorsi grew up in Fremont and is a champion for all things Fremont. He has been endorsed by the Democratic Party, Alameda Labor Council, as well as important local leaders including Congressman Mike Honda, City Councilmembers Anu Natarajan, Sue Chan and Vinnie Bacon, School Board trustees Lara Calvert-York, Desrie Campbell and Ann Crosbie.\r\n\r\nCan we count on you to vote for David Bonaccorsi for Fremont City Council on November 4th?\r\n\r\n<If Undecided> David Bonaccorsi is the longest serving Fremont Planning commissioner. He has fought for a well-planned downtown and has the experience to make the new Innovation District a reality; David has been endorsed by the Sierra Club and, as a past President of the Fremont Education Foundation, will ensure continued cooperation between the city and our schools. We hope you will vote for David Bonaccorsi on November 4th. Thank you for your time. <end>"
+      ]
+    end
 
     it 'handles headings' do
       subject.content = '# Hello'
@@ -80,6 +92,12 @@ describe ScriptText, :type => :model do
       expected = "\n<p>Hi is________<strong>there? Hi, this is</strong>_______.</p>\n"
       subject.content = content
       expect(subject.markdown_content).to eq expected
+    end
+    it 'does not cause segfaults when segfaulting_text is used' do
+      segfaulting_text.each do |text|
+        subject.content = text
+        expect{subject.markdown_content}.to_not raise_error{ Exception }
+      end
     end
   end
 end

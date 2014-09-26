@@ -46,7 +46,7 @@ end
 # - linebreak
 # - paragraph
 # - blockquote (block_quote)
-class Redcarpet::Render::ScriptText < Redcarpet::Render::Base
+class Redcarpet::Render::ScriptText < Redcarpet::Render::HTML
   def normal_text(text)
     text.gsub('-', '\\-').strip
   end
@@ -68,9 +68,22 @@ class Redcarpet::Render::ScriptText < Redcarpet::Render::Base
     end
   end
 
-  def triple_emphasis(text)
-    nil
-  end
+  def triple_emphasis(text); nil end
+  def block_code(code, language); nil end
+  def codespan(code); nil end
+  def link(link, title, content); nil end
+  def block_html(raw_html); nil end
+  def footnotes(content); nil end
+  def footnote_def(content, number); nil end
+  def hrule; nil end
+  def table(header, body); nil end
+  def table_row(content); nil end
+  def table_cell(content, alignment); nil end
+  def autolink(link, link_type); nil end
+  def superscript(text); nil end
+  def highlight(text); nil end
+  def quote(text); nil end
+  def footnote_ref(number); nil end
 
   def double_emphasis(text)
     "<strong>#{text}</strong>"
