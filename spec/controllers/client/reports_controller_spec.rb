@@ -100,7 +100,7 @@ describe Client::ReportsController, :type => :controller do
       it "sets the default date range according to the campaign's time zone" do
         Timecop.freeze do
           expected_from = Time.now.in_time_zone(campaign.time_zone).beginning_of_day
-          expected_to = Time.now.in_time_zone(campaign.time_zone).end_of_day
+          expected_to = Time.now.in_time_zone(campaign.time_zone).end_of_day.utc
 
           get :download_report, :campaign_id => campaign.id
 

@@ -1,12 +1,13 @@
 <div role="main">
   <h1><%= @record.name %> Performance</h1>
-  <h4><%= nice_date(@date_range.from) %> - <%= nice_date(@date_range.to) %> <%= @date_range.time_zone.name %></h4>
+  <h4><%= nice_date(@date_range.from, (@campaign || @caller.campaign).time_zone) %> - <%= nice_date(@date_range.to, (@campaign || @caller.campaign).time_zone) %> <%= @date_range.time_zone.name %></h4>
 
   <%= @velocity.html_safe %>
 
   <%= render('selective_date_range_picker', {
     datepicker_path: @datepicker_path,
     campaign_id: @campaign.try(:id),
+    campaign: (@campaign || @caller.campaign),
     caller_id: @caller.try(:id),
     from_date: @date_range.from,
     to_date: @date_range.to

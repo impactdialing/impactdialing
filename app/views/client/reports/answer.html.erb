@@ -80,6 +80,7 @@
     <%= render('selective_date_range_picker', {
       datepicker_path: answer_client_reports_path,
       campaign_id: @campaign.try(:id),
+      campaign: @campaign,
       from_date: @date_range.from,
       to_date: @date_range.to
     }) %>

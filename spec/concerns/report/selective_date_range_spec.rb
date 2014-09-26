@@ -25,6 +25,24 @@ describe Report::SelectiveDateRange do
 
       expect(date_range.from).to eq expected_from
     end
+
+    context 'given a TimeZone "Pacific Time" From String "9/22/2014" and a To String "9/22/2014' do
+      let(:from_pool){ ['9/22/2014'] }
+      let(:to_pool){ from_pool }
+      let(:date_range) do
+        Report::SelectiveDateRange.new(from_pool, to_pool)
+      end
+      it '#from => 9/22/2014 0700 UTC' do
+        expected = Time.new(2014, 9, 22, 7, 0, 0, '+00:00')
+        expect(date_range.from).to eq expected
+      end
+
+      it '#to => 9/23/2014 0659 UTC' do
+        expected = Time.new(2014, 9, 22, 12, 0, 0, '-07:00').end_of_day.utc
+        expect(expected.day).to eq 23 # sanity check
+        expect(date_range.to.to_s).to eq expected.to_s
+      end
+    end
   end
 
   context 'given a from_date_pool with at least one non-nil element and an empty to_date_pool' do

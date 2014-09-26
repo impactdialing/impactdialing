@@ -1,3 +1,7 @@
+# date range fix
+# range = Report::SelectiveDateRange.new
+# to = range.to.in_time_zone(c.time_zone).end_of_day
+# from = to.beginning_of_day
 class Report::SelectiveDateRange
   attr_reader :time_zone, :from_pool, :to_pool
 
@@ -6,7 +10,7 @@ private
     if datetime.kind_of?(String)
       month, day, year = datetime.split('/')
       if month and day and year
-        return Time.new(year, month, day, 12, 0, 0, @time_zone.formatted_offset)
+        datetime = Time.new(year, month, day, 12, 0, 0, @time_zone.formatted_offset)
       end
     end
     datetime.in_time_zone(@time_zone)
@@ -32,6 +36,6 @@ public
   end
 
   def to
-    normalize(to_before_normalize).end_of_day
+    normalize(to_before_normalize).end_of_day.utc
   end
 end
