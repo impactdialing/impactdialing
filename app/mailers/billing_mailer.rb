@@ -3,7 +3,7 @@ class BillingMailer < MandrillMailer
 
 private
   def invoice_recipient
-    payment_gateway = PaymentGateway.new(account.billing_provider_customer_id)
+    payment_gateway = Billing::PaymentGateway.new(account.billing_provider_customer_id)
     payment_gateway.customer.presence.email || @account.users.first.email
   end
 
