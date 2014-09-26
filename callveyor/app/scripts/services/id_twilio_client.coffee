@@ -16,7 +16,6 @@ twilio.factory('idTwilioConfig', [
         p = $http.get(TwilioCache.get('tokenUrl'))
         s = (resp) ->
           factory.token = resp.data.twilio_token
-          factory.setupDevice()
           if successCallback?
             successCallback(resp)
         e = (err) ->
@@ -67,9 +66,9 @@ twilio.provider('idTwilioService', ->
       deferred = $q.defer()
 
       scriptLoaded = (token) ->
-        idTwilioConfig.setupDevice()
         $timeout(->
           deferred.resolve($window.Twilio)
+          idTwilioConfig.setupDevice()
         )
 
       tokensFetched = (token) ->

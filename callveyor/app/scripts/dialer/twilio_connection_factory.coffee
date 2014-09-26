@@ -66,12 +66,7 @@ mod.factory('idTwilioConnectionFactory', [
           twilio.Device.error(factory.error)
           factory.boundEvents.push('error')
 
-        tokenFetchSuccess = ->
-          twilio.Device.connect(twilioParams)
-        tokenFetchFail = (err) ->
-          idFlashFactory.now('danger', 'Error establishing voice connection. Please refresh and try again.')
-
-        idTwilioConfig.fetchToken(tokenFetchSuccess, tokenFetchFail)
+        twilio.Device.connect(twilioParams)
 
       resolveError: (err) ->
         idFlashFactory.now('danger', 'Voice setup failed. Refresh the page or dial-in to continue.')
