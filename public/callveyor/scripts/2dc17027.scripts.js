@@ -34220,12 +34220,14 @@ to fix it.');
       isWarmTransfer = function() {
         return /warm/i.test(TransferCache.get('type'));
       };
+      $window.idDebugData || ($window.idDebugData = {});
       beforeunloadBeenBound = false;
       handlers = {
         startCalling: function(data) {
           var caller, stopFirst;
           caller = CallStationCache.get('caller');
           caller.session_id = data.caller_session_id;
+          $window.idDebugData.caller = caller;
           if (!beforeunloadBeenBound) {
             beforeunloadBeenBound = true;
             stopFirst = function(ev) {
@@ -34272,6 +34274,8 @@ to fix it.');
           }
           ContactCache.put('data', contact);
           $rootScope.$broadcast('contact:changed');
+          $window.idDebugData.campaign = campaign;
+          $window.idDebugData.contact = contact;
           p = $state.go('dialer.hold');
           p["catch"](idTransitionPrevented);
           if (campaign.type === 'Power') {
@@ -34347,6 +34351,7 @@ to fix it.');
         voterConnected: function(data) {
           var p;
           CallCache.put('id', data.call_id);
+          $window.idDebugData.call_id = data.call_id;
           p = $state.go('dialer.active');
           return p["catch"](idTransitionPrevented);
         },
@@ -34365,7 +34370,9 @@ to fix it.');
           transitionSuccess = function() {
             ContactCache.put('data', data.voter);
             $rootScope.$broadcast('contact:changed');
-            return CallCache.put('id', data.call_id);
+            CallCache.put('id', data.call_id);
+            $window.idDebugData.contact = data.voter;
+            return $window.idDebugData.call_id = data.call_id;
           };
           p = $state.go('dialer.active');
           return p.then(transitionSuccess, idTransitionPrevented);
@@ -34429,7 +34436,11 @@ to fix it.');
 
         transferConnected: function(data) {
           console.log('transfer_connected', data);
-          return TransferCache.put('type', data.type);
+          TransferCache.put('type', data.type);
+          return $window.idDebugData.transfer = {
+            type: data.type,
+            selected: TransferCache.get('selected')
+          };
         },
         contactJoinedTransferConference: function() {
           var p;
