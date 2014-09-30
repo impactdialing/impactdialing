@@ -33,4 +33,21 @@ module CampaignHelper
     blocked_numbers = list.campaign.account.blocked_numbers.for_campaign(list.campaign).pluck(:number)
     return Voter.remaining_voters_for_voter_list(list, blocked_numbers).count
   end
+
+  def voters_available_count_for(list)
+    list.voters.available_list(list.campaign).count
+  end
+
+  def numbers_count_for(list)
+    list.voters.select('DISTINCT(phone)').count
+  end
+
+  def numbers_remaining_count_for(list)
+    blocked_numbers = list.campaign.account.blocked_numbers.for_campaign(list.campaign).pluck(:number)
+    Voter.remaining_voters_for_voter_list(list, blocked_numbers).select('DISTINCT(phone)').count
+  end
+
+  def numbers_available_count_for(list)
+    list.voters.available_list(list.campaign).select('DISTINCT(phone)').count
+  end
 end

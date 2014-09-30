@@ -340,6 +340,16 @@ padding : .5em 10px 0 5px; }
 tr:nth-child(odd) th,
 tr:nth-child(odd) td {
 background-color : rgb(238,238,238); }
+tr:nth-child(even) th,
+tr:nth-child(even) td {
+background-color : #fff; }
+tr:nth-child(odd) th, tr:nth-child(odd) td, tr:nth-child(odd) table tr th, tr:nth-child(odd) table tr td {
+  background-color : rgb(238,238,238);
+}
+tr:nth-child(even) th, tr:nth-child(even) td, tr:nth-child(even) table tr th, tr:nth-child(even) table tr td {
+  background-color : #fff;
+}
+
 
 tfoot {
 font-style : italic; }

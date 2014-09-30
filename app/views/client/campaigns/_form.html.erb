@@ -74,23 +74,58 @@
         <table>
           <tr>
             <th>Name</th>
-            <th>Phone #s</th>
-            <th>Remaining</th>
+            <th style="padding-right: 10px;">
+              Contacts
+
+              <table>
+                <tr>
+                  <th style="width: 33%;">Available</th>
+                  <th style="width: 33%;">Remaining</th>
+                  <th style="width: 33%;">Total</th>
+                </tr>
+              </table>
+            </th>
+            <th>
+              Households
+
+              <table>
+                <tr>
+                  <th style="width: 33%;">Available</th>
+                  <th style="width: 33%;">Remaining</th>
+                  <th style="width: 33%;">Total</th>
+                </tr>
+              </table>
+            </th>
           </tr>
           <% i = 0 %>
           <% @campaign.voter_lists.includes(:campaign).each do |list| %>
             <% unless list.new_record? %>
               <tr>
                 <td valign="top">
-
                   <%= f.fields_for :voter_lists, list do |list_fields| %>
                     <%= list_fields.hidden_field :id, {name: "campaign[voter_lists_attributes][#{i}][id]"} %>
                     <%= list_fields.check_box :enabled, {name: "campaign[voter_lists_attributes][#{i}][enabled]"} %> <%= list.name %></td>
                   <% end %>
                 <% i= i+1 %>
                 </td>
-                <td valign="top"><%= list.voters_count %></td>
-                <td valign="top"><%= voters_remaining_count_for(list) %></td>
+                <td style="padding-right: 10px;" valign="top">
+                  <table>
+                    <tr>
+                      <td style="width: 33%;"><%= voters_available_count_for(list) %></td>
+                      <td style="width: 33%;"><%= voters_remaining_count_for(list) %></td>
+                      <td style="width: 33%;"><%= list.voters_count %></td>
+                    </tr>
+                  </table>
+                </td>
+                <td valign="top">
+                  <table>
+                    <tr>
+                      <td style="width: 33%;"><%= numbers_available_count_for(list) %></td>
+                      <td style="width: 33%;"><%= numbers_remaining_count_for(list) %></td>
+                      <td style="width: 33%;"><%= numbers_count_for(list) %></td>
+                    </tr>
+                  </table>
+                </td>
               </tr>
             <% end %>
           <% end %>
