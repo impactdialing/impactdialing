@@ -122,53 +122,33 @@ public
   ##
   # Return `n` voters from available list. 
   #
-  # Current implementation is to rpop the requested
-  # number of voters from the available list. When
-  # redis client sends rpop command, it may fail
-  # due to network error. Wrap each call to rpop in
-  # begin/rescue and retry each rpop a max of 3 times
-  # before moving on to the next load attempt. So for
-  # each requested voter, we give redis client X
-  # chances to return from rpop w/out a network error.
-  #
-  # If 3 voters are requested and 3 network errors occur
-  # each for the first 2 voters requested but no network
-  # error (or less than X network errors) occur when
-  # requesting the 3rd voter, that 3rd voter will be returned.
-  # This works regardless of the order of errors. For
-  # example, the 1st voter may load successfully,
-  # the 2nd fail and the 3rd load successfully resulting
-  # in 2 voters returned (1st & 3rd), the 2nd voter
-  # will be loaded the next time the cache needs populating.
+  # Retries up to 3 times on `Redis::TimeoutError`.
   def next(n)
     n        = size if n > size
     results  = []
 
     n.times do |i|
-      attempt = 0
-      begin
-        attempt += 1
-        results << redis.rpop(keys[:active])
-
-      rescue Redis::BaseConnectionError => exception
-        if attempt < 3
-          retry
-        else
-          results.compact!
-          log_msg = "CallFlow::DialQueue::Available#next(#{n}) Error (Attempt: #{attempt}; Cycle: #{i}) Fetched: #{results.size}. #{exception.message}"
-          Rails.logger.error log_msg
-          if results.empty? and i == (n - 1)
-            raise exception
-          elsif i < (n - 1)
-            next
-          else
-            return results
-          end
-        end
-      end
+      results << rpop
     end
 
     results.compact.map{|r| JSON.parse(r)}
+  end
+
+  def rpop
+    attempt = 0
+    begin
+      attempt += 1
+      redis.rpop(keys[:active])
+
+    rescue Redis::TimeoutError => exception
+      if attempt <= 3
+        retry
+      else
+        log_msg = "CallFlow::DialQueue::Available#rpop Error (Attempt: #{attempt}. #{exception.message}"
+        Rails.logger.error log_msg
+        raise
+      end
+    end
   end
 
   def last

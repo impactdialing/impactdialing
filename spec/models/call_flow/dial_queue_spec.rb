@@ -104,7 +104,7 @@ describe 'CallFlow::DialQueue' do
           @times_called = 0
           allow(redis).to receive(:rpop).exactly(:nine) do
             @times_called += 1
-            raise [Redis::TimeoutError, Redis::ConnectionError, Redis::CannotConnectError].sample
+            raise Redis::TimeoutError
           end
         end
         after do
