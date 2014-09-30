@@ -82,16 +82,23 @@ class Twillio
     attempt = voter.call_attempts.create(attempt_attrs)
 
     # update voter state
-    voter.update_attributes({
-      last_call_attempt_id: attempt.id,
-      last_call_attempt_time: Time.now,
-      status: CallAttempt::Status::RINGING
-    })
+    update_voter(voter, attempt)
+
+    # add voter number to dialed list (householding)
+    CallFlow::DialQueue.household_dialed campaign, voter.phone, voter.last_call_attempt_time
 
     # create the call record
     Call.create(call_attempt: attempt, state: "initial")
 
     attempt
+  end
+
+  def self.update_voter(voter, attempt)
+    voter.update_attributes({
+      last_call_attempt_id: attempt.id,
+      last_call_attempt_time: Time.now,
+      status: CallAttempt::Status::RINGING
+    })
   end
 
   def self.setup_call_predictive(voter, campaign, dc)

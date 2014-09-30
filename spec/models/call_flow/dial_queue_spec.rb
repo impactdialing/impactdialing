@@ -3,6 +3,11 @@ require 'spec_helper'
 describe 'CallFlow::DialQueue' do
   include FakeCallData
 
+  def clean_dial_queue_lists
+    @dial_queue.clear(:available)
+    # @dial_queue.clear(:dialed)
+  end
+
   let(:admin){ create(:user) }
   let(:account){ admin.account }
 
@@ -15,7 +20,7 @@ describe 'CallFlow::DialQueue' do
     @dial_queue.prepend
   end
   after do
-    @dial_queue.clear(:available)
+    clean_dial_queue_lists
   end
 
   describe 'caching voters available to be dialed' do
@@ -68,29 +73,86 @@ describe 'CallFlow::DialQueue' do
       end
     end
 
-    it 'does not return household members when one member has been dialed recently (within recycle rate)' do
-      
+    context '(householding) more than one voter has the same phone number' do
+      def attempt_recent_calls(voters)
+        voters.each do |voter|
+          @dial_queue.next(1)
+          call_time = 5.minutes.ago
+          voter.update_attribute('last_call_attempt_time', call_time)
+          @dial_queue.household_dialed voter.phone, call_time
+        end
+      end
+
+      before do
+        clean_dial_queue_lists
+        @voters = @campaign.all_voters
+        @householders = [
+          @voters[1],
+          @voters[3],
+          @voters[9]
+        ]
+        @householders.each do |voter|
+          voter.update_attributes!(phone: '5551234567')
+        end
+        # load voters now that some are in same household
+        @dial_queue.prepend
+        attempted = [@voters[0], @voters[1], @voters[2]]
+        not_called = @voters[3..9]
+        attempt_recent_calls(attempted)
+        @current_voter = attempted.last
+      end
+      after do
+        clean_dial_queue_lists
+      end
+
+      context 'first voter in household has been called less than recycle_rate.hours.ago' do
+        it 'does not load the second voter in the household' do
+          expected = @voters[4]
+          actual   = @dial_queue.next(1).first
+
+          expect(actual['id']).to eq expected.id
+        end
+      end
+
+      context 'first voter in household has been called more than recycle_rate.hours.ago' do
+        it 'loads the second voter in the household' do
+          attach_call_attempt(:past_recycle_time_completed_call_attempt, @voters[1])
+          expected = @voters[3]
+          actual = Voter.next_voter(@voters, @campaign.recycle_rate, [], @current_voter.id)
+
+          expect(actual).to eq expected
+        end
+      end
     end
 
     describe 'robust to network failure' do
       context 'one or more result(s) were returned from redis server' do
         before do
           times_called = 0
+          load_count   = 0
           redis        = @dial_queue.available.send(:redis)
 
           allow(redis).to receive(:rpop).exactly(:three) do
-            times_called += 1
+            times_called       += 1
+
             if times_called == 1
-              Voter.select([:id]).first.attributes
+              voter = Voter.select([:id, :phone]).order('id').all[load_count]
+              load_count += 1
+              voter.to_json(root: false)
             elsif times_called >= 2
-              raise [Redis::TimeoutError, Redis::ConnectionError, Redis::CannotConnectError].sample
+              msg = "redis.rpop called #{times_called} times"
+              times_called = 0 if times_called == 4
+              raise Redis::TimeoutError, msg
             end
           end
         end
+        after do
+          clean_dial_queue_lists
+        end
 
         it 'returns the result(s)' do
-          expected_size = 1
-          expected_val  = [Voter.select([:id]).first.attributes]
+          expected_size = 3
+          expected_val  = Voter.select([:id, :phone]).order('id').limit(3).map(&:attributes)
           actual        = @dial_queue.next(3)
 
           expect(actual.size).to eq expected_size
@@ -108,11 +170,12 @@ describe 'CallFlow::DialQueue' do
           end
         end
         after do
-          expect(@times_called).to eq 9
+          expect(@times_called).to eq 4
+          clean_dial_queue_lists
         end
 
         it 're-raises exception' do
-          expect{ @dial_queue.next(3) }.to raise_error(Redis::BaseConnectionError)
+          expect{ @dial_queue.next(3) }.to raise_error(Redis::TimeoutError)
         end
       end
     end
@@ -120,7 +183,10 @@ describe 'CallFlow::DialQueue' do
 
   describe 'seed' do
     before do
-      @dial_queue.clear :available
+      clean_dial_queue_lists
+    end
+    after do
+      clean_dial_queue_lists
     end
     it 'loads voters limited by ENV["DIAL_QUEUE_AVAILABLE_SEED_LIMIT"] which should be a small number to keep startup time fast' do
       @dial_queue.seed

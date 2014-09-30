@@ -1,7 +1,8 @@
 class CallFlow::DialQueue
   attr_reader :campaign
 
-  delegate :next, :prepend, :seed, :refresh, :below_threshold?, :reload_if_below_threshold, to: :available
+  delegate :prepend, :seed, :refresh, :below_threshold?, :reload_if_below_threshold, to: :available
+  delegate :household_dialed, to: :dialed
 
 private
 
@@ -20,6 +21,10 @@ public
     Voter.find next_voters.map{|voter| voter['id']}
   end
 
+  def self.household_dialed(campaign, phone, call_time)
+    new(campaign).household_dialed(phone, call_time)
+  end
+
   def initialize(campaign)
     if campaign.nil? or campaign.id.nil?
       raise ArgumentError, "Campaign must not be nil and must have an id."
@@ -30,6 +35,21 @@ public
 
   def available
     @available ||= CallFlow::DialQueue::Available.new(campaign)
+  end
+
+  def dialed
+    @dialed ||= CallFlow::DialQueue::Dialed.new(campaign)
+  end
+
+  def next(n)
+    queued_voters   = available.next(n)
+    filtered_voters = dialed.filter(queued_voters)
+    filtered_count  = queued_voters.size - filtered_voters.size
+
+    if filtered_count > 0
+      filtered_voters += self.next(filtered_count)
+    end
+    filtered_voters
   end
 
   def size(queue)
