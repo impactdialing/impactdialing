@@ -1,10 +1,12 @@
 class CallStats::Summary
   attr_reader :campaign
 
-  delegate :all_voters, to: :campaign
-
   def initialize(campaign)
     @campaign = campaign
+  end
+
+  def all_voters
+    campaign.all_voters.enabled.active
   end
 
   def percent_of_all_voters(number)
