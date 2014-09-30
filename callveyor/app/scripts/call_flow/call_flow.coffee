@@ -49,6 +49,8 @@ mod.factory('idCallFlow', [
     ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache,   CallerReassignedMessage) ->
       isWarmTransfer = -> /warm/i.test(TransferCache.get('type'))
 
+      $window.idDebugData ||= {}
+
       beforeunloadBeenBound = false
 
       handlers = {
@@ -69,6 +71,8 @@ mod.factory('idCallFlow', [
           caller = CallStationCache.get('caller')
           # console.log 'start_calling', caller
           caller.session_id = data.caller_session_id
+
+          $window.idDebugData.caller = caller
 
           unless beforeunloadBeenBound
             beforeunloadBeenBound = true
@@ -144,6 +148,9 @@ mod.factory('idCallFlow', [
 
           ContactCache.put('data', contact)
           $rootScope.$broadcast('contact:changed')
+          
+          $window.idDebugData.campaign = campaign
+          $window.idDebugData.contact  = contact
 
           p = $state.go('dialer.hold')
           p.catch(idTransitionPrevented)
@@ -155,6 +162,7 @@ mod.factory('idCallFlow', [
               session_id: caller.session_id,
               voter_id: contact.fields.id
             })
+
         ##
         # caller_connected_dialer
         #
@@ -268,6 +276,7 @@ mod.factory('idCallFlow', [
         voterConnected: (data) ->
           # console.log 'voter_connected', data
           CallCache.put('id', data.call_id)
+          $window.idDebugData.call_id = data.call_id
           p = $state.go('dialer.active')
           p.catch(idTransitionPrevented)
           # console.log CallCache.get('id'), CallCache.info()
@@ -297,6 +306,8 @@ mod.factory('idCallFlow', [
             ContactCache.put('data', data.voter)
             $rootScope.$broadcast('contact:changed')
             CallCache.put('id', data.call_id)
+            $window.idDebugData.contact = data.voter
+            $window.idDebugData.call_id = data.call_id
 
           p = $state.go('dialer.active')
           p.then(transitionSuccess, idTransitionPrevented)
@@ -406,6 +417,10 @@ mod.factory('idCallFlow', [
           console.log 'transfer_connected', data
           # TransferCache.put('id', data.call_id)
           TransferCache.put('type', data.type)
+          $window.idDebugData.transfer = {
+            type: data.type,
+            selected: TransferCache.get('selected')
+          }
           # idFlashFactory.now('info', 'Transfer connected.')
           # $state.go('dialer.active.transfer.conference')
 
