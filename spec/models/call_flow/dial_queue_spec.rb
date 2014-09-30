@@ -26,7 +26,7 @@ describe 'CallFlow::DialQueue' do
     end
 
     it 'preserves ordering of voters' do
-      expected = @campaign.all_voters.select([:id]).order('id DESC').all[-10..-1].map{|voter| voter.to_json(root: false)}
+      expected = @campaign.all_voters.select([:id, :phone]).order('id DESC').all[-10..-1].map{|voter| voter.to_json(root: false)}
       actual   = @dial_queue.peak(:available)
       expect(actual).to eq expected
     end
@@ -44,14 +44,14 @@ describe 'CallFlow::DialQueue' do
 
   describe 'retrieving voters' do
     it 'retrieve one voter' do
-      expected = [Voter.order('id').select([:id]).first.attributes]
+      expected = [Voter.order('id').select([:id, :phone]).first.attributes]
       actual   = @dial_queue.next(1)
 
       expect(actual).to eq expected
     end
 
     it 'retrieves multiple voters' do
-      expected = Voter.order('id').select([:id]).limit(10).map(&:attributes)
+      expected = Voter.order('id').select([:id, :phone]).limit(10).map(&:attributes)
       actual   = @dial_queue.next(10)
 
       expect(actual).to eq expected

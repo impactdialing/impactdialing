@@ -36,7 +36,7 @@ private
     if voters.count.zero?
       voters = available_voters.limit(limit)
     end
-    voters.select([:id])
+    voters.select([:id, :phone])
   end
 
   def active_ids
