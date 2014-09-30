@@ -40,6 +40,7 @@ task :sync_all_voter_lists_to_voter => :environment do |t, args|
   rows   = []
 
   until lists.empty?
+    print "#{1 + offset} - #{offset + limit}\n"
     lists.each do |list|
       row = []
       row << list.id
@@ -73,6 +74,7 @@ task :sync_all_voter_lists_to_voter => :environment do |t, args|
   end
   print "List ID, Enabling, Disabling, Total enabled, Total disabled\n"
   print rows.map{|row| row.join(", ")}.join("\n") + "\n"
+  print "done\n"
 end
 
 desc "Migrate Voter#blocked_number_id values to Voter#blocked bool flags"
