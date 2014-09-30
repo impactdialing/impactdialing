@@ -350,6 +350,10 @@ tr:nth-child(even) th, tr:nth-child(even) td, tr:nth-child(even) table tr th, tr
   background-color : #fff;
 }
 
+td, th {
+  padding: 5px;
+}
+
 
 tfoot {
 font-style : italic; }
