@@ -8,7 +8,7 @@ module Windozer
 
   class String < ::String
     def replace_carriage_returns!
-      gsub!("\r", "\n")
+      gsub!(/\r\n?/, "\n")
     end
 
     def clean_encoding!
