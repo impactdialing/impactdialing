@@ -9,6 +9,10 @@ private
         number: :not_dialed_count
       },
       {
+        status: 'Dialed',
+        number: :dialed_count
+      },
+      {
         status: 'Dialed and available for retry',
         number: :dialed_and_available_for_retry_count
       },

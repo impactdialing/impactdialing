@@ -148,7 +148,10 @@ class Voter < ActiveRecord::Base
   # New Shiny
   scope :blocked, with_enabled(:blocked)
   scope :not_blocked, without_enabled(:blocked)
-  scope :dialed, where('last_call_attempt_time IS NOT NULL')
+  scope :blocked, where('voters.blocked_number_id IS NOT NULL')
+  scope :not_blocked, where('voters.blocked_number_id IS NULL')
+  scope :dialed, where('last_call_attempt_time IS NOT NULL OR status <> ?', Status::NOTCALLED)
+  scope :completed, lambda{|campaign| where(status: CallAttempt::Status.completed_list(campaign))}
   scope :available, lambda{|campaign| where('status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
   scope :recently_dialed_households, lambda{ |recycle_rate|
     dialed.
