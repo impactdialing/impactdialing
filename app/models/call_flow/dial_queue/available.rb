@@ -12,6 +12,8 @@
 class CallFlow::DialQueue::Available
   attr_reader :campaign
 
+  delegate :all_voters, :recycle_rate, to: :campaign
+
   include CallFlow::DialQueue::Util
 
 private
@@ -28,7 +30,8 @@ private
   end
 
   def next_voters(limit)
-    available_voters = campaign.all_voters.available_list(campaign).where('id NOT IN (?)', active_ids)
+    recently_dialed_numbers = all_voters.recently_dialed_households(recycle_rate).pluck(:phone)
+    available_voters        = all_voters.available_list(campaign).where('id NOT IN (?)', active_ids).without(recently_dialed_numbers)
 
     voters = available_voters.where('id > ?', last_loaded_id).limit(limit)
     if voters.count.zero?
