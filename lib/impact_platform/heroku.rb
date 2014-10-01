@@ -7,6 +7,7 @@ module ImpactPlatform
         process = 'upload_download'
         rules   = ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process)
         scale   = ImpactPlatform::Heroku::Scale.new(process, rules.desired_quantity, Rails.env)
+        return if scale.autoscale_disabled?
         scale.scale_up
       end
     end
@@ -34,16 +35,16 @@ module ImpactPlatform
           'test' => 'impactdialing-staging'
         }
       end
-      
-      def autoscale_disabled?
-        ENV['ENABLE_WORKER_AUTOSCALING'].to_i.zero?
-      end
 
     public
       def initialize(process, desired_quantity, env)
         @process          = process
         @desired_quantity = desired_quantity.try(:to_i)
         @env              = env
+      end
+
+      def autoscale_disabled?
+        ENV['ENABLE_WORKER_AUTOSCALING'].to_i.zero?
       end
 
       def app
