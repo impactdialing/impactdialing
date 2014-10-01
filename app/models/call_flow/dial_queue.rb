@@ -48,6 +48,7 @@ module CallFlow
       filtered_count  = queued_voters.size - filtered_voters.size
 
       if filtered_count > 0
+        reload_if_below_threshold
         filtered_voters += self.next(filtered_count)
       end
       filtered_voters
