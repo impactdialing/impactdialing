@@ -3,7 +3,13 @@ require 'impact_platform/metrics'
 module ImpactPlatform
   module Heroku
     module UploadDownloadHooks
+      def autoscale_disabled?
+        ENV['ENABLE_WORKER_AUTOSCALING'].to_i.zero?
+      end
+
       def after_enqueue_scale_workers(*args)
+        return if autoscale_disabled?
+
         process = 'upload_download'
         rules   = ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process)
         scale   = ImpactPlatform::Heroku::Scale.new(process, rules.desired_quantity, Rails.env)
@@ -11,6 +17,8 @@ module ImpactPlatform
       end
 
       def after_perform_scale_workers(*args)
+        return if autoscale_disabled?
+
         process = 'upload_download'
         rules   = ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process)
         scale   = ImpactPlatform::Heroku::Scale.new(process, rules.desired_quantity, Rails.env)
