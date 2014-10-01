@@ -64,6 +64,7 @@ describe ImpactPlatform::Heroku::Scale do
       context '#current_quantity != #desired_quantity' do
         let(:desired_quantity){ 3 }
         it 'requests that dynos for process name be scaled to #desired_quantity' do
+          ENV['ENABLE_WORKER_AUTOSCALING'] = '1'
           scale = ImpactPlatform::Heroku::Scale.new(process, desired_quantity, 'test')
           scale.auto!
           expect(WebMock).to have_requested(:patch, formation_url)

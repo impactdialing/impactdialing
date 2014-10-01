@@ -51,11 +51,9 @@ RSpec.configure do |config|
     DatabaseCleaner.clean_with :truncation
 
     module ImpactPlatform::Heroku::UploadDownloadHooks
-      alias_method :real_after_enqueue_scale_workers, :after_enqueue_scale_workers
-      alias_method :real_after_perform_scale_workers, :after_perform_scale_workers
+      alias_method :real_after_enqueue_scale_up, :after_enqueue_scale_up
 
-      def after_enqueue_scale_workers(*args); end
-      def after_perform_scale_workers(*args); end
+      def after_enqueue_scale_up(*args); end
     end
   end
 
@@ -63,8 +61,7 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
     
     module ImpactPlatform::Heroku::UploadDownloadHooks
-      alias_method :after_enqueue_scale_workers, :real_after_enqueue_scale_workers
-      alias_method :after_perform_scale_workers, :real_after_perform_scale_workers
+      alias_method :after_enqueue_scale_up, :real_after_enqueue_scale_up
     end
   end
 
