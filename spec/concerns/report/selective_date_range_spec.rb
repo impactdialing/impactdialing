@@ -32,14 +32,13 @@ describe Report::SelectiveDateRange do
       let(:date_range) do
         Report::SelectiveDateRange.new(from_pool, to_pool)
       end
-      it '#from => 9/22/2014 0700 UTC' do
-        expected = Time.new(2014, 9, 22, 7, 0, 0, '+00:00')
+      it '#from("9/22/2014") => 9/22/2014 0700 UTC' do
+        expected = "2014-09-22 07:00:00 UTC"
         expect(date_range.from).to eq expected
       end
 
-      it '#to => 9/23/2014 0659 UTC' do
-        expected = Time.new(2014, 9, 22, 12, 0, 0, '-07:00').end_of_day.utc
-        expect(expected.day).to eq 23 # sanity check
+      it '#to("9/22/2014") => 9/23/2014 0659 UTC' do
+        expected = "2014-09-23 06:59:59 UTC"
         expect(date_range.to.to_s).to eq expected.to_s
       end
     end

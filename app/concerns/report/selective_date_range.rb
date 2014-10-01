@@ -32,7 +32,7 @@ public
   end
 
   def from
-    normalize(from_before_normalize).beginning_of_day
+    normalize(from_before_normalize).beginning_of_day.utc
   end
 
   def to
