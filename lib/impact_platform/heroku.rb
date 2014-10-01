@@ -29,7 +29,7 @@ module ImpactPlatform
 
       def envs_available
         {
-          'heroku' => 'impactdialing-ps',
+          'heroku' => 'impactkungfupushupsclient',
           'heroku_staging' => 'impactdialing-staging',
           'test' => 'impactdialing-staging'
         }
