@@ -1,3 +1,8 @@
+Signal.trap("TERM") {
+  puts "============ EXITING  ============"
+  exit
+}
+
 loop do
   begin
     logged_in_campaigns = CallerSession.campaigns_on_call
@@ -8,12 +13,8 @@ loop do
       end
     end
     sleep 30
-  rescue Exception => e
-    if e.class == SystemExit || e.class == Interrupt
-      ActiveRecord::Base.logger.info "============ EXITING  ============"
-      exit
-    end
-    ActiveRecord::Base.logger.info "Rescued - #{ e } (#{ e.class })!"
-    ActiveRecord::Base.logger.info e.backtrace
+  rescue => e
+    ActiveRecord::Base.logger.error "Rescued - #{ e } (#{ e.class })!"
+    ActiveRecord::Base.logger.error e.backtrace
   end
 end

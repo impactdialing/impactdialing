@@ -7,7 +7,10 @@ require 'em-http-request'
 require "em-synchrony"
 require "em-synchrony/em-http"
 
-
+Signal.trap("TERM") {
+  puts "============ EXITING  ============"
+  exit
+}
 
 loop do
   begin
@@ -17,11 +20,7 @@ loop do
       campaign.dial_resque if !campaign.calculate_dialing?
     end
     sleep 3
-  rescue Exception => e
-    if e.class==SystemExit
-      puts "============ EXITING  ============"
-      exit 
-    end
+  rescue => e
     puts "DIALER EXCEPTION Rescued - #{ e } (#{ e.class })!"
     puts "DIALER EXCEPTION Backtrace : #{e.backtrace}"
   end
