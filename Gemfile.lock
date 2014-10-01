@@ -261,6 +261,7 @@ GEM
     pusher (0.11.3)
       multi_json (~> 1.0)
       signature (~> 0.1.6)
+    query_reviewer (0.2.2)
     rack (1.4.5)
     rack-cache (1.2)
       rack (>= 0.4)
@@ -486,6 +487,7 @@ DEPENDENCIES
   pry
   pry-debugger
   pusher (~> 0.11.3)
+  query_reviewer
   rack-queue-metrics!
   rack-timing
   rails (~> 3.2.19)
