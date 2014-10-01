@@ -3,22 +3,14 @@ require 'impact_platform/metrics'
 module ImpactPlatform
   module Heroku
     module UploadDownloadHooks
-      def autoscale_disabled?
-        ENV['ENABLE_WORKER_AUTOSCALING'].to_i.zero?
-      end
-
-      def after_enqueue_scale_workers(*args)
-        return if autoscale_disabled?
-
+      def after_enqueue_do_this(*args)
         process = 'upload_download'
         rules   = ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process)
         scale   = ImpactPlatform::Heroku::Scale.new(process, rules.desired_quantity, Rails.env)
         scale.auto!
       end
 
-      def after_perform_scale_workers(*args)
-        return if autoscale_disabled?
-
+      def after_perform_do_this(*args)
         process = 'upload_download'
         rules   = ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process)
         scale   = ImpactPlatform::Heroku::Scale.new(process, rules.desired_quantity, Rails.env)
@@ -48,6 +40,10 @@ module ImpactPlatform
           'heroku_staging' => 'impactdialing-staging',
           'test' => 'impactdialing-staging'
         }
+      end
+      
+      def autoscale_disabled?
+        ENV['ENABLE_WORKER_AUTOSCALING'].to_i.zero?
       end
 
     public
@@ -81,6 +77,13 @@ module ImpactPlatform
         # don't make pointless requests
         return false if app.nil? or invalid_quantity?
 
+        if autoscale_disabled?
+          Rails.logger.error "[auto!] Autoscaling is DISABLED"
+          return false
+        else
+          Rails.logger.error "[auto!] Autoscaling is ENABLED"
+        end
+
         begin
           # don't scale if already at the desired quantity
           return false if at_scale?
@@ -88,7 +91,12 @@ module ImpactPlatform
           metrics.total
 
           # finally try to scale the process
-          heroku.formation.update(app, process, {'quantity' => desired_quantity})
+          if scale_up?
+            Rails.logger.error "Autoscaling #{process} on #{app} to #{desired_quantity}"
+            heroku.formation.update(app, process, {'quantity' => desired_quantity})
+          else
+            Rails.logger.error "Autoscaling aborted, would have scaled down"
+          end
 
           if scale_up?
             metrics.up
