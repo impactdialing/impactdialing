@@ -3,18 +3,11 @@ require 'impact_platform/metrics'
 module ImpactPlatform
   module Heroku
     module UploadDownloadHooks
-      def after_enqueue_do_this(*args)
+      def after_enqueue_scale_up(*args)
         process = 'upload_download'
         rules   = ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process)
         scale   = ImpactPlatform::Heroku::Scale.new(process, rules.desired_quantity, Rails.env)
-        scale.auto!
-      end
-
-      def after_perform_do_this(*args)
-        process = 'upload_download'
-        rules   = ImpactPlatform::Heroku::Scale::BackgroundScaleRules.new(process)
-        scale   = ImpactPlatform::Heroku::Scale.new(process, rules.desired_quantity, Rails.env)
-        scale.auto!
+        scale.scale_up
       end
     end
 
@@ -71,6 +64,10 @@ module ImpactPlatform
 
       def scale_up?
         current_quantity < desired_quantity
+      end
+
+      def scale_up
+        auto! if scale_up?
       end
 
       def auto!
