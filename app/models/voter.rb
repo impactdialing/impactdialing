@@ -56,7 +56,7 @@ class Voter < ActiveRecord::Base
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
-  scope :yet_to_call, enabled.where('status not in (?)', [
+  scope :yet_to_call, enabled.where('voters.status not in (?)', [
     CallAttempt::Status::INPROGRESS,
     CallAttempt::Status::RINGING,
     CallAttempt::Status::READY,
@@ -64,10 +64,10 @@ class Voter < ActiveRecord::Base
     CallAttempt::Status::FAILED
   ])
   scope :last_call_attempt_before_recycle_rate, lambda {|recycle_rate|
-    where('last_call_attempt_time IS NULL OR last_call_attempt_time < ? ', recycle_rate.hours.ago)
+    where('voters.last_call_attempt_time IS NULL OR voters.last_call_attempt_time < ? ', recycle_rate.hours.ago)
   }
   scope :avialable_to_be_retried, lambda {|recycle_rate|
-    where('last_call_attempt_time IS NOT NULL AND last_call_attempt_time < ? AND status in (?)',
+    where('voters.last_call_attempt_time IS NOT NULL AND voters.last_call_attempt_time < ? AND voters.status in (?)',
           recycle_rate.hours.ago, [
             CallAttempt::Status::BUSY,
             CallAttempt::Status::NOANSWER,
@@ -76,7 +76,7 @@ class Voter < ActiveRecord::Base
           ])
   }
   scope :not_avialable_to_be_retried, lambda {|recycle_rate|
-    where('last_call_attempt_time IS NOT NULL AND last_call_attempt_time >= ? AND status in (?)',
+    where('voters.last_call_attempt_time IS NOT NULL AND voters.last_call_attempt_time >= ? AND voters.status in (?)',
           recycle_rate.hours.ago, [
             CallAttempt::Status::BUSY,
             CallAttempt::Status::NOANSWER,
@@ -85,15 +85,15 @@ class Voter < ActiveRecord::Base
           ])
   }
 
-  scope :not_dialed, where('last_call_attempt_time IS NULL').where('status NOT IN (?)', CallAttempt::Status.in_progress_list)
+  scope :not_dialed, where('voters.last_call_attempt_time IS NULL').where('voters.status NOT IN (?)', CallAttempt::Status.in_progress_list)
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
   scope :to_callback, where(:call_back => true)
   # scope :scheduled, enabled.where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :scheduled, lambda{raise "Deprecated ImpactDialing Method: Voter.scheduled"}
   scope :limit, lambda { |n| {:limit => n} }
-  scope :without, lambda { |numbers| where('phone not in (?)', numbers << -1) }
-  scope :not_skipped, where('skipped_time IS NULL')
-  scope :answered, where('result_date is not null')
+  scope :without, lambda { |numbers| where('voters.phone not in (?)', numbers << -1) }
+  scope :not_skipped, where('voters.skipped_time IS NULL')
+  scope :answered, where('voters.result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :answered_within_timespan, lambda { |from, to| where(:result_date => from..to)}
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from..to)) }
@@ -136,13 +136,13 @@ class Voter < ActiveRecord::Base
   scope :next_in_recycled_queue, lambda {|recycle_rate, blocked_numbers|
     enabled.not_blocked.
     recycle_rate_expired(recycle_rate).
-    where('status NOT IN (?) OR call_back=?', [
+    where('voters.status NOT IN (?) OR voters.call_back=?', [
       CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING,
       CallAttempt::Status::READY, CallAttempt::Status::SUCCESS,
       CallAttempt::Status::FAILED, CallAttempt::Status::VOICEMAIL,
       CallAttempt::Status::HANGUP
     ], 1).
-    order('last_call_attempt_time, id')
+    order('voters.last_call_attempt_time, voters.id')
   }
 
   # New Shiny
@@ -150,18 +150,18 @@ class Voter < ActiveRecord::Base
   scope :not_blocked, without_enabled(:blocked)
   scope :blocked, where('voters.blocked_number_id IS NOT NULL')
   scope :not_blocked, where('voters.blocked_number_id IS NULL')
-  scope :dialed, where('last_call_attempt_time IS NOT NULL OR status <> ?', Status::NOTCALLED)
-  scope :completed, lambda{|campaign| where(status: CallAttempt::Status.completed_list(campaign))}
-  scope :available, lambda{|campaign| where('status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
+  scope :dialed, where('voters.last_call_attempt_time IS NOT NULL OR voters.status <> ?', Status::NOTCALLED)
+  scope :completed, lambda{|campaign| where('voters.status' => CallAttempt::Status.completed_list(campaign))}
+  scope :available, lambda{|campaign| where('voters.status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
   scope :recently_dialed_households, lambda{ |recycle_rate|
     dialed.
-    group('phone').
-    order('last_call_attempt_time ASC').
-    where('last_call_attempt_time > ?', recycle_rate.hours.ago)
+    group('voters.phone').
+    order('voters.last_call_attempt_time ASC').
+    where('voters.last_call_attempt_time > ?', recycle_rate.hours.ago)
   }
   scope :available_for_retry, lambda {|campaign|
-    enabled.
-    where('voters.status IN (?) OR call_back=?',
+    enabled.active.
+    where('voters.status IN (?) OR voters.call_back=?',
           CallAttempt::Status.retry_list(campaign),
           true).
     recycle_rate_expired(campaign.recycle_rate)
@@ -173,9 +173,9 @@ class Voter < ActiveRecord::Base
     )
   }
   scope :recycle_rate_expired, lambda {|recycle_rate|
-    where('last_call_attempt_time IS NULL OR '+
-          'last_call_attempt_time < ? OR '+
-          '(skipped_time IS NOT NULL AND status = ?)',
+    where('voters.last_call_attempt_time IS NULL OR '+
+          'voters.last_call_attempt_time < ? OR '+
+          '(voters.skipped_time IS NOT NULL AND voters.status = ?)',
           recycle_rate.hours.ago, Status::SKIPPED)
   }
   scope :not_ringing, lambda{ where('voters.status <> ?', CallAttempt::Status::RINGING) }
@@ -192,13 +192,32 @@ class Voter < ActiveRecord::Base
       true
     )
   }
+  scope :not_available_list, lambda{|campaign|
+    not_available_for_retry(campaign).
+    
+    joins('JOIN voters as recently_dialed on
+           voters.phone = recently_dialed.phone
+           and voters.campaign_id = recently_dialed.campaign_id
+           and recently_dialed.last_call_attempt_time is not null
+           and TIMESTAMPDIFF(MINUTE, recently_dialed.last_call_attempt_time, UTC_TIMESTAMP()) < ' +
+           campaign.recycle_rate.minutes.to_s +
+           ' and voters.id <> recently_dialed.id')
+  }
   scope :available_list, lambda{ |campaign|
     generally_available(campaign).
     recycle_rate_expired(campaign.recycle_rate).
+
+    joins('LEFT OUTER JOIN voters AS recently_dialed ON
+           voters.phone = recently_dialed.phone AND
+           voters.campaign_id = recently_dialed.campaign_id AND
+           recently_dialed.last_call_attempt_time IS NOT NULL AND
+           TIMESTAMPDIFF(MINUTE, recently_dialed.last_call_attempt_time, UTC_TIMESTAMP()) < '+campaign.recycle_rate.minutes.to_s).
+    where('recently_dialed.last_call_attempt_time IS NULL').
+
     order('voters.last_call_attempt_time, voters.id')
   }
 
-  scope :skipped, where('status = ?', Status::SKIPPED)
+  scope :skipped, where('voters.status = ?', Status::SKIPPED)
   #/New Shiny
 
   before_validation :sanitize_phone
@@ -268,22 +287,22 @@ public
 
     if _not_skipped.nil?
       if current_voter_id.present?
-        voter = not_dialed_queue.where(["id > ?", current_voter_id]).first
+        voter = not_dialed_queue.where(["voters.id > ?", current_voter_id]).first
       end
       voter ||= not_dialed_queue.first
 
       if current_voter_id.present?
-        voter ||= retry_queue.where(["id > ?", current_voter_id]).first
+        voter ||= retry_queue.where(["voters.id > ?", current_voter_id]).first
       end
       voter ||= retry_queue.first
     else
       if current_voter_id.present?
-        voter = not_dialed_queue.where(["id > ?", current_voter_id]).not_skipped.first
+        voter = not_dialed_queue.where(["voters.id > ?", current_voter_id]).not_skipped.first
       end
       voter ||= not_dialed_queue.not_skipped.first
 
       if current_voter_id.present?
-        voter ||= retry_queue.where(["id > ?", current_voter_id]).not_skipped.first
+        voter ||= retry_queue.where(["voters.id > ?", current_voter_id]).not_skipped.first
       end
       voter ||= _not_skipped
     end

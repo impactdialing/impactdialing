@@ -33,17 +33,10 @@ class CallStats::Summary
   end
 
   def dialed_and_available_for_retry_count
-    return @dialed_and_available_for_retry_count if defined?(@dialed_and_available_for_retry_count)
-
-    recently_dialed_numbers               = all_voters.recently_dialed_households(campaign.recycle_rate).pluck(:phone)
-    @dialed_and_available_for_retry_count = all_voters.dialed.available_list(campaign).without(recently_dialed_numbers).count
+    @dialed_and_available_for_retry_count ||= all_voters.dialed.available_list(campaign).count
   end
 
   def dialed_and_not_available_for_retry_count
-    return @dialed_and_not_available_for_retry_count if defined?(@dialed_and_not_available_for_retry_count)
-
-    recently_dialed_numbers                   = all_voters.recently_dialed_households(campaign.recycle_rate).pluck(:phone)
-    @dialed_and_not_available_for_retry_count = all_voters.dialed.not_available_for_retry(campaign).count
-    @dialed_and_not_available_for_retry_count += all_voters.where(phone: recently_dialed_numbers).where('id NOT IN (?)', all_voters.not_available_for_retry(campaign).pluck(:id)).count
+    @dialed_and_not_available_for_retry_count ||= all_voters.dialed.not_available_list(campaign).count
   end
 end

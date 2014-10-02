@@ -30,10 +30,9 @@ private
   end
 
   def next_voters(limit)
-    recently_dialed_numbers = all_voters.recently_dialed_households(recycle_rate).pluck(:phone)
-    available_voters        = all_voters.available_list(campaign).where('voters.id NOT IN (?)', active_ids).without(recently_dialed_numbers)
+    available_voters = all_voters.available_list(campaign).where('voters.id NOT IN (?)', active_ids)
+    voters           = available_voters.where('voters.id > ?', last_loaded_id).limit(limit)
 
-    voters = available_voters.where('voters.id > ?', last_loaded_id).limit(limit)
     if voters.count.zero?
       voters = available_voters.limit(limit)
     end
