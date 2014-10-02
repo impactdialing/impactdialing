@@ -12,10 +12,10 @@ describe Client::AccountUsagesController, :type => :controller do
   let(:from_date){ '09/09/2013' }
   let(:to_date){ '01/24/2014' }
   let(:db_from_date) do
-    Time.utc('2013','09','09').beginning_of_day
+    Time.new('2013','09','09').in_time_zone(account.time_zone).beginning_of_day.utc
   end
   let(:db_to_date) do
-    Time.utc('2014','01','24').end_of_day
+    Time.new('2014','01','24').in_time_zone(account.time_zone).end_of_day.utc
   end
   let(:report_type){ 'campaigns' }
   let(:valid_params) do
@@ -31,14 +31,9 @@ describe Client::AccountUsagesController, :type => :controller do
   end
 
   describe 'show' do
-    it 'sets @from_date' do
+    it 'sets @date_range' do
       get :show
-      expect(assigns[:from_date]).not_to be_blank
-    end
-
-    it 'sets @to_date' do
-      get :show
-      expect(assigns[:to_date]).not_to be_blank
+      expect(assigns[:date_range]).not_to be_blank
     end
   end
 

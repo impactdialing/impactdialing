@@ -62,6 +62,10 @@ public
     end
   end
 
+  def time_zone
+    campaigns.active.first.try(:time_zone) || ActiveSupport::TimeZone.new('Pacific Time (US & Canada)')
+  end
+
   def administrators
     users.select{|x| x.administrator? }
   end

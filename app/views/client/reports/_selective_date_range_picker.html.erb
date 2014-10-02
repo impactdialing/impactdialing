@@ -3,7 +3,7 @@
   <legend>Date range:</legend>
   <% if(defined?(campaign_id)) %>
   <input name="campaign_id" type="hidden" value="<%= campaign_id %>">
-  <% else %>
+  <% elsif(defined?(caller_id)) %>
   <input name="caller_id" type="hidden" value="<%= caller_id %>">
   <% end %>
   <p>

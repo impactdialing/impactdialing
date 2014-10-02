@@ -4,7 +4,13 @@
 
     <%= select_tag 'report_type', options_for_select([['By Campaign', 'campaigns'], ['By Caller', 'callers']], params[:report_type]), prompt: 'Select a usage breakdown...' %>
 
-    <%= render :partial => 'shared/date_picker' %>
+    <%= render('client/reports/selective_date_range_picker', {
+      campaign_id: nil,
+      campaign: @account,
+      from_date: @date_range.from,
+      to_date: @date_range.to,
+      embedded: true
+    }) %>
 
     <div class="buttons">
       <button type="submit">Generate</button>

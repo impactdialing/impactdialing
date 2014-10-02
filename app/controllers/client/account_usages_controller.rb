@@ -18,12 +18,16 @@ private
 
 public
   def show
-    @from_date, @to_date = set_date_range_account(@account, nil, nil)
+    from_pool   = [@account.created_at]
+    @date_range = Report::SelectiveDateRange.new from_pool
   end
 
   def create
-    from_date, to_date = set_date_range_account(@account, params[:from_date], params[:to_date])
-    Resque.enqueue(ReportAccountUsageJob, params[:report_type], @user.id, from_date, to_date, session[:internal_admin])
+    from_pool  = [params[:from_date], @account.created_at]
+    to_pool    = [params[:to_date]]
+    date_range = Report::SelectiveDateRange.new from_pool, to_pool
+
+    Resque.enqueue(ReportAccountUsageJob, params[:report_type], @user.id, date_range.from, date_range.to, session[:internal_admin])
     redirect_to client_account_usage_path, notice: [t('account_usages.create.success')]
   end
 end
