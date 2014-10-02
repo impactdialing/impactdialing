@@ -25,11 +25,19 @@ class CallStats::Summary
   end
 
   def dialed_count
-    @dialed_count ||= all_voters.dialed.uniq.count
+    @dialed_count ||= all_voters.dialed.count
+  end
+
+  def ringing_count
+    @ringing_count ||= all_voters.ringing.count
+  end
+
+  def failed_count
+    @failed_count ||= all_voters.failed.count
   end
 
   def not_dialed_count
-    @not_dialed_count ||= all_voters.not_dialed.uniq.count
+    @not_dialed_count ||= all_voters.not_dialed.count
   end
 
   def dialed_and_available_for_retry_count

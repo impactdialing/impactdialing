@@ -222,6 +222,11 @@ class CallAttempt < ActiveRecord::Base
       statuses + completed_list(campaign)
     end
 
+    def self.available_list(campaign)
+      statuses = [Voter::Status::NOTCALLED]
+      statuses + retry_list(campaign)
+    end
+
     def self.completed_list(campaign)
       statuses = [SUCCESS, FAILED]
 

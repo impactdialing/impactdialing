@@ -114,6 +114,10 @@ FactoryGirl.define do
         call_back true
       end
 
+      trait :retry do
+        status Voter::Status::RETRY
+      end
+
       factory :abandoned_voter, traits: [:abandoned]
       factory :busy_voter, traits: [:busy]
       factory :no_answer_voter, traits: [:no_answer]

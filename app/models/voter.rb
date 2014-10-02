@@ -152,6 +152,9 @@ class Voter < ActiveRecord::Base
   scope :not_blocked, where('voters.blocked_number_id IS NULL')
   scope :dialed, where('voters.last_call_attempt_time IS NOT NULL OR voters.status <> ?', Status::NOTCALLED)
   scope :completed, lambda{|campaign| where('voters.status' => CallAttempt::Status.completed_list(campaign))}
+  scope :not_completed, lambda{|campaign| where('voters.status NOT IN (?)', CallAttempt::Status.completed_list(campaign))}
+  scope :ringing, where('voters.status = ?', CallAttempt::Status::RINGING)
+  scope :failed, where('voters.status = ?', CallAttempt::Status::FAILED)
   scope :available, lambda{|campaign| where('voters.status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
   scope :recently_dialed_households, lambda{ |recycle_rate|
     dialed.
@@ -194,14 +197,13 @@ class Voter < ActiveRecord::Base
   }
   scope :not_available_list, lambda{|campaign|
     not_available_for_retry(campaign).
-    
-    joins('JOIN voters as recently_dialed on
-           voters.phone = recently_dialed.phone
-           and voters.campaign_id = recently_dialed.campaign_id
-           and recently_dialed.last_call_attempt_time is not null
-           and TIMESTAMPDIFF(MINUTE, recently_dialed.last_call_attempt_time, UTC_TIMESTAMP()) < ' +
-           campaign.recycle_rate.minutes.to_s +
-           ' and voters.id <> recently_dialed.id')
+    not_completed(campaign) #.
+    # joins('JOIN voters as recently_dialed on
+    #        voters.phone = recently_dialed.phone
+    #        and voters.campaign_id = recently_dialed.campaign_id
+    #        and recently_dialed.last_call_attempt_time is not null
+    #        and TIMESTAMPDIFF(MINUTE, recently_dialed.last_call_attempt_time, UTC_TIMESTAMP()) < ' +
+    #        campaign.recycle_rate.minutes.to_s)
   }
   scope :available_list, lambda{ |campaign|
     generally_available(campaign).

@@ -98,8 +98,8 @@ describe CallStats::Summary do
         @dial_report = CallStats::Summary.new(@campaign)
       end
 
-      it "should consider not available for retry now" do
-        expect(@dial_report.dialed_and_not_available_for_retry_count).to eq 4
+      it "returns count of voters who may be retried but are not currently available (dialed & not available & not completed)" do
+        expect(@dial_report.dialed_and_not_available_for_retry_count).to eq 3
       end
 
       it 'considers the remaining as available for retry' do
@@ -126,5 +126,64 @@ describe CallStats::Summary do
 
     end
 
+    describe 'the math' do
+      include FakeCallData
+
+      let(:admin){ create(:user) }
+      let(:account){ admin.account }
+
+      let(:not_recently_dialed){ create_list(:realistic_voter, :not_recently_dialed, 10, campaign: @campaign) }
+      let(:recently_dialed){ create_list(:realistic_voter, :recently_dialed, 10, campaign: @campaign) }
+
+      before do
+        @campaign = create_campaign_with_script(:bare_predictive, account).last
+        voter_attrs = {campaign: @campaign, account: account}
+
+        @completed = create_list(:realistic_voter, 5, :not_recently_dialed, :success, voter_attrs)
+        @completed += create_list(:realistic_voter, 5, :not_recently_dialed, :failed, voter_attrs)
+        @completed += create_list(:realistic_voter, 5, :recently_dialed, :success, voter_attrs)
+        @completed += create_list(:realistic_voter, 5, :recently_dialed, :failed, voter_attrs)
+
+        @available = create_list(:realistic_voter, 5, :not_recently_dialed, :busy, voter_attrs)
+        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :abandoned, voter_attrs)
+        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :no_answer, voter_attrs)
+        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :skipped, voter_attrs)
+        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :hangup, voter_attrs)
+        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :call_back, voter_attrs)
+        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :voicemail, voter_attrs)
+        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :retry, voter_attrs)
+
+        @not_available = create_list(:realistic_voter, 5, :recently_dialed, :ringing, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :not_recently_dialed, :ringing, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :queued, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :not_recently_dialed, :queued, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :in_progress, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :busy, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :abandoned, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :no_answer, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :skipped, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :hangup, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :call_back, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :voicemail, voter_attrs)
+        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :retry, voter_attrs)
+
+        @not_dialed = create_list(:realistic_voter, 5, :skipped, voter_attrs)
+        @not_dialed += create_list(:realistic_voter, 5, voter_attrs)
+
+        @dialed = @completed + @available + @not_available
+      end
+
+      it 'not dialed + dialed = all voters' do
+        summary = CallStats::Summary.new(@campaign)
+
+        expect( summary.not_dialed_count + @campaign.all_voters.dialed.count ).to eq @campaign.all_voters.count
+      end
+
+      it 'available + not available + completed = dialed' do
+        summary = CallStats::Summary.new(@campaign)
+
+        expect( summary.dialed_and_available_for_retry_count + summary.dialed_and_not_available_for_retry_count + summary.dialed_and_complete_count ).to eq @campaign.all_voters.dialed.count
+      end
+    end
   end
 end

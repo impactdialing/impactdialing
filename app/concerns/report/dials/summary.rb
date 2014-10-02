@@ -8,10 +8,18 @@ private
         status: 'Not dialed',
         number: :not_dialed_count
       },
-      {
-        status: 'Dialed',
-        number: :dialed_count
-      },
+      # {
+      #   status: 'Dialed',
+      #   number: :dialed_count
+      # },
+      # {
+      #   status: 'Ringing',
+      #   number: :ringing_count
+      # },
+      # {
+      #   status: 'Failed',
+      #   number: :failed_count
+      # },
       {
         status: 'Dialed and available for retry',
         number: :dialed_and_available_for_retry_count
