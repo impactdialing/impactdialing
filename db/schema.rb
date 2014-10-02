@@ -539,6 +539,7 @@ ActiveRecord::Schema.define(:version => 20141120232910) do
   add_index "voters", ["campaign_id", "status", "last_call_attempt_time"], :name => "voters_campaign_status_time"
   add_index "voters", ["custom_id", "campaign_id"], :name => "index_voters_customid_campaign_id"
   add_index "voters", ["enabled", "campaign_id", "last_call_attempt_time", "status"], :name => "voters_enabled_campaign_time_status"
+  add_index "voters", ["phone", "campaign_id", "last_call_attempt_time"], :name => "index_voters_on_phone_campaign_id_last_call_attempt_time"
   add_index "voters", ["phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"

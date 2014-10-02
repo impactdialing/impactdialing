@@ -1257,6 +1257,10 @@ end
 #     * **`campaign_id`**
 #     * **`status`**
 #     * **`id`**
+# * `index_voters_on_phone_campaign_id_last_call_attempt_time`:
+#     * **`phone`**
+#     * **`campaign_id`**
+#     * **`last_call_attempt_time`**
 # * `index_voters_on_status`:
 #     * **`status`**
 # * `index_voters_on_voter_list_id`:
