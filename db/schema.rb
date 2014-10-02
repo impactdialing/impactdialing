@@ -12,7 +12,6 @@
 # It's strongly recommended to check this file into your version control system.
 
 ActiveRecord::Schema.define(:version => 20141120232910) do
-
   create_table "accounts", :force => true do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -97,6 +96,7 @@ ActiveRecord::Schema.define(:version => 20141120232910) do
     t.integer  "campaign_id"
   end
 
+  add_index "blocked_numbers", ["account_id", "campaign_id", "number"], :name => "index_blocked_numbers_on_account_campaign_number"
   add_index "blocked_numbers", ["account_id", "campaign_id"], :name => "index_blocked_numbers_account_id_campaign_id"
   add_index "blocked_numbers", ["number"], :name => "index_on_blocked_numbers_number"
 
