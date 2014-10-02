@@ -109,7 +109,7 @@ describe CallStats::Summary do
 
     describe "leads_not_dialed" do
 
-      it "should consider not dialed, ringing & ready to dial" do
+      it "counts Voters w/ blank last_call_attempt_time and w/ statuses not in 'ringing', 'ready' or 'in-progress'" do
         @campaign = create(:predictive, recycle_rate: 3)
         voter1 = create(:realistic_voter, campaign: @campaign, status: 'not called')
         voter2 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS)
@@ -121,7 +121,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        expect(dial_report.not_dialed_count).to eq(3)
+        expect(dial_report.not_dialed_count).to eq(1)
       end
 
     end

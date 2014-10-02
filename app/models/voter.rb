@@ -182,6 +182,8 @@ class Voter < ActiveRecord::Base
   scope :with_manual_message_drop, not_ringing.joins(:last_call_attempt).where('call_attempts.recording_id IS NOT NULL').where(call_attempts: {recording_delivered_manually: true})
   scope :with_auto_message_drop, not_ringing.joins(:last_call_attempt).where('call_attempts.recording_id IS NOT NULL').where(call_attempts: {recording_delivered_manually: false})
 
+  # voters index: campaign_id_active_enabled_status_call_back
+  # blocked numbers index: account_id_campaign_id_number
   scope :generally_available, lambda{|campaign|
     enabled.not_blocked.
     where('status NOT IN (?) OR (status = ? AND call_back = ?)',
@@ -193,7 +195,7 @@ class Voter < ActiveRecord::Base
   scope :available_list, lambda{ |campaign|
     generally_available(campaign).
     recycle_rate_expired(campaign.recycle_rate).
-    order('last_call_attempt_time, id')
+    order('voters.last_call_attempt_time, voters.id')
   }
 
   scope :skipped, where('status = ?', Status::SKIPPED)
