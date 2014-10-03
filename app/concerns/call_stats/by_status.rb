@@ -15,17 +15,14 @@ class CallStats::ByStatus
     scoped_to == sym
   end
 
-  def call_attempt_items
-    call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').between(@from_date, @to_date)
-  end
-
-  def voter_items
-    all_voters.last_call_attempt_within(@from_date, @to_date)
-  end
-
-  def items
+  def items(group_by_status_index=false)
     if scoped_to?(:call_attempts)
-      @_call_attempts ||= call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').between(@from_date, @to_date)
+      # @_call_attempts ||= call_attempts.from('call_attempts use index (index_sync_calls)').between(@from_date, @to_date)
+      if group_by_status_index
+        @_call_attempts_with_index ||= call_attempts.from('call_attempts use index (index_sync_calls)').between(@from_date, @to_date)
+      else
+        @_call_attempts_without_index ||= call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').between(@from_date, @to_date)
+      end
     elsif scoped_to?(:all_voters)
       @_all_voters ||= all_voters.last_call_attempt_within(@from_date, @to_date)
     else
@@ -59,7 +56,7 @@ class CallStats::ByStatus
   end
 
   def by_status
-    items.group('status')
+    items(true).group('status')
   end
 
   def by_status_counts
