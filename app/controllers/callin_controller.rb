@@ -18,6 +18,7 @@ class CallinController < TwimlController
       render_abort_twiml_unless_fit_to(:start_calling, load_caller_session) do
 
         caller.started_calling(load_caller_session)
+
         if caller.is_phones_only?
           CachePhonesOnlyScriptQuestions.add_to_queue caller.campaign.script_id, 'seed'
           xml = load_caller_session.callin_choice
