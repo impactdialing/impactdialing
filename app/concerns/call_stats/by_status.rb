@@ -25,9 +25,9 @@ class CallStats::ByStatus
 
   def items
     if scoped_to?(:call_attempts)
-      call_attempt_items
+      @_call_attempts ||= call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').between(@from_date, @to_date)
     elsif scoped_to?(:all_voters)
-      voter_items
+      @_all_voters ||= all_voters.last_call_attempt_within(@from_date, @to_date)
     else
       raise ArgumentError, "Unknown scoped_to in CallStats::ByStatus: #{scoped_to}. Use one of :call_attempts, :all_voters."
     end
@@ -56,10 +56,6 @@ class CallStats::ByStatus
   def percent_of_all_attempts(number)
     quo = number / total_count.to_f
     "#{(quo * 100).ceil}%"
-  end
-
-  def in_range
-    items
   end
 
   def by_status
