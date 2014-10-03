@@ -6,8 +6,8 @@ describe AccountUsageMailer, :type => :mailer do
   let(:white_labeled_email){ 'info@stonesphones.com' }
   let(:white_label){ 'stonesphonesdialer' }
 
-  let(:from_date){ '2013-09-10T00:09:09+07:00' }
-  let(:to_date){ '2014-01-28T23:59:59+07:00' }
+  let(:from_date){ '2014-10-01 07:00:00 UTC' }
+  let(:to_date){ '2014-10-02 06:59:59 UTC' }
 
   let(:campaigns){ [] }
   let(:callers){ [] }
@@ -15,7 +15,8 @@ describe AccountUsageMailer, :type => :mailer do
     double('Account', {
       id: 1,
       all_campaigns: campaigns,
-      callers: callers
+      callers: callers,
+      time_zone: ActiveSupport::TimeZone.new('Pacific Time (US & Canada)')
     })
   end
 
@@ -81,7 +82,7 @@ describe AccountUsageMailer, :type => :mailer do
     expected_text = AccountUsageRender.new.by_campaigns(:text, billable_totals, grand_total, campaigns)
 
     expect(@mailer).to receive(:send_email).with({
-      :subject => "Campaign Usage Report: #{@mailer.send(:format_date, from_date)} - #{@mailer.send(:format_date, to_date)}",
+      :subject => "Campaign Usage Report: Oct 1 2014 - Oct 1 2014",
       :html => expected_html,
       :text => expected_text,
       :from_name => 'Impact Dialing',

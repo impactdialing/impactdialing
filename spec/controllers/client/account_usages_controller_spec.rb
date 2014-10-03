@@ -48,7 +48,7 @@ describe Client::AccountUsagesController, :type => :controller do
     end
     it 'redirects to client_account_usage_path' do
       post :create, valid_params
-      expect(response).to redirect_to client_account_usage_path
+      expect(response).to redirect_to client_account_usage_path(from_date: from_date, to_date: to_date)
     end
   end
 end

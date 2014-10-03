@@ -4,9 +4,9 @@ class AccountUsageMailer < MandrillMailer
   attr_reader :user, :account
 
 private
-  def format_date(date)
-    d = Date.rfc3339(date)
-    d.strftime("%b %e %Y")
+  def format_date(datetime)
+    t = DateTime.parse(datetime)
+    t.in_time_zone(account.time_zone).strftime("%b%e %Y")
   end
 
 public
