@@ -17,6 +17,10 @@ public
     @campaign = campaign
   end
 
+  def filter_disabled?
+    ENV['ENABLE_HOUSEHOLDING_FILTER'].to_i.zero?
+  end
+
   def household_dialed(phone_number, call_time)
     expire keys[:dialed] do
       redis.hset keys[:dialed], phone_number, call_time
@@ -24,7 +28,7 @@ public
   end
 
   def filter(voters)
-    return voters if voters.empty?
+    return voters if voters.empty? or filter_disabled?
 
     phone_numbers = voters.map{|v| v['phone']}
     call_times    = redis.hmget keys[:dialed], phone_numbers

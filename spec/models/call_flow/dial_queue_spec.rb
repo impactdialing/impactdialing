@@ -84,6 +84,7 @@ describe 'CallFlow::DialQueue' do
       end
 
       before do
+        ENV['ENABLE_HOUSEHOLDING_FILTER'] = '1'
         clean_dial_queue_lists
         @voters = @campaign.all_voters
         @householders = [
