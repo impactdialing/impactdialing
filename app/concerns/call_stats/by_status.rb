@@ -19,12 +19,16 @@ class CallStats::ByStatus
     if scoped_to?(:call_attempts)
       # @_call_attempts ||= call_attempts.from('call_attempts use index (index_sync_calls)').between(@from_date, @to_date)
       if group_by_status_index
-        @_call_attempts_with_index ||= call_attempts.from('call_attempts use index (index_sync_calls)').between(@from_date, @to_date)
+        @_call_attempts_group_index ||= call_attempts.from('call_attempts use index (index_sync_calls)').between(@from_date, @to_date)
       else
-        @_call_attempts_without_index ||= call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').between(@from_date, @to_date)
+        @_call_attempts_row_index ||= call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').between(@from_date, @to_date)
       end
     elsif scoped_to?(:all_voters)
-      @_all_voters ||= all_voters.last_call_attempt_within(@from_date, @to_date)
+      if group_by_status_index
+        @_all_voters_group_index ||= all_voters.from('voters use index (voters_campaign_status_time)').last_call_attempt_within(@from_date, @to_date)
+      else
+        @_all_voters ||= all_voters.last_call_attempt_within(@from_date, @to_date)
+      end
     else
       raise ArgumentError, "Unknown scoped_to in CallStats::ByStatus: #{scoped_to}. Use one of :call_attempts, :all_voters."
     end
