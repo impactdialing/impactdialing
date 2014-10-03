@@ -124,4 +124,13 @@ class CallStats::ByStatus
   #   end
   # end
 
+  def caller_left_message_count
+    @caller_left_message_count ||= items.with_manual_message_drop.count
+  end
+
+  def caller_left_message_percent
+    n = caller_left_message_count || 0
+    perc = (n / (answered_count.zero? ? 1 : answered_count).to_f) * 100
+    "#{perc.round}%"
+  end
 end
