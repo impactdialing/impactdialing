@@ -5,7 +5,7 @@ module VoterListsHelper
       system_header.upcase.gsub(' ', '') == normalized_csv_header
     end
     match ||= ('DWID' if normalized_csv_header.include? 'ID')
-    match
+    match || csv_header
   end
 
   def system_column_headers(csv_header, account)
