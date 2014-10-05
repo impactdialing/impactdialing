@@ -30,6 +30,20 @@ module ImpactPlatform
       STDOUT.puts(strs.join(' '))
     end
 
+    class Benchmark
+      attr_reader :metric_prefix
+      
+      def initialize(metric_prefix)
+        @metric_prefix = metric_prefix
+      end
+
+      def time(name, &block)
+        Librato.timing "#{metric_prefix}.#{name}" do
+          yield
+        end
+      end
+    end
+
     class Autoscale
       attr_reader :process
 

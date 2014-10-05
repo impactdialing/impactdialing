@@ -16,6 +16,10 @@ private
     redis.hgetall keys[:dialed]
   end
 
+  def _benchmark
+    @_benchmark = ImpactPlatform::Metrics::Benchmark.new("dial_queue.#{campaign.account_id}.#{campaign.id}.dialed")
+  end
+
 public
   def initialize(campaign)
     @campaign = campaign
@@ -44,16 +48,18 @@ public
   end
 
   def filter(voters)
-    return voters if voters.empty? or filter_disabled?
+    _benchmark.time('household_filter') do
+      return voters if voters.empty? or filter_disabled?
 
-    block = []
-    voters.each_with_index do |voter, i|
-      block << i if numbers.include?(voter['phone'])
+      block = []
+      voters.each_with_index do |voter, i|
+        block << i if numbers.include?(voter['phone'])
+      end
+
+      block.each{|i| voters[i] = nil}
+      
+      voters.compact
     end
-
-    block.each{|i| voters[i] = nil}
-    
-    voters.compact
   end
 
   def size
