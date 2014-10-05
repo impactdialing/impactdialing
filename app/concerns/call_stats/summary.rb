@@ -7,6 +7,10 @@ class CallStats::Summary
     @campaign = campaign
   end
 
+  def recently_dialed
+    @recently_dialed ||= all_voters.recently_dialed_households(campaign.recycle_rate).pluck(:phone)
+  end
+
   def percent_of_all_voters(number)
     quo = number / all_voters_count.to_f
     "#{(quo * 100).ceil}%"
@@ -41,7 +45,7 @@ class CallStats::Summary
   end
 
   def dialed_and_available_for_retry_count
-    @dialed_and_available_for_retry_count ||= all_voters.dialed.available_list(campaign).count
+    @dialed_and_available_for_retry_count ||= all_voters.dialed.available_list(campaign).without(recently_dialed).count
   end
 
   def dialed_and_not_available_for_retry_count
