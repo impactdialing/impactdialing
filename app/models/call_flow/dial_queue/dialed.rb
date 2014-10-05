@@ -12,6 +12,10 @@ private
     }
   end
 
+  def entries
+    redis.hgetall keys[:dialed]
+  end
+
 public
   def initialize(campaign)
     @campaign = campaign
@@ -27,19 +31,27 @@ public
     end
   end
 
+  def numbers
+    numbers = []
+    entries.each do |phone,time|
+      numbers << phone if time > recycle_rate
+    end
+    numbers
+  end
+
+  def recycle_rate
+    @threshold ||= campaign.recycle_rate.hours.ago
+  end
+
   def filter(voters)
     return voters if voters.empty? or filter_disabled?
 
-    phone_numbers = voters.map{|v| v['phone']}
-    call_times    = redis.hmget keys[:dialed], phone_numbers
-
-    call_times.each_with_index do |call_time, i|
-      next if call_time.nil?
-
-      if call_time > campaign.recycle_rate.hours.ago
-        voters[i] = nil
-      end
+    block = []
+    voters.each_with_index do |voter, i|
+      block << i if numbers.include?(voter['phone'])
     end
+
+    block.each{|i| voters[i] = nil}
     
     voters.compact
   end

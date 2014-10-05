@@ -10,7 +10,7 @@
 # the campaign, the appropriate list should be removed.
 #
 class CallFlow::DialQueue::Available
-  attr_reader :campaign
+  attr_reader :campaign, :dialed
 
   delegate :all_voters, :recycle_rate, to: :campaign
 
@@ -30,7 +30,7 @@ private
   end
 
   def next_voters(limit)
-    available_voters = all_voters.available_list(campaign).where('voters.id NOT IN (?)', active_ids)
+    available_voters = all_voters.available_list(campaign).without(dialed.numbers).where('voters.id NOT IN (?)', active_ids)
     voters           = available_voters.where('voters.id > ?', last_loaded_id).limit(limit)
 
     if voters.count.zero?
@@ -41,7 +41,7 @@ private
 
   def active_ids
     # -1 entry here ensures consistent results when there are no active ids
-    [-1] + peak(:active).map{|v| JSON.parse(v)['id']}
+    @active_ids ||= [-1] + peak(:active).map{|v| JSON.parse(v)['id']}
   end
 
   def last_loaded_id
@@ -61,8 +61,9 @@ private
 
 public
 
-  def initialize(campaign)
+  def initialize(campaign, dialed)
     @campaign = campaign
+    @dialed   = dialed
   end
 
   def prepend(voters_to_prepend=[])

@@ -35,7 +35,7 @@ module CallFlow
     end
 
     def available
-      @available ||= CallFlow::DialQueue::Available.new(campaign)
+      @available ||= CallFlow::DialQueue::Available.new(campaign, dialed)
     end
 
     def dialed

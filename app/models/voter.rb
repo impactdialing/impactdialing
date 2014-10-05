@@ -91,7 +91,7 @@ class Voter < ActiveRecord::Base
   # scope :scheduled, enabled.where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :scheduled, lambda{raise "Deprecated ImpactDialing Method: Voter.scheduled"}
   scope :limit, lambda { |n| {:limit => n} }
-  scope :without, lambda { |numbers| where('voters.phone not in (?)', numbers << -1) }
+  scope :without, lambda { |numbers| where('voters.phone not in (?)', numbers + [-1]) }
   scope :not_skipped, where('voters.skipped_time IS NULL')
   scope :answered, where('voters.result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
@@ -209,12 +209,12 @@ class Voter < ActiveRecord::Base
     generally_available(campaign).
     recycle_rate_expired(campaign.recycle_rate).
 
-    joins('LEFT OUTER JOIN voters AS recently_dialed ON
-           voters.phone = recently_dialed.phone AND
-           voters.campaign_id = recently_dialed.campaign_id AND
-           recently_dialed.last_call_attempt_time IS NOT NULL AND
-           TIMESTAMPDIFF(MINUTE, recently_dialed.last_call_attempt_time, UTC_TIMESTAMP()) < '+campaign.recycle_rate.minutes.to_s).
-    where('recently_dialed.last_call_attempt_time IS NULL').
+    # joins('LEFT OUTER JOIN voters AS recently_dialed ON
+    #        voters.phone = recently_dialed.phone AND
+    #        voters.campaign_id = recently_dialed.campaign_id AND
+    #        recently_dialed.last_call_attempt_time IS NOT NULL AND
+    #        TIMESTAMPDIFF(MINUTE, recently_dialed.last_call_attempt_time, UTC_TIMESTAMP()) < '+campaign.recycle_rate.minutes.to_s).
+    # where('recently_dialed.last_call_attempt_time IS NULL').
 
     order('voters.last_call_attempt_time, voters.id')
   }

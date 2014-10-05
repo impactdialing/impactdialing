@@ -97,10 +97,10 @@ describe 'CallFlow::DialQueue' do
         end
         # load voters now that some are in same household
         @dial_queue.prepend
-        attempted = [@voters[0], @voters[1], @voters[2]]
+        @attempted = [@voters[0], @voters[1], @voters[2]]
         not_called = @voters[3..9]
-        attempt_recent_calls(attempted)
-        @current_voter = attempted.last
+        attempt_recent_calls(@attempted)
+        @current_voter = @attempted.last
       end
       after do
         clean_dial_queue_lists
