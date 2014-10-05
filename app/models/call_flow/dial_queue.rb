@@ -16,6 +16,10 @@ module CallFlow
       (ENV['USE_REDIS_DIAL_QUEUE'] || '').to_i > 0
     end
 
+    def self.filter_loop_limit
+      (ENV['FILTER_LOOP_LIMIT'] || 15)
+    end
+
     def self.next(campaign, n)
       dial_queue  = CallFlow::DialQueue.new(campaign)
       next_voters = dial_queue.next(n)
@@ -31,7 +35,8 @@ module CallFlow
         raise ArgumentError, "Campaign must not be nil and must have an id."
       end
 
-      @campaign = campaign
+      @campaign           = campaign
+      @_filter_loop_count = 0
     end
 
     def available
@@ -47,10 +52,14 @@ module CallFlow
       filtered_voters = dialed.filter(queued_voters)
       filtered_count  = queued_voters.size - filtered_voters.size
 
-      if filtered_count > 0
+      if filtered_count > 0 and @_filter_loop_count <= self.class.filter_loop_limit
         reload_if_below_threshold
         filtered_voters += self.next(filtered_count)
+        @_filter_loop_count += 1
+      elsif @_filter_loop_count > self.class.filter_loop_limit
+        ImpactPlatform::Metrics.count("dial_queue.#{campaign.account_id}.#{campaign.id}.filter_loop.limit_reached", 1)
       end
+
       filtered_voters
     end
 
