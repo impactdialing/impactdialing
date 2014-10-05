@@ -229,3 +229,31 @@ task :changelog, [:after, :before] do |t, args|
   cmd << " --before='#{before}'" unless before.blank?
   print cmd + "\n"
 end
+
+desc "Generate CSV of random, known bad numbers w/ a realistic distribution (eg 2-4 members per household & 85-95%% unique numbers)"
+task :generate_realistic_voter_list => :environment do
+  require 'forgery'
+
+  today    = Date.today
+  
+  4.times do |i|
+    filepath = File.join(Rails.root, 'tmp', "#{today.year}-#{today.month}-#{today.day}-#{Forgery(:basic).number}-random-part(#{i+1}).csv")
+    file     = File.new(filepath, 'w+')
+    file << "#{['VANID', 'Phone', 'Last Name', 'First Name', 'Suffix', 'Sex', 'Age', 'Party'].join(',')}\n"
+    250_000.times do
+    # 5.times do
+      row = [
+        Forgery(:basic).number(at_least: 1000, at_most: 999999),
+        "1#{Forgery(:basic).number(at_least: 0, at_most: 9)}#{Forgery(:basic).number(at_least: 0, at_most: 9)}#{Forgery(:basic).number(at_least: 0, at_most: 9)}#{Forgery(:basic).number(at_least: 0, at_most: 9)}#{Forgery(:basic).number(at_least: 0, at_most: 9)}#{Forgery(:basic).number(at_least: 0, at_most: 9)}#{Forgery(:basic).number(at_least: 0, at_most: 9)}#{Forgery(:basic).number(at_least: 0, at_most: 9)}#{Forgery(:basic).number(at_least: 0, at_most: 9)}#{Forgery(:basic).number(at_least: 0, at_most: 9)}",
+        Forgery(:name).last_name,
+        Forgery(:name).first_name,
+        Forgery(:name).suffix,
+        %w(Male Female).sample,
+        Forgery(:basic).number,
+        %w(Republican Democrat Independent).sample
+      ]
+      file << "#{row.join(',')}\n"
+    end
+    file.close
+  end
+end
