@@ -345,9 +345,12 @@ public
       status_count = RedisStatus.count_by_status(self.id, current_caller_sessions.collect{|x| x.id})
     end
 
+    summary = CallStats::Summary.new(self)
     ringing_lines = call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
-    num_remaining = all_voters.by_status([Voter::Status::NOTCALLED, Voter::Status::SKIPPED]).live.count
-    num_available = leads_available_now + num_remaining
+    # num_remaining = all_voters.by_status('not called').enabled.count
+    num_remaining = summary.not_dialed_count
+    # num_available = leads_available_now + num_remaining
+    num_available = summary.dialed_and_available_for_retry_count
     {callers_logged_in: callers_logged_in, on_call: status_count[1], wrap_up: status_count[2], on_hold: status_count[0], ringing_lines: ringing_lines, available: num_available  }
   end
 
