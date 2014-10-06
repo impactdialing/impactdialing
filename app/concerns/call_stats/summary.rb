@@ -48,6 +48,10 @@ class CallStats::Summary
     @dialed_and_available_for_retry_count ||= all_voters.dialed.available_list(campaign).without(recently_dialed).count
   end
 
+  def households_dialed_and_available_for_retry_count
+    @households_dialed_and_available_for_retry_count ||= all_voters.dialed.available_list(campaign).without(recently_dialed).select('DISTINCT(phone)').count
+  end
+
   def dialed_and_not_available_for_retry_count
     @dialed_and_not_available_for_retry_count ||= all_voters.dialed.not_available_list(campaign).count
   end
