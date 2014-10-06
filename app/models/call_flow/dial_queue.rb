@@ -17,7 +17,7 @@ module CallFlow
     end
 
     def self.filter_loop_limit
-      (ENV['FILTER_LOOP_LIMIT'] || 15)
+      (ENV['FILTER_LOOP_LIMIT'] || 15).to_i
     end
 
     def self.next(campaign, n)
