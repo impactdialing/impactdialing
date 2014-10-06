@@ -27,7 +27,9 @@ module CallFlow
     end
 
     def self.household_dialed(campaign, phone, call_time)
-      new(campaign).household_dialed(phone, call_time)
+      dial_queue = new(campaign)
+      dial_queue.household_dialed(phone, call_time)
+      dial_queue.remove_household(phone)
     end
 
     def initialize(campaign)
@@ -36,7 +38,7 @@ module CallFlow
       end
 
       @campaign           = campaign
-      @_filter_loop_count = 0
+      # @_filter_loop_count = 0
     end
 
     def available
@@ -50,17 +52,22 @@ module CallFlow
     def next(n)
       queued_voters    = available.next(n)
       filtered_voters  = dialed.filter(queued_voters)
-      discarded_voters = queued_voters - filtered_voters
-      filtered_count   = discarded_voters.size
+      # discarded_voters = queued_voters - filtered_voters
+      # filtered_count   = discarded_voters.size
 
-      if filtered_count > 0 and @_filter_loop_count <= self.class.filter_loop_limit
-        ImpactPlatform::Metrics.count("dial_queue.#{campaign.account_id}.#{campaign.id}.filter_loop.count", 1)
-        reload_if_below_threshold
-        filtered_voters += self.next(filtered_count)
-        @_filter_loop_count += 1
-      elsif @_filter_loop_count > self.class.filter_loop_limit
-        ImpactPlatform::Metrics.count("dial_queue.#{campaign.account_id}.#{campaign.id}.filter_loop.limit_reached", 1)
-      end
+      # if filtered_voters.size > 0 and filtered_voters.size < numbers
+      #   # queue job to clear recently dialed numbers & reload if needed
+      # elsif filtered_voters.size.zero?
+
+      # end
+      # if filtered_count > 0 and @_filter_loop_count <= self.class.filter_loop_limit
+      #   ImpactPlatform::Metrics.count("dial_queue.#{campaign.account_id}.#{campaign.id}.filter_loop.count", 1)
+      #   reload_if_below_threshold
+      #   filtered_voters += self.next(filtered_count)
+      #   @_filter_loop_count += 1
+      # elsif @_filter_loop_count > self.class.filter_loop_limit
+      #   ImpactPlatform::Metrics.count("dial_queue.#{campaign.account_id}.#{campaign.id}.filter_loop.limit_reached", 1)
+      # end
 
       filtered_voters
     end

@@ -122,8 +122,15 @@ public
     n.times do |i|
       results << rpop
     end
-
     results.compact.map{|r| JSON.parse(r)}
+  end
+
+  def remove_household(phone)
+    values = peak.map{|v| JSON.parse(v)}
+    sweep  = values.select{|v| v['phone'] == phone}
+    sweep.each do |v|
+      redis.lrem keys[:active], 1, v.to_json
+    end
   end
 
   def rpop
