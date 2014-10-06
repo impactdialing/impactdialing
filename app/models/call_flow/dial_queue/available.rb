@@ -29,14 +29,20 @@ private
     (ENV['DIAL_QUEUE_AVAILABLE_RELOAD_THRESHOLD'] || seed_limit).to_i
   end
 
-  def next_voters(limit)
-    available_voters = all_voters.available_list(campaign).without(dialed.numbers).where('voters.id NOT IN (?)', active_ids)
-    voters           = available_voters.where('voters.id > ?', last_loaded_id).limit(limit)
+  def _benchmark
+    @_benchmark ||= ImpactPlatform::Metrics::Benchmark.new("dial_queue.#{campaign.account_id}.#{campaign.id}.available")
+  end
 
-    if voters.count.zero?
-      voters = available_voters.limit(limit)
+  def next_voters(limit)
+    _benchmark.time 'next_voters' do
+      available_voters = all_voters.available_list(campaign).without(dialed.numbers).where('voters.id NOT IN (?)', active_ids)
+      voters           = available_voters.where('voters.id > ?', last_loaded_id).limit(limit)
+
+      if voters.count.zero?
+        voters = available_voters.limit(limit)
+      end
+      voters.select(['voters.id', 'voters.phone'])
     end
-    voters.select(['voters.id', 'voters.phone'])
   end
 
   def active_ids

@@ -17,7 +17,7 @@ private
   end
 
   def _benchmark
-    @_benchmark = ImpactPlatform::Metrics::Benchmark.new("dial_queue.#{campaign.account_id}.#{campaign.id}.dialed")
+    @_benchmark ||= ImpactPlatform::Metrics::Benchmark.new("dial_queue.#{campaign.account_id}.#{campaign.id}.dialed")
   end
 
 public

@@ -32,15 +32,20 @@ module ImpactPlatform
 
     class Benchmark
       attr_reader :metric_prefix
-      
+
       def initialize(metric_prefix)
         @metric_prefix = metric_prefix
       end
 
       def time(name, &block)
-        Librato.timing "#{metric_prefix}.#{name}" do
-          yield
-        end
+        start  = Time.now.to_i
+        result = yield
+        stop   = Time.now.to_i
+        diff   = ((stop - start) * 1000).to_i
+
+        STDOUT.puts("measure##{metric_prefix}.#{name}=#{diff}ms")
+
+        result
       end
     end
 
