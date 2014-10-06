@@ -48,11 +48,13 @@ module CallFlow
     end
 
     def next(n)
-      queued_voters   = available.next(n)
-      filtered_voters = dialed.filter(queued_voters)
-      filtered_count  = queued_voters.size - filtered_voters.size
+      queued_voters    = available.next(n)
+      filtered_voters  = dialed.filter(queued_voters)
+      discarded_voters = queued_voters - filtered_voters
+      filtered_count   = discarded_voters.size
 
       if filtered_count > 0 and @_filter_loop_count <= self.class.filter_loop_limit
+        ImpactPlatform::Metrics.count("dial_queue.#{campaign.account_id}.#{campaign.id}.filter_loop.count", 1)
         reload_if_below_threshold
         filtered_voters += self.next(filtered_count)
         @_filter_loop_count += 1
