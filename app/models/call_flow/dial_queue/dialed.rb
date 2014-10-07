@@ -49,7 +49,12 @@ public
 
   def filter(voters)
     _benchmark.time('household_filter') do
-      return voters if voters.empty? or filter_disabled?
+      if voters.empty? or filter_disabled?
+        print "\nReturning early: empty voters or filter disabled.\n"
+        return voters 
+      end
+
+      print "\nFiltering #{voters.size} voters\n"
 
       block = []
       voters.each_with_index do |voter, i|
@@ -57,7 +62,7 @@ public
       end
 
       block.each{|i| voters[i] = nil}
-      
+      print "\nReturning #{voters.size} from Dialed#filter\n"
       voters.compact
     end
   end

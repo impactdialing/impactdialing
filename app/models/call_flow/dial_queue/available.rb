@@ -129,6 +129,7 @@ public
     values = peak.map{|v| JSON.parse(v)}
     sweep  = values.select{|v| v['phone'] == phone}
     sweep.each do |v|
+      print "\nRemoving Household: #{phone}; Looking for match to: #{v.to_json}\n"
       redis.lrem keys[:active], 1, v.to_json
     end
   end

@@ -5,7 +5,7 @@ describe 'CallFlow::DialQueue' do
 
   def clean_dial_queue_lists
     @dial_queue.clear(:available)
-    # @dial_queue.clear(:dialed)
+    @dial_queue.clear(:dialed)
   end
 
   let(:admin){ create(:user) }
@@ -85,6 +85,7 @@ describe 'CallFlow::DialQueue' do
 
       before do
         ENV['ENABLE_HOUSEHOLDING_FILTER'] = '1'
+        ENV['USE_REDIS_DIAL_QUEUE']       = '1'
         clean_dial_queue_lists
         @voters = @campaign.all_voters
         @householders = [
@@ -107,11 +108,27 @@ describe 'CallFlow::DialQueue' do
       end
 
       context 'first voter in household has been called less than recycle_rate.hours.ago' do
+        it 'removes households when dialed' do
+          available = @dial_queue.available
+          
+          a = available.peak.map{|a| JSON.parse(a)['phone']}
+          initial_household_count = a.select{|phone| phone == '5551234567'}.size
+          expect(a).to include('5551234567')
+
+          initial_size = available.size
+          
+          available.remove_household '5551234567'
+          
+          remaining = available.peak.map{|a| JSON.parse(a)['phone']}
+          expect(remaining).to_not include('5551234567')
+          expect(remaining.size).to eq(initial_size - initial_household_count)
+        end
+
         it 'does not load the second voter in the household' do
           expected = @voters[4]
           actual   = @dial_queue.next(1).first
-
-          expect(actual['id']).to eq expected.id
+          # binding.pry
+          expect(actual['id']).to(eq(expected.id), "Wrong voter loaded. Got: #{actual}\nExpected: #{expected}")
         end
       end
 

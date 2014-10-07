@@ -2,7 +2,7 @@ module CallFlow
   class DialQueue
     attr_reader :campaign
 
-    delegate :prepend, :seed, :refresh, :below_threshold?, :reload_if_below_threshold, to: :available
+    delegate :remove_household, :prepend, :seed, :refresh, :below_threshold?, :reload_if_below_threshold, to: :available
     delegate :household_dialed, to: :dialed
 
   private
@@ -38,7 +38,7 @@ module CallFlow
       end
 
       @campaign           = campaign
-      # @_filter_loop_count = 0
+      @_filter_loop_count = 0
     end
 
     def available
@@ -51,14 +51,16 @@ module CallFlow
 
     def next(n)
       queued_voters    = available.next(n)
-      filtered_voters  = dialed.filter(queued_voters)
+      # filtered_voters  = dialed.filter(queued_voters)
+      # print "\nDialQueue#next Attempted: #{n}; Got: #{filtered_voters.size}\n"
       # discarded_voters = queued_voters - filtered_voters
       # filtered_count   = discarded_voters.size
 
-      # if filtered_voters.size > 0 and filtered_voters.size < numbers
+      # if filtered_voters.size > 0
       #   # queue job to clear recently dialed numbers & reload if needed
-      # elsif filtered_voters.size.zero?
-
+      # elsif filtered_voters.size.zero? and @_filter_loop_count <= 2
+      #   filtered_voters += self.next(n)
+      #   @_filter_loop_count += 1
       # end
       # if filtered_count > 0 and @_filter_loop_count <= self.class.filter_loop_limit
       #   ImpactPlatform::Metrics.count("dial_queue.#{campaign.account_id}.#{campaign.id}.filter_loop.count", 1)
