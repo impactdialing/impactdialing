@@ -32,7 +32,7 @@ module PreviewPowerCampaign
 
       voter = Voter.find voter_attrs['id']
       voter.update_attributes!(status: CallAttempt::Status::READY)
-      dial_queue.reload_if_below_threshold
+      # dial_queue.reload_if_below_threshold
 
     rescue ActiveRecord::StaleObjectError => e
       Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] StaleObjectError - retrying..."

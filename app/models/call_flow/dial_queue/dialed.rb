@@ -1,23 +1,39 @@
 ##
-# Class for caching list of dialed voters
+# Class for caching list of dialed voters.
+# This list is not seeded until a voter is ready to call.
+# Once a voter has been added to this list. The voter should
+# remain on the list until the associated campaign's recycle rate expires.
+#
+# When deploying this, it's possible there could be some campaign's with long recycle
+# rates (eg 24 hours). So once these changes are deployed to production, make sure
+# to run a script to seed the dialed lists for these campaigns to avoid potentially long
+# start-up times in the morning as well as to avoid calling household members. Check
+# w/ Michael to see if there's any value in this seed'ing first.
 class CallFlow::DialQueue::Dialed
   attr_reader :campaign
+
+  delegate :recycle_rate, to: :campaign
 
   include CallFlow::DialQueue::Util
 
 private
   def keys
     {
-      dialed: "dial_queue:dialed:#{campaign.id}"
+      dialed: "dial_queue:#{campaign.id}:dialed"
     }
   end
 
   def entries
-    redis.hgetall keys[:dialed]
+    redis.zrange keys[:dialed], 0, -1
   end
 
   def _benchmark
     @_benchmark ||= ImpactPlatform::Metrics::Benchmark.new("dial_queue.#{campaign.account_id}.#{campaign.id}.dialed")
+  end
+
+  def score(voter)
+    n = voter.id + voter.last_call_attempt_time.to_i
+    "#{n}.#{voter.call_attempts.count}"
   end
 
 public
@@ -29,49 +45,17 @@ public
     ENV['ENABLE_HOUSEHOLDING_FILTER'].to_i.zero?
   end
 
-  def household_dialed(phone_number, call_time)
+  def household_dialed(voter)
     expire keys[:dialed] do
-      redis.hset keys[:dialed], phone_number, call_time
-    end
-  end
-
-  def numbers
-    numbers = []
-    entries.each do |phone,time|
-      numbers << phone if time > recycle_rate
-    end
-    numbers
-  end
-
-  def recycle_rate
-    @threshold ||= campaign.recycle_rate.hours.ago
-  end
-
-  def filter(voters)
-    _benchmark.time('household_filter') do
-      if voters.empty? or filter_disabled?
-        print "\nReturning early: empty voters or filter disabled.\n"
-        return voters 
-      end
-
-      print "\nFiltering #{voters.size} voters\n"
-
-      block = []
-      voters.each_with_index do |voter, i|
-        block << i if numbers.include?(voter['phone'])
-      end
-
-      block.each{|i| voters[i] = nil}
-      print "\nReturning #{voters.size} from Dialed#filter\n"
-      voters.compact
+      redis.zadd keys[:dialed], score(voter), voter.phone
     end
   end
 
   def size
-    redis.hlen keys[:dialed]
+    redis.zcard keys[:dialed]
   end
 
   def peak(list=:dialed)
-    redis.hgetall keys[list]
+    redis.zrange keys[list], 0, -1
   end
 end

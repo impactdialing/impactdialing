@@ -136,8 +136,12 @@ describe Predictive do
       blocked_voter                   = create(:realistic_voter, :blocked, campaign: campaign, account: account)
       blocked_number                  = create(:blocked_number, number: blocked_voter.phone, account: account, campaign: nil)
       cache_available_voters(campaign)
- 
-      expect(campaign.choose_voters_to_dial(10)).to eq([unblocked_voter.id])
+      
+      actual = campaign.choose_voters_to_dial(10)
+
+      # binding.pry
+      expect(actual).to_not include(blocked_voter.id)
+      expect(actual).to include(unblocked_voter.id)
     end
 
     it "excludes campaign blocked numbers" do
@@ -147,7 +151,11 @@ describe Predictive do
       blocked_number  = create(:blocked_number, number: blocked_voter.phone, account: account, campaign: campaign)
       cache_available_voters(campaign)
 
-      expect(campaign.choose_voters_to_dial(10)).to eq([unblocked_voter.id])
+      actual = campaign.choose_voters_to_dial(10)
+
+      # binding.pry
+      expect(actual).to_not include(blocked_voter.id)
+      expect(actual).to include(unblocked_voter.id)
     end
 
     it "always dials numbers that have not been dialed first" do
@@ -167,7 +175,7 @@ describe Predictive do
       dial_queue.next(5) # and these are dialed
       voters[35..39].each{|v| v.update_attribute(:last_call_attempt_time, 30.minutes.ago)}
 
-      reload_dial_queue(campaign)
+      cache_available_voters(campaign)
 
       actual = campaign.choose_voters_to_dial(20)
       # binding.pry

@@ -3,6 +3,10 @@ module FakeCallData
     CallFlow::Jobs::CacheAvailableVoters.perform(campaign.id)
   end
 
+  def top_off(dial_queue)
+    dial_queue.available.top_off
+  end
+
   def add_voters(campaign, type=:bare_voter, n=25)
     account = campaign.account
 
@@ -19,7 +23,12 @@ module FakeCallData
 
   def cache_available_voters(campaign)
     dial_queue = CallFlow::DialQueue.new(campaign)
-    dial_queue.prepend
+    dial_queue.available.clear
+    if dial_queue.available.seeded?
+      dial_queue.top_off
+    else
+      dial_queue.seed
+    end
     dial_queue
   end
 

@@ -2,7 +2,7 @@ module CallFlow
   class DialQueue
     attr_reader :campaign
 
-    delegate :remove_household, :prepend, :seed, :refresh, :below_threshold?, :reload_if_below_threshold, to: :available
+    delegate :next, :remove_household, :seed, :refresh, :below_threshold?, :reload_if_below_threshold, to: :available
     delegate :household_dialed, to: :dialed
 
   private
@@ -26,10 +26,9 @@ module CallFlow
       Voter.find next_voters.map{|voter| voter['id']}
     end
 
-    def self.household_dialed(campaign, phone, call_time)
+    def self.household_dialed(campaign, voter)
       dial_queue = new(campaign)
-      dial_queue.household_dialed(phone, call_time)
-      dial_queue.remove_household(phone)
+      dial_queue.household_dialed(voter)
     end
 
     def initialize(campaign)
@@ -47,31 +46,6 @@ module CallFlow
 
     def dialed
       @dialed ||= CallFlow::DialQueue::Dialed.new(campaign)
-    end
-
-    def next(n)
-      queued_voters    = available.next(n)
-      # filtered_voters  = dialed.filter(queued_voters)
-      # print "\nDialQueue#next Attempted: #{n}; Got: #{filtered_voters.size}\n"
-      # discarded_voters = queued_voters - filtered_voters
-      # filtered_count   = discarded_voters.size
-
-      # if filtered_voters.size > 0
-      #   # queue job to clear recently dialed numbers & reload if needed
-      # elsif filtered_voters.size.zero? and @_filter_loop_count <= 2
-      #   filtered_voters += self.next(n)
-      #   @_filter_loop_count += 1
-      # end
-      # if filtered_count > 0 and @_filter_loop_count <= self.class.filter_loop_limit
-      #   ImpactPlatform::Metrics.count("dial_queue.#{campaign.account_id}.#{campaign.id}.filter_loop.count", 1)
-      #   reload_if_below_threshold
-      #   filtered_voters += self.next(filtered_count)
-      #   @_filter_loop_count += 1
-      # elsif @_filter_loop_count > self.class.filter_loop_limit
-      #   ImpactPlatform::Metrics.count("dial_queue.#{campaign.account_id}.#{campaign.id}.filter_loop.limit_reached", 1)
-      # end
-
-      filtered_voters
     end
 
     def size(queue)

@@ -21,7 +21,7 @@ context 'Message Drops', data_heavy: true do
 
     before do
       add_callers(campaign, 1)
-      dial_queue.prepend
+      dial_queue.seed
     end
 
     it 'When all contacts have received a message automatically' do
@@ -73,22 +73,22 @@ context 'Message Drops', data_heavy: true do
 
     before do
       add_callers(campaign, 1)
-      dial_queue.prepend
+      dial_queue.seed
     end
 
     it 'When all contacts have received a message automatically' do
       call_and_leave_messages(dial_queue, voters.size, true)
-      # binding.pry
-      dial_queue.reload_if_below_threshold
-      actual = campaign.next_voter_in_dial_queue(voters.last)
 
+      dial_queue.seed
+      actual = campaign.next_voter_in_dial_queue(voters.last)
+      # binding.pry
       expect(actual).to eq voters.first.reload
     end
 
     it 'When all but one contact have received a message automatically' do
       remaining = voters.pop
       call_and_leave_messages(dial_queue, voters.size, true)
-      dial_queue.reload_if_below_threshold
+      dial_queue.seed
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
       expect(actual).to eq remaining
@@ -96,7 +96,7 @@ context 'Message Drops', data_heavy: true do
 
     it 'When all contacts have received a message manually' do
       call_and_leave_messages(dial_queue, voters.size, false)
-      dial_queue.reload_if_below_threshold
+      dial_queue.seed
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
       expect(actual).to eq voters.first
@@ -106,7 +106,7 @@ context 'Message Drops', data_heavy: true do
       remaining = voters.pop
 
       call_and_leave_messages(dial_queue, voters.size, false)
-      dial_queue.reload_if_below_threshold
+      dial_queue.seed
       actual = campaign.next_voter_in_dial_queue(voters.last)
 
       expect(actual).to eq remaining
@@ -114,7 +114,7 @@ context 'Message Drops', data_heavy: true do
 
     it 'Drop no further messages automatically' do
       call_and_leave_messages(dial_queue, voters.size, true)
-      dial_queue.reload_if_below_threshold
+      dial_queue.seed
       voter = campaign.next_voter_in_dial_queue(nil)
 
       # mimic /calls/:id/incoming
@@ -147,7 +147,7 @@ context 'Machine Detection without Message Drops' do
 
     before do
       add_callers(campaign, 1)
-      dial_queue.prepend
+      dial_queue.seed
     end
 
     def call_and_hangup_on_machine(voters)
@@ -167,7 +167,7 @@ context 'Machine Detection without Message Drops' do
       call_and_hangup_on_machine([voters[0], voters[2], voters[4]])
 
       dial_queue.clear :available
-      dial_queue.prepend
+      dial_queue.seed
 
       actual = campaign.next_voter_in_dial_queue(nil)
 

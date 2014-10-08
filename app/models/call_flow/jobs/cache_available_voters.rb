@@ -9,7 +9,7 @@ module CallFlow::Jobs
       dial_queue = CallFlow::DialQueue.new(campaign)
 
       if dial_queue.below_threshold?
-        dial_queue.prepend
+        dial_queue.top_off
       end
       metrics.completed
     end

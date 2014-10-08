@@ -85,7 +85,7 @@ class Twillio
     update_voter(voter, attempt)
 
     # add voter number to dialed list (householding)
-    CallFlow::DialQueue.household_dialed campaign, voter.phone, voter.last_call_attempt_time
+    CallFlow::DialQueue.household_dialed campaign, voter
 
     # create the call record
     Call.create(call_attempt: attempt, state: "initial")

@@ -75,7 +75,7 @@ class Predictive < Campaign
 
     set_voter_status_to_read_for_dial!(voter_ids)
 
-    dial_queue.reload_if_below_threshold
+    # dial_queue.reload_if_below_threshold
 
     voter_ids
   end

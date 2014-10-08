@@ -14,13 +14,19 @@ describe Preview, :type => :model do
   end
 
   def skip_voters(voters)
-    voters.each{|v| v.skip; v.save! }
+    available = CallFlow::DialQueue.new(voters.first.campaign).available
+    voters.each do |v|
+      v.skip
+      v.save!
+      available.update_score(v)
+    end
   end
 
   def dial_all_one_at_a_time(campaign, &block)
     campaign.all_voters.available_list(campaign).count.times do
       voter = campaign.next_in_dial_queue
       yield voter
+      voter
     end
   end
 
@@ -28,6 +34,7 @@ describe Preview, :type => :model do
     n.times do 
       voter = campaign.next_in_dial_queue
       yield voter
+      voter
     end
   end
 
@@ -40,6 +47,38 @@ describe Preview, :type => :model do
       CallFlow::DialQueue.new(campaign)
     end
     context 'skipped voters' do
+      it 'are moved to the end of the list' do
+        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
+
+        dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:busy_call_attempt, voter, caller)}
+
+        # reloading should be done via background job
+        top_off(dial_queue)
+
+        # in real-world, skipping a voter causes next voter to load right away, so check for skipped voter
+        # to be re-added to list after following voter is dialed
+        last_on_queue = dial_queue.peak(:available).last
+
+        # binding.pry
+        # cuz first voter was skipped, it should now be at tail
+        expect(last_on_queue).to eq Voter.first.phone
+
+        dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:completed_call_attempt, voter, caller)}
+
+        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
+
+        dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:failed_call_attempt, voter, caller)}
+
+        top_off(dial_queue)
+
+        last_on_queue = dial_queue.peak(:available).last
+        penultimate_on_queue = dial_queue.peak(:available)[-2]
+
+        # binding.pry
+
+        expect(last_on_queue).to eq Voter.all[3].phone # last voter that was skipped
+        expect(penultimate_on_queue).to eq Voter.all[0].phone # voter skipped previously
+      end
 
       it 'are cycled through until called; ie the campaign does not run out of numbers while some voters have been skipped' do
         # binding.pry
@@ -49,8 +88,11 @@ describe Preview, :type => :model do
 
         # make 3 more passes through the list. this really means reloading the same voter
         # each time it's skipped since all other voters have been called.
+
         3.times do
+          top_off(dial_queue)
           voter = campaign.next_in_dial_queue
+
           expect(voter).to eq Voter.first
           skip_voters([voter])
         end
@@ -63,6 +105,36 @@ describe Preview, :type => :model do
         # 5th pass should return nil, since all voters have now been dialed
         voter = campaign.next_in_dial_queue
         expect(voter).to be_nil
+      end
+
+      it 'voters are presented in the same order on every pass' do
+        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
+        dial_one_at_a_time(campaign, 2){|voter| attach_call_attempt(:busy_call_attempt, voter, caller)}
+        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
+        dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:completed_call_attempt, voter, caller)}
+        
+        # fake like everyone stops calling then starts later, after recycle rate expiry
+        Voter.where('last_call_attempt_time is not null').each do |voter|
+          voter.update_attributes!(last_call_attempt_time: 25.hours.ago + (voter.id))
+        end
+        Voter.skipped.order('id').each do |voter|
+          voter.update_attributes(skipped_time: 25.hours.ago + (voter.id))
+        end
+
+        # dial_queue.available.clear
+        # dial_queue.seed
+        top_off dial_queue
+
+        first_skipped = campaign.next_in_dial_queue
+
+        expect(first_skipped).to eq Voter.where('skipped_time is not null').order('id').first
+        attach_call_attempt(:busy_call_attempt, first_skipped, caller)
+
+        expected_busy = Voter.busy.second
+        actual_busy   = campaign.next_in_dial_queue
+
+        expect(actual_busy).to eq expected_busy
+        attach_call_attempt(:completed_call_attempt, actual_busy, caller)
       end
     end
   end
@@ -79,52 +151,32 @@ describe Preview, :type => :model do
       create_list(:realistic_voter, 10, vopt)
       expect(Voter.count).to eq 10
       @voters = @campaign.all_voters
-      last_call_time = 20.hours.ago
+      last_call_time = 36.hours.ago
       @voters.order('id ASC').each do |v|
         v.update_attribute(:last_call_attempt_time, last_call_time)
-        last_call_time += 1.hour
+        last_call_time += (120 + v.id)
       end
       @dial_queue = cache_available_voters(@campaign)
     end
 
-    let(:campaign){ create(:preview) }
-    let(:dial_queue){ CallFlow::DialQueue.new(campaign) }
-    it_behaves_like 'Preview/Power#next_voter_in_dial_queue'
-
-    context 'current_voter_id is not present' do
-      before do
-        setup_voters
+    context 'shared behaviors' do
+      let(:campaign){ create(:preview) }
+      let(:dial_queue){ CallFlow::DialQueue.new(campaign) }
+      after do
+        redis = dial_queue.available.send :redis
+        redis.flushall
       end
-      context 'all voters have been skipped' do
-        it 'returns the first voter with the oldest last_call_attempt_time' do
-          actual = @campaign.next_voter_in_dial_queue(nil)
-          expected = @voters.first
-          expect(actual).to eq expected
-        end
-      end
-      context 'one voter has not been skipped' do
-        it 'returns the first unskipped voter' do
-          skip_voters @voters[0..7]
-          @dial_queue.next(8) # pop first 8 voters off the list
-          expected = @voters[8]
-          actual = @campaign.next_voter_in_dial_queue(nil)
-          expect(actual).to eq expected
-        end
-      end
-      context 'more than one voter has not been skipped' do
-        it 'returns the first unskipped voter with the oldest last_call_attempt_time' do
-          skip_voters @voters[3..7]
-          expected = @voters[0]
-          actual = @campaign.next_voter_in_dial_queue(nil)
-          expect(actual).to eq expected
-        end
-      end
+      it_behaves_like 'Preview/Power#next_voter_in_dial_queue'
     end
 
-    context 'current_voter_id is present' do
+    context 'skipping voters' do
       before do
         setup_voters
         @current_voter = @voters[3]
+      end
+      after do
+        redis = @dial_queue.available.send :redis
+        redis.flushall
       end
       context 'all voters have been skipped' do
         it 'returns the voter with id > current_voter_id' do
@@ -137,21 +189,27 @@ describe Preview, :type => :model do
       end
       context 'one voter has not been skipped' do
         it 'returns the unskipped voter with id > current_voter_id' do
+          @dial_queue.next(3)
           skip_voters @voters[0..2]
-          skip_voters @voters[4..7]
-          skip_voters [@voters[9]]
-          @dial_queue.next(8)
+          @dial_queue.next(4)
+          skip_voters @voters[3..6]
+          @dial_queue.next(1)
+          skip_voters [@voters[7]]
+
           expected = @voters[8]
-          actual = @campaign.next_voter_in_dial_queue(@current_voter.id)
+          actual = @campaign.next_voter_in_dial_queue
+
           expect(actual).to eq expected
         end
       end
       context 'more than one voter has not been skipped' do
         it 'returns the first unskipped voter with id > current_voter_id' do
-          skip_voters @voters[0..2]
+          @dial_queue.next(5)
+          skip_voters @voters[0..4]
+          @dial_queue.next(2)
           skip_voters @voters[5..6]
-          @dial_queue.next(4)
-          expected = @voters[4]
+
+          expected = @voters[7]
           actual = @campaign.next_voter_in_dial_queue(@current_voter.id)
           expect(actual).to eq expected
         end
@@ -160,6 +218,9 @@ describe Preview, :type => :model do
 
     it 'does not cycle through a sub-set of available voters' do
       setup_voters
+      Voter.update_all(last_call_attempt_time: nil)
+      @dial_queue = cache_available_voters(@campaign)
+
       expected = @voters[0]
       actual = @campaign.next_voter_in_dial_queue(nil)
       expect(actual).to eq expected
@@ -177,6 +238,9 @@ describe Preview, :type => :model do
       expected = @voters[2]
       actual = @campaign.next_voter_in_dial_queue(actual.id)
       expect(actual).to eq expected
+
+      redis = @dial_queue.available.send :redis
+      redis.flushall
     end
 
     it 'never returns the current voter when that voter has been skipped' do
@@ -202,6 +266,9 @@ describe Preview, :type => :model do
       next_voter = campaign.next_voter_in_dial_queue(vtwo.id)
       expect(next_voter).not_to eq vtwo
       expect(next_voter).to eq vthr
+
+      redis = @dial_queue.available.send :redis
+      redis.flushall
     end
   end
 end

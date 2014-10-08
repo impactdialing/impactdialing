@@ -31,7 +31,7 @@ describe 'CalculateDialsJob' do
     before do
       add_voters(campaign, :realistic_voter, 25)
       add_callers(campaign, 5)
-      dial_queue.prepend
+      dial_queue.seed
     end
 
     after do

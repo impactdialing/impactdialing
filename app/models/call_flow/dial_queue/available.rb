@@ -9,60 +9,132 @@
 # in the redis list for each campaign for the day. At the end of the calling hours for
 # the campaign, the appropriate list should be removed.
 #
+# As a sorted set usage based on light experiments is approx. 0.61 MB for 5,000 numbers
+# and ~155 MB for 717,978 numbers. Relative to current usage this number is ginormous.
+#
+# Configuring redis as follow reduces memory usage by ~50% to approx 0.14 MB for 5,000 numbers
+# and ~77 MB for 717,978.
+# - zset-max-ziplist-entries 6000
+# - zset-max-ziplist-value 6000
+# these may not be reasonable or even allowed by redislabs.
+#
+# Loading large data-sets requires good indexing.
+#
+# 
+#
 class CallFlow::DialQueue::Available
   attr_reader :campaign, :dialed
 
-  delegate :all_voters, :recycle_rate, to: :campaign
+  delegate :recycle_rate, to: :campaign
 
   include CallFlow::DialQueue::Util
 
 private
-  def seed_limit
-    (ENV['DIAL_QUEUE_AVAILABLE_SEED_LIMIT'] || 10).to_i
-  end
-
-  def voter_limit
-    (ENV['DIAL_QUEUE_AVAILABLE_LIMIT'] || 1000).to_i
-  end
-
-  def voter_reload_threshold
-    (ENV['DIAL_QUEUE_AVAILABLE_RELOAD_THRESHOLD'] || seed_limit).to_i
-  end
-
   def _benchmark
     @_benchmark ||= ImpactPlatform::Metrics::Benchmark.new("dial_queue.#{campaign.account_id}.#{campaign.id}.available")
   end
 
-  def next_voters(limit)
-    _benchmark.time 'next_voters' do
-      available_voters = all_voters.available_list(campaign).without(dialed.numbers).where('voters.id NOT IN (?)', active_ids)
-      voters           = available_voters.where('voters.id > ?', last_loaded_id).limit(limit)
-
-      if voters.count.zero?
-        voters = available_voters.limit(limit)
-      end
-      voters.select(['voters.id', 'voters.phone'])
-    end
+  def all_voters
+    campaign.all_voters.available_list(campaign).select([
+      'DISTINCT(voters.phone)',
+      'voters.id',
+      'voters.last_call_attempt_time
+    '])
   end
 
-  def active_ids
-    # -1 entry here ensures consistent results when there are no active ids
-    @active_ids ||= [-1] + peak(:active).map{|v| JSON.parse(v)['id']}
+  def top_off_voters(&block)
+    all_voters.where('id > ?', last_loaded_id).find_in_batches(batch_size: 5000, &block)
+    redis.del keys[:last_loaded_id]
+  end
+
+  def seed_voters
+    seeds               = all_voters.order('voters.id').limit(5000)
+    # self.last_loaded_id = seeds.last.id
+    return seeds
   end
 
   def last_loaded_id
-    id = 0
-    last_active_item = redis.lrange(keys[:active], 0, 1)
-    if last_active_item.first.present?
-      id = JSON.parse(last_active_item.first)['id']
-    end
-    id
+    redis.get keys[:last_loaded_id]
+  end
+
+  def last_loaded_id=(val)
+    redis.set keys[:last_loaded_id], val
   end
 
   def keys
     {
-      active: "dial_queue:active:#{campaign.id}"
+      active: "dial_queue:#{campaign.id}:active",
+      last_loaded_id: "dial_queue:#{campaign.id}:last_loaded_id",
+      voter_pool: "dial_queue:#{campaign.id}:voter_pool"
     }
+  end
+
+  def count_call_attempts(voters)
+    ids                  = voters.map(&:id)
+    @call_attempt_counts = CallAttempt.where(voter_id: ids).group(:voter_id).count
+  end
+
+  def score(voter)
+    x = if voter.skipped?
+          voter.skipped_time.to_i # force skipped voters to rank before called voters
+        else
+          voter.last_call_attempt_time.to_i
+        end
+
+    n = voter.id + x
+    # n = "#{voter.id}#{x}"
+    "#{n}.#{@call_attempt_counts[voter.id]}"
+  end
+
+  def memberize(voter)
+    [score(voter), voter.phone]
+  end
+
+  def memberize_voters(voters)
+    count_call_attempts(seed_voters)
+
+    voters.map do |voter|
+      memberize(voter)
+    end
+  end
+
+  def cache_households(numbers)
+    # numbers.each_slice(3000) do |number_slice|
+      last_id     = 0
+      voters      = campaign.all_voters.available_list(campaign).where(phone: numbers)
+      households  = {}
+      set_members = []
+      count_call_attempts(voters)
+
+      voters.each do |voter|
+        households[voter.phone] ||= []
+
+        if households[voter.phone].empty?
+          set_members << [score(voter), voter.phone]
+        end
+
+        households[voter.phone] << {id: voter.id, last_call_attempt_time: voter.last_call_attempt_time}
+        last_id = voter.id
+      end
+
+      return last_id if households.empty? and set_members.empty?
+
+      unless households.empty?
+        # cache voters by phone number
+        hmargs = households.map{|phone, members| [phone, members.to_json]}
+        expire keys[:voter_pool] do
+          redis.hmset keys[:voter_pool], *hmargs
+        end
+      end
+
+      # cache phone numbers by score
+      unless set_members.empty?
+        expire keys[:active] do
+          redis.zadd keys[:active], set_members
+        end
+      end
+      last_id
+    # end
   end
 
 public
@@ -72,15 +144,17 @@ public
     @dialed   = dialed
   end
 
-  def prepend(voters_to_prepend=[])
-    if voters_to_prepend.empty?
-      voters_to_prepend = next_voters(voter_limit)
-    end
+  def top_off
+    # top_off_voters do |voters|
+    #   redis.zadd keys[:active], memberize_voters(voters)
+    # end
 
-    return if voters_to_prepend.empty?
-
-    expire keys[:active] do
-      redis.lpush keys[:active], voters_to_prepend.map{|voter| voter.to_json(root: false)}
+    campaign.all_voters.available_list(campaign).
+    select('DISTINCT(voters.phone), id').
+    # where('id > ?', last_loaded_id).
+    where('phone NOT IN (?)', [peak(:active)] + [-1]).
+    find_in_batches(batch_size: 3000) do |numbers| 
+      self.last_loaded_id = cache_households(numbers.map(&:phone))
     end
   end
 
@@ -91,77 +165,49 @@ public
   def seed
     return if seeded?
 
-    prepend(next_voters(seed_limit))
+    all_numbers = campaign.all_voters.available_list(campaign).select('DISTINCT(voters.phone)').limit(3000).pluck(:phone)
+    self.last_loaded_id = cache_households(all_numbers)
   end
 
   def refresh
     return if not seeded?
 
-    # redis.multi do
-      redis.del keys[:active]
-      prepend
-    # end
+    redis.zdel keys[:active]
+    seed
   end
 
   def size
-    redis.llen keys[:active]
+    redis.zcard keys[:active]
   end
 
   def peak(list=:active)
-    redis.lrange keys[list], 0, -1
+    redis.zrange keys[list], 0, -1
   end
 
-  ##
-  # Return `n` voters from available list. 
-  #
-  # Retries up to 3 times on `Redis::TimeoutError`.
   def next(n)
-    n        = size if n > size
-    results  = []
+    n             = size if n > size
+    # every number in :active set is guaranteed to have at least one callable voter
+    phone_numbers = redis.zrange keys[:active], 0, (n-1)
+    return [] if phone_numbers.empty?
+    households    = redis.hmget keys[:voter_pool], phone_numbers # get array of households as json strings
 
-    n.times do |i|
-      results << rpop
-    end
-    results.compact.map{|r| JSON.parse(r)}
+    # since we know every number in :active has at least one callable voter,
+    # and recycle rate is respected per phone number, it is acceptable to simply
+    # pull the first voter from each household.
+    voters = households.compact.map{|voters| JSON.parse(voters).first}
+
+    # remove phone_numbers from :active pool to prevent other callers checking them out
+    remove_household phone_numbers
+
+    return voters
+  end
+
+  def update_score(voter)
+    count_call_attempts([voter])
+    redis.zadd keys[:active], score(voter), voter.phone
   end
 
   def remove_household(phone)
-    values = peak.map{|v| JSON.parse(v)}
-    sweep  = values.select{|v| v['phone'] == phone}
-    sweep.each do |v|
-      print "\nRemoving Household: #{phone}; Looking for match to: #{v.to_json}\n"
-      redis.lrem keys[:active], 1, v.to_json
-    end
-  end
-
-  def rpop
-    attempt = 0
-    begin
-      attempt += 1
-      redis.rpop(keys[:active])
-
-    rescue Redis::TimeoutError => exception
-      if attempt <= 3
-        retry
-      else
-        log_msg = "CallFlow::DialQueue::Available#rpop Error (Attempt: #{attempt}. #{exception.message}"
-        Rails.logger.error log_msg
-        raise
-      end
-    end
-  end
-
-  def last
-    redis.lindex keys[:active], 0
-  end
-
-  def below_threshold?
-    size <= voter_reload_threshold
-  end
-
-  def reload_if_below_threshold
-    # prepend if size <= voter_reload_threshold
-    return unless below_threshold?
-    Resque.enqueue(CallFlow::Jobs::CacheAvailableVoters, campaign.id)
+    redis.zrem keys[:active], phone
   end
 end

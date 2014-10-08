@@ -157,9 +157,8 @@ class Voter < ActiveRecord::Base
   scope :failed, where('voters.status = ?', CallAttempt::Status::FAILED)
   scope :available, lambda{|campaign| where('voters.status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
   scope :recently_dialed_households, lambda{ |recycle_rate|
-    dialed.
-    group('voters.phone').
-    order('voters.last_call_attempt_time ASC').
+    dialed.enabled.active.
+    select('DISTINCT(voters.phone), voters.id, voters.last_call_attempt_time').
     where('voters.last_call_attempt_time > ?', recycle_rate.hours.ago)
   }
   scope :available_for_retry, lambda {|campaign|
@@ -220,6 +219,7 @@ class Voter < ActiveRecord::Base
   }
 
   scope :skipped, where('voters.status = ?', Status::SKIPPED)
+  scope :busy, where('voters.status = ?', CallAttempt::Status::BUSY)
   #/New Shiny
 
   before_validation :sanitize_phone
@@ -331,6 +331,10 @@ public
 
   def self.phone_correct?(phone)
     phone && (phone.length >= 10 || phone.start_with?("+"))
+  end
+
+  def skipped?
+    status == Status::SKIPPED
   end
 
   def abandoned

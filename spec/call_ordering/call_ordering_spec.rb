@@ -12,7 +12,7 @@ describe 'Voters (Contacts) are called in the order they are uploaded', data_hea
     callers     = add_callers(campaign, 1)
 
     dial_queue = CallFlow::DialQueue.new(campaign)
-    dial_queue.prepend
+    dial_queue.seed
 
     full_passes = 3
     prev_voter  = nil
