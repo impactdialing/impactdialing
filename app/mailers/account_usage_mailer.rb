@@ -47,7 +47,7 @@ public
       CallAttempt::Status::VOICEMAIL,
       CallAttempt::Status::HANGUP
     ].each do |billable_status|
-      grand_total += status_totals[billable_status]
+      grand_total += status_totals[billable_status].to_i
     end
     callers          = account.callers
     html             = AccountUsageRender.new.by_callers(:html, billable_totals, status_totals, grand_total, callers)
