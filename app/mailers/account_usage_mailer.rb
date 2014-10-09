@@ -42,6 +42,13 @@ public
     billable_totals  = by_caller.build
     status_totals    = by_status.build
     grand_total      = billable_minutes.calculate_total(billable_totals.values)
+    [
+      CallAttempt::Status::ABANDONED,
+      CallAttempt::Status::VOICEMAIL,
+      CallAttempt::Status::HANGUP
+    ].each do |billable_status|
+      grand_total += status_totals[billable_status]
+    end
     callers          = account.callers
     html             = AccountUsageRender.new.by_callers(:html, billable_totals, status_totals, grand_total, callers)
     text             = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, grand_total, callers)

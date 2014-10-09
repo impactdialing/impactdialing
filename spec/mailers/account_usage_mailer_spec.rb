@@ -102,8 +102,10 @@ describe AccountUsageMailer, :type => :mailer do
       with(billable_minutes, account).
       and_return(status_report)
 
-    expected_html = AccountUsageRender.new.by_callers(:html, billable_totals, status_totals, grand_total, callers)
-    expected_text = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, grand_total, callers)
+    # add 3 to grand_total for by_callers to account for ABANDONED, VOICEMAIL & HANGUP call statuses,
+    # whose minutes are not assigned to any callers
+    expected_html = AccountUsageRender.new.by_callers(:html, billable_totals, status_totals, (grand_total+3), callers)
+    expected_text = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, (grand_total+3), callers)
 
     expect(@mailer).to receive(:send_email).with({
       :subject => "Caller Usage Report: #{@mailer.send(:format_date, from_date)} - #{@mailer.send(:format_date, to_date)}",
