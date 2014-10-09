@@ -90,17 +90,30 @@ class CallsController < ApplicationController
 
   def find_and_update_answers_and_notes_and_scheduled_date
     find_call
+    
+    madd = "MissingAnswerDataDebug "
+
     unless @call.nil?
-      @parsed_params["questions"]  = params[:question].try(:to_json)
+      madd << "Call[#{@call.id}]"
+
+      @parsed_params["questions"] = params[:question].try(:to_json)
       @parsed_params["notes"] = params[:notes].try(:to_json)
+
+      p "#{madd} parsed_params['questions']#{@parsed_params['questions']}"
+      p "#{madd} parsed_params['notes']#{@parsed_params['notes']}"
+
       RedisCall.set_request_params(@call.id, @parsed_params)
       unless params[:scheduled_date].blank?
         scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_minutes]
         @call.call_attempt.schedule_for_later(scheduled_date)
       end
+    else
+      madd << "Call[NotFound:#{params[:id]}]"
     end
-  end
 
+    p "#{madd} params[:question]#{params[:question]}"
+    p "#{madd} params[:notes]#{params[:notes]}"
+  end
 
   def find_and_update_call
     find_call
