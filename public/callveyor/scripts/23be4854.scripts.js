@@ -34023,6 +34023,76 @@ angular.module("config", [])
 */
 (function() {
   'use strict';
+  angular.module('Janitor', ['idCacheFactories']).factory('idJanitor', [
+    '$window', '$state', 'CallStationCache', function($window, $state, CallStationCache) {
+      var beforeUnloadMsg, janitor, makeRequest;
+      makeRequest = function(url, params) {
+        return jQuery.ajax({
+          url: url,
+          data: params,
+          type: "POST",
+          async: false,
+          success: function() {
+            return console.log('Bye.');
+          }
+        });
+      };
+      beforeUnloadMsg = 'Danger! You have unsaved data. Please save before closing or refreshing the page.';
+      janitor = {};
+      janitor.confirmUnloadBound = false;
+      janitor.confirmUnloadRan = false;
+      janitor.confirmUnload = function(on_off, fn) {
+        if (on_off) {
+          if (!janitor.confirmUnloadBound) {
+            $window.onbeforeunload = function() {
+              janitor.confirmUnloadRan = true;
+              return beforeUnloadMsg;
+            };
+            return janitor.confirmUnloadBound = true;
+          }
+        } else {
+          $window.onbeforeunload = null;
+          return janitor.confirmUnloadBound = false;
+        }
+      };
+      janitor.cleanUpUnloadBound = false;
+      janitor.cleanUpUnload = function(on_off, fn) {
+        var saferUnload;
+        if (on_off) {
+          if (!janitor.cleanUpUnloadBound) {
+            saferUnload = function(ev) {
+              var caller, caller_id, params, request_params, url;
+              if ($state.is('dialer.wrap') || $state.includes('dialer.active')) {
+                request_params = fn();
+                return makeRequest(request_params.url, request_params.data);
+              } else if (!$state.is('') && !$state.is('dialer.ready') && !$state.is('abort') && !$state.is('dialer.stop')) {
+                caller = CallStationCache.get('caller');
+                caller_id = caller.id;
+                params = {};
+                params.session_id = caller.session_id;
+                url = "/call_center/api/" + caller_id + "/stop_calling";
+                return makeRequest(url, params);
+              }
+            };
+            $window.onunload = saferUnload;
+            return janitor.cleanUpUnloadBound = true;
+          }
+        } else {
+          $window.onunload = null;
+          return janitor.cleanUpUnloadBound = false;
+        }
+      };
+      return janitor;
+    }
+  ]);
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=janitor.js.map
+*/
+(function() {
+  'use strict';
   var mod;
 
   mod = angular.module('pusherConnectionHandlers', ['idFlash', 'angularSpinner']);
@@ -34179,7 +34249,7 @@ to fix it.');
   'use strict';
   var mod;
 
-  mod = angular.module('callveyor.call_flow', ['ui.router', 'idFlash', 'idTransition', 'idCacheFactories', 'callveyor.http_dialer']);
+  mod = angular.module('callveyor.call_flow', ['ui.router', 'idFlash', 'idTransition', 'idCacheFactories', 'Janitor', 'callveyor.http_dialer']);
 
   mod.factory('CallerReassignedMessage', [
     function() {
@@ -34215,7 +34285,7 @@ to fix it.');
   ]);
 
   mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', function($rootScope, $state, $window, $cacheFactory, CallCache, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache, TwilioCache, CallerReassignedMessage) {
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', function($rootScope, $state, $window, $cacheFactory, CallCache, idJanitor, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache, TwilioCache, CallerReassignedMessage) {
       var beforeunloadBeenBound, handlers, isWarmTransfer;
       isWarmTransfer = function() {
         return /warm/i.test(TransferCache.get('type'));
@@ -34224,28 +34294,13 @@ to fix it.');
       beforeunloadBeenBound = false;
       handlers = {
         startCalling: function(data) {
-          var caller, stopFirst;
+          var caller;
           caller = CallStationCache.get('caller');
           caller.session_id = data.caller_session_id;
           $window.idDebugData.caller = caller;
           if (!beforeunloadBeenBound) {
-            beforeunloadBeenBound = true;
-            stopFirst = function(ev) {
-              var caller_id, params;
-              caller_id = caller.id;
-              params = {};
-              params.session_id = caller.session_id;
-              return jQuery.ajax({
-                url: "/call_center/api/" + caller_id + "/stop_calling",
-                data: params,
-                type: "POST",
-                async: false,
-                success: function() {
-                  return console.log('Bye.');
-                }
-              });
-            };
-            return $window.addEventListener('beforeunload', stopFirst);
+            idJanitor.confirmUnload(true);
+            return beforeunloadBeenBound = true;
           }
         },
         /*
@@ -34398,6 +34453,7 @@ to fix it.');
             p = $state.go('dialer.wrap');
             return p["catch"](idTransitionPrevented);
           } else {
+            idJanitor.confirmUnload(false);
             p = $state.go('dialer.ready');
             return p["catch"](idTransitionPrevented);
           }
@@ -34953,7 +35009,7 @@ to fix it.');
   'use strict';
   var surveyForm;
 
-  surveyForm = angular.module('survey', ['ui.router', 'angularSpinner', 'idFlash', 'idCacheFactories']);
+  surveyForm = angular.module('survey', ['ui.router', 'angularSpinner', 'idFlash', 'idCacheFactories', 'Janitor']);
 
   surveyForm.factory('SurveyFormFieldsFactory', [
     '$http', '$filter', '$sce', function($http, $filter, $sce) {
@@ -35011,7 +35067,7 @@ to fix it.');
   ]);
 
   surveyForm.controller('SurveyFormCtrl', [
-    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', function($rootScope, $scope, $filter, $state, $http, $window, $timeout, TransferCache, CallCache, TwilioCache, usSpinnerService, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache) {
+    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', function($rootScope, $scope, $filter, $state, $http, $window, $timeout, TransferCache, CallCache, TwilioCache, usSpinnerService, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache, idJanitor) {
       var cacheTransferList, fetchErr, handleStateChange, loadForm, normalizeQuestion, prepForm, requestInProgress, reset, selectDefaults, survey;
       survey = {
         hideButtons: true,
@@ -35155,9 +35211,21 @@ to fix it.');
           question: normalizeQuestion()
         }).then(success, error)["finally"](always);
       };
+      survey.autoSubmitConfig = function() {
+        var call_id;
+        call_id = CallCache.get('id');
+        return {
+          url: "/call_center/api/" + call_id + "/submit_result_and_stop",
+          data: {
+            notes: survey.responses.notes,
+            question: normalizeQuestion()
+          }
+        };
+      };
       if (!SurveyCache.get('eventsBound')) {
         $rootScope.$on('survey:save:click', survey.save);
         $rootScope.$on('survey:reload', loadForm);
+        idJanitor.cleanUpUnload(true, survey.autoSubmitConfig);
         SurveyCache.put('eventsBound', true);
       }
       loadForm();
