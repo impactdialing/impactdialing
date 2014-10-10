@@ -4,7 +4,8 @@ surveyForm = angular.module('survey', [
   'ui.router',
   'angularSpinner',
   'idFlash',
-  'idCacheFactories'
+  'idCacheFactories',
+  'Janitor'
 ])
 
 # surveyForm.config([])
@@ -71,8 +72,8 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 # - survey:reload - triggers re-fetch/load of survey form data & transfer list
 #
 surveyForm.controller('SurveyFormCtrl', [
-  '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache',
-  ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   $timeout,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache) ->
+  '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor',
+  ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   $timeout,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache,   idJanitor) ->
     # Public 
     survey = {
       hideButtons: true
@@ -81,6 +82,8 @@ surveyForm.controller('SurveyFormCtrl', [
         question: {}
       }
     }
+
+    # SurveyCache.put('responses', survey.responses)
 
     selectDefaults = ->
       console.log 'selectDefaults'
@@ -213,9 +216,20 @@ surveyForm.controller('SurveyFormCtrl', [
       })
       .then(success, error).finally(always)
 
+    survey.autoSubmitConfig = ->
+      call_id = CallCache.get('id')
+      {
+        url: "/call_center/api/#{call_id}/submit_result_and_stop"
+        data: {
+          notes: survey.responses.notes
+          question: normalizeQuestion()
+        }
+      }
+
     unless SurveyCache.get('eventsBound')
       $rootScope.$on('survey:save:click', survey.save)
       $rootScope.$on('survey:reload', loadForm)
+      idJanitor.cleanUpUnload(true, survey.autoSubmitConfig)
       SurveyCache.put('eventsBound', true)
 
     loadForm()

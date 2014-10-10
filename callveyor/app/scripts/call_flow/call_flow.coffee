@@ -16,6 +16,7 @@ mod = angular.module('callveyor.call_flow', [
   'idFlash',
   'idTransition',
   'idCacheFactories',
+  'Janitor',
   'callveyor.http_dialer'
 ])
 
@@ -45,8 +46,8 @@ mod.factory('CallerReassignedMessage', [
 ])
 
 mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage',
-    ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache,   CallerReassignedMessage) ->
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', 
+    ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   idJanitor,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache,   CallerReassignedMessage) ->
       isWarmTransfer = -> /warm/i.test(TransferCache.get('type'))
 
       $window.idDebugData ||= {}
@@ -75,25 +76,27 @@ mod.factory('idCallFlow', [
           $window.idDebugData.caller = caller
 
           unless beforeunloadBeenBound
+            idJanitor.confirmUnload(true)
             beforeunloadBeenBound = true
-            # Clean-up after closed windows
-            stopFirst = (ev) ->
-              caller_id         = caller.id
-              params            = {}
-              params.session_id = caller.session_id
-              jQuery.ajax({
-                url : "/call_center/api/#{caller_id}/stop_calling",
-                data : params,
-                type : "POST",
-                async : false,
-                success: ->
-                  # Force the browser to wait for request to complete
-                  # by setting async false and supplying a callback.
-                  # Without the callback the page unload interrupts the request.
-                  console.log 'Bye.'
-              })
 
-            $window.addEventListener('beforeunload', stopFirst)
+          #   submitAndStop = (ev) ->
+          #     $rootScope.$broadcast('survey:save:click', true)
+          #   stop = (ev) ->
+          #     caller_id         = caller.id
+          #     params            = {}
+          #     params.session_id = caller.session_id
+          #     url               = "/call_center/api/#{caller_id}/stop_calling"
+          #     makeRequest(url, params)
+              
+          #   cleanUp = (ev) ->
+          #     if $state.is('dialer.wrap')
+          #       # submit and stop
+          #       submitAndStop(ev)
+          #     else if !$state.is('dialer.ready')
+          #       # end caller session (stop calling)
+          #       stop(ev)
+            
+          #   $window.addEventListener('beforeunload', stopFirst)
 
         ##
         # conference_started
@@ -353,6 +356,7 @@ mod.factory('idCallFlow', [
             p.catch(idTransitionPrevented)
           else
             # console.log '$state is NOT dialer.active'
+            idJanitor.confirmUnload(false)
             p = $state.go('dialer.ready')
             p.catch(idTransitionPrevented)
 
