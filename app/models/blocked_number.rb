@@ -11,6 +11,8 @@ class BlockedNumber < ActiveRecord::Base
   
   scope :for_campaign, lambda {|campaign| where("campaign_id is NULL OR campaign_id = ?", campaign.id)}
   scope :matching, lambda{|campaign, phone| for_campaign(campaign).where(number: phone)}
+  scope :account_wide, where('campaign_id IS NULL').order('id')
+  scope :with_campaign, lambda {|campaign| where(campaign_id: campaign.id).order('id')}
   scope :numbers, select('DISTINCT(blocked_numbers.number)').pluck(:number)
 
   after_create :block_voters
