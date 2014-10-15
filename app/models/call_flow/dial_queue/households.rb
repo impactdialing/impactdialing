@@ -82,4 +82,10 @@ public
     phone_numbers.each{|number| result[number] = find(number)}
     result
   end
+
+  def rotate(member)
+    members = find(member.phone)
+    members.rotate!(1)
+    save(member.phone, members)
+  end
 end

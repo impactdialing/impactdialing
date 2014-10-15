@@ -9,7 +9,7 @@
 # to run a script to seed the dialed lists for these campaigns to avoid potentially long
 # start-up times in the morning as well as to avoid calling household members. Check
 # w/ Michael to see if there's any value in this seed'ing first.
-class CallFlow::DialQueue::Dialed
+class CallFlow::DialQueue::RecycleBin
   attr_reader :campaign
 
   delegate :recycle_rate, to: :campaign
@@ -41,21 +41,21 @@ public
     @campaign = campaign
   end
 
-  def filter_disabled?
-    ENV['ENABLE_HOUSEHOLDING_FILTER'].to_i.zero?
-  end
-
-  def household_dialed(voter)
+  def add(voter)
     expire keys[:dialed] do
       redis.zadd keys[:dialed], score(voter), voter.phone
     end
+  end
+
+  def remove(voter)
+    redis.zrem keys[:dialed], voter.phone
   end
 
   def size
     redis.zcard keys[:dialed]
   end
 
-  def peak(list=:dialed)
-    redis.zrange keys[list], 0, -1
+  def all
+    redis.zrange keys[:dialed], 0, -1
   end
 end

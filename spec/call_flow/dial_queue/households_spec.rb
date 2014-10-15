@@ -80,4 +80,15 @@ describe 'CallFlow::DialQueue::Households' do
       expect(actual).to eq expected
     end
   end
+
+  describe 'rotating household member ids' do
+    it 'moves the id of the given member to the last position of the member list' do
+      subject.add(member_with_country_code)
+      subject.add(member_of_country_code)
+
+      subject.rotate(member_with_country_code)
+
+      expect(subject.find(member_with_country_code.phone)).to eq [member_of_country_code.id, member_with_country_code.id]
+    end
+  end
 end

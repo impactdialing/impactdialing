@@ -3,225 +3,148 @@ require 'spec_helper'
 describe 'CallFlow::DialQueue' do
   include FakeCallData
 
-  def clean_dial_queue_lists
-    @dial_queue.clear(:available)
-    @dial_queue.clear(:dialed)
+  def clean_dial_queue
+    @dial_queue.clear
   end
 
   let(:admin){ create(:user) }
   let(:account){ admin.account }
 
   before do
-    ENV['DIAL_QUEUE_AVAILABLE_SEED_LIMIT'] = '5'
-    ENV['DIAL_QUEUE_AVAILABLE_LIMIT'] = '10'
     @campaign = create_campaign_with_script(:bare_preview, account).last
     create_list(:realistic_voter, 100, {campaign: @campaign, account: account})
     @dial_queue = CallFlow::DialQueue.new(@campaign)
-    @dial_queue.seed
+    @dial_queue.cache_all(@campaign.all_voters)
   end
   after do
-    clean_dial_queue_lists
+    clean_dial_queue
   end
 
   describe 'caching voters available to be dialed' do
-    # it 'caches ENV["DIAL_QUEUE_AVAILABLE_LIMIT"] number of voters' do
-    #   expected = 10
-    #   actual   = @dial_queue.size(:available)
-    #   expect(actual).to eq expected
-    # end
-
     it 'preserves ordering of voters' do
       expected = @campaign.all_voters.select([:id, :last_call_attempt_time, :phone]).map(&:phone)
       actual   = @dial_queue.peak(:available)
       expect(actual).to eq expected
     end
 
-    it 'only caches voters that can be dialed right away' do
-      @dial_queue.clear(:available)
-      Voter.order('id DESC').limit(95).update_all(status: CallAttempt::Status::READY)
-      @dial_queue.seed
+    context 'partitioning voters by available state' do
+      before do
+        @dial_queue.clear
+        Voter.order('id DESC').limit(90).update_all(status: CallAttempt::Status::BUSY, last_call_attempt_time: 5.minutes.ago)
+        li = Voter.order('id DESC').limit(90).last.id
+        Voter.order('id DESC').where('id < ?', li).limit(5).update_all(status: CallAttempt::Status::SUCCESS)
+        @dial_queue.cache_all(@campaign.reload.all_voters)
+      end
+      it 'pushes voters that can not be dialed right away to the recycle bin set' do
+        expect(@dial_queue.size(:recycle_bin)).to eq 90
+      end
 
-      expected = 5
-      actual = @dial_queue.size(:available)
-      expect(actual).to eq expected
+      it 'pushes voters that can be dialed right away to the available set' do
+        expect(@dial_queue.size(:available)).to eq 5
+      end
+
+      it 'avoids pushing members that are not available for dial and not eventually retriable' do
+        # if the previous two pass, this one is good. more for documentation :)
+      end
     end
   end
 
   describe 'retrieving voters' do
     it 'retrieve one voter' do
-      expected = [Voter.order('id').select([:id, :last_call_attempt_time]).first.attributes]
+      expected = [Voter.order('id').select([:id, :last_call_attempt_time]).first.id]
       actual   = @dial_queue.next(1)
 
       expect(actual).to eq expected
     end
 
     it 'retrieves multiple voters' do
-      expected = Voter.order('id').select([:id, :last_call_attempt_time]).limit(10).map(&:attributes)
+      expected = Voter.order('id').select([:id, :last_call_attempt_time]).limit(10).map(&:id)
       actual   = @dial_queue.next(10)
 
       expect(actual).to eq expected
     end
 
     it 'removes retrieved voter(s) from queue' do
-      voters    = @dial_queue.next(5)
-      voter_ids = voters.map{|v| v['id']}
+      voter_ids    = @dial_queue.next(5)
       Voter.where(id: voter_ids).update_all(last_call_attempt_time: Time.now, status: CallAttempt::Status::BUSY)
       db_voters  = Voter.where(id: voter_ids)
       actual     = @dial_queue.available.peak
       unexpected = db_voters.map(&:phone)
-      # binding.pry
+
       unexpected.each do |un|
         expect(actual).to_not include un
       end
     end
+  end
 
-    context '(householding) more than one voter has the same phone number' do
-      def attempt_recent_calls(voters)
-        voters.each do |voter|
-          @dial_queue.next(1)
-          call_time = 5.minutes.ago
-          voter.update_attribute('last_call_attempt_time', call_time)
-          @dial_queue.household_dialed voter
-        end
-      end
+  describe 'handling recycle bin voters' do
+    let(:voter_ids){ @dial_queue.next(1) }
+    let(:voter){ Voter.find(voter_ids.first) }
+    let(:other_voter){ create(:realistic_voter, campaign: voter.campaign, phone: voter.phone) }
 
+    it 'adds voter.phone to recycle bin set' do
+      @dial_queue.process_dialed(voter)
+
+      expect(@dial_queue.recycle_bin.all).to include voter.phone
+    end
+
+    context 'the dial completes and will not be retried' do
       before do
-        ENV['ENABLE_HOUSEHOLDING_FILTER'] = '1'
-        ENV['USE_REDIS_DIAL_QUEUE']       = '1'
-        clean_dial_queue_lists
-        @voters = @campaign.all_voters
-        @householders = [
-          @voters[1],
-          @voters[3],
-          @voters[9]
-        ]
-        @householders.each do |voter|
-          voter.update_attributes!(phone: '5551234567')
-        end
-        # load voters now that some are in same household
-        @dial_queue.seed
-        @attempted = [@voters[0], @voters[1], @voters[2]]
-        not_called = @voters[3..9]
-        attempt_recent_calls(@attempted)
-        @current_voter = @attempted.last
-      end
-      after do
-        clean_dial_queue_lists
+        @dial_queue.cache(other_voter)
       end
 
-      context 'first voter in household has been called less than recycle_rate.hours.ago' do
-        it 'removes households when dialed' do
-          available = @dial_queue.available
-          
-          remaining = available.peak
-          expect(remaining).to_not include('5551234567')
-        end
+      it 'removes the voter.id from the set of household members' do
+        voter.update_attributes!({
+          status: CallAttempt::Status::SUCCESS,
+          last_call_attempt_time: 5.minutes.ago,
+          last_call_attempt_id: 42
+        })
+        @dial_queue.process_dialed(voter)
 
-        it 'does not load the second voter in the household' do
-          expected = @voters[4]
-          actual   = @dial_queue.next(1).first
-          # binding.pry
-          expect(actual['id']).to(eq(expected.id), "Wrong voter loaded. Got: #{actual['id']}\nExpected: #{expected.id}")
-        end
+        remaining_members = @dial_queue.households.find(voter.phone)
+        expect(remaining_members).to eq [other_voter.id]
       end
 
-      context 'first voter in household has been called more than recycle_rate.hours.ago' do
-        it 'loads the second voter in the household' do
-          attach_call_attempt(:past_recycle_time_completed_call_attempt, @voters[1])
-          expected = @voters[3]
-          actual = Voter.next_voter(@voters, @campaign.recycle_rate, [], @current_voter.id)
-
-          expect(actual).to eq expected
-        end
-      end
-    end
-
-    describe 'robust to network failure' do
-      context 'one or more result(s) were returned from redis server' do
+      context 'the just completed dial was to the last member of a household' do
         before do
-          times_called = 0
-          load_count   = 0
-          redis        = @dial_queue.available.send(:redis)
-
-          allow(redis).to receive(:rpop).exactly(:three) do
-            times_called       += 1
-
-            if times_called == 1
-              voter = Voter.select([:id, :last_call_attempt_time]).order('id').all[load_count]
-              load_count += 1
-              voter.to_json(root: false)
-            elsif times_called >= 2
-              msg = "redis.rpop called #{times_called} times"
-              times_called = 0 if times_called == 4
-              raise Redis::TimeoutError, msg
-            end
-          end
-        end
-        after do
-          clean_dial_queue_lists
+          # make sure forgery didn't randomly create dup phone
+          voter = Voter.last
+          @dial_queue.remove(voter)
+          voter.destroy
         end
 
-        it 'returns the result(s)' do
-          expected_size = 3
-          expected_val  = Voter.select([:id, :last_call_attempt_time]).order('id').limit(3).map(&:attributes)
-          actual        = @dial_queue.next(3)
+        it 'removes the household' do
+          ids = @dial_queue.next(1)
+          last_member = Voter.find(ids.first)
+          expect(Voter.where(phone: last_member.phone).count).to eq 1
+          last_member.update_attributes!({
+            status: CallAttempt::Status::SUCCESS,
+            last_call_attempt_time: 5.minutes.ago,
+            last_call_attempt_id: 42
+          })
+          @dial_queue.process_dialed(last_member)
 
-          expect(actual.size).to eq expected_size
-          expect(actual).to eq expected_val
+          remaining_members = @dial_queue.households.find(last_member.phone)
+          expect(remaining_members).to eq []
         end
       end
+    end
 
-      context 'no results returned from server' do
-        before do
-          redis = @dial_queue.available.send(:redis)
-          @times_called = 0
-          allow(redis).to receive(:rpop).exactly(:nine) do
-            @times_called += 1
-            raise Redis::TimeoutError
-          end
-        end
-        after do
-          expect(@times_called).to eq 4
-          clean_dial_queue_lists
-        end
+    context 'the dial completes and will be retried' do
+      before do
+        @dial_queue.cache(other_voter)
+      end
 
-        # it 're-raises exception' do
-        #   expect{ @dial_queue.next(3) }.to raise_error(Redis::TimeoutError)
-        # end
+      it 'moves the voter.id to the last position in the set of household members' do
+        voter.update_attributes!({
+          status: Voter::Status::SKIPPED,
+          skipped_time: 1.minute.ago
+        })
+        @dial_queue.process_dialed(voter)
+
+        remaining_members = @dial_queue.households.find(voter.phone)
+        expect(remaining_members).to eq [other_voter.id, voter.id]
       end
     end
-  end
-
-  describe 'seed' do
-    before do
-      clean_dial_queue_lists
-    end
-    after do
-      clean_dial_queue_lists
-    end
-    # it 'loads voters limited by ENV["DIAL_QUEUE_AVAILABLE_SEED_LIMIT"] which should be a small number to keep startup time fast' do
-    it 'loads up to 3000 phone numbers' do
-      @dial_queue.seed
-      expect(@dial_queue.size(:available)).to eq Voter.count
-    end
-  end
-
-  describe 'clean up' do
-    it 'expires queues at 10 minutes past the appropriate Campaign#end_time' do
-      key      = @dial_queue.available.send(:keys)[:active]
-      actual   = @dial_queue.available.send(:redis).ttl key
-
-      today       = Date.today
-      # campaign.end_time only stores the hour
-      expire_time = Time.mktime(today.year, today.month, today.day, @campaign.end_time.hour, 10)
-
-      expected = expire_time.in_time_zone(@campaign.time_zone).end_of_day.to_i - Time.now.in_time_zone(@campaign.time_zone).to_i
-
-      expect(actual).to eq expected
-    end
-  end
-
-  describe 'refreshing cache' do
-    it 'is robust to network failure'
   end
 end

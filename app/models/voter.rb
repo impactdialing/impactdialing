@@ -337,6 +337,16 @@ public
     status == Status::SKIPPED
   end
 
+  def available_for_dial?
+    last_call_attempt_time.to_f < campaign.recycle_rate.hours.ago.to_f &&
+    CallAttempt::Status.available_list(campaign).include?(status)
+  end
+
+  def can_eventually_be_retried?
+    CallAttempt::Status.retry_list(campaign).include?(status) ||
+    (call_back && CallAttempt::Status::SUCCESS)
+  end
+
   def abandoned
     self.status = CallAttempt::Status::ABANDONED
     self.call_back = false

@@ -1,23 +1,23 @@
+##
+# Primary interface to manage read-only cache of queue/voter list data.
+#
 module CallFlow
   class DialQueue
     attr_reader :campaign
-
-    delegate :next, :remove_household, :seed, :refresh, :below_threshold?, :reload_if_below_threshold, to: :available
-    delegate :household_dialed, to: :dialed
-
   private
 
     def load_if_nil(queue)
       send(queue) if queues[queue].nil?
     end
 
+    def cacheit?(voter)
+      !blocked_numbers.all.include?(voter.phone) &&
+      (voter.available_for_dial? || voter.can_eventually_be_retried?)
+    end
+
   public
     def self.enabled?
       (ENV['USE_REDIS_DIAL_QUEUE'] || '').to_i > 0
-    end
-
-    def self.filter_loop_limit
-      (ENV['FILTER_LOOP_LIMIT'] || 15).to_i
     end
 
     def self.next(campaign, n)
@@ -36,16 +36,59 @@ module CallFlow
         raise ArgumentError, "Campaign must not be nil and must have an id."
       end
 
-      @campaign           = campaign
-      @_filter_loop_count = 0
+      @campaign = campaign
     end
 
     def available
-      @available ||= CallFlow::DialQueue::Available.new(campaign, dialed)
+      @available ||= CallFlow::DialQueue::Available.new(campaign)
     end
 
-    def dialed
-      @dialed ||= CallFlow::DialQueue::Dialed.new(campaign)
+    def recycle_bin
+      @recycle_bin ||= CallFlow::DialQueue::RecycleBin.new(campaign)
+    end
+
+    def households
+      @households ||= CallFlow::DialQueue::Households.new(campaign)
+    end
+
+    def blocked_numbers
+      @blocked_numbers ||= CallFlow::DialQueue::DoNotCall.new(campaign)
+    end
+
+    def cache(voter)
+      return nil unless cacheit?(voter)
+
+      unless voter.available_for_dial? && available.add(voter)
+        recycle_bin.add(voter)
+      end
+
+      households.add(voter)
+    end
+
+    def cache_all(voters)
+      voters.each{|voter| cache(voter)}
+    end
+
+    def next(n)
+      phone_numbers      = available.next(n)
+      current_households = households.find_all(phone_numbers)
+      
+      current_households.map{|phone, voters| voters.first}
+    end
+
+    def process_dialed(voter)
+      recycle_bin.add(voter)
+      if voter.can_eventually_be_retried?
+        households.rotate(voter)
+      else
+        households.remove(voter)
+      end
+    end
+
+    def remove(voter)
+      available.remove(voter)
+      recycle_bin.remove(voter)
+      households.remove(voter)
     end
 
     def size(queue)
@@ -60,8 +103,15 @@ module CallFlow
       send(queue).last
     end
 
-    def clear(queue)
-      send(queue).clear
+    def clear(queue=nil)
+      if queue.present?
+        send(queue).clear
+      else
+        available.clear
+        recycle_bin.clear
+        households.clear
+        blocked_numbers.clear
+      end
     end
   end
 end
