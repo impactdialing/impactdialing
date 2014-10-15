@@ -2,7 +2,7 @@ require 'resque-loner'
 
 class AlertJob
   include Resque::Plugins::UniqueJob
-  @queue = :background_worker
+  @queue = :alert_worker
 
   def self.perform
     metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)

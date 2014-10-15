@@ -5,6 +5,13 @@ debit_money:
   args:
   description: "This job debits minutes from Account#debitable_subscription."
 
+active_caller_monitor:
+  cron: "* * * * *"
+  class: CallFlow::Jobs::ActiveCallerMonitor
+  queue: alert_worker
+  args:
+  description: "Print out tallies of active callers per campaign/account for Librato."
+
 alert:
   cron: "*/2 * * * *"
   class: AlertJob
