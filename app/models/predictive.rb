@@ -48,7 +48,7 @@ class Predictive < Campaign
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
 
-    bench_start = Time.now
+    bench_start = Time.now.to_f
     namespace   = [self.type.downcase]
 
     if CallFlow::DialQueue.enabled?
@@ -58,9 +58,10 @@ class Predictive < Campaign
       voter_ids = mysql_choose_voters_to_dial(num_voters)
       namespace << 'mysql'
     end
-
-    bench_end = Time.now
-    puts "measure##{namespace.join('.')}.choose_voters=#{bench_end - bench_start}ms"
+    namespace << "ac-#{self.account_id}"
+    namespace << "ca-#{self.id}"
+    bench_end = Time.now.to_f
+    ImpactPlatform::Metrics.measure('dialer.voter_load', (bench_end - bench_start), namespace.join('.'))
 
     return voter_ids
   end

@@ -1,7 +1,23 @@
 module ImpactPlatform
   module Metrics
-    def self.count(metric_name, number)
-      STDOUT.puts("count##{metric_name}=#{number}")
+    def self.count(metric_name, number, source=nil)
+      strs = [
+        "count##{metric_name}=#{number}"
+      ]
+      if source.present?
+        strs.unshift "source=#{source}"
+      end
+      STDOUT.puts(strs.join(' '))
+    end
+
+    def self.measure(measure_name, sec, source=nil)
+      strs = [
+        "measure##{measure_name}=#{(sec*1000).to_i}mS"
+      ]
+      if source.present?
+        strs.unshift "source=#{source}"
+      end
+      STDOUT.puts(strs.join(' '))
     end
 
     class Autoscale

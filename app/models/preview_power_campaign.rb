@@ -1,6 +1,6 @@
 module PreviewPowerCampaign
   def next_voter_in_dial_queue(current_voter_id = nil)
-    bench_start = Time.now
+    bench_start = Time.now.to_f
     namespace   = [self.type.downcase]
 
     if CallFlow::DialQueue.enabled?
@@ -10,9 +10,12 @@ module PreviewPowerCampaign
       voter = mysql_next_voter_in_dial_queue(current_voter_id)
       namespace << 'mysql'
     end
+    namespace << "ac-#{self.account_id}"
+    namespace << "ca-#{self.id}"
 
-    bench_end = Time.now
-    puts "measure##{namespace.join('.')}.next_voter=#{bench_end - bench_start}ms"
+    bench_end = Time.now.to_f
+
+    ImpactPlatform::Metrics.measure('dialer.voter_load', (bench_end - bench_start), namespace.join('.'))
 
     return voter
   end
