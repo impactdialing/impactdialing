@@ -64,3 +64,11 @@ Best case Preview/Power dial rate when all attempts are answered w/ 1 minute con
 20 callers: 40-240 req /min
 
 1,000 callers: 2,000 - 12,000 req /min
+
+## Observations from manually
+
+### 150 - 180 callers
+
+impactdialing-ps
+- dialer_worker: 3
+- simulator_worker: 2
