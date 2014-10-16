@@ -63,15 +63,16 @@ class CallStats::ByStatus
   end
 
   def machine_answered_count
+    return @machine_answered_count if defined?(@machine_answered_count)
     n = 0
     CallAttempt::Status.machine_answered_list.each do |status|
       n += with_status_in_range_count(status)
     end
-    n
+    @machine_answered_count = n
   end
 
   def machine_left_message_count
-    with_status_in_range_count(CallAttempt::Status::VOICEMAIL)
+    @machine_left_message_count ||= with_status_in_range_count(CallAttempt::Status::VOICEMAIL)
   end
 
   def machine_left_message_percent
@@ -93,11 +94,13 @@ class CallStats::ByStatus
   end
 
   def total_count(&block)
+    return @total_count if defined?(@total_count)
+
     query = items
 
     query = yield query if block_given?
 
-    query.count
+    @total_count = query.count
   end
 
   # def not_ringing_total_count
@@ -107,7 +110,7 @@ class CallStats::ByStatus
   # end
 
   def caller_left_message_count
-    items.with_manual_message_drop.count
+    @caller_left_message_count ||= items.with_manual_message_drop.count
   end
 
   def caller_left_message_percent
