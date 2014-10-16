@@ -32,6 +32,7 @@ class VoterListChangeJob
 
         Voter.where(id: ids).blocked.update_all(enabled: Voter.bitmask_for_enabled(*[ bitmasks + [:blocked] ].flatten))
         Voter.where(id: ids).not_blocked.update_all(enabled: Voter.bitmask_for_enabled(*bitmasks))
+        enqueue_cache_voters(voter_list.campaign_id, ids, enabled)
       end
     rescue Resque::TermException, ActiveRecord::StatementInvalid => exception
       handle_exception(voter_list_id, enabled, exception)
@@ -40,6 +41,10 @@ class VoterListChangeJob
 
     dial_queue = CallFlow::DialQueue.new(voter_list.campaign)
     dial_queue.refresh
+  end
+
+  def self.enqueue_cache_voters(campaign_id, voter_ids, enabled)
+    Resque.enqueue(CallFlow::Jobs::CacheVoters, campaign_id, voter_ids, enabled)
   end
 
   def self.requeue(voter_list_id, enabled)

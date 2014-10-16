@@ -22,22 +22,19 @@ module PreviewPowerCampaign
 
   def redis_next_voter_in_dial_queue
     begin
-      dial_queue  = CallFlow::DialQueue.new(self)
-      # try to re-seed before loading next voter to allow
-      # looping through a single voter (use case: skipping voters in preview)
-      dial_queue.seed
-      voter_attrs = dial_queue.next(1).first
+      dial_queue = CallFlow::DialQueue.new(self)
+      voter_id   = dial_queue.next(1).first
       
-      return nil if voter_attrs.nil?
+      return nil if voter_id.blank?
 
-      voter = Voter.find voter_attrs['id']
+      voter = Voter.find(voter_id)
       voter.update_attributes!(status: CallAttempt::Status::READY)
-      # dial_queue.reload_if_below_threshold
 
     rescue ActiveRecord::StaleObjectError => e
-      Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] StaleObjectError - retrying..."
+      Rails.logger.error "#{e.class} #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] Voter[#{voter_id}] - retrying..."
       retry
     end
+
     return voter
   end
 
@@ -52,6 +49,7 @@ module PreviewPowerCampaign
       Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] StaleObjectError - retrying..."
       retry
     end
+
     return voter
   end
 

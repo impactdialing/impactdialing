@@ -85,7 +85,7 @@ class Twillio
     update_voter(voter, attempt)
 
     # add voter number to dialed list (householding)
-    CallFlow::DialQueue.household_dialed campaign, voter
+    CallFlow::DialQueue.dialed voter
 
     # create the call record
     Call.create(call_attempt: attempt, state: "initial")
@@ -121,6 +121,10 @@ class Twillio
     count_dial_error(voter.campaign, caller_session)
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
+    # This removes only the voter. If other members of the household exist, they will be dialed.
+    # todo: When caller app is updated to support householding then remove entire household when dialed number fails w/ bad request.
+    CallFlow::DialQueue.remove(voter)
+
     unless caller_session.nil?
       caller_session.update_attributes(attempt_in_progress: nil, voter_in_progress: nil, on_call: true, available_for_call: true)
       Providers::Phone::Call.redirect_for(caller_session)

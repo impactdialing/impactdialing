@@ -11,8 +11,7 @@ describe 'Voters (Contacts) are called in the order they are uploaded', data_hea
     voters      = add_voters(campaign, :bare_voter, 50)
     callers     = add_callers(campaign, 1)
 
-    dial_queue = CallFlow::DialQueue.new(campaign)
-    dial_queue.seed
+    cache_available_voters(campaign)
 
     full_passes = 3
     prev_voter  = nil

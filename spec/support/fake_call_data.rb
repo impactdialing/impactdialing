@@ -1,12 +1,4 @@
 module FakeCallData
-  def reload_dial_queue(campaign)
-    CallFlow::Jobs::CacheAvailableVoters.perform(campaign.id)
-  end
-
-  def top_off(dial_queue)
-    dial_queue.available.top_off
-  end
-
   def add_voters(campaign, type=:bare_voter, n=25)
     account = campaign.account
 
@@ -15,20 +7,27 @@ module FakeCallData
       campaign: campaign
     })
 
-    cache = CallFlow::DialQueue.new(campaign)
-    cache.seed
+    cache_voters(campaign.id, campaign.all_voter_ids, '1')
 
     list
   end
 
+  def cache_voters(campaign_id, voter_ids, enabled='1')
+    CallFlow::Jobs::CacheVoters.perform(campaign_id, voter_ids, enabled)
+  end
+
+  def process_recycle_bin(campaign)
+    CallFlow::Jobs::ProcessRecycleBin.perform(campaign.id)
+  end
+
+  def clean_dial_queue
+    @dial_queue.clear
+  end
+
   def cache_available_voters(campaign)
     dial_queue = CallFlow::DialQueue.new(campaign)
-    dial_queue.available.clear
-    if dial_queue.available.seeded?
-      dial_queue.top_off
-    else
-      dial_queue.seed
-    end
+    dial_queue.clear
+    cache_voters(campaign.id, campaign.all_voter_ids, '1')
     dial_queue
   end
 
@@ -57,6 +56,7 @@ module FakeCallData
       last_call_attempt_id: call_attempt.id,
       last_call_attempt_time: call_attempt.created_at
     })
+    CallFlow::DialQueue.dialed voter
 
     # mimicing PersistCalls job
     case type.to_s
@@ -103,7 +103,7 @@ module FakeCallData
   end
 
   def call_and_leave_messages(dial_queue, voter_count, autodropped=0)
-    voters = Voter.find(dial_queue.next(voter_count).map{|v| v['id']})
+    voters = Voter.find(dial_queue.next(voter_count))
 
     voters.each do |voter|
       call_attempt = attach_call_attempt(:past_recycle_time_machine_answered_call_attempt, voter)

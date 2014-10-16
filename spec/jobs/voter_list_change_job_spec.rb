@@ -85,11 +85,13 @@ describe VoterListChangeJob do
     it_behaves_like 'enabled/disabled voter list change'
   end
 
-  it 'refreshes the available voter queue' do
-    dial_queue = double('DialQueue')
-    allow(CallFlow::DialQueue).to receive(:new){ dial_queue }
-    expect(dial_queue).to receive(:refresh)
+  it 'queues job to cache voters' do
     subject.perform(voter_list.id, enabled)
+
+    expected = {'class' => 'CallFlow::Jobs::CacheVoters', 'args' => [voter_list.campaign_id, voters.map(&:id), enabled]}
+    actual = Resque.peek :upload_download, 0, 100
+
+    expect(actual).to include expected
   end
 
   it 'properly requeues itself if the worker is stopped during a run' do
