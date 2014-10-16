@@ -26,9 +26,14 @@ module CallFlow
       Voter.find next_voters.map{|voter| voter['id']}
     end
 
-    def self.household_dialed(campaign, voter)
-      dial_queue = new(campaign)
-      dial_queue.household_dialed(voter)
+    def self.dialed(voter)
+      dial_queue = new(voter.campaign)
+      dial_queue.dialed(voter)
+    end
+
+    def self.remove(voter)
+      dial_queue = new(voter.campaign)
+      dial_queue.remove(voter)
     end
 
     def initialize(campaign)
@@ -69,6 +74,12 @@ module CallFlow
       voters.each{|voter| cache(voter)}
     end
 
+    def recycle!
+      recycle_bin.reuse do |expired|
+        available.insert expired
+      end
+    end
+
     def next(n)
       phone_numbers      = available.next(n)
       current_households = households.find_all(phone_numbers)
@@ -76,7 +87,7 @@ module CallFlow
       current_households.map{|phone, voters| voters.first}
     end
 
-    def process_dialed(voter)
+    def dialed(voter)
       recycle_bin.add(voter)
       if voter.can_eventually_be_retried?
         households.rotate(voter)
@@ -89,6 +100,10 @@ module CallFlow
       available.remove(voter)
       recycle_bin.remove(voter)
       households.remove(voter)
+    end
+
+    def remove_all(voters)
+      voters.each{|voter| remove(voter)}
     end
 
     def size(queue)

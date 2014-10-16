@@ -3,10 +3,6 @@ require 'spec_helper'
 describe 'CallFlow::DialQueue' do
   include FakeCallData
 
-  def clean_dial_queue
-    @dial_queue.clear
-  end
-
   let(:admin){ create(:user) }
   let(:account){ admin.account }
 
@@ -22,8 +18,9 @@ describe 'CallFlow::DialQueue' do
 
   describe 'caching voters available to be dialed' do
     it 'preserves ordering of voters' do
-      expected = @campaign.all_voters.select([:id, :last_call_attempt_time, :phone]).map(&:phone)
-      actual   = @dial_queue.peak(:available)
+      expected = @campaign.all_voters.order('id, last_call_attempt_time').select([:id, :last_call_attempt_time, :phone]).map(&:phone)
+      actual   = @dial_queue.available.all
+
       expect(actual).to eq expected
     end
 
@@ -83,7 +80,7 @@ describe 'CallFlow::DialQueue' do
     let(:other_voter){ create(:realistic_voter, campaign: voter.campaign, phone: voter.phone) }
 
     it 'adds voter.phone to recycle bin set' do
-      @dial_queue.process_dialed(voter)
+      @dial_queue.dialed(voter)
 
       expect(@dial_queue.recycle_bin.all).to include voter.phone
     end
@@ -99,7 +96,7 @@ describe 'CallFlow::DialQueue' do
           last_call_attempt_time: 5.minutes.ago,
           last_call_attempt_id: 42
         })
-        @dial_queue.process_dialed(voter)
+        @dial_queue.dialed(voter)
 
         remaining_members = @dial_queue.households.find(voter.phone)
         expect(remaining_members).to eq [other_voter.id]
@@ -122,7 +119,7 @@ describe 'CallFlow::DialQueue' do
             last_call_attempt_time: 5.minutes.ago,
             last_call_attempt_id: 42
           })
-          @dial_queue.process_dialed(last_member)
+          @dial_queue.dialed(last_member)
 
           remaining_members = @dial_queue.households.find(last_member.phone)
           expect(remaining_members).to eq []
@@ -140,10 +137,22 @@ describe 'CallFlow::DialQueue' do
           status: Voter::Status::SKIPPED,
           skipped_time: 1.minute.ago
         })
-        @dial_queue.process_dialed(voter)
+        @dial_queue.dialed(voter)
 
         remaining_members = @dial_queue.households.find(voter.phone)
         expect(remaining_members).to eq [other_voter.id, voter.id]
+      end
+    end
+
+    context 'recycling voters' do
+      let(:voter_a){ create(:abandoned_voter, :not_recently_dialed) }
+      before do
+        @dial_queue.recycle_bin.add(voter_a)
+      end
+      it 'moves expired numbers from recycle bin to available' do
+        @dial_queue.recycle!
+        expect(@dial_queue.recycle_bin.all).to_not include voter_a.phone
+        expect(@dial_queue.available.all).to include voter_a.phone
       end
     end
   end
