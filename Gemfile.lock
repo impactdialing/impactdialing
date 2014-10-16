@@ -64,6 +64,9 @@ GEM
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
     builder (3.0.4)
+    bullet (4.14.0)
+      activesupport (>= 3.0.0)
+      uniform_notifier (>= 1.6.0)
     cancan (1.6.10)
     capistrano (2.15.5)
       highline
@@ -408,6 +411,7 @@ GEM
       kgio (~> 2.6)
       rack
       raindrops (~> 0.7)
+    uniform_notifier (1.6.2)
     uuid (2.3.7)
       macaddr (~> 1.0)
     uuidtools (2.1.4)
@@ -431,6 +435,7 @@ DEPENDENCIES
   aws-sdk
   better_errors
   binding_of_caller
+  bullet
   cancan (~> 1.6.10)
   capistrano
   capistrano-multiconfig

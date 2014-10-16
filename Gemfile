@@ -81,6 +81,10 @@ group :development do
   gem 'binding_of_caller'
 end
 
+group :development, :heroku_staging do
+  gem 'bullet'
+end
+
 group :development, :test, :e2e do
   gem 'rspec-rails'
   gem 'rspec-its' # its is not in rspec 3
