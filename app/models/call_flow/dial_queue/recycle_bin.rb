@@ -1,39 +1,29 @@
 ##
-# Class for caching list of dialed voters.
-# This list is not seeded until a voter is ready to call.
-# Once a voter has been added to this list. The voter should
-# remain on the list until the associated campaign's recycle rate expires.
+# Maintains cache of dialed or skipped phone numbers - really any number
+# that has had some action taken by a caller or is otherwise
+# not available for dialing right away.
 #
-# When deploying this, it's possible there could be some campaign's with long recycle
-# rates (eg 24 hours). So once these changes are deployed to production, make sure
-# to run a script to seed the dialed lists for these campaigns to avoid potentially long
-# start-up times in the morning as well as to avoid calling household members. Check
-# w/ Michael to see if there's any value in this seed'ing first.
 class CallFlow::DialQueue::RecycleBin
   attr_reader :campaign
 
   delegate :recycle_rate, to: :campaign
 
   include CallFlow::DialQueue::Util
+  include CallFlow::DialQueue::SortedSetScore
 
 private
   def keys
     {
-      dialed: "dial_queue:#{campaign.id}:dialed"
+      bin: "dial_queue:#{campaign.id}:bin"
     }
   end
 
   def entries
-    redis.zrange keys[:dialed], 0, -1
+    redis.zrange keys[:bin], 0, -1
   end
 
   def _benchmark
     @_benchmark ||= ImpactPlatform::Metrics::Benchmark.new("dial_queue.#{campaign.account_id}.#{campaign.id}.dialed")
-  end
-
-  def score(voter)
-    n = voter.id + voter.last_call_attempt_time.to_i
-    "#{n}.#{voter.call_attempts.count}"
   end
 
 public
@@ -42,20 +32,39 @@ public
   end
 
   def add(voter)
-    expire keys[:dialed] do
-      redis.zadd keys[:dialed], score(voter), voter.phone
+    expire keys[:bin] do
+      redis.zadd keys[:bin], score(voter), voter.phone
     end
   end
 
   def remove(voter)
-    redis.zrem keys[:dialed], voter.phone
+    redis.zrem keys[:bin], voter.phone
+  end
+
+  def remove_all(phones)
+    return if phones.blank?
+    
+    redis.zrem keys[:bin], phones
   end
 
   def size
-    redis.zcard keys[:dialed]
+    redis.zcard keys[:bin]
   end
 
   def all
-    redis.zrange keys[:dialed], 0, -1
+    redis.zrange keys[:bin], 0, -1
+  end
+
+  def reuse(&block)
+    items = expired
+    yield items
+    remove_all items.map{|item| item.last}
+  end
+
+  def expired
+    min     = '-inf'
+    max     = "#{campaign.recycle_rate.hours.ago.to_i}.999"
+    items = redis.zrangebyscore(keys[:bin], min, max, with_scores: true)
+    items.map{|item| item.rotate(1)}
   end
 end

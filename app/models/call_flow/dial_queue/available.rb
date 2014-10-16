@@ -28,6 +28,7 @@ class CallFlow::DialQueue::Available
   delegate :recycle_rate, to: :campaign
 
   include CallFlow::DialQueue::Util
+  include CallFlow::DialQueue::SortedSetScore
 
 private
   def _benchmark
@@ -38,35 +39,6 @@ private
     {
       active: "dial_queue:#{campaign.id}:active"
     }
-  end
-
-  def count_call_attempts(voters)
-    ids                  = voters.map(&:id)
-    @call_attempt_counts = CallAttempt.where(voter_id: ids).group(:voter_id).count
-  end
-
-  def score(voter)
-    x = if voter.skipped?
-          voter.skipped_time.to_i # force skipped voters to rank before called voters
-        else
-          voter.last_call_attempt_time.to_i
-        end
-
-    n = voter.id + x
-    # n = "#{voter.id}#{x}"
-    "#{n}.#{@call_attempt_counts[voter.id]}"
-  end
-
-  def memberize(voter)
-    [score(voter), voter.phone]
-  end
-
-  def memberize_voters(voters)
-    count_call_attempts(seed_voters)
-
-    voters.map do |voter|
-      memberize(voter)
-    end
   end
 
 public
@@ -82,6 +54,7 @@ public
   def peak(list=:active)
     redis.zrange keys[list], 0, -1
   end
+  alias :all :peak
 
   def next(n)
     n = size if n > size
@@ -96,10 +69,15 @@ public
     return phone_numbers
   end
 
+  def insert(scored_members)
+    return if scored_members.empty?
+
+    redis.zadd(keys[:active], scored_members)
+  end
+
   def update_score(voter)
-    count_call_attempts([voter])
     new_score = score(voter).to_f
-    cur_score = redis.zscore(keys[:active], voter.phone).to_i
+    cur_score = redis.zscore(keys[:active], voter.phone).to_f
     if new_score > cur_score
       redis.zadd keys[:active], new_score, voter.phone
       return true
