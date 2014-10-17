@@ -4,7 +4,7 @@ module CallFlow::Jobs
     @queue = :dialer_worker
 
     def self.perform(campaign_id)
-      metrics    = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
+      metrics    = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore.split('/').last)
       campaign   = Campaign.find campaign_id
       dial_queue = CallFlow::DialQueue.new(campaign)
 
