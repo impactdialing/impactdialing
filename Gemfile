@@ -79,9 +79,6 @@ group :development do
   gem 'capistrano-multiconfig'
   gem 'better_errors'
   gem 'binding_of_caller'
-end
-
-group :development, :heroku_staging do
   gem 'bullet'
 end
 
