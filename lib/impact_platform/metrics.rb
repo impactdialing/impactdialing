@@ -20,6 +20,16 @@ module ImpactPlatform
       STDOUT.puts(strs.join(' '))
     end
 
+    def self.sample(sample_name, value, source=nil)
+      strs = [
+        "sample##{sample_name}=#{value}"
+      ]
+      if source.present?
+        strs.unshift "source=#{source}"
+      end
+      STDOUT.puts(strs.join(' '))
+    end
+
     class Autoscale
       attr_reader :process
 

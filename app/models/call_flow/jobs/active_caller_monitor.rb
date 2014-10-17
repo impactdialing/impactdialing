@@ -13,10 +13,10 @@ module CallFlow::Jobs
 
       # sleep(1) # help librato capture metrics
 
-      ImpactPlatform::Metrics.count('dialer.active.caller_sessions.total', active_caller_count)
-      ImpactPlatform::Metrics.count('dialer.active.campaigns.total', active_campaigns.count)
+      ImpactPlatform::Metrics.sample('dialer.active.caller_sessions.total', active_caller_count)
+      ImpactPlatform::Metrics.sample('dialer.active.campaigns.total', active_campaigns.count)
       active_campaigns.each do |campaign|
-        ImpactPlatform::Metrics.count("dialer.active.caller_sessions", campaign.caller_sessions.on_call.count, "ac-#{campaign.account_id}.ca-#{campaign.id}")
+        ImpactPlatform::Metrics.sample("dialer.active.caller_sessions", campaign.caller_sessions.on_call.count, "ac-#{campaign.account_id}.ca-#{campaign.id}")
       end
 
       # job_run_metrics.completed
