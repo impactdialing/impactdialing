@@ -15,14 +15,50 @@ class CallStats::ByStatus
     scoped_to == sym
   end
 
+  def call_attempt_items
+    call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').between(@from_date, @to_date)
+  end
+
+  def voter_items
+    all_voters.last_call_attempt_within(@from_date, @to_date)
+  end
+
   def items
     if scoped_to?(:call_attempts)
-      call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').between(@from_date, @to_date)
+      call_attempt_items
     elsif scoped_to?(:all_voters)
-      all_voters.last_call_attempt_within(@from_date, @to_date)
+      voter_items
     else
       raise ArgumentError, "Unknown scoped_to in CallStats::ByStatus: #{scoped_to}. Use one of :call_attempts, :all_voters."
     end
+  end
+
+  def caller_left_message_count
+    if scoped_to?(:call_attempts)
+      @caller_left_message_per_attempt_count ||= call_attempt_items.with_manual_message_drop.count(:id) 
+    else
+      @caller_left_message_per_voter_count ||= CallAttempt.with_manual_message_drop.where(voter_id: voter_items.pluck(:id)).count(:id)
+    end
+  end
+
+  def machine_left_message_count
+    if scoped_to?(:call_attempts)
+      @machine_left_message_per_attempt_count ||= call_attempt_items.with_auto_message_drop.count(:id)
+    else
+      @machine_left_message_per_voter_count ||= CallAttempt.with_auto_message_drop.where(voter_id: voter_items.pluck(:id)).count(:id)
+    end
+  end
+
+  def caller_left_message_percent
+    n = caller_left_message_count || 0
+    perc = (n / (answered_count.zero? ? 1 : answered_count).to_f) * 100
+    "#{perc.round}%"
+  end
+
+  def machine_left_message_percent
+    n = machine_left_message_count || 0
+    perc = (n / (machine_answered_count.zero? ? 1 : machine_answered_count).to_f) * 100
+    "#{perc.round}%"
   end
 
   def percent_of_all_attempts(number)
@@ -39,7 +75,7 @@ class CallStats::ByStatus
   end
 
   def by_status_counts
-    @by_status_counts ||= by_status.count
+    @by_status_counts ||= by_status.count(:id)
   end
 
   def with_status_in_range_count(status)
@@ -71,16 +107,6 @@ class CallStats::ByStatus
     @machine_answered_count = n
   end
 
-  def machine_left_message_count
-    @machine_left_message_count ||= with_status_in_range_count(CallAttempt::Status::VOICEMAIL)
-  end
-
-  def machine_left_message_percent
-    n = machine_left_message_count || 0
-    perc = (n / (machine_answered_count.zero? ? 1 : machine_answered_count).to_f) * 100
-    "#{perc.round}%"
-  end
-
   def failed_count
     with_status_in_range_count(CallAttempt::Status::FAILED)
   end
@@ -100,7 +126,7 @@ class CallStats::ByStatus
 
     query = yield query if block_given?
 
-    @total_count = query.count
+    @total_count = query.count(:id)
   end
 
   # def not_ringing_total_count
@@ -109,13 +135,4 @@ class CallStats::ByStatus
   #   end
   # end
 
-  def caller_left_message_count
-    @caller_left_message_count ||= items.with_manual_message_drop.count
-  end
-
-  def caller_left_message_percent
-    n = caller_left_message_count || 0
-    perc = (n / (answered_count.zero? ? 1 : answered_count).to_f) * 100
-    "#{perc.round}%"
-  end
 end

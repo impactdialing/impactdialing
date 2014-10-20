@@ -33,7 +33,7 @@ private
   end
 
   def total_voters
-    @campaign.all_voters.count
+    @total_voters ||= @campaign.all_voters.count(:id)
   end
 
   def perc(n)
