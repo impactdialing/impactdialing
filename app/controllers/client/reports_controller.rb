@@ -182,9 +182,9 @@ module Client
     private
 
     def load_campaign
-      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
+      # Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
         @campaign = Account.find(account).campaigns.find(params[:campaign_id])
-      end
+      # end
       @datepicker_target = performance_client_campaign_reports_path({campaign_id: @campaign.id})
       @campaign
     end
