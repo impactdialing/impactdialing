@@ -2,10 +2,10 @@ module CallStats
   def self.call_attempts(resource)
     if resource.kind_of? Campaign
       index_name = "index_call_attempts_on_campaign_id_created_at_status"
+      resource.call_attempts.from("call_attempts use index (#{index_name})")
     else
-      index_name = "index_call_attempts_on_campaign_created_id"
+      resource.call_attempts
     end
-    resource.call_attempts.from("call_attempts use index (#{index_name})")
   end
 
   def self.all_voters(resource)
