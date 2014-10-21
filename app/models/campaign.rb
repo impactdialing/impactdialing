@@ -284,7 +284,7 @@ public
 
   def transfers(from_date, to_date)
     result = {}
-    attempts = transfer_attempts.within(from_date, to_date, id)
+    attempts = transfer_attempts.includes(:transfer).within(from_date, to_date, id)
     unless attempts.blank?
       result = TransferAttempt.aggregate(attempts)
     end
