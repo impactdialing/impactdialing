@@ -146,10 +146,8 @@ class Voter < ActiveRecord::Base
     recycle_rate_expired(campaign.recycle_rate)
   }
   scope :not_available_for_retry, lambda {|campaign|
-    where('(voters.status IN (?)) OR voters.active = ? OR voters.enabled = ? OR (voters.last_call_attempt_time IS NOT NULL AND voters.last_call_attempt_time >= ?)',
+    where('(voters.status IN (?)) OR (voters.last_call_attempt_time IS NOT NULL AND voters.last_call_attempt_time >= ?)',
       CallAttempt::Status.not_available_list(campaign),
-      false,
-      false,
       campaign.recycle_rate.hours.ago
     )
   }

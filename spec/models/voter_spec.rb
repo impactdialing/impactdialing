@@ -801,14 +801,6 @@ describe Voter, :type => :model do
       end
 
       context 'includes' do
-        it 'disabled' do
-          all_disabled_flags = @voters.select{|f| !f.enabled?}
-          expect(all_disabled_flags.size).to eq 10
-        end
-        it 'deleted' do
-          all_deleted_flags = @voters.select{|f| !f.active?}
-          expect(all_deleted_flags.size).to eq 10
-        end
         it 'within recycle rate threshold' do
           @voters.where(status: CallAttempt::Status::BUSY).count.should eq 10
         end
