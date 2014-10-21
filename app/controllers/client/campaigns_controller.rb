@@ -85,7 +85,7 @@ module Client
 
     def load_and_verify_campaign
       begin
-        @campaign = Campaign.find(params[:id] || params[:campaign_id])
+        @campaign = Campaign.includes(:voter_lists).find(params[:id] || params[:campaign_id])
       rescue ActiveRecord::RecordNotFound => e
         render :json=> {"message"=>"Resource not found"}, :status => :not_found
         return

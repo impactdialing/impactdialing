@@ -78,7 +78,7 @@
             <th>Remaining</th>
           </tr>
           <% i = 0 %>
-          <% @campaign.voter_lists.each do |list| %>
+          <% @campaign.voter_lists.includes(:campaign).each do |list| %>
             <% unless list.new_record? %>
               <tr>
                 <td valign="top">
