@@ -3,28 +3,33 @@ class CallStats::Velocity
 
 private
   def answered_calls
+    return @answered_calls if defined?(@answered_calls)
     query = CallStats.call_attempts(record).where(status: CallAttempt::Status::SUCCESS)
-    CallStats.between(query, from_date, to_date)
+    @answered_calls = CallStats.between(query, from_date, to_date)
   end
 
   def dials_count
+    return @dials_count if defined?(@dials_count)
     query = CallStats.call_attempts(record)
-    CallStats.between(query, from_date, to_date).count
+    @dials_count = CallStats.between(query, from_date, to_date).count
   end
 
   def answered_calls_count
+    return @answered_calls_count if defined?(@answered_calls_count)
     query = answered_calls
-    CallStats.between(query).count
+    @answered_calls_count = CallStats.between(query).count
   end
 
   def calling_hours_count
+    return @calling_hours_count if defined?(@calling_hours_count)
     query = record.caller_sessions
-    @calling_hours_count ||= CallStats.between(query, from_date, to_date).sum('tDuration') / 3600.0
+    @calling_hours_count = CallStats.between(query, from_date, to_date).sum('tDuration') / 3600.0
   end
 
   def average_duration
+    return @average_duration if defined?(@average_duration)
     return 0 if answered_calls_count.zero?
-    @average_duration ||= (answered_calls.sum('tDuration') / answered_calls_count).ceil
+    @average_duration = (answered_calls.sum('tDuration') / answered_calls_count).ceil
   end
 
 public
