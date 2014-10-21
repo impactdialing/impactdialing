@@ -34,23 +34,11 @@ class CallStats::ByStatus
   end
 
   def caller_left_message_count
-    if scoped_to?(:call_attempts)
-      @caller_left_message_per_attempt_count ||= call_attempt_items.with_manual_message_drop.count(:id) 
-    else
-      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
-        @caller_left_message_per_voter_count ||= CallAttempt.with_manual_message_drop.where(voter_id: voter_items.pluck(:id)).count(:id)
-      end
-    end
+    @caller_left_message_count ||= items.with_manual_message_drop.count(:id)
   end
 
   def machine_left_message_count
-    if scoped_to?(:call_attempts)
-      @machine_left_message_per_attempt_count ||= call_attempt_items.with_auto_message_drop.count(:id)
-    else
-      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
-        @machine_left_message_per_voter_count ||= CallAttempt.with_auto_message_drop.where(voter_id: voter_items.pluck(:id)).count(:id)
-      end
-    end
+    @machine_left_message_count ||= items.with_auto_message_drop.count(:id)
   end
 
   def caller_left_message_percent

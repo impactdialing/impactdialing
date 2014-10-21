@@ -158,7 +158,8 @@ class Voter < ActiveRecord::Base
           recycle_rate.hours.ago, Status::SKIPPED)
   }
   scope :not_ringing, lambda{ where('voters.status <> ?', CallAttempt::Status::RINGING) }
-  scope :with_manual_message_drop, not_ringing.joins(:call_attempts).where('call_attempts.id=voters.last_call_attempt_id').where('call_attempts.recording_id IS NOT NULL').where(call_attempts: {recording_delivered_manually: true})
+  scope :with_manual_message_drop, not_ringing.joins(:last_call_attempt).where('call_attempts.recording_id IS NOT NULL').where(call_attempts: {recording_delivered_manually: true})
+  scope :with_auto_message_drop, not_ringing.joins(:last_call_attempt).where('call_attempts.recording_id IS NOT NULL').where(call_attempts: {recording_delivered_manually: false})
 
   scope :generally_available, lambda{|campaign|
     active.enabled.
