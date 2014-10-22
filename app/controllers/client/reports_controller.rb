@@ -99,22 +99,29 @@ module Client
 
       @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
 
-      @by_contact = Report::Dials::ByStatusController.render(:html, {
-        campaign: @campaign,
-        scoped_to: :all_voters,
-        from_date: @date_range.from,
-        to_date: @date_range.to,
-        heading: "Per lead",
-        description: "The data in the per lead table includes only the most recent status for each lead."
-      })
-      @by_attempt = Report::Dials::ByStatusController.render(:html, {
-        campaign: @campaign,
-        scoped_to: :call_attempts,
-        from_date: @date_range.from,
-        to_date: @date_range.to,
-        heading: "Per dial",
-        description: "The data in the per dial table includes every status for each lead."
-      })
+      if params[:dials_view].blank? || params[:dials_view] == 'by_lead'
+        @report = Report::Dials::ByStatusController.render(:html, {
+          campaign: @campaign,
+          scoped_to: :all_voters,
+          from_date: @date_range.from,
+          to_date: @date_range.to,
+          heading: "Per lead",
+          description: "The data in the per lead table includes only the most recent status for each lead."
+        })
+        @report_link_text = 'Per dial'
+        @report_link_view = 'by_dial'
+      else
+        @report = Report::Dials::ByStatusController.render(:html, {
+          campaign: @campaign,
+          scoped_to: :call_attempts,
+          from_date: @date_range.from,
+          to_date: @date_range.to,
+          heading: "Per dial",
+          description: "The data in the per dial table includes every status for each lead."
+        })
+        @report_link_text = 'Per lead'
+        @report_link_view = 'by_lead'
+      end
     end
 
     def answer
