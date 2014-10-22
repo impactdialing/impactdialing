@@ -1,8 +1,11 @@
 <div role="main">
+  <p>
+    <%= link_to 'Summary Report', dials_summary_client_reports_path(campaign_id: params[:campaign_id]) %>
+  </p>
+  
   <h1><%= @campaign.name %> Dials</h1>
   <h4><%= nice_date(@date_range.from, @campaign.time_zone) %> - <%= nice_date(@date_range.to, @campaign.time_zone) %> <%= @date_range.time_zone.name %></h4>
 
-  <%= @overview.html_safe %>
   <%= @by_contact.html_safe %>
   <%= @by_attempt.html_safe %>
 

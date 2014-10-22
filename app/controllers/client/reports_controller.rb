@@ -80,19 +80,19 @@ module Client
       })
     end
 
+    def dials_summary
+      authorize! :view_reports, @account
+      load_campaign
+      @overview = Report::Dials::SummaryController.render(:html, {
+        campaign: @campaign,
+        heading: 'Overview',
+        description: 'The data in the overview table gives the current state of the campaign.'
+      })
+    end
+
     def dials
       authorize! :view_reports, @account
       load_campaign
-
-      if params[:from_date].blank? || params[:to_date].blank?
-        @overview = Report::Dials::SummaryController.render(:html, {
-          campaign: @campaign,
-          heading: 'Overview',
-          description: 'The data in the overview table gives the current state of the campaign.'
-        })
-      else
-        @overview = ''
-      end
 
       from_date_pool = build_date_pool(:from_date, [@campaign])
       to_date_pool   = build_date_pool(:to_date)
