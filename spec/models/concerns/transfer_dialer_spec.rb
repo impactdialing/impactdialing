@@ -31,7 +31,6 @@ describe TransferDialer do
     end
     let(:expected_transfer_attempt_attrs) do
       {
-        session_key: anything,
         campaign_id: caller_session.campaign_id,
         status: 'Ringing',
         caller_session_id: caller_session.id,
@@ -56,10 +55,15 @@ describe TransferDialer do
     end
 
     it 'creates a transfer_attempt' do
-      expect(transfer.transfer_attempts).to receive(:create).with(expected_transfer_attempt_attrs){ transfer_attempt }
       VCR.use_cassette('TransferDialerSuccessfulDial') do
         transfer_dialer.dial(caller_session)
       end
+
+      transfer_attempt = TransferAttempt.last
+      expected_transfer_attempt_attrs.each do |attr, val|
+        expect(transfer_attempt[attr]).to eq val
+      end
+      expect(transfer_attempt.session_key).to_not be_nil
     end
 
     it 'makes the call to connect the transfer' do

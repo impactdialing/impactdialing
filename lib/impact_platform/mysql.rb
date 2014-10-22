@@ -7,11 +7,6 @@ module ImpactPlatform
       rails_config = Rails.application.config.database_configuration[Rails.env]
       rails_config['pool'] = pool_size
 
-      octopus_config = Octopus.config[Rails.env]
-      octopus_config.each do |shard_name, shard_config|
-        shard_config['pool'] = pool_size
-      end
-
       database_url = ENV['DATABASE_URL']
       if database_url
         pool_query   = "pool=#{pool_size}"

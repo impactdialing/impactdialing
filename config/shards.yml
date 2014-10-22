@@ -1,96 +1,76 @@
+<%
+require 'cgi'
+require 'uri'
+
+def attribute(name, value, force_string = false)
+  output = if value
+    value_string =
+      if force_string
+        '"' + value + '"'
+      else
+        value
+      end
+    "#{name}: #{value_string}"
+  else
+    ""
+  end
+  output
+end
+
+current_env = (ENV['RAILS_ENV'] || ENV['RACK_ENV'])
+pool_size   = (
+  (ENV['WEB_CONCURRENCY'] || 1).to_i *
+  (ENV['MAX_THREADS'] || 5).to_i
+)
+
+slave_keys = ENV.keys.select{|k| k =~ /DATABASE_[A-Z]+_SLAVE\d?_URL/}
+
+configs = slave_keys.map do |env_key|
+  config = {}
+  begin
+    uri = URI.parse(ENV["#{env_key}"])
+  rescue URI::InvalidURIError
+    raise "Invalid DATABASE URL at #{env_key}: #{ENV[env_key]}"
+  end
+
+  raise "No RACK_ENV or RAILS_ENV found" unless ENV["RAILS_ENV"] || ENV["RACK_ENV"]
+  
+  config['id'] = env_key.gsub(/(DATABASE_|_URL)/, '').downcase
+  config['adapter'] = uri.scheme
+
+  config['database'] = (uri.path || "").split("/")[1]
+
+  config['username'] = uri.user
+  config['password'] = uri.password
+
+  config['host'] = uri.host
+  config['port'] = uri.port
+  config['pool'] = pool_size
+
+  config['params'] = CGI.parse(uri.query || "")
+  config
+end
+
+%>
 octopus:
   environments:
-    - heroku_staging
-    - heroku
-    - aws
-    - aws_staging
-    - heroku_preproduction
+  <% unless configs.empty? %>
+    <%= "- #{current_env}" %>
+  <%= current_env %>:
+    <% configs.each do |c| %>
+    <%= c['id'].downcase %>:
+      <%= attribute "adapter",  c['adapter'] %>
+      <%= attribute "database", c['database'] %>
+      <%= attribute "username", c['username'] %>
+      <%= attribute "password", c['password'], true %>
+      <%= attribute "host",     c['host'] %>
+      <%= attribute "port",     c['port'] %>
+      <%= attribute "pool",     c['pool'] %>
+      <% (c['params'] || {}).each do |key, value| %>
+      <%= key %>: <%= value.first %>
+      <% end %>
 
-  test:
-    read_slave1:
-      adapter: mysql2
-      host: localhost
-      database: impactdialing_test
-      username: root
-      password:
-      timeout: 5000
-      reconnect: true
-
-  development:
-    read_slave1:
-      adapter: mysql2
-      host: localhost
-      database: impactdialing_dev
-      username: root
-      password:
-      timeout: 5000
-      reconnect: true
-
-  heroku_staging: &heroku_staging
-    read_slave1:
-      adapter: mysql2
-      host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: staging
-      username: root
-      password: VeYx42NVRVsJMuG
-
-    read_slave2:
-      adapter: mysql2
-      host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: staging
-      username: root
-      password: VeYx42NVRVsJMuG
-
-    simulator_slave:
-      adapter: mysql2
-      host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: staging
-      username: root
-      password: VeYx42NVRVsJMuG
-      # mysql2://root:VeYx42NVRVsJMuG@impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com/staging?reconnect=true
-
-  aws_staging:
-    <<: *heroku_staging
-
-  heroku: &heroku
-    read_slave1:
-      adapter: mysql2
-      host: impact-prod-db.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
-      username: root
-      password: pfsdh37sl203jq
-    read_slave2:
-      adapter: mysql2
-      host: impact-prod-db.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
-      username: root
-      password: pfsdh37sl203jq
-    simulator_slave:
-      adapter: mysql2
-      host: impact-prod-db.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
-      username: root
-      password: pfsdh37sl203jq
-
-  aws:
-    <<: *heroku
-
-  heroku_preproduction:
-    read_slave1:
-      adapter: mysql2
-      host: reports.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
-      username: root
-      password: pfsdh37sl203jq
-    read_slave2:
-      adapter: mysql2
-      host: reports.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
-      username: root
-      password: pfsdh37sl203jq
-    simulator_slave:
-      adapter: mysql2
-      host: reports.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
-      username: root
-      password: pfsdh37sl203jq
+    <% end %>
+  <% else %>
+    - none
+  <% end %>

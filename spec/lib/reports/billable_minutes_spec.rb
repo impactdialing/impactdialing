@@ -86,7 +86,7 @@ describe 'Reports::BillableMinutes' do
       3.times do |i|
         expected = billable_minutes.send(:relations)[i]
         actual = billable_minutes.relation(types[i])
-        expect(actual).to eq expected
+        expect(actual).to be_kind_of expected.class
       end
     end
   end
