@@ -164,7 +164,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       voter_id   = attempt['voter_id']
       attempt_id = attempt['id']
       data       = csv_for(voters[voter_id], voter_field_values[voter_id])
-      Rails.logger.error "process_attempts - #{voters.class}"
+
       voter      = voters[voter_id]
       data[-1]   = call_attempt_details(attempt, answers[attempt_id], note_responses[attempt_id], caller_names, attempt_numbers, @possible_responses, transfer_attempts[attempt_id], voter, voicemail_history)
       @csv << data.flatten
