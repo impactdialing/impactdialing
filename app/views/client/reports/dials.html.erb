@@ -1,7 +1,12 @@
 <div role="main">
   <p>
     <%= link_to 'Summary', dials_summary_client_reports_path(campaign_id: params[:campaign_id]) %><br>
-    <%= link_to @report_link_text, dials_client_reports_path(campaign_id: params[:campaign_id], dials_view: @report_link_view) %>
+    <%= link_to @report_link_text, dials_client_reports_path({
+          campaign_id: params[:campaign_id],
+          dials_view: @report_link_view,
+          from_date: date_as_slashes(@date_range.from, @campaign.time_zone),
+          to_date: date_as_slashes(@date_range.to, @campaign.time_zone)
+    }) %>
   </p>
 
   <h1><%= @campaign.name %> Dials</h1>
@@ -12,6 +17,7 @@
   <%= render('selective_date_range_picker', {
     datepicker_path: dials_client_reports_path,
     campaign_id: @campaign.try(:id),
+    hidden: [['dials_view', params[:dials_view]]],
     campaign: @campaign,
     from_date: @date_range.from,
     to_date: @date_range.to

@@ -6,6 +6,11 @@
   <% elsif(defined?(caller_id)) %>
   <input name="caller_id" type="hidden" value="<%= caller_id %>">
   <% end %>
+  <% if(defined?(hidden)) %>
+  <% hidden.each do |tuple| %>
+  <input name="<%= tuple.first %>" type="hidden" value="<%= tuple.last %>">
+  <% end %>
+  <% end %>
   <p>
     <label for="from_date">From:</label>
     <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= date_as_slashes(from_date, campaign.try(:time_zone)) %>">

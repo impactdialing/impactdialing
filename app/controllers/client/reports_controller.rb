@@ -94,12 +94,14 @@ module Client
       authorize! :view_reports, @account
       load_campaign
 
+      params[:dials_view] ||= 'by_lead'
+
       from_date_pool = build_date_pool(:from_date, [@campaign])
       to_date_pool   = build_date_pool(:to_date)
 
       @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
 
-      if params[:dials_view].blank? || params[:dials_view] == 'by_lead'
+      if params[:dials_view] == 'by_lead'
         @report = Report::Dials::ByStatusController.render(:html, {
           campaign: @campaign,
           scoped_to: :all_voters,
