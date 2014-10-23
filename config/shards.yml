@@ -29,24 +29,24 @@ octopus:
   heroku_staging: &heroku_staging
     read_slave1:
       adapter: mysql2
-      host: debug-odd-mysql-syntax-err-prod.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
+      host: herokustaging55.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      database: impactdialing_heroku_staging
       username: root
-      password: pfsdh37sl203jq
+      password: mypassword912481
 
     read_slave2:
       adapter: mysql2
-      host: debug-odd-mysql-syntax-err-prod.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
+      host: herokustaging55.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      database: impactdialing_heroku_staging
       username: root
-      password: pfsdh37sl203jq
+      password: mypassword912481
 
     simulator_slave:
       adapter: mysql2
-      host: debug-odd-mysql-syntax-err-prod.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
+      host: herokustaging55.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      database: impactdialing_heroku_staging
       username: root
-      password: pfsdh37sl203jq
+      password: mypassword912481
 
   aws_staging:
     <<: *heroku_staging
