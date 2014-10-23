@@ -86,11 +86,15 @@ class Predictive < Campaign
     not_dialed  = voter_query.not_dialed.where(:call_back => false).pluck(:id)
 
     if not_dialed.size > 0
-      voters = not_dialed
+      voter_ids = not_dialed
     else
-      voters = voter_query.last_call_attempt_before_recycle_rate(recycle_rate).
+      voter_ids = voter_query.last_call_attempt_before_recycle_rate(recycle_rate).
                 to_be_dialed.pluck(:id)
     end
+    
+    set_voter_status_to_read_for_dial!(voter_ids)
+
+    voter_ids
   end
 
   def abort_calling_with(caller_session, reason)

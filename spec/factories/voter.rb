@@ -21,7 +21,11 @@ FactoryGirl.define do
 
       trait :queued do
         status CallAttempt::Status::READY
-        last_call_attempt_time { Time.now }
+        # last_call_attempt_time { Time.now }
+      end
+
+      trait :ready do
+        status CallAttempt::Status::READY
       end
 
       trait :in_progress do

@@ -107,6 +107,13 @@ describe Predictive do
 
       expect(campaign.choose_voters_to_dial(1)).to eq([voter.id])
     end
+    
+    it 'marks voter(s) as READY before returning' do
+      voter = create(:realistic_voter, {campaign: campaign})
+      cache_available_voters(campaign)
+      campaign.choose_voters_to_dial(20)
+      expect(voter.reload.status).to eq CallAttempt::Status::READY
+    end
 
     it 'does not load deleted (not active) voters' do
       # voter = create(:realistic_voter, :deleted, {campaign: campaign})
