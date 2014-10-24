@@ -8,7 +8,7 @@ class VoterListBatchUpload
     csv = CSV.new(VoterList.read_from_s3(csv_filename), :col_sep => separator)
     @csv_headers = csv.shift.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @voters_list = csv.readlines
-    @result = {:successCount => 0, :failedCount => 0}
+    @result = {:successCount => 0, :failedCount => 0, :scrubbedCount => 0}
     @csv_to_system_map.remap_system_column! "ID", :to => "custom_id"
     @csv_phone_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "phone")
     @csv_custom_id_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "custom_id")
@@ -16,18 +16,30 @@ class VoterListBatchUpload
   end
 
   def import_leads
-    campaign = @list.campaign
+    campaign = @list.campaign.includes(:account)
+    dnc_list = campaign.account.blocked_numbers.for_campaign(campaign).pluck(:number)
 
     @voters_list.each_slice(1000).each do |voter_info_list|
-      custom_fields = []
-      leads = []
-      updated_leads = {}
+      custom_fields     = []
+      leads             = []
+      updated_leads     = {}
       successful_voters = []
 
       found_leads = found_voters(voter_info_list) if custom_id_present?
 
       voter_info_list.each do |voter_info|
         phone_number = Voter.sanitize_phone(voter_info[@csv_phone_column_location])
+
+        if dnc_list.include?(phone_number)
+          # abort early if this number is in the dnc
+          # do not need to worry about deleting existing
+          # voters eg when custom id is provided because
+          # they will have already been scrubbed on
+          # BlockedNumber creation.
+          @result[:scrubbedCount] += 1
+          next
+        end
+
         lead = nil
 
         if custom_id_present?
