@@ -499,9 +499,12 @@ end
 # **`lock_version`**            | `integer`          | `default(0)`
 # **`enabled`**                 | `boolean`          | `default(TRUE)`
 # **`voicemail_history`**       | `string(255)`      |
+# **`blocked_number_id`**       | `integer`          |
 #
 # ### Indexes
 #
+# * `index_on_blocked_number_id`:
+#     * **`blocked_number_id`**
 # * `index_priority_voters`:
 #     * **`campaign_id`**
 #     * **`enabled`**
