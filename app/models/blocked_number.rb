@@ -5,11 +5,15 @@ class BlockedNumber < ActiveRecord::Base
   validates_length_of :number, :minimum => 10, :maximum => 16
   validates_numericality_of :number
   validates_presence_of :account
+  validates_uniqueness_of :number, scope: [:account_id, :campaign_id]
   before_validation :sanitize_phone
   scope :for_campaign, lambda {|campaign| where("campaign_id is NULL OR campaign_id = ?", campaign.id)}
 
+private
   def sanitize_phone
-    self.number=self.number.gsub(/[\(\)\+ -]/, "") if self.number!=nil
+    return if number.blank?
+
+    self.number = number.gsub(/[\(\)\+ -]/, "")
   end
 end
 

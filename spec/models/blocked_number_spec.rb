@@ -10,6 +10,12 @@ describe BlockedNumber, :type => :model do
     expect(BlockedNumber.new(:number => '1234567890')).to have(0).errors_on(:number)
   end
 
+  it 'ensures number is no more than 16 characters (reasonable max since no numbering plans currently support >15 digits)' do
+    a = []
+    17.times{ a << rand(9)}
+    expect(BlockedNumber.new(number: a.join)).to have(1).error_on(:number)
+  end
+
   ['-', '(', ')', '+', ' '].each do |symbol|
     it "strips #{symbol} from the number" do
       blocked_number = build(:blocked_number, :number => "123#{symbol}456#{symbol}7890")
@@ -32,6 +38,27 @@ describe BlockedNumber, :type => :model do
     expect(BlockedNumber.for_campaign(campaign)).to eq([system_blocked_number, this_campaign_blocked_number])
   end
 
+  describe 'enforcing uniqueness' do
+    let(:account_number){ '1111111111' }
+    let(:campaign_number){ '1111111112' }
+    let(:account){ create(:account) }
+    let(:campaign){ create(:power, account: account) }
+    let(:other_campaign){ create(:power, account: account) }
+    let!(:account_blocked_number){ create(:blocked_number, number: account_number, account: account) }
+    let!(:campaign_blocked_number){ create(:blocked_number, number: campaign_number, account: account, campaign: campaign) }
+
+    it 'ensures uniqueness of account-wide numbers' do
+      expect(BlockedNumber.new(number: account_number, account: account)).to have(1).error_on(:number)
+    end
+
+    it 'ensures uniqueness of campaign-wide numbers' do
+      expect(BlockedNumber.new(number: campaign_number, account: account, campaign: campaign))
+    end
+
+    it 'allows multiple campaign-wide DNCs to have same number' do
+      expect(BlockedNumber.new(number: campaign_number, account: account, campaign: other_campaign)).to have(0).errors_on(:number)
+    end
+  end
 end
 
 # ## Schema Information
