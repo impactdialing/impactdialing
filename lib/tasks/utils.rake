@@ -96,6 +96,35 @@ task :inspect_voter_dnc => :environment do |t,args|
   print "Not blocked: #{y}\n"
 end
 
+desc "De-duplicate BlockedNumber records"
+task :dedup_blocked_numbers => :environment do |t,args|
+  dup_numbers = BlockedNumber.group(:account_id, :campaign_id, :number).count.reject{|k,v| v < 2}
+  dup_numbers.each do |tuple, count|
+    account_id  = tuple[0]
+    campaign_id = tuple[1]
+    number      = tuple[2]
+    
+    raise ArgumentError, "Bad Data... Account[#{account_id}] Campaign[#{campaign_id}] Count[#{count}]" if account_id.blank? or count == 1
+
+    duplicate_ids = BlockedNumber.where(account_id: account_id, campaign_id: campaign_id, number: number).limit(count-1).pluck(:id)
+    to_delete     = BlockedNumber.where(id: duplicate_ids)
+    deleted       = to_delete.map{|n| {account_id: n.account_id, campaign_id: n.campaign_id, number: n.number}}.to_json
+    to_delete.delete_all
+
+    print "Deleted #{deleted.size} BlockedNumber records (as JSON):\n#{deleted}\n"
+  end
+end
+
+desc "Inspect duplicate BlockedNumber entries"
+task :inspect_dup_blocked_numbers => :environment do |t,args|
+  dup_numbers = BlockedNumber.group(:account_id, :campaign_id, :number).count.reject{|k,v| v < 2}
+  print "Account ID, Campaign ID, Number, Count\n"
+  dup_numbers.each do |tuple, count|
+    print tuple.join(',') + ", #{count}\n"
+  end
+  print "\n"
+end
+
 desc "Read phone numbers from csv file and output as array."
 task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_index] => :environment do |t, args|
   raise "Do Not Do This. BlockedNumber.import will bypass after create hooks, breaking the dialer because then blocked numbers could be dialed."
