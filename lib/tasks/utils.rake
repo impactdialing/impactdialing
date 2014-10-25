@@ -49,8 +49,56 @@ task :sync_all_voter_lists_to_voter => :environment do |t, args|
   end
 end
 
+desc "Scrub voters w/ numbers in the DNC from the system (on a per account/campaign basis as it should:)"
+task :scrub_lists_from_dnc => :environment do |t,args|
+  voter_columns_to_import = Voter.columns.map(&:name)
+  import_results = []
+  not_found = []
+
+  Campaign.includes(:account).find_in_batches(batch_size: 500) do |campaigns|
+    campaigns.each do |campaign|
+      campaign.account.blocked_numbers.for_campaign(campaign).find_in_batches(batch_size: 200) do |blocked_numbers|
+        campaign.all_voters.where(phone: blocked_numbers.map(&:number)).find_in_batches(batch_size: 200) do |voters|
+          voters_to_import  = []
+          voters.each do |voter|
+            blocked_number_id = blocked_numbers.detect{|n| n.number == voter.phone}.try(:id)
+            if blocked_number_id
+              voter.blocked_number_id = blocked_number_id
+              voters_to_import << voter
+            else
+              not_found << [voter.account_id, voter.campaign_id, voter.id, voter.phone]
+            end
+          end
+          import_results << Voter.import(voters_to_import, on_duplicate_key_update: [:blocked_number_id])
+        end
+      end
+    end
+  end
+
+  print "Voters loaded from blocked_numbers but blocked_number could not be found when searching for ID\n"
+  print "----------------------------------------------------------------------------------------------\n"
+  print "Account ID, Campaign ID, Voter ID, Voter Phone\n"
+  print not_found.map{|v| v.join(', ')}.join("\n")
+  print "\n\n"
+
+  print "Voter import results\n"
+  print "----------------------------------------------------------------------------------------------\n"
+  print "Success, Fail\n"
+  print import_results.map{|r| "#{r.num_inserts}, #{r.failed_instances.size}"}.join("\n")
+  print "\n\n"
+end
+
+desc "Inspect voter blocked ids"
+task :inspect_voter_dnc => :environment do |t,args|
+  x = Voter.where('blocked_number_id is not null').group(:campaign_id).count
+  y = Voter.where('blocked_number_id is null').group(:campaign_id).count
+  print "Blocked: #{x}\n"
+  print "Not blocked: #{y}\n"
+end
+
 desc "Read phone numbers from csv file and output as array."
 task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_index] => :environment do |t, args|
+  raise "Do Not Do This. BlockedNumber.import will bypass after create hooks, breaking the dialer because then blocked numbers could be dialed."
   require 'csv'
 
   account_id = args[:account_id]
