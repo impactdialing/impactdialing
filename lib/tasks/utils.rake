@@ -125,6 +125,15 @@ task :inspect_dup_blocked_numbers => :environment do |t,args|
   print "\n"
 end
 
+desc "Update VoterList voters_count cache"
+task :update_voter_list_voters_count_cache => :environment do |t,args|
+  VoterList.select([:id, :campaign_id]).find_in_batches do |voter_lists|
+    voter_lists.each do |voter_list|
+      VoterList.reset_counters(voter_list.id, :voters)
+    end
+  end
+end
+
 desc "Read phone numbers from csv file and output as array."
 task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_index] => :environment do |t, args|
   raise "Do Not Do This. BlockedNumber.import will bypass after create hooks, breaking the dialer because then blocked numbers could be dialed."

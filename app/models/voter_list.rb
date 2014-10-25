@@ -152,6 +152,7 @@ end
 # **`csv_to_system_map`**   | `text`             |
 # **`s3path`**              | `text`             |
 # **`uploaded_file_name`**  | `string(255)`      |
+# **`voters_count`**        | `integer`          | `default(0)`
 #
 # ### Indexes
 #

@@ -14,7 +14,7 @@ class Voter < ActiveRecord::Base
     SKIPPED   = 'skipped'
   end
 
-  belongs_to :voter_list
+  belongs_to :voter_list, counter_cache: true
   belongs_to :campaign
   belongs_to :account
 
