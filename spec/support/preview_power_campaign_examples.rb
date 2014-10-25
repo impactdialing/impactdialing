@@ -42,6 +42,8 @@ shared_examples 'Preview/Power#next_voter_in_dial_queue' do
     campaign       = create(:power, {account: account})
     voter          = create(:realistic_voter, :blocked, campaign: campaign)
     priority_voter = create(:realistic_voter, :blocked, campaign: campaign)
+    create(:blocked_number, account: account, campaign: campaign, number: voter.phone)
+    create(:blocked_number, account: account, campaign: campaign, number: priority_voter.phone)
 
     expect(campaign.next_voter_in_dial_queue(nil)).to be_nil
   end
