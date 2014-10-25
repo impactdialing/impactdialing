@@ -50,7 +50,7 @@ task :sync_all_voter_lists_to_voter => :environment do |t, args|
 end
 
 desc "Fix-up DNC for Account 895"
-task :fix_up_account_895 do |t,args|
+task :fix_up_account_895 => :environment do |t,args|
   account      = Account.find 895
   tmp_campaign = account.campaigns.find 4465
   reg_campaign = account.campaigns.find 4388
