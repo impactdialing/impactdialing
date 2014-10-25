@@ -127,6 +127,10 @@ public
     @blocked_numbers ||= account.blocked_numbers.for_campaign(self).pluck(:number)
   end
 
+  def find_dnc_match_id(phone)
+    account.blocked_numbers.matching(self, phone).pluck(:id)
+  end
+
   def new_campaign
     Rails.logger.info "Deprecated ImpactDialing Method: Campaign#new_campaign"
     new_record?

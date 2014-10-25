@@ -1,5 +1,6 @@
 require "spec_helper"
 
+# todo: move upload/parsing related tests to appropriate places eg VoterListBatchUpload
 describe VoterList, :type => :model do
 
   it "can return all voter lists of the given ids" do
@@ -89,7 +90,8 @@ describe VoterList, :type => :model do
             ",")
         expect(@result).to eq({
             :successCount => 2,
-            :failedCount => 0
+            :failedCount => 0,
+            :dncCount => 0
         })
       end
 
@@ -98,7 +100,8 @@ describe VoterList, :type => :model do
         actual = voter_list.import_leads(windoze_mappings, windoze_csv_file_upload, ",")
         expect(actual).to eq({
           successCount: 29,
-          failedCount: 0
+          failedCount: 0,
+          :dncCount => 0
         })
       end
 
@@ -108,7 +111,8 @@ describe VoterList, :type => :model do
         @result = voter_list.import_leads(MAPPINGS,"#{fixture_path}/files/missing_field_list.csv",",")
         expect(@result).to eq({
             :successCount => 2,
-            :failedCount => 0
+            :failedCount => 0,
+            :dncCount => 0
         })
         expect(Voter.all.count).to eq(2)
       end
@@ -154,7 +158,11 @@ describe VoterList, :type => :model do
             ",")
 
         another_voter_list = create(:voter_list, :campaign => campaign, :account => user.account)
-        expect(another_voter_list.import_leads(USER_MAPPINGS, csv_file_upload,",")).to eq({:successCount => 2,:failedCount => 0})
+        expect(another_voter_list.import_leads(USER_MAPPINGS, csv_file_upload,",")).to eq({
+          :successCount => 2,
+          :failedCount => 0,
+          :dncCount => 0
+        })
       end
 
       it "should add even if the same phone is repeated in a different campaign" do
@@ -167,7 +175,8 @@ describe VoterList, :type => :model do
             ",")).to eq(
             {
                 :successCount => 2,
-                :failedCount => 0
+                :failedCount => 0,
+                :dncCount => 0
             }
         )
       end
@@ -196,7 +205,8 @@ describe VoterList, :type => :model do
               ",")).to eq(
               {
                   :successCount => 2,
-                  :failedCount => 0
+                  :failedCount => 0,
+                  :dncCount => 0
               }
           )
         end
@@ -245,7 +255,11 @@ describe VoterList, :type => :model do
         expect(VoterList).to receive(:read_from_s3).and_return(File.open("#{csv_file}").read)
         custom_field = "Custom"
         voter_list = create(:voter_list, :campaign => create(:predictive, :account => user.account), :account => user.account)
-        expect(voter_list.import_leads(mappings, csv_file, ",")).to eq({:successCount => 2, :failedCount => 0})
+        expect(voter_list.import_leads(mappings, csv_file, ",")).to eq({
+          :successCount => 2,
+          :failedCount => 0,
+          :dncCount => 0
+        })
         expect(CustomVoterField.find_by_name(custom_field)).not_to be_nil
         expect(CustomVoterField.all.size).to eq(1)
         voter_list.reload
@@ -261,7 +275,24 @@ describe VoterList, :type => :model do
         expect(VoterList).to receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/missing_phone_with_custom_fields_list.csv").read)
         mappings = CsvMapping.new({"Phone"=>"phone", "Name"=>"", "Custom"=>"Custom"})
         @result = voter_list.import_leads(mappings,"#{fixture_path}/files/missing_phone_with_custom_fields_list.csv",",")
-        expect(@result).to eq({ :successCount => 2,  :failedCount => 1 })
+        expect(@result).to eq({
+          :successCount => 4,
+          :failedCount => 1,
+          :dncCount => 0
+        })
+      end
+
+      it 'reports when an imported number also exists in DNC list for account or campaign' do
+        BlockedNumber.create!(number: '1234555-89-5', campaign: campaign, account: campaign.account)
+        BlockedNumber.create!(number: '1234444-89-5', account: campaign.account)
+        expect(VoterList).to receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/missing_phone_with_custom_fields_list.csv").read)
+        mappings = CsvMapping.new({"Phone"=>"phone", "Name"=>"", "Custom"=>"Custom"})
+        @result = voter_list.import_leads(mappings,"#{fixture_path}/files/missing_phone_with_custom_fields_list.csv",",")
+        expect(@result).to eq({
+          :successCount => 2,
+          :failedCount => 1,
+          :dncCount => 2
+        })
       end
     end
 
@@ -272,6 +303,7 @@ describe VoterList, :type => :model do
     let(:voter_list) { create(:voter_list, :campaign => create(:campaign, :calls_in_progress => true)) }
 
     it "dials all the voters who have not been dialed yet" do
+      # todo: deprecate VoterList#dial
       voter1 = create(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
       voter2 = create(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
       expect(voter1).to receive(:dial)

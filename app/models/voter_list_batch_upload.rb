@@ -8,7 +8,7 @@ class VoterListBatchUpload
     csv = CSV.new(VoterList.read_from_s3(csv_filename), :col_sep => separator)
     @csv_headers = csv.shift.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @voters_list = csv.readlines
-    @result = {:successCount => 0, :failedCount => 0, :scrubbedCount => 0}
+    @result = {:successCount => 0, :failedCount => 0, :dncCount => 0}
     @csv_to_system_map.remap_system_column! "ID", :to => "custom_id"
     @csv_phone_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "phone")
     @csv_custom_id_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "custom_id")
@@ -16,8 +16,7 @@ class VoterListBatchUpload
   end
 
   def import_leads
-    campaign = @list.campaign.includes(:account)
-    dnc_list = campaign.account.blocked_numbers.for_campaign(campaign).pluck(:number)
+    campaign = @list.campaign
 
     @voters_list.each_slice(1000).each do |voter_info_list|
       custom_fields     = []
@@ -30,16 +29,6 @@ class VoterListBatchUpload
       voter_info_list.each do |voter_info|
         phone_number = Voter.sanitize_phone(voter_info[@csv_phone_column_location])
 
-        if dnc_list.include?(phone_number)
-          # abort early if this number is in the dnc
-          # do not need to worry about deleting existing
-          # voters eg when custom id is provided because
-          # they will have already been scrubbed on
-          # BlockedNumber creation.
-          @result[:scrubbedCount] += 1
-          next
-        end
-
         lead = nil
 
         if custom_id_present?
@@ -51,12 +40,15 @@ class VoterListBatchUpload
           end
         end
 
+        blocked_number_id = campaign.find_dnc_match_id(phone_number)
+
         lead ||= {
-          :phone         => phone_number,
-          :voter_list_id => @list.id,
-          :account_id    => @list.account_id,
-          :campaign_id   => @list.campaign_id,
-          :enabled       => true
+          :phone             => phone_number,
+          :voter_list_id     => @list.id,
+          :account_id        => @list.account_id,
+          :campaign_id       => @list.campaign_id,
+          :blocked_number_id => blocked_number_id,
+          :enabled           => true
         }
 
         @csv_headers.each_with_index do |csv_column_title, column_location|
@@ -72,7 +64,12 @@ class VoterListBatchUpload
         if lead[:id] || Voter.phone_correct?(lead[:phone])
           leads << lead
           successful_voters << voter_info
-          @result[:successCount] +=1
+
+          if lead[:blocked_number_id].present?
+            @result[:dncCount] += 1
+          else
+            @result[:successCount] +=1
+          end
         else
           @result[:failedCount] +=1
         end

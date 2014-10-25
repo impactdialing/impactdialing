@@ -28,9 +28,14 @@ class VoterListJob
       result = @voter_list.import_leads(@csv_to_system_map,
                                         @csv_filename,
                                         @separator)
-      response['success'] << "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully."
     rescue Exception => err
-      Rails.logger.error "VoterListJob: #{err.message}"
+      dnc_count     = result[:dncCount]
+      success_count = result[:successCount]
+      fail_count    = result[:failedCount]
+      import_count  = success_count + dnc_count
+      total_count   = successCount + failCount
+      response['success'] << "Upload complete. #{success_count} out of #{total_count} records imported successfully. #{dnc_count} out of #{success_count} records contained phone numbers in your Do Not Call list; we will not call these numbers until the matching entry is removed from your Do Not Call List."
+      Rails.logger.error "VoterListJob: #{err.class} #{err.message}"
       @voter_list.destroy_with_voters
       response['errors'] << "Invalid CSV file. Could not import."
     ensure

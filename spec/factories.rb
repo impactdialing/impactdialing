@@ -198,7 +198,7 @@ FactoryGirl.define do
 
   factory :blocked_number do
     account
-    number '1234567890'
+    number { Forgery(:address).phone }
   end
 
   factory :script_text do
