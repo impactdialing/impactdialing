@@ -308,7 +308,7 @@ public
   end
 
   def leads_available_now
-    sanitize_dials(all_voters.enabled.avialable_to_be_retried(recycle_rate).count  + all_voters.by_status(CallAttempt::Status::ABANDONED).count)
+    sanitize_dials(all_voters.enabled.not_blocked.avialable_to_be_retried(recycle_rate).count  + all_voters.not_blocked.by_status(CallAttempt::Status::ABANDONED).count)
   end
 
   def sanitize_dials(dial_count)
@@ -346,7 +346,7 @@ public
     end
 
     ringing_lines = call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
-    num_remaining = all_voters.by_status('not called').enabled.count
+    num_remaining = all_voters.by_status('not called').enabled.not_blocked.count
     num_available = leads_available_now + num_remaining
     {callers_logged_in: callers_logged_in, on_call: status_count[1], wrap_up: status_count[2], on_hold: status_count[0], ringing_lines: ringing_lines, available: num_available  }
   end
