@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141024194555) do
+ActiveRecord::Schema.define(:version => 20141024222738) do
 
   create_table "accounts", :force => true do |t|
     t.datetime "created_at"
@@ -98,6 +98,7 @@ ActiveRecord::Schema.define(:version => 20141024194555) do
   end
 
   add_index "blocked_numbers", ["account_id", "campaign_id"], :name => "index_blocked_numbers_account_id_campaign_id"
+  add_index "blocked_numbers", ["number"], :name => "index_on_blocked_numbers_number"
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"

@@ -5,6 +5,31 @@ describe BlockedNumber, :type => :model do
   it { is_expected.to validate_presence_of(:account) }
   it { is_expected.to validate_numericality_of(:number)  }
 
+  describe 'load entries for a given account or campaign and number' do
+    let(:account){ create(:account) }
+    let(:other_account){ create(:account) }
+    let(:campaign){ create(:power, account: account) }
+    before do
+      create_list(:bare_blocked_number, 10, account: account)
+      create_list(:bare_blocked_number, 10, account: account, campaign: campaign)
+      create_list(:bare_blocked_number, 10, account: other_account)
+      @account_wide_n = BlockedNumber.where(account_id: account).where('campaign_id is null').first
+      @campaign_wide_n = BlockedNumber.where(account_id: account).where(campaign_id: campaign.id).first
+    end
+
+    it 'loads account-wide numbers' do
+      actual = BlockedNumber.matching(campaign, @account_wide_n.number).first
+
+      expect(actual.id).to eq @account_wide_n.id
+    end
+
+    it 'loads campaign-wide numbers' do
+      actual = BlockedNumber.matching(campaign, @campaign_wide_n.number).first
+
+      expect(actual.id).to eq @campaign_wide_n.id
+    end
+  end
+
   it "ensures the number is at least 10 characters" do
     expect(BlockedNumber.new(:number => '123456789')).to have(1).error_on(:number)
     expect(BlockedNumber.new(:number => '1234567890')).to have(0).errors_on(:number)
@@ -81,4 +106,6 @@ end
 # * `index_blocked_numbers_account_id_campaign_id`:
 #     * **`account_id`**
 #     * **`campaign_id`**
+# * `index_on_blocked_numbers_number`:
+#     * **`number`**
 #
