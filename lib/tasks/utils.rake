@@ -49,6 +49,30 @@ task :sync_all_voter_lists_to_voter => :environment do |t, args|
   end
 end
 
+desc "Fix-up DNC for Account 895"
+task :fix_up_account_895 do |t,args|
+  account      = Account.find 895
+  tmp_campaign = account.campaigns.find 4465
+  reg_campaign = account.campaigns.find 4388
+  account.blocked_numbers.for_campaign(tmp_campaign).update_all(campaign_id: reg_campaign.id)
+
+  account.blocked_numbers.for_campaign(reg_campaign).find_in_batches(batch_size: 500) do |blocked_numbers|
+    campaign.all_voters.where(phone: blocked_numbers.map(&:number)).find_in_batches do |voters|
+      voters_to_import  = []
+      voters.each do |voter|
+        blocked_number_id = blocked_numbers.detect{|n| n.number == voter.phone}.try(:id)
+        if blocked_number_id
+          voter.blocked_number_id = blocked_number_id
+          voters_to_import << voter
+        else
+          not_found << [voter.account_id, voter.campaign_id, voter.id, voter.phone]
+        end
+      end
+      import_results << Voter.import(voters_to_import, on_duplicate_key_update: [:blocked_number_id])
+    end
+  end
+end
+
 desc "Scrub voters w/ numbers in the DNC from the system (on a per account/campaign basis as it should:)"
 task :scrub_lists_from_dnc => :environment do |t,args|
   voter_columns_to_import = Voter.columns.map(&:name)
