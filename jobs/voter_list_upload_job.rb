@@ -11,6 +11,7 @@ class VoterListUploadJob
       voter_list = VoterList.find(voter_list_id)
       job = VoterListJob.new( voter_list.id , domain, email, callback_url, strategy="webui")
       job.perform
+      Resque.enqueue(ResetVoterListCounterCache, voter_list_id)
     rescue Resque::TermException
       Resque.enqueue(self, voter_list_id, email, domain, callback_url, strategy)
     end
