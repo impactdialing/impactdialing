@@ -57,7 +57,7 @@ task :fix_up_account_895 => :environment do |t,args|
   account.blocked_numbers.for_campaign(tmp_campaign).update_all(campaign_id: reg_campaign.id)
 
   account.blocked_numbers.for_campaign(reg_campaign).find_in_batches(batch_size: 500) do |blocked_numbers|
-    campaign.all_voters.where(phone: blocked_numbers.map(&:number)).find_in_batches do |voters|
+    reg_campaign.all_voters.where(phone: blocked_numbers.map(&:number)).find_in_batches do |voters|
       voters_to_import  = []
       voters.each do |voter|
         blocked_number_id = blocked_numbers.detect{|n| n.number == voter.phone}.try(:id)
