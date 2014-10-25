@@ -12,11 +12,17 @@ class BlockedNumber < ActiveRecord::Base
   scope :for_campaign, lambda {|campaign| where("campaign_id is NULL OR campaign_id = ?", campaign.id)}
   scope :matching, lambda{|campaign, phone| for_campaign(campaign).where(number: phone)}
 
+  after_create :scrub_voters
+
 private
   def sanitize_phone
     return if number.blank?
 
     self.number = number.gsub(/[\(\)\+ -]/, "")
+  end
+
+  def scrub_voters
+    Resque.enqueue BlockedNumberScrubber, self.id
   end
 end
 

@@ -30,6 +30,17 @@ describe BlockedNumber, :type => :model do
     end
   end
 
+  describe 'scrubbing matching voters' do
+    let(:account){ create(:account) }
+    let(:campaign){ create(:power, account: account) }
+    it 'queues BlockedNumberScrubber after a BlockedNumber record is created' do
+      blocked_number = BlockedNumber.create(account: account, campaign: campaign, number: '1234567890')
+
+      actual = Resque.peek :background_worker
+      expect(actual).to eq({'class' => 'BlockedNumberScrubber', 'args' => [blocked_number.id]})
+    end
+  end
+
   it "ensures the number is at least 10 characters" do
     expect(BlockedNumber.new(:number => '123456789')).to have(1).error_on(:number)
     expect(BlockedNumber.new(:number => '1234567890')).to have(0).errors_on(:number)
