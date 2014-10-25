@@ -45,6 +45,10 @@ FactoryGirl.define do
         active false
       end
 
+      trait :blocked do
+        blocked_number_id { rand(100) }
+      end
+
       trait :busy do
         status CallAttempt::Status::BUSY
       end

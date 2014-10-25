@@ -30,8 +30,7 @@ private
   end
 
   def next_voters(limit)
-    dnc_numbers      = campaign.account.blocked_numbers.for_campaign(campaign).pluck(:number)
-    available_voters = campaign.all_voters.available_list(campaign).where('id NOT IN (?)', active_ids).without(dnc_numbers)
+    available_voters = campaign.all_voters.available_list(campaign).where('id NOT IN (?)', active_ids)
 
     voters = available_voters.where('id > ?', last_loaded_id).limit(limit)
     if voters.count.zero?

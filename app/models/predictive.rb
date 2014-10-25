@@ -81,8 +81,7 @@ class Predictive < Campaign
   end
 
   def mysql_choose_voters_to_dial(num_voters)
-    blocked     = account.blocked_numbers.for_campaign(self).pluck(:number)
-    voter_query = all_voters.active.enabled.without(blocked).limit(num_voters)
+    voter_query = all_voters.enabled.not_blocked.limit(num_voters)
     not_dialed  = voter_query.not_dialed.where(:call_back => false).pluck(:id)
 
     if not_dialed.size > 0

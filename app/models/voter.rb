@@ -118,7 +118,7 @@ class Voter < ActiveRecord::Base
   scope :next_in_priority_or_scheduled_queues, lambda {|blocked_numbers| raise "Deprecated ImpactDialing Method: Voter.next_in_recycled_queue"}
 
   scope :next_in_recycled_queue, lambda {|recycle_rate, blocked_numbers|
-    enabled.without(blocked_numbers).
+    enabled.not_blocked.
     recycle_rate_expired(recycle_rate).
     where('status NOT IN (?) OR call_back=?', [
       CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING,
@@ -130,6 +130,8 @@ class Voter < ActiveRecord::Base
   }
 
   # New Shiny
+  scope :blocked, where('voters.blocked_number_id IS NOT NULL')
+  scope :not_blocked, where('voters.blocked_number_id IS NULL')
   scope :dialed, where('last_call_attempt_time IS NOT NULL')
   scope :available, lambda{|campaign| where('status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
   scope :recently_dialed_households, lambda{ |recycle_rate|
@@ -162,7 +164,7 @@ class Voter < ActiveRecord::Base
   scope :with_auto_message_drop, not_ringing.joins(:last_call_attempt).where('call_attempts.recording_id IS NOT NULL').where(call_attempts: {recording_delivered_manually: false})
 
   scope :generally_available, lambda{|campaign|
-    active.enabled.
+    enabled.not_blocked.
     where('status NOT IN (?) OR (status = ? AND call_back = ?)',
       CallAttempt::Status.not_available_list(campaign), 
       CallAttempt::Status::SUCCESS,
@@ -229,7 +231,7 @@ public
   # is configured to set the call_back flag to true.
   #
   def self.next_voter(voters, recycle_rate, blocked_numbers, current_voter_id)
-    not_dialed_queue = voters.not_dialed.without(blocked_numbers).enabled
+    not_dialed_queue = voters.enabled.not_blocked.not_dialed
     retry_queue      = voters.next_in_recycled_queue(recycle_rate, blocked_numbers)
     _not_skipped     = not_dialed_queue.not_skipped.first
     _not_skipped     ||= retry_queue.not_skipped.first

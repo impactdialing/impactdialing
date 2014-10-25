@@ -115,13 +115,6 @@ describe Predictive do
       expect(voter.reload.status).to eq CallAttempt::Status::READY
     end
 
-    it 'does not load deleted (not active) voters' do
-      # voter = create(:realistic_voter, :deleted, {campaign: campaign})
-      voter = create_and_cache_voter(:realistic_voter, :deleted, {campaign: campaign})
-
-      expect(campaign.choose_voters_to_dial(1)).to be_empty
-    end
-
     it 'does not load disabled (not enabled) voters' do
       # voter = create(:realistic_voter, :disabled, {campaign: campaign})
       voter = create_and_cache_voter(:realistic_voter, :disabled, {campaign: campaign})
@@ -139,20 +132,21 @@ describe Predictive do
     end
 
     it "excludes system blocked numbers" do
-      unblocked_voter = create(:realistic_voter, campaign: campaign, account: account)
-      blocked_voter   = create(:realistic_voter, campaign: campaign, account: account)
-      create(:blocked_number, number: blocked_voter.phone, account: account, campaign: nil)
+      unblocked_voter                 = create(:realistic_voter, campaign: campaign, account: account)
+      blocked_voter                   = create(:realistic_voter, campaign: campaign, account: account)
+      blocked_number                  = create(:blocked_number, number: blocked_voter.phone, account: account, campaign: nil)
+      blocked_voter.update_attributes!(blocked_number_id: blocked_number.id)
       cache_available_voters(campaign)
  
       expect(campaign.choose_voters_to_dial(10)).to eq([unblocked_voter.id])
     end
 
     it "excludes campaign blocked numbers" do
-      voter_list = create(:voter_list, campaign: campaign, active: true)
+      voter_list      = create(:voter_list, campaign: campaign, active: true)
       unblocked_voter = create(:voter, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
-      blocked_voter = create(:voter, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
-      create(:blocked_number, number: blocked_voter.phone, account: account, campaign: campaign)
-      create(:blocked_number, number: unblocked_voter.phone, account: account, campaign: create(:campaign))
+      blocked_voter   = create(:voter, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
+      blocked_number  = create(:blocked_number, number: blocked_voter.phone, account: account, campaign: campaign)
+      blocked_voter.update_attributes!(blocked_number_id: blocked_number.id)
       cache_available_voters(campaign)
 
       expect(campaign.choose_voters_to_dial(10)).to eq([unblocked_voter.id])
