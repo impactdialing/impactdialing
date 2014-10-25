@@ -52,11 +52,17 @@ end
 desc "Scrub voters w/ numbers in the DNC from the system (on a per account/campaign basis as it should:)"
 task :scrub_lists_from_dnc => :environment do |t,args|
   voter_columns_to_import = Voter.columns.map(&:name)
-  import_results = []
-  not_found = []
+  import_results          = []
+  not_found               = []
+  accountless_campaigns   = []
 
   Campaign.includes(:account).find_in_batches(batch_size: 500) do |campaigns|
     campaigns.each do |campaign|
+      if campaign.account.nil?
+        accountless_campaigns << campaign
+        next
+      end
+
       campaign.account.blocked_numbers.for_campaign(campaign).find_in_batches(batch_size: 200) do |blocked_numbers|
         campaign.all_voters.where(phone: blocked_numbers.map(&:number)).find_in_batches(batch_size: 200) do |voters|
           voters_to_import  = []
@@ -85,6 +91,12 @@ task :scrub_lists_from_dnc => :environment do |t,args|
   print "----------------------------------------------------------------------------------------------\n"
   print "Success, Fail\n"
   print import_results.map{|r| "#{r.num_inserts}, #{r.failed_instances.size}"}.join("\n")
+  print "\n\n"
+
+  print "Account-less campaigns\n"
+  print "----------------------------------------------------------------------------------------------\n"
+  print "Campaign ID, Campaign Type, Account ID, Admin count, First email\n"
+  print accountless_campaigns.map{|r| [r.id, r.type, r.account_id, (r.respond_to?(:users) ? r.users.count : 'N/A'), (r.respond_to?(:users) ? r.users.first.email : 'N/A')].join(',')}.join("\n")
   print "\n\n"
 end
 
