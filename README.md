@@ -170,3 +170,7 @@ Master is mainline development and should always be ready to deploy.
 Work on features, bugs, etc should be done on topical branches. When ready push branch up and open a pull request.
 
 Once the pull request is merged, delete the branch and carry on.
+
+## Abandon Rate Spec
+
+Legally, abandon rate must be calculated as (number abandoned / (number abandoned + number connected to voter)).
