@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'WirelessBlockList' do
+describe 'CallList::WirelessBlockList' do
   def r7
     s = ''
     7.times{ s << "#{rand(9)}" }
@@ -11,31 +11,31 @@ describe 'WirelessBlockList' do
     @redis ||= Redis.new
   end
 
-  subject{ WirelessBlockList }
+  subject{ CallList::WirelessBlockList }
   let(:parser) do
-    instance_double('WirelessBlockParser')
+    instance_double('CallList::WirelessBlockParser')
   end
 
   before do
-    stub_const('WirelessBlockParser', Class.new)
-    allow(WirelessBlockParser).to receive(:new){ parser }
+    stub_const('CallList::WirelessBlockParser', Class.new)
+    allow(CallList::WirelessBlockParser).to receive(:new){ parser }
   end
 
   it 'caches a set of 7 digit numbers (xxx) xxx-x' do
     to_yield = [r7,r7,r7,r7,r7]
     expect(parser).to receive(:in_batches).and_yield(to_yield)
-    WirelessBlockList.cache
+    CallList::WirelessBlockList.cache
     expect(redis.scard(subject.key)).to eq to_yield.size
   end
 
   it 'does not retain entries between cache refreshes' do
     pre_exist = [r7,r7,r7]
     expect(parser).to receive(:in_batches).and_yield(pre_exist)
-    WirelessBlockList.cache
+    CallList::WirelessBlockList.cache
 
     fresh = [r7,r7,r7,r7]
     expect(parser).to receive(:in_batches).and_yield(fresh)
-    WirelessBlockList.cache
+    CallList::WirelessBlockList.cache
     expect(redis.scard(subject.key)).to eq fresh.size
     expect(redis.smembers(subject.key)).to match_array fresh.flatten
   end
@@ -45,8 +45,8 @@ describe 'WirelessBlockList' do
     existing = m[2]
     missing  = r7
     allow(parser).to receive(:in_batches).and_yield(m)
-    WirelessBlockList.cache
-    expect( WirelessBlockList.exists?(missing) ).to be_falsy
-    expect( WirelessBlockList.exists?(existing) ).to be_truthy
+    CallList::WirelessBlockList.cache
+    expect( CallList::WirelessBlockList.exists?(missing) ).to be_falsy
+    expect( CallList::WirelessBlockList.exists?(existing) ).to be_truthy
   end
 end
