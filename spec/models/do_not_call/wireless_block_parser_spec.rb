@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe 'DoNotCall::WirelessBlockParser' do
   let(:filepath) do
-    # generated w/ spec/fixtures/wireless/block.rb
+    # generated w/ ruby spec/fixtures/wireless/gen_list.rb block
     File.join(Rails.root, 'spec', 'fixtures', 'wireless', 'block.csv')
   end
   let(:file){ File.new(filepath, 'r') }

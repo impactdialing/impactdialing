@@ -15,6 +15,9 @@ describe 'DoNotCall::WirelessBlockList' do
   let(:parser) do
     instance_double('DoNotCall::WirelessBlockParser')
   end
+  let(:file) do
+    double('FakeFile')
+  end
 
   before do
     stub_const('DoNotCall::WirelessBlockParser', Class.new)
@@ -24,18 +27,18 @@ describe 'DoNotCall::WirelessBlockList' do
   it 'caches a set of 7 digit numbers (xxx) xxx-x' do
     to_yield = [r7,r7,r7,r7,r7]
     expect(parser).to receive(:in_batches).and_yield(to_yield)
-    DoNotCall::WirelessBlockList.cache
+    subject.cache(file)
     expect(redis.scard(subject.key)).to eq to_yield.size
   end
 
   it 'does not retain entries between cache refreshes' do
     pre_exist = [r7,r7,r7]
     expect(parser).to receive(:in_batches).and_yield(pre_exist)
-    DoNotCall::WirelessBlockList.cache
+    subject.cache(file)
 
     fresh = [r7,r7,r7,r7]
     expect(parser).to receive(:in_batches).and_yield(fresh)
-    DoNotCall::WirelessBlockList.cache
+    subject.cache(file)
     expect(redis.scard(subject.key)).to eq fresh.size
     expect(redis.smembers(subject.key)).to match_array fresh.flatten
   end
@@ -45,8 +48,8 @@ describe 'DoNotCall::WirelessBlockList' do
     existing = m[2]
     missing  = r7
     allow(parser).to receive(:in_batches).and_yield(m)
-    DoNotCall::WirelessBlockList.cache
-    expect( DoNotCall::WirelessBlockList.exists?(missing) ).to be_falsy
-    expect( DoNotCall::WirelessBlockList.exists?(existing) ).to be_truthy
+    subject.cache(file)
+    expect( subject.exists?(missing) ).to be_falsy
+    expect( subject.exists?(existing) ).to be_truthy
   end
 end

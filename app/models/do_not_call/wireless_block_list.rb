@@ -6,7 +6,7 @@ module DoNotCall
     end
 
     def self.key
-      "wireless_numbers:block"
+      "do_not_call:wireless_block"
     end
 
     def self.delete_all
@@ -14,9 +14,9 @@ module DoNotCall
     end
 
   public
-    def self.cache
+    def self.cache(file)
       delete_all
-      parser = WirelessBlockParser.new
+      parser = WirelessBlockParser.new(file)
       parser.in_batches do |strs_of_7_digits|
         redis.sadd key, strs_of_7_digits
       end
@@ -24,6 +24,10 @@ module DoNotCall
 
     def self.exists?(str_of_7_digits)
       redis.sismember(key, str_of_7_digits)
+    end
+
+    def self.all
+      redis.smembers(key)
     end
   end
 end
