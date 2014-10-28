@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'CallList::WirelessBlockList' do
+describe 'DoNotCall::WirelessBlockList' do
   def r7
     s = ''
     7.times{ s << "#{rand(9)}" }
@@ -11,31 +11,31 @@ describe 'CallList::WirelessBlockList' do
     @redis ||= Redis.new
   end
 
-  subject{ CallList::WirelessBlockList }
+  subject{ DoNotCall::WirelessBlockList }
   let(:parser) do
-    instance_double('CallList::WirelessBlockParser')
+    instance_double('DoNotCall::WirelessBlockParser')
   end
 
   before do
-    stub_const('CallList::WirelessBlockParser', Class.new)
-    allow(CallList::WirelessBlockParser).to receive(:new){ parser }
+    stub_const('DoNotCall::WirelessBlockParser', Class.new)
+    allow(DoNotCall::WirelessBlockParser).to receive(:new){ parser }
   end
 
   it 'caches a set of 7 digit numbers (xxx) xxx-x' do
     to_yield = [r7,r7,r7,r7,r7]
     expect(parser).to receive(:in_batches).and_yield(to_yield)
-    CallList::WirelessBlockList.cache
+    DoNotCall::WirelessBlockList.cache
     expect(redis.scard(subject.key)).to eq to_yield.size
   end
 
   it 'does not retain entries between cache refreshes' do
     pre_exist = [r7,r7,r7]
     expect(parser).to receive(:in_batches).and_yield(pre_exist)
-    CallList::WirelessBlockList.cache
+    DoNotCall::WirelessBlockList.cache
 
     fresh = [r7,r7,r7,r7]
     expect(parser).to receive(:in_batches).and_yield(fresh)
-    CallList::WirelessBlockList.cache
+    DoNotCall::WirelessBlockList.cache
     expect(redis.scard(subject.key)).to eq fresh.size
     expect(redis.smembers(subject.key)).to match_array fresh.flatten
   end
@@ -45,8 +45,8 @@ describe 'CallList::WirelessBlockList' do
     existing = m[2]
     missing  = r7
     allow(parser).to receive(:in_batches).and_yield(m)
-    CallList::WirelessBlockList.cache
-    expect( CallList::WirelessBlockList.exists?(missing) ).to be_falsy
-    expect( CallList::WirelessBlockList.exists?(existing) ).to be_truthy
+    DoNotCall::WirelessBlockList.cache
+    expect( DoNotCall::WirelessBlockList.exists?(missing) ).to be_falsy
+    expect( DoNotCall::WirelessBlockList.exists?(existing) ).to be_truthy
   end
 end

@@ -29,7 +29,7 @@ class VoterListBatchUpload
       voter_info_list.each do |voter_info|
         phone_number = Voter.sanitize_phone(voter_info[@csv_phone_column_location])
 
-        if phone_number.present? && CallList::WirelessBlockList.exists?(phone_number[-10..-1])
+        if DoNotCall::WirelessList.exists?(phone_number)
           @result[:cellCount] += 1
           next
         end

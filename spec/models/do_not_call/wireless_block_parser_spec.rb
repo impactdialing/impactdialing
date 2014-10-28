@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'CallList::WirelessBlockParser' do
+describe 'DoNotCall::WirelessBlockParser' do
   let(:filepath) do
     # generated w/ spec/fixtures/wireless/block.rb
     File.join(Rails.root, 'spec', 'fixtures', 'wireless', 'block.csv')
@@ -8,7 +8,7 @@ describe 'CallList::WirelessBlockParser' do
   let(:file){ File.new(filepath, 'r') }
   let(:batch_size){ 250_000 }
 
-  subject{ CallList::WirelessBlockParser.new(file) }
+  subject{ DoNotCall::WirelessBlockParser.new(file) }
 
   it 'yields the result of combining 3 CSV columns (NPS,NXX,X) into a single string' do
     actual_iterations   = 0

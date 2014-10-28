@@ -1,6 +1,6 @@
 require 'csv'
 
-module CallList
+module DoNotCall
   class WirelessBlockParser
     attr_reader :file
 

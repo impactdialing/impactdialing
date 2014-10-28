@@ -1,4 +1,4 @@
-module CallList
+module DoNotCall
   class WirelessBlockList
   private
     def self.redis
