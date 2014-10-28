@@ -91,7 +91,8 @@ describe VoterList, :type => :model do
         expect(@result).to eq({
             :successCount => 2,
             :failedCount => 0,
-            :dncCount => 0
+            :dncCount => 0,
+            :cellCount => 0
         })
       end
 
@@ -101,7 +102,8 @@ describe VoterList, :type => :model do
         expect(actual).to eq({
           successCount: 29,
           failedCount: 0,
-          :dncCount => 0
+          :dncCount => 0,
+          :cellCount => 0
         })
       end
 
@@ -112,7 +114,8 @@ describe VoterList, :type => :model do
         expect(@result).to eq({
             :successCount => 2,
             :failedCount => 0,
-            :dncCount => 0
+            :dncCount => 0,
+            :cellCount => 0
         })
         expect(Voter.all.count).to eq(2)
       end
@@ -161,7 +164,8 @@ describe VoterList, :type => :model do
         expect(another_voter_list.import_leads(USER_MAPPINGS, csv_file_upload,",")).to eq({
           :successCount => 2,
           :failedCount => 0,
-          :dncCount => 0
+          :dncCount => 0,
+          :cellCount => 0
         })
       end
 
@@ -174,9 +178,10 @@ describe VoterList, :type => :model do
             csv_file_upload,
             ",")).to eq(
             {
-                :successCount => 2,
-                :failedCount => 0,
-                :dncCount => 0
+              :successCount => 2,
+              :failedCount => 0,
+              :dncCount => 0,
+              :cellCount => 0
             }
         )
       end
@@ -204,9 +209,10 @@ describe VoterList, :type => :model do
               csv_file_upload_with_duplicate_custom_id,
               ",")).to eq(
               {
-                  :successCount => 2,
-                  :failedCount => 0,
-                  :dncCount => 0
+                :successCount => 2,
+                :failedCount => 0,
+                :dncCount => 0,
+                :cellCount => 0
               }
           )
         end
@@ -258,7 +264,8 @@ describe VoterList, :type => :model do
         expect(voter_list.import_leads(mappings, csv_file, ",")).to eq({
           :successCount => 2,
           :failedCount => 0,
-          :dncCount => 0
+          :dncCount => 0,
+          :cellCount => 0
         })
         expect(CustomVoterField.find_by_name(custom_field)).not_to be_nil
         expect(CustomVoterField.all.size).to eq(1)
@@ -278,7 +285,8 @@ describe VoterList, :type => :model do
         expect(@result).to eq({
           :successCount => 4,
           :failedCount => 1,
-          :dncCount => 0
+          :dncCount => 0,
+          :cellCount => 0
         })
       end
 
@@ -291,7 +299,8 @@ describe VoterList, :type => :model do
         expect(@result).to eq({
           :successCount => 2,
           :failedCount => 1,
-          :dncCount => 2
+          :dncCount => 2,
+          :cellCount => 0
         })
       end
     end

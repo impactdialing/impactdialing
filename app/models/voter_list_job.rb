@@ -32,10 +32,16 @@ class VoterListJob
       dnc_count     = result[:dncCount]
       success_count = result[:successCount]
       fail_count    = result[:failedCount]
+      cell_count    = result[:cellCount]
       import_count  = success_count + dnc_count
       total_count   = success_count + fail_count
 
-      response['success'] << "Upload complete. #{success_count} out of #{total_count} records imported successfully. #{dnc_count} out of #{success_count} records contained phone numbers in your Do Not Call list."
+      response['success'] << [
+        "Upload complete.",
+        " #{success_count} out of #{total_count} records imported successfully.",
+        " #{dnc_count} out of #{success_count} records contained phone numbers",
+        " in your Do Not Call list. #{cell_count} records were skipped because they are assigned to cellular devices."
+      ].join
     rescue CSV::MalformedCSVError => err
       Rails.logger.error "VoterListJobException #{err.class} #{err.message}"
       @voter_list.destroy_with_voters

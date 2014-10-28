@@ -8,7 +8,7 @@ class VoterListBatchUpload
     csv = CSV.new(VoterList.read_from_s3(csv_filename), :col_sep => separator)
     @csv_headers = csv.shift.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @voters_list = csv.readlines
-    @result = {:successCount => 0, :failedCount => 0, :dncCount => 0}
+    @result = {:successCount => 0, :failedCount => 0, :dncCount => 0, :cellCount => 0}
     @csv_to_system_map.remap_system_column! "ID", :to => "custom_id"
     @csv_phone_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "phone")
     @csv_custom_id_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "custom_id")
@@ -28,6 +28,11 @@ class VoterListBatchUpload
 
       voter_info_list.each do |voter_info|
         phone_number = Voter.sanitize_phone(voter_info[@csv_phone_column_location])
+
+        if phone_number.present? && CallList::WirelessBlockList.exists?(phone_number[-10..-1])
+          @result[:cellCount] += 1
+          next
+        end
 
         lead = nil
 
