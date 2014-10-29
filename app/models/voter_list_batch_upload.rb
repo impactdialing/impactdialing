@@ -32,7 +32,10 @@ class VoterListBatchUpload
 
         if dnc_wireless.prohibits?(phone_number)
           @result[:cellCount] += 1
+          p "Skipping Cell: #{phone_number}"
           next
+        else
+          p "Importing Landline: #{phone_number}"
         end
 
         lead = nil
