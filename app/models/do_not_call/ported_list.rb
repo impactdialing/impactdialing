@@ -27,7 +27,7 @@ module DoNotCall
     end
 
     def redis
-      @redis ||= Redis.new
+      @redis ||= DoNotCall.redis
     end
 
     def delete_all

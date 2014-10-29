@@ -2,7 +2,7 @@ module DoNotCall
   class WirelessBlockList
   private
     def self.redis
-      @redis ||= Redis.new
+      @redis ||= DoNotCall.redis
     end
 
     def self.key
