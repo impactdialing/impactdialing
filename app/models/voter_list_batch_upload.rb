@@ -30,10 +30,10 @@ class VoterListBatchUpload
       voter_info_list.each do |voter_info|
         phone_number = Voter.sanitize_phone(voter_info[@csv_phone_column_location])
 
-        # if dnc_wireless.prohibits?(phone_number)
-        #   @result[:cellCount] += 1
-        #   next
-        # end
+        if dnc_wireless.prohibits?(phone_number)
+          @result[:cellCount] += 1
+          next
+        end
 
         lead = nil
 

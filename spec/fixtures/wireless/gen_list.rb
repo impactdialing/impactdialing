@@ -9,6 +9,7 @@ if ARGV[0] == 'block'
       "#{rand(9)}#{rand(9)}#{rand(9)}",
       "#{rand(9)}#{rand(9)}#{rand(9)}",
       rand(9),
+      %w(X S C P V).sample
     ].join(',')
     STDOUT << "\n"
   end
