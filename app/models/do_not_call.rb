@@ -3,6 +3,12 @@ module DoNotCall
     "_system/do_not_call"
   end
 
+  def self.s3_filepath(filename)
+    raise ArgumentError if filename.blank?
+
+    "#{DoNotCall.s3_root}/#{filename}"
+  end
+
   def self.ported_file_url
     ENV['WIRELESS_PORTED_URL']
   end

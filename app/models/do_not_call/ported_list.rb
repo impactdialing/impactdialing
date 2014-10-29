@@ -5,16 +5,19 @@ module DoNotCall
     attr_reader :namespace
 
     def self.filenames
-      [
+      @filenames ||= [
         'WIRELESS-TO-WIRELINE-NORANGE.TXT',
         'WIRELINE-TO-WIRELESS-NORANGE.TXT'
       ]
     end
 
-    def self.s3_filepath(filename)
-      raise ArgumentError if filename.blank?
+    def self.namespaces
+      @namespaces ||= [:landline, :wireless]
+    end
 
-      "#{DoNotCall.s3_root}/#{filename}"
+    def self.infer_namespace(filename)
+      i = filenames.find_index(filename)
+      namespaces[i]
     end
 
     def self.cache(namespace, file)
