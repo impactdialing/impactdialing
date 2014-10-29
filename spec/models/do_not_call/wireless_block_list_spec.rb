@@ -24,7 +24,7 @@ describe 'DoNotCall::WirelessBlockList' do
     allow(DoNotCall::WirelessBlockParser).to receive(:new){ parser }
   end
 
-  it 'caches a set of 7 digit numbers (xxx) xxx-x' do
+  it 'caches a set of the first 7 digits of phone numbers (xxx) xxx-x' do
     to_yield = [r7,r7,r7,r7,r7]
     expect(parser).to receive(:in_batches).and_yield(to_yield)
     subject.cache(file)
@@ -43,13 +43,15 @@ describe 'DoNotCall::WirelessBlockList' do
     expect(redis.smembers(subject.key)).to match_array fresh.flatten
   end
 
-  it 'checks for existence of a 7 digit number' do
+  it 'checks for existence of the first 7 digits of a phone number' do
     m        = [r7,r7,r7,r7,r7,r7]
     existing = m[2]
     missing  = r7
     allow(parser).to receive(:in_batches).and_yield(m)
     subject.cache(file)
-    expect( subject.exists?(missing) ).to be_falsy
-    expect( subject.exists?(existing) ).to be_truthy
+    missing_phone = "#{missing}432"
+    existing_phone = "1#{existing}234"
+    expect( subject.exists?(missing_phone) ).to be_falsy
+    expect( subject.exists?(existing_phone) ).to be_truthy
   end
 end

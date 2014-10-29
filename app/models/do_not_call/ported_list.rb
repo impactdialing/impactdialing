@@ -51,7 +51,7 @@ module DoNotCall
     end
 
     def exists?(phone)
-      redis.sismember(key, phone)
+      redis.sismember(key, phone[-10..-1])
     end
 
     def all

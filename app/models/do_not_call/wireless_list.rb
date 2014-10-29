@@ -23,7 +23,7 @@ module DoNotCall
     end
 
     def not_wireless_block?(phone_number)
-      return ( not block_list.exists?(phone_number[-10,-1]) )
+      return ( not block_list.exists?(phone_number) )
     end
 
     def ported_to_wireless?(phone_number)

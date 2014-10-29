@@ -22,8 +22,8 @@ module DoNotCall
       end
     end
 
-    def self.exists?(str_of_7_digits)
-      redis.sismember(key, str_of_7_digits)
+    def self.exists?(phone)
+      redis.sismember(key, phone[-10..-4])
     end
 
     def self.all

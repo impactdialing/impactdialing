@@ -25,7 +25,7 @@ describe 'DoNotCall::PortedList' do
     allow(DoNotCall::FileParser).to receive(:new){ parser }
   end
 
-  it 'caches a set of numbers namespaced to given key part' do
+  it 'caches a set of 10 digit phone numbers namespaced to given key part' do
     to_yield = [r10,r10,r10,r10,r10]
     expect(parser).to receive(:in_batches).and_yield(to_yield)
     list = subject.cache(:wireless, file)
@@ -50,11 +50,13 @@ describe 'DoNotCall::PortedList' do
     expect( list.key ).to eq "do_not_call:ported:#{namespace}"
   end
 
-  it 'checks for existence of a member' do
+  it 'checks for member existence from the last 10 digits of a phone number' do
     to_yield = [r10,r10,r10,r10,r10]
     expect(parser).to receive(:in_batches).and_yield(to_yield)
     list = subject.cache(:wireless, file)
-    expect( list.exists?(to_yield.first) ).to be_truthy
+
+    existing_phone = "1#{to_yield.first}"
+    expect( list.exists?(existing_phone) ).to be_truthy
     expect( list.exists?(r10) ).to be_falsy
   end
 end
