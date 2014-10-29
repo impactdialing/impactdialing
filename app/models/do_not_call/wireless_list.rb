@@ -4,8 +4,8 @@ module DoNotCall
 
     def initialize
       @block_list = WirelessBlockList
-      @wireless_port_list = PortList.new(:wireless)
-      @landline_port_list = PortList.new(:landline)
+      @wireless_port_list = PortedList.new(:wireless)
+      @landline_port_list = PortedList.new(:landline)
     end
 
     def prohibits?(phone_number)

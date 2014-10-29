@@ -1,6 +1,21 @@
+require 'uri'
+
 module DoNotCall
-  class PortList
+  class PortedList
     attr_reader :namespace
+
+    def self.filenames
+      [
+        'WIRELESS-TO-WIRELINE-NORANGE.TXT',
+        'WIRELINE-TO-WIRELESS-NORANGE.TXT'
+      ]
+    end
+
+    def self.s3_filepath(filename)
+      raise ArgumentError if filename.blank?
+
+      "#{DoNotCall.s3_root}/#{filename}"
+    end
 
     def self.cache(namespace, file)
       list = new(namespace)

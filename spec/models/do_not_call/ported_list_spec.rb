@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'DoNotCall::PortList' do
+describe 'DoNotCall::PortedList' do
   def r10
     s = ''
     10.times{ s << "#{rand(9)}" }
@@ -18,7 +18,7 @@ describe 'DoNotCall::PortList' do
     double('FakeFile')
   end
 
-  subject{ DoNotCall::PortList }
+  subject{ DoNotCall::PortedList }
 
   before do
     stub_const('DoNotCall::FileParser', Class.new)
