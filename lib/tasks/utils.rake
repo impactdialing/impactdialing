@@ -170,6 +170,12 @@ task :update_voter_list_voters_count_cache => :environment do |t,args|
   end
 end
 
+desc "Refresh Redis Wireless Block List & Wireless <-> Wired Ported Lists"
+task :refresh_wireless_ported_lists => :environment do |t,args|
+  DoNotCall::Jobs::RefreshWirelessBlockList.perform('nalennd_block.csv')
+  DoNotCall::Jobs::RefreshPortedLists.perform
+end
+
 desc "Read phone numbers from csv file and output as array."
 task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_index] => :environment do |t, args|
   raise "Do Not Do This. BlockedNumber.import will bypass after create hooks, breaking the dialer because then blocked numbers could be dialed."
