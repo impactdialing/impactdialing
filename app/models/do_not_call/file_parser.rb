@@ -8,7 +8,6 @@ module DoNotCall
 
     # process file in batches, yielding each batch to the givenblock
     def in_batches(batch_size=10_000, &block)
-      csv      = CSV.new(file, {headers: true})
       to_yield = []
 
       csv.each do |line|
@@ -23,7 +22,11 @@ module DoNotCall
     end
 
     def parse_line(line)
-      line
+      line[0]
+    end
+
+    def csv
+      CSV.new(file)
     end
   end
 end
