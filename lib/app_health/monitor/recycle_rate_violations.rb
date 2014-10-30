@@ -9,28 +9,54 @@
 # ```
 # -- alert query, run often to check for problem
 #  SELECT COUNT(id) FROM call_attempts
-#  WHERE created_at >= NOW() - INTERVAL 2 MINUTE
+#  WHERE created_at >= NOW() - INTERVAL 1 HOUR
 #  GROUP BY voter_id
 #  HAVING COUNT(*) > 1
 #
 # -- report query, run once problem is identified
-# select count(*),voter_id,GROUP_CONCAT(dialer_mode) dial_mode,GROUP_CONCAT(campaign_id) campaigns,GROUP_CONCAT(status) statuses,GROUP_CONCAT(created_at) time,NOW() cur_time,GROUP_CONCAT(tDuration) seconds,GROUP_CONCAT(sid) SIDs from call_attempts where created_at >= NOW() - INTERVAL 2 MINUTE group by voter_id,campaign_id having count(*) > 1
+#
+#  SELECT COUNT(*),voter_id,GROUP_CONCAT(dialer_mode) dial_mode,
+#         GROUP_CONCAT(campaign_id) campaigns,GROUP_CONCAT(status) statuses,
+#         GROUP_CONCAT(created_at) time,NOW() cur_time,
+#         GROUP_CONCAT(tDuration) seconds,GROUP_CONCAT(sid) SIDs
+#  FROM call_attempts
+#  WHERE created_at >= NOW() - INTERVAL 1 HOUR
+#  GROUP BY voter_id,campaign_id HAVING COUNT(*) > 1
 # ```
 
 module AppHealth
   module Monitor
     module RecycleRateViolations
-      
+      @sample_name = ''
+      @metric_source = ''
+
+      def self.sample(result)
+        ImpactPlatform::Metrics.sample(@sample_name, result.size, @metric_source)
+      end
+
       # This will run often (every minute or so).
       # TODO: add useful index
       # Performance is ok (~10ms) so long as the INTERVAL is kept to a minimum.
       # Longer than an hour and this query will probably affect db performance without a proper index.
-      def self.alert_query
+      def self.count_violators_sql
         %Q{
-          SELECT COUNT(id) FROM call_attempts
-          WHERE created_at >= NOW() - INTERVAL 1 HOUR
+          SELECT COUNT(DISTINCT(id)) FROM call_attempts
+          WHERE created_at >= UTC_TIMESTAMP() - INTERVAL 1 HOUR
           GROUP BY voter_id
-          HAVING COUNT(*) > 1
+          HAVING COUNT(id) > 1
+        }
+      end
+
+      # This will run infrequently; when alarm condition is noticed.
+      def self.inspect_violators_sql
+        %Q{
+          SELECT COUNT(*),voter_id,GROUP_CONCAT(dialer_mode) dial_mode,
+                 GROUP_CONCAT(campaign_id) campaigns,GROUP_CONCAT(status) statuses,
+                 GROUP_CONCAT(created_at) time,NOW() cur_time,
+                 GROUP_CONCAT(tDuration) seconds,GROUP_CONCAT(sid) SIDs
+          FROM call_attempts
+          WHERE created_at >= UTC_TIMESTAMP() - INTERVAL 1 HOUR
+          GROUP BY voter_id,campaign_id HAVING COUNT(*) > 1
         }
       end
 
@@ -41,12 +67,16 @@ module AppHealth
       # to generate report of violators
       def self.ok?
         # any violations mean our result set is non-empty
-        result = db.execute(alert_query)
-        if result.size.zero?
-          return true
-        else
-          return false
-        end
+        result = db.execute(count_violators_sql)
+
+        sample(result)
+
+        return result.size.zero?
+      end
+
+      def self.inspect_violators
+        result = db.execute(inspect_violators_sql)
+        result
       end
     end
   end
