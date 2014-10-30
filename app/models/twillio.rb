@@ -1,13 +1,20 @@
 class Twillio
   include SidekiqEvents
 
+  def self.error_response_codes
+    # 401: unauthorized
+    # 405: method not allowed
+    # 429: too many requests
+    [400, 401, 404, 405, 429, 500]
+  end
+
   def self.dial(voter, caller_session)
     campaign = caller_session.campaign
     call_attempt = setup_call(voter, caller_session, campaign)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     http_response = twilio_lib.make_call(campaign, voter, call_attempt)
     response = JSON.parse(http_response)
-    if response["status"] == 400
+    if error_response_codes.include?(response["status"])
       TwilioLogger.error(response['TwilioResponse'] || response)
       handle_failed_call(call_attempt, caller_session, voter)
     else
@@ -24,7 +31,7 @@ class Twillio
     http.callback {
       Rails.logger.info "#{call_attempt.id} - after call"
       response = JSON.parse(http.response)
-      if response["status"] == 400
+      if error_response_codes.include?(response["status"])
         TwilioLogger.error(response['TwilioResponse'] || response)
         handle_failed_call(call_attempt, nil, voter)
       else
