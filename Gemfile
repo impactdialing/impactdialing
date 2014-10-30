@@ -55,6 +55,9 @@ group :production, :heroku, :heroku_staging do
   gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
 end
 
+# 911
+gem 'pagerduty'
+
 # Text -> HTML processors
 gem 'redcarpet'
 
@@ -107,5 +110,6 @@ group :test, :e2e do
   gem 'launchy'
   gem 'timecop'
   gem 'webmock'
+  gem 'vcr'
   gem 'capybara-webkit'
 end

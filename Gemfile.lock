@@ -233,6 +233,8 @@ GEM
     newrelic_rpm (3.8.1.221)
     nokogiri (1.6.2.1)
       mini_portile (= 0.6.0)
+    pagerduty (2.0.0)
+      json (>= 1.7.7)
     paperclip (3.5.0)
       activemodel (>= 3.0.0)
       activesupport (>= 3.0.0)
@@ -415,6 +417,7 @@ GEM
     uuid (2.3.7)
       macaddr (~> 1.0)
     uuidtools (2.1.4)
+    vcr (2.9.3)
     vegas (0.1.11)
       rack (>= 1.0.0)
     webmock (1.18.0)
@@ -470,6 +473,7 @@ DEPENDENCIES
   newrelic-redis
   newrelic_rpm
   nokogiri (~> 1.6.0)
+  pagerduty
   paperclip (~> 3.5.0)
   platform-api
   pry
@@ -510,5 +514,6 @@ DEPENDENCIES
   twilio-ruby (~> 3.10.0)
   unicorn
   uuid (~> 2.3.7)
+  vcr
   webmock
   will_paginate (~> 3.0.4)

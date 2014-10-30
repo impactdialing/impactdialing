@@ -1,0 +1,32 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://events.pagerduty.com/generic/2010-04-15/create_event.json
+    body:
+      encoding: UTF-8
+      string: '{"incident_key":"30/10/2014","client":"impact-dialing-app-health","details":"[{\"count\":2,\"voter_id\":1,\"dial_mode\":null,\"campaigns\":\"1,1\",\"statuses\":\"Message
+        delivered,Message delivered\",\"time\":\"2014-10-30 18:59:13,2014-10-30 19:44:13\",\"cur_time\":\"2014-10-30T12:44:14Z\",\"seconds\":\"35,122\",\"SIDs\":null}]","description":"1
+        Recycle Rate Violators","service_key":"5ee2a001bc0b41e48bb587a66d63f4a6","event_type":"trigger"}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - '*/*'
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Length:
+      - '76'
+      Content-Type:
+      - application/json; charset=utf-8
+    body:
+      encoding: UTF-8
+      string: '{"status":"success","message":"Event processed","incident_key":"30/10/2014"}'
+    http_version: 
+  recorded_at: Thu, 30 Oct 2014 19:44:14 GMT
+recorded_with: VCR 2.9.3

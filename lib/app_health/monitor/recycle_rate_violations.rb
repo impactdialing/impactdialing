@@ -26,12 +26,17 @@
 
 module AppHealth
   module Monitor
-    module RecycleRateViolations
-      @sample_name = ''
-      @metric_source = ''
+    class RecycleRateViolations
+      def self.sample_name
+        ''
+      end
+
+      def self.metric_source
+        ''
+      end
 
       def self.sample(result)
-        ImpactPlatform::Metrics.sample(@sample_name, result.size, @metric_source)
+        ImpactPlatform::Metrics.sample(sample_name, result.size, metric_source)
       end
 
       # This will run often (every minute or so).
@@ -40,7 +45,7 @@ module AppHealth
       # Longer than an hour and this query will probably affect db performance without a proper index.
       def self.count_violators_sql
         %Q{
-          SELECT COUNT(DISTINCT(id)) FROM call_attempts
+          SELECT COUNT(DISTINCT(id)) count FROM call_attempts
           WHERE created_at >= UTC_TIMESTAMP() - INTERVAL 1 HOUR
           GROUP BY voter_id
           HAVING COUNT(id) > 1
@@ -50,7 +55,7 @@ module AppHealth
       # This will run infrequently; when alarm condition is noticed.
       def self.inspect_violators_sql
         %Q{
-          SELECT COUNT(*),voter_id,GROUP_CONCAT(dialer_mode) dial_mode,
+          SELECT COUNT(*) count,voter_id,GROUP_CONCAT(dialer_mode) dial_mode,
                  GROUP_CONCAT(campaign_id) campaigns,GROUP_CONCAT(status) statuses,
                  GROUP_CONCAT(created_at) time,NOW() cur_time,
                  GROUP_CONCAT(tDuration) seconds,GROUP_CONCAT(sid) SIDs
@@ -67,16 +72,57 @@ module AppHealth
       # to generate report of violators
       def self.ok?
         # any violations mean our result set is non-empty
-        result = db.execute(count_violators_sql)
+        instance = new
 
-        sample(result)
-
-        return result.size.zero?
+        return instance.ok?
       end
 
       def self.inspect_violators
-        result = db.execute(inspect_violators_sql)
-        result
+        db.select_all(inspect_violators_sql)
+      end
+
+      def self.count_violators
+        db.select_all(count_violators_sql)
+      end
+
+      attr_reader :violator_counts, :violators
+
+      def initialize
+        @violator_counts = self.class.count_violators
+        self.class.sample(violator_counts)
+      end
+
+      def ok?
+        violator_counts.size.zero?
+      end
+
+      def alert_key
+        Time.now.strftime('%d/%m/%Y')
+      end
+
+      def alert_client
+        'impact-dialing-app-health'
+      end
+
+      def alert_description
+        "#{violator_counts.size} Recycle Rate Violators"
+      end
+
+      def alert_details
+        # todo: parse mysql result w/ column names into json objects
+        violators.to_json
+      end
+
+      def alert_if_not_ok
+        unless ok?
+          @violators = self.class.inspect_violators
+          pager_duty = Pagerduty.new(ENV['PAGER_DUTY_RECYCLE_RATE_MONITOR_SERVICE'])
+          pager_duty.trigger(alert_description, {
+            incident_key: alert_key,
+            client: alert_client,
+            details: alert_details
+          })
+        end
       end
     end
   end
