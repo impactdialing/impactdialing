@@ -1,3 +1,5 @@
+require 'impact_platform/metrics'
+
 ## Monitor possible recycle rate violations (ie calling the same voter multiple times in less than an hour)
 #
 # Monitor our data. Count call attempts with a created_at time in the last hour grouped by voter_id.
@@ -28,11 +30,11 @@ module AppHealth
   module Monitor
     class RecycleRateViolations
       def self.sample_name
-        ''
+        'app_health.monitor.recycle_rate_violations'
       end
 
       def self.metric_source
-        ''
+        'system'
       end
 
       def self.sample(result)
@@ -77,6 +79,11 @@ module AppHealth
         return instance.ok?
       end
 
+      def self.alert_if_not_ok
+        instance = new
+        instance.alert_if_not_ok
+      end
+
       def self.inspect_violators
         db.select_all(inspect_violators_sql)
       end
@@ -88,7 +95,9 @@ module AppHealth
       attr_reader :violator_counts, :violators
 
       def initialize
-        @violator_counts = self.class.count_violators
+        @pager_duty_service = ENV['PAGER_DUTY_SERVICE']
+        @violator_counts    = self.class.count_violators
+
         self.class.sample(violator_counts)
       end
 
@@ -109,20 +118,40 @@ module AppHealth
       end
 
       def alert_details
-        # todo: parse mysql result w/ column names into json objects
         violators.to_json
       end
 
       def alert_if_not_ok
         unless ok?
           @violators = self.class.inspect_violators
-          pager_duty = Pagerduty.new(ENV['PAGER_DUTY_RECYCLE_RATE_MONITOR_SERVICE'])
-          pager_duty.trigger(alert_description, {
-            incident_key: alert_key,
-            client: alert_client,
-            details: alert_details
-          })
+
+          alert!
+
+          return false
         end
+
+        return true
+      end
+
+      def alert!
+        alert_by_pager_duty
+        alert_by_email
+      end
+
+      def alert_by_pager_duty
+        return if @pager_duty_service.blank?
+
+        pager_duty = Pagerduty.new(@pager_duty_service)
+        pager_duty.trigger(alert_description, {
+          incident_key: alert_key,
+          client: alert_client,
+          details: alert_details
+        })
+      end
+
+      def alert_by_email
+        return if @pager_duty_service.present?
+        # todo: alert recycle rate violations by email
       end
     end
   end

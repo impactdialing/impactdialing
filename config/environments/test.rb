@@ -4,7 +4,7 @@ PORT = 3000
 MANDRILL_API_KEY='qlYdRXlyROwaN9Tqk1QrhA'
 
 ImpactDialing::Application.configure do
-  ENV['PAGER_DUTY_RECYCLE_RATE_MONITOR_SERVICE'] ||= '5ee2a001bc0b41e48bb587a66d63f4a6'
+  ENV['PAGER_DUTY_SERVICE'] ||= '5ee2a001bc0b41e48bb587a66d63f4a6'
   # Settings specified here will take precedence over those in config/environment.rb
 
   # The test environment is used exclusively to run your application's
