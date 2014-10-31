@@ -57,6 +57,7 @@ end
 
 # 911
 gem 'pagerduty'
+gem 'bugsnag'
 
 # Text -> HTML processors
 gem 'redcarpet'

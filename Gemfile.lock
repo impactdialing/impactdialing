@@ -63,6 +63,9 @@ GEM
       erubis (>= 2.6.6)
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
+    bugsnag (2.5.0)
+      httparty (>= 0.6, < 1.0)
+      multi_json (~> 1.0)
     builder (3.0.4)
     bullet (4.14.0)
       activesupport (>= 3.0.0)
@@ -438,6 +441,7 @@ DEPENDENCIES
   aws-sdk
   better_errors
   binding_of_caller
+  bugsnag
   bullet
   cancan (~> 1.6.10)
   capistrano
