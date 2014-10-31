@@ -50,7 +50,7 @@ describe AppHealth::Monitor::RecycleRateViolations do
         create_attempts(voter2, 71.minutes.ago)
         create_attempts(voter3, 71.minutes.ago)
 
-        expect( subject.ok? ).to(be_truthy, "#{subject.inspect_violators.map{|r| r.join(', ')}.join(' -- ')}")
+        expect( subject.ok? ).to(be_truthy, "#{subject.class.inspect_violators.map{|r| r.join(', ')}.join(' -- ')}")
       end
     end
   end

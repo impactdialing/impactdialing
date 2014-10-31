@@ -2,10 +2,6 @@ require "spec_helper"
 
 describe VoterListsController, :type => :controller do
 
-  before do
-    WebMock.allow_net_connect!
-  end
-
   describe "API Usage (JSON)" do
     let(:account) { create(:account) }
     before(:each) do
@@ -116,12 +112,14 @@ describe VoterListsController, :type => :controller do
         end
 
         it "renders voter_list attributes as json" do
-          allow(Resque).to receive(:enqueue).once.with(VoterListChangeJob, anything, anything)
-          expect(Resque).to receive(:enqueue).at_least(:once).with(VoterListUploadJob, anything, anything, anything, anything)
+          VCR.use_cassette('API CSV voter list upload', match_requests_on: [:host, :method]) do
+            allow(Resque).to receive(:enqueue).once.with(VoterListChangeJob, anything, anything)
+            expect(Resque).to receive(:enqueue).at_least(:once).with(VoterListUploadJob, anything, anything, anything, anything)
 
-          post :create, params.merge(upload: csv_upload)
-          
-          expect(response.body).to match(/\{\"voter_list\":\{\"enabled\":true,\"id\":(.*),\"name\":\"abc.csv\"\}\}/)
+            post :create, params.merge(upload: csv_upload)
+            
+            expect(response.body).to match(/\{\"voter_list\":\{\"enabled\":true,\"id\":(.*),\"name\":\"abc.csv\"\}\}/)
+          end
         end
       end
 
@@ -133,8 +131,10 @@ describe VoterListsController, :type => :controller do
           }
         end
         it 'renders a json error message telling the consumer of the incorrect file format' do
-          post :create, params.merge(upload: csv_upload)
-          expect(response.body).to eq("{\"errors\":{\"base\":[\"Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \\\"Save As\\\" to change it to one of these formats.\"]}}")
+          VCR.use_cassette('API invalid file format voter list upload', match_requests_on: [:host, :method]) do
+            post :create, params.merge(upload: csv_upload)
+            expect(response.body).to eq("{\"errors\":{\"base\":[\"Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \\\"Save As\\\" to change it to one of these formats.\"]}}")
+          end
         end
       end
 

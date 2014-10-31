@@ -9,8 +9,12 @@ class RedirectCallerJob
 
     twilio = Twilio::REST::Client.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     call   = twilio.account.calls.get(caller_session.sid)
-    params = Providers::Phone::Call::Params::CallerSession.new(caller_session)
-    
-    call.redirect_to(params.url)
+
+    if call.status == 'in-progress'
+      params = Providers::Phone::Call::Params::CallerSession.new(caller_session)
+      call.redirect_to(params.url)
+    else
+      Rails.logger.warn("RedirectCallerJob attempted to redirect Call[#{call.sid}] Status[#{call.status}]")
+    end
   end
 end

@@ -7,21 +7,23 @@ describe UserMailer, :type => :mailer do
   let(:white_label){ 'stonesphonesdialer' }
 
   before(:each) do
-    WebMock.allow_net_connect!
     @mandrill = double
     @mailer = UserMailer.new
     allow(@mailer).to receive(:email_domain).and_return({'email_addresses'=>['email@impactdialing.com', white_labeled_email]})
   end
 
   it 'delivers confirmation for uploaded voter list' do
-    domain = 'dc-London'
-    expect(@mailer).to receive(:send_email).with(anything)
-    @mailer.voter_list_upload({'success' => ['true']}, domain, 'test@email.com', 'test')
-
+    VCR.use_cassette('email confirmation for voter list upload') do
+      domain = 'dc-London'
+      expect(@mailer).to receive(:send_email).with(anything)
+      @mailer.voter_list_upload({'success' => ['true']}, domain, 'test@email.com', 'test')
+    end
   end
 
   it 'defaults from_email to email@impactdialing.com when unverified' do
-    expect(@mailer.white_labeled_email('unverified@email.com')).to eq('email@impactdialing.com')
+    VCR.use_cassette('email unverified something or other') do
+      expect(@mailer.white_labeled_email('unverified@email.com')).to eq('email@impactdialing.com')
+    end
   end
 
   it 'uses white labeled email when verified' do
@@ -46,7 +48,9 @@ describe UserMailer, :type => :mailer do
     end
     let(:account_id) { 111 }
     after do
-      @mailer.deliver_download_failure(user, campaign)
+      VCR.use_cassette('email download fail message') do
+        @mailer.deliver_download_failure(user, campaign)
+      end
     end
 
     describe '#deliver_download_failure(user, campaign)' do

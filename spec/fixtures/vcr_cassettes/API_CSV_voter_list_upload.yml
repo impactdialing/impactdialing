@@ -1,0 +1,51 @@
+---
+http_interactions:
+- request:
+    method: put
+    uri: https://s3.amazonaws.com/impactdialing_production/test/uploads/voter_list/abc.csv_1414733977_725
+    body:
+      encoding: ASCII-8BIT
+      string: |
+        "Phone","FIRSTName","LAST","MiddleName","Suffix","Email","ID","Age","Gender"
+        "1234567-89-5","Foo","Bar","FuBur",,"foo@bar.com",987,23,"Male"
+        "1234567-89-5","Chocolate","Bar","FuBur",,"choco@bar.com",123,23,"Male"
+    headers:
+      Content-Type:
+      - application/text
+      Accept-Encoding:
+      - ''
+      Content-Length:
+      - '213'
+      X-Amz-Acl:
+      - private
+      User-Agent:
+      - aws-sdk-ruby/1.11.1 ruby/2.0.0 x86_64-darwin13.1.0
+      Date:
+      - Fri, 31 Oct 2014 05:39:37 GMT
+      Authorization:
+      - AWS AKIAINGDKRFQU6S63LUQ:pVYWsiMASwbDuXo9HDd+LAGVtig=
+      Accept:
+      - '*/*'
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      X-Amz-Id-2:
+      - E/p2vFvsdN7zcCLm7ghysqt3Wdaju3OWDk3PwlJsafqe+feUnV6huR2FbRUH1eT/
+      X-Amz-Request-Id:
+      - 38149C4BBBA9D64D
+      Date:
+      - Fri, 31 Oct 2014 05:39:38 GMT
+      Etag:
+      - '"b253a279d887d703322aac33c257bf87"'
+      Content-Length:
+      - '0'
+      Server:
+      - AmazonS3
+    body:
+      encoding: UTF-8
+      string: ''
+    http_version: 
+  recorded_at: Fri, 31 Oct 2014 05:39:37 GMT
+recorded_with: VCR 2.9.3
