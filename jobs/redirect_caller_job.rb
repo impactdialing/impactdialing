@@ -14,7 +14,7 @@ class RedirectCallerJob
       params = Providers::Phone::Call::Params::CallerSession.new(caller_session)
       call.redirect_to(params.url)
     else
-      Rails.logger.warn("RedirectCallerJob attempted to redirect Call[#{call.sid}] Status[#{call.status}]")
+      Rails.logger.error("RedirectCallerJob attempted to redirect Call[#{call.sid}] Status[#{call.status}]")
     end
   end
 end
