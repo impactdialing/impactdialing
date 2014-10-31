@@ -20,3 +20,5 @@ persist_worker: rake environment resque:work QUEUE=persist_jobs
 twilio_stats: rake environment resque:work QUEUE=twilio_stats
 
 clock: rake environment resque:scheduler VERBOSE=true
+
+app_health: rake environment monitor_app_health APP_HEALTH_RUN_INTERVAL=90
