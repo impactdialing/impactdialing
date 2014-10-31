@@ -12,7 +12,7 @@ module AppHealth
       loop do
         RecycleRateViolations.alert_if_not_ok
 
-        sleep(app_health_run_interval)
+        sleep(app_health_run_interval.to_i)
       end
     end
   end
