@@ -106,7 +106,10 @@ module AppHealth
       end
 
       def alert_key
-        Time.now.strftime('%d/%m/%Y')
+        time      = Time.now.strftime('%d/%m/%Y')
+        campaigns = violators.first['campaigns']
+        voter_id  = violators.first['voter_id']
+        "#{time} - #{campaigns} - #{voter_id}"
       end
 
       def alert_client
