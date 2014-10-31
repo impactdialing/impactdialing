@@ -27,8 +27,12 @@ Dir[Rails.root.join("spec/shared/**/*.rb")].each {|f| require f}
 Capybara.javascript_driver = :webkit
 
 VCR.configure do |c|
-  c.cassette_library_dir = Rails.root.join 'spec/fixtures/vcr_cassettes'
-  c.hook_into :webmock
+  if ENV['RAILS_ENV'] == 'e2e'
+    c.allow_http_connections_when_no_cassette = true
+  else
+    c.cassette_library_dir = Rails.root.join 'spec/fixtures/vcr_cassettes'
+    c.hook_into :webmock
+  end
 end
 
 RSpec.configure do |config|
