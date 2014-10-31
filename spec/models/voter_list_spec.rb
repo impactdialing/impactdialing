@@ -435,6 +435,7 @@ end
 # **`s3path`**              | `text`             |
 # **`uploaded_file_name`**  | `string(255)`      |
 # **`voters_count`**        | `integer`          | `default(0)`
+# **`skip_wireless`**       | `boolean`          | `default(TRUE)`
 #
 # ### Indexes
 #

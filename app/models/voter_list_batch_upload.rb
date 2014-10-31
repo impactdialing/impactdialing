@@ -15,9 +15,18 @@ class VoterListBatchUpload
     @custom_attributes = create_custom_attributes
   end
 
+  # return true when desirable to not import numbers for cell devices
+  # return false when desirable to import numbers for both cell & landline devices
+  def skip_wireless?
+    @list.skip_wireless?
+  end
+
+  def dnc_wireless
+    @dnc_wireless ||= DoNotCall::WirelessList.new
+  end
+
   def import_leads
     campaign     = @list.campaign
-    dnc_wireless = DoNotCall::WirelessList.new
 
     @voters_list.each_slice(1000).each do |voter_info_list|
       custom_fields     = []
@@ -30,7 +39,7 @@ class VoterListBatchUpload
       voter_info_list.each do |voter_info|
         phone_number = Voter.sanitize_phone(voter_info[@csv_phone_column_location])
 
-        if dnc_wireless.prohibits?(phone_number)
+        if skip_wireless? && dnc_wireless.prohibits?(phone_number)
           @result[:cellCount] += 1
           next
         end

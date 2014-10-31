@@ -3,7 +3,7 @@ class VoterList < ActiveRecord::Base
   belongs_to :campaign
   belongs_to :account
   has_many :voters, :conditions => {:active => true}
-  attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id, :uploaded_file_name, :enabled
+  attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id, :uploaded_file_name, :enabled, :skip_wireless
 
   validates_presence_of :name, :s3path, :csv_to_system_map, :uploaded_file_name
   validates_length_of :name, :minimum => 3
@@ -153,6 +153,7 @@ end
 # **`s3path`**              | `text`             |
 # **`uploaded_file_name`**  | `string(255)`      |
 # **`voters_count`**        | `integer`          | `default(0)`
+# **`skip_wireless`**       | `boolean`          | `default(TRUE)`
 #
 # ### Indexes
 #

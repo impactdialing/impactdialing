@@ -5,6 +5,12 @@
     <div class="form">
       <%= hidden_field_tag 'voter_list[separator]' %>
       <p>
+        <label for="voter_list_skip_wireless">
+          <input type="hidden" name="voter_list[skip_wireless]" value="0">
+          <input type="checkbox" name="voter_list[skip_wireless]" id="voter_list_skip_wireless" checked="checked" value="1"> Do not import cell phone records
+        </label>
+      </p>
+      <p>
         <%= file_field_tag 'upload[datafile]' %>
       </p>
       <p style="display: none;" id='list_name'>
