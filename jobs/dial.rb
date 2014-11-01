@@ -44,8 +44,8 @@ class Dial
         EventMachine.stop
       end
       
-     rescue Exception => e
-       puts e
+     rescue => e
+       Rails.logger.error "#{e.class} #{e.message}"
      end    
   end
 end
