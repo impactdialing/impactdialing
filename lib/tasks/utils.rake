@@ -176,6 +176,19 @@ task :refresh_wireless_ported_lists => :environment do |t,args|
   DoNotCall::Jobs::RefreshPortedLists.perform
 end
 
+desc "Fix pre-existing VoterList#skip_wireless values"
+task :fix_pre_existing_list_skip_wireless => :environment do
+  # lists that were never scrubbed => < 2014-10-29
+  # lists that were never scrubbed => > 2014-10-29 11:15am < 2014-10-29 12:00pm
+  # lists that were scrubbed => > 2014-10-29 3am < 2014-10-29 11:15am
+  # lists that were scrubbed => > 2014-10-29 12pm
+  never_scrubbed = VoterList.where('created_at <= ? OR (created_at >= ? AND created_at <= ?)',
+    '2014-10-29 07:00:00 0000',
+    '2014-10-29 18:15:00 0000',
+    '2014-10-29 19:15:00 0000')
+  never_scrubbed.update_all(skip_wireless: false)
+end
+
 desc "Read phone numbers from csv file and output as array."
 task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_index] => :environment do |t, args|
   raise "Do Not Do This. BlockedNumber.import will bypass after create hooks, breaking the dialer because then blocked numbers could be dialed."
