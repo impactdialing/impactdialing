@@ -8,6 +8,23 @@ class Twillio
     [400, 401, 404, 405, 429, 500]
   end
 
+  def self.count_source(campaign, caller_session=nil)
+    n = []
+    n << campaign.type.to_s.downcase
+    n << "ac-#{campaign.account_id}"
+    n << "ca-#{campaign.id}"
+    n << "cs-#{caller_session.id}" if caller_session.present?
+    n.join('.')
+  end
+
+  def self.count_dial_success(campaign, caller_session=nil)
+    ImpactPlatform::Metrics.count('dialer.dial.success', '1', count_source(campaign, caller_session))
+  end
+
+  def self.count_dial_error(campaign, caller_session=nil)
+    ImpactPlatform::Metrics.count('dialer.dial.error', '1', count_source(campaign, caller_session))
+  end
+
   def self.dial(voter, caller_session)
     campaign = caller_session.campaign
     call_attempt = setup_call(voter, caller_session, campaign)
@@ -15,10 +32,9 @@ class Twillio
     http_response = twilio_lib.make_call(campaign, voter, call_attempt)
     response = JSON.parse(http_response)
     if error_response_codes.include?(response["status"])
-      TwilioLogger.error(response['TwilioResponse'] || response)
-      handle_failed_call(call_attempt, caller_session, voter)
+      handle_failed_call(call_attempt, caller_session, voter, response)
     else
-      call_attempt.update_attributes(:sid => response["sid"])
+      handle_succeeded_call(call_attempt, caller_session, voter, response)
     end
   end
 
@@ -32,10 +48,9 @@ class Twillio
       Rails.logger.info "#{call_attempt.id} - after call"
       response = JSON.parse(http.response)
       if error_response_codes.include?(response["status"])
-        TwilioLogger.error(response['TwilioResponse'] || response)
-        handle_failed_call(call_attempt, nil, voter)
+        handle_failed_call(call_attempt, nil, voter, response)
       else
-        call_attempt.update_attributes(:sid => response["sid"])
+        handle_succeeded_call(call_attempt, nil, voter, response)
       end
       iter.return(http)
        }
@@ -60,7 +75,14 @@ class Twillio
     attempt
   end
 
-  def self.handle_failed_call(attempt, caller_session, voter)
+  def self.handle_succeeded_call(call_attempt, caller_session, voter, response)
+    count_dial_success(voter.campaign, caller_session)
+    call_attempt.update_attributes(:sid => response["sid"])
+  end
+
+  def self.handle_failed_call(attempt, caller_session, voter, response)
+    TwilioLogger.error(response['TwilioResponse'] || response)
+    count_dial_error(voter.campaign, caller_session)
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
     unless caller_session.nil?
