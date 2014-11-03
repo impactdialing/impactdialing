@@ -13,6 +13,20 @@ describe Client::ReportsController, :type => :controller do
     let!(:campaign){ create(:preview, script: create(:script), :time_zone => time_zone.name, account: account) }
     let!(:caller){ create(:caller, campaign: campaign, account: account) }
 
+    describe 'graceful invalid report dates handler' do
+      before do
+        request.env['HTTP_REFERER'] = performance_client_campaign_reports_url(campaign_id: campaign.id, from_date: '7-4-2014')
+        get :performance, campaign_id: campaign.id, from_date: '7-4-2014'
+      end
+      it 'redirects back' do
+        expect(response).to redirect_to :back
+      end
+
+      it 'warns user' do
+        expect(flash[:error]).to_not be_blank
+      end
+    end
+
     describe "caller reports" do
       it "lists all callers" do
         3.times{create(:caller, account: account, campaign: campaign, active: true)}
