@@ -68,6 +68,16 @@ describe Report::SelectiveDateRange do
     it 'raises ArgumentError'
   end
 
+  context 'given invalid date formats' do
+    it 'raises Report::InvalidDateFormat' do
+      date_range = Report::SelectiveDateRange.new(['10-1-2014'])
+
+      expect{
+        date_range.from
+      }.to raise_error Report::InvalidDateFormat
+    end
+  end
+
   context 'given first non-nil element of pool is datetime object' do
     let(:campaign){ create(:power, time_zone: "Pacific Time (US & Canada)") }
 
