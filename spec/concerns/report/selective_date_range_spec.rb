@@ -74,7 +74,7 @@ describe Report::SelectiveDateRange do
 
       expect{
         date_range.from
-      }.to raise_error Report::InvalidDateFormat
+      }.to raise_error Report::SelectiveDateRange::InvalidDateFormat
     end
   end
 

@@ -1,13 +1,13 @@
-class Report::InvalidDateFormat < ArgumentError; end
-
 class Report::SelectiveDateRange
+  class InvalidDateFormat < ArgumentError; end
+
   attr_reader :time_zone, :from_pool, :to_pool
 
 private
   def verify_date_format!(datetime)
     return true if datetime =~ /\d+\/\d+\/\d+/
 
-    raise Report::InvalidDateFormat, "Date must be of format mm/dd/yyyy; eg 7/4/2014"
+    raise InvalidDateFormat, "Date must be of format mm/dd/yyyy; eg 7/4/2014"
   end
 
   def normalize(datetime)
