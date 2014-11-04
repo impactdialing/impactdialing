@@ -49,6 +49,19 @@ task :sync_all_voter_lists_to_voter => :environment do |t, args|
   end
 end
 
+desc "Count Voters out-of-sync w/ VoterList#enabled"
+task :fix_out_of_sync_voters, [:campaign_id] => :environment do |t,args|
+  campaign_id = args[:campaign_id]
+  campaign = Campaign.find(campaign_id)
+  sync_map = campaign.voter_lists.where(enabled: false).map{|l| [l.id, l.name, l.voters.where(enabled: true).count]}
+  out_of_sync = sync_map.select{|ar| ar.last > 0}
+  # update
+  out_of_sync.each do |sm|
+    list = campaign.voter_lists.find(sm.first)
+    list.voters.update_all(enabled: list.enabled)
+  end
+end
+
 desc "Fix-up DNC for Account 895"
 task :fix_up_account_895 => :environment do |t,args|
   account        = Account.find 895
