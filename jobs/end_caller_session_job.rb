@@ -1,5 +1,25 @@
+##
+# Clean-up calls & voters when a caller disconnects.
+# This job is queued for +WebuiCallerSession+ & +PhonesOnlyCallerSession+.
+#
+# ### Metrics
+#
+# - failed count
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 2 or more failures within 5 minutes
+#
+# todo: make re-entrant/idempotent
+# todo: stop updating voter statuses to 'not called'
+#
 class EndCallerSessionJob
   include Sidekiq::Worker
+  # Eventually should be able to retry this. Current implementation would cause
+  # data inconsistencies on retry as the CallAttempt.wrapup_calls sets all call
+  # attempt records to have a wrapup_time of `Time.now`.
   sidekiq_options :retry => false
   sidekiq_options :failures => true
 

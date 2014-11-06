@@ -1,5 +1,24 @@
+##
+# Redirect a caller to new TwiML.
+# This job is queued ... more than it should be.
+# Currently queue this job whenever there is a change in a dialed call
+# or the caller account has reached some error condition (eg out of funds).
+#
+# ### Metrics
+#
+# - failed count
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 2 or more failures within 5 minutes
+#
 class RedirectCallerJob
   include Sidekiq::Worker
+  # Retries should occur in lower-level dependencies.
+  # Sidekiq should not be used to retry it will almost certainly retry after
+  # the call has ended.
   sidekiq_options :retry => false
   sidekiq_options :failures => true
 
