@@ -19,12 +19,14 @@ module LibratoSidekiq
         Librato.group('sidekiq') do |group|
           group.increment 'completed', source: source, sporadic: true
         end
+        log "Middleware#call - completed"
       rescue => exception
         worker_name = worker.respond_to?(:name) ? worker.name : worker.class.to_s.split('::').last
         source = [queue, worker_name].join('.')
         Librato.group('sidekiq') do |group|
           group.increment 'exception', source: source, sporadic: true
         end
+        log "Middleware#call - exception: #{exception}"
 
         raise
       end
