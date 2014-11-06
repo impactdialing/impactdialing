@@ -32,5 +32,9 @@ Rails.application.config.after_initialize do
         :namespace => 'resque'
       }
     end
+
+    Librato::Sidekiq::Middleware.configure do |c|
+      c.enabled = true
+    end
   end
 end
