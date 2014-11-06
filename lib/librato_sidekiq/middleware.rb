@@ -7,6 +7,7 @@ module LibratoSidekiq
 
     def initialize(*args)
       log "initializing #{self.class}.new(#{[*args]})"
+      LibratoSidekiq.track!
     end
 
     def call(worker, msg, queue)
@@ -27,7 +28,6 @@ module LibratoSidekiq
           group.increment 'exception', source: source
         end
         log "Middleware#call - exception: #{exception}"
-
         raise
       end
     end
