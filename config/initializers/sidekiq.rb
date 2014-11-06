@@ -20,9 +20,7 @@ Rails.application.config.after_initialize do
       ImpactPlatform::MySQL.reconnect!(min_pool_size)
 
       config.server_middleware do |chain|
-        # chain.add Librato::Sidekiq::Middleware
-        # chain.add Librato::HeartBeat::SidekiqJob, destination: :heroku_drain, source_namespace: 'sidekiq'
-        # chain.add Librato::Duplicate::SidekiqJob, destination: :heroku_drain, source_namespace: 'sidekiq'
+        # chain.add Librato::Sidekiq::Middleware, destination: :stdout, group: 'sidekiq', monitors: [:stats, :heart_beat, :queue_duplicates]
       end
     end
 
@@ -31,10 +29,6 @@ Rails.application.config.after_initialize do
         :url => url,
         :namespace => 'resque'
       }
-    end
-
-    Librato::Sidekiq::Middleware.configure do |c|
-      c.enabled = true
     end
   end
 end
