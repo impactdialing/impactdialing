@@ -13,7 +13,7 @@ background_worker: rake environment resque:work QUEUE=background_worker
 
 alert_worker: rake environment resque:work QUEUE=alert_worker
 
-call_flow: bundle exec sidekiq -c 8 -q call_flow
+call_flow: bundle exec sidekiq -c 8 -q call_flow LIBRATO_AUTORUN=1
 
 persist_worker: rake environment resque:work QUEUE=persist_jobs
 
