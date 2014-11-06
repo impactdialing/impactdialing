@@ -18,6 +18,12 @@ Rails.application.config.after_initialize do
       require 'impact_platform/mysql'
       min_pool_size = Sidekiq.options[:concurrency]
       ImpactPlatform::MySQL.reconnect!(min_pool_size)
+
+      config.server_middleware do |chain|
+        # chain.add Librato::Sidekiq::Middleware
+        # chain.add Librato::HeartBeat::SidekiqJob, destination: :heroku_drain, source_namespace: 'sidekiq'
+        # chain.add Librato::Duplicate::SidekiqJob, destination: :heroku_drain, source_namespace: 'sidekiq'
+      end
     end
 
     Sidekiq.configure_client do |config|
