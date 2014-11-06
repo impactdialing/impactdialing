@@ -4,41 +4,29 @@
   <p>Select the type of usage report you'd like to receive along w/ the date range.</p>
 
   <%= form_tag ("/admin/report") do %>
-    <table>
-      <tr>
-        <td>
-          <label for="report_type">Type:</label>
-        </td>
-        <td>
+    <fieldset>
+      <p>
+        <label for="report_type">Type:
           <select id="report_type" name="report_type">
             <option value="enterprise">Manual / Enterprise Accounts</option>
             <option value="all">All Accounts</option>
           </select>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="from_date">From:</label>
-        </td>
-        <td>
-          <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= @from_date.strftime("%m/%d/%Y") %>">
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label for="to_date">To:</label>
-        </td>
-        <td><input class="format-m-d-y divider-slash" id="to_date" name="to_date" type="text" value="<%= @to_date.strftime("%m/%d/%Y") %>"></td>
-      </tr>
-      <tr>
-        <td>
-          <label for="include_undebited">Include undebited minutes (All accounts only):</label>
-        </td>
-        <td>
+        </label>
+      </p>
+      <p>
+        <label for="include_undebited">
           <input type="checkbox" id="include_undebited" name="include_undebited">
-        </td>
-      </tr>
-    </table>
+          Include undebited minutes (All accounts only)
+        </label>
+      </p>
+
+    <%= render('client/reports/selective_date_range_picker', {
+      embedded: true,
+      from_date: @date_range.from,
+      to_date: @date_range.to
+    }) %>
+
+    </fieldset>
     <button type="submit">Build &amp; email report</button>
   <% end %>
 </div>

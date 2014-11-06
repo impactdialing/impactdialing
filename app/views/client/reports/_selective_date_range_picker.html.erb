@@ -13,11 +13,11 @@
   <% end %>
   <p>
     <label for="from_date">From:</label>
-    <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= date_as_slashes(from_date, campaign.try(:time_zone)) %>">
+    <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= date_as_slashes(from_date) %>">
   </p>
   <p>
     <label for="to_date">To:</label>
-    <input class="format-m-d-y divider-slash" id="to_date" name="to_date" type="text" value="<%= date_as_slashes(to_date, campaign.try(:time_zone)) %>">
+    <input class="format-m-d-y divider-slash" id="to_date" name="to_date" type="text" value="<%= date_as_slashes(to_date) %>">
   </p>
 </fieldset>
 <% end %>

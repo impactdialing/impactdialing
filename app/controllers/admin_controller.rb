@@ -9,6 +9,26 @@ class AdminController < ApplicationController
     redirect_to :back
   end
 
+  rescue_from Report::SelectiveDateRange::InvalidDateFormat, with: :rescue_invalid_date
+
+private
+  def rescue_invalid_date(exception)
+    flash[:error] = [exception.message]
+    redirect_to :back
+  end
+
+  def build_date_pool(param_name, record_pool=[])
+    date_pool = []
+    date_pool << params[param_name]
+    record_pool.each do |record|
+      next if record.nil?
+      date_pool << record
+    end
+    date_pool
+  end
+
+public
+
   def state
     @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call = 1 )")
     @logged_in_callers_count = CallerSession.on_call.count
@@ -63,29 +83,15 @@ class AdminController < ApplicationController
   end
 
   def report
-    set_report_date_range
+    from_date_pool = build_date_pool(:from_date, [Time.now.in_time_zone('Pacific Time (US & Canada)').beginning_of_month])
+    to_date_pool   = build_date_pool(:to_date)
+
+    @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool)
+
     if request.post?
-      flash.now[:notice] = ["Your #{report_type} report (#{@from_date.strftime('%m-%d-%Y')} - #{@to_date.strftime('%m-%d-%Y')}) has been added to the queue. You should receive it via email when complete."]
-      Resque.enqueue(AdminReportJob, @from_date, @to_date, report_type, reports_include_undebited)
+      flash.now[:notice] = ["Your #{report_type} report (#{params[:from_date]} - #{params[:to_date]}) has been added to the queue. You should receive it via email when complete."]
+      Resque.enqueue(AdminReportJob, params[:from_date], params[:to_date], report_type, reports_include_undebited)
     end
-  end
-
-  def set_report_date_range
-    begin
-      if params[:from_date]
-        @from_date= Date.strptime params[:from_date], '%m/%d/%Y'
-        @to_date= Date.strptime params[:to_date], '%m/%d/%Y'
-      else
-        @from_date = 1.month.ago
-        @to_date = DateTime.now
-      end
-    rescue
-      #just use the defaults below
-    end
-
-    @from_date = 1.month.ago if @from_date==nil
-    @to_date = DateTime.now if @to_date==nil
-
   end
 
   def users

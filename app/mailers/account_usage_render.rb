@@ -56,8 +56,8 @@ public
   end
 
   def by_account(content_type, from_date, to_date, billable_totals, undebited_totals, grand_total, accounts)
-    @from_date         = from_date
-    @to_date           = to_date
+    @from_date         = from_date.in_time_zone('Pacific Time (US & Canada)')
+    @to_date           = to_date.in_time_zone('Pacific Time (US & Canada)')
     @billable_totals   = billable_totals
     @undebited_totals  = undebited_totals
     @include_undebited = !@undebited_totals.empty?
