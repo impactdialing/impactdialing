@@ -72,3 +72,11 @@ Best case Preview/Power dial rate when all attempts are answered w/ 1 minute con
 impactdialing-ps
 - dialer_worker: 3
 - simulator_worker: 2
+
+### 200 - 300 callers
+
+#### Throughput
+
+
+dialer_worker: 6
+simulator_worker: 2

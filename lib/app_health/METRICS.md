@@ -1,3 +1,13 @@
+# TODO
+
+- determine uniform source & name scheme
+-- goals:
+--- minimize admin overhead w/out sacrificing granularity
+---- eg setup a single 'redis persistence failure' alert to trigger on
+---- any job failing to run
+--- minimize dev overhead w/out sacrificing capture consistency or granularity over time
+--- 
+
 # App metrics
 
 ## Auto-scaling
@@ -44,5 +54,5 @@ Librato provides 2 layers of naming metrics: a source and the name of the metric
   - `dialer.transfer.redirect`
   - `dialer.caller.redirect`
 
-  	When we initiate a request to Twilio, start a timer e.g. RedisTimer.start(unique_identifiers)
-  	When proper TwiML or an error is served to Twilio, stop timer and submit metric sample# e.g. sample#dialer.contact.answered=RedisTimer.stop(unique_identifiers)
+    When we initiate a request to Twilio, start a timer e.g. RedisTimer.start(unique_identifiers)
+    When proper TwiML or an error is served to Twilio, stop timer and submit metric sample# e.g. sample#dialer.contact.answered=RedisTimer.stop(unique_identifiers)
