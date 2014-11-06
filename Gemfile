@@ -51,6 +51,7 @@ gem 'platform-api'
 # monitoring
 group :production, :heroku, :heroku_staging do
   gem 'librato-rails'
+  gem 'librato-sidekiq'
   gem 'rack-timing'
   gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
 end
