@@ -23,7 +23,8 @@ Rails.application.config.after_initialize do
 
       config.server_middleware do |chain|
         # chain.add LibratoSidekiq::Server, destination: :stdout, group: 'sidekiq', monitors: [:stats, :heart_beat, :queue_duplicates]
-        chain.add LibratoSidekiq::Server
+        chain.add LibratoSidekiq::ServerTiming
+        chain.add LibratoSidekiq::ServerIncrement
       end
     end
 
