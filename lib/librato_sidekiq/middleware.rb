@@ -1,14 +1,13 @@
-require 'active_support/core_ext/string/inflections'
-
 # https://github.com/mperham/sidekiq/wiki/Middleware
 module LibratoSidekiq
   class Middleware
+  private
     def log(msg)
       LibratoSidekiq.log(msg)
     end
 
+  public
     def initialize(*args)
-      log "initializing #{self.class}.new(#{[*args]})"
       LibratoSidekiq.track!
     end
 
@@ -17,19 +16,12 @@ module LibratoSidekiq
       begin
         yield
 
-        worker_name = worker.class.to_s.split('::').last.underscore
-        source = [ENV['LIBRATO_SOURCE'], queue, worker_name].join('.')
-        Librato.group('sidekiq') do |group|
-          group.increment 'completed', source: source
-        end
-        log "Middleware#call - completed"
+        LibratoSidekiq.increment('completed', queue, worker)
       rescue => exception
-        worker_name = worker.class.to_s.split('::').last.underscore
-        source = [ENV['LIBRATO_SOURCE'], queue, worker_name].join('.')
-        Librato.group('sidekiq') do |group|
-          group.increment 'exception', source: source
-        end
-        log "Middleware#call - exception: #{exception}"
+        extra = exception.class.to_s.split('::').last.underscore
+        LibratoSidekiq.increment('exception', queue, worker, extra)
+
+        # re-raise
         raise
       end
     end
