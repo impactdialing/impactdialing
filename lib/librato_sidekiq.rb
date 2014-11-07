@@ -11,11 +11,11 @@ module LibratoSidekiq
 
   def self.worker_name(worker)
     return nil if worker.nil?
-    
+
     worker.class.to_s.split('::').last.underscore
   end
 
-  def self.source(queue, worker=nil, extra=nil)
+  def self.source(queue=nil, worker=nil, extra=nil)
     [ENV['LIBRATO_SOURCE'], queue, worker_name(worker), extra].compact.join('.')
   end
 
@@ -35,6 +35,22 @@ module LibratoSidekiq
     group do |namespace|
       namespace.timing(worker_name(worker), source: source(queue)) do
         yield
+      end
+    end
+  end
+
+  def self.record_stats
+    sidekiq_stats  = ::Sidekiq::Stats.new
+
+    group do |namespace|
+      %w(processed failed enqueued retry_size).each do |stat|
+        namespace.measure("stats.#{stat}", sidekiq_stats.send(stat), source: source)
+      end
+
+      sidekiq_stats.queues.keys.each do |queue_name|
+        queue = ::Sidekiq::Queue.new(queue_name)
+        namespace.measure('queue.latency', queue.latency, source: source(queue_name))
+        namespace.measure('queue.size', queue.size, source: source(queue_name))
       end
     end
   end
