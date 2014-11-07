@@ -1,9 +1,11 @@
+require 'librato_sidekiq'
+
 # https://github.com/mperham/sidekiq/wiki/Middleware
 module LibratoSidekiq
   class Middleware
   private
-    def log(msg)
-      LibratoSidekiq.log(msg)
+    def log(level, msg)
+      LibratoSidekiq.log(level, msg)
     end
 
   public

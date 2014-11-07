@@ -3,7 +3,7 @@ require 'librato_sidekiq/middleware'
 module LibratoSidekiq
   class ServerIncrement < Middleware    
     def call(worker, msg, queue)
-      log "ServerStatus#call(#{worker}, #{msg}, #{queue})"
+      log :debug, "ServerStatus#call(#{worker}, #{msg}, #{queue})"
       begin
         yield
 
@@ -20,7 +20,7 @@ module LibratoSidekiq
 
   class ServerTiming < Middleware
     def call(worker, msg, queue)
-      log "ServerTiming#call(#{worker}, #{msg}, #{queue})"
+      log :debug, "ServerTiming#call(#{worker}, #{msg}, #{queue})"
 
       LibratoSidekiq.timing(queue, worker) do
         yield

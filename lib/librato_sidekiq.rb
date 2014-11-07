@@ -1,12 +1,17 @@
 require 'active_support/core_ext/string/inflections'
 
 module LibratoSidekiq
-  mattr_accessor :tracking do
-    false
+  def self.logger
+    return @logger if defined?(@logger)
+    if Rails.env =~ /heroku/
+      @logger = Logger.new(STDOUT)
+    else
+      @logger = Logger.new
+    end
   end
 
-  def self.log(msg)
-    STDOUT.puts "[LibratoSidekiq] #{msg}"
+  def self.log(level, msg)
+    logger.send(level, "[LibratoSidekiq] #{msg}")
   end
 
   def self.worker_name(worker)
@@ -33,7 +38,7 @@ module LibratoSidekiq
 
   def self.timing(queue, worker, &block)
     group do |namespace|
-      namespace.timing(worker_name(worker), source: source(queue)) do
+      namespace.timing('worker.time', source: source(queue, worker)) do
         yield
       end
     end
@@ -56,11 +61,6 @@ module LibratoSidekiq
   end
 
   def self.track!
-    return true if tracking
-    log 'tracking started'
     Librato.tracker.start!
-    self.tracking = true
   end
 end
-
-require 'librato_sidekiq/server'

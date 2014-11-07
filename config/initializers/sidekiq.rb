@@ -9,7 +9,7 @@ STDOUT.puts "Sidekiq is connecting to #{url}. REDIS_URL is #{ENV['REDIS_URL']}"
 
 Rails.application.config.after_initialize do
   ActiveSupport.on_load(:active_record) do
-    require 'librato_sidekiq'
+    require 'librato_sidekiq/server'
 
     Sidekiq.configure_server do |config|
       config.redis = {
@@ -22,7 +22,6 @@ Rails.application.config.after_initialize do
       ImpactPlatform::MySQL.reconnect!(min_pool_size)
 
       config.server_middleware do |chain|
-        # chain.add LibratoSidekiq::Server, destination: :stdout, group: 'sidekiq', monitors: [:stats, :heart_beat, :queue_duplicates]
         chain.add LibratoSidekiq::ServerTiming
         chain.add LibratoSidekiq::ServerIncrement
       end
