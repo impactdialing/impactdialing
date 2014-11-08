@@ -7,20 +7,20 @@ require 'impact_platform/metrics'
 # and will impact job performance a bit more than printing to STDOUT
 # since any collected metrics must be submitted before the job completes.
 module LibratoResque
-  def self.source(extra=nil)
+  def source(extra=nil)
     [ENV['LIBRATO_SOURCE'], @queue, self.to_s.split('::').last.underscore, extra].compact.join('.')
   end
 
-  def self.after_perform(*job_args)
+  def after_perform(*job_args)
     ImpactPlatform::Metrics.count('resque.completed', source)
   end
 
-  def self.on_failure(exception, *job_args)
+  def on_failure(exception, *job_args)
     extra = exception.class.to_s.split('::').last.underscore
     ImpactPlatform::Metrics.count('resque.exception', source(extra))
   end
 
-  def self.around_perform(*job_args)
+  def around_perform(*job_args)
     a = Time.now.to_f
     yield
     b = Time.now.to_f
