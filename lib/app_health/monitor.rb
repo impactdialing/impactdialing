@@ -15,6 +15,8 @@ module AppHealth
       loop do
         RecycleRateViolations.alert_if_not_ok
 
+        CallFlow::Jobs::ActiveCallerMonitor.perform
+        
         LibratoSidekiq.record_stats
 
         sleep(app_health_run_interval.to_i)

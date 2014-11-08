@@ -16,15 +16,7 @@ loop do
       end
     end
     
-    if ENV['COLLECT_ACTIVE_CALLER_METRICS'].to_i > 0
-      a = Time.now.to_f
-      CallFlow::Jobs::ActiveCallerMonitor.perform # quick running method to send stats to librato
-      b = Time.now.to_f
-      d = b - a
-      sleep(30 - d.to_i) if d < 30
-    else
-      sleep(30)
-    end
+    sleep(30)
 
   rescue Exception => e
     if e.class == SystemExit || e.class == Interrupt
