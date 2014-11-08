@@ -1,5 +1,6 @@
 require 'reports'
 require 'impact_platform/heroku'
+require 'librato_resque'
 
 ##
 # Email account usage reports to customers.
@@ -19,9 +20,11 @@ require 'impact_platform/heroku'
 # - 1 failure
 #
 class ReportAccountUsageJob
-  @queue = :upload_download
   extend ImpactPlatform::Heroku::UploadDownloadHooks
   extend TimeZoneHelper
+  extend LibratoResque
+  
+  @queue = :upload_download
 
   def self.perform(report_type, user_id, from_date, to_date, internal_admin=false)
     method = "mail_#{report_type}_usage"

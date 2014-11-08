@@ -1,5 +1,6 @@
 require 'resque/plugins/lock'
 require 'resque-loner'
+require 'librato_resque'
 
 ##
 # Persist answer data submitted to redis via web-ui.
@@ -24,11 +25,11 @@ require 'resque-loner'
 #
 class AnsweredJob
   include Resque::Plugins::UniqueJob
+  extend LibratoResque
+  
   @queue = :persist_jobs
 
   def self.perform
-    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
-
     ActiveRecord::Base.verify_active_connections!
     success_count = 0
     not_found = 0
@@ -53,12 +54,9 @@ class AnsweredJob
           end
         end
       rescue Exception => e
-        metrics.error
         Rails.logger.error("#{self} Exception: #{e.class}: #{e.message}")
         Rails.logger.error("#{self} Exception Backtrace: #{e.backtrace}")
       end
     end
-
-    metrics.completed
   end
 end

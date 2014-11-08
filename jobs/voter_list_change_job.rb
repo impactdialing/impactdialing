@@ -1,5 +1,6 @@
 require 'resque/errors'
 require 'impact_platform/heroku'
+require 'librato_resque'
 
 ##
 # Sync +VoterList#enabled+ to +Voter#enabled+.
@@ -17,26 +18,23 @@ require 'impact_platform/heroku'
 # - 1 failure
 #
 class VoterListChangeJob
-  @queue = :upload_download
   extend ImpactPlatform::Heroku::UploadDownloadHooks
+  extend LibratoResque
+
+  @queue = :upload_download
 
   def self.perform(voter_list_id, enabled)
-    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
-
     begin
       voter_list = VoterList.find(voter_list_id)
       voter_list.voter_ids.each_slice(500) do |ids|
         Voter.where(id: ids).update_all(enabled: enabled)
       end
     rescue Resque::TermException, ActiveRecord::StatementInvalid => exception
-      metrics.error
       handle_exception(voter_list_id, enabled, exception)
     end
 
     dial_queue = CallFlow::DialQueue.new(voter_list.campaign)
     dial_queue.refresh(:available)
-
-    metrics.completed
   end
 
   def self.requeue(voter_list_id, enabled)

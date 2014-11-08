@@ -1,5 +1,6 @@
 require 'reports'
 require 'impact_platform/heroku'
+require 'librato_resque'
 
 ##
 # Build & email admin reports.
@@ -14,6 +15,7 @@ require 'impact_platform/heroku'
 class AdminReportJob
   @queue = :upload_download
   extend ImpactPlatform::Heroku::UploadDownloadHooks
+  extend LibratoResque
 
   def self.perform(from, to, report_type, include_undebited)
     date_range       = Report::SelectiveDateRange.new([from], [to])

@@ -1,3 +1,5 @@
+require 'librato_resque'
+
 ##
 # Email password reset to customer.
 #
@@ -14,6 +16,8 @@
 # - 1 failure
 #
 class ResetPasswordEmailJob
+  extend LibratoResque
+
   @queue = :background_worker
   
   def self.perform(user_id)

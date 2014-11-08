@@ -1,3 +1,5 @@
+require 'librato_resque'
+
 ##
 # Reset +VoterList#voters_count+ counter cache.
 #
@@ -14,6 +16,8 @@
 # - 1 failure
 #
 class ResetVoterListCounterCache
+  extend LibratoResque
+
   @queue = :upload_download
 
   def self.perform(voter_list_id)

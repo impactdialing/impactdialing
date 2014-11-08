@@ -1,4 +1,5 @@
 require 'resque-loner'
+require 'librato_resque'
 
 ##
 # Update +Caller#campaign_id+ for +Caller+ records associated with the
@@ -20,6 +21,8 @@ require 'resque-loner'
 #
 class CallerGroupJob
   include Resque::Plugins::UniqueJob
+  extend LibratoResque
+  
   @queue = :background_worker
 
   def self.perform(caller_group_id)

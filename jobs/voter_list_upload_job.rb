@@ -1,5 +1,6 @@
 require 'resque/errors'
 require 'impact_platform/heroku'
+require 'librato_resque'
 
 ##
 # Upload a new +VoterList+, importing +Voter+ records.
@@ -17,8 +18,10 @@ require 'impact_platform/heroku'
 # - 1 failure
 #
 class VoterListUploadJob
-  @queue = :upload_download
   extend ImpactPlatform::Heroku::UploadDownloadHooks
+  extend LibratoResque
+
+  @queue = :upload_download
 
   def self.perform(voter_list_id, email, domain, callback_url, strategy="webui")
     begin

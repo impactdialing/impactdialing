@@ -2,6 +2,7 @@ require 'resque-loner'
 require 'em-http-request'
 require "em-synchrony"
 require "em-synchrony/em-http"
+require 'librato_resque'
 
 ##
 # Pull down call data for +CallAttempt+ records from Twilio for billing purposes.
@@ -21,11 +22,11 @@ require "em-synchrony/em-http"
 #
 class UpdateStatsAttemptsEm
   include Resque::Plugins::UniqueJob
+  extend LibratoResque
+
   @queue = :twilio_stats
 
   def self.perform
-    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
-
     ActiveRecord::Base.verify_active_connections!
     results = []
     stats = []
@@ -69,7 +70,5 @@ class UpdateStatsAttemptsEm
       })
       EventMachine.stop
     end
-
-    metrics.completed
   end
 end

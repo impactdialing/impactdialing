@@ -1,5 +1,6 @@
 require 'octopus'
 require 'resque-loner'
+require 'librato_resque'
 
 ##
 # Run periodically from simulator/simulator_loop.rb. Simulates a set of dials based on
@@ -21,6 +22,8 @@ require 'resque-loner'
 #
 class SimulatorJob
   include Resque::Plugins::UniqueJob
+  extend LibratoResque
+  
   @queue = :simulator_worker
 
 

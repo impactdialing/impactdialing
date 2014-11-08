@@ -1,5 +1,6 @@
 require 'resque/errors'
 require 'impact_platform/heroku'
+require 'librato_resque'
 
 ##
 # Prepares a download report for a customer or internal-admin and emails a link when complete.
@@ -17,8 +18,10 @@ require 'impact_platform/heroku'
 # - 1 failure
 #
 class ReportDownloadJob
-  @queue = :upload_download
   extend ImpactPlatform::Heroku::UploadDownloadHooks
+  extend LibratoResque
+  
+  @queue = :upload_download
 
   def self.perform(campaign_id, user_id, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
     begin

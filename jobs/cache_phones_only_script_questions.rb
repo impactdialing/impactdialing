@@ -1,5 +1,6 @@
 require 'digest/sha1'
 require 'resque-loner'
+require 'librato_resque'
 
 ##
 # Cache survey scripts, questions, possible responses to redis from relational database.
@@ -20,6 +21,8 @@ require 'resque-loner'
 #
 class CachePhonesOnlyScriptQuestions
   include Resque::Plugins::UniqueJob
+  extend LibratoResque
+  
   @queue = :persist_jobs
 
   def self.add_to_queue(script_id, action)
@@ -27,12 +30,8 @@ class CachePhonesOnlyScriptQuestions
   end
 
   def self.perform(script_id, action='update')
-    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
-
     script  = Script.find script_id
     send("#{action}_cache", script)
-
-    metrics.completed
   end
 
   def self._ttl

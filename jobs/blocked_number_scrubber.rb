@@ -1,3 +1,5 @@
+require 'librato_resque'
+
 ##
 # Update all +Voter+ records for a given account or campaign with a phone number matching the
 # +BlockedNumber#number+ of the given `blocked_number_id`.
@@ -15,6 +17,8 @@
 # - 1 failure
 #
 class BlockedNumberScrubber
+  extend LibratoResque
+  
   @queue = :background_worker
 
   def self.perform(blocked_number_id)

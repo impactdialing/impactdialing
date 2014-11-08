@@ -1,3 +1,5 @@
+require 'librato_resque'
+
 ##
 # What it says on the box, delivers an invitation email to a new user.
 # Queued from +UsersController#invite+.
@@ -14,8 +16,9 @@
 # - 1 failure
 #
 class DeliverInvitationEmailJob
-  @queue = :background_worker
+  extend LibratoResque
 
+  @queue = :background_worker
 
   def self.perform(new_user_id, current_user_id)
     new_user = User.find(new_user_id)

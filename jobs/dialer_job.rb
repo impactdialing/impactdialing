@@ -1,6 +1,7 @@
 require 'em-http-request'
 require "em-synchrony"
 require "em-synchrony/em-http"
+require 'librato_resque'
 
 ##
 # Proxy for +Dial.perform+.
@@ -20,10 +21,11 @@ require "em-synchrony/em-http"
 # - 1 failure (WARNING: Dial.perform rescues all exceptions)
 #
 class DialerJob 
+  extend LibratoResque
+  
   @queue = :dialer_worker
 
-
-   def self.perform(campaign_id, voter_ids)
-     Dial.perform(campaign_id, voter_ids)
-   end
+  def self.perform(campaign_id, voter_ids)
+    Dial.perform(campaign_id, voter_ids)
+  end
 end

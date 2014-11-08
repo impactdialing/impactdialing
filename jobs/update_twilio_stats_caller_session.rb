@@ -1,4 +1,5 @@
 require 'resque-loner'
+require 'librato_resque'
 
 ##
 # Pull down call data for +WebuiCallerSession+ & +PhonesOnlyCallerSession+ records
@@ -19,11 +20,11 @@ require 'resque-loner'
 #
 class UpdateTwilioStatsCallerSession
   include Resque::Plugins::UniqueJob
+  extend LibratoResque
+
   @queue = :twilio_stats
 
   def self.perform
-    metrics = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore)
-
     ActiveRecord::Base.verify_active_connections!
     caller_sessions = []
     twillio_lib = TwilioLib.new
@@ -41,7 +42,6 @@ class UpdateTwilioStatsCallerSession
     WebuiCallerSession.import caller_sessions, :on_duplicate_key_update=>[:tCallSegmentSid, :tAccountSid,
                                         :tCalled, :tCaller, :tPhoneNumberSid, :tStatus, :tStartTime, :tEndTime, :tDuration, :tPrice, :tFlags]
 
-
     caller_sessions = []
     twillio_lib = TwilioLib.new
 
@@ -58,7 +58,5 @@ class UpdateTwilioStatsCallerSession
     end
     PhonesOnlyCallerSession.import caller_sessions, :on_duplicate_key_update=>[:tCallSegmentSid, :tAccountSid,
                                         :tCalled, :tCaller, :tPhoneNumberSid, :tStatus, :tStartTime, :tEndTime, :tDuration, :tPrice, :tFlags]
-
-    metrics.completed
   end
 end
