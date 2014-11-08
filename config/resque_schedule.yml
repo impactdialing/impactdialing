@@ -5,13 +5,6 @@ debit_money:
   args:
   description: "This job debits minutes from Account#debitable_subscription."
 
-alert:
-  cron: "*/2 * * * *"
-  class: AlertJob
-  queue: alert_worker
-  args:
-  description: "This job alerts all of us if something is fishy"
-
 phantom_callers:
   cron: "*/5 * * * *"
   class: PhantomCallerJob
