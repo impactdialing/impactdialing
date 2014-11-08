@@ -1,6 +1,27 @@
 require 'resque/plugins/lock'
 require 'resque-loner'
 
+##
+# Persist answer data submitted to redis via web-ui.
+# When answer data is submitted, it is stored in redis until
+# this job runs and persists it to the relational database.
+# This job only handles answer data submitted via the web-ui.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+# - sql timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - stops reporting for 5 minutes
+#
+# todo: stop rescuing Exception
+#
 class AnsweredJob
   include Resque::Plugins::UniqueJob
   @queue = :persist_jobs

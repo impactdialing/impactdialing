@@ -1,6 +1,21 @@
 require 'resque/errors'
 require 'impact_platform/heroku'
 
+##
+# Prepares a download report for a customer or internal-admin and emails a link when complete.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+#
 class ReportDownloadJob
   @queue = :upload_download
   extend ImpactPlatform::Heroku::UploadDownloadHooks

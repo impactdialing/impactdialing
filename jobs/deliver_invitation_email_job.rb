@@ -1,3 +1,18 @@
+##
+# What it says on the box, delivers an invitation email to a new user.
+# Queued from +UsersController#invite+.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+#
 class DeliverInvitationEmailJob
   @queue = :background_worker
 

@@ -1,6 +1,21 @@
 require 'resque/errors'
 require 'impact_platform/heroku'
 
+##
+# Sync +VoterList#enabled+ to +Voter#enabled+.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+#
 class VoterListChangeJob
   @queue = :upload_download
   extend ImpactPlatform::Heroku::UploadDownloadHooks

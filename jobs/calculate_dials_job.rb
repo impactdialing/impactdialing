@@ -3,7 +3,25 @@ require "em-synchrony"
 require "em-synchrony/em-http"
 require 'resque-loner'
 
-
+##
+# Determine number of +Voter+ records that should be dialed, if any and queue +DialerJob+.
+# Does nothing if the number of +Voter+ records that should be dialed is zero.
+# Queues +CampaignOutOfNumbersJob+ when the number of +Voter+ records that should be dialed is > 0
+# but there are not +Voter+ records left in the dial queue.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+# - sql timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+#
 class CalculateDialsJob
   include Resque::Plugins::UniqueJob
   extend SidekiqEvents::InstanceMethods

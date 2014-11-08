@@ -1,6 +1,23 @@
 require 'digest/sha1'
 require 'resque-loner'
 
+##
+# Cache survey scripts, questions, possible responses to redis from relational database.
+# This job is queued when a phones-only caller enters the correct pin.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+# - sql timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+#
 class CachePhonesOnlyScriptQuestions
   include Resque::Plugins::UniqueJob
   @queue = :persist_jobs

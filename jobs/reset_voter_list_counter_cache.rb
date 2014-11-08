@@ -1,3 +1,18 @@
+##
+# Reset +VoterList#voters_count+ counter cache.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+#
 class ResetVoterListCounterCache
   @queue = :upload_download
 

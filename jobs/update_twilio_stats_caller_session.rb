@@ -1,4 +1,22 @@
 require 'resque-loner'
+
+##
+# Pull down call data for +WebuiCallerSession+ & +PhonesOnlyCallerSession+ records
+# from Twilio for billing purposes.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - failed
+# - stops reporting for 5 minutes
+#
 class UpdateTwilioStatsCallerSession
   include Resque::Plugins::UniqueJob
   @queue = :twilio_stats

@@ -1,5 +1,21 @@
 require 'resque-loner'
 
+##
+# Periodically run to end stale +CallerSession+s.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+# - sql timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - ...
+#
 class PhantomCallerJob
   include Resque::Plugins::UniqueJob
   @queue = :background_worker

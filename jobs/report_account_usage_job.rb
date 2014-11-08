@@ -1,6 +1,23 @@
 require 'reports'
 require 'impact_platform/heroku'
 
+##
+# Email account usage reports to customers.
+# See +Client::AccountUsagesController#create+.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+# - sql timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+#
 class ReportAccountUsageJob
   @queue = :upload_download
   extend ImpactPlatform::Heroku::UploadDownloadHooks

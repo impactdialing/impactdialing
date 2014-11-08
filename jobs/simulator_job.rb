@@ -1,6 +1,24 @@
 require 'octopus'
 require 'resque-loner'
 
+##
+# Run periodically from simulator/simulator_loop.rb. Simulates a set of dials based on
+# passed dial history to determine number of +Voter+ records that should be dialed next.
+# Updates +SimulatedValues+ when complete.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+# - stops reporting for 2 minutes and active predictive callers > 0
+#
 class SimulatorJob
   include Resque::Plugins::UniqueJob
   @queue = :simulator_worker

@@ -1,5 +1,23 @@
 require 'resque-loner'
 
+##
+# Run periodically to deduct minutes used by +CallerSession+,
+# +CallAttempt+ and +TransferAttempt+ from appropriate +Quota+.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+# - sql timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+# - OR stops reporting for 5 minutes
+#
 class DebitJob
   include Resque::Plugins::UniqueJob
   @queue = :background_worker

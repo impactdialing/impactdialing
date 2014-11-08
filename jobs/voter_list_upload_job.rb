@@ -1,6 +1,21 @@
 require 'resque/errors'
 require 'impact_platform/heroku'
 
+##
+# Upload a new +VoterList+, importing +Voter+ records.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+#
 class VoterListUploadJob
   @queue = :upload_download
   extend ImpactPlatform::Heroku::UploadDownloadHooks

@@ -1,6 +1,16 @@
 require 'reports'
 require 'impact_platform/heroku'
 
+##
+# Build & email admin reports.
+# For all or enterprise accounts.
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 error
+#
 class AdminReportJob
   @queue = :upload_download
   extend ImpactPlatform::Heroku::UploadDownloadHooks

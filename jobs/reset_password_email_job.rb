@@ -1,3 +1,18 @@
+##
+# Email password reset to customer.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+#
 class ResetPasswordEmailJob
   @queue = :background_worker
   

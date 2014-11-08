@@ -3,6 +3,22 @@ require 'em-http-request'
 require "em-synchrony"
 require "em-synchrony/em-http"
 
+##
+# Pull down call data for +CallAttempt+ records from Twilio for billing purposes.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - failed
+# - stops reporting for 5 minutes
+#
 class UpdateStatsAttemptsEm
   include Resque::Plugins::UniqueJob
   @queue = :twilio_stats

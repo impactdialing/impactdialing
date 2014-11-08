@@ -1,3 +1,19 @@
+##
+# Update all +Voter+ records for a given account or campaign with a phone number matching the
+# +BlockedNumber#number+ of the given `blocked_number_id`.
+# This job is queued from after create in +BlockedNumber+.
+#
+# ### Metrics
+#
+# - failed
+# - sql timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure
+#
 class BlockedNumberScrubber
   @queue = :background_worker
 

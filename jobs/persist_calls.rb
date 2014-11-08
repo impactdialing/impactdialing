@@ -1,5 +1,25 @@
 require 'resque-loner'
 
+##
+# Run periodically to persist call data from redis to the relational database.
+# Call data is pushed to a redis list based on the call outcome. This job
+# processes each list in turn and imports call data to the appropriate places.
+#
+# ### Metrics
+#
+# - completed
+# - failed
+# - timing
+# - sql timing
+#
+# ### Monitoring
+#
+# Alert conditions:
+#
+# - 1 failure (WARNING: Exception rescued in a few spots)
+# - stops reporting for 5 minutes
+#
+# todo: stop rescuing exception
 class PersistCalls
   LIMIT = 1000
   include Resque::Plugins::UniqueJob
