@@ -1,6 +1,8 @@
 require 'ostruct'
 class VoterList < ActiveRecord::Base
   attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id, :uploaded_file_name, :enabled, :skip_wireless
+
+  serialize :csv_to_system_map, JSON
   
   belongs_to :campaign
   belongs_to :account
@@ -21,23 +23,34 @@ class VoterList < ActiveRecord::Base
                         "state"=>"State/Province", "zip_code"=>"Zip/Postal Code", "country"=>"Country"}
   BLANK_HEADER = '<Blank header>'
 
-  def enable_disable_voters
-    Resque.enqueue(VoterListChangeJob, self.id, self.enabled)
+  def self.upload_file_to_s3(file, file_name)
+    s3path="#{Rails.env}/uploads/voter_list/#{file_name}"
+    return s3path if file.nil?
+    AmazonS3.new.write(s3path, file)
+    s3path
   end
 
-
-  def validates_file_type
-    if uploaded_file_name.nil?
-      errors.add(:base, "Please upload a file.")
-      return
-    end
-
-    if ['.csv','.txt'].include? File.extname(uploaded_file_name).downcase
-    else
-      errors.add(:base, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
-    end
+  def self.csv_file_name(list_name)
+    "#{list_name}_#{Time.now.to_i}_#{rand(999)}"
   end
 
+  def self.valid_file?(filename)
+    return false if filename.nil?
+    ['.csv','.txt'].include? File.extname(filename).downcase
+  end
+
+  def self.separator_from_file_extension(filename)
+    (File.extname(filename).downcase.include?('.csv')) ? ',' : "\t"
+  end
+
+  def self.read_from_s3(file_name)
+    require 'windozer'
+    Windozer.to_unix( AmazonS3.new.read(file_name) )
+  end
+
+  def self.delete_from_s3(file_name)
+    AmazonS3.new.delete(file_name)
+  end
 
   def self.disable_all
     self.all.each do |voter_list|
@@ -58,57 +71,38 @@ class VoterList < ActiveRecord::Base
     active_lists.collect { |x| x.id }
   end
 
-  def import_leads(csv_to_system_map, csv_filename, separator)
-    batch_upload = VoterListBatchUpload.new(self, csv_to_system_map, csv_filename, separator)
-    batch_upload.import_leads
+  def enable_disable_voters
+    Resque.enqueue(VoterListChangeJob, self.id, self.enabled)
   end
 
-  def dial
-    self.voters.to_be_dialed.find_in_batches(:batch_size => 500) { |voter_group|
-      voter_group.each do |voter|
-        return false unless self.campaign.calls_in_progress?
-        voter.dial
-      end
-    }
-    true
+  def validates_file_type
+    if uploaded_file_name.nil?
+      errors.add(:base, "Please upload a file.")
+      return
+    end
+
+    if ['.csv','.txt'].include? File.extname(uploaded_file_name).downcase
+    else
+      errors.add(:base, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
+    end
   end
 
   def voters_remaining
     voters.to_be_dialed.size
   end
 
-
-  def self.read_from_s3(file_name)
-    require 'windozer'
-    Windozer.to_unix( AmazonS3.new.read(file_name) )
-  end
-
-  def self.delete_from_s3(file_name)
-    AmazonS3.new.delete(file_name)
-  end
-
-  def self.upload_file_to_s3(file, file_name)
-    s3path="#{Rails.env}/uploads/voter_list/#{file_name}"
-    return s3path if file.nil?
-    AmazonS3.new.write(s3path, file)
-    s3path
-  end
-
-  def self.csv_file_name(list_name)
-    "#{list_name}_#{Time.now.to_i}_#{rand(999)}"
-  end
-
-
-  def self.valid_file?(filename)
-    return false if filename.nil?
-    ['.csv','.txt'].include? File.extname(filename).downcase
-  end
-
-  def self.separator_from_file_extension(filename)
-    (File.extname(filename).downcase.include?('.csv')) ? ',' : "\t"
+  def destroy_with_voters
+    voter_ids.each_slice(1000) do |ids|
+      CustomVoterFieldValue.where(voter_id: ids).delete_all
+      Voter.where(id: ids).delete_all
+    end
+    self.destroy
   end
 
   def self.create_csv_to_system_map(csv_headers,account)
+    ActiveSupport::Deprecation.warn('VoterList.create_csv_to_system_map is now a no-op.')
+    return
+
     csv_to_system_map = {}
     csv_headers.each do |header_field|
       if Voter.new.has_attribute?(header_field)
@@ -123,15 +117,21 @@ class VoterList < ActiveRecord::Base
     end
     return csv_to_system_map
   end
-
-  def destroy_with_voters
-    voter_ids.each_slice(1000) do |ids|
-      CustomVoterFieldValue.where(voter_id: ids).delete_all
-      Voter.where(id: ids).delete_all
-    end
-    self.destroy
+  def import_leads(csv_to_system_map, csv_filename, separator)
+    batch_upload = VoterListBatchUpload.new(self, csv_to_system_map, csv_filename, separator)
+    batch_upload.import_leads
   end
-
+  deprecate import_leads: 'use VoterListBatchUpload directly instead.'
+  def dial
+    self.voters.to_be_dialed.find_in_batches(:batch_size => 500) { |voter_group|
+      voter_group.each do |voter|
+        return false unless self.campaign.calls_in_progress?
+        voter.dial
+      end
+    }
+    true
+  end
+  deprecate :dial
 end
 
 # ## Schema Information
