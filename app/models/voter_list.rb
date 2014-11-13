@@ -1,16 +1,19 @@
 require 'ostruct'
 class VoterList < ActiveRecord::Base
+  attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id, :uploaded_file_name, :enabled, :skip_wireless
+  
   belongs_to :campaign
   belongs_to :account
   has_many :voters, :conditions => {:active => true}
-  attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id, :uploaded_file_name, :enabled, :skip_wireless
 
+  scope :active, where(:active => true)
+  scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
+  
   validates_presence_of :name, :s3path, :csv_to_system_map, :uploaded_file_name
   validates_length_of :name, :minimum => 3
   validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
   validate :validates_file_type, :on => :create
-  scope :active, where(:active => true)
-  scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
+  
   after_save :enable_disable_voters
 
   VOTER_DATA_COLUMNS = {"phone"=> "Phone", "custom_id" => "ID", "last_name"=>"LastName", "first_name"=>"FirstName",
