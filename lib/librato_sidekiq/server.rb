@@ -7,10 +7,10 @@ module LibratoSidekiq
       begin
         yield
 
-        LibratoSidekiq.increment('completed', queue, worker)
+        LibratoSidekiq.increment('job_status.completed', queue, worker)
       rescue => exception
         extra = exception.class.to_s.split('::').last.underscore
-        LibratoSidekiq.increment('exception', queue, worker, extra)
+        LibratoSidekiq.increment('job_status.exception', queue, worker, extra)
 
         # re-raise
         raise

@@ -21,24 +21,30 @@ module LibratoSidekiq
   end
 
   def self.source(queue=nil, worker=nil, extra=nil)
-    [ENV['LIBRATO_SOURCE'], queue, worker_name(worker), extra].compact.join('.')
+    [ENV['LIBRATO_SOURCE'], 'sidekiq', queue, worker_name(worker), extra].compact.join('.')
+  end
+
+  # match prefix defined by heroku librato drain
+  def self.metric_prefix
+    'heroku.logs'
   end
 
   def self.group(&block)
-    Librato.group('sidekiq') do |namespace|
-      yield namespace
-    end
+    yield Librato
+    # Librato.group('sidekiq') do |namespace|
+    #   yield namespace
+    # end
   end
 
   def self.increment(name, queue, worker, extra=nil)
     group do |namespace|
-      namespace.increment(name, source: source(queue, worker, extra))
+      namespace.increment("#{metric_prefix}.#{name}", source: source(queue, worker, extra))
     end
   end
 
   def self.timing(queue, worker, &block)
     group do |namespace|
-      namespace.timing('worker.time', source: source(queue, worker)) do
+      namespace.timing("#{metric_prefix}.worker.time", source: source(queue, worker)) do
         yield
       end
     end
@@ -49,13 +55,13 @@ module LibratoSidekiq
 
     group do |namespace|
       %w(processed failed enqueued retry_size).each do |stat|
-        namespace.measure("stats.#{stat}", sidekiq_stats.send(stat), source: source)
+        namespace.measure("#{metric_prefix}.stats.#{stat}", sidekiq_stats.send(stat), source: source)
       end
 
       sidekiq_stats.queues.keys.each do |queue_name|
         queue = ::Sidekiq::Queue.new(queue_name)
-        namespace.measure('queue.latency', queue.latency, source: source(queue_name))
-        namespace.measure('queue.size', queue.size, source: source(queue_name))
+        namespace.measure("#{metric_prefix}.queue.latency", queue.latency, source: source(queue_name))
+        namespace.measure("#{metric_prefix}.queue.size", queue.size, source: source(queue_name))
       end
     end
   end
