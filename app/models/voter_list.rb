@@ -16,7 +16,7 @@ class VoterList < ActiveRecord::Base
   validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
   validate :validates_file_type, :on => :create
   
-  after_save :enable_disable_voters
+  after_update :enable_disable_voters
 
   VOTER_DATA_COLUMNS = {"phone"=> "Phone", "custom_id" => "ID", "last_name"=>"LastName", "first_name"=>"FirstName",
                         "middle_name"=>"MiddleName", "suffix"=>"Suffix", "email"=>"Email", "address"=>"Address", "city"=>"City",
