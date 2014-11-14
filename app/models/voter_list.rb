@@ -71,6 +71,10 @@ class VoterList < ActiveRecord::Base
     active_lists.collect { |x| x.id }
   end
 
+  def read_from_s3
+    self.class.read_from_s3(s3path)
+  end
+
   def enable_disable_voters
     Resque.enqueue(VoterListChangeJob, self.id, self.enabled)
   end
@@ -118,10 +122,10 @@ class VoterList < ActiveRecord::Base
     return csv_to_system_map
   end
   def import_leads(csv_to_system_map, csv_filename, separator)
-    batch_upload = VoterListBatchUpload.new(self, csv_to_system_map, csv_filename, separator)
+    batch_upload = VoterBatchImport.new(self, csv_to_system_map, csv_filename, separator)
     batch_upload.import_leads
   end
-  deprecate import_leads: 'use VoterListBatchUpload directly instead.'
+  deprecate import_leads: 'use VoterBatchImport directly instead.'
   def dial
     self.voters.to_be_dialed.find_in_batches(:batch_size => 500) { |voter_group|
       voter_group.each do |voter|

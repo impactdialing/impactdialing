@@ -1,18 +1,19 @@
 # encoding: UTF-8
 require 'benchmark'
-class VoterListBatchUpload
+class VoterBatchImport
 
-  def initialize(list, csv_to_system_map, csv_filename, separator)
-    @list = list
+  def initialize(list, csv_to_system_map, csv_headers, csv_data, separator)
+    @list              = list
     @csv_to_system_map = csv_to_system_map
-    csv = CSV.new(VoterList.read_from_s3(csv_filename), :col_sep => separator)
-    @csv_headers = csv.shift.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
-    @voters_list = csv.readlines
-    @result = {:successCount => 0, :failedCount => 0, :dncCount => 0, :cellCount => 0}
+    @csv_headers       = csv_headers.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
+    @voters_list       = csv_data
+    @result            = {:success => 0, :failed => 0, :dnc => 0, :cell => 0}
+
     @csv_to_system_map.remap_system_column! "ID", :to => "custom_id"
-    @csv_phone_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "phone")
+    
+    @csv_phone_column_location     = @csv_headers.index(@csv_to_system_map.csv_index_for "phone")
     @csv_custom_id_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "custom_id")
-    @custom_attributes = create_custom_attributes
+    @custom_attributes             = create_custom_attributes
   end
 
   # return true when desirable to not import numbers for cell devices
@@ -25,7 +26,7 @@ class VoterListBatchUpload
     @dnc_wireless ||= DoNotCall::WirelessList.new
   end
 
-  def import_leads
+  def import_csv
     campaign     = @list.campaign
 
     @voters_list.each_slice(1000).each do |voter_info_list|
@@ -40,7 +41,7 @@ class VoterListBatchUpload
         phone_number = Voter.sanitize_phone(voter_info[@csv_phone_column_location])
 
         if skip_wireless? && dnc_wireless.prohibits?(phone_number)
-          @result[:cellCount] += 1
+          @result[:cell] += 1
           next
         end
 
@@ -81,12 +82,12 @@ class VoterListBatchUpload
           successful_voters << voter_info
 
           if lead[:blocked_number_id].present?
-            @result[:dncCount] += 1
+            @result[:dnc] += 1
           else
-            @result[:successCount] +=1
+            @result[:success] +=1
           end
         else
-          @result[:failedCount] +=1
+          @result[:failed] +=1
         end
       end
 
