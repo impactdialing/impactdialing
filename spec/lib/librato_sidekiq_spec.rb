@@ -9,6 +9,10 @@ class HandyWorker
 end
 
 describe 'LibratoSidekiq' do
+  before do
+    # add the test queue 'lunch_line' since resque & sidekiq currently share redis namespace
+    ENV['SIDEKIQ_QUEUES'] = 'call_flow,lunch_line'
+  end
   let(:group_name){ '' }
   let(:metric_prefix){ 'heroku.logs' }
   let(:source_namespace){ 'sidekiq' }

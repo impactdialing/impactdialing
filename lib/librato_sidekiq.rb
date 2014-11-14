@@ -29,6 +29,18 @@ module LibratoSidekiq
     'heroku.logs'
   end
 
+  def self.sidekiq_queues
+    queues = []
+    if ENV['SIDEKIQ_QUEUES'].present?
+      queues = ENV['SIDEKIQ_QUEUES'].split(',')
+    end
+    return queues.empty? ? default_sidekiq_queues : queues
+  end
+
+  def self.default_sidekiq_queues
+    ['call_flow']
+  end
+
   def self.group(&block)
     yield Librato
     # Librato.group('sidekiq') do |namespace|
@@ -58,8 +70,8 @@ module LibratoSidekiq
         namespace.measure("#{metric_prefix}.stats.#{stat}", sidekiq_stats.send(stat), source: source)
       end
 
-      sidekiq_stats.queues.keys.each do |queue_name|
-        queue = ::Sidekiq::Queue.new(queue_name)
+      sidekiq_queues.each do |queue_name|
+        queue   = ::Sidekiq::Queue.new(queue_name)
         namespace.measure("#{metric_prefix}.queue.latency", queue.latency, source: source(queue_name))
         namespace.measure("#{metric_prefix}.queue.size", queue.size, source: source(queue_name))
       end
