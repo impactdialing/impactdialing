@@ -12,12 +12,12 @@ module LibratoResque
   end
 
   def after_perform(*job_args)
-    ImpactPlatform::Metrics.count('resque.completed', source)
+    ImpactPlatform::Metrics.count('resque.completed', 1, source)
   end
 
   def on_failure(exception, *job_args)
     extra = exception.class.to_s.split('::').last.underscore
-    ImpactPlatform::Metrics.count('resque.exception', source(extra))
+    ImpactPlatform::Metrics.count('resque.exception', 1, source(extra))
   end
 
   def around_perform(*job_args)
