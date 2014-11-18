@@ -23,13 +23,18 @@ class BlockedNumberScrubber
 
   def self.perform(blocked_number_id)
     blocked_number = BlockedNumber.find blocked_number_id
-
-    voters = Voter.where(account_id: blocked_number.account_id, phone: blocked_number.number)
-    if blocked_number.campaign_id.present?
-      voters = voters.where(campaign_id: blocked_number.campaign_id)
-    end
-
+    voters = voters_with(blocked_number)
     voters.update_all(blocked: 1)
     Rails.logger.info "BlockedNumberScrubber Account[#{blocked_number.account_id}] Campaign[#{blocked_number.campaign_id}] Number[#{blocked_number.number}] marked #{voters.count} voters blocked."
+  end
+
+  def self.voters_with(blocked_number)
+    voters = if blocked_number.campaign_id.present?
+               blocked_number.campaign.all_voters
+             else
+               blocked_number.account.voters
+             end
+
+    voters.where(phone: blocked_number.number)
   end
 end
