@@ -30,23 +30,20 @@ describe BlockedNumber, :type => :model do
     end
   end
 
-  describe 'blocking voters with a `phone` matching `BlockedNumber#number`' do
-    it 'queues DoNotCall::Jobs::BlockVoter after a BlockedNumber record is created' do
-      blocked_number = BlockedNumber.create(account: account, campaign: campaign, number: '1234567890')
-      actual         = Resque.peek :background_worker
+  describe '(un)blocking Voters with a `phone` matching `BlockedNumber#number`' do
+    let!(:blocked_number){ BlockedNumber.create(account: account, campaign: campaign, number: '1234567890') }
 
+    it 'queues DoNotCall::Jobs::BlockVoter after a BlockedNumber record is created' do
+      actual = Resque.peek :background_worker
       expect(actual).to eq({'class' => 'DoNotCall::Jobs::BlockVoter', 'args' => [blocked_number.id]})
     end
+
+    it 'queues DoNotCall::Jobs::UnblockVoter after a BlockedNumber record is destroyed' do
+      blocked_number.destroy
+      actual = Resque.peek :background_worker, 0, 10
+      expect(actual).to include({'class' => 'DoNotCall::Jobs::UnblockVoter', 'args' => [account.id, campaign.id, blocked_number.number]})
+    end
   end
-
-  # describe 'unblocking' do
-  #   it 'queues  with (`blocked_number_id`, :unblock) after a BlockedNumber record is destroyed' do
-  #     blocked_number = BlockedNumber.create(account: account, campaign: campaign, number: '1234567890')
-  #     actual         = Resque.peek :background_worker
-
-  #     expect(actual).top eq({'class' => 'DoNotCall::Jobs::UnblockVoter', 'args' => [account.id, campaign.id, blocked_number.number]})
-  #   end
-  # end
 
   it "ensures the number is at least 10 characters" do
     expect(BlockedNumber.new(:number => '123456789')).to have(1).error_on(:number)
