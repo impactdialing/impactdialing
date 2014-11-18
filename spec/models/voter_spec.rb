@@ -400,16 +400,13 @@ describe Voter, :type => :model do
 
     context '2 voters in the list have phone numbers that exist on the blocked list' do
       before do
-        blocked_numbers = []
-        2.times do |i|
-          blocked_numbers << BlockedNumber.create(number: @voters[i].phone, account: @voters[i].campaign.account)
-        end
-        @query = Voter.remaining_voters_for_voter_list(voter_list, blocked_numbers.map(&:number))
+        @voters[0].update_attributes!(blocked: true)
+        @voters[1].update_attributes!(blocked: true)
+        @query = Voter.remaining_voters_for_voter_list(voter_list)
       end
 
       it 'returns the size of the voter list minus 2' do
         expect(@voters.first.campaign.account.id).not_to be_nil
-        expect(@voters.first.campaign.account.blocked_numbers.count).to eq 2
         expect(@query.count).to eq 8
       end
     end

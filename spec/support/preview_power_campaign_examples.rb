@@ -1,17 +1,10 @@
 require 'spec_helper'
 
 shared_examples 'Preview/Power#next_voter_in_dial_queue' do
-  it 're-populates queue via background job' do
-    dial_queue.clear(:available)
-    dial_queue.reload_if_below_threshold(:available)
-    expected = {'class' => 'CallFlow::Jobs::CacheAvailableVoters', 'args' => [campaign.id]}
-    expect(Resque.peek(:dialer_worker)).to eq expected
-  end
-
   it "returns uncalled voter before called voter" do
     campaign = create(:power)
-    create(:voter, status: CallAttempt::Status::SUCCESS, :last_call_attempt_time => 2.hours.ago, campaign: campaign)
-    uncalled_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
+    create(:realistic_voter, status: CallAttempt::Status::SUCCESS, :last_call_attempt_time => 2.hours.ago, campaign: campaign)
+    uncalled_voter = create(:realistic_voter, status: Voter::Status::NOTCALLED, campaign: campaign)
     cache_available_voters(campaign)
 
     expect(campaign.next_voter_in_dial_queue(nil)).to eq(uncalled_voter)
@@ -19,9 +12,9 @@ shared_examples 'Preview/Power#next_voter_in_dial_queue' do
 
   it "returns voter with respect to a current voter" do
     campaign       = create(:power)
-    uncalled_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
-    current_voter  = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
-    next_voter     = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
+    uncalled_voter = create(:realistic_voter, status: Voter::Status::NOTCALLED, campaign: campaign)
+    current_voter  = create(:realistic_voter, status: Voter::Status::NOTCALLED, campaign: campaign)
+    next_voter     = create(:realistic_voter, status: Voter::Status::NOTCALLED, campaign: campaign)
     dial_queue     = cache_available_voters(campaign)
     dial_queue.next(2) # pop the uncalled & current voter off the list, this test is a bit silly
                        # todo: fix or remove this test
