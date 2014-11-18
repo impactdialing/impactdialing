@@ -22,7 +22,7 @@ private
   end
 
   def scrub_voters
-    Resque.enqueue BlockedNumberScrubber, self.id
+    Resque.enqueue DoNotCall::Jobs::BlockVoter, self.id
   end
 end
 

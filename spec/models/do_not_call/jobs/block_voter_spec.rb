@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'BlockedNumberScrubber' do
+describe 'DoNotCall::Jobs::BlockVoter' do
   let(:account){ create(:account) }
   let(:campaign){ create(:power, account: account) }
   let(:voters){ create_list(:realistic_voter, 10, account: account, campaign: campaign) }
@@ -19,10 +19,10 @@ describe 'BlockedNumberScrubber' do
     other_voters.second.update_attributes!(phone: voters.first.phone)
     other_voters.third.update_attributes!(phone: voters.last.phone)
 
-    BlockedNumberScrubber.perform(account_wide.id)
-    BlockedNumberScrubber.perform(campaign_wide.id)
-    BlockedNumberScrubber.perform(other_account_wide.id)
-    BlockedNumberScrubber.perform(other_campaign_wide.id)
+    DoNotCall::Jobs::BlockVoter.perform(account_wide.id)
+    DoNotCall::Jobs::BlockVoter.perform(campaign_wide.id)
+    DoNotCall::Jobs::BlockVoter.perform(other_account_wide.id)
+    DoNotCall::Jobs::BlockVoter.perform(other_campaign_wide.id)
   end
   
   it 'marks voter blocked from account-wide list' do

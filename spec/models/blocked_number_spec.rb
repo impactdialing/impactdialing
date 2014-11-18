@@ -4,11 +4,11 @@ describe BlockedNumber, :type => :model do
   it { is_expected.to validate_presence_of(:number) }
   it { is_expected.to validate_presence_of(:account) }
   it { is_expected.to validate_numericality_of(:number)  }
+  let(:account){ create(:account) }
+  let(:campaign){ create(:power, account: account) }
 
   describe 'load entries for a given account or campaign and number' do
-    let(:account){ create(:account) }
     let(:other_account){ create(:account) }
-    let(:campaign){ create(:power, account: account) }
     before do
       create_list(:bare_blocked_number, 10, account: account)
       create_list(:bare_blocked_number, 10, account: account, campaign: campaign)
@@ -30,16 +30,23 @@ describe BlockedNumber, :type => :model do
     end
   end
 
-  describe 'scrubbing matching voters' do
-    let(:account){ create(:account) }
-    let(:campaign){ create(:power, account: account) }
-    it 'queues BlockedNumberScrubber after a BlockedNumber record is created' do
+  describe 'blocking voters with a `phone` matching `BlockedNumber#number`' do
+    it 'queues DoNotCall::Jobs::BlockVoter after a BlockedNumber record is created' do
       blocked_number = BlockedNumber.create(account: account, campaign: campaign, number: '1234567890')
+      actual         = Resque.peek :background_worker
 
-      actual = Resque.peek :background_worker
-      expect(actual).to eq({'class' => 'BlockedNumberScrubber', 'args' => [blocked_number.id]})
+      expect(actual).to eq({'class' => 'DoNotCall::Jobs::BlockVoter', 'args' => [blocked_number.id]})
     end
   end
+
+  # describe 'unblocking' do
+  #   it 'queues  with (`blocked_number_id`, :unblock) after a BlockedNumber record is destroyed' do
+  #     blocked_number = BlockedNumber.create(account: account, campaign: campaign, number: '1234567890')
+  #     actual         = Resque.peek :background_worker
+
+  #     expect(actual).top eq({'class' => 'DoNotCall::Jobs::UnblockVoter', 'args' => [account.id, campaign.id, blocked_number.number]})
+  #   end
+  # end
 
   it "ensures the number is at least 10 characters" do
     expect(BlockedNumber.new(:number => '123456789')).to have(1).error_on(:number)
