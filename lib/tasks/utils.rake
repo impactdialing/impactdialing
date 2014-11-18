@@ -62,6 +62,11 @@ task :fix_out_of_sync_voters, [:campaign_id] => :environment do |t,args|
   end
 end
 
+desc "Migrate Voter#blocked_number_id values to Voter#blocked bool flags"
+task :migrate_voter_blocked_number_id_to_blocked => :environment do |t, args|
+  Voter.where('blocked <> 0').update_all(blocked: 1)
+end
+
 desc "Fix-up DNC for Account 895"
 task :fix_up_account_895 => :environment do |t,args|
   account        = Account.find 895

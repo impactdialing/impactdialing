@@ -133,9 +133,8 @@ describe Predictive do
 
     it "excludes system blocked numbers" do
       unblocked_voter                 = create(:realistic_voter, campaign: campaign, account: account)
-      blocked_voter                   = create(:realistic_voter, campaign: campaign, account: account)
+      blocked_voter                   = create(:realistic_voter, :blocked, campaign: campaign, account: account)
       blocked_number                  = create(:blocked_number, number: blocked_voter.phone, account: account, campaign: nil)
-      blocked_voter.update_attributes!(blocked_number_id: blocked_number.id)
       cache_available_voters(campaign)
  
       expect(campaign.choose_voters_to_dial(10)).to eq([unblocked_voter.id])
@@ -143,10 +142,9 @@ describe Predictive do
 
     it "excludes campaign blocked numbers" do
       voter_list      = create(:voter_list, campaign: campaign, active: true)
-      unblocked_voter = create(:voter, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
-      blocked_voter   = create(:voter, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
+      unblocked_voter = create(:realistic_voter, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
+      blocked_voter   = create(:realistic_voter, :blocked, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
       blocked_number  = create(:blocked_number, number: blocked_voter.phone, account: account, campaign: campaign)
-      blocked_voter.update_attributes!(blocked_number_id: blocked_number.id)
       cache_available_voters(campaign)
 
       expect(campaign.choose_voters_to_dial(10)).to eq([unblocked_voter.id])

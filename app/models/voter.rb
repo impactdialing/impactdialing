@@ -130,8 +130,8 @@ class Voter < ActiveRecord::Base
   }
 
   # New Shiny
-  scope :blocked, where('voters.blocked_number_id IS NOT NULL')
-  scope :not_blocked, where('voters.blocked_number_id IS NULL')
+  scope :blocked, where('voters.blocked = 0')
+  scope :not_blocked, where('voters.blocked = 1')
   scope :dialed, where('last_call_attempt_time IS NOT NULL')
   scope :available, lambda{|campaign| where('status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
   scope :recently_dialed_households, lambda{ |recycle_rate|
@@ -344,10 +344,6 @@ public
     return fields.first.value
   end
 
-  def blocked?
-    account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.phone)
-  end
-
   def selected_custom_voter_field_values
     select_custom_fields = campaign.script.try(:selected_custom_fields)
     custom_voter_field_values.try(:select) { |cvf| select_custom_fields.include?(cvf.custom_voter_field.name) } if select_custom_fields.present?
@@ -501,12 +497,10 @@ end
 # **`lock_version`**            | `integer`          | `default(0)`
 # **`enabled`**                 | `boolean`          | `default(TRUE)`
 # **`voicemail_history`**       | `string(255)`      |
-# **`blocked_number_id`**       | `integer`          |
+# **`blocked`**                 | `boolean`          | `default(FALSE), not null`
 #
 # ### Indexes
 #
-# * `index_on_blocked_number_id`:
-#     * **`blocked_number_id`**
 # * `index_priority_voters`:
 #     * **`campaign_id`**
 #     * **`enabled`**
@@ -523,6 +517,8 @@ end
 #     * **`voter_list_id`**
 # * `index_voters_on_attempt_id`:
 #     * **`attempt_id`**
+# * `index_voters_on_blocked`:
+#     * **`blocked`**
 # * `index_voters_on_caller_session_id`:
 #     * **`caller_session_id`**
 # * `index_voters_on_campaign_id_and_active_and_status_and_call_back`:

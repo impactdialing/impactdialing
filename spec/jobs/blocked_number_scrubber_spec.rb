@@ -4,8 +4,10 @@ describe 'BlockedNumberScrubber' do
   let(:account){ create(:account) }
   let(:campaign){ create(:power, account: account) }
   let(:voters){ create_list(:realistic_voter, 10, account: account, campaign: campaign) }
-  let(:account_wide){ create(:blocked_number, account: account, number: voters.first.phone) }
-  let(:campaign_wide){ create(:blocked_number, account: account, campaign: campaign, number: voters.last.phone) }
+  let(:voter_blocked_account_wide){ voters.first }
+  let(:voter_blocked_campaign_wide){ voters.last }
+  let(:account_wide){ create(:blocked_number, account: account, number: voter_blocked_account_wide.phone) }
+  let(:campaign_wide){ create(:blocked_number, account: account, campaign: campaign, number: voter_blocked_campaign_wide.phone) }
 
   let(:other_account){ create(:account) }
   let(:other_campaign){ create(:power, account: account) }
@@ -24,22 +26,18 @@ describe 'BlockedNumberScrubber' do
   end
   
   it 'marks voter blocked from account-wide list' do
-    blocked = Voter.where(blocked_number_id: account_wide.id)
-    expect(blocked.first.id).to eq voters.first.id
+    expect( voter_blocked_account_wide.reload.blocked ).to be_truthy
   end
 
   it 'marks voter blocked from campaign-wide list' do
-    blocked = Voter.where(blocked_number_id: campaign_wide.id)
-    expect(blocked.first.id).to eq voters.last.id
+    expect( voter_blocked_campaign_wide.reload.blocked ).to be_truthy
   end
 
   it 'does not mark voter from another account' do
-    blocked = Voter.where(blocked_number_id: account_wide.id)
-    expect(blocked.count).to eq 1
+    expect( other_voters.second.reload.blocked ).to be_falsey
   end
 
   it 'does not mark voter from another campaign' do
-    blocked = Voter.where(blocked_number_id: campaign_wide.id)
-    expect(blocked.count).to eq 1
+    expect( other_voters.third.reload.blocked ).to be_falsey
   end
 end

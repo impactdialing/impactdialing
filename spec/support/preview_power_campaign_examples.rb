@@ -37,7 +37,7 @@ shared_examples 'Preview/Power#next_voter_in_dial_queue' do
     expect(actual).to be_nil
   end
 
-  it 'does not return any voter who is assigned a blocked_number_id' do
+  it 'does not return any voter who is blocked by DNC' do
     account        = create(:account)
     campaign       = create(:power, {account: account})
     voter          = create(:realistic_voter, :blocked, campaign: campaign)

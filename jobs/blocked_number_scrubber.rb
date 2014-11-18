@@ -29,7 +29,7 @@ class BlockedNumberScrubber
       voters = voters.where(campaign_id: blocked_number.campaign_id)
     end
 
-    voters.update_all(blocked_number_id: blocked_number.id)
+    voters.update_all(blocked: 1)
     Rails.logger.info "BlockedNumberScrubber Account[#{blocked_number.account_id}] Campaign[#{blocked_number.campaign_id}] Number[#{blocked_number.number}] marked #{voters.count} voters blocked."
   end
 end

@@ -1,23 +1,6 @@
 require "spec_helper"
 require 'fiber'
 describe Voter, :type => :model do
-  class Voter
-    def dial_predictive
-      call_attempt = new_call_attempt(self.campaign.type)
-      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "20" : "15"}
-      params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
-      response = Twilio::Call.make(campaign.caller_id, self.phone, flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event:  'incoming_call'), params)
-      if response["TwilioResponse"]["RestException"]
-        call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-        update_attributes(status: CallAttempt::Status::FAILED)
-        Rails.logger.info "[dialer] Exception when attempted to call #{self.phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
-        return
-      end
-      call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
-    end
-  end
-
   include Rails.application.routes.url_helpers
 
   describe 'Voter::Status' do
@@ -557,25 +540,15 @@ describe Voter, :type => :model do
   end
 
   describe 'blocked?' do
-    let(:voter) { create(:voter, :account => create(:account), :phone => '1234567890', :campaign => create(:campaign)) }
+    let(:blocked_voter){ build(:realistic_voter, :blocked) }
+    let(:voter){ build(:realistic_voter) }
 
-    it "knows when it isn't blocked" do
-      expect(voter).not_to be_blocked
+    it 'returns true when Voter#blocked = 1' do
+      expect( blocked_voter.blocked? ).to be_truthy
     end
 
-    it "knows when it is blocked system-wide" do
-      voter.account.blocked_numbers.create(:number => voter.phone)
-      expect(voter).to be_blocked
-    end
-
-    it "doesn't care if it blocked for a different campaign" do
-      voter.account.blocked_numbers.create(:number => voter.phone, :campaign => create(:campaign))
-      expect(voter).not_to be_blocked
-    end
-
-    it "knows when it is blocked for its campaign" do
-      voter.account.blocked_numbers.create(:number => voter.phone, :campaign => voter.campaign)
-      expect(voter).to be_blocked
+    it 'returns false when Voter#blocked = 0' do
+      expect( voter.blocked? ).to be_falsey
     end
   end
 
@@ -1226,12 +1199,10 @@ end
 # **`lock_version`**            | `integer`          | `default(0)`
 # **`enabled`**                 | `boolean`          | `default(TRUE)`
 # **`voicemail_history`**       | `string(255)`      |
-# **`blocked_number_id`**       | `integer`          |
+# **`blocked`**                 | `boolean`          | `default(FALSE), not null`
 #
 # ### Indexes
 #
-# * `index_on_blocked_number_id`:
-#     * **`blocked_number_id`**
 # * `index_priority_voters`:
 #     * **`campaign_id`**
 #     * **`enabled`**
@@ -1248,6 +1219,8 @@ end
 #     * **`voter_list_id`**
 # * `index_voters_on_attempt_id`:
 #     * **`attempt_id`**
+# * `index_voters_on_blocked`:
+#     * **`blocked`**
 # * `index_voters_on_caller_session_id`:
 #     * **`caller_session_id`**
 # * `index_voters_on_campaign_id_and_active_and_status_and_call_back`:

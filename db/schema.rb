@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141031223114) do
+ActiveRecord::Schema.define(:version => 20141117220702) do
 
   create_table "accounts", :force => true do |t|
     t.datetime "created_at"
@@ -525,11 +525,11 @@ ActiveRecord::Schema.define(:version => 20141031223114) do
     t.integer  "lock_version",           :default => 0
     t.boolean  "enabled",                :default => true
     t.string   "voicemail_history"
-    t.integer  "blocked_number_id"
+    t.boolean  "blocked",                :default => false,        :null => false
   end
 
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
-  add_index "voters", ["blocked_number_id"], :name => "index_on_blocked_number_id"
+  add_index "voters", ["blocked"], :name => "index_voters_on_blocked"
   add_index "voters", ["caller_id", "campaign_id"], :name => "index_voters_caller_id_campaign_id"
   add_index "voters", ["caller_session_id"], :name => "index_voters_on_caller_session_id"
   add_index "voters", ["campaign_id", "active", "status", "call_back"], :name => "index_voters_on_campaign_id_and_active_and_status_and_call_back"

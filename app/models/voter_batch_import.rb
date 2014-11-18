@@ -57,14 +57,15 @@ class VoterBatchImport
         end
 
         blocked_number_id = campaign.find_dnc_match_id(phone_number)
+        blocked           = blocked_number_id.present? ? true : false
 
         lead ||= {
-          :phone             => phone_number,
-          :voter_list_id     => @list.id,
-          :account_id        => @list.account_id,
-          :campaign_id       => @list.campaign_id,
-          :blocked_number_id => blocked_number_id,
-          :enabled           => true
+          :phone         => phone_number,
+          :voter_list_id => @list.id,
+          :account_id    => @list.account_id,
+          :campaign_id   => @list.campaign_id,
+          :blocked       => blocked,
+          :enabled       => true
         }
 
         @csv_headers.each_with_index do |csv_column_title, column_location|
@@ -81,7 +82,7 @@ class VoterBatchImport
           leads << lead
           successful_voters << voter_info
 
-          if lead[:blocked_number_id].present?
+          if lead[:blocked]
             @result[:dnc] += 1
           else
             @result[:success] +=1

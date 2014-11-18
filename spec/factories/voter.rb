@@ -46,7 +46,7 @@ FactoryGirl.define do
       end
 
       trait :blocked do
-        blocked_number_id { rand(100) }
+        blocked{ 1 }
       end
 
       trait :busy do
