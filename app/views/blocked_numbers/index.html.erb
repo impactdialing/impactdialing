@@ -8,7 +8,7 @@
       <%= f.text_field :number %>
     </p>
     <p data-intro="Choose whether the number should be blocked for the entire system, or just one campaign." data-step="2">
-      <%= f.label :level %>
+      <%= f.label :level, for: 'blocked_number_campaign_id' %>
       <%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %>
     </p>
     <div class="buttons">
@@ -18,21 +18,22 @@
 </fieldset>
 
 <% if @blocked_numbers.any? %>
-  <table>
+  <table id="do_not_call_list">
     <tr>
       <th>Phone</th>
       <th>DNC level</th>
       <th width="55" class="ac"></th>
     </tr>
     <% @blocked_numbers.each do |blocked_number| %>
-      <tr>
+      <tr id="blocked_number_<%= blocked_number.id %>">
         <td><%= blocked_number.number %></td>
         <td><%= blocked_number.campaign ? blocked_number.campaign.name : 'System' %></td>
         <td><%= link_to '',
                 blocked_number_path(blocked_number),
                 :confirm => 'Are you sure you want to remove this number from the Do Not Call list?',
                 :method => :delete,
-                :class => "ico del" %></td>
+                :class => "ico del",
+                :title => "Remove number from DNC" %></td>
       </tr>
     <% end %>
   </table>
