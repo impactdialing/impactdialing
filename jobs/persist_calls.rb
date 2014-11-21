@@ -47,10 +47,6 @@ class PersistCalls
       rescue Resque::TermException => e
         Rails.logger.info "Shutting down. [multipop]"
         ImpactPlatform::Metrics::JobStatus.sigterm(self.to_s.underscore)
-      rescue Exception => e
-        ImpactPlatform::Metrics::JobStatus.error(self.to_s.underscore)
-        Rails.logger.error("#{self} Exception: #{e.class}: #{e.message}")
-        Rails.logger.error("#{self} Exception Backtrace: #{e.backtrace}")
       end
     end
     result
@@ -70,11 +66,9 @@ class PersistCalls
       Rails.logger.info "Shutting down. Saving popped data. [safe_pop]"
       ImpactPlatform::Metrics::JobStatus.sigterm(self.to_s.underscore)
       multipush(connection, list_name, data)
-    rescue Exception => e
+    rescue => exception
       multipush(connection, list_name, data)
-      ImpactPlatform::Metrics::JobStatus.error(self.to_s.underscore)
-      Rails.logger.error("#{self} Exception: #{e.class}: #{e.message}")
-      Rails.logger.error("#{self} Exception Backtrace: #{e.backtrace}")
+      raise
     end
   end
 
@@ -173,11 +167,6 @@ class PersistCalls
         rescue Resque::TermException => e
           Rails.logger.info "Shutting down. [wrapped_up_calls]"
           ImpactPlatform::Metrics::JobStatus.sigterm(self.to_s.underscore)
-        rescue Exception => e
-          ImpactPlatform::Metrics::JobStatus.error(self.to_s.underscore)
-          Rails.logger.error("#{self} Exception: #{e.class}: #{e.message}")
-          Rails.logger.error("#{self} Exception Backtrace: #{e.backtrace}")
-          # raise e
         end
       end
       CallAttempt.import result, :on_duplicate_key_update=>[:wrapup_time, :voter_response_processed]
