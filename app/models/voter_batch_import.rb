@@ -64,9 +64,10 @@ class VoterBatchImport
           :voter_list_id => @list.id,
           :account_id    => @list.account_id,
           :campaign_id   => @list.campaign_id,
-          :blocked       => blocked,
-          :enabled       => true
+          :enabled       => [:list]
         }
+
+        lead[:enabled] << :blocked if blocked
 
         @csv_headers.each_with_index do |csv_column_title, column_location|
           system_column = @csv_to_system_map.system_column_for csv_column_title
@@ -82,7 +83,7 @@ class VoterBatchImport
           leads << lead
           successful_voters << voter_info
 
-          if lead[:blocked]
+          if blocked
             @result[:dnc] += 1
           else
             @result[:success] +=1

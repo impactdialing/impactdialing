@@ -23,7 +23,8 @@ class DoNotCall::Jobs::UnblockVoter
 
   def self.perform(account_id, campaign_id, phone_number)
     voters = voters_with(account_id, campaign_id, phone_number)
-    voters.update_all(blocked: false)
+    voters.enabled.update_all(enabled: Voter.bitmask_for_enabled(:list))
+    voters.disabled.update_all(enabled: Voter.bitmask_for_enabled([]))
     Rails.logger.info "DoNotCall::Jobs::UnblockVoter Account[#{account_id}] Campaign[#{campaign_id}] Number[#{phone_number}] marked #{voters.count} voters unblocked."
   end
 

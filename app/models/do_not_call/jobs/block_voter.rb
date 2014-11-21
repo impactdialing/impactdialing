@@ -24,7 +24,8 @@ class DoNotCall::Jobs::BlockVoter
   def self.perform(blocked_number_id)
     blocked_number = BlockedNumber.find blocked_number_id
     voters = voters_with(blocked_number)
-    voters.update_all(blocked: true)
+    voters.enabled.update_all(enabled: Voter.bitmask_for_enabled(:list, :blocked))
+    voters.disabled.update_all(enabled: Voter.bitmask_for_enabled(:blocked))
     Rails.logger.info "DoNotCall::Jobs::BlockVoter Account[#{blocked_number.account_id}] Campaign[#{blocked_number.campaign_id}] Number[#{blocked_number.number}] marked #{voters.count} voters blocked."
   end
 

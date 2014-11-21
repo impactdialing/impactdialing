@@ -86,7 +86,7 @@ describe VoterList, :type => :model do
   describe "voter enable callback after save" do
     it "should enable all voters when list enabled" do
       voter_list = create(:voter_list, enabled: false)
-      voter = create(:voter, voter_list: voter_list, enabled: false)
+      voter = create(:realistic_voter, :disabled, voter_list: voter_list)
       voter_list.enabled = true
       voter_list.save
       VoterListChangeJob.perform(voter_list.id, voter_list.enabled)
@@ -95,11 +95,11 @@ describe VoterList, :type => :model do
 
     it "should disable all voters when list disabled" do
       voter_list = create(:voter_list, enabled: true)
-      voter = create(:voter, voter_list: voter_list, enabled: true)
+      voter = create(:realistic_voter, voter_list: voter_list)
       voter_list.enabled = false
       voter_list.save
       VoterListChangeJob.perform(voter_list.id, voter_list.enabled)
-      expect(voter.reload.enabled).to be_falsey
+      expect(voter.reload.enabled?(:list)).to be_falsey
     end
 
   end

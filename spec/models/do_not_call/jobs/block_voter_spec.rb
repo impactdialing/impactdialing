@@ -26,18 +26,18 @@ describe 'DoNotCall::Jobs::BlockVoter' do
   end
   
   it 'marks voter blocked from account-wide list' do
-    expect( voter_blocked_account_wide.reload.blocked ).to be_truthy
+    expect( voter_blocked_account_wide.reload.blocked? ).to be_truthy
   end
 
   it 'marks voter blocked from campaign-wide list' do
-    expect( voter_blocked_campaign_wide.reload.blocked ).to be_truthy
+    expect( voter_blocked_campaign_wide.reload.blocked? ).to be_truthy
   end
 
   it 'does not mark voter from another account' do
-    expect( other_voters.second.reload.blocked ).to be_falsey
+    expect( other_voters.second.reload.blocked? ).to be_falsey
   end
 
   it 'does not mark voter from another campaign' do
-    expect( other_voters.third.reload.blocked ).to be_falsey
+    expect( other_voters.third.reload.blocked? ).to be_falsey
   end
 end

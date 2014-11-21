@@ -79,7 +79,19 @@ class PersistCalls
   end
 
   def self.import_voters(voters)
-    Voter.import  voters, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date, :voicemail_history]
+    use_value_after_type_cast = ['enabled']
+
+    columns = Voter.column_names
+    values  = voters.map do |voter|
+      columns.map do |column|
+        unless use_value_after_type_cast.include?(column)
+          voter.send("#{column}_before_type_cast") 
+        else
+          voter.send(column)
+        end
+      end
+    end
+    Voter.import columns, values, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date, :voicemail_history]
   end
 
   def self.import_call_attempts(call_attempts)

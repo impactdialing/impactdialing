@@ -124,9 +124,9 @@ describe Predictive do
 
     it "dials enabled voters only" do
        # voter1 = create(:realistic_voter, campaign: campaign, enabled: true)
-       voter1 = create_and_cache_voter(:realistic_voter, campaign: campaign, enabled: true)
+       voter1 = create_and_cache_voter(:realistic_voter, campaign: campaign)
        # voter2 = create(:realistic_voter, campaign: campaign, enabled: false)
-       voter2 = create_and_cache_voter(:realistic_voter, campaign: campaign, enabled: false)
+       voter2 = create_and_cache_voter(:realistic_voter, :disabled, campaign: campaign)
 
        expect(campaign.choose_voters_to_dial(2)).to eq([voter1.id])
     end
@@ -151,7 +151,7 @@ describe Predictive do
     end
 
     it "always dials numbers that have not been dialed first" do
-      create_list(:voter, 40, campaign: campaign, status: Voter::Status::NOTCALLED)
+      create_list(:realistic_voter, 40, campaign: campaign, status: Voter::Status::NOTCALLED)
       dial_queue = cache_available_voters(campaign)
 
       voters = Voter.all
@@ -201,14 +201,14 @@ describe Predictive do
     end
 
     it "does not dial voter who has been just dialed recycle rate" do
-      voter = create(:voter, campaign: campaign, status: CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 1.hour)
+      voter = create(:realistic_voter, campaign: campaign, status: CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 1.hour)
       cache_available_voters(campaign)
       create(:call_attempt, :voter => voter, status: CallAttempt::Status::BUSY)
       expect(campaign.choose_voters_to_dial(20)).not_to include(voter.id)
     end
 
     it "dials voter who has been dialed passed recycle rate" do
-      voter = create(:voter, campaign: campaign, status: CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 4.hours)
+      voter = create(:realistic_voter, campaign: campaign, status: CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 4.hours)
       cache_available_voters(campaign)
       create(:call_attempt, :voter => voter, status: CallAttempt::Status::BUSY)
       expect(campaign.choose_voters_to_dial(20)).to include(voter.id)

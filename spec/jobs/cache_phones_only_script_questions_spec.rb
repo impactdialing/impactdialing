@@ -4,7 +4,7 @@ describe 'CachePhonesOnlyScriptQuestions' do
   include FakeCallData
 
   def update_script(script)
-    questions = Question.all
+    questions = script.questions.order('id').all
 
     script.update_attributes!({
       questions_attributes: [
@@ -45,6 +45,8 @@ describe 'CachePhonesOnlyScriptQuestions' do
   end
 
   before do
+    Question.destroy_all
+    PossibleResponse.destroy_all
     admin   = create(:user)
     account = admin.account
     @script = create_campaign_with_script(:bare_power, account).first
@@ -137,16 +139,15 @@ describe 'CachePhonesOnlyScriptQuestions' do
 
       it 'updates possible responses cache' do
         updated_questions = @script.questions[0..1]
-        updated_responses = updated_questions.map(&:possible_responses).flatten
         question_ids      = updated_questions.map(&:id)
 
-        cached_responses = RedisPossibleResponse.possible_responses(question_ids.first)
-        expect(cached_responses[0]['value']).to eq updated_responses[0].value
-        expect(cached_responses[1]['value']).to eq updated_responses[1].value
+        actuals = RedisPossibleResponse.possible_responses(question_ids.first)
+        expect(actuals[0]['value']).to eq Question.find(question_ids.first).possible_responses.find_by_keypad(actuals[0]['keypad']).value
+        expect(actuals[1]['value']).to eq Question.find(question_ids.first).possible_responses.find_by_keypad(actuals[1]['keypad']).value
 
-        cached_responses = RedisPossibleResponse.possible_responses(question_ids.last)
-        expect(cached_responses[0]['value']).to eq updated_responses[4].value
-        expect(cached_responses[1]['value']).to eq updated_responses[5].value
+        actuals = RedisPossibleResponse.possible_responses(question_ids.last)
+        expect(actuals[0]['value']).to eq Question.find(question_ids.last).possible_responses.find_by_keypad(actuals[0]['keypad']).value
+        expect(actuals[1]['value']).to eq Question.find(question_ids.last).possible_responses.find_by_keypad(actuals[1]['keypad']).value
       end
     end
 

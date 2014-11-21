@@ -17,7 +17,11 @@ gem 'settingslogic', '~> 2.0.9'
 gem 'twilio-ruby', '~> 3.10.0'
 gem 'dynamic_form', '~> 1.1.4'
 gem 'jquery-rails', '~> 3.0.4'
+
+# activerecord extensions
 gem 'activerecord-import', '~> 0.4.1'
+gem 'bitmask_attributes'
+
 gem 'uuid', '~> 2.3.7'
 gem 'eventmachine', '1.0.3'
 gem 'em-http-request', '~> 1.1.0'

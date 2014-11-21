@@ -3,6 +3,7 @@ FactoryGirl.define do
     first_name { Forgery(:name).first_name }
     phone { Forgery(:address).phone }
     updated_at Time.now
+    enabled [:list]
 
     factory :realistic_voter do
       last_name { Forgery(:name).last_name }
@@ -12,7 +13,7 @@ FactoryGirl.define do
       state { Forgery(:address).state }
       zip_code { Forgery(:address).zip }
       country { Forgery(:address).country }
-
+      enabled [:list]
 
       trait :ringing do
         status CallAttempt::Status::RINGING
@@ -38,7 +39,7 @@ FactoryGirl.define do
       end
 
       trait :disabled do
-        enabled false
+        enabled []
       end
 
       trait :deleted do
@@ -46,7 +47,7 @@ FactoryGirl.define do
       end
 
       trait :blocked do
-        blocked{ 1 }
+        enabled [:list, :blocked]
       end
 
       trait :busy do

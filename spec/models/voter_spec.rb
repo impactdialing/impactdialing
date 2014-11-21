@@ -195,7 +195,7 @@ describe Voter, :type => :model do
       })
     end
     let(:voter) do
-      create(:voter, {
+      create(:realistic_voter, {
         campaign: campaign,
         account: campaign.account
       })
@@ -246,7 +246,7 @@ describe Voter, :type => :model do
 
   context '#disconnect_call(caller_id)' do
     subject do
-      create(:voter, {
+      create(:realistic_voter, {
         status: 'hello',
         caller_session: create(:caller_session),
         caller_id: 1,
@@ -264,15 +264,15 @@ describe Voter, :type => :model do
   end
 
   it "can share the same number" do
-    voter1 = create(:voter, :phone => '92345623434')
-    voter2 = create(:voter, :phone => '92345623434')
+    voter1 = create(:realistic_voter, :phone => '92345623434')
+    voter2 = create(:realistic_voter, :phone => '92345623434')
     expect(Voter.all).to include(voter1)
     expect(Voter.all).to include(voter2)
   end
 
   it "should list existing entries in a campaign having the given phone number" do
     expect {
-      create(:voter, :phone => '0123456789', :campaign_id => 99)
+      create(:realistic_voter, :phone => '0123456789', :campaign_id => 99)
     }.to change {
       Voter.existing_phone_in_campaign('0123456789', 99).count
     }.by(1)
@@ -280,19 +280,19 @@ describe Voter, :type => :model do
 
   it "gives remaining voters to count" do
     campaign = create(:campaign)
-    no_answr_voter = create(:voter, :campaign => campaign, :status=> CallAttempt::Status::NOANSWER)
-    busy_voter = create(:voter, :campaign => campaign, :status=> CallAttempt::Status::BUSY)
-    abandon_voter = create(:voter, :campaign => campaign, :status=> CallAttempt::Status::ABANDONED)
-    schedule_voter = create(:voter, :campaign => campaign, :status=> CallAttempt::Status::SCHEDULED, :call_back => true)
-    not_called_voter = create(:voter, :campaign => campaign, :status=> Voter::Status::NOTCALLED)
-    failed_voter = create(:voter, :campaign => campaign, :status=> CallAttempt::Status::FAILED, :call_back => true)
-    ready_voter = create(:voter, :campaign => campaign, :status=> CallAttempt::Status::READY)
-    success_voter = create(:voter, :campaign => campaign, :status=> CallAttempt::Status::SUCCESS)
+    no_answr_voter = create(:realistic_voter, :campaign => campaign, :status=> CallAttempt::Status::NOANSWER)
+    busy_voter = create(:realistic_voter, :campaign => campaign, :status=> CallAttempt::Status::BUSY)
+    abandon_voter = create(:realistic_voter, :campaign => campaign, :status=> CallAttempt::Status::ABANDONED)
+    schedule_voter = create(:realistic_voter, :campaign => campaign, :status=> CallAttempt::Status::SCHEDULED, :call_back => true)
+    not_called_voter = create(:realistic_voter, :campaign => campaign, :status=> Voter::Status::NOTCALLED)
+    failed_voter = create(:realistic_voter, :campaign => campaign, :status=> CallAttempt::Status::FAILED, :call_back => true)
+    ready_voter = create(:realistic_voter, :campaign => campaign, :status=> CallAttempt::Status::READY)
+    success_voter = create(:realistic_voter, :campaign => campaign, :status=> CallAttempt::Status::SUCCESS)
     expect(Voter.remaining_voters_for_campaign(campaign)).to have(6).items
   end
 
   it "allows international phone numbers beginning with +" do
-    voter = create(:voter, :phone => "+2353546")
+    voter = create(:realistic_voter, :phone => "+2353546")
     expect(voter).to be_valid
   end
 
@@ -302,45 +302,45 @@ describe Voter, :type => :model do
   end
 
   it "lists voters not called" do
-    voter1 = create(:voter, :campaign => create(:campaign), :status=> Voter::Status::NOTCALLED)
-    voter2 = create(:voter, :campaign => create(:campaign), :status=> Voter::Status::NOTCALLED)
-    create(:voter, :campaign => create(:campaign), :status=> "Random")
+    voter1 = create(:realistic_voter, :campaign => create(:campaign), :status=> Voter::Status::NOTCALLED)
+    voter2 = create(:realistic_voter, :campaign => create(:campaign), :status=> Voter::Status::NOTCALLED)
+    create(:realistic_voter, :campaign => create(:campaign), :status=> "Random")
     expect(Voter.by_status(Voter::Status::NOTCALLED)).to include(voter1)
     expect(Voter.by_status(Voter::Status::NOTCALLED)).to include(voter2)
   end
 
   it "returns only active voters" do
-    active_voter = create(:voter, :active => true)
-    inactive_voter = create(:voter, :active => false)
+    active_voter = create(:realistic_voter, :active => true)
+    inactive_voter = create(:realistic_voter, :active => false)
     expect(Voter.active).to include(active_voter)
   end
 
   it "returns voters from an enabled list" do
-    voter_from_enabled_list = create(:voter, :voter_list => create(:voter_list, :enabled => true), enabled: true)
-    voter_from_disabled_list = create(:voter, :voter_list => create(:voter_list, :enabled => false), enabled: false)
+    voter_from_enabled_list = create(:realistic_voter, :voter_list => create(:voter_list, :enabled => true))
+    voter_from_disabled_list = create(:realistic_voter, :disabled, :voter_list => create(:voter_list, :enabled => false))
     expect(Voter.enabled).to include(voter_from_enabled_list)
   end
 
   it "returns voters that have responded" do
-    create(:voter)
-    3.times { create(:voter, :result_date => Time.now) }
+    create(:realistic_voter)
+    3.times { create(:realistic_voter, :result_date => Time.now) }
     expect(Voter.answered.size).to eq(3)
   end
 
   it "returns voters that have responded within a date range" do
-    create(:voter)
-    v1 = create(:voter, :result_date => DateTime.now)
-    v2 = create(:voter, :result_date => 1.day.ago)
-    v3 = create(:voter, :result_date => 2.days.ago)
+    create(:realistic_voter)
+    v1 = create(:realistic_voter, :result_date => DateTime.now)
+    v2 = create(:realistic_voter, :result_date => 1.day.ago)
+    v3 = create(:realistic_voter, :result_date => 2.days.ago)
     expect(Voter.answered_within(2.days.ago, 0.days.ago)).to eq([v1, v2, v3])
     expect(Voter.answered_within(2.days.ago, 1.day.ago)).to eq([v2, v3])
     expect(Voter.answered_within(1.days.ago, 1.days.ago)).to eq([v2])
   end
 
   it "returns voters who have responded within a time range" do
-    v1 = create(:voter, :result_date => Time.new(2012, 2, 14, 10))
-    v2 = create(:voter, :result_date => Time.new(2012, 2, 14, 15))
-    v3 = create(:voter, :result_date => Time.new(2012, 2, 14, 20))
+    v1 = create(:realistic_voter, :result_date => Time.new(2012, 2, 14, 10))
+    v2 = create(:realistic_voter, :result_date => Time.new(2012, 2, 14, 15))
+    v3 = create(:realistic_voter, :result_date => Time.new(2012, 2, 14, 20))
     expect(Voter.answered_within_timespan(Time.new(2012, 2, 14, 10), Time.new(2012, 2, 14, 12))).to eq([v1])
     expect(Voter.answered_within_timespan(Time.new(2012, 2, 14, 12), Time.new(2012, 2, 14, 23, 59, 59))).to eq([v2, v3])
     expect(Voter.answered_within_timespan(Time.new(2012, 2, 14, 0), Time.new(2012, 2, 14, 9, 59, 59))).to eq([])
@@ -352,7 +352,7 @@ describe Voter, :type => :model do
       campaign = create(:power, {account: account})
       vopt = voter_opts.merge({
         campaign: campaign,
-        enabled: true
+        enabled: [:list]
       })
       create_list(:voter, n, vopt)
       expect(Voter.count).to eq n
@@ -400,8 +400,8 @@ describe Voter, :type => :model do
 
     context '2 voters in the list have phone numbers that exist on the blocked list' do
       before do
-        @voters[0].update_attributes!(blocked: true)
-        @voters[1].update_attributes!(blocked: true)
+        @voters[0].update_attributes!(enabled: [:list, :blocked])
+        @voters[1].update_attributes!(enabled: [:list, :blocked])
         @query = Voter.remaining_voters_for_voter_list(voter_list)
       end
 
@@ -414,12 +414,12 @@ describe Voter, :type => :model do
 
   describe "Dialing" do
     let(:campaign) { create(:robo) }
-    let(:voter) { create(:voter, :campaign => campaign) }
+    let(:voter) { create(:realistic_voter, :campaign => campaign) }
 
     it "records users to call back" do
-      voter1 = create(:voter)
+      voter1 = create(:realistic_voter)
       expect(Voter.to_callback).to eq([])
-      voter2 = create(:voter, :call_back =>true)
+      voter2 = create(:realistic_voter, :call_back =>true)
       expect(Voter.to_callback).to eq([voter2])
     end
   end
@@ -427,19 +427,19 @@ describe Voter, :type => :model do
 
   describe "predictive dialing" do
     let(:campaign) { create(:predictive, answering_machine_detect: true) }
-    let(:voter) { create(:voter, :campaign => campaign) }
+    let(:voter) { create(:realistic_voter, :campaign => campaign) }
     let(:client) { double(:client).tap { |client| allow(Twilio::REST::Client).to receive(:new).and_return(client) } }
 
     it "checks, whether voter is called or not" do
-      voter1 = create(:voter, :status => "not called")
-      voter2 = create(:voter, :status => "success")
+      voter1 = create(:realistic_voter, :status => "not called")
+      voter2 = create(:realistic_voter, :status => "success")
       expect(voter1.not_yet_called?("not called")).to be_truthy
       expect(voter2.not_yet_called?("not called")).to be_falsey
     end
 
     it "checks, call attemp made before 3 hours or not" do
-      voter1 = create(:voter, :last_call_attempt_time => 4.hours.ago, :call_back => true)
-      voter2 = create(:voter, :last_call_attempt_time => 2.hours.ago, :call_back => true)
+      voter1 = create(:realistic_voter, :last_call_attempt_time => 4.hours.ago, :call_back => true)
+      voter2 = create(:realistic_voter, :last_call_attempt_time => 2.hours.ago, :call_back => true)
       expect(voter1.call_attempted_before?(3.hours)).to be_truthy
       expect(voter2.call_attempted_before?(3.hours)).to be_falsey
       expect(voter2.call_attempted_before?(10.minutes)).to be_truthy
@@ -451,11 +451,11 @@ describe Voter, :type => :model do
       voter_list2 = create(:voter_list)
       active_list_ids = [voter_list1.id, voter_list2.id]
       status = "not called"
-      voter1 = create(:voter, :campaign => campaign, :voter_list => voter_list1)
-      voter2 = create(:voter, :campaign => campaign, :voter_list => voter_list1, last_call_attempt_time: 2.hours.ago, status: CallAttempt::Status::VOICEMAIL)
-      voter3 = create(:voter, :campaign => campaign, :voter_list => voter_list2)
-      voter4 = create(:voter, :voter_list => voter_list1)
-      voter5 = create(:voter, :campaign => campaign)
+      voter1 = create(:realistic_voter, :campaign => campaign, :voter_list => voter_list1)
+      voter2 = create(:realistic_voter, :campaign => campaign, :voter_list => voter_list1, last_call_attempt_time: 2.hours.ago, status: CallAttempt::Status::VOICEMAIL)
+      voter3 = create(:realistic_voter, :campaign => campaign, :voter_list => voter_list2)
+      voter4 = create(:realistic_voter, :voter_list => voter_list1)
+      voter5 = create(:realistic_voter, :campaign => campaign)
       expect(Voter.to_be_called(campaign.id, active_list_ids, status, 3).length).to eq(2)
     end
 
@@ -465,14 +465,14 @@ describe Voter, :type => :model do
       voter_list2 = create(:voter_list)
       active_list_ids = [voter_list1.id, voter_list2.id]
       status = "not called"
-      voter1 = create(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list1, :last_call_attempt_time => 2.hours.ago)
-      voter2 = create(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 1.hours.ago)
-      voter3 = create(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 30.minutes.ago)
-      voter4 = create(:voter, :campaign => campaign, :call_back => false, :voter_list => voter_list2, :last_call_attempt_time => 50.minutes.ago)
-      voter5 = create(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 8.minutes.ago)
-      voter6 = create(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 1.minutes.ago)
-      voter7 = create(:voter, :voter_list => voter_list1)
-      voter8 = create(:voter, :campaign => campaign)
+      voter1 = create(:realistic_voter, :campaign => campaign, :call_back => true, :voter_list => voter_list1, :last_call_attempt_time => 2.hours.ago)
+      voter2 = create(:realistic_voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 1.hours.ago)
+      voter3 = create(:realistic_voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 30.minutes.ago)
+      voter4 = create(:realistic_voter, :campaign => campaign, :call_back => false, :voter_list => voter_list2, :last_call_attempt_time => 50.minutes.ago)
+      voter5 = create(:realistic_voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 8.minutes.ago)
+      voter6 = create(:realistic_voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 1.minutes.ago)
+      voter7 = create(:realistic_voter, :voter_list => voter_list1)
+      voter8 = create(:realistic_voter, :campaign => campaign)
       expect(Voter.just_called_voters_call_back(campaign.id, active_list_ids)).to eq([voter1, voter2, voter3])
     end
 
@@ -480,38 +480,38 @@ describe Voter, :type => :model do
 
   describe "to be dialed" do
     it "includes voters never called" do
-      voter = create(:voter, :status => Voter::Status::NOTCALLED)
+      voter = create(:realistic_voter, :status => Voter::Status::NOTCALLED)
       expect(Voter.to_be_dialed).to include(voter)
     end
 
     it "includes voters with a busy signal" do
-      voter = create(:voter, :status => CallAttempt::Status::BUSY)
+      voter = create(:realistic_voter, :status => CallAttempt::Status::BUSY)
       create(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
       expect(Voter.to_be_dialed).to include(voter)
     end
 
     (CallAttempt::Status::ALL - [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED]).each do |status|
       it "includes voters with a status of #{status} " do
-        voter = create(:voter, :status => status)
+        voter = create(:realistic_voter, :status => status)
         expect(Voter.to_be_dialed).to include(voter)
       end
     end
 
     it "excludes voters with a status of a successful call" do
-      voter = create(:voter, :status => CallAttempt::Status::SUCCESS)
+      voter = create(:realistic_voter, :status => CallAttempt::Status::SUCCESS)
       expect(Voter.to_be_dialed).not_to include(voter)
     end
 
     it "is ordered by the last_call_attempt_time" do
-      v1 = create(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
-      v2 = create(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 1.hour.ago)
+      v1 = create(:realistic_voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
+      v2 = create(:realistic_voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 1.hour.ago)
       expect(Voter.to_be_dialed).to include(v1)
       expect(Voter.to_be_dialed).to include(v2)
     end
 
     it "prioritizes uncalled voters over called voters" do
-      called_voter = create(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
-      uncalled_voter = create(:voter, :status => Voter::Status::NOTCALLED)
+      called_voter = create(:realistic_voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
+      uncalled_voter = create(:realistic_voter, :status => Voter::Status::NOTCALLED)
       expect(Voter.to_be_dialed).to include(uncalled_voter)
       expect(Voter.to_be_dialed).to include(called_voter)
     end
@@ -519,20 +519,20 @@ describe Voter, :type => :model do
 
 
   xit "lists scheduled voters" do
-    recent_voter = create(:voter, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
-    really_old_voter = create(:voter, :scheduled_date => 2.hours.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
-    recent_but_unscheduled_voter = create(:voter, :scheduled_date => 1.minute.ago, :status => nil)
+    recent_voter = create(:realistic_voter, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
+    really_old_voter = create(:realistic_voter, :scheduled_date => 2.hours.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
+    recent_but_unscheduled_voter = create(:realistic_voter, :scheduled_date => 1.minute.ago, :status => nil)
     expect(Voter.scheduled).to eq([recent_voter])
   end
 
   it "limits voters when listing them" do
-    10.times { create(:voter) }
+    10.times { create(:realistic_voter) }
     expect(Voter.limit(5)).to have(5).voters
   end
 
   it "excludes specific numbers" do
-    unblocked_voter = create(:voter, :phone => "1234567890")
-    blocked_voter = create(:voter, :phone => "0123456789")
+    unblocked_voter = create(:realistic_voter, :phone => "1234567890")
+    blocked_voter = create(:realistic_voter, :phone => "0123456789")
     expect(Voter.without(['0123456789'])).to include(unblocked_voter)
   end
 
@@ -552,7 +552,7 @@ describe Voter, :type => :model do
   describe 'answers' do
     let(:script) { create(:script) }
     let(:campaign) { create(:predictive, :script => script) }
-    let(:voter) { create(:voter, :campaign => campaign, :caller_session => create(:caller_session, :caller => create(:caller))) }
+    let(:voter) { create(:realistic_voter, :campaign => campaign, :caller_session => create(:caller_session, :caller => create(:caller))) }
     let(:question) { create(:question, :script => script) }
     let(:response) { create(:possible_response, :question => question) }
     let(:call_attempt) { create(:call_attempt, :caller => create(:caller)) }
@@ -592,7 +592,7 @@ describe Voter, :type => :model do
     it "associates the caller with the answer" do
       caller = create(:caller)
       session = create(:caller_session, :caller => caller)
-      voter = create(:voter, :campaign => campaign, :last_call_attempt => create(:call_attempt, :caller_session => session))
+      voter = create(:realistic_voter, :campaign => campaign, :last_call_attempt => create(:call_attempt, :caller_session => session))
       create(:possible_response, :question => question, :keypad => 1, :value => "response1")
       expect(voter.answer(question, "1", session).caller_id).to eq(caller.id)
     end
@@ -600,7 +600,7 @@ describe Voter, :type => :model do
     describe "phones only" do
       let(:script) { create(:script) }
       let(:campaign) { create(:predictive, :script => script) }
-      let(:voter) { create(:voter, :campaign => campaign, :last_call_attempt => create(:call_attempt, :caller_session => create(:caller_session))) }
+      let(:voter) { create(:realistic_voter, :campaign => campaign, :last_call_attempt => create(:call_attempt, :caller_session => create(:caller_session))) }
       let(:question) { create(:question, :script => script) }
       let(:session) { create(:caller_session, :caller => create(:caller)) }
 
@@ -633,7 +633,7 @@ describe Voter, :type => :model do
     let(:note1) { create(:note, note: "Question1", script: script) }
     let(:note2) { create(:note, note: "Question2", script: script) }
     let(:call_attempt) { create(:call_attempt, :caller => create(:caller)) }
-    let(:voter) { create(:voter, last_call_attempt: call_attempt) }
+    let(:voter) { create(:realistic_voter, last_call_attempt: call_attempt) }
 
     it "captures call notes" do
       voter.persist_notes("{\"#{note1.id}\":\"tell\",\"#{note2.id}\":\"no\"}", call_attempt)
@@ -645,19 +645,19 @@ describe Voter, :type => :model do
   describe "last_call_attempt_before_recycle_rate" do
     it "should return voter if call attempt was before recycle rate hours" do
       campaign = create(:campaign)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: 150.minutes.ago)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: 150.minutes.ago)
       expect(Voter.last_call_attempt_before_recycle_rate(2)).to include(voter)
     end
 
     it "should return not voter if call attempt was within recycle rate hours" do
       campaign = create(:campaign)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: 110.minutes.ago)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: 110.minutes.ago)
       expect(Voter.last_call_attempt_before_recycle_rate(2)).not_to include(voter)
     end
 
     it "should return  voter if call not attempted " do
       campaign = create(:campaign)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: nil)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: nil)
       expect(Voter.last_call_attempt_before_recycle_rate(2)).to include(voter)
     end
 
@@ -667,7 +667,7 @@ describe Voter, :type => :model do
   describe "skip voter" do
     it "should skip voter but adding skipped_time" do
       campaign = create(:campaign)
-      voter = create(:voter, :campaign => campaign)
+      voter = create(:realistic_voter, :campaign => campaign)
       voter.skip
       expect(voter.skipped_time).not_to be_nil
     end
@@ -677,25 +677,25 @@ describe Voter, :type => :model do
 
     it "should not consider voters who have not been dialed" do
       campaign = create(:campaign)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: nil)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: nil)
       expect(Voter.avialable_to_be_retried(campaign.recycle_rate)).to eq([])
     end
 
     it "should not consider voters who last call attempt is within recycle rate" do
       campaign = create(:campaign, recycle_rate: 4)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours)
       expect(Voter.avialable_to_be_retried(campaign.recycle_rate)).to eq([])
     end
 
     it "should  consider voters who last call attempt is not within recycle rate for hangup status" do
       campaign = create(:campaign, recycle_rate: 1)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
       expect(Voter.avialable_to_be_retried(campaign.recycle_rate)).to include(voter)
     end
 
     it "should not  consider voters who last call attempt is not within recycle rate for success status" do
       campaign = create(:campaign, recycle_rate: 1)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::SUCCESS)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::SUCCESS)
       expect(Voter.avialable_to_be_retried(campaign.recycle_rate)).not_to include(voter)
     end
 
@@ -705,25 +705,25 @@ describe Voter, :type => :model do
 
     it "should not consider voters who have not been dialed" do
       campaign = create(:campaign)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: nil)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: nil)
       expect(Voter.not_avialable_to_be_retried(campaign.recycle_rate)).to eq([])
     end
 
     it "should not consider voters who last call attempt is not within recycle rate" do
       campaign = create(:campaign, recycle_rate: 1)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours)
       expect(Voter.not_avialable_to_be_retried(campaign.recycle_rate)).to eq([])
     end
 
     it "should  not consider voters who last call attempt is  within recycle rate for hangup status" do
       campaign = create(:campaign, recycle_rate: 1)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
       expect(Voter.not_avialable_to_be_retried(campaign.recycle_rate)).to eq([])
     end
 
     it "should consider voters who last call attempt is not within recycle rate for hangup status" do
       campaign = create(:campaign, recycle_rate: 3)
-      voter = create(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
+      voter = create(:realistic_voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
       expect(Voter.not_avialable_to_be_retried(campaign.recycle_rate)).to eq([voter])
     end
   end
@@ -889,20 +889,20 @@ describe Voter, :type => :model do
     let(:campaign){ create(:campaign) }
 
     xit 'loads voters w/ priority=1 and status=Voter::Status::NOTCALLED' do
-      expected = [create(:voter, campaign: campaign, status: Voter::Status::NOTCALLED, priority: true)]
-      create(:voter, campaign: campaign, status: nil, priority: true)
-      create(:voter, campaign: campaign, status: Voter::Status::RETRY, priority: true)
+      expected = [create(:realistic_voter, campaign: campaign, status: Voter::Status::NOTCALLED, priority: true)]
+      create(:realistic_voter, campaign: campaign, status: nil, priority: true)
+      create(:realistic_voter, campaign: campaign, status: Voter::Status::RETRY, priority: true)
       actual = Voter.next_in_priority_or_scheduled_queues([])
       expect(actual.all).to eq expected
     end
 
     xit 'OR voters scheduled to be called back in the last or next 10 minutes' do
       expected = [
-        create(:voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 5.minutes.ago),
-        create(:voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 5.minutes.from_now)
+        create(:realistic_voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 5.minutes.ago),
+        create(:realistic_voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 5.minutes.from_now)
       ]
-      create(:voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 20.minutes.ago)
-      create(:voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 20.minutes.from_now)
+      create(:realistic_voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 20.minutes.ago)
+      create(:realistic_voter, campaign: campaign, status: CallAttempt::Status::SCHEDULED, scheduled_date: 20.minutes.from_now)
       actual = Voter.next_in_priority_or_scheduled_queues([])
       expect(actual.all).to eq expected
     end
@@ -910,18 +910,18 @@ describe Voter, :type => :model do
     xit 'excludes voters w/ phone numbers in the list of blocked numbers' do
       blocked = ['1234567890', '0987654321']
       expected = [
-        create(:voter, {
+        create(:realistic_voter, {
           campaign: campaign,
           status: Voter::Status::NOTCALLED,
           priority: true
         })
       ]
-      create(:voter, {
+      create(:realistic_voter, {
         campaign: campaign,
         status: Voter::Status::NOTCALLED,
         phone: blocked.first
       })
-      create(:voter, {
+      create(:realistic_voter, {
         campaign: campaign,
         status: Voter::Status::NOTCALLED,
         phone: blocked.second
@@ -938,7 +938,7 @@ describe Voter, :type => :model do
       }))
       vopt = voter_opts.merge({
         campaign: @campaign,
-        enabled: true
+        enabled: [:list]
       })
       create_list(:realistic_voter, count, vopt)
       expect(Voter.count).to eq count
@@ -1194,12 +1194,14 @@ end
 # **`skipped_time`**            | `datetime`         |
 # **`priority`**                | `string(255)`      |
 # **`lock_version`**            | `integer`          | `default(0)`
-# **`enabled`**                 | `boolean`          | `default(TRUE)`
+# **`enabled`**                 | `integer`          | `default(0), not null`
 # **`voicemail_history`**       | `string(255)`      |
-# **`blocked`**                 | `boolean`          | `default(FALSE), not null`
+# **`blocked_number_id`**       | `integer`          |
 #
 # ### Indexes
 #
+# * `index_on_blocked_number_id`:
+#     * **`blocked_number_id`**
 # * `index_priority_voters`:
 #     * **`campaign_id`**
 #     * **`enabled`**
@@ -1216,8 +1218,6 @@ end
 #     * **`voter_list_id`**
 # * `index_voters_on_attempt_id`:
 #     * **`attempt_id`**
-# * `index_voters_on_blocked`:
-#     * **`blocked`**
 # * `index_voters_on_caller_session_id`:
 #     * **`caller_session_id`**
 # * `index_voters_on_campaign_id_and_active_and_status_and_call_back`:

@@ -63,6 +63,8 @@ GEM
       erubis (>= 2.6.6)
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
+    bitmask_attributes (1.0.0)
+      activerecord (>= 3.1)
     bugsnag (2.5.0)
       httparty (>= 0.6, < 1.0)
       multi_json (~> 1.0)
@@ -441,6 +443,7 @@ DEPENDENCIES
   aws-sdk
   better_errors
   binding_of_caller
+  bitmask_attributes
   bugsnag
   bullet
   cancan (~> 1.6.10)

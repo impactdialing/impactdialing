@@ -1,4 +1,18 @@
 require 'fiber'
+
+## 
+# Models a Voter record. These records make-up the dial-pool.
+#
+# Columns:
+# - `enabled` is a bitmask. Possible values: :list, :blocked.
+# - `active` is not currently in-use.
+#
+# When the Voter#enabled :list bit is set, the Voter is
+# enabled and may be dialed depending on other settings.
+# When the Voter#enabled :blocked bit is
+# set, the Voter is blocked and cannot be dialed regardless
+# of any other settings. 
+#
 class Voter < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallAttempt::Status
@@ -25,6 +39,8 @@ class Voter < ActiveRecord::Base
   has_many :answers
   has_many :note_responses
 
+  bitmask :enabled, as: [:list, :blocked], null: false
+
   validates_presence_of :phone
 
   validate :phone_validatation
@@ -35,8 +51,8 @@ class Voter < ActiveRecord::Base
   scope :default_order, :order => 'last_name, first_name, phone'
 
   # scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
-  scope :enabled, where(:enabled => true)
-  scope :disabled, where(:enabled => false)
+  scope :enabled, with_enabled(:list)
+  scope :disabled, without_enabled(:list)
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
@@ -130,8 +146,8 @@ class Voter < ActiveRecord::Base
   }
 
   # New Shiny
-  scope :blocked, where('voters.blocked = 1')
-  scope :not_blocked, where('voters.blocked = 0')
+  scope :blocked, with_enabled(:blocked)
+  scope :not_blocked, without_enabled(:blocked)
   scope :dialed, where('last_call_attempt_time IS NOT NULL')
   scope :available, lambda{|campaign| where('status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
   scope :recently_dialed_households, lambda{ |recycle_rate|
@@ -141,7 +157,7 @@ class Voter < ActiveRecord::Base
     where('last_call_attempt_time > ?', recycle_rate.hours.ago)
   }
   scope :available_for_retry, lambda {|campaign|
-    enabled.active.
+    enabled.
     where('voters.status IN (?) OR call_back=?',
           CallAttempt::Status.retry_list(campaign),
           true).
@@ -259,6 +275,12 @@ public
     end
 
     return voter
+  end
+
+  scope :live, enabled.not_blocked
+
+  def blocked?
+    enabled?(:blocked)
   end
 
   def self.sanitize_phone(phonenumber)
@@ -495,12 +517,14 @@ end
 # **`skipped_time`**            | `datetime`         |
 # **`priority`**                | `string(255)`      |
 # **`lock_version`**            | `integer`          | `default(0)`
-# **`enabled`**                 | `boolean`          | `default(TRUE)`
+# **`enabled`**                 | `integer`          | `default(0), not null`
 # **`voicemail_history`**       | `string(255)`      |
-# **`blocked`**                 | `boolean`          | `default(FALSE), not null`
+# **`blocked_number_id`**       | `integer`          |
 #
 # ### Indexes
 #
+# * `index_on_blocked_number_id`:
+#     * **`blocked_number_id`**
 # * `index_priority_voters`:
 #     * **`campaign_id`**
 #     * **`enabled`**
@@ -517,8 +541,6 @@ end
 #     * **`voter_list_id`**
 # * `index_voters_on_attempt_id`:
 #     * **`attempt_id`**
-# * `index_voters_on_blocked`:
-#     * **`blocked`**
 # * `index_voters_on_caller_session_id`:
 #     * **`caller_session_id`**
 # * `index_voters_on_campaign_id_and_active_and_status_and_call_back`:

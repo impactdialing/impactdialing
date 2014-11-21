@@ -125,7 +125,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         @callers_campaign = @campaign
         @caller           = create(:caller, campaign: @campaign, account: @account)
         @caller_session   = create(:bare_caller_session, :phones_only, :available, {caller: @caller, campaign: @campaign})
-        @voter            = create(:voter, campaign: @campaign)
+        @voter            = create(:realistic_voter, campaign: @campaign)
         @dial_queue       = cache_available_voters(@campaign)
       end
 
@@ -170,7 +170,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         @script     = create(:script)
         @campaign   = create(:power, script: @script)
         @caller     = create(:caller, campaign: @campaign)
-        @voter      = create(:voter, campaign: @campaign)
+        @voter      = create(:realistic_voter, campaign: @campaign)
         @dial_queue = cache_available_voters(@campaign)
       end
 

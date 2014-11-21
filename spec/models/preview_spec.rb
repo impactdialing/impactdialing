@@ -42,6 +42,7 @@ describe Preview, :type => :model do
     context 'skipped voters' do
 
       it 'are cycled through until called; ie the campaign does not run out of numbers while some voters have been skipped' do
+        # binding.pry
         dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
 
         dial_one_at_a_time(campaign, 4){|voter| attach_call_attempt(:completed_call_attempt, voter, caller)}
@@ -73,9 +74,9 @@ describe Preview, :type => :model do
       }))
       vopt = voter_opts.merge({
         campaign: @campaign,
-        enabled: true
+        enabled: [:list]
       })
-      create_list(:voter, 10, vopt)
+      create_list(:realistic_voter, 10, vopt)
       expect(Voter.count).to eq 10
       @voters = @campaign.all_voters
       last_call_time = 20.hours.ago
@@ -183,9 +184,9 @@ describe Preview, :type => :model do
       vopt = {
         campaign: campaign
       }
-      vone = create(:voter, vopt)
-      vtwo = create(:voter, vopt)
-      vthr = create(:voter, vopt)
+      vone = create(:realistic_voter, vopt)
+      vtwo = create(:realistic_voter, vopt)
+      vthr = create(:realistic_voter, vopt)
       cache_available_voters(campaign)
 
       expect(campaign.next_voter_in_dial_queue(nil)).to eq vone
