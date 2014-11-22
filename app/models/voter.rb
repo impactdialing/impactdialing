@@ -222,6 +222,15 @@ private
   end
 
 public
+  # make activerecord-import work with bitmask_attributes
+  def enabled=(raw_value)
+    if raw_value.is_a?(Fixnum) && raw_value <= Voter.bitmasks[:enabled].values.sum
+      self.send(:write_attribute, :enabled, raw_value)
+    else
+      values = raw_value.kind_of?(Array) ? raw_value : [raw_value]
+      self.enabled.replace(values.reject{|value| value.blank?})
+    end
+  end
   ##
   # Select the next voter.
   #

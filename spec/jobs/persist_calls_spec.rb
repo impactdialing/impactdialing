@@ -13,6 +13,7 @@ describe PersistCalls do
   let!(:new_call) { create(:call, call_attempt: new_call_attempt) }
 
   before(:each) do
+    Redis.new.flushall
     $redis_call_flow_connection.lpush "abandoned_call_list", {id: call.id, current_time: time}.to_json
     $redis_call_flow_connection.lpush "abandoned_call_list", {id: 123, current_time: Time.zone.now - 1.day}.to_json
 

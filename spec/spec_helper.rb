@@ -42,10 +42,6 @@ RSpec.configure do |config|
   config.include TwilioRequestStubs
   config.include FactoryGirlImportHelpers
 
-  config.before(:each) do
-    $redis_call_flow_connection.flushALL
-  end
-
   config.mock_with :rspec
 
   config.before(:suite) do

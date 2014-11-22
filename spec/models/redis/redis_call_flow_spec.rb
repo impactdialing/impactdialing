@@ -1,7 +1,9 @@
 require "spec_helper"
 
 describe RedisCallFlow, :type => :model do
-  
+  before do
+    Redis.new.flushall
+  end  
   it "should add the call params to the not answered list" do
     RedisCallFlow.push_to_not_answered_call_list(1234, "busy")
     expect(RedisCallFlow.not_answered_call_list.length).to eq(1)
@@ -36,7 +38,5 @@ describe RedisCallFlow, :type => :model do
     RedisCallFlow.push_to_wrapped_up_call_list(1234, CallerSession::CallerType::TWILIO_CLIENT)
     expect(RedisCallFlow.wrapped_up_call_list.length).to eq(1)
     expect(RedisCallFlow.wrapped_up_call_list.pop).to eq("{\"id\":1234,\"caller_type\":\"Twilio client\",\"current_time\":\"#{Time.now.to_s}\"}")
-  end
-  
-  
+  end  
 end

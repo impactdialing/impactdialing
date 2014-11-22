@@ -56,6 +56,7 @@ describe 'VoterListUploadJob' do
     }
   end
   before do
+    Resque.redis.del "queue:upload_download"
     allow(amazon_s3).to receive(:read).with(voter_list.s3path){ csv_file }
     allow(AmazonS3).to receive(:new){ amazon_s3 }
     allow(VoterListWebuiStrategy).to receive(:new){ web_response_strategy }

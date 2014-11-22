@@ -7,6 +7,10 @@ describe BlockedNumber, :type => :model do
   let(:account){ create(:account) }
   let(:campaign){ create(:power, account: account) }
 
+  before do
+    Redis.new.flushall
+  end
+
   describe 'load entries for a given account or campaign and number' do
     let(:other_account){ create(:account) }
     before do

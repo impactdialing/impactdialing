@@ -44,8 +44,8 @@ begin
     %w(features).each do |exclude|
       file_list = file_list.exclude("spec/#{exclude}/**/*_spec.rb")
     end
-
-    t.pattern = file_list
+    t.pattern    = file_list
+    t.rspec_opts = "--tag ~data_heavy"
   end
 rescue LoadError
 end

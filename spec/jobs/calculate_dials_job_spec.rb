@@ -116,6 +116,8 @@ describe 'CalculateDialsJob' do
             campaign: campaign, caller: campaign.callers.first, caller_session: available_caller_session
           })
           make_abandon_rate_acceptable(campaign)
+          Resque.redis.del "queue:dialer_worker"
+          Resque.redis.del "queue:call_flow"
         end
 
         it_behaves_like 'all calculate dial jobs'

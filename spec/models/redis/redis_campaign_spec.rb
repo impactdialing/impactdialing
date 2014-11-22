@@ -2,6 +2,9 @@ require "spec_helper"
 
 describe RedisPredictiveCampaign, :type => :model do
   
+  before do
+    Redis.new.flushall
+  end
   
   it "should add to running campaigns" do
     account = create(:account)

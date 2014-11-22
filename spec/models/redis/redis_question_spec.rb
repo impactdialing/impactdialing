@@ -9,6 +9,10 @@ describe RedisQuestion, :type => :model do
     ]
   end
 
+  before do
+    Redis.new.flushall
+  end
+
   it "should persist question" do
     RedisQuestion.persist_questions(1, questions.first)
 
