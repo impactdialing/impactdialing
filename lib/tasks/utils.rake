@@ -34,32 +34,45 @@ end
 
 desc "sync Voters#enabled w/ VoterList#enabled"
 task :sync_all_voter_lists_to_voter => :environment do |t, args|
-  limit = 100
+  limit  = 100
   offset = 0
-
-  lists = VoterList.limit(limit).offset(offset)
+  lists  = VoterList.limit(limit).offset(offset)
+  rows   = []
 
   until lists.empty?
     lists.each do |list|
-      list.voters.update_all(enabled: list.enabled)
+      row = []
+      row << list.id
+      if list.enabled?
+        row << list.voters.count - list.voters.enabled.count
+        row << 0
+      else
+        row << 0
+        row << list.voters.count - list.voters.disabled.count
+      end
+      bits = []
+      bits << :list if list.enabled?
+      blocked_bit     = Voter.bitmask_for_enabled(*[bits + [:blocked]].flatten)
+      not_blocked_bit = Voter.bitmask_for_enabled(*bits)
+
+      list.voters.blocked.update_all(enabled: blocked_bit)
+      list.voters.not_blocked.update_all(enabled: not_blocked_bit)
+      if list.enabled?
+        row << list.voters.enabled.count
+        row << 0
+      else
+        row << 0
+        row << list.voters.disabled.count
+      end
+
+      rows << row
     end
 
     offset += limit
     lists = VoterList.limit(limit).offset(offset)
   end
-end
-
-desc "Count Voters out-of-sync w/ VoterList#enabled"
-task :fix_out_of_sync_voters, [:campaign_id] => :environment do |t,args|
-  campaign_id = args[:campaign_id]
-  campaign = Campaign.find(campaign_id)
-  sync_map = campaign.voter_lists.where(enabled: false).map{|l| [l.id, l.name, l.voters.where(enabled: true).count]}
-  out_of_sync = sync_map.select{|ar| ar.last > 0}
-  # update
-  out_of_sync.each do |sm|
-    list = campaign.voter_lists.find(sm.first)
-    list.voters.update_all(enabled: list.enabled)
-  end
+  print "List ID, Enabling, Disabling, Total enabled, Total disabled\n"
+  print rows.map{|row| row.join(", ")}.join("\n") + "\n"
 end
 
 desc "Migrate Voter#blocked_number_id values to Voter#blocked bool flags"
@@ -89,78 +102,17 @@ task :fix_up_account_895 => :environment do |t,args|
   reg_campaign   = account.campaigns.find 4388
   account.blocked_numbers.for_campaign(tmp_campaign).update_all(campaign_id: reg_campaign.id)
 
-  account.blocked_numbers.for_campaign(reg_campaign).find_in_batches(batch_size: 500) do |blocked_numbers|
-    reg_campaign.all_voters.where(phone: blocked_numbers.map(&:number)).find_in_batches do |voters|
-      voters_to_import  = []
-      voters.each do |voter|
-        blocked_number_id = blocked_numbers.detect{|n| n.number == voter.phone}.try(:id)
-        if blocked_number_id
-          voter.blocked_number_id = blocked_number_id
-          voters_to_import << voter
-        else
-          not_found << [voter.account_id, voter.campaign_id, voter.id, voter.phone]
-        end
-      end
-      Voter.import(voters_to_import, on_duplicate_key_update: [:blocked_number_id])
-    end
-  end
-end
+  blocked_numbers = account.blocked_numbers.for_campaign(reg_campaign)
+  blocked_voters  = reg_campaign.all_voters.where(phone: blocked_numbers.map(&:number))
 
-desc "Scrub voters w/ numbers in the DNC from the system (on a per account/campaign basis as it should:)"
-task :scrub_lists_from_dnc => :environment do |t,args|
-  voter_columns_to_import = Voter.columns.map(&:name)
-  import_results          = []
-  not_found               = []
-  accountless_campaigns   = []
-
-  Campaign.includes(:account).find_in_batches(batch_size: 500) do |campaigns|
-    campaigns.each do |campaign|
-      if campaign.account.nil?
-        accountless_campaigns << campaign
-        next
-      end
-
-      campaign.account.blocked_numbers.for_campaign(campaign).find_in_batches(batch_size: 200) do |blocked_numbers|
-        campaign.all_voters.where(phone: blocked_numbers.map(&:number)).find_in_batches(batch_size: 200) do |voters|
-          voters_to_import  = []
-          voters.each do |voter|
-            blocked_number_id = blocked_numbers.detect{|n| n.number == voter.phone}.try(:id)
-            if blocked_number_id
-              voter.blocked_number_id = blocked_number_id
-              voters_to_import << voter
-            else
-              not_found << [voter.account_id, voter.campaign_id, voter.id, voter.phone]
-            end
-          end
-          import_results << Voter.import(voters_to_import, on_duplicate_key_update: [:blocked_number_id])
-        end
-      end
-    end
-  end
-
-  print "Voters loaded from blocked_numbers but blocked_number could not be found when searching for ID\n"
-  print "----------------------------------------------------------------------------------------------\n"
-  print "Account ID, Campaign ID, Voter ID, Voter Phone\n"
-  print not_found.map{|v| v.join(', ')}.join("\n")
-  print "\n\n"
-
-  print "Voter import results\n"
-  print "----------------------------------------------------------------------------------------------\n"
-  print "Success, Fail\n"
-  print import_results.map{|r| "#{r.num_inserts}, #{r.failed_instances.size}"}.join("\n")
-  print "\n\n"
-
-  print "Account-less campaigns\n"
-  print "----------------------------------------------------------------------------------------------\n"
-  print "Campaign ID, Campaign Type, Account ID, Admin count, First email\n"
-  print accountless_campaigns.map{|r| [r.id, r.type, r.account_id, (r.respond_to?(:users) ? r.users.count : 'N/A'), (r.respond_to?(:users) ? r.users.first.email : 'N/A')].join(',')}.join("\n")
-  print "\n\n"
+  blocked_voters.enabled.update_all(enabled: Voter.bitmask_for_enabled(:list, :blocked))
+  blocked_voters.disabled.update_all(enabled: Voter.bitmask_for_enabled(:blocked))
 end
 
 desc "Inspect voter blocked ids"
 task :inspect_voter_dnc => :environment do |t,args|
-  x = Voter.where('blocked_number_id is not null').group(:campaign_id).count
-  y = Voter.where('blocked_number_id is null').group(:campaign_id).count
+  x = Voter.with_enabled(:blocked).group(:campaign_id).count
+  y = Voter.without_enabled(:blocked).group(:campaign_id).count
   print "Blocked: #{x}\n"
   print "Not blocked: #{y}\n"
 end
