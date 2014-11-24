@@ -35,6 +35,56 @@ describe VoterListChangeJob do
     Voter.destroy_all
   end
 
+  shared_examples 'enabled/disabled voter list change' do
+    let(:blocked){ false }
+
+    before do
+      bits = []
+      bits << :list unless enabled
+      Voter.update_all(enabled: Voter.bitmask_for_enabled(*bits))
+      if blocked
+        bits << :blocked
+        Voter.first.update_attributes!(enabled: Voter.bitmask_for_enabled(*bits))
+      end
+    end
+    context 'Voter.first#enabled :blocked bit is set' do
+      let(:blocked){ true }
+      it 'preserves the :blocked bit' do
+        subject.perform(voter_list.id, enabled)
+        expect(Voter.with_enabled(:blocked).count).to eq 1
+      end
+    end
+
+    context 'Voter#enabled :blocked bit is not set' do
+      it 'preserves the :blocked bit' do
+        subject.perform(voter_list.id, enabled)
+        expect(Voter.with_enabled(:blocked).count).to be_zero
+      end
+    end
+  end
+
+  context 'VoterList#enabled is true' do
+    let(:enabled){ true }
+
+    it 'sets Voter#enabled :list bit' do
+      subject.perform(voter_list.id, enabled)
+      expect(Voter.with_enabled(:list).count).to eq voter_list.voters.count
+    end
+
+    it_behaves_like 'enabled/disabled voter list change'
+  end
+
+  context 'VoterList#enabled is false' do
+    let(:enabled){ false }
+
+    it 'unsets Voter#enabled :list bit' do
+      subject.perform(voter_list.id, enabled)
+      expect(Voter.without_enabled(:list).count).to eq voter_list.voters.count
+    end
+
+    it_behaves_like 'enabled/disabled voter list change'
+  end
+
   it 'refreshes the available voter queue' do
     dial_queue = double('DialQueue')
     allow(CallFlow::DialQueue).to receive(:new){ dial_queue }
@@ -44,7 +94,7 @@ describe VoterListChangeJob do
 
   it 'properly requeues itself if the worker is stopped during a run' do
     expect(Resque).to receive(:enqueue).with(subject, voter_list.id, enabled)
-    allow(Voter).to receive_message_chain(:where, :update_all){ raise Resque::TermException, 'TERM' }
+    allow(VoterList).to receive(:find){ raise Resque::TermException, 'TERM' }
     subject.perform(voter_list.id, enabled)
   end
 
@@ -58,7 +108,7 @@ describe VoterListChangeJob do
       })
     end
     before do
-      allow(Voter).to receive_message_chain(:where, :update_all){ raise ActiveRecord::StatementInvalid, msg }
+      allow(VoterList).to receive(:find){ raise ActiveRecord::StatementInvalid, msg }
       allow(Resque).to receive(:enqueue).with(subject, voter_list.id, anything)
       allow(ExceptionMailer).to receive(:new){ mailer }
     end
@@ -76,7 +126,7 @@ describe VoterListChangeJob do
 
   context 'other exceptions' do
     before do
-      allow(Voter).to receive_message_chain(:where, :update_all){ raise ActiveRecord::StatementInvalid, "Syntax error" }
+      allow(VoterList).to receive(:find){ raise ActiveRecord::StatementInvalid, "Syntax error" }
     end
     it 'fall through' do
       expect{subject.perform(voter_list.id, enabled)}.to raise_error(ActiveRecord::StatementInvalid)

@@ -27,10 +27,15 @@ class VoterListChangeJob
     begin
       voter_list = VoterList.find(voter_list_id)
       voter_list.voter_ids.each_slice(500) do |ids|
-        Voter.where(id: ids).update_all(enabled: enabled)
+        bitmasks = []
+        bitmasks << :list if enabled
+
+        Voter.where(id: ids).blocked.update_all(enabled: Voter.bitmask_for_enabled(*[ bitmasks + [:blocked] ].flatten))
+        Voter.where(id: ids).not_blocked.update_all(enabled: Voter.bitmask_for_enabled(*bitmasks))
       end
     rescue Resque::TermException, ActiveRecord::StatementInvalid => exception
       handle_exception(voter_list_id, enabled, exception)
+      return
     end
 
     dial_queue = CallFlow::DialQueue.new(voter_list.campaign)
