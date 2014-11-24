@@ -63,8 +63,23 @@ task :fix_out_of_sync_voters, [:campaign_id] => :environment do |t,args|
 end
 
 desc "Migrate Voter#blocked_number_id values to Voter#blocked bool flags"
-task :migrate_voter_blocked_number_id_to_blocked => :environment do |t, args|
-  Voter.where('blocked <> 0').update_all(blocked: 1)
+task :migrate_voter_blocked_number_id_to_enabled_bitmask => :environment do |t, args|
+  print "#{Voter.with_exact_enabled(:blocked).count} blocked/disabled voters\n"
+  print "#{Voter.with_exact_enabled(:list, :blocked).count} blocked/enabled voters\n"
+
+  enabled          = Voter.where(enabled: 1).where('blocked_number_id IS NOT NULL AND blocked_number_id > 0')
+  enabled_bitmask  = Voter.bitmask_for_enabled(:list, :blocked)
+  disabled         = Voter.where(enabled: 0).where('blocked_number_id IS NOT NULL AND blocked_number_id > 0')
+  disabled_bitmask = Voter.bitmask_for_enabled(:blocked)
+  untouched        = Voter.where('blocked_number_id IS NULL OR blocked_number_id = 0')
+  
+  print "Blocking #{enabled.count} enabled w/ bitmask #{enabled_bitmask}...\n"
+  enabled.update_all(enabled: enabled_bitmask)
+  print "Blocked #{Voter.with_exact_enabled(:list, :blocked).count} voters\n"
+  print "Blocking #{disabled.count} disabled Voters w/ bitmask #{disabled_bitmask}...\n"
+  disabled.update_all(enabled: disabled_bitmask)
+  print "Blocked #{Voter.with_exact_enabled(:blocked).count} voters\n"
+  print "Left #{untouched.count} voters untouched because they're not blocked...\n"
 end
 
 desc "Fix-up DNC for Account 895"
