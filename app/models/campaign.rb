@@ -346,7 +346,7 @@ public
     end
 
     ringing_lines = call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
-    num_remaining = all_voters.by_status('not called').live.count
+    num_remaining = all_voters.by_status([Voter::Status::NOTCALLED, Voter::Status::SKIPPED]).live.count
     num_available = leads_available_now + num_remaining
     {callers_logged_in: callers_logged_in, on_call: status_count[1], wrap_up: status_count[2], on_hold: status_count[0], ringing_lines: ringing_lines, available: num_available  }
   end
