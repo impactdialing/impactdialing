@@ -1,61 +1,71 @@
 require 'spec_helper'
 include JSHelpers
 
-def select_plan(type='Basic')
-  select type, from: 'Select plan:'
-end
-
-def enter_n_callers(n)
-  fill_in 'Number of callers:', with: n
-end
-
-def submit_valid_upgrade
-  select_plan 'Basic'
-  enter_n_callers 2
-  click_on 'Upgrade'
-end
-
-def fill_in_expiration
-  # verify jquery datepicker is working
-  page.execute_script('$("#expiration_date").datepicker("show")')
-  page.execute_script('$("select[data-handler=\"selectMonth\"]").val("0")')
-  page.execute_script('$("select[data-handler=\"selectYear\"]").val("2020")')
-  page.execute_script('$("#expiration_date").datepicker("hide")')
-  expect(page.find_field('Expiration date').value).to eq "01/2020"
-end
-
-def add_valid_payment_info
-  go_to_update_billing
-  fill_in 'Card number', with: StripeFakes.valid_cards[:visa].first
-  fill_in 'CVC', with: 123
-  fill_in_expiration
-  click_on 'Update payment information'
-  expect(page).to have_content I18n.t('subscriptions.update_billing.success')
-end
-
-def go_to_billing
-  click_on 'Account'
-  click_on 'Billing'
-end
-
-def go_to_upgrade
-  go_to_billing
-  click_on 'Upgrade'
-end
-
-def go_to_update_billing
-  go_to_billing
-  click_on 'Update card'
-end
-
-def expect_monthly_cost_eq(expected_cost)
-  within('#cost-subscription') do
-    expect(page).to have_content "$#{expected_cost} per month"
-  end
-end
-
 describe 'Account profile', type: :feature, admin: true do
+  def select_plan(type='Basic')
+    select type, from: 'Select plan:'
+  end
+
+  def enter_n_callers(n)
+    fill_in 'Number of callers:', with: n
+  end
+
+  def submit_valid_upgrade
+    select_plan 'Basic'
+    enter_n_callers 2
+    click_on 'Upgrade'
+  end
+
+  def fill_in_expiration
+    # verify jquery datepicker is working
+    page.execute_script('$("#expiration_date").datepicker("show")')
+    page.execute_script('$("select[data-handler=\"selectMonth\"]").val("0")')
+    page.execute_script('$("select[data-handler=\"selectYear\"]").val("2020")')
+    page.execute_script('$("#expiration_date").datepicker("hide")')
+    expect(page.find_field('Expiration date').value).to eq "01/2020"
+  end
+
+  def add_valid_payment_info
+    go_to_update_billing
+    fill_in 'Card number', with: StripeFakes.valid_cards[:visa].first
+    fill_in 'CVC', with: 123
+    fill_in_expiration
+    click_on 'Update payment information'
+    expect(page).to have_content I18n.t('subscriptions.update_billing.success')
+  end
+
+  def add_not_chargeable_payment_info
+    go_to_update_billing
+    fill_in 'Card number', with: StripeFakes.not_chargeable
+    fill_in 'CVC', with: 123
+    fill_in_expiration
+    click_on 'Update payment information'
+    expect(page).to have_content I18n.t('subscriptions.update_billing.success')
+  end
+
+  def go_to_billing
+    click_on 'Account'
+    click_on 'Billing'
+  end
+
+  def go_to_upgrade
+    go_to_billing
+    click_on 'Upgrade'
+  end
+
+  def go_to_update_billing
+    go_to_billing
+    click_on 'Update card'
+  end
+
+  def expect_monthly_cost_eq(expected_cost)
+    within('#cost-subscription') do
+      expect(page).to have_content "$#{expected_cost} per month"
+    end
+  end
+
   let(:user){ create(:user) }
+  
   before do
     web_login_as(user)
   end
@@ -163,6 +173,20 @@ describe 'Account profile', type: :feature, admin: true do
         click_on 'Upgrade'
 
         expect(page).to have_content I18n.t('subscriptions.upgrade.success')
+      end
+    end
+
+    context 'Upgrading when the card is declined' do
+      it 'displays the error' do
+        add_not_chargeable_payment_info
+
+        go_to_upgrade
+        select_plan 'Basic'
+        enter_n_callers 2
+        click_on 'Upgrade'
+
+        expect(page).to have_content 'Your card was declined.'
+        expect(page).to_not have_content 'Stripe::CardError' # sanity check the exception backtrace isn't on the page since we want the exception message displayed
       end
     end
 

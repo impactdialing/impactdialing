@@ -6,6 +6,7 @@ class Client::Billing::SubscriptionController < ClientController
   rescue_from Stripe::InvalidRequestError, with: :stripe_invalid_request_error
   rescue_from Stripe::APIConnectionError, with: :stripe_api_connection_error
   rescue_from ::Billing::Plans::InvalidPlanTransition, with: :flash_render_edit
+  rescue_from Stripe::CardError, with: :flash_render_edit
 
 private
   def flash_i18n_now(flash_key, i18n_key)
