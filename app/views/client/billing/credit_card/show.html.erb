@@ -38,6 +38,10 @@
       <input type="hidden" data-stripe="exp_month">
       <input type="hidden" data-stripe="exp_year">
     </p>
+    <p>
+      <label for="address_zip">Zipcode</label>
+      <input type="text" data-stripe="address_zip" class="field" style="width:120px;" id="address_zip">
+    </p>
   <% end %>
   <%= field_set_tag 'Invoicing' do %>
     <p>

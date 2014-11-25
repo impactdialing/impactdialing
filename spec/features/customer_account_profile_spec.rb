@@ -121,6 +121,39 @@ describe 'Account profile', type: :feature, admin: true do
       end
     end
 
+    context 'Adding invalid payment info' do
+      before do
+        go_to_update_billing
+      end
+
+      it 'rejects cards that fail zipcode validation' do
+        fill_in 'Card number', with: StripeFakes.bad_zip
+        fill_in 'CVC', with: 123
+        fill_in 'Zipcode', with: 12345
+        fill_in_expiration
+        click_on 'Update payment information'
+        expect(page).to have_content 'The zip code you supplied failed validation.'
+      end
+
+      it 'rejects cards that fail CVC validation' do
+        fill_in 'Card number', with: StripeFakes.bad_cvc
+        fill_in 'CVC', with: 123
+        fill_in 'Zipcode', with: 12345
+        fill_in_expiration
+        click_on 'Update payment information'
+        expect(page).to have_content "Your card's security code is incorrect."
+      end
+
+      it 'rejects expired cards' do
+        fill_in 'Card number', with: StripeFakes.expired_card
+        fill_in 'CVC', with: 123
+        fill_in 'Zipcode', with: 12345
+        fill_in_expiration
+        click_on 'Update payment information'
+        expect(page).to have_content 'Your card has expired.'
+      end
+    end
+
     context 'Upgrading with valid payment info' do
       it 'displays subscriptions.upgrade.success after form submission' do
         add_valid_payment_info

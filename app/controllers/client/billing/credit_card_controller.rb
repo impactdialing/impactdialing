@@ -8,12 +8,19 @@ class Client::Billing::CreditCardController < ClientController
 private
   def flash_error_and_render_show(exception)
     flash.now[:error] = [exception.message]
+    build_credit_card
     render :show and return
   end
 
   def credit_card
     validate_account_presence!(@account) || return
     @credit_card ||= @account.billing_credit_card
+  end
+
+  def build_credit_card
+    if credit_card.nil?
+      @credit_card = @account.build_billing_credit_card
+    end
   end
 
   def email
@@ -30,9 +37,7 @@ private
 
 public
   def show
-    if credit_card.nil?
-      @credit_card = @account.build_billing_credit_card
-    end
+    build_credit_card
     payment_gateway    = Billing::PaymentGateway.new(@account.billing_provider_customer_id)
     if payment_gateway.customer.present?
       @invoice_recipient = @account.users.find_by_email(payment_gateway.customer.email)
