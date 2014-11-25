@@ -5,7 +5,7 @@ begin
   RSpec::Core::RakeTask.new("spec:e2e:admin") do |t, task_args|
     ENV['RAILS_ENV'] = 'e2e'
     t.pattern        = "features/**/*_spec.rb"
-    t.rspec_opts     = "--tag admin"
+    t.rspec_opts     = "--tag admin --tag ~js"
   end
 
   desc "Run all :caller_ui tagged specs in spec/features directory"
@@ -20,13 +20,6 @@ begin
     ENV['RAILS_ENV'] = 'e2e'
     t.pattern        = "features/**/*_spec.rb"
     t.rspec_opts     = "--tag js"
-  end
-
-  desc "Run all :admin, :caller_ui and :js tagged specs in spec/features directory"
-  RSpec::Core::RakeTask.new("spec:e2e:all") do |t, task_args|
-    ENV['RAILS_ENV'] = 'e2e'
-    t.pattern        = "features/**/*_spec.rb"
-    t.rspec_opts     = "--tag js --tag admin --tag caller_ui"
   end
 
   desc "Run all data heavy specs"
