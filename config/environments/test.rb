@@ -1,3 +1,6 @@
+require 'simplecov'
+SimpleCov.start 'rails'
+
 HOST = 'localhost'
 PORT = 3000
 
@@ -38,9 +41,6 @@ ImpactDialing::Application.configure do
 
   require 'shoulda'
   require 'factory_girl'
-
-  # require 'simplecov'
-  # SimpleCov.start
 
   APP_NUMBER="SomeNumber"
   PUSHER_APP_ID="blah"

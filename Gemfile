@@ -109,7 +109,7 @@ end
 group :test, :e2e do
   gem 'factory_girl_rails'
   gem 'shoulda'
-  gem 'simplecov'
+  gem 'simplecov', require: false
   gem 'database_cleaner'
   gem 'capybara'
   gem 'launchy'
