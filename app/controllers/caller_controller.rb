@@ -16,7 +16,7 @@ class CallerController < TwimlController
   ]
 
   before_filter :check_login, :except=>[
-    :login, :feedback, :end_session, :start_calling,
+    :login, :end_session, :start_calling,
     :phones_only, :call_voter, :stop_calling,
     :ready_to_call, :continue_conf, :pause, :run_out_of_numbers,
     :callin_choice, :read_instruction_options,
@@ -299,11 +299,6 @@ public
       @caller_session.publish('caller_kicked_off', {})
     end
     render nothing: true
-  end
-
-  def feedback
-    Postoffice.feedback(params[:issue]).deliver
-    render :text=> "var x='ok';"
   end
 
   def find_session
