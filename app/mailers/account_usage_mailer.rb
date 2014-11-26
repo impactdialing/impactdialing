@@ -27,8 +27,8 @@ public
     billable_totals  = by_campaign.build
     grand_total      = billable_minutes.calculate_total(billable_totals.values)
     campaigns        = account.all_campaigns
-    html             = AccountUsageRender.new.by_campaigns(:html, billable_totals, grand_total, campaigns)
-    text             = AccountUsageRender.new.by_campaigns(:text, billable_totals, grand_total, campaigns)
+    html             = AccountUsageRender.new.by_campaigns(:html, from_date, to_date, billable_totals, grand_total, campaigns)
+    text             = AccountUsageRender.new.by_campaigns(:text, from_date, to_date, billable_totals, grand_total, campaigns)
     subject          = "Campaign Usage Report: #{format_date(from_date)} - #{format_date(to_date)}"
     to               = [{email: user.email}]
 
@@ -50,8 +50,8 @@ public
       grand_total += status_totals[billable_status].to_i
     end
     callers          = account.callers
-    html             = AccountUsageRender.new.by_callers(:html, billable_totals, status_totals, grand_total, callers)
-    text             = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, grand_total, callers)
+    html             = AccountUsageRender.new.by_callers(:html, from_date, to_date, billable_totals, status_totals, grand_total, callers)
+    text             = AccountUsageRender.new.by_callers(:text, from_date, to_date, billable_totals, status_totals, grand_total, callers)
     subject          = "Caller Usage Report: #{format_date(from_date)} - #{format_date(to_date)}"
     to               = [{email: user.email}]
 

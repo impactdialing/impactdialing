@@ -32,7 +32,9 @@ private
 
 public
 
-  def by_campaigns(content_type, billable_totals, grand_total, campaigns)
+  def by_campaigns(content_type, from_date, to_date, billable_totals, grand_total, campaigns)
+    @from_date       = from_date
+    @to_date         = to_date
     @billable_totals = billable_totals
     @grand_total     = grand_total
     @campaigns       = campaigns
@@ -43,7 +45,9 @@ public
     render(opts)
   end
 
-  def by_callers(content_type, billable_totals, status_totals, grand_total, callers)
+  def by_callers(content_type, from_date, to_date, billable_totals, status_totals, grand_total, callers)
+    @from_date       = from_date
+    @to_date         = to_date
     @billable_totals = billable_totals
     @status_totals   = status_totals
     @grand_total     = grand_total
@@ -56,8 +60,8 @@ public
   end
 
   def by_account(content_type, from_date, to_date, billable_totals, undebited_totals, grand_total, accounts)
-    @from_date         = from_date.in_time_zone('Pacific Time (US & Canada)')
-    @to_date           = to_date.in_time_zone('Pacific Time (US & Canada)')
+    @from_date         = from_date
+    @to_date           = to_date
     @billable_totals   = billable_totals
     @undebited_totals  = undebited_totals
     @include_undebited = !@undebited_totals.empty?

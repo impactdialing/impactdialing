@@ -1,25 +1,41 @@
 <%
-  headers = ['Caller', 'Abandoned calls', 'Voicemails / Hangups']
+  def padding(headers, values)
+    longest = 0
+    (headers + values).each{|str| longest = str.size > longest ? str.size : longest}
+    longest += 5
+  end
+  col1_headers = ['Caller', 'Abandoned calls', 'Voicemails / Hangups']
+  row1_headers = [
+    'Caller', 'Billable total', 'Billable leads', 'Billable caller',
+    'On call', 'Wrap up', 'On hold', 'Connected (total)'
+  ]
   names = @callers.map(&:identity_name)
-  longest = 0
-  (headers + names).each{|str| longest = str.size > longest ? str.size : longest}
-  longest += 5
+  pads = row1_headers.map{|h| padding([h], @billable_totals.values)}
 -%>
 Account usage by caller
 
-<%= 'Caller'.ljust(longest) %> Billable minutes
+<% row1_headers.each_with_index do |header, i| %>
+<%= header.ljust(pads[i]) %> 
+<% end %>
 
 <% @callers.each do |caller| %>
-<%= caller.identity_name.ljust(longest) %>
-<%= @billable_totals[caller.id] || 0 %>
+<% usage = CallerUsage.new(caller, caller.campaign, @from_date, @to_date) %>
+<%= caller.identity_name.ljust(pads[0]) %>
+<%= (@billable_totals[caller.id] || 0).to_s.ljust(pads[1]) %>
+<%= usage.lead_time.to_s.ljust(pads[2]) %>
+<%= usage.caller_time.to_s.ljust(pads[3]) %>
+<%= usage.time_on_call.to_s.ljust(pads[4]) %>
+<%= usage.time_in_wrapup.to_s.ljust(pads[5]) %>
+<%= usage.time_onhold.to_s.ljust(pads[6]) %>
+<%= usage.time_logged_in.to_s.ljust(pads[7]) %>
 <% end %>
 
 
-<%= 'Abandoned calls'.ljust(longest) %> <%= @status_totals[CallAttempt::Status::ABANDONED] || 0 %>
+<%= 'Abandoned calls'.ljust(pads[0]) %> <%= @status_totals[CallAttempt::Status::ABANDONED] || 0 %>
 
 
 
-<%= 'Voicemails / Hangups'.ljust(longest) %> <%= (@status_totals[CallAttempt::Status::VOICEMAIL].to_i || 0) +
+<%= 'Voicemails / Hangups'.ljust(pads[0]) %> <%= (@status_totals[CallAttempt::Status::VOICEMAIL].to_i || 0) +
         (@status_totals[CallAttempt::Status::HANGUP].to_i || 0) %>
 
 Total <%= @grand_total %>

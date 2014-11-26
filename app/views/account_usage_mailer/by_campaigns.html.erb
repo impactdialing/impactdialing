@@ -2,17 +2,35 @@
 <table style="width: 100%; color: rgb(102,102,102); font-family: 'Helvetica Neue', Helvetica, Arial; font-size: 100%; font-style: normal; font-variant: normal; font-weight: 200; line-height: 1.4;">
   <tr style="background-color: rgb(238,238,238);">
     <th style="text-align: left;">Campaign</th>
-    <th style="text-align: left;">Billable minutes</th>
+    <th style="text-align: left;">Billable total</th>
+    <th style="text-align: left;">Billable callers</th>
+    <th style="text-align: left;">Billable leads</th>
+    <th style="text-align: left;">Billable transfers</th>
+    <th style="text-align: left;">Billable voicemails</th>
+    <th style="text-align: left;">Billable abandoned</th>
+    <th style="text-align: left;">On call</th>
+    <th style="text-align: left;">Wrap up</th>
+    <th style="text-align: left;">On hold</th>
+    <th style="text-align: left;">Connected (total)</th>
   </tr>
   <%
     row_style = ' style="background-color: rgb(238,238,238);"'.html_safe
     n = 0
   %>
   <% @campaigns.each do |campaign| %>
-
+    <% usage = CampaignUsage.new(campaign, @from_date, @to_date) %>
     <tr<%= n % 2 != 0 ? row_style : '' %>>
       <td><%= campaign.name %></td>
       <td><%= @billable_totals[campaign.id] || 0 %></td>
+      <td><%= usage.caller_time || 0 %></td>
+      <td><%= usage.lead_time || 0 %></td>
+      <td><%= usage.transfer_time || 0 %></td>
+      <td><%= usage.voice_mail_time || 0 %></td>
+      <td><%= usage.abandoned_time || 0 %></td>
+      <td><%= usage.time_on_call || 0 %></td>
+      <td><%= usage.time_in_wrapup || 0 %></td>
+      <td><%= usage.time_onhold || 0 %></td>
+      <td><%= usage.time_logged_in || 0 %></td>
     </tr>
 
     <% n += 1 %>

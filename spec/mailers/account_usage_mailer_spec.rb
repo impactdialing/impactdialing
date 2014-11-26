@@ -78,8 +78,8 @@ describe AccountUsageMailer, :type => :mailer do
       with(billable_minutes, account).
       and_return(campaign_report)
 
-    expected_html = AccountUsageRender.new.by_campaigns(:html, billable_totals, grand_total, campaigns)
-    expected_text = AccountUsageRender.new.by_campaigns(:text, billable_totals, grand_total, campaigns)
+    expected_text = AccountUsageRender.new.by_campaigns(:text, from_date, to_date, billable_totals, grand_total, campaigns)
+    expected_html = AccountUsageRender.new.by_campaigns(:html, from_date, to_date, billable_totals, grand_total, campaigns)
 
     expect(@mailer).to receive(:send_email).with({
       :subject => "Campaign Usage Report: Oct 1 2014 - Oct 1 2014",
@@ -104,8 +104,8 @@ describe AccountUsageMailer, :type => :mailer do
 
     # add 3 to grand_total for by_callers to account for ABANDONED, VOICEMAIL & HANGUP call statuses,
     # whose minutes are not assigned to any callers
-    expected_html = AccountUsageRender.new.by_callers(:html, billable_totals, status_totals, (grand_total+3), callers)
-    expected_text = AccountUsageRender.new.by_callers(:text, billable_totals, status_totals, (grand_total+3), callers)
+    expected_text = AccountUsageRender.new.by_callers(:text, from_date, to_date, billable_totals, status_totals, (grand_total+3), callers)
+    expected_html = AccountUsageRender.new.by_callers(:html, from_date, to_date, billable_totals, status_totals, (grand_total+3), callers)
 
     expect(@mailer).to receive(:send_email).with({
       :subject => "Caller Usage Report: #{@mailer.send(:format_date, from_date)} - #{@mailer.send(:format_date, to_date)}",
