@@ -74,10 +74,6 @@ class User < ActiveRecord::Base
   def domain
     account.domain_name
   end
-
-  def create_recurly_account_code
-    self.account.create_recurly_account_code
-  end
 end
 
 # ## Schema Information
