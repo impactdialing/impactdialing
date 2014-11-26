@@ -125,20 +125,6 @@ class ClientController < ApplicationController
     self.current_user = Account.find_by_api_key(params[:api_key]) unless params[:api_key].empty?
   end
 
-  def check_credit_card_declined
-    Rails.logger.info "Deprecated! This method is cruft from recurly"
-    if current_user.present?
-      validate_account_presence!(current_user.try(:account)) || return
-    end
-
-    if current_user && !current_user.account.billing_subscription.trial? && current_user.account.credit_card_declined?
-      billing_link = '<a href="' + white_labeled_billing_link(request.domain) + '">Billing information</a>'
-      add_to_balance_link = '<a href="' + white_labeled_add_to_balance_link(request.domain) + '">add to your balance</a>'
-      configure_auto_recharge_link = '<a href="' + white_labeled_configure_auto_recharge_link(request.domain) + '">re-enable auto-recharge</a>'
-      flash_now(:warning, I18n.t(:credit_card_declined, billing_link: billing_link , add_to_balance_link: add_to_balance_link, configure_auto_recharge_link: configure_auto_recharge_link).html_safe)
-    end
-  end
-
   def index
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)

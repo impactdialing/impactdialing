@@ -3,7 +3,6 @@ module Client
 
     skip_before_filter :check_login, :only => [:policies]
     skip_before_filter :authenticate_api, :only => [:policies]
-    skip_before_filter :check_credit_card_declined, :only => [:policies]
     skip_before_filter :check_tos_accepted, :only => [:index, :create, :policies]
     skip_before_filter :check_paid, :only => [:index, :policies]
 
