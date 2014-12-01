@@ -23,15 +23,13 @@ stop.config([
 stop.controller('StopCtrl.buttons', [
   '$scope', '$state', 'TwilioCache', '$http', 'idTwilioService', 'callStation', 'idTransitionPrevented'
   ($scope,   $state,   TwilioCache,   $http,   idTwilioService,   callStation,   idTransitionPrevented) ->
-    connection   = TwilioCache.get('connection')
-    caller_id    = callStation.caller.id
-    params       = {}
+    connection        = TwilioCache.get('connection')
+    caller_id         = callStation.caller.id
+    params            = {}
     params.session_id = callStation.caller.session_id
-    stopPromise  = $http.post("/call_center/api/#{caller_id}/stop_calling", params)
 
     goTo = {}
     goTo.ready = ->
-      console.log 'going to "ready" $state'
       p = $state.go('dialer.ready')
       p.catch(idTransitionPrevented)
       if angular.isFunction(goTo.readyOff)
@@ -43,7 +41,12 @@ stop.controller('StopCtrl.buttons', [
         goTo.readyOff = connection.disconnect(goTo.ready)
         connection.disconnectAll()
       else
-        goToReady()
+        goTo.ready()
+
+    if params.session_id?
+      stopPromise = $http.post("/call_center/api/#{caller_id}/stop_calling", params)
+    else
+      goTo.ready()
 
     stopPromise.finally(always)
 ])

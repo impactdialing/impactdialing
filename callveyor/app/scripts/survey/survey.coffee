@@ -235,8 +235,6 @@ surveyForm.controller('SurveyFormCtrl', [
     loadForm()
 
     $scope.survey ||= survey
-
-    console.log 'controller done, final survey obj', $scope.survey
 ])
 
 surveyForm.directive('idSurvey', ->
