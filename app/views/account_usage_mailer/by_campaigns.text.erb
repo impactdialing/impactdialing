@@ -6,9 +6,8 @@
   end
   col1_headers = ['Campaign', 'Total']
   row1_headers = [
-    'Campaign', 'Billable total', 'Billable callers', 'Billable leads',
-    'Billable transfers', 'Billable voicemails', 'Billable abandoned',
-    'On call', 'Wrap up', 'On hold', 'Connected (total)'
+    'Campaign', 'Total', 'Callers', 'Leads',
+    'Transfers', 'Voicemails', 'Abandoned'
   ]
   names = @campaigns.map(&:name)
   pads = row1_headers.map{|h| padding([h], @billable_totals.values)}
@@ -28,10 +27,6 @@ Account usage by campaign
 <%= usage.transfer_time.to_s.ljust(pads[4]) %>
 <%= usage.voice_mail_time.to_s.ljust(pads[5]) %>
 <%= usage.abandoned_time.to_s.ljust(pads[6]) %>
-<%= usage.time_on_call.to_s.ljust(pads[7]) %>
-<%= usage.time_in_wrapup.to_s.ljust(pads[8]) %>
-<%= usage.time_onhold.to_s.ljust(pads[9]) %>
-<%= usage.time_logged_in.to_s.ljust(pads[10]) %>
 <%end%>
 
 <%= 'Total'.ljust(pads[0]) %> <%= @grand_total %>

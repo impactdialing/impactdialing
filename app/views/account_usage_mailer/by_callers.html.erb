@@ -1,14 +1,10 @@
 <h1 style="color: rgb(102,102,102); font-family: 'Helvetica Neue', Helvetica, Arial; font-style: normal; font-variant: normal;">Account usage by caller</h1>
 <table style="width: 100%; color: rgb(102,102,102); font-family: 'Helvetica Neue', Helvetica, Arial; font-size: 100%; font-style: normal; font-variant: normal; font-weight: 200; line-height: 1.4;">
   <tr style="background-color: rgb(238,238,238);">
+    <th style="text-align: left;">Name</th>
+    <th style="text-align: left;">Total</th>
+    <th style="text-align: left;">Leads</th>
     <th style="text-align: left;">Caller</th>
-    <th style="text-align: left;">Billable total</th>
-    <th style="text-align: left;">Billable leads</th>
-    <th style="text-align: left;">Billable caller</th>
-    <th style="text-align: left;">On call</th>
-    <th style="text-align: left;">Wrap up</th>
-    <th style="text-align: left;">On hold</th>
-    <th style="text-align: left;">Connected (total)</th>
   </tr>
   <%
     row_style = ' style="background-color: rgb(238,238,238);"'.html_safe
@@ -22,10 +18,6 @@
       <td><%= @billable_totals[caller.id] || 0 %></td>
       <td><%= usage.lead_time || 0 %></td>
       <td><%= usage.caller_time || 0 %></td>
-      <td><%= usage.time_on_call || 0 %></td>
-      <td><%= usage.time_in_wrapup || 0 %></td>
-      <td><%= usage.time_onhold || 0 %></td>
-      <td><%= usage.time_logged_in || 0 %></td>
     </tr>
 
     <% n += 1 %>

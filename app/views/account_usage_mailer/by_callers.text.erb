@@ -4,10 +4,9 @@
     (headers + values).each{|str| longest = str.size > longest ? str.size : longest}
     longest += 5
   end
-  col1_headers = ['Caller', 'Abandoned calls', 'Voicemails / Hangups']
+  col1_headers = ['Name', 'Abandoned calls', 'Voicemails / Hangups']
   row1_headers = [
-    'Caller', 'Billable total', 'Billable leads', 'Billable caller',
-    'On call', 'Wrap up', 'On hold', 'Connected (total)'
+    'Name', 'Total', 'Leads', 'Caller'
   ]
   names = @callers.map(&:identity_name)
   pads = row1_headers.map{|h| padding([h], @billable_totals.values)}
@@ -24,10 +23,6 @@ Account usage by caller
 <%= (@billable_totals[caller.id] || 0).to_s.ljust(pads[1]) %>
 <%= usage.lead_time.to_s.ljust(pads[2]) %>
 <%= usage.caller_time.to_s.ljust(pads[3]) %>
-<%= usage.time_on_call.to_s.ljust(pads[4]) %>
-<%= usage.time_in_wrapup.to_s.ljust(pads[5]) %>
-<%= usage.time_onhold.to_s.ljust(pads[6]) %>
-<%= usage.time_logged_in.to_s.ljust(pads[7]) %>
 <% end %>
 
 

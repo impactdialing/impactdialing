@@ -57,7 +57,12 @@ describe AccountUsageRender, :type => :mailer do
 
         expect(t).to match(/<h1.*>Account usage by campaign<\/h1>/)
         expect(t).to match(/<th.*>Campaign<\/th>/)
-        expect(t).to match(/<th.*>Billable total<\/th>/)
+        expect(t).to match(/<th.*>Total<\/th>/)
+        expect(t).to match(/<th.*>Callers<\/th>/)
+        expect(t).to match(/<th.*>Leads<\/th>/)
+        expect(t).to match(/<th.*>Transfers<\/th>/)
+        expect(t).to match(/<th.*>Voicemails<\/th>/)
+        expect(t).to match(/<th.*>Abandoned<\/th>/)
 
         expect(t).to match(/<td.*>Campaign 1<\/td>/)
         expect(t).to match(/<td.*>#{values.first}<\/td>/)
@@ -81,7 +86,12 @@ describe AccountUsageRender, :type => :mailer do
         expect(t).not_to match(/<\w+>/)
         expect(t).to match(/Account usage by campaign/)
         expect(t).to match(/Campaign/)
-        expect(t).to match(/Billable total/)
+        expect(t).to match(/Total/)
+        expect(t).to match(/Callers/)
+        expect(t).to match(/Leads/)
+        expect(t).to match(/Transfers/)
+        expect(t).to match(/Voicemails/)
+        expect(t).to match(/Abandoned/)
 
         expect(t).to match(/Campaign 1/)
         expect(t).to match(/#{values.first}/)
@@ -138,8 +148,10 @@ describe AccountUsageRender, :type => :mailer do
         t = @template.to_s
 
         expect(t).to match(/<h1.*>Account usage by caller<\/h1>/)
+        expect(t).to match(/<th.*>Name<\/th>/)
+        expect(t).to match(/<th.*>Total<\/th>/)
+        expect(t).to match(/<th.*>Leads<\/th>/)
         expect(t).to match(/<th.*>Caller<\/th>/)
-        expect(t).to match(/<th.*>Billable total<\/th>/)
 
         expect(t).to match(/<td.*>Caller 1<\/td>/)
         expect(t).to match(/<td.*>#{values.first}<\/td>/)
@@ -170,8 +182,10 @@ describe AccountUsageRender, :type => :mailer do
         t = @template.to_s
 
         expect(t).to match(/Account usage by caller/)
+        expect(t).to match(/Name/)
+        expect(t).to match(/Total/)
+        expect(t).to match(/Leads/)
         expect(t).to match(/Caller/)
-        expect(t).to match(/Billable total/)
 
         expect(t).to match(/Caller 1/)
         expect(t).to match(/#{values.first}/)
