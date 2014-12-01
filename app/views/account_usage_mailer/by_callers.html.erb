@@ -11,7 +11,7 @@
     n = 0
   %>
   <% @callers.each do |caller| %>
-    <% usage = CallerUsage.new(caller, caller.campaign, @from_date, @to_date) %>
+    <% usage = CallerUsage.new(caller, nil, @from_date, @to_date) %>
 
     <tr<%= n % 2 != 0 ? row_style : ''%>>
       <td><%= caller.identity_name %></td>
