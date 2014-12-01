@@ -53,8 +53,8 @@ gem 'stripe', '~>1.8.4'
 gem 'platform-api'
 
 # monitoring
+gem 'librato-rails'
 group :production, :heroku, :heroku_staging do
-  gem 'librato-rails'
   gem 'rack-timing'
   gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
 end

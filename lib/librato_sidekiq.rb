@@ -2,12 +2,7 @@ require 'active_support/core_ext/string/inflections'
 
 module LibratoSidekiq
   def self.logger
-    return @logger if defined?(@logger)
-    if Rails.env =~ /heroku/
-      @logger = Logger.new(STDOUT)
-    else
-      @logger = Logger.new
-    end
+    @logger ||= Rails.logger
   end
 
   def self.log(level, msg)
