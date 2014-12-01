@@ -14,6 +14,9 @@ ready.config(['$stateProvider', ($stateProvider) ->
       callFlowButtons:
         templateUrl: '/callveyor/dialer/ready/callFlowButtons.tpl.html'
         controller: 'ReadyCtrl.splash'
+      callStatus:
+        templateUrl: '/callveyor/dialer/ready/callStatus.tpl.html'
+        controller: 'ReadyCtrl.status'
   })
 ])
 
@@ -29,6 +32,14 @@ ready.factory('ReadyEventHandlers', [
     }
 
     handlers
+])
+
+ready.controller('ReadyCtrl.status', [
+  '$scope', 'CallStationCache',
+  ($scope,   CallStationCache) ->
+    ready          = {}
+    ready.campaign = CallStationCache.get('campaign')
+    $scope.ready   = ready
 ])
 
 ready.controller('ReadyCtrl.splashModal', [

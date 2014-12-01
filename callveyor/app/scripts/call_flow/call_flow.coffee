@@ -23,7 +23,7 @@ mod = angular.module('callveyor.call_flow', [
 mod.factory('CallerReassignedMessage', [
   ->
     callerReassignedMessage = (old_campaign, new_campaign) ->
-      msg = ["An admin reassigned you to a new campaign!"]
+      msg = ["An admin reassigned you to the \"#{new_campaign.name}\" campaign!"]
 
       return msg[0] if old_campaign.type == new_campaign.type
 
@@ -236,8 +236,10 @@ mod.factory('idCallFlow', [
           deregister    = {}
           campaign      = CallStationCache.get('campaign')
           old_campaign  = angular.copy(campaign)
+          campaign.name = contact.campaign_name
           campaign.type = contact.campaign_type
           campaign.id   = contact.campaign_id
+          delete(contact.campaign_name)
           delete(contact.campaign_type)
           delete(contact.campaign_id)
 
@@ -351,7 +353,7 @@ mod.factory('idCallFlow', [
           # console.log 'caller_disconnected'
           if $state.is('dialer.active')
             # console.log '$state is dialer.active'
-            idFlashFactory.now('warning', 'Voice connection was lost. Save responses, report problem &amp; refresh page.')
+            idFlashFactory.now('warning', 'Voice connection was lost. Save responses, report problem & refresh page.')
             p = $state.go('dialer.wrap')
             p.catch(idTransitionPrevented)
           else

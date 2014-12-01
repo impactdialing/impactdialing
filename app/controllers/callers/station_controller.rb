@@ -110,6 +110,7 @@ public
         campaign: {
           id: campaign.id,
           type: campaign.type,
+          name: campaign.name
         },
         permissions: {
           can_drop_message_manually: campaign.caller_can_drop_message_manually?

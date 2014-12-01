@@ -77,11 +77,6 @@ describe 'idTwilioConnectionHandlers', ->
       expect(twilio.Device.connect).toHaveBeenCalledWith(jasmine.any(Function))
       expect(twilio.Device.error).toHaveBeenCalledWith(jasmine.any(Function))
 
-    it 'fetches a new twilio capability token', ->
-      factory.resolved(twilio)
-      expect(idTwilioConfig.fetchToken).toHaveBeenCalled()
-
     it 'connects once twilio capability token fetch is successful', ->
       factory.resolved(twilio)
-      idTwilioConfig.fetchToken.calls[0].args[0]()
       expect(twilio.Device.connect).toHaveBeenCalledWith(twilioParams)
