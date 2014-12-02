@@ -12,7 +12,7 @@
   names = @campaigns.map(&:name)
   pads = row1_headers.map{|h| padding([h], @billable_totals.values)}
 -%>
-Account usage by campaign
+Billable minutes by campaign
 
 <% row1_headers.each_with_index do |header, i| %>
 <%= header.ljust(pads[i]) %> 

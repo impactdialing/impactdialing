@@ -55,7 +55,7 @@ describe AccountUsageRender, :type => :mailer do
       it 'renders the html template to a string: views/account_usage_mailer/by_campaigns' do
         t = @template.to_s
 
-        expect(t).to match(/<h1.*>Account usage by campaign<\/h1>/)
+        expect(t).to match(/<h1.*>Billable minutes by campaign<\/h1>/)
         expect(t).to match(/<th.*>Campaign<\/th>/)
         expect(t).to match(/<th.*>Total<\/th>/)
         expect(t).to match(/<th.*>Callers<\/th>/)
@@ -84,7 +84,7 @@ describe AccountUsageRender, :type => :mailer do
         t = @template.to_s
 
         expect(t).not_to match(/<\w+>/)
-        expect(t).to match(/Account usage by campaign/)
+        expect(t).to match(/Billable minutes by campaign/)
         expect(t).to match(/Campaign/)
         expect(t).to match(/Total/)
         expect(t).to match(/Callers/)
@@ -147,7 +147,7 @@ describe AccountUsageRender, :type => :mailer do
       it 'renders the html template to a string: views/account_usage_mailer/by_callers' do
         t = @template.to_s
 
-        expect(t).to match(/<h1.*>Account usage by caller<\/h1>/)
+        expect(t).to match(/<h1.*>Billable minutes by caller<\/h1>/)
         expect(t).to match(/<th.*>Name<\/th>/)
         expect(t).to match(/<th.*>Total<\/th>/)
         expect(t).to match(/<th.*>Leads<\/th>/)
@@ -181,7 +181,7 @@ describe AccountUsageRender, :type => :mailer do
       it 'renders the text template to a string: views/account_usage_mailer/by_callers' do
         t = @template.to_s
 
-        expect(t).to match(/Account usage by caller/)
+        expect(t).to match(/Billable minutes by caller/)
         expect(t).to match(/Name/)
         expect(t).to match(/Total/)
         expect(t).to match(/Leads/)

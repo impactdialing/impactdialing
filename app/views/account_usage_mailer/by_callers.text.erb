@@ -11,7 +11,7 @@
   names = @callers.map(&:identity_name)
   pads = row1_headers.map{|h| padding([h], @billable_totals.values)}
 -%>
-Account usage by caller
+Billable minutes by caller
 
 <% row1_headers.each_with_index do |header, i| %>
 <%= header.ljust(pads[i]) %> 
