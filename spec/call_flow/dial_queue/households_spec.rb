@@ -14,6 +14,10 @@ describe 'CallFlow::DialQueue::Households' do
     subject.send(:hkey, phone)
   end
 
+  after do
+    redis.flushall
+  end
+
   describe 'adding a member from the collection' do
     it 'add the member.id to the collection of member ids' do
       subject.add(member_with_country_code)
