@@ -11,7 +11,6 @@ module CallFlow
     end
 
     def cacheit?(voter)
-      !blocked_numbers.all.include?(voter.phone) &&
       (voter.available_for_dial? || voter.can_eventually_be_retried?)
     end
 
@@ -54,10 +53,6 @@ module CallFlow
 
     def households
       @households ||= CallFlow::DialQueue::Households.new(campaign)
-    end
-
-    def blocked_numbers
-      @blocked_numbers ||= CallFlow::DialQueue::DoNotCall.new(campaign)
     end
 
     def cache(voter)
@@ -125,7 +120,6 @@ module CallFlow
         available.clear
         recycle_bin.clear
         households.clear
-        blocked_numbers.clear
       end
     end
   end
