@@ -1,7 +1,7 @@
 module CallFlow::DialQueue::SortedSetScore
-  def score(voter)
-    skipped_time = voter.skipped_time.to_i
-    attempt_time = voter.last_call_attempt_time.to_i
+  def score(object)
+    skipped_time = object.skipped_time.to_i
+    attempt_time = object.last_call_attempt_time.to_i
     x = if skipped_time > attempt_time
           skipped_time
         else
@@ -16,13 +16,14 @@ module CallFlow::DialQueue::SortedSetScore
     "#{x}.#{y}"
   end
 
-  def memberize(voter)
-    [score(voter), voter.phone]
+  def memberize(object)
+    [score(object), object.phone]
   end
 
-  def memberize_voters(voters)
-    voters.map do |voter|
-      memberize(voter)
+  def memberize_voters(collection)
+    collection.map do |object|
+      memberize(object)
     end
   end
+  alias :memberize_collection, :memberize_voters
 end

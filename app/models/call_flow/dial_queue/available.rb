@@ -1,11 +1,11 @@
 ##
-# Class for caching list of voters available for dialing right now.
+# Class for caching list of objects available for dialing right now.
 # 
-# Experiments show caching the id and phone as json list items for approx. 560,000 voters
+# Experiments show caching the id and phone as json list items for approx. 560,000 objects
 # takes approx. 45-50KB. Extrapolating, I expect 100KB usage for ~1 million entries and
 # ~100MB usage for ~1 billion entries.
 #
-# Based on the above numbers, there should be no issue with storing all available voters
+# Based on the above numbers, there should be no issue with storing all available objects
 # in the redis list for each campaign for the day. At the end of the calling hours for
 # the campaign, the appropriate list should be removed.
 #
@@ -51,14 +51,14 @@ public
     redis.zcard keys[:active]
   end
 
-  def peak(list=:active)
-    redis.zrange keys[list], 0, -1
+  def peak(list=:active, options={})
+    redis.zrange keys[list], 0, -1, options
   end
   alias :all :peak
 
   def next(n)
     n = size if n > size
-    # every number in :active set is guaranteed to have at least one callable voter
+    # every number in :active set is guaranteed to have at least one callable object
     phone_numbers = redis.zrange keys[:active], 0, (n-1)
 
     return [] if phone_numbers.empty?
@@ -74,11 +74,11 @@ public
     redis.zadd(keys[:active], scored_members)
   end
 
-  def update_score(voter)
-    new_score = score(voter).to_f
-    cur_score = redis.zscore(keys[:active], voter.phone).to_f
+  def update_score(object)
+    new_score = score(object).to_f
+    cur_score = redis.zscore(keys[:active], object.phone).to_f
     if new_score > cur_score
-      redis.zadd keys[:active], new_score, voter.phone
+      redis.zadd keys[:active], new_score, object.phone
       return true
     else
       return false

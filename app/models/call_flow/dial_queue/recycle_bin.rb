@@ -31,14 +31,14 @@ public
     @campaign = campaign
   end
 
-  def add(voter)
+  def add(objects)
     expire keys[:bin] do
-      redis.zadd keys[:bin], score(voter), voter.phone
+      redis.zadd keys[:bin], *memberize_collection(objects)
     end
   end
 
-  def remove(voter)
-    redis.zrem keys[:bin], voter.phone
+  def remove(object)
+    redis.zrem keys[:bin], object.phone
   end
 
   def remove_all(phones)
