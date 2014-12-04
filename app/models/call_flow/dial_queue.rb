@@ -84,11 +84,9 @@ module CallFlow
 
     def dialed(voter)
       recycle_bin.add(voter)
-      if voter.can_eventually_be_retried?
-        households.rotate(voter)
-      else
-        households.remove(voter)
-      end
+      # no need to rotate since web-ui caller will select
+      # and system will auto-select for phones only callers
+      # households.rotate(voter)
     end
 
     def remove(voter)

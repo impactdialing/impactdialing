@@ -20,7 +20,7 @@ class Call < ActiveRecord::Base
   end
 
   def connected
-    connect_call
+    connect_call # CallAttempt
     enqueue_call_flow(VoterConnectedPusherJob, [call_attempt.caller_session_id, self.id])
     connected_twiml
   end
