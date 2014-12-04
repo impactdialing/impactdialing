@@ -72,6 +72,7 @@ class PersistCalls
     end
   end
 
+  # def self.cache_last_attempt_status
   def self.import_voters(voters)
     use_value_after_type_cast = ['enabled']
 
@@ -107,6 +108,7 @@ class PersistCalls
   def self.process_calls_base(connection, list_name, num)
     safe_pop(connection, list_name, num) do |calls_data|
       calls = Call.where(id: calls_data.map { |c| c['id'] }).includes(call_attempt: :voter).each_with_object({}) do |call, memo|
+        # todo: ^^ change to CallAttempt.where(id: calls_data.map{|c| c['id']}).includes(:household).each_with_object({}) do |call_attempt, memo|
         memo[call.id] = call
       end
       result = calls_data.each_with_object({voters: [], call_attempts: []}) do |call_data, memo|
@@ -119,6 +121,7 @@ class PersistCalls
         memo[:voters] << voter
       end
       import_voters(result[:voters])
+      # todo: ^^ change to import_households
       import_call_attempts(result[:call_attempts])
     end
   end
@@ -127,6 +130,7 @@ class PersistCalls
     process_calls_base($redis_call_flow_connection, "abandoned_call_list", num) do |abandoned_call_data, call_attempt, voter|
       call_attempt.abandoned(abandoned_call_data['current_time'])
       voter.abandoned
+      # todo: ^^ change to update household
     end
   end
 
@@ -134,6 +138,7 @@ class PersistCalls
     process_calls_base($redis_call_end_connection, "not_answered_call_list", num) do |unanswered_call_data, call_attempt, voter|
       call_attempt.end_unanswered_call(unanswered_call_data['call_status'], unanswered_call_data['current_time'])
       voter.end_unanswered_call(unanswered_call_data['call_status'])
+      # todo: ^^ change to update household
     end
   end
 
@@ -142,6 +147,7 @@ class PersistCalls
       connect_time = RedisCallFlow.processing_by_machine_call_hash[unanswered_call_data['id']]
       call_attempt.end_answered_by_machine(connect_time, unanswered_call_data['current_time'])
       voter.end_answered_by_machine
+      # todo: ^^ change to update household
     end
   end
 
@@ -150,6 +156,7 @@ class PersistCalls
       call_attempt.disconnect_call(disconnected_call_data['current_time'], disconnected_call_data['recording_duration'],
                                    disconnected_call_data['recording_url'], disconnected_call_data['caller_id'])
       voter.disconnect_call(disconnected_call_data['caller_id'])
+      # todo: ^^ change to update household
     end
   end
 
