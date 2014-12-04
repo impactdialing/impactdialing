@@ -25,5 +25,5 @@ module CallFlow::DialQueue::SortedSetScore
       memberize(object)
     end
   end
-  alias :memberize_collection, :memberize_voters
+  alias :memberize_collection :memberize_voters
 end
