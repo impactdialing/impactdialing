@@ -111,6 +111,7 @@ FactoryGirl.define do
       end
 
       trait :call_back do
+        status CallAttempt::Status::SUCCESS
         call_back true
       end
 

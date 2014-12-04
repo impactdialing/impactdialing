@@ -71,7 +71,6 @@ public
 
   def insert(scored_members)
     return if scored_members.empty?
-
     redis.zadd(keys[:active], scored_members)
   end
 

@@ -13,11 +13,14 @@ describe Preview, :type => :model do
     create(:caller)
   end
 
+  before do
+    Redis.new.flushall
+  end
+
   def skip_voters(voters)
     dial_queue = CallFlow::DialQueue.new(voters.first.campaign)
-    voters.each do |v|
-      v.update_attributes(skipped_time: 25.hours.ago)
-      v.save!
+    voters.each_with_index do |v, i|
+      v.update_attributes!(skipped_time: (25.hours.ago + i.minutes), status: Voter::Status::SKIPPED)
       dial_queue.dialed(v)
     end
   end
@@ -40,7 +43,7 @@ describe Preview, :type => :model do
 
   describe 'dialing' do
     before do
-      ENV['USE_REDIS_DIAL_QUEUE'] = '0'
+      ENV['USE_REDIS_DIAL_QUEUE'] = '1'
       add_voters(campaign, :realistic_voter, 5)
     end
     let(:dial_queue) do
@@ -107,19 +110,25 @@ describe Preview, :type => :model do
       # end
 
       it 'voters are presented in the same order on every pass' do
-        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
-        dial_one_at_a_time(campaign, 2){|voter| attach_call_attempt(:past_recycle_time_busy_call_attempt, voter, caller)}
-        dial_one_at_a_time(campaign, 1){|voter| skip_voters([voter])}
-        dial_one_at_a_time(campaign, 1){|voter| attach_call_attempt(:past_recycle_time_completed_call_attempt, voter, caller)}
+        # binding.pry
+        skipped  = []
+        busy     = []
+        complete = []
+        dial_one_at_a_time(campaign, 1){|voter| skipped << voter && skip_voters([voter])}
+        dial_one_at_a_time(campaign, 2){|voter| busy << voter && attach_call_attempt(:past_recycle_time_busy_call_attempt, voter, caller)}
+        dial_one_at_a_time(campaign, 1){|voter| skipped << voter && skip_voters([voter])}
+        dial_one_at_a_time(campaign, 1){|voter| complete << voter && attach_call_attempt(:past_recycle_time_completed_call_attempt, voter, caller)}
 
         process_recycle_bin(campaign)
         
-        first_skipped = campaign.next_in_dial_queue
+        expected_skipped = skipped.first
+        first_skipped    = campaign.next_in_dial_queue
 
-        expect(first_skipped).to eq Voter.where('skipped_time is not null').order('id').first
+        binding.pry
+        expect(first_skipped).to eq skipped.first
         attach_call_attempt(:busy_call_attempt, first_skipped, caller)
 
-        expected_busy = Voter.busy.second
+        expected_busy = busy.first
         actual_busy   = campaign.next_in_dial_queue
 
         expect(actual_busy).to eq expected_busy

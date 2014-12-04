@@ -148,8 +148,11 @@ class Voter < ActiveRecord::Base
   # New Shiny
   scope :blocked, with_enabled(:blocked)
   scope :not_blocked, without_enabled(:blocked)
-  scope :dialed, where('voters.last_call_attempt_time IS NOT NULL OR voters.status <> ?', Status::NOTCALLED)
-  scope :completed, lambda{|campaign| where('voters.status' => CallAttempt::Status.completed_list(campaign))}
+  scope :dialed, where('voters.last_call_attempt_time IS NOT NULL')
+  scope :completed, lambda{|campaign|
+    where('voters.status' => CallAttempt::Status.completed_list(campaign)).
+    where('voters.call_back' => false)
+  }
   scope :not_completed, lambda{|campaign| where('voters.status NOT IN (?)', CallAttempt::Status.completed_list(campaign))}
   scope :ringing, where('voters.status = ?', CallAttempt::Status::RINGING)
   scope :failed, where('voters.status = ?', CallAttempt::Status::FAILED)
@@ -174,9 +177,8 @@ class Voter < ActiveRecord::Base
   }
   scope :recycle_rate_expired, lambda {|recycle_rate|
     where('voters.last_call_attempt_time IS NULL OR '+
-          'voters.last_call_attempt_time < ? OR '+
-          '(voters.skipped_time IS NOT NULL AND voters.status = ?)',
-          recycle_rate.hours.ago, Status::SKIPPED)
+          'voters.last_call_attempt_time < ?',
+          recycle_rate.hours.ago)
   }
   scope :not_ringing, lambda{ where('voters.status <> ?', CallAttempt::Status::RINGING) }
   scope :with_manual_message_drop, not_ringing.joins(:last_call_attempt).where('call_attempts.recording_id IS NOT NULL').where(call_attempts: {recording_delivered_manually: true})
@@ -193,8 +195,8 @@ class Voter < ActiveRecord::Base
     )
   }
   scope :not_available_list, lambda{|campaign|
-    not_available_for_retry(campaign).
-    not_completed(campaign) #.
+    not_available_for_retry(campaign) #.
+    # not_completed(campaign) #.
     # joins('JOIN voters as recently_dialed on
     #        voters.phone = recently_dialed.phone
     #        and voters.campaign_id = recently_dialed.campaign_id
