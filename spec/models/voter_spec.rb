@@ -772,7 +772,7 @@ describe Voter, :type => :model do
 
       context 'includes' do
         it 'within recycle rate threshold' do
-          @voters.where(status: CallAttempt::Status::BUSY).count.should eq 10
+          expect(@voters.where(status: CallAttempt::Status::BUSY).count).to eq 10
         end
         it 'ringing' do
           expected = Voter.where(status: CallAttempt::Status::RINGING).count
@@ -935,14 +935,12 @@ describe Voter, :type => :model do
     let(:campaign){ create(:power) }
     it 'loads active & enabled records excluding those with status in `not_available_list` AND with phone numbers with matching BlockedNumber records BUT including completed if call_back=true' do
       create(:disabled_voter, {campaign: campaign})
-      create(:deleted_voter, {campaign: campaign})
       create(:in_progress_voter, {campaign: campaign})
       create(:ringing_voter, {campaign: campaign})
       create(:queued_voter, {campaign: campaign})
       create(:success_voter, {campaign: campaign})
       create(:failed_voter, {campaign: campaign})
-      blocked_voter = create(:realistic_voter, {campaign: campaign})
-      create(:blocked_number, {campaign: campaign, account: campaign.account, number: blocked_voter.phone})
+      blocked_voter = create(:realistic_voter, :blocked, {campaign: campaign})
       excluded_count = Voter.count
 
       create(:realistic_voter, {campaign: campaign})
@@ -1136,42 +1134,6 @@ describe Voter, :type => :model do
           expected = @voters.first
           actual = Voter.next_voter(@voters, @campaign.recycle_rate, [], @voters.last.id)
           expect(actual).to eq expected
-        end
-      end
-      context '(householding) more than one voter has the same phone number' do
-        before do
-          @householders = [
-            @voters[1],
-            @voters[3],
-            @voters[-1]
-          ]
-          @householders.each do |voter|
-            voter.update_attributes!(phone: '5551234567')
-          end
-          attempted = [@voters[0], @voters[1], @voters[2]]
-          not_called = @voters[3..-1]
-          attempt_recent_calls(attempted)
-          not_called.each{|v| v.update_attributes!(last_call_attempt_time: nil, status: Voter::Status::NOTCALLED)}
-          @current_voter = attempted.last
-        end
-
-        context 'first voter in household has been called less than recycle_rate.hours.ago' do
-          it 'does not load the second voter in the household' do
-            expected = @voters[4]
-            actual = Voter.next_voter(@voters, @campaign.recycle_rate, [], @current_voter.id)
-
-            expect(actual).to eq expected
-          end
-        end
-
-        context 'first voter in household has been called more than recycle_rate.hours.ago' do
-          it 'loads the second voter in the household' do
-            attempt_calls([@voters[1]]) # sets last_call_attempt_time to 25.hours.ago
-            expected = @voters[3]
-            actual = Voter.next_voter(@voters, @campaign.recycle_rate, [], @current_voter.id)
-
-            expect(actual).to eq expected
-          end
         end
       end
     end

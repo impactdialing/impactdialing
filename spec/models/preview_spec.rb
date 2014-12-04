@@ -124,7 +124,6 @@ describe Preview, :type => :model do
         expected_skipped = skipped.first
         first_skipped    = campaign.next_in_dial_queue
 
-        binding.pry
         expect(first_skipped).to eq skipped.first
         attach_call_attempt(:busy_call_attempt, first_skipped, caller)
 
@@ -158,10 +157,9 @@ describe Preview, :type => :model do
     end
 
     context 'shared behaviors' do
-      let(:campaign){ create(:preview) }
-      let(:dial_queue){ CallFlow::DialQueue.new(campaign) }
+      # let(:campaign){ create(:preview) }
       after do
-        redis = dial_queue.available.send :redis
+        redis = Redis.new
         redis.flushall
       end
       it_behaves_like 'Preview/Power#next_voter_in_dial_queue'
@@ -265,7 +263,7 @@ describe Preview, :type => :model do
       expect(next_voter).not_to eq vtwo
       expect(next_voter).to eq vthr
 
-      redis = @dial_queue.available.send :redis
+      redis = Redis.new
       redis.flushall
     end
   end

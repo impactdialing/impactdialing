@@ -85,65 +85,6 @@ describe 'CallFlow::DialQueue' do
       expect(@dial_queue.recycle_bin.all).to include voter.phone
     end
 
-    context 'the dial completes and will not be retried' do
-      before do
-        @dial_queue.cache(other_voter)
-      end
-
-      it 'removes the voter.id from the set of household members' do
-        voter.update_attributes!({
-          status: CallAttempt::Status::SUCCESS,
-          last_call_attempt_time: 5.minutes.ago,
-          last_call_attempt_id: 42
-        })
-        @dial_queue.dialed(voter)
-
-        remaining_members = @dial_queue.households.find(voter.phone)
-        expect(remaining_members).to eq [other_voter.id]
-      end
-
-      context 'the just completed dial was to the last member of a household' do
-        before do
-          # make sure forgery didn't randomly create dup phone
-          voter = Voter.last
-          @dial_queue.remove(voter)
-          voter.destroy
-        end
-
-        it 'removes the household' do
-          ids = @dial_queue.next(1)
-          last_member = Voter.find(ids.first)
-          expect(Voter.where(phone: last_member.phone).count).to eq 1
-          last_member.update_attributes!({
-            status: CallAttempt::Status::SUCCESS,
-            last_call_attempt_time: 5.minutes.ago,
-            last_call_attempt_id: 42
-          })
-          @dial_queue.dialed(last_member)
-
-          remaining_members = @dial_queue.households.find(last_member.phone)
-          expect(remaining_members).to eq []
-        end
-      end
-    end
-
-    context 'the dial completes and will be retried' do
-      before do
-        @dial_queue.cache(other_voter)
-      end
-
-      it 'moves the voter.id to the last position in the set of household members' do
-        voter.update_attributes!({
-          status: Voter::Status::SKIPPED,
-          skipped_time: 1.minute.ago
-        })
-        @dial_queue.dialed(voter)
-
-        remaining_members = @dial_queue.households.find(voter.phone)
-        expect(remaining_members).to eq [other_voter.id, voter.id]
-      end
-    end
-
     context 'recycling voters' do
       let(:voter_a){ create(:abandoned_voter, :not_recently_dialed) }
       before do
@@ -157,3 +98,67 @@ describe 'CallFlow::DialQueue' do
     end
   end
 end
+
+
+    ## saving for reference. this is the desired behavior but bad implementation
+    ## call outcomes aren't known when .dialed will be called
+
+
+    # context 'the dial completes and will be retried' do
+    #   before do
+    #     @dial_queue.cache(other_voter)
+    #   end
+
+    #   it 'moves the voter.id to the last position in the set of household members' do
+    #     voter.update_attributes!({
+    #       status: Voter::Status::SKIPPED,
+    #       skipped_time: 1.minute.ago
+    #     })
+    #     @dial_queue.dialed(voter)
+
+    #     remaining_members = @dial_queue.households.find(voter.phone)
+    #     expect(remaining_members).to eq [other_voter.id, voter.id]
+    #   end
+    # end
+    
+    # context 'the dial completes and will not be retried' do
+    #   before do
+    #     @dial_queue.cache(other_voter)
+    #   end
+
+    #   it 'removes the voter.id from the set of household members' do
+    #     voter.update_attributes!({
+    #       status: CallAttempt::Status::SUCCESS,
+    #       last_call_attempt_time: 5.minutes.ago,
+    #       last_call_attempt_id: 42
+    #     })
+    #     @dial_queue.dialed(voter)
+
+    #     remaining_members = @dial_queue.households.find(voter.phone)
+    #     expect(remaining_members).to eq [other_voter.id]
+    #   end
+
+    #   context 'the just completed dial was to the last member of a household' do
+    #     before do
+    #       # make sure forgery didn't randomly create dup phone
+    #       voter = Voter.last
+    #       @dial_queue.remove(voter)
+    #       voter.destroy
+    #     end
+
+    #     it 'removes the household' do
+    #       ids = @dial_queue.next(1)
+    #       last_member = Voter.find(ids.first)
+    #       expect(Voter.where(phone: last_member.phone).count).to eq 1
+    #       last_member.update_attributes!({
+    #         status: CallAttempt::Status::SUCCESS,
+    #         last_call_attempt_time: 5.minutes.ago,
+    #         last_call_attempt_id: 42
+    #       })
+    #       @dial_queue.dialed(last_member)
+
+    #       remaining_members = @dial_queue.households.find(last_member.phone)
+    #       expect(remaining_members).to eq []
+    #     end
+    #   end
+    # end
