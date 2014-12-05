@@ -188,62 +188,6 @@ describe Voter, :type => :model do
     end
   end
 
-  describe 'voicemail_history' do
-    let(:campaign) do
-      create(:campaign, {
-        recording_id: 12
-      })
-    end
-    let(:voter) do
-      create(:realistic_voter, {
-        campaign: campaign,
-        account: campaign.account
-      })
-    end
-    context '#update_voicemail_history' do
-      it 'appends the current campaign.recording_id to voicemail_history' do
-        voter.update_voicemail_history
-        expect(voter.voicemail_history).to eq '12'
-
-        voter.update_voicemail_history
-        expect(voter.voicemail_history).to eq '12,12'
-      end
-    end
-
-    context '#yet_to_receive_voicemail?' do
-      it 'returns true when voicemail_history is blank' do
-        expect(voter.yet_to_receive_voicemail?).to be_truthy
-      end
-      it 'returns false otherwise' do
-        voter.update_voicemail_history
-        expect(voter.yet_to_receive_voicemail?).to be_falsey
-      end
-    end
-  end
-
-  describe '#skip' do
-    let(:voter) do
-      create(:realistic_voter)
-    end
-
-    before do
-      Timecop.freeze
-      voter.skip
-    end
-
-    after do
-      Timecop.return
-    end
-
-    it 'sets skipped_time to Time.now' do
-      expect(voter.skipped_time).to eq Time.now
-    end
-
-    it 'sets status to Voter::Status::SKIPPED' do
-      expect(voter.status).to eq Voter::Status::SKIPPED
-    end
-  end
-
   context '#disconnect_call(caller_id)' do
     subject do
       create(:realistic_voter, {
@@ -289,16 +233,6 @@ describe Voter, :type => :model do
     ready_voter = create(:realistic_voter, :campaign => campaign, :status=> CallAttempt::Status::READY)
     success_voter = create(:realistic_voter, :campaign => campaign, :status=> CallAttempt::Status::SUCCESS)
     expect(Voter.remaining_voters_for_campaign(campaign)).to have(6).items
-  end
-
-  it "allows international phone numbers beginning with +" do
-    voter = create(:realistic_voter, :phone => "+2353546")
-    expect(voter).to be_valid
-  end
-
-  it "validation fails when phone number not given" do
-    voter = build(:voter, :phone => nil)
-    expect(voter).not_to be_valid
   end
 
   it "lists voters not called" do
@@ -391,11 +325,6 @@ describe Voter, :type => :model do
         @voters[3..4].each{|v| v.update_attribute(:status, CallAttempt::Status::SUCCESS)}
         expect(@query.count).to eq 8
       end
-    end
-
-    context '3 voters in the list were called and scheduled for call backs' do
-      it 'returns the size of the voter list minus 3'
-      it 'includes the scheduled voters in the count when it is near their scheduled date'
     end
 
     context '2 voters in the list have phone numbers that exist on the blocked list' do
@@ -517,38 +446,6 @@ describe Voter, :type => :model do
     end
   end
 
-
-  xit "lists scheduled voters" do
-    recent_voter = create(:realistic_voter, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
-    really_old_voter = create(:realistic_voter, :scheduled_date => 2.hours.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
-    recent_but_unscheduled_voter = create(:realistic_voter, :scheduled_date => 1.minute.ago, :status => nil)
-    expect(Voter.scheduled).to eq([recent_voter])
-  end
-
-  it "limits voters when listing them" do
-    10.times { create(:realistic_voter) }
-    expect(Voter.limit(5)).to have(5).voters
-  end
-
-  it "excludes specific numbers" do
-    unblocked_voter = create(:realistic_voter, :phone => "1234567890")
-    blocked_voter = create(:realistic_voter, :phone => "0123456789")
-    expect(Voter.without(['0123456789'])).to include(unblocked_voter)
-  end
-
-  describe 'blocked?' do
-    let(:blocked_voter){ build(:realistic_voter, :blocked) }
-    let(:voter){ build(:realistic_voter) }
-
-    it 'returns true when Voter#blocked = 1' do
-      expect( blocked_voter.blocked? ).to be_truthy
-    end
-
-    it 'returns false when Voter#blocked = 0' do
-      expect( voter.blocked? ).to be_falsey
-    end
-  end
-
   describe 'answers' do
     let(:script) { create(:script) }
     let(:campaign) { create(:predictive, :script => script) }
@@ -662,15 +559,6 @@ describe Voter, :type => :model do
     end
 
 
-  end
-
-  describe "skip voter" do
-    it "should skip voter but adding skipped_time" do
-      campaign = create(:campaign)
-      voter = create(:realistic_voter, :campaign => campaign)
-      voter.skip
-      expect(voter.skipped_time).not_to be_nil
-    end
   end
 
   describe "avialable_to_be_retried" do
@@ -1186,12 +1074,9 @@ end
 # **`lock_version`**            | `integer`          | `default(0)`
 # **`enabled`**                 | `integer`          | `default(0), not null`
 # **`voicemail_history`**       | `string(255)`      |
-# **`blocked_number_id`**       | `integer`          |
 #
 # ### Indexes
 #
-# * `index_on_blocked_number_id`:
-#     * **`blocked_number_id`**
 # * `index_priority_voters`:
 #     * **`campaign_id`**
 #     * **`enabled`**
@@ -1219,10 +1104,6 @@ end
 #     * **`campaign_id`**
 #     * **`status`**
 #     * **`id`**
-# * `index_voters_on_phone_campaign_id_last_call_attempt_time`:
-#     * **`phone`**
-#     * **`campaign_id`**
-#     * **`last_call_attempt_time`**
 # * `index_voters_on_status`:
 #     * **`status`**
 # * `index_voters_on_voter_list_id`:

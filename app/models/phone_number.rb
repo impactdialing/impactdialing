@@ -1,6 +1,6 @@
 class PhoneNumber
   def initialize(number)
-    @number = PhoneNumber::sanitize(number.to_s)
+    @number = PhoneNumber::sanitize(number)
   end
 
   def valid?
@@ -14,9 +14,8 @@ class PhoneNumber
     @number
   end
 
-  private
   def self.sanitize(number)
-    number.scan(/\d/).join
+    number.to_s.scan(/\d/).join
   end
 
   def has_only_digits?

@@ -4,6 +4,7 @@ describe BlockedNumber, :type => :model do
   it { is_expected.to validate_presence_of(:number) }
   it { is_expected.to validate_presence_of(:account) }
   it { is_expected.to validate_numericality_of(:number)  }
+  
   let(:account){ create(:account) }
   let(:campaign){ create(:power, account: account) }
 
@@ -125,8 +126,6 @@ end
 # * `index_blocked_numbers_account_id_campaign_id`:
 #     * **`account_id`**
 #     * **`campaign_id`**
-# * `index_blocked_numbers_on_account_campaign_number`:
-#     * **`account_id`**
-#     * **`campaign_id`**
+# * `index_on_blocked_numbers_number`:
 #     * **`number`**
 #

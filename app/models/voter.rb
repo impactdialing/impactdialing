@@ -568,12 +568,9 @@ end
 # **`lock_version`**            | `integer`          | `default(0)`
 # **`enabled`**                 | `integer`          | `default(0), not null`
 # **`voicemail_history`**       | `string(255)`      |
-# **`blocked_number_id`**       | `integer`          |
 #
 # ### Indexes
 #
-# * `index_on_blocked_number_id`:
-#     * **`blocked_number_id`**
 # * `index_priority_voters`:
 #     * **`campaign_id`**
 #     * **`enabled`**
@@ -601,10 +598,6 @@ end
 #     * **`campaign_id`**
 #     * **`status`**
 #     * **`id`**
-# * `index_voters_on_phone_campaign_id_last_call_attempt_time`:
-#     * **`phone`**
-#     * **`campaign_id`**
-#     * **`last_call_attempt_time`**
 # * `index_voters_on_status`:
 #     * **`status`**
 # * `index_voters_on_voter_list_id`:

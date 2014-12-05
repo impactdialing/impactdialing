@@ -11,7 +11,8 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141120232910) do
+ActiveRecord::Schema.define(:version => 20141205214056) do
+
   create_table "accounts", :force => true do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -96,7 +97,6 @@ ActiveRecord::Schema.define(:version => 20141120232910) do
     t.integer  "campaign_id"
   end
 
-  add_index "blocked_numbers", ["account_id", "campaign_id", "number"], :name => "index_blocked_numbers_on_account_campaign_number"
   add_index "blocked_numbers", ["account_id", "campaign_id"], :name => "index_blocked_numbers_account_id_campaign_id"
   add_index "blocked_numbers", ["number"], :name => "index_on_blocked_numbers_number"
 
@@ -303,6 +303,20 @@ ActiveRecord::Schema.define(:version => 20141120232910) do
     t.string   "campaign_id"
   end
 
+  create_table "households", :force => true do |t|
+    t.integer  "account_id",                                     :null => false
+    t.integer  "campaign_id",                                    :null => false
+    t.integer  "voter_list_id",                                  :null => false
+    t.integer  "last_call_attempt_id"
+    t.string   "phone",                                          :null => false
+    t.integer  "enabled",              :default => 0,            :null => false
+    t.string   "voicemail_history"
+    t.string   "status",               :default => "not called", :null => false
+    t.datetime "presented_at",                                   :null => false
+    t.datetime "created_at",                                     :null => false
+    t.datetime "updated_at",                                     :null => false
+  end
+
   create_table "moderator_campaigns", :force => true do |t|
     t.string "name"
   end
@@ -404,12 +418,6 @@ ActiveRecord::Schema.define(:version => 20141120232910) do
     t.float    "best_conversation"
     t.float    "longest_conversation"
     t.float    "best_wrapup_time"
-  end
-
-  create_table "temp_voter_lists", :force => true do |t|
-    t.string   "name"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
   end
 
   create_table "transfer_attempts", :force => true do |t|
@@ -525,11 +533,9 @@ ActiveRecord::Schema.define(:version => 20141120232910) do
     t.integer  "lock_version",           :default => 0
     t.integer  "enabled",                :default => 0,            :null => false
     t.string   "voicemail_history"
-    t.integer  "blocked_number_id"
   end
 
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
-  add_index "voters", ["blocked_number_id"], :name => "index_on_blocked_number_id"
   add_index "voters", ["caller_id", "campaign_id"], :name => "index_voters_caller_id_campaign_id"
   add_index "voters", ["caller_session_id"], :name => "index_voters_on_caller_session_id"
   add_index "voters", ["campaign_id", "active", "status", "call_back"], :name => "index_voters_on_campaign_id_and_active_and_status_and_call_back"
@@ -539,7 +545,6 @@ ActiveRecord::Schema.define(:version => 20141120232910) do
   add_index "voters", ["campaign_id", "status", "last_call_attempt_time"], :name => "voters_campaign_status_time"
   add_index "voters", ["custom_id", "campaign_id"], :name => "index_voters_customid_campaign_id"
   add_index "voters", ["enabled", "campaign_id", "last_call_attempt_time", "status"], :name => "voters_enabled_campaign_time_status"
-  add_index "voters", ["phone", "campaign_id", "last_call_attempt_time"], :name => "index_voters_on_phone_campaign_id_last_call_attempt_time"
   add_index "voters", ["phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"
