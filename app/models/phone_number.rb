@@ -4,7 +4,10 @@ class PhoneNumber
   end
 
   def valid?
-    (not @number.blank?) and (@number.length >= 10) and has_only_digits?
+    (not @number.blank?) and
+    (@number.length >= 10) and
+    (@number.length <= 16) and
+    has_only_digits?
   end
 
   def to_s
