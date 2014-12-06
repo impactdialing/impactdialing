@@ -3,26 +3,39 @@ require 'rails_helper'
 RSpec.describe Household, :type => :model do
   subject{ build(:household) }
 
-  it 'requires a phone' do
-    subject.phone = nil
-    expect(subject).to have_at_least(1).error_on(:phone)
-  end
-  it 'requires phone is 10-16 digits long' do
-    subject.phone = '123456789'
-    expect(subject).to have_at_least(1).error_on(:phone)
+  describe 'database-level validations' do
+    it 'campaign_id not null' do
+      
+    end
+    it 'account_id not null' do
+    end
 
-    subject.phone += '01234567890'
-    expect(subject).to have_at_least(1).error_on(:phone)
+    it 'voter_list_id not null' do
+    end
   end
-  it 'requires phone is unique for given campaign' do
-    create(:household, phone: subject.phone, campaign_id: subject.campaign_id)
-    expect(subject).to have_at_least(1).error_on(:phone)
-  end
-  it 'before validating: sanitizes phone of all non-digit characters' do
-    str = '+1234567890pk'
-    subject.phone = str
-    subject.valid?
-    expect(subject.phone).to eq str.gsub(/[^\d]/,'')
+
+  describe '#phone' do
+    it 'is required' do
+      subject.phone = nil
+      expect(subject).to have_at_least(1).error_on(:phone)
+    end
+    it 'is 10-16 digits long' do
+      subject.phone = '123456789'
+      expect(subject).to have_at_least(1).error_on(:phone)
+
+      subject.phone += '01234567890'
+      expect(subject).to have_at_least(1).error_on(:phone)
+    end
+    it 'is unique for given campaign' do
+      create(:household, phone: subject.phone, campaign_id: subject.campaign_id)
+      expect(subject).to have_at_least(1).error_on(:phone)
+    end
+    it 'before validating: sanitizes phone of all non-digit characters' do
+      str = '+1234567890pk'
+      subject.phone = str
+      subject.valid?
+      expect(subject.phone).to eq str.gsub(/[^\d]/,'')
+    end
   end
 
   # describe 'voicemail_history' do
@@ -102,7 +115,7 @@ end
 # **`id`**                    | `integer`          | `not null, primary key`
 # **`account_id`**            | `integer`          | `not null`
 # **`campaign_id`**           | `integer`          | `not null`
-# **`voter_list_id`**         | `integer`          | `not null`
+# **`voter_list_id`**         | `integer`          |
 # **`last_call_attempt_id`**  | `integer`          |
 # **`phone`**                 | `string(255)`      | `not null`
 # **`enabled`**               | `integer`          | `default(0), not null`
@@ -111,4 +124,23 @@ end
 # **`presented_at`**          | `datetime`         | `not null`
 # **`created_at`**            | `datetime`         | `not null`
 # **`updated_at`**            | `datetime`         | `not null`
+#
+# ### Indexes
+#
+# * `index_households_on_account_id`:
+#     * **`account_id`**
+# * `index_households_on_campaign_id`:
+#     * **`campaign_id`**
+# * `index_households_on_enabled`:
+#     * **`enabled`**
+# * `index_households_on_last_call_attempt_id`:
+#     * **`last_call_attempt_id`**
+# * `index_households_on_phone`:
+#     * **`phone`**
+# * `index_households_on_presented_at`:
+#     * **`presented_at`**
+# * `index_households_on_status`:
+#     * **`status`**
+# * `index_households_on_voter_list_id`:
+#     * **`voter_list_id`**
 #

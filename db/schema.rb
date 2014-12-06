@@ -306,7 +306,7 @@ ActiveRecord::Schema.define(:version => 20141205214056) do
   create_table "households", :force => true do |t|
     t.integer  "account_id",                                     :null => false
     t.integer  "campaign_id",                                    :null => false
-    t.integer  "voter_list_id",                                  :null => false
+    t.integer  "voter_list_id"
     t.integer  "last_call_attempt_id"
     t.string   "phone",                                          :null => false
     t.integer  "enabled",              :default => 0,            :null => false
@@ -316,6 +316,15 @@ ActiveRecord::Schema.define(:version => 20141205214056) do
     t.datetime "created_at",                                     :null => false
     t.datetime "updated_at",                                     :null => false
   end
+
+  add_index "households", ["account_id"], :name => "index_households_on_account_id"
+  add_index "households", ["campaign_id"], :name => "index_households_on_campaign_id"
+  add_index "households", ["enabled"], :name => "index_households_on_enabled"
+  add_index "households", ["last_call_attempt_id"], :name => "index_households_on_last_call_attempt_id"
+  add_index "households", ["phone"], :name => "index_households_on_phone"
+  add_index "households", ["presented_at"], :name => "index_households_on_presented_at"
+  add_index "households", ["status"], :name => "index_households_on_status"
+  add_index "households", ["voter_list_id"], :name => "index_households_on_voter_list_id"
 
   create_table "moderator_campaigns", :force => true do |t|
     t.string "name"

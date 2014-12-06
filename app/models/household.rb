@@ -42,7 +42,7 @@ end
 # **`id`**                    | `integer`          | `not null, primary key`
 # **`account_id`**            | `integer`          | `not null`
 # **`campaign_id`**           | `integer`          | `not null`
-# **`voter_list_id`**         | `integer`          | `not null`
+# **`voter_list_id`**         | `integer`          |
 # **`last_call_attempt_id`**  | `integer`          |
 # **`phone`**                 | `string(255)`      | `not null`
 # **`enabled`**               | `integer`          | `default(0), not null`
@@ -51,4 +51,23 @@ end
 # **`presented_at`**          | `datetime`         | `not null`
 # **`created_at`**            | `datetime`         | `not null`
 # **`updated_at`**            | `datetime`         | `not null`
+#
+# ### Indexes
+#
+# * `index_households_on_account_id`:
+#     * **`account_id`**
+# * `index_households_on_campaign_id`:
+#     * **`campaign_id`**
+# * `index_households_on_enabled`:
+#     * **`enabled`**
+# * `index_households_on_last_call_attempt_id`:
+#     * **`last_call_attempt_id`**
+# * `index_households_on_phone`:
+#     * **`phone`**
+# * `index_households_on_presented_at`:
+#     * **`presented_at`**
+# * `index_households_on_status`:
+#     * **`status`**
+# * `index_households_on_voter_list_id`:
+#     * **`voter_list_id`**
 #
