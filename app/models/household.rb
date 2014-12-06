@@ -10,7 +10,8 @@ class Household < ActiveRecord::Base
   bitmask :enabled, as: [:list, :blocked], null: false
 
   before_validation :sanitize_phone
-  validates_presence_of :phone
+  validates_presence_of :phone, :account, :campaign
+  validates_presence_of :voter_list, on: :create
   validates_length_of :phone, minimum: 10, maximum: 16
   validates_uniqueness_of :phone, scope: :campaign_id
 
@@ -29,6 +30,29 @@ public
       self.enabled.replace(values.reject{|value| value.blank?})
     end
   end
+
+  def in_dnc?
+    enabled?(:blocked)
+  end
+
+  def update_voicemail_history
+    parts = (self.voicemail_history || '').split(',')
+    parts << campaign.recording_id
+    self.voicemail_history = parts.join(',')
+  end
+
+  def update_voicemail_history!
+    update_voicemail_history
+    save
+  end
+
+  def yet_to_receive_voicemail?
+    voicemail_history.blank?
+  end
+
+  # def update_call_back_after_message_drop
+  #   self.call_back = campaign.call_back_after_voicemail_delivery?
+  # end
 end
 
 # ## Schema Information

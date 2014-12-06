@@ -3,14 +3,25 @@ require 'rails_helper'
 RSpec.describe Household, :type => :model do
   subject{ build(:household) }
 
-  describe 'database-level validations' do
-    it 'campaign_id not null' do
-      
+  describe 'associations' do
+    it 'campaign is required' do
+      subject.campaign = nil
+      expect(subject).to have(1).error_on(:campaign)
     end
-    it 'account_id not null' do
+    it 'account is required' do
+      subject.account = nil
+      expect(subject).to have(1).error_on(:account)
     end
 
-    it 'voter_list_id not null' do
+    it 'voter_list is required on create' do
+      subject.voter_list = nil
+      expect(subject).to have(1).error_on(:voter_list)
+    end
+
+    it 'voter_list may be nil on updates when CustomID is used' do
+      subject.save!
+      subject.voter_list = nil
+      expect(subject).to have(0).errors_on(:voter_list)
     end
   end
 
@@ -38,51 +49,43 @@ RSpec.describe Household, :type => :model do
     end
   end
 
-  # describe 'voicemail_history' do
-  #   let(:campaign) do
-  #     create(:campaign, {
-  #       recording_id: 12
-  #     })
-  #   end
-  #   let(:voter) do
-  #     create(:realistic_voter, {
-  #       campaign: campaign,
-  #       account: campaign.account
-  #     })
-  #   end
-  #   context '#update_voicemail_history' do
-  #     it 'appends the current campaign.recording_id to voicemail_history' do
-  #       voter.update_voicemail_history
-  #       expect(voter.voicemail_history).to eq '12'
+  describe 'voicemail_history' do
+    before do
+      subject.campaign.update_attributes(recording_id: 12)
+    end
+    context '#update_voicemail_history' do
+      let(:recording_id){ subject.campaign.recording_id.to_s }
+      it 'appends the current campaign.recording_id to voicemail_history' do
+        subject.update_voicemail_history
+        expect(subject.voicemail_history).to eq recording_id
 
-  #       voter.update_voicemail_history
-  #       expect(voter.voicemail_history).to eq '12,12'
-  #     end
-  #   end
+        subject.update_voicemail_history
+        expect(subject.voicemail_history).to eq "#{recording_id},#{recording_id}"
+      end
+    end
 
-  #   context '#yet_to_receive_voicemail?' do
-  #     it 'returns true when voicemail_history is blank' do
-  #       expect(voter.yet_to_receive_voicemail?).to be_truthy
-  #     end
-  #     it 'returns false otherwise' do
-  #       voter.update_voicemail_history
-  #       expect(voter.yet_to_receive_voicemail?).to be_falsey
-  #     end
-  #   end
-  # end
+    context '#yet_to_receive_voicemail?' do
+      it 'returns true when voicemail_history is blank' do
+        expect(subject.yet_to_receive_voicemail?).to be_truthy
+      end
+      it 'returns false otherwise' do
+        subject.update_voicemail_history
+        expect(subject.yet_to_receive_voicemail?).to be_falsey
+      end
+    end
+  end
 
-  # describe 'blocked?' do
-  #   let(:blocked_voter){ build(:realistic_voter, :blocked) }
-  #   let(:voter){ build(:realistic_voter) }
+  describe 'in_dnc?' do
+    let(:blocked_household){ build(:household, :blocked) }
 
-  #   it 'returns true when Voter#blocked = 1' do
-  #     expect( blocked_voter.blocked? ).to be_truthy
-  #   end
+    it 'returns true when Voter#enabled has :blocked bit set' do
+      expect( blocked_household.in_dnc? ).to be_truthy
+    end
 
-  #   it 'returns false when Voter#blocked = 0' do
-  #     expect( voter.blocked? ).to be_falsey
-  #   end
-  # end
+    it 'returns false when Voter#enabled does not have :blocked bit set' do
+      expect( subject.in_dnc? ).to be_falsey
+    end
+  end
 
   # describe '#skip' do
   #   let(:voter) do

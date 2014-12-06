@@ -5,5 +5,9 @@ FactoryGirl.define do
     voter_list
     phone { Forgery(:address).phone }
     enabled [:list]
+
+    trait :blocked do
+      enabled [:list, :blocked]
+    end
   end
 end
