@@ -28,9 +28,10 @@ class Voter < ActiveRecord::Base
     SKIPPED   = 'skipped'
   end
 
-  belongs_to :voter_list, counter_cache: true
-  belongs_to :campaign
   belongs_to :account
+  belongs_to :campaign
+  belongs_to :voter_list, counter_cache: true
+  belongs_to :household, counter_cache: true
 
   has_many :call_attempts
   has_many :custom_voter_field_values, autosave: true
@@ -568,6 +569,7 @@ end
 # **`lock_version`**            | `integer`          | `default(0)`
 # **`enabled`**                 | `integer`          | `default(0), not null`
 # **`voicemail_history`**       | `string(255)`      |
+# **`household_id`**            | `integer`          |
 #
 # ### Indexes
 #
@@ -598,6 +600,8 @@ end
 #     * **`campaign_id`**
 #     * **`status`**
 #     * **`id`**
+# * `index_voters_on_household_id`:
+#     * **`household_id`**
 # * `index_voters_on_status`:
 #     * **`status`**
 # * `index_voters_on_voter_list_id`:

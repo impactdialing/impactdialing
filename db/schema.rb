@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141205214056) do
+ActiveRecord::Schema.define(:version => 20141206013434) do
 
   create_table "accounts", :force => true do |t|
     t.datetime "created_at"
@@ -542,6 +542,7 @@ ActiveRecord::Schema.define(:version => 20141205214056) do
     t.integer  "lock_version",           :default => 0
     t.integer  "enabled",                :default => 0,            :null => false
     t.string   "voicemail_history"
+    t.integer  "household_id"
   end
 
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
@@ -554,6 +555,7 @@ ActiveRecord::Schema.define(:version => 20141205214056) do
   add_index "voters", ["campaign_id", "status", "last_call_attempt_time"], :name => "voters_campaign_status_time"
   add_index "voters", ["custom_id", "campaign_id"], :name => "index_voters_customid_campaign_id"
   add_index "voters", ["enabled", "campaign_id", "last_call_attempt_time", "status"], :name => "voters_enabled_campaign_time_status"
+  add_index "voters", ["household_id"], :name => "index_voters_on_household_id"
   add_index "voters", ["phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"

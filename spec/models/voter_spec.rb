@@ -1074,6 +1074,7 @@ end
 # **`lock_version`**            | `integer`          | `default(0)`
 # **`enabled`**                 | `integer`          | `default(0), not null`
 # **`voicemail_history`**       | `string(255)`      |
+# **`household_id`**            | `integer`          |
 #
 # ### Indexes
 #
@@ -1104,6 +1105,8 @@ end
 #     * **`campaign_id`**
 #     * **`status`**
 #     * **`id`**
+# * `index_voters_on_household_id`:
+#     * **`household_id`**
 # * `index_voters_on_status`:
 #     * **`status`**
 # * `index_voters_on_voter_list_id`:
