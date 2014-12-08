@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141206013434) do
+ActiveRecord::Schema.define(:version => 20141208191116) do
 
   create_table "accounts", :force => true do |t|
     t.datetime "created_at"
@@ -500,6 +500,7 @@ ActiveRecord::Schema.define(:version => 20141206013434) do
     t.string   "uploaded_file_name"
     t.integer  "voters_count",       :default => 0
     t.boolean  "skip_wireless",      :default => true
+    t.integer  "households_count"
   end
 
   add_index "voter_lists", ["account_id", "name"], :name => "index_voter_lists_on_user_id_and_name", :unique => true
