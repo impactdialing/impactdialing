@@ -9,5 +9,9 @@ FactoryGirl.define do
     trait :blocked do
       enabled [:list, :blocked]
     end
+
+    trait :disabled do
+      enabled []
+    end
   end
 end

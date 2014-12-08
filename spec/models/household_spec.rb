@@ -52,11 +52,11 @@ RSpec.describe Household, :type => :model do
   describe 'in_dnc?' do
     let(:blocked_household){ build(:household, :blocked) }
 
-    it 'returns true when Voter#enabled has :blocked bit set' do
+    it 'returns true when #enabled has :blocked bit set' do
       expect( blocked_household.in_dnc? ).to be_truthy
     end
 
-    it 'returns false when Voter#enabled does not have :blocked bit set' do
+    it 'returns false when #enabled does not have :blocked bit set' do
       expect( subject.in_dnc? ).to be_falsey
     end
   end

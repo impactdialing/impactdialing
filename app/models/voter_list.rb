@@ -7,16 +7,14 @@ class VoterList < ActiveRecord::Base
   belongs_to :campaign
   belongs_to :account
   has_many :voters, :conditions => {:active => true}
-
-  scope :active, where(:active => true)
-  scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
+  has_many :households
   
   validates_presence_of :name, :s3path, :csv_to_system_map, :uploaded_file_name
   validates_length_of :name, :minimum => 3
   validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
   validate :validates_file_type, :on => :create
   
-  after_update :enable_disable_voters
+  after_update :enable_disable_members
 
   VOTER_DATA_COLUMNS = {"phone"=> "Phone", "custom_id" => "ID", "last_name"=>"LastName", "first_name"=>"FirstName",
                         "middle_name"=>"MiddleName", "suffix"=>"Suffix", "email"=>"Email", "address"=>"Address", "city"=>"City",
@@ -52,30 +50,11 @@ class VoterList < ActiveRecord::Base
     AmazonS3.new.delete(file_name)
   end
 
-  def self.disable_all
-    self.all.each do |voter_list|
-      voter_list.update_attribute(:enabled, false)
-      voter_list.voters.update_all(enabled: false)
-    end
-  end
-
-  def self.enable_all
-    self.all.each do |voter_list|
-      voter_list.update_attribute(:enabled, true)
-      voter_list.voters.update_all(enabled: true)
-    end
-  end
-
-  def self.active_voter_list_ids(campaign_id)
-    active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(campaign_id, 1, 1)
-    active_lists.collect { |x| x.id }
-  end
-
   def read_from_s3
     self.class.read_from_s3(s3path)
   end
 
-  def enable_disable_voters
+  def enable_disable_members
     Resque.enqueue(VoterListChangeJob, self.id, self.enabled)
   end
 
@@ -91,51 +70,56 @@ class VoterList < ActiveRecord::Base
     end
   end
 
-  def voters_remaining
-    voters.to_be_dialed.size
-  end
+  # going away very soon (next release)
+  # def self.disable_all
+  #   deprecated_method_warning(:disable_all)
+  #   self.all.each do |voter_list|
+  #     voter_list.update_attribute(:enabled, false)
+  #     voter_list.voters.update_all(enabled: false)
+  #   end
+  # end
+  # def self.enable_all
+  #   deprecated_method_warning(:enable_all)
+  #   self.all.each do |voter_list|
+  #     voter_list.update_attribute(:enabled, true)
+  #     voter_list.voters.update_all(enabled: true)
+  #   end
+  # end
+  # def self.active_voter_list_ids(campaign_id)
+  #   deprecated_method_warning(:active_voter_list_ids)
+  #   VoterList.where(campaign_id: campaign_id, active: 1, enabled: 1).pluck(:id)
+  # end
+  # def voters_remaining
+  #   voters.to_be_dialed.size
+  # end
+  # deprecate :voters_remaining
+  # def destroy_with_voters
+  #   voter_ids.each_slice(1000) do |ids|
+  #     CustomVoterFieldValue.where(voter_id: ids).delete_all
+  #     Voter.where(id: ids).delete_all
+  #   end
+  #   self.destroy
+  # end
+  # deprecate :destroy_with_voters
+  # def self.create_csv_to_system_map(csv_headers,account)
+  #   ActiveSupport::Deprecation.warn('VoterList.create_csv_to_system_map is now a no-op.')
+  #   return
 
-  def destroy_with_voters
-    voter_ids.each_slice(1000) do |ids|
-      CustomVoterFieldValue.where(voter_id: ids).delete_all
-      Voter.where(id: ids).delete_all
-    end
-    self.destroy
-  end
-
-  def self.create_csv_to_system_map(csv_headers,account)
-    ActiveSupport::Deprecation.warn('VoterList.create_csv_to_system_map is now a no-op.')
-    return
-
-    csv_to_system_map = {}
-    csv_headers.each do |header_field|
-      if Voter.new.has_attribute?(header_field)
-        system_field = header_field
-      end
-      system_field ||=  account.custom_voter_fields.find_by_name(header_field).try(:name)
-      if system_field.nil?
-        csv_to_system_map[header_field] = "#{header_field}"
-      else
-        csv_to_system_map[header_field] = system_field
-      end
-    end
-    return csv_to_system_map
-  end
-  def import_leads(csv_to_system_map, csv_filename, separator)
-    batch_upload = VoterBatchImport.new(self, csv_to_system_map, csv_filename, separator)
-    batch_upload.import_leads
-  end
-  deprecate import_leads: 'use VoterBatchImport directly instead.'
-  def dial
-    self.voters.to_be_dialed.find_in_batches(:batch_size => 500) { |voter_group|
-      voter_group.each do |voter|
-        return false unless self.campaign.calls_in_progress?
-        voter.dial
-      end
-    }
-    true
-  end
-  deprecate :dial
+  #   csv_to_system_map = {}
+  #   csv_headers.each do |header_field|
+  #     if Voter.new.has_attribute?(header_field)
+  #       system_field = header_field
+  #     end
+  #     system_field ||=  account.custom_voter_fields.find_by_name(header_field).try(:name)
+  #     if system_field.nil?
+  #       csv_to_system_map[header_field] = "#{header_field}"
+  #     else
+  #       csv_to_system_map[header_field] = system_field
+  #     end
+  #   end
+  #   return csv_to_system_map
+  # end
+  #/ going away very soon (next release)
 end
 
 # ## Schema Information
