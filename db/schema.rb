@@ -314,7 +314,7 @@ ActiveRecord::Schema.define(:version => 20141208192814) do
     t.integer  "enabled",              :default => 0,            :null => false
     t.string   "voicemail_history"
     t.string   "status",               :default => "not called", :null => false
-    t.datetime "presented_at",                                   :null => false
+    t.datetime "presented_at"
     t.datetime "created_at",                                     :null => false
     t.datetime "updated_at",                                     :null => false
   end

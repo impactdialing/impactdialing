@@ -124,7 +124,7 @@ end
 # **`enabled`**               | `integer`          | `default(0), not null`
 # **`voicemail_history`**     | `string(255)`      |
 # **`status`**                | `string(255)`      | `default("not called"), not null`
-# **`presented_at`**          | `datetime`         | `not null`
+# **`presented_at`**          | `datetime`         |
 # **`created_at`**            | `datetime`         | `not null`
 # **`updated_at`**            | `datetime`         | `not null`
 #

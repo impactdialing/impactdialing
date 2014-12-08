@@ -10,7 +10,7 @@ class CreateHouseholds < ActiveRecord::Migration
       t.integer :enabled, null: false, default: 0
       t.string :voicemail_history
       t.string :status, null: false, default: 'not called'
-      t.datetime :presented_at, null: false
+      t.datetime :presented_at
 
       t.timestamps
     end
