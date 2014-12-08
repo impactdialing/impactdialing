@@ -265,6 +265,7 @@ end
 # **`debited`**                       | `boolean`          | `default(FALSE)`
 # **`recording_id`**                  | `integer`          |
 # **`recording_delivered_manually`**  | `boolean`          | `default(FALSE)`
+# **`household_id`**                  | `integer`          |
 #
 # ### Indexes
 #
@@ -301,6 +302,8 @@ end
 #     * **`status`**
 # * `index_call_attempts_on_created_at`:
 #     * **`created_at`**
+# * `index_call_attempts_on_household_id`:
+#     * **`household_id`**
 # * `index_call_attempts_on_voter_id`:
 #     * **`voter_id`**
 # * `index_call_attempts_on_voter_response_processed_and_status`:

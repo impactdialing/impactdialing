@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141208191116) do
+ActiveRecord::Schema.define(:version => 20141208192814) do
 
   create_table "accounts", :force => true do |t|
     t.datetime "created_at"
@@ -135,6 +135,7 @@ ActiveRecord::Schema.define(:version => 20141208191116) do
     t.boolean  "debited",                      :default => false
     t.integer  "recording_id"
     t.boolean  "recording_delivered_manually", :default => false
+    t.integer  "household_id"
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
@@ -148,6 +149,7 @@ ActiveRecord::Schema.define(:version => 20141208191116) do
   add_index "call_attempts", ["campaign_id"], :name => "index_call_attempts_on_campaign_id"
   add_index "call_attempts", ["created_at"], :name => "index_call_attempts_on_created_at"
   add_index "call_attempts", ["debited", "status", "tStartTime", "tEndTime", "tDuration"], :name => "index_call_attempts_debit"
+  add_index "call_attempts", ["household_id"], :name => "index_call_attempts_on_household_id"
   add_index "call_attempts", ["status", "tPrice", "tStatus", "sid"], :name => "index_sync_calls"
   add_index "call_attempts", ["voter_id"], :name => "index_call_attempts_on_voter_id"
   add_index "call_attempts", ["voter_response_processed", "status"], :name => "index_call_attempts_on_voter_response_processed_and_status"
