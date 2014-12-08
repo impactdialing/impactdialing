@@ -49,32 +49,6 @@ RSpec.describe Household, :type => :model do
     end
   end
 
-  describe 'voicemail_history' do
-    before do
-      subject.campaign.update_attributes(recording_id: 12)
-    end
-    context '#update_voicemail_history' do
-      let(:recording_id){ subject.campaign.recording_id.to_s }
-      it 'appends the current campaign.recording_id to voicemail_history' do
-        subject.update_voicemail_history
-        expect(subject.voicemail_history).to eq recording_id
-
-        subject.update_voicemail_history
-        expect(subject.voicemail_history).to eq "#{recording_id},#{recording_id}"
-      end
-    end
-
-    context '#yet_to_receive_voicemail?' do
-      it 'returns true when voicemail_history is blank' do
-        expect(subject.yet_to_receive_voicemail?).to be_truthy
-      end
-      it 'returns false otherwise' do
-        subject.update_voicemail_history
-        expect(subject.yet_to_receive_voicemail?).to be_falsey
-      end
-    end
-  end
-
   describe 'in_dnc?' do
     let(:blocked_household){ build(:household, :blocked) }
 
@@ -122,7 +96,6 @@ end
 # **`last_call_attempt_id`**  | `integer`          |
 # **`phone`**                 | `string(255)`      | `not null`
 # **`enabled`**               | `integer`          | `default(0), not null`
-# **`voicemail_history`**     | `string(255)`      |
 # **`status`**                | `string(255)`      | `default("not called"), not null`
 # **`presented_at`**          | `datetime`         |
 # **`created_at`**            | `datetime`         | `not null`

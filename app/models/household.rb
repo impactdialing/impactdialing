@@ -1,11 +1,12 @@
 class Household < ActiveRecord::Base
-  attr_accessible :account_id, :campaign_id, :enabled, :last_call_attempt_id, :phone, :presented_to_caller, :status, :voicemail_history, :voter_list_id
+  attr_accessible :account_id, :campaign_id, :enabled, :last_call_attempt_id, :phone, :presented_at, :status, :voter_list_id
 
   belongs_to :account
   belongs_to :campaign
   belongs_to :voter_list #, counter_cache: true
   belongs_to :last_call_attempt, class_name: 'CallAttempt'
   has_many :call_attempts
+  has_many :voters
 
   bitmask :enabled, as: [:list, :blocked], null: false
 
@@ -34,25 +35,6 @@ public
   def in_dnc?
     enabled?(:blocked)
   end
-
-  def update_voicemail_history
-    parts = (self.voicemail_history || '').split(',')
-    parts << campaign.recording_id
-    self.voicemail_history = parts.join(',')
-  end
-
-  def update_voicemail_history!
-    update_voicemail_history
-    save
-  end
-
-  def yet_to_receive_voicemail?
-    voicemail_history.blank?
-  end
-
-  # def update_call_back_after_message_drop
-  #   self.call_back = campaign.call_back_after_voicemail_delivery?
-  # end
 end
 
 # ## Schema Information
@@ -70,7 +52,6 @@ end
 # **`last_call_attempt_id`**  | `integer`          |
 # **`phone`**                 | `string(255)`      | `not null`
 # **`enabled`**               | `integer`          | `default(0), not null`
-# **`voicemail_history`**     | `string(255)`      |
 # **`status`**                | `string(255)`      | `default("not called"), not null`
 # **`presented_at`**          | `datetime`         |
 # **`created_at`**            | `datetime`         | `not null`

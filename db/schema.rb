@@ -312,7 +312,6 @@ ActiveRecord::Schema.define(:version => 20141208192814) do
     t.integer  "last_call_attempt_id"
     t.string   "phone",                                          :null => false
     t.integer  "enabled",              :default => 0,            :null => false
-    t.string   "voicemail_history"
     t.string   "status",               :default => "not called", :null => false
     t.datetime "presented_at"
     t.datetime "created_at",                                     :null => false
