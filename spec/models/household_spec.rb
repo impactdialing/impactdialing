@@ -12,17 +12,6 @@ RSpec.describe Household, :type => :model do
       subject.account = nil
       expect(subject).to have(1).error_on(:account)
     end
-
-    it 'voter_list is required on create' do
-      subject.voter_list = nil
-      expect(subject).to have(1).error_on(:voter_list)
-    end
-
-    it 'voter_list may be nil on updates when CustomID is used' do
-      subject.save!
-      subject.voter_list = nil
-      expect(subject).to have(0).errors_on(:voter_list)
-    end
   end
 
   describe '#phone' do
@@ -50,13 +39,18 @@ RSpec.describe Household, :type => :model do
   end
 
   describe 'in_dnc?' do
-    let(:blocked_household){ build(:household, :blocked) }
+    let(:dnc_household){ build(:household, :dnc) }
+    let(:cell_household){ build(:household, :cell) }
 
-    it 'returns true when #enabled has :blocked bit set' do
-      expect( blocked_household.in_dnc? ).to be_truthy
+    it 'returns true when #blocked has :dnc bit set' do
+      expect( dnc_household.in_dnc? ).to be_truthy
     end
 
-    it 'returns false when #enabled does not have :blocked bit set' do
+    it 'returns true when #blocked has :cell bit set' do
+      expect( cell_household.in_dnc? ).to be_truthy
+    end
+
+    it 'returns false when #blocked does not have :dnc OR :cell bit set' do
       expect( subject.in_dnc? ).to be_falsey
     end
   end
@@ -92,10 +86,9 @@ end
 # **`id`**                    | `integer`          | `not null, primary key`
 # **`account_id`**            | `integer`          | `not null`
 # **`campaign_id`**           | `integer`          | `not null`
-# **`voter_list_id`**         | `integer`          |
 # **`last_call_attempt_id`**  | `integer`          |
 # **`phone`**                 | `string(255)`      | `not null`
-# **`enabled`**               | `integer`          | `default(0), not null`
+# **`blocked`**               | `integer`          | `default(0), not null`
 # **`status`**                | `string(255)`      | `default("not called"), not null`
 # **`presented_at`**          | `datetime`         |
 # **`created_at`**            | `datetime`         | `not null`
@@ -105,10 +98,10 @@ end
 #
 # * `index_households_on_account_id`:
 #     * **`account_id`**
+# * `index_households_on_blocked`:
+#     * **`blocked`**
 # * `index_households_on_campaign_id`:
 #     * **`campaign_id`**
-# * `index_households_on_enabled`:
-#     * **`enabled`**
 # * `index_households_on_last_call_attempt_id`:
 #     * **`last_call_attempt_id`**
 # * `index_households_on_phone`:
@@ -117,6 +110,4 @@ end
 #     * **`presented_at`**
 # * `index_households_on_status`:
 #     * **`status`**
-# * `index_households_on_voter_list_id`:
-#     * **`voter_list_id`**
 #

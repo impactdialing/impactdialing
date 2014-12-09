@@ -2,16 +2,18 @@ FactoryGirl.define do
   factory :household, class: 'Household' do
     account
     campaign
-    voter_list
     phone { Forgery(:address).phone }
-    enabled [:list]
 
-    trait :blocked do
-      enabled [:list, :blocked]
+    trait :cell do
+      blocked [:cell]
     end
 
-    trait :disabled do
-      enabled []
+    trait :dnc do
+      blocked [:dnc]
+    end
+
+    trait :dnc_and_cell_blocked do
+      blocked [:dnc, :cell]
     end
   end
 end

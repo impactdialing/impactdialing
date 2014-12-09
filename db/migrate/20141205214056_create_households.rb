@@ -3,11 +3,10 @@ class CreateHouseholds < ActiveRecord::Migration
     create_table :households do |t|
       t.integer :account_id, null: false
       t.integer :campaign_id, null: false
-      t.integer :voter_list_id
       t.integer :last_call_attempt_id
       
       t.string :phone, null: false
-      t.integer :enabled, null: false, default: 0
+      t.integer :blocked, null: false, default: 0
       t.string :status, null: false, default: 'not called'
       t.datetime :presented_at
 
@@ -16,9 +15,8 @@ class CreateHouseholds < ActiveRecord::Migration
 
     add_index :households, :account_id
     add_index :households, :campaign_id
-    add_index :households, :voter_list_id
     add_index :households, :last_call_attempt_id
-    add_index :households, :enabled
+    add_index :households, :blocked
     add_index :households, :phone
     add_index :households, :status
     add_index :households, :presented_at
