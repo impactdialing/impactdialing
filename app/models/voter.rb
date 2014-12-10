@@ -42,14 +42,10 @@ class Voter < ActiveRecord::Base
 
   bitmask :enabled, as: [:list, :blocked], null: false
 
-  # validates_presence_of :phone
-
-  # validate :phone_validatation
-
   scope :by_campaign, ->(campaign) { where(campaign_id: campaign) }
-  scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:phone => phone_number).where(:campaign_id => campaign_id) }
+  # scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:phone => phone_number).where(:campaign_id => campaign_id) }
 
-  scope :default_order, :order => 'last_name, first_name, phone'
+  # scope :default_order, :order => 'last_name, first_name, phone'
 
   # scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
   scope :enabled, with_enabled(:list)
@@ -92,7 +88,7 @@ class Voter < ActiveRecord::Base
   # scope :scheduled, enabled.where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :scheduled, lambda{raise "Deprecated ImpactDialing Method: Voter.scheduled"}
   scope :limit, lambda { |n| {:limit => n} }
-  scope :without, lambda { |numbers| where('voters.phone not in (?)', numbers + [-1]) }
+  # scope :without, lambda { |numbers| where('voters.phone not in (?)', numbers + [-1]) }
   scope :not_skipped, where('voters.skipped_time IS NULL')
   scope :answered, where('voters.result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
@@ -158,11 +154,11 @@ class Voter < ActiveRecord::Base
   scope :ringing, where('voters.status = ?', CallAttempt::Status::RINGING)
   scope :failed, where('voters.status = ?', CallAttempt::Status::FAILED)
   scope :available, lambda{|campaign| where('voters.status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
-  scope :recently_dialed_households, lambda{ |recycle_rate|
-    dialed.enabled.active.
-    select('DISTINCT(voters.phone), voters.id, voters.last_call_attempt_time').
-    where('voters.last_call_attempt_time > ?', recycle_rate.hours.ago)
-  }
+  # scope :recently_dialed_households, lambda{ |recycle_rate|
+  #   dialed.enabled.active.
+  #   select('DISTINCT(voters.phone), voters.id, voters.last_call_attempt_time').
+  #   where('voters.last_call_attempt_time > ?', recycle_rate.hours.ago)
+  # }
   scope :available_for_retry, lambda {|campaign|
     enabled.active.
     where('voters.status IN (?) OR voters.call_back=?',
@@ -222,8 +218,6 @@ class Voter < ActiveRecord::Base
   scope :skipped, where('voters.status = ?', Status::SKIPPED)
   scope :busy, where('voters.status = ?', CallAttempt::Status::BUSY)
   #/New Shiny
-
-  # before_validation :sanitize_phone
 
   cattr_reader :per_page
   @@per_page = 25
@@ -317,21 +311,6 @@ public
 
   def blocked?
     enabled?(:blocked)
-  end
-
-  def self.sanitize_phone(phonenumber)
-    return phonenumber if phonenumber.blank?
-    append = true if phonenumber.start_with?('+')
-    sanitized = phonenumber.gsub(/[^0-9]/, "")
-    append ? "+#{sanitized}" : sanitized
-  end
-
-  def sanitize_phone
-    self.phone = Voter.sanitize_phone(self.phone) if self.phone
-  end
-
-  def self.phone_correct?(phone)
-    phone && (phone.length >= 10 || phone.start_with?("+"))
   end
 
   def skipped?
@@ -516,10 +495,6 @@ public
       Rails.logger.info "Persisting_Notes_Exception #{e.to_s}"
       Rails.logger.info "Voter #{self.inspect}"
     end
-  end
-
-  def phone_validatation
-    errors.add(:phone, 'should be at least 10 digits') unless Voter.phone_correct?(self.phone)
   end
 end
 

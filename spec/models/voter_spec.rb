@@ -207,21 +207,6 @@ describe Voter, :type => :model do
     its(:call_back) { should be_falsey }
   end
 
-  it "can share the same number" do
-    voter1 = create(:realistic_voter, :phone => '92345623434')
-    voter2 = create(:realistic_voter, :phone => '92345623434')
-    expect(Voter.all).to include(voter1)
-    expect(Voter.all).to include(voter2)
-  end
-
-  it "should list existing entries in a campaign having the given phone number" do
-    expect {
-      create(:realistic_voter, :phone => '0123456789', :campaign_id => 99)
-    }.to change {
-      Voter.existing_phone_in_campaign('0123456789', 99).count
-    }.by(1)
-  end
-
   it "gives remaining voters to count" do
     campaign = create(:campaign)
     no_answr_voter = create(:realistic_voter, :campaign => campaign, :status=> CallAttempt::Status::NOANSWER)

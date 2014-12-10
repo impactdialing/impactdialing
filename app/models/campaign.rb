@@ -181,7 +181,7 @@ public
   end
 
   def sanitize_caller_id
-    self.caller_id = Voter.sanitize_phone(self.caller_id)
+    self.caller_id = PhoneNumber.sanitize(self.caller_id)
   end
 
   def continue_on_amd
