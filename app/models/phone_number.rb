@@ -18,6 +18,10 @@ class PhoneNumber
     number.to_s.scan(/\d/).join
   end
 
+  def self.valid?(number)
+    new(number).valid?
+  end
+
   def has_only_digits?
     (not @number.match(/[^\d]+/))
   end

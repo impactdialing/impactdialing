@@ -42,9 +42,9 @@ class Voter < ActiveRecord::Base
 
   bitmask :enabled, as: [:list, :blocked], null: false
 
-  validates_presence_of :phone
+  # validates_presence_of :phone
 
-  validate :phone_validatation
+  # validate :phone_validatation
 
   scope :by_campaign, ->(campaign) { where(campaign_id: campaign) }
   scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:phone => phone_number).where(:campaign_id => campaign_id) }
@@ -223,7 +223,7 @@ class Voter < ActiveRecord::Base
   scope :busy, where('voters.status = ?', CallAttempt::Status::BUSY)
   #/New Shiny
 
-  before_validation :sanitize_phone
+  # before_validation :sanitize_phone
 
   cattr_reader :per_page
   @@per_page = 25

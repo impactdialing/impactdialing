@@ -31,25 +31,17 @@ describe 'VoterBatchImport' do
     end
   end
   context 'Marking Voters with phone numbers in the DNC list' do
-    it 'sets :blocked bit on Voter#enabled' do
-      expect(Voter.with_enabled(:list, :blocked).count).to eq(Voter.count - 1)
-    end
-
-    it 'sets :list bit on Voter#enabled' do
-      expect(Voter.with_enabled(:list).count).to eq Voter.count
+    it 'sets :dnc bit on Household#blocked' do
+      expect(Household.with_blocked(:dnc).count).to eq(Voter.count - 1)
     end
   end
 
   context 'Not marking Voters with phone numbers not in the DNC list' do
-    let(:not_blocked_voter) do
-      Voter.where('phone <> ?', blocked_number.number).first
+    let(:not_blocked_household) do
+      Household.where('phone <> ?', blocked_number.number).first
     end
-    it 'does not set :blocked bit on Voter#enabled' do
-      expect(not_blocked_voter.enabled?(:blocked)).to be_falsey
-    end
-
-    it 'sets :list bit on Voter#enabled' do
-      expect(not_blocked_voter.enabled?(:list)).to be_truthy
+    it 'does not set :dnc bit on Household#blocked' do
+      expect(not_blocked_household.blocked?(:dnc)).to be_falsey
     end
   end
 end

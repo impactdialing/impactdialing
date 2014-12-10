@@ -1,9 +1,13 @@
 # encoding: UTF-8
 require 'benchmark'
 class VoterBatchImport
+  attr_reader :list, :csv_to_system_map, :csv_headers, :voters_list, :result, :csv_phone_column_location,
+              :csv_custom_id_column_location, :custom_attributes, :blocked_numbers, :campaign
 
   def initialize(list, csv_to_system_map, csv_headers, csv_data)
     @list              = list
+    @campaign          = list.campaign
+    @blocked_numbers   = campaign.blocked_numbers
     @csv_to_system_map = csv_to_system_map
     @csv_headers       = csv_headers.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @voters_list       = csv_data
@@ -25,48 +29,109 @@ class VoterBatchImport
     @dnc_wireless ||= DoNotCall::WirelessList.new
   end
 
-  def import_csv
-    campaign     = @list.campaign
+  def calculate_blocked(phone)
+    blocked = []
+    if skip_wireless? && dnc_wireless.prohibits?(phone)
+      blocked << :cell
+    end
+    if blocked_numbers.include?(phone)
+      blocked << :dnc
+    end
+    blocked
+  end
 
+  # build & validate new households
+  def build_household(phone)
+    unless PhoneNumber.valid?(phone)
+      return nil
+    end
+
+    household           = {
+      account_id: campaign.account_id,
+      campaign_id: campaign.id,
+      phone: phone
+    }
+
+    household[:blocked] = Household.bitmask_for_blocked( *calculate_blocked(phone) )
+
+    return household
+  end
+
+  # don't validate existing households, just update blocked bits
+  def update_household(id, phone)
+    household = {
+      id: id,
+      blocked: Household.bitmask_for_blocked( *calculate_blocked(phone) )
+    }
+
+    return household
+  end
+
+  def create_or_update_households(rows)
+    phones              = rows.map{ |row| PhoneNumber.new(row[csv_phone_column_location]) }
+    numbers             = phones.map(&:to_s)
+    household_query     = Household.where(campaign_id: campaign.id, phone: numbers).select([:phone, :id])
+    households          = load_as_hash(household_query)
+    new_numbers         = numbers - households.keys
+    new_households      = new_numbers.map{|n| build_household(n)}.compact
+    existing_households = households.map{|phone, id| update_household(id, phone) }
+    created_households  = {}
+
+    if new_households.any?    
+      Household.import new_households.first.keys, new_households.map(&:values)
+      created_households = load_as_hash(Household.where(campaign_id: campaign.id, phone: new_numbers).select([:phone, :id]))
+    end
+
+    if existing_households.any?
+      Household.import existing_households.first.keys, existing_households.map(&:values), validate: false, on_duplicate_key_update: [:blocked]
+    end
+
+    households.merge(created_households)
+  end
+
+  def import_csv
     @voters_list.each_slice(1000).each do |voter_info_list|
       custom_fields     = []
       leads             = []
       updated_leads     = {}
       successful_voters = []
 
+      households  = create_or_update_households(voter_info_list)
       found_leads = found_voters(voter_info_list) if custom_id_present?
 
       voter_info_list.each do |voter_info|
-        phone_number = Voter.sanitize_phone(voter_info[@csv_phone_column_location])
-
-        if skip_wireless? && dnc_wireless.prohibits?(phone_number)
-          @result[:cell] += 1
-          next
-        end
+        raw_phone_number = voter_info[@csv_phone_column_location]
+        phone_number     = PhoneNumber.sanitize(raw_phone_number)
 
         lead = nil
 
         if custom_id_present?
           custom_id = voter_info[@csv_custom_id_column_location]
-          lead_id = found_leads[custom_id]
+          lead_id   = found_leads[custom_id]
           if lead_id.present?
-            lead = {id: lead_id, voter_list_id: @list.id, enabled: true}
+            lead = {
+              id: lead_id,
+              voter_list_id: @list.id,
+              household_id: households[phone_number],
+              enabled: Voter.bitmask_for_enabled(:list)
+            }
             updated_leads[custom_id] = lead
+
+          elsif (not PhoneNumber.valid?(phone_number))
+            result[:failed] += 1
+            next
           end
         end
 
-        blocked_number_id = campaign.find_dnc_match_id(phone_number)
-        blocked           = blocked_number_id.present? ? true : false
-
         lead ||= {
-          :phone         => phone_number,
           :voter_list_id => @list.id,
+          :household_id  => households[phone_number],
           :account_id    => @list.account_id,
           :campaign_id   => @list.campaign_id,
           :enabled       => Voter.bitmask_for_enabled(:list)
         }
-        lead[:enabled] = Voter.bitmask_for_enabled(:list, :blocked) if blocked
 
+        # persist app-defined field data (address, city, etc)
         @csv_headers.each_with_index do |csv_column_title, column_location|
           system_column = @csv_to_system_map.system_column_for csv_column_title
           value = voter_info[column_location]
@@ -77,25 +142,20 @@ class VoterBatchImport
           end
         end
 
-        if lead[:id] || Voter.phone_correct?(lead[:phone])
-          leads << lead
-          successful_voters << voter_info
+        blocked = calculate_blocked(phone_number)
+        blocked.each{|type| result[type] += 1}
+        result[:success] += 1
 
-          if blocked
-            @result[:dnc] += 1
-          else
-            @result[:success] +=1
-          end
-        else
-          @result[:failed] +=1
-        end
+        leads << lead
+        successful_voters << voter_info
       end
 
-      created_ids = created_ids(@list.voters.reorder(:id)) do
+      created_voter_ids = created_ids(@list.voters.reorder(:id)) do
         import_from_hashes(Voter, leads)
       end
 
-      save_field_values(successful_voters, created_ids, updated_leads)
+      # persist custom field data
+      save_field_values(successful_voters, created_voter_ids, updated_leads)
     end
     @result
   end
@@ -106,7 +166,12 @@ class VoterBatchImport
     custom_ids = voter_info_list.map do |voter_info|
       voter_info[@csv_custom_id_column_location]
     end
-    query = Voter.where(custom_id: custom_ids, campaign_id: @list.campaign_id).select([:custom_id, :id]).to_sql
+    query = Voter.where(custom_id: custom_ids, campaign_id: @list.campaign_id).select([:custom_id, :id])
+    load_as_hash(query)
+  end
+
+  def load_as_hash(query)
+    query = query.to_sql unless query.is_a?(String)
     Hash[*OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)).execute(query).to_a.flatten]
   end
 
@@ -117,7 +182,7 @@ class VoterBatchImport
   end
 
 
-  def save_field_values(voter_info_list, created_ids, updated_leads)
+  def save_field_values(voter_info_list, created_voter_ids, updated_leads)
     updated_ids = updated_leads.values.map { |l| l[:id] }
 
     query = CustomVoterFieldValue.where(voter_id: updated_ids, custom_voter_field_id: @custom_attributes.values).
@@ -133,7 +198,7 @@ class VoterBatchImport
       if custom_id_present? && updated_leads && updated_leads[voter_info[@csv_custom_id_column_location]]
         lead_id = updated_leads[voter_info[@csv_custom_id_column_location]][:id]
       else
-        lead_id = created_ids.shift
+        lead_id = created_voter_ids.shift
       end
       @csv_headers.each_with_index do |csv_column_title, column_location|
         system_column = @csv_to_system_map.system_column_for csv_column_title

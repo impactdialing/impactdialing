@@ -47,23 +47,34 @@ describe 'VoterBatchImport' do
     end
 
     shared_examples 'all valid Voter uploads' do
-      it 'creates 1 Voter record associated with the appropriate Account, Campaign & VoterList for each valid CSV row' do
+      it 'creates 1 Household record per phone number associated w/ appropriate Account & Campaign' do
+        phones = []
         CSV.foreach(csv_file_upload, headers: true, return_headers: false) do |row|
           phone, first_name, last_name, middle_name, suffix, email, id, age, gender = *row
+          expect(Household.where(campaign_id: campaign.id, phone: phone.last.gsub(/[^\d]/,'')).count).to eq 1
+        end
+      end
+
+      it 'creates 1 Voter record associated with the appropriate Account, Campaign, VoterList & Household for each valid CSV row' do
+        CSV.foreach(csv_file_upload, headers: true, return_headers: false) do |row|
+          phone, first_name, last_name, middle_name, suffix, email, id, age, gender = *row
+          
           voter = Voter.find_by_email(email)
+          
           expect(voter).to_not be_nil
           expect(voter.account_id).to eq campaign.account_id
           expect(voter.campaign_id).to eq campaign.id
           expect(voter.voter_list_id).to eq voter_list.id
+          expect(voter.household_id).to eq Household.where(phone: phone.last.gsub(/[^\d]/,'')).first.id
         end
       end
 
       it 'each created Voter record has attributes matching corresponding CSV row' do
         CSV.foreach(csv_file_upload, headers: true, return_headers: false) do |row|
           phone, first_name, last_name, middle_name, suffix, email, id, age, gender = *row.map(&:last).flatten
+
           voter = Voter.find_by_email(email)
 
-          expect(voter.phone).to eq phone.gsub(/[^\d]/, '')
           expect(voter.first_name).to eq first_name
           expect(voter.last_name).to eq last_name
         end
@@ -166,7 +177,7 @@ describe 'VoterBatchImport' do
             csv.first.split(',').first.first.gsub(/[^\d]/, '')
           end
           it 'creates a new Voter record when phone number is duplicated on same list' do
-            expect(Voter.where(phone: phone).count).to eq 2
+            expect(Voter.count).to eq 2
           end
 
           it 'creates a new Voter record when phone number is duplicated on different list for different Campaigns' do
@@ -175,7 +186,7 @@ describe 'VoterBatchImport' do
             other_list   = create(:voter_list, :campaign => create(:power, :account => user.account))
             batch_import = VoterBatchImport.new(other_list, mapping, csv_file.shift, csv_file.readlines)
             batch_import.import_csv
-            expect(Voter.where(phone: phone).count).to eq 4 # 2 voters on 2 campaigns
+            expect(Voter.count).to eq 4 # 2 voters on 2 campaigns
           end
 
           it 'creates a new Voter record when phone number is duplicated on different list for same Campaign' do
@@ -184,7 +195,7 @@ describe 'VoterBatchImport' do
             other_list   = create(:voter_list, :campaign => campaign)
             batch_import = VoterBatchImport.new(other_list, mapping, csv_file.shift, csv_file.readlines)
             batch_import.import_csv
-            expect(Voter.where(phone: phone).count).to eq 4 # 2 voters on 2 lists
+            expect(Voter.count).to eq 4 # 2 voters on 2 lists
           end
         end
       end
