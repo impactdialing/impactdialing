@@ -317,6 +317,7 @@ ActiveRecord::Schema.define(:version => 20141208192814) do
     t.datetime "updated_at",                                     :null => false
   end
 
+  add_index "households", ["account_id", "campaign_id", "phone"], :name => "index_households_on_account_id_and_campaign_id_and_phone", :unique => true
   add_index "households", ["account_id"], :name => "index_households_on_account_id"
   add_index "households", ["blocked"], :name => "index_households_on_blocked"
   add_index "households", ["campaign_id"], :name => "index_households_on_campaign_id"

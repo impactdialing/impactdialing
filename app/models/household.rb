@@ -57,6 +57,10 @@ end
 #
 # * `index_households_on_account_id`:
 #     * **`account_id`**
+# * `index_households_on_account_id_and_campaign_id_and_phone` (_unique_):
+#     * **`account_id`**
+#     * **`campaign_id`**
+#     * **`phone`**
 # * `index_households_on_blocked`:
 #     * **`blocked`**
 # * `index_households_on_campaign_id`:

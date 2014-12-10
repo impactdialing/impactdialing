@@ -20,6 +20,7 @@ class CreateHouseholds < ActiveRecord::Migration
     add_index :households, :phone
     add_index :households, :status
     add_index :households, :presented_at
+    add_index :households, [:account_id, :campaign_id, :phone], unique: true
 
     execute <<-SQL
       ALTER TABLE households ADD CONSTRAINT fk_households_campaigns
