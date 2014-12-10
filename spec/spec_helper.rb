@@ -37,7 +37,7 @@ end
 
 RSpec.configure do |config|
   config.infer_spec_type_from_file_location!
-
+  config.profile_examples = 10
   config.include FactoryGirl::Syntax::Methods
   config.include TwilioRequestStubs
   config.include FactoryGirlImportHelpers
