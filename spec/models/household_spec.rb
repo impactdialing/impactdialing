@@ -87,6 +87,7 @@ end
 # **`account_id`**            | `integer`          | `not null`
 # **`campaign_id`**           | `integer`          | `not null`
 # **`last_call_attempt_id`**  | `integer`          |
+# **`voters_count`**          | `integer`          | `default(0), not null`
 # **`phone`**                 | `string(255)`      | `not null`
 # **`blocked`**               | `integer`          | `default(0), not null`
 # **`status`**                | `string(255)`      | `default("not called"), not null`

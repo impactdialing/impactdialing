@@ -4,7 +4,8 @@ class CreateHouseholds < ActiveRecord::Migration
       t.integer :account_id, null: false
       t.integer :campaign_id, null: false
       t.integer :last_call_attempt_id
-      
+
+      t.integer :voters_count, null: false, default: 0      
       t.string :phone, null: false
       t.integer :blocked, null: false, default: 0
       t.string :status, null: false, default: 'not called'
