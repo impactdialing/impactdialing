@@ -24,9 +24,7 @@ module CallFlow
     end
 
     def self.next(campaign, n)
-      dial_queue  = CallFlow::DialQueue.new(campaign)
-      next_voters = dial_queue.next(n)
-      Voter.find next_voters.map{|voter| voter['id']}
+      new(campaign).next(n)
     end
 
     def self.dialed(voter)
@@ -79,12 +77,6 @@ module CallFlow
       end
     end
 
-    def next(n)
-      phone_numbers      = available.next(n)
-      current_households = households.find_all(phone_numbers)
-      
-      current_households.map{|phone, voters| voters.first}
-    end
 
     def dialed(voter)
       recycle_bin.add(voter)

@@ -30,6 +30,8 @@ class CallFlow::DialQueue::Available
   include CallFlow::DialQueue::Util
   include CallFlow::DialQueue::SortedSetScore
 
+  class RetryZPopPush < RuntimeError; end
+
 private
   def _benchmark
     @_benchmark ||= ImpactPlatform::Metrics::Benchmark.new("dial_queue.#{campaign.account_id}.#{campaign.id}.available")
@@ -37,8 +39,46 @@ private
 
   def keys
     {
-      active: "dial_queue:#{campaign.id}:active"
+      active: "dial_queue:#{campaign.id}:active",
+      presented: "dial_queue:#{campaign.id}:presented"
     }
+  end
+
+  def retry_limit
+    # limit of 8 w/ backoff:2 means caller waits a max of 140 seconds before abort
+    # limit of 25 w/ backoff:0.5 means caller waits a max of 80 seconds before abort
+    (ENV['DIAL_QUEUE_NEXT_AVAILABLE_RETRY_LIMIT'] ||= '25').to_i
+  end
+
+  def retry_backoff
+    (ENV['DIAL_QUEUE_NEXT_AVAILABLE_RETRY_BACKOFF_DIAL'] ||= '0.5').to_f
+  end
+
+  def zpoppush(n)
+    n       = size if n > size
+    retries = 0
+    begin
+      phone_numbers = []
+      redis_result = redis.watch(keys[:active]) do
+        members = redis.zrange keys[:active], 0, (n-1), with_scores: true
+        members.map(&:rotate!)
+        phone_numbers = members.map(&:last)
+        redis.multi do |multi|
+          multi.zrem keys[:active], phone_numbers
+          multi.zadd keys[:presented], members
+        end
+      end
+
+      throw RetryZPopPush if redis_result.nil? # trxn was aborted due
+    rescue RetryZPopPush
+      if retries < retry_limit
+        retries += 1
+        sleep(retries ** retry_backoff)
+        retry
+      end
+    end
+
+    return phone_numbers
   end
 
 public
@@ -57,16 +97,10 @@ public
   alias :all :peak
 
   def next(n)
-    n = size if n > size
-    # every number in :active set is guaranteed to have at least one callable object
-    phone_numbers = redis.zrange keys[:active], 0, (n-1)
+    # every number in :active set is guaranteed to have a corresponding presentable contact
+    zpoppush(n)
+  end
 
-    return [] if phone_numbers.empty?
-
-    # remove phone_numbers from :active pool to prevent other callers checking them out
-    remove phone_numbers
-
-    return phone_numbers
   def missing?(phone)
     redis.zscore(keys[:active], phone).nil?
   end
