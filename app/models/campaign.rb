@@ -31,7 +31,9 @@ class Campaign < ActiveRecord::Base
                   :voter_lists_attributes, :use_recordings, :recording_id,
                   :call_back_after_voicemail_delivery, :caller_can_drop_message_manually
 
-
+  belongs_to :script
+  belongs_to :account
+  belongs_to :recording
   has_many :caller_sessions
   has_many :caller_sessions_on_call, conditions: {on_call: true}, class_name: 'CallerSession'
   has_many :voter_lists, :conditions => {:active => true}
@@ -43,10 +45,8 @@ class Campaign < ActiveRecord::Base
   has_many :answers
   has_many :note_responses
   has_many :caller_groups
-  belongs_to :script
-  belongs_to :account
-  belongs_to :recording
   has_many :downloaded_reports
+  has_many :households
 
   accepts_nested_attributes_for :voter_lists
 
@@ -113,6 +113,10 @@ public
     PREVIEW = "Preview"
     PREDICTIVE = "Predictive"
     POWER = "Power"
+  end
+
+  def dial_queue
+    @dial_queue ||= CallFlow::DialQueue.new(self)
   end
 
   def self.preview_power_campaign?(campaign_type)

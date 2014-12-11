@@ -4,14 +4,18 @@
 module CallFlow
   class DialQueue
     attr_reader :campaign
+    delegate :next, to: :available
   private
 
     def load_if_nil(queue)
       send(queue) if queues[queue].nil?
     end
 
-    def cacheit?(voter)
-      (voter.available_for_dial? || voter.can_eventually_be_retried?)
+    def cache_household?(household)
+      return false unless household.any_voters_to_dial?
+
+      available.missing?(household.phone) &&
+      recycle_bin.missing?(household.phone)
     end
 
   public
@@ -56,13 +60,13 @@ module CallFlow
     end
 
     def cache(voter)
-      return nil unless cacheit?(voter)
+      household = voter.household
 
-      unless voter.available_for_dial? && available.add(voter)
-        recycle_bin.add(voter)
+      if cache_household?(household)
+        available.add(household) || recycle_bin.add(household)
       end
 
-      households.add(voter)
+      households.add(household.phone, voter.cache_data)
     end
 
     def cache_all(voters)
@@ -90,9 +94,10 @@ module CallFlow
     end
 
     def remove(voter)
-      available.remove(voter)
-      recycle_bin.remove(voter)
-      households.remove(voter)
+      phone = voter.household.phone
+      available.remove(phone)
+      recycle_bin.remove(phone)
+      households.remove_member(phone, voter)
     end
 
     def remove_all(voters)

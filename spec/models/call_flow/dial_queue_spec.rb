@@ -18,7 +18,7 @@ describe 'CallFlow::DialQueue' do
 
   describe 'caching voters available to be dialed' do
     it 'preserves ordering of voters' do
-      expected = @campaign.all_voters.order('id, last_call_attempt_time').select([:id, :last_call_attempt_time, :phone]).map(&:phone)
+      expected = @campaign.households.map(&:phone)
       actual   = @dial_queue.available.all
 
       expect(actual).to eq expected
@@ -27,11 +27,16 @@ describe 'CallFlow::DialQueue' do
     context 'partitioning voters by available state' do
       before do
         @dial_queue.clear
-        Voter.order('id DESC').limit(90).update_all(status: CallAttempt::Status::BUSY, last_call_attempt_time: 5.minutes.ago)
-        li = Voter.order('id DESC').limit(90).last.id
-        Voter.order('id DESC').where('id < ?', li).limit(5).update_all(status: CallAttempt::Status::SUCCESS)
-        @dial_queue.cache_all(@campaign.reload.all_voters)
+        # last 90 were busy
+        Household.order('id DESC').limit(90).update_all(status: CallAttempt::Status::BUSY, presented_at: 5.minutes.ago)
+        li = Household.order('id DESC').limit(90).last.id
+        # 5 before that completed and are done
+        households = Household.order('id DESC').where('id < ?', li).limit(5)
+        households.update_all(status: CallAttempt::Status::SUCCESS, presented_at: 2.minutes.ago)
+        households.each{|household| household.voters.update_all(status: CallAttempt::Status::SUCCESS)}
+        @dial_queue.cache_all(@campaign.reload.all_voters) # 5 available, 90 recycled
       end
+
       it 'pushes voters that can not be dialed right away to the recycle bin set' do
         expect(@dial_queue.size(:recycle_bin)).to eq 90
       end
@@ -46,119 +51,107 @@ describe 'CallFlow::DialQueue' do
     end
   end
 
-  describe 'retrieving voters' do
-    it 'retrieve one voter' do
-      expected = [Voter.order('id').select([:id, :last_call_attempt_time]).first.id]
+  describe 'dialing through available' do
+    it 'retrieve one phone number' do
+      expected = [Household.first.phone]
       actual   = @dial_queue.next(1)
 
       expect(actual).to eq expected
     end
 
-    it 'retrieves multiple voters' do
-      expected = Voter.order('id').select([:id, :last_call_attempt_time]).limit(10).map(&:id)
+    it 'retrieves multiple phone numbers' do
+      expected = Household.limit(10).map(&:phone)
       actual   = @dial_queue.next(10)
 
       expect(actual).to eq expected
     end
 
-    it 'removes retrieved voter(s) from queue' do
-      voter_ids    = @dial_queue.next(5)
-      Voter.where(id: voter_ids).update_all(last_call_attempt_time: Time.now, status: CallAttempt::Status::BUSY)
-      db_voters  = Voter.where(id: voter_ids)
-      actual     = @dial_queue.available.peak
-      unexpected = db_voters.map(&:phone)
+    it 'moves retrieved phone number(s) from :active queue to :presented' do
+      phones           = @dial_queue.next(5)
+      remaining_phones = @dial_queue.available.all(:active, with_scores: false)
+      presented_phones = @dial_queue.available.all(:presented, with_scores: false)
 
-      unexpected.each do |un|
-        expect(actual).to_not include un
+      expect(phones).to eq presented_phones
+
+      phones.each do |dialed|
+        expect(remaining_phones).to_not include dialed
       end
     end
   end
 
-  describe 'handling recycle bin voters' do
-    let(:voter_ids){ @dial_queue.next(1) }
-    let(:voter){ Voter.find(voter_ids.first) }
-    let(:other_voter){ create(:realistic_voter, campaign: voter.campaign, phone: voter.phone) }
+  # describe 'when a call ends' do
+  #   let(:phone_number){ @dial_queue.next(1).first }
+  #   let(:twilio_params) do
+  #     {
+  #       'AccountSid' => 'AC123',
+  #       'CallSid' => 'CA321',
+  #       'To' => phone_number,
+  #       'From' => '5554443322'
+  #     }
+  #   end
+  #   # let(:voter){ Household.where(phone: phone_numbers).voters.first }
+  #   # let(:other_voter){ create(:realistic_voter, campaign: voter.campaign, household: voter.household) }
 
-    it 'adds voter.phone to recycle bin set' do
-      @dial_queue.dialed(voter)
+  #   context 'call was not answered' do
+  #     context 'CallStatus is failed' do
+  #       let(:params) do
+  #         twilio_params.merge({'CallStatus' => 'failed'})
+  #       end
+  #       before do
+  #         @dial_queue.dialed(params)
+  #       end
+  #       it 'removes phone number from :presented set' do
+  #         expect(@dial_queue.available.all(:presented)).to_not include(phone_number)
+  #       end
+  #       it 'does not add phone number to recycle bin' do
+  #         expect(@dial_queue.recycle_bin.missing?(phone_number)).to be_truthy
+  #       end
+  #     end
 
-      expect(@dial_queue.recycle_bin.all).to include voter.phone
-    end
+  #     context 'CallStatus is busy or no-answer' do
+  #       it 'removes phone number from :presented set'
+  #       it 'adds phone number to recycle bin'
+  #     end
+  #   end
 
-    context 'recycling voters' do
-      let(:voter_a){ create(:abandoned_voter, :not_recently_dialed) }
-      before do
-        @dial_queue.recycle_bin.add(voter_a)
-      end
-      it 'moves expired numbers from recycle bin to available' do
-        @dial_queue.recycle!
-        expect(@dial_queue.recycle_bin.all).to_not include voter_a.phone
-        expect(@dial_queue.available.all).to include voter_a.phone
-      end
-    end
-  end
+  #   context 'call was answered' do
+  #     context 'by human' do
+  #       context 'and connected' do
+  #         it 'removes phone number from :presented set'
+
+  #         context 'disposition results indicate the voter should be called again' do
+  #           it 'adds phone number to recycle bin'
+  #         end
+  #         context 'disposition results indicate the voter should not be called again' do
+  #           context 'this is the last voter of the household to be contacted' do
+  #             it 'does not add the phone number to recycle bin'
+  #           end
+  #           context 'other voters of the household should be contacted' do
+  #             it 'adds the phone number to recycle bin'
+  #           end
+  #         end
+  #       end
+
+  #       context 'and abandoned' do
+  #         it 'removes phone number from :presented set'
+  #         it 'adds the phone number to recycle bin'
+  #       end
+  #     end
+
+  #     context 'by machine' do
+  #       it 'removes phone number from :presented set'
+  #       context 'campaign is configured to hangup' do
+  #         it 'adds phone number to recycle bin'
+  #       end
+  #       context 'campaign is configured to drop message' do
+  #         context 'and call back after message drop' do
+  #           it 'adds phone number to recycle bin'
+  #         end
+  #         context 'and not call back after message drop' do
+  #           it 'does not add phone number to recycle bin'
+  #         end
+  #       end
+  #     end
+  #   end
+  # end
 end
-
-
-    ## saving for reference. this is the desired behavior but bad implementation
-    ## call outcomes aren't known when .dialed will be called
-
-
-    # context 'the dial completes and will be retried' do
-    #   before do
-    #     @dial_queue.cache(other_voter)
-    #   end
-
-    #   it 'moves the voter.id to the last position in the set of household members' do
-    #     voter.update_attributes!({
-    #       status: Voter::Status::SKIPPED,
-    #       skipped_time: 1.minute.ago
-    #     })
-    #     @dial_queue.dialed(voter)
-
-    #     remaining_members = @dial_queue.households.find(voter.phone)
-    #     expect(remaining_members).to eq [other_voter.id, voter.id]
-    #   end
-    # end
-    
-    # context 'the dial completes and will not be retried' do
-    #   before do
-    #     @dial_queue.cache(other_voter)
-    #   end
-
-    #   it 'removes the voter.id from the set of household members' do
-    #     voter.update_attributes!({
-    #       status: CallAttempt::Status::SUCCESS,
-    #       last_call_attempt_time: 5.minutes.ago,
-    #       last_call_attempt_id: 42
-    #     })
-    #     @dial_queue.dialed(voter)
-
-    #     remaining_members = @dial_queue.households.find(voter.phone)
-    #     expect(remaining_members).to eq [other_voter.id]
-    #   end
-
-    #   context 'the just completed dial was to the last member of a household' do
-    #     before do
-    #       # make sure forgery didn't randomly create dup phone
-    #       voter = Voter.last
-    #       @dial_queue.remove(voter)
-    #       voter.destroy
-    #     end
-
-    #     it 'removes the household' do
-    #       ids = @dial_queue.next(1)
-    #       last_member = Voter.find(ids.first)
-    #       expect(Voter.where(phone: last_member.phone).count).to eq 1
-    #       last_member.update_attributes!({
-    #         status: CallAttempt::Status::SUCCESS,
-    #         last_call_attempt_time: 5.minutes.ago,
-    #         last_call_attempt_id: 42
-    #       })
-    #       @dial_queue.dialed(last_member)
-
-    #       remaining_members = @dial_queue.households.find(last_member.phone)
-    #       expect(remaining_members).to eq []
-    #     end
-    #   end
-    # end

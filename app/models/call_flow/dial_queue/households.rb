@@ -30,15 +30,20 @@ private
 
   def keys
     {
-      numbers: "dial_queue:#{campaign.id}:households"
+      active: "dial_queue:#{campaign.id}:households:active"
     }
   end
 
+  def key(phone)
+    "#{keys[type]}:#{phone[0..4]}"
+  end
+
   def hkey(phone)
-    [
-      "#{keys[:numbers]}:#{phone[0..4]}",
-      phone[5..-1]
-    ]
+    [ key(phone), phone[5..-1] ]
+  end
+
+  def match?(member_one, member_two)
+    member_one['id'] == member_two['id']
   end
 
 public
@@ -47,18 +52,21 @@ public
     @campaign = campaign
   end
 
-  def add(member)
-    members = find(member.phone)
-    members << member.id
-    members.sort!
-    save(member.phone, members)
+  def add(phone, member)
+    members = find(phone)
+    if (index = members.index{|membr| match?(membr, member)})
+      members[index] = member
+    else
+      members << member
+    end
+    save(phone, members)
     members
   end
 
-  def remove(member)
-    members = find(member.phone)
-    members.reject!{|id| id == member.id}
-    save(member.phone, members)
+  def remove_member(phone, member)
+    members = find(phone)
+    members.reject!{|membr| match?(membr, member)}
+    save(phone, members)
   end
 
   def save(phone, members)
@@ -70,7 +78,7 @@ public
     if result.blank?
       result = []
     else
-      result = JSON.parse(result)
+      result = JSON.parse(result).map{|r| HashWithIndifferentAccess.new(r)}
     end
     result
   end
@@ -83,9 +91,9 @@ public
     result
   end
 
-  def rotate(member)
-    members = find(member.phone)
-    members.rotate!(1)
-    save(member.phone, members)
-  end
+  # def rotate(member)
+  #   members = find(member['phone'])
+  #   members.rotate!(1)
+  #   save(member['phone'], members)
+  # end
 end

@@ -31,14 +31,24 @@ public
     @campaign = campaign
   end
 
-  def add(objects)
+  def add_all(objects)
     expire keys[:bin] do
       redis.zadd keys[:bin], *memberize_collection(objects)
     end
   end
 
-  def remove(object)
-    redis.zrem keys[:bin], object.phone
+  def add(household)
+    # return false if household.
+
+    redis.zadd keys[:bin], *memberize(household)
+  end
+
+  def missing?(phone)
+    redis.zscore(keys[:bin], phone).nil?
+  end
+
+  def remove(phone)
+    redis.zrem keys[:bin], phone
   end
 
   def remove_all(phones)

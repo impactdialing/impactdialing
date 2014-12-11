@@ -1,7 +1,10 @@
 class Household < ActiveRecord::Base
   # no attr_accessible for now; these records are handled entirely behind-the-scenes
   belongs_to :account
+  
   belongs_to :campaign
+  delegate :dial_queue, to: :campaign
+
   belongs_to :last_call_attempt, class_name: 'CallAttempt'
   has_many :call_attempts
   has_many :voters
@@ -31,6 +34,35 @@ public
 
   def in_dnc?
     blocked?(:cell) || blocked?(:dnc)
+  end
+
+  def failed?
+    status == CallAttempt::Status::FAILED
+  end
+
+  def dialed(status)
+    self.status = status
+    dial_queue.dialed(phone, status)
+  end
+
+  def presented_recently?
+    presented_at.to_i > campaign.recycle_rate.hours.ago.to_i
+  end
+
+  def no_voters_to_dial?
+    failed? || in_dnc? || no_presentable_voters?
+  end
+
+  def any_voters_to_dial?
+    (not no_voters_to_dial?)
+  end
+
+  def no_presentable_voters?
+    # if campaign.contact_all_voters_in_household?
+      voters_count == voters.not_presentable(campaign).count
+    # else
+    # voters.any?{|voter| voter.not_presentable?}   
+    # end
   end
 end
 

@@ -40,6 +40,8 @@ class Voter < ActiveRecord::Base
   has_many :answers
   has_many :note_responses
 
+  validates_presence_of :household_id
+
   bitmask :enabled, as: [:list, :blocked], null: false
 
   scope :by_campaign, ->(campaign) { where(campaign_id: campaign) }
@@ -218,6 +220,12 @@ class Voter < ActiveRecord::Base
   scope :skipped, where('voters.status = ?', Status::SKIPPED)
   scope :busy, where('voters.status = ?', CallAttempt::Status::BUSY)
   #/New Shiny
+
+  # Newest
+  scope :not_presentable, lambda{|campaign|
+    where(call_back: false).where(status: CallAttempt::Status.completed_list(campaign))
+  }
+  #/Newest
 
   cattr_reader :per_page
   @@per_page = 25
@@ -412,6 +420,10 @@ public
       fields: fields,
       custom_fields: custom_fields
     }.merge!(campaign.script.selected_fields_json)
+  end
+
+  def cache_data
+    info.merge(id: self.id)
   end
 
   def not_yet_called?(call_status)

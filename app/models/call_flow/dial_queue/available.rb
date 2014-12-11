@@ -67,6 +67,8 @@ public
     remove phone_numbers
 
     return phone_numbers
+  def missing?(phone)
+    redis.zscore(keys[:active], phone).nil?
   end
 
   def insert(scored_members)
@@ -74,17 +76,11 @@ public
     redis.zadd(keys[:active], scored_members)
   end
 
-  def update_score(object)
-    new_score = score(object).to_f
-    cur_score = redis.zscore(keys[:active], object.phone).to_f
-    if new_score > cur_score
-      redis.zadd keys[:active], new_score, object.phone
-      return true
-    else
-      return false
-    end
+  def add(household)
+    return false if household.presented_recently?
+
+    redis.zadd keys[:active], *memberize(household)
   end
-  alias :add :update_score
 
   def remove_household(phones)
     redis.zrem keys[:active], [*phones]

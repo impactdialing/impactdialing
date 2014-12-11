@@ -1,11 +1,17 @@
 FactoryGirl.define do
   factory :bare_voter, class: 'Voter' do
     first_name { Forgery(:name).first_name }
-    phone { Forgery(:address).phone }
+    # phone { Forgery(:address).phone }
     updated_at Time.now
     enabled [:list]
 
     factory :realistic_voter do
+      after(:build) do |voter|
+        voter.household = create(:household, {
+          campaign: voter.campaign,
+          account: voter.account
+        })
+      end
       last_name { Forgery(:name).last_name }
       email { Forgery(:email).address }
       address { Forgery(:address).street_address }
