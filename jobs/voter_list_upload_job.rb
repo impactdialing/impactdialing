@@ -70,7 +70,7 @@ class VoterListUploadJob
   
   def self.parse_csv(responder, domain, email, voter_list)
     begin
-      csv_file = CSV.new(VoterList.read_from_s3(voter_list.s3path))
+      csv_file = CSV.new(VoterList.read_from_s3(voter_list.s3path), :col_sep => voter_list.separator)
       # parse now to surface any CSV issues early
       headers  = csv_file.shift
       data     = csv_file.readlines
@@ -97,10 +97,13 @@ class VoterListUploadJob
       end
 
       headers, data = parse_csv(responder, domain, email, voter_list)
-      return false if headers.nil? or data.nil?
+      if headers.nil? or data.nil?
+        handle_errors(responder, "No data found in uploaded file.", domain, email, voter_list)
+        return false 
+      end
 
       # import voters
-      batch_upload = VoterBatchImport.new(voter_list, csv_mapping, headers, data, voter_list.separator)
+      batch_upload = VoterBatchImport.new(voter_list, csv_mapping, headers, data)
       result       = batch_upload.import_csv
 
       # build & email import results

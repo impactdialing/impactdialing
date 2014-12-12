@@ -2,13 +2,12 @@
 require 'benchmark'
 class VoterBatchImport
 
-  def initialize(list, csv_to_system_map, csv_headers, csv_data, separator)
+  def initialize(list, csv_to_system_map, csv_headers, csv_data)
     @list              = list
     @csv_to_system_map = csv_to_system_map
     @csv_headers       = csv_headers.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @voters_list       = csv_data
     @result            = {:success => 0, :failed => 0, :dnc => 0, :cell => 0}
-
     @csv_to_system_map.remap_system_column! "ID", :to => "custom_id"
     
     @csv_phone_column_location     = @csv_headers.index(@csv_to_system_map.csv_index_for "phone")

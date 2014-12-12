@@ -94,7 +94,7 @@ describe 'VoterBatchImport' do
       let(:file) do
         File.open(csv_file_upload)
       end
-      subject{ VoterBatchImport.new(voter_list, mapping, csv_file.shift, csv_file.readlines, ',') }
+      subject{ VoterBatchImport.new(voter_list, mapping, csv_file.shift, csv_file.readlines) }
 
       context 'with CustomID' do
         let(:mapping) do
@@ -118,7 +118,7 @@ describe 'VoterBatchImport' do
 
           before(:each) do
             allow(VoterList).to receive(:read_from_s3).and_return(File.open("#{csv_file_upload_with_duplicate_custom_id}").read)
-            batch_import = VoterBatchImport.new(other_voter_list, valid_voters_map_with_custom_id_and_custom_fields, dup_csv_file.shift, dup_csv_file.readlines, ",")
+            batch_import = VoterBatchImport.new(other_voter_list, valid_voters_map_with_custom_id_and_custom_fields, dup_csv_file.shift, dup_csv_file.readlines)
             result = batch_import.import_csv
             expect(result[:success]).to eq 2
             expect(result[:failed]).to eq 0
@@ -173,7 +173,7 @@ describe 'VoterBatchImport' do
             csv_file.rewind
             allow(VoterList).to receive(:read_from_s3).and_return(file.read)
             other_list   = create(:voter_list, :campaign => create(:power, :account => user.account))
-            batch_import = VoterBatchImport.new(other_list, mapping, csv_file.shift, csv_file.readlines, ',')
+            batch_import = VoterBatchImport.new(other_list, mapping, csv_file.shift, csv_file.readlines)
             batch_import.import_csv
             expect(Voter.where(phone: phone).count).to eq 4 # 2 voters on 2 campaigns
           end
@@ -182,7 +182,7 @@ describe 'VoterBatchImport' do
             csv_file.rewind
             allow(VoterList).to receive(:read_from_s3).and_return(file.read)
             other_list   = create(:voter_list, :campaign => campaign)
-            batch_import = VoterBatchImport.new(other_list, mapping, csv_file.shift, csv_file.readlines, ',')
+            batch_import = VoterBatchImport.new(other_list, mapping, csv_file.shift, csv_file.readlines)
             batch_import.import_csv
             expect(Voter.where(phone: phone).count).to eq 4 # 2 voters on 2 lists
           end
@@ -195,7 +195,7 @@ describe 'VoterBatchImport' do
         require 'windozer'
         allow(AmazonS3).to receive_message_chain(:new, :read){ File.open(windoze_csv_file_upload).read }
         csv = CSV.new( Windozer.to_unix(File.open(windoze_csv_file_upload).read) )
-        batch_upload = VoterBatchImport.new(voter_list, windoze_mappings, csv.shift, csv.readlines, ",")
+        batch_upload = VoterBatchImport.new(voter_list, windoze_mappings, csv.shift, csv.readlines)
         actual = batch_upload.import_csv
         expect(actual[:success]).to eq(29)
         expect(actual[:failed]).to eq(0)
@@ -204,7 +204,7 @@ describe 'VoterBatchImport' do
         missing_field_file = File.open("#{fixture_path}/files/missing_field_list.csv").read
         missing_field_csv = CSV.new(missing_field_file)
         allow(VoterList).to receive(:read_from_s3).and_return(missing_field_file)
-        batch_upload = VoterBatchImport.new(voter_list, valid_voters_not_available_map_without_custom_id, missing_field_csv.shift, missing_field_csv.readlines, ",")
+        batch_upload = VoterBatchImport.new(voter_list, valid_voters_not_available_map_without_custom_id, missing_field_csv.shift, missing_field_csv.readlines)
         result = batch_upload.import_csv
         expect(result[:success]).to eq 2
         expect(result[:failed]).to eq 0

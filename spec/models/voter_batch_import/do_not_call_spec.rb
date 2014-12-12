@@ -23,7 +23,7 @@ describe 'VoterBatchImport' do
     @counts = subject.import_csv
   end
 
-  subject{ VoterBatchImport.new(voter_list, mapping, csv_file.shift, csv_file.readlines, ',') }
+  subject{ VoterBatchImport.new(voter_list, mapping, csv_file.shift, csv_file.readlines) }
 
   describe 'returns a Hash with' do
     it 'dnc => int' do

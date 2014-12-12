@@ -10,6 +10,9 @@ describe 'VoterListUploadJob' do
   let(:admin){ create(:user, account: account) }
   let(:campaign){ create(:power, account: account) }
   let(:s3path){ '/bucket/folder/filename.csv' }
+  let(:txt_file) do
+    File.read(File.join(fixture_path, 'files', 'valid_voters_list.txt'))
+  end
   let(:csv_file) do
     File.read(File.join(fixture_path, 'files', 'valid_voters_list.csv'))
   end
@@ -88,10 +91,7 @@ describe 'VoterListUploadJob' do
     end
   end
 
-  context 'CSV is valid' do
-    let(:total_count){ csv_file.split("\n").size - 1 }
-    let(:success_count){ total_count }
-
+  shared_examples 'valid list file' do
     it 'creates 1 Voter record for each row of data' do
       VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
       expect(Voter.count).to(eq(success_count))
@@ -113,6 +113,25 @@ describe 'VoterListUploadJob' do
       expected = {'class' => 'ResetVoterListCounterCache', 'args' => [voter_list.id]}
       expect(actual).to include expected
     end
+  end
+
+  context 'CSV is valid' do
+    let(:total_count){ csv_file.split("\n").size - 1 }
+    let(:success_count){ total_count }
+
+    it_behaves_like 'valid list file'
+  end
+
+  context 'file is valid TSV' do
+    let(:total_count){ txt_file.split("\n").size - 1 }
+    let(:success_count){ total_count }
+    before do
+      voter_list.update_attributes(separator: "\t")
+      allow(amazon_s3).to receive(:read).with(voter_list.s3path){ txt_file }
+      allow(AmazonS3).to receive(:new){ amazon_s3 }
+    end
+
+    it_behaves_like 'valid list file'
   end
 
   context 'CSV file is malformed in some way' do
