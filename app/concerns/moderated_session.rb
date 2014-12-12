@@ -37,7 +37,7 @@ class ModeratedSession
   end
 
   def call_in_progress?
-    return caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
+    return caller_session.attempt_in_progress && (caller_session.attempt_in_progress.status == "Call in progress")
   end
 
   def msg(method)

@@ -25,18 +25,18 @@ class PhonesOnlyCallerSession < CallerSession
   end
 
   def choosing_voter_to_dial
-    select_voter(voter_in_progress)
+    select_voter
     choosing_voter_to_dial_twiml
   end
 
   def choosing_voter_and_dial
-    select_voter(voter_in_progress)
+    select_voter
     choosing_voter_and_dial_twiml
   end
 
   def conference_started_phones_only_power
     start_conference
-    enqueue_call_flow(PreviewPowerDialJob, [self.id, voter_in_progress.id])
+    enqueue_call_flow(PreviewPowerDialJob, [self.id, voter_in_progress.household.phone])
     conference_started_phones_only_twiml
   end
 
@@ -46,7 +46,7 @@ class PhonesOnlyCallerSession < CallerSession
     end
     if star_selected?
       start_conference
-      enqueue_call_flow(PreviewPowerDialJob, [self.id, voter_in_progress.id])
+      enqueue_call_flow(PreviewPowerDialJob, [self.id, voter_in_progress.household.phone])
       return conference_started_phones_only_twiml
     end
     choosing_voter_to_dial_twiml
@@ -59,7 +59,7 @@ class PhonesOnlyCallerSession < CallerSession
 
 
   def skip_voter
-    voter_in_progress.skip
+    voter_in_progress.household.skip
     skip_voter_twiml
   end
 
@@ -111,10 +111,10 @@ class PhonesOnlyCallerSession < CallerSession
   end
 
 
-  def select_voter(old_voter)
-    voter = campaign.next_voter_in_dial_queue(old_voter.try(:[], 'id'))
-    self.update_attributes(voter_in_progress: voter)
-    voter
+  def select_voter
+    house = campaign.next_in_dial_queue
+    voter = house[:voters].first
+    self.update_attributes(voter_in_progress_id: voter[:id])
   end
 
 

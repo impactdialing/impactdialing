@@ -31,7 +31,7 @@ module Monitors
       caller_session = CallerSession.find(params[:session_id])
       moderator = Moderator.find(params["monitor_session_id"])
       moderator.update_attributes(caller_session_id: caller_session.id, call_sid: params['CallSid'])
-      if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
+      if caller_session.attempt_in_progress && (caller_session.attempt_in_progress.status == "Call in progress")
         status_msg = "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.identity_name + "."
       else
         status_msg = "Status: Caller is not connected to a lead."

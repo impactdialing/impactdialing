@@ -34,7 +34,7 @@ module CallerEvents
     def publish_caller_conference_started
       return if caller.is_phones_only?
 
-      event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))
+      event_hash = campaign.caller_conference_started_event
 
       pushit(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
     end
