@@ -25,6 +25,7 @@ class PreviewPowerDialJob
 
   def perform(caller_session_id, phone)
     caller_session = CallerSession.find_by_id_cached(caller_session_id, includes: [:campaign])
-    Twillio.dial(phone, caller_session)
+    household      = caller_session.campaign.households.find_by_phone(phone)
+    Twillio.dial(household, caller_session)
   end
 end
