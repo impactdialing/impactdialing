@@ -9,11 +9,38 @@ class TwilioLib
   DEFAULT_ROOT= "/2010-04-01/Accounts/" unless const_defined?('DEFAULT_ROOT')
 
   def initialize(accountguid=TWILIO_ACCOUNT, authtoken=TWILIO_AUTH, options = {})
-    @server = DEFAULT_SERVER
-    @port = DEFAULT_PORT
-    @root = "#{DEFAULT_ROOT}#{accountguid}/"
-    @http_user = accountguid
+    @server        = DEFAULT_SERVER
+    @port          = DEFAULT_PORT
+    @root          = "#{DEFAULT_ROOT}#{accountguid}/"
+    @http_user     = accountguid
     @http_password = authtoken
+  end
+
+  def twilio_calls_uri
+    "https://#{Settings.voip_api_url}#{twilio_calls_url}"
+  end
+
+  def twilio_calls_url
+    "#{@root}Calls.json"
+  end
+
+  def shared_callback_url_params
+    {
+      host: Settings.incoming_callback_host,
+      port: Settings.twilio_callback_port,
+      protocol: "http://",
+      campaign_type: campaign.type
+    }
+  end
+
+  def make_call_params(campaign, household, call_attempt)
+    {
+      'From'           => campaign.caller_id,
+      'To'             => household.phone,
+      'Url'            => incoming_call_url(attempt.call, shared_callback_url_params.merge(event: "incoming_call")),
+      'StatusCallback' => call_ended_call_url(attempt.call, shared_callback_url_params.merge(event: "call_ended")),
+      'Timeout'        => "15"
+    }.merge!(amd_params(campaign))
   end
 
   def end_call(call_id)
@@ -25,22 +52,18 @@ class TwilioLib
     create_http_request("#{@root}Calls/#{call_id}", {'Status'=>"completed"}, Settings.voip_api_url)
   end
 
-  def make_call(campaign, voter, attempt)
-    dc_codes = RedisDataCentre.data_centres(campaign.id)
-    params = {'From'=> campaign.caller_id, "To"=> voter.phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: Settings.incoming_callback_host, port: Settings.twilio_callback_port, :protocol => "http://", event: "incoming_call", campaign_type: campaign.type),
-      'StatusCallback' => call_ended_call_url(attempt.call, host: Settings.call_end_callback_host, port:  Settings.twilio_callback_port, protocol: "http://", event: "call_ended", campaign_type: campaign.type),
-      'Timeout' => "15","DCCODES" => dc_codes}
-    params.merge!(amd_params(campaign))
-    response = create_http_request("https://#{Settings.voip_api_url}#{@root}Calls.json", params, Settings.voip_api_url)
+  def make_call(campaign, household, call_attempt)
+    response = create_http_request(twilio_calls_url, make_call_params(campaign, household, call_attempt), Settings.voip_api_url)
     response.body
   end
 
-  def make_call_em(campaign, voter, attempt, dc)
-    params = {'From'=> campaign.caller_id, "To"=> voter.phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: DataCentre.incoming_call_host(dc), port: Settings.twilio_callback_port, protocol: "http://", event: "incoming_call", campaign_type: campaign.type),
-      'StatusCallback' => call_ended_call_url(attempt.call, host: DataCentre.call_end_host(dc), port:  Settings.twilio_callback_port, protocol: "http://", event: "call_ended", campaign_type: campaign.type),
-      'Timeout' => "15", "DCCODES" => dc}
-    params.merge!(amd_params(campaign))
-    EventMachine::HttpRequest.new("#{DataCentre.protocol(dc)}://#{DataCentre.voip_api_url(dc)}#{@root}Calls.json").apost :head => {'authorization' => [@http_user, @http_password]},:body => params
+  def make_call_em(campaign, household, call_attempt)
+    EventMachine::HttpRequest.new(twilio_calls_uri).apost({
+      :head => {
+        'authorization' => [@http_user, @http_password]
+      },
+      :body => make_call_params(campaign, household, call_attempt)
+    })
   end
 
   def create_http_request(url, params, server)
@@ -55,8 +78,13 @@ class TwilioLib
   end
 
   def amd_params(campaign)
-    campaign.continue_on_amd ? {'IfMachine'=> 'Continue', "Timeout" => "30"} :
-      campaign.hangup_on_amd ? {'IfMachine'=> 'Hangup'} : {}
+    if campaign.continue_on_amd
+      {'IfMachine'=> 'Continue', "Timeout" => "30"}
+    elsif campaign.hangup_on_amd
+      {'IfMachine'=> 'Hangup'}
+    else
+      {}
+    end
   end
 
   def redirect_call(call_sid, redirect_url)

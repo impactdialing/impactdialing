@@ -24,48 +24,36 @@ class Twillio
   def self.count_dial_error(campaign, caller_session=nil)
     ImpactPlatform::Metrics.count('dialer.dial.error', '1', count_source(campaign, caller_session))
   end
-
-  def self.dial(voter, caller_session)
-    campaign = caller_session.campaign
-    call_attempt = setup_call(voter, caller_session, campaign)
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    http_response = twilio_lib.make_call(campaign, voter, call_attempt)
-    handle_response(http_response, voter, call_attempt, caller_session)
-  end
   
-  def self.handle_response(http_response, voter, call_attempt, caller_session)
+  def self.handle_response(http_response, household, call_attempt, caller_session=nil)
     response = JSON.parse(http_response)
     if error_response_codes.include?(response["status"])
-      handle_failed_call(call_attempt, caller_session, voter, response)
+      handle_failed_call(call_attempt, caller_session, household, response)
     else
-      handle_succeeded_call(call_attempt, caller_session, voter, response)
+      handle_succeeded_call(call_attempt, caller_session, response)
     end
   end
 
-  def self.dial(voter, caller_session)
+  def self.dial(household, caller_session)
     campaign      = caller_session.campaign
-    call_attempt  = setup_call(voter, caller_session, campaign)
+    call_attempt  = setup_call(household, caller_session, campaign)
     twilio_lib    = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    http_response = twilio_lib.make_call(campaign, voter, call_attempt)
-    handle_response(http_response, voter, call_attempt, caller_session)
+    http_response = twilio_lib.make_call(campaign, household, call_attempt)
+    handle_response(http_response, household, call_attempt, caller_session)
   end
 
-  def self.dial_predictive_em(iter, voter, dc)
-    campaign     = voter.campaign
-    call_attempt = setup_call_predictive(voter, campaign, dc)
+  def self.dial_predictive_em(iter, household)
+    call_attempt = setup_call_predictive(household, campaign, dc)
     twilio_lib   = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-
-    Rails.logger.info "#{call_attempt.id} - before call"
-    http = twilio_lib.make_call_em(campaign, voter, call_attempt, dc)
+    http         = twilio_lib.make_call_em(campaign, household, call_attempt, dc)
     http.callback {
-      Rails.logger.info "#{call_attempt.id} - after call"
-      handle_response(http.response)
+      handle_response(http.response, household, call_attempt)
       iter.return(http)
     }
     http.errback { iter.return(http) }
   end
 
-  def self.create_call_attempt(voter, campaign, caller_session=nil)
+  def self.create_call_attempt(household, campaign, caller_session=nil)
     attempt_attrs = {
       campaign: campaign,
       dialer_mode: campaign.type,
@@ -78,55 +66,42 @@ class Twillio
         caller: caller_session.caller
       })
     end
-    # create the call attempt
-    attempt = voter.call_attempts.create(attempt_attrs)
 
-    # update voter state
-    update_voter(voter, attempt)
+    call_attempt = household.call_attempts.create(attempt_attrs)
+    call         = Call.create(call_attempt: attempt, state: "initial")
 
-    # add voter number to dialed list (householding)
-    CallFlow::DialQueue.dialed voter
-
-    # create the call record
-    Call.create(call_attempt: attempt, state: "initial")
-
-    attempt
+    call_attempt
   end
 
-  def self.update_voter(voter, attempt)
-    voter.update_attributes({
-      last_call_attempt_id: attempt.id,
-      last_call_attempt_time: Time.now,
-      status: CallAttempt::Status::RINGING
+  def self.setup_call_predictive(household, campaign)
+    create_call_attempt(household, campaign)
+  end
+
+  def self.setup_call(household, caller_session, campaign)
+    call_attempt = create_call_attempt(household, campaign, caller_session)
+    caller_session.update_attributes({
+      on_call: true,
+      available_for_call: false,
+      attempt_in_progress: call_attempt
     })
+    call_attempt
   end
 
-  def self.setup_call_predictive(voter, campaign, dc)
-    create_call_attempt(voter, campaign)
-  end
-
-  def self.setup_call(voter, caller_session, campaign)
-    attempt = create_call_attempt(voter, campaign, caller_session)
-    caller_session.update_attributes(on_call: true, available_for_call: false, attempt_in_progress: attempt, voter_in_progress: voter)
-    attempt
-  end
-
-  def self.handle_succeeded_call(call_attempt, caller_session, voter, response)
-    count_dial_success(voter.campaign, caller_session)
+  def self.handle_succeeded_call(call_attempt, caller_session, response)
+    count_dial_success(call_attempt.campaign, caller_session)
     call_attempt.update_attributes(:sid => response["sid"])
   end
 
-  def self.handle_failed_call(attempt, caller_session, voter, response)
+  def self.handle_failed_call(call_attempt, caller_session, household, response)
     TwilioLogger.error(response['TwilioResponse'] || response)
-    count_dial_error(voter.campaign, caller_session)
-    attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-    voter.update_attributes(status: CallAttempt::Status::FAILED)
-    # This removes only the voter. If other members of the household exist, they will be dialed.
-    # todo: When caller app is updated to support householding then remove entire household when dialed number fails w/ bad request.
-    CallFlow::DialQueue.remove(voter)
+    count_dial_error(attempt.campaign, caller_session)
 
+    call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
+
+    household.failed!
+    
     unless caller_session.nil?
-      caller_session.update_attributes(attempt_in_progress: nil, voter_in_progress: nil, on_call: true, available_for_call: true)
+      caller_session.update_attributes(attempt_in_progress: nil, on_call: true, available_for_call: true)
       Providers::Phone::Call.redirect_for(caller_session)
     end
   end

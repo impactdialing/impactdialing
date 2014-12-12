@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Twillio, :type => :model do
+describe Twillio do
   it "should setup_call by changing voter info " do
     campaign = create(:campaign)
     voter = create(:voter, campaign: campaign)
@@ -15,5 +15,9 @@ describe Twillio, :type => :model do
     caller_session = create(:caller_session, campaign: campaign)
     Twillio.setup_call(voter, caller_session, campaign)
     expect(caller_session.attempt_in_progress).not_to be_nil
+  end
+
+  describe '.setup_call' do
+    
   end
 end
