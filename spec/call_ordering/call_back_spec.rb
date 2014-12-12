@@ -13,7 +13,7 @@ context 'Message Drops', data_heavy: true do
         caller_can_drop_message_manually: true
       }).last
     end
-    let(:voters){ add_voters(campaign, :bare_voter, 5) }
+    let(:voters){ add_voters(campaign, :voter, 5) }
     let(:dial_queue) do
       voters
       CallFlow::DialQueue.new(campaign)
@@ -65,7 +65,7 @@ context 'Message Drops', data_heavy: true do
         caller_can_drop_message_manually: true
       }).last
     end
-    let(:voters){ add_voters(campaign, :bare_voter, 5) }
+    let(:voters){ add_voters(campaign, :voter, 5) }
     let(:dial_queue) do
       voters
       CallFlow::DialQueue.new(campaign)
@@ -135,7 +135,7 @@ context 'Machine Detection without Message Drops' do
         use_recordings: false
       }).last
     end
-    let(:voters){ add_voters(campaign, :bare_voter, 5) }
+    let(:voters){ add_voters(campaign, :voter, 5) }
     let(:dial_queue) do
       voters
       CallFlow::DialQueue.new(campaign)

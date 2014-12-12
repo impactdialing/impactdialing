@@ -52,12 +52,12 @@ describe CallerController, :type => :controller do
       })
     end
     let(:current_voter) do
-      create(:realistic_voter, {
+      create(:voter, {
         campaign: campaign
       })
     end
     let(:next_voter) do
-      create(:realistic_voter, {
+      create(:voter, {
         campaign: campaign
       })
     end

@@ -8,7 +8,7 @@ describe 'CallFlow::DialQueue' do
 
   before do
     @campaign = create_campaign_with_script(:bare_preview, account).last
-    create_list(:realistic_voter, 100, {campaign: @campaign, account: account})
+    create_list(:voter, 100, {campaign: @campaign, account: account})
     @dial_queue = CallFlow::DialQueue.new(@campaign)
     @dial_queue.cache_all(@campaign.all_voters)
   end
@@ -90,7 +90,7 @@ describe 'CallFlow::DialQueue' do
   #     }
   #   end
   #   # let(:voter){ Household.where(phone: phone_numbers).voters.first }
-  #   # let(:other_voter){ create(:realistic_voter, campaign: voter.campaign, household: voter.household) }
+  #   # let(:other_voter){ create(:voter, campaign: voter.campaign, household: voter.household) }
 
   #   context 'call was not answered' do
   #     context 'CallStatus is failed' do

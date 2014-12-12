@@ -10,7 +10,7 @@ describe 'ProcessRecycleBin.perform(campaign_id)' do
     let(:caller){ create(:caller, campaign: campaign, account: account)}
 
     before do
-      add_voters(campaign, :realistic_voter, 10)
+      add_voters(campaign, :voter, 10)
       @dial_queue = cache_available_voters(campaign)
 
       10.times do |n|

@@ -3,7 +3,7 @@ require 'spec_helper'
 describe 'DoNotCall::Jobs::BlockVoter' do
   let(:account){ create(:account) }
   let(:campaign){ create(:power, account: account) }
-  let(:voters){ create_list(:realistic_voter, 10, account: account, campaign: campaign) }
+  let(:voters){ create_list(:voter, 10, account: account, campaign: campaign) }
   let(:voter_blocked_account_wide){ voters.first }
   let(:voter_blocked_campaign_wide){ voters.last }
   let(:account_wide){ create(:blocked_number, account: account, number: voter_blocked_account_wide.phone) }
@@ -11,7 +11,7 @@ describe 'DoNotCall::Jobs::BlockVoter' do
 
   let(:other_account){ create(:account) }
   let(:other_campaign){ create(:power, account: account) }
-  let(:other_voters){ create_list(:realistic_voter, 10, account: other_account, campaign: other_campaign) }
+  let(:other_voters){ create_list(:voter, 10, account: other_account, campaign: other_campaign) }
   let(:other_account_wide){ create(:blocked_number, account: other_account, number: other_voters.first.phone) }
   let(:other_campaign_wide){ create(:blocked_number, account: other_account, campaign: other_campaign, number: other_voters.last.phone) }
 

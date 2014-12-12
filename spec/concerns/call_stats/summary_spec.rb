@@ -9,10 +9,10 @@ describe CallStats::Summary do
 
       it "should include all successful call attempts" do
         @campaign = create(:predictive)
-        voter1 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now)
-        voter2 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now)
-        voter3 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
-        voter4 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
+        voter1 = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now)
+        voter2 = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now)
+        voter3 = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
+        voter4 = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
 
         call_attempt1 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now, voter: voter1)
         voter1.update_attributes(last_call_attempt_time: call_attempt1.created_at)
@@ -30,10 +30,10 @@ describe CallStats::Summary do
 
       it "should include all failed call attempts" do
         @campaign = create(:predictive)
-        voter1 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now)
-        voter2 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now)
-        voter3 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
-        voter4 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
+        voter1 = create(:voter, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now)
+        voter2 = create(:voter, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now)
+        voter3 = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
+        voter4 = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
 
         call_attempt1 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now, voter: voter1)
         voter1.update_attributes(last_call_attempt_time: call_attempt1.created_at)
@@ -51,10 +51,10 @@ describe CallStats::Summary do
 
       it "should include all successful failed call attempts" do
         @campaign = create(:predictive)
-        voter1 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now)
-        voter2 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now)
-        voter3 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
-        voter4 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
+        voter1 = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now)
+        voter2 = create(:voter, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now)
+        voter3 = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
+        voter4 = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
 
         call_attempt1 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now, voter: voter1)
         voter1.update_attributes(last_call_attempt_time: call_attempt1.created_at)
@@ -75,10 +75,10 @@ describe CallStats::Summary do
 
       it "should consider available and abandoned calls" do
         @campaign = create(:predictive, recycle_rate: 1)
-        voter1 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, last_call_attempt_time: 2.hours.ago)
-        voter2 = create(:realistic_voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS)
-        voter3 = create(:realistic_voter, campaign: @campaign, last_call_attempt_time: 2.hours.ago, status: CallAttempt::Status::HANGUP)
-        voter5 = create(:realistic_voter, campaign: @campaign, last_call_attempt_time: 3.hours.ago, status: CallAttempt::Status::ABANDONED)
+        voter1 = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, last_call_attempt_time: 2.hours.ago)
+        voter2 = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS)
+        voter3 = create(:voter, campaign: @campaign, last_call_attempt_time: 2.hours.ago, status: CallAttempt::Status::HANGUP)
+        voter5 = create(:voter, campaign: @campaign, last_call_attempt_time: 3.hours.ago, status: CallAttempt::Status::ABANDONED)
 
         dial_report = CallStats::Summary.new(@campaign)
 
@@ -90,11 +90,11 @@ describe CallStats::Summary do
 
       before do
         @campaign = create(:predictive, recycle_rate: 3)
-        voter1 = create(:realistic_voter, :success, :recently_dialed, campaign: @campaign)
-        voter2 = create(:realistic_voter, :success, :recently_dialed, campaign: @campaign)
-        voter3 = create(:realistic_voter, :hangup, :recently_dialed, campaign: @campaign)
-        voter4 = create(:realistic_voter, :hangup, :recently_dialed, campaign: @campaign)
-        voter7 = create(:realistic_voter, :abandoned, :not_recently_dialed, campaign: @campaign)
+        voter1 = create(:voter, :success, :recently_dialed, campaign: @campaign)
+        voter2 = create(:voter, :success, :recently_dialed, campaign: @campaign)
+        voter3 = create(:voter, :hangup, :recently_dialed, campaign: @campaign)
+        voter4 = create(:voter, :hangup, :recently_dialed, campaign: @campaign)
+        voter7 = create(:voter, :abandoned, :not_recently_dialed, campaign: @campaign)
         @dial_report = CallStats::Summary.new(@campaign)
       end
 
@@ -111,12 +111,12 @@ describe CallStats::Summary do
 
       it "counts Voters w/ blank last_call_attempt_time and w/ statuses not in 'ringing', 'ready' or 'in-progress'" do
         @campaign = create(:predictive, recycle_rate: 3)
-        voter1 = create(:realistic_voter, campaign: @campaign, status: 'not called')
-        voter2 = create(:realistic_voter, :success, :not_recently_dialed, campaign: @campaign)
-        voter3 = create(:realistic_voter, :hangup, :not_recently_dialed, campaign: @campaign)
-        voter5 = create(:realistic_voter, :abandoned, :not_recently_dialed, campaign: @campaign)
-        voter6 = create(:realistic_voter, :queued, campaign: @campaign)
-        voter7 = create(:realistic_voter, :ringing, :recently_dialed, campaign: @campaign)
+        voter1 = create(:voter, campaign: @campaign, status: 'not called')
+        voter2 = create(:voter, :success, :not_recently_dialed, campaign: @campaign)
+        voter3 = create(:voter, :hangup, :not_recently_dialed, campaign: @campaign)
+        voter5 = create(:voter, :abandoned, :not_recently_dialed, campaign: @campaign)
+        voter6 = create(:voter, :queued, campaign: @campaign)
+        voter7 = create(:voter, :ringing, :recently_dialed, campaign: @campaign)
 
         dial_report = CallStats::Summary.new(@campaign)
 
@@ -131,43 +131,43 @@ describe CallStats::Summary do
       let(:admin){ create(:user) }
       let(:account){ admin.account }
 
-      let(:not_recently_dialed){ create_list(:realistic_voter, :not_recently_dialed, 10, campaign: @campaign) }
-      let(:recently_dialed){ create_list(:realistic_voter, :recently_dialed, 10, campaign: @campaign) }
+      let(:not_recently_dialed){ create_list(:voter, :not_recently_dialed, 10, campaign: @campaign) }
+      let(:recently_dialed){ create_list(:voter, :recently_dialed, 10, campaign: @campaign) }
 
       before do
         @campaign = create_campaign_with_script(:bare_predictive, account).last
         voter_attrs = {campaign: @campaign, account: account}
 
-        @completed = create_list(:realistic_voter, 5, :not_recently_dialed, :success, voter_attrs)
-        @completed += create_list(:realistic_voter, 5, :not_recently_dialed, :failed, voter_attrs)
-        @completed += create_list(:realistic_voter, 5, :recently_dialed, :success, voter_attrs)
-        @completed += create_list(:realistic_voter, 5, :recently_dialed, :failed, voter_attrs)
+        @completed = create_list(:voter, 5, :not_recently_dialed, :success, voter_attrs)
+        @completed += create_list(:voter, 5, :not_recently_dialed, :failed, voter_attrs)
+        @completed += create_list(:voter, 5, :recently_dialed, :success, voter_attrs)
+        @completed += create_list(:voter, 5, :recently_dialed, :failed, voter_attrs)
 
-        @available = create_list(:realistic_voter, 5, :not_recently_dialed, :busy, voter_attrs)
-        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :abandoned, voter_attrs)
-        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :no_answer, voter_attrs)
-        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :skipped, voter_attrs)
-        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :hangup, voter_attrs)
-        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :call_back, voter_attrs)
-        @available += create_list(:realistic_voter, 5, :not_recently_dialed, :retry, voter_attrs)
+        @available = create_list(:voter, 5, :not_recently_dialed, :busy, voter_attrs)
+        @available += create_list(:voter, 5, :not_recently_dialed, :abandoned, voter_attrs)
+        @available += create_list(:voter, 5, :not_recently_dialed, :no_answer, voter_attrs)
+        @available += create_list(:voter, 5, :not_recently_dialed, :skipped, voter_attrs)
+        @available += create_list(:voter, 5, :not_recently_dialed, :hangup, voter_attrs)
+        @available += create_list(:voter, 5, :not_recently_dialed, :call_back, voter_attrs)
+        @available += create_list(:voter, 5, :not_recently_dialed, :retry, voter_attrs)
 
-        @not_available = create_list(:realistic_voter, 5, :recently_dialed, :ringing, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :skipped, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :not_recently_dialed, :ringing, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :queued, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :not_recently_dialed, :queued, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :in_progress, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :busy, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :abandoned, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :no_answer, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :not_recently_dialed, :voicemail, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :hangup, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :call_back, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :voicemail, voter_attrs)
-        @not_available += create_list(:realistic_voter, 5, :recently_dialed, :retry, voter_attrs)
+        @not_available = create_list(:voter, 5, :recently_dialed, :ringing, voter_attrs)
+        @not_available += create_list(:voter, 5, :recently_dialed, :skipped, voter_attrs)
+        @not_available += create_list(:voter, 5, :not_recently_dialed, :ringing, voter_attrs)
+        @not_available += create_list(:voter, 5, :recently_dialed, :queued, voter_attrs)
+        @not_available += create_list(:voter, 5, :not_recently_dialed, :queued, voter_attrs)
+        @not_available += create_list(:voter, 5, :recently_dialed, :in_progress, voter_attrs)
+        @not_available += create_list(:voter, 5, :recently_dialed, :busy, voter_attrs)
+        @not_available += create_list(:voter, 5, :recently_dialed, :abandoned, voter_attrs)
+        @not_available += create_list(:voter, 5, :recently_dialed, :no_answer, voter_attrs)
+        @not_available += create_list(:voter, 5, :not_recently_dialed, :voicemail, voter_attrs)
+        @not_available += create_list(:voter, 5, :recently_dialed, :hangup, voter_attrs)
+        @not_available += create_list(:voter, 5, :recently_dialed, :call_back, voter_attrs)
+        @not_available += create_list(:voter, 5, :recently_dialed, :voicemail, voter_attrs)
+        @not_available += create_list(:voter, 5, :recently_dialed, :retry, voter_attrs)
 
-        @not_dialed = create_list(:realistic_voter, 5, :skipped, voter_attrs)
-        @not_dialed += create_list(:realistic_voter, 5, voter_attrs)
+        @not_dialed = create_list(:voter, 5, :skipped, voter_attrs)
+        @not_dialed += create_list(:voter, 5, voter_attrs)
 
         @dialed = @completed + @available + @not_available
       end

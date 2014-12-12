@@ -143,13 +143,6 @@ FactoryGirl.define do
     updated_at Time.now
   end
 
-  factory :voter do
-    first_name { generate(:name) }
-    phone { generate(:phonenumber) }
-    voter_list
-    updated_at Time.now
-  end
-
   factory :caller_session do
     campaign
     caller

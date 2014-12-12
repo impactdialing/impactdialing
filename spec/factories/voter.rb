@@ -5,8 +5,10 @@ FactoryGirl.define do
     updated_at Time.now
     enabled [:list]
 
-    factory :realistic_voter do
+    factory :voter do
       after(:build) do |voter|
+        voter.account ||= create(:account)
+        voter.campaign ||= create(:power, account: voter.account)
         voter.household = create(:household, {
           campaign: voter.campaign,
           account: voter.account

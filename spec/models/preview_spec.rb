@@ -44,7 +44,7 @@ describe Preview, :type => :model do
   describe 'dialing' do
     before do
       ENV['USE_REDIS_DIAL_QUEUE'] = '1'
-      add_voters(campaign, :realistic_voter, 5)
+      add_voters(campaign, :voter, 5)
     end
     let(:dial_queue) do
       CallFlow::DialQueue.new(campaign)
@@ -145,7 +145,7 @@ describe Preview, :type => :model do
         campaign: @campaign,
         enabled: [:list]
       })
-      create_list(:realistic_voter, 10, vopt)
+      create_list(:voter, 10, vopt)
       expect(Voter.count).to eq 10
       @voters = @campaign.all_voters
       last_call_time = 36.hours.ago
@@ -244,9 +244,9 @@ describe Preview, :type => :model do
       vopt = {
         campaign: campaign
       }
-      vone = create(:realistic_voter, vopt)
-      vtwo = create(:realistic_voter, vopt)
-      vthr = create(:realistic_voter, vopt)
+      vone = create(:voter, vopt)
+      vtwo = create(:voter, vopt)
+      vthr = create(:voter, vopt)
       cache_available_voters(campaign)
 
       expect(campaign.next_voter_in_dial_queue(nil)).to eq vone

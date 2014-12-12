@@ -1,5 +1,5 @@
 module FakeCallData
-  def add_voters(campaign, type=:bare_voter, n=25)
+  def add_voters(campaign, type=:voter, n=25)
     account = campaign.account
 
     list = build_and_import_list(type, n, {
@@ -40,14 +40,29 @@ module FakeCallData
     })
   end
 
+  # def twilio_posts_status_callback(status, household, caller)
+  #   campaign = household.campaign
+  #   caller ||= campaign.callers.sample
+  #   twilio_params = {
+  #     'CallStatus' => status,
+  #     'To' => household.phone,
+  #     'CallSid' => 'CA123',
+  #     'AccountSid' => 'AC321'
+  #   }
+  #   dial_queue = CallFlow::DialQueue.new(campaign)
+  #   dial_queue.dialed(twilio_params)
+  # end
+
   def attach_call_attempt(type, voter, caller=nil)
-    campaign = voter.campaign
-    caller   ||= campaign.callers.sample
+    campaign  = voter.campaign
+    household = voter.household
+    caller    ||= campaign.callers.sample
 
     call_attempt = create(type, {
       campaign: campaign,
       dialer_mode: campaign.type,
       voter: voter,
+      household: household,
       caller: caller
     })
 

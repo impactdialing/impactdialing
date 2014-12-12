@@ -5,7 +5,7 @@ describe PersistCalls do
 
   let!(:recording){ create(:recording) }
   let!(:campaign) { create(:campaign, {recording_id: recording.id}) }
-  let!(:voter) { create(:realistic_voter, campaign: campaign) }
+  let!(:voter) { create(:voter, campaign: campaign) }
   let!(:call_attempt) { create(:call_attempt, voter: voter, campaign: campaign) }
   let!(:call) { create(:call, call_attempt: call_attempt) }
   let!(:time) { Time.zone.now.to_s }

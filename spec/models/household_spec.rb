@@ -57,7 +57,7 @@ RSpec.describe Household, :type => :model do
 
   # describe '#skip' do
   #   let(:voter) do
-  #     create(:realistic_voter)
+  #     create(:voter)
   #   end
 
   #   before do

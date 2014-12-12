@@ -29,7 +29,7 @@ describe 'CalculateDialsJob' do
     end
 
     before do
-      add_voters(campaign, :realistic_voter, 25)
+      add_voters(campaign, :voter, 25)
       add_callers(campaign, 5)
       cache_available_voters(campaign)
     end

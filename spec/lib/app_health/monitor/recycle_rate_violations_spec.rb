@@ -4,7 +4,7 @@ require 'app_health/monitor/recycle_rate_violations'
 describe AppHealth::Monitor::RecycleRateViolations do
   let(:account){ create(:account) }
   let(:campaign){ create(:power, account: account) }
-  let(:voter){ create(:realistic_voter, account: account, campaign: campaign) }
+  let(:voter){ create(:voter, account: account, campaign: campaign) }
 
   def create_attempts(voter, time_a, time_b=Time.now)
     create(:bare_call_attempt, :machine_answered, voter: voter, created_at: time_a, campaign: campaign)
@@ -44,8 +44,8 @@ describe AppHealth::Monitor::RecycleRateViolations do
 
     describe 'false positives' do
       it 'does not care that several different voters are called within an hour of each other' do
-        voter2 = create(:realistic_voter, account: account, campaign: campaign)
-        voter3 = create(:realistic_voter, account: account, campaign: campaign)
+        voter2 = create(:voter, account: account, campaign: campaign)
+        voter3 = create(:voter, account: account, campaign: campaign)
         create_attempts(voter, 71.minutes.ago)
         create_attempts(voter2, 71.minutes.ago)
         create_attempts(voter3, 71.minutes.ago)
