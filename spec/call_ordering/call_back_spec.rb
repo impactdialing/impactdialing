@@ -5,6 +5,16 @@ context 'Message Drops', data_heavy: true do
   let(:admin){ create(:user) }
   let(:account){ admin.account }
 
+  
+  def call_and_leave_messages(dial_queue, voter_count, autodropped=0)
+    voters = Voter.find(dial_queue.next(voter_count))
+
+    voters.each do |voter|
+      call_attempt = attach_call_attempt(:past_recycle_time_machine_answered_call_attempt, voter)
+      call_attempt.update_recording!(autodropped)
+    end
+  end
+
   describe 'Do not call back after dropping message' do
     let(:campaign) do
       create_campaign_with_script(:power_with_recording, account, {
@@ -26,7 +36,7 @@ context 'Message Drops', data_heavy: true do
 
     it 'When all contacts have received a message automatically' do
       call_and_leave_messages(dial_queue, voters.size, true)
-      actual = campaign.next_voter_in_dial_queue(voters.last)
+      actual = campaign.next_in_dial_queue
 
       expect(actual).to be_nil
     end
@@ -34,14 +44,14 @@ context 'Message Drops', data_heavy: true do
     it 'When all but one contact have received a message automatically' do
       remaining = voters.pop
       call_and_leave_messages(dial_queue, voters.size, true)
-      actual = campaign.next_voter_in_dial_queue(voters.last)
+      actual = campaign.next_in_dial_queue
 
       expect(actual).to eq remaining
     end
 
     it 'When all contacts have received a message manually' do
       call_and_leave_messages(dial_queue, voters.size, false)
-      actual = campaign.next_voter_in_dial_queue(voters.last)
+      actual = campaign.next_in_dial_queue
 
       expect(actual).to be_nil
     end
@@ -51,7 +61,7 @@ context 'Message Drops', data_heavy: true do
 
       call_and_leave_messages(dial_queue, voters.size, false)
 
-      actual = campaign.next_voter_in_dial_queue(voters.last)
+      actual = campaign.next_in_dial_queue
 
       expect(actual).to eq remaining
     end
@@ -80,7 +90,7 @@ context 'Message Drops', data_heavy: true do
       call_and_leave_messages(dial_queue, voters.size, true)
 
       process_recycle_bin(campaign)
-      actual = campaign.next_voter_in_dial_queue(voters.last)
+      actual = campaign.next_in_dial_queue
       # binding.pry
       expect(actual).to eq voters.first.reload
     end
@@ -88,14 +98,14 @@ context 'Message Drops', data_heavy: true do
     it 'When all but one contact have received a message automatically' do
       remaining = voters.pop
       call_and_leave_messages(dial_queue, voters.size, true)
-      actual = campaign.next_voter_in_dial_queue(voters.last)
+      actual = campaign.next_in_dial_queue
 
       expect(actual).to eq remaining
     end
 
     it 'When all contacts have received a message manually' do
       call_and_leave_messages(dial_queue, voters.size, false)
-      actual = campaign.next_voter_in_dial_queue(voters.last)
+      actual = campaign.next_in_dial_queue
 
       expect(actual).to eq voters.first
     end
@@ -104,14 +114,14 @@ context 'Message Drops', data_heavy: true do
       remaining = voters.pop
 
       call_and_leave_messages(dial_queue, voters.size, false)
-      actual = campaign.next_voter_in_dial_queue(voters.last)
+      actual = campaign.next_in_dial_queue
 
       expect(actual).to eq remaining
     end
 
     it 'Drop no further messages automatically' do
       call_and_leave_messages(dial_queue, voters.size, true)
-      voter = campaign.next_voter_in_dial_queue(nil)
+      voter = campaign.next_in_dial_queue
 
       # mimic /calls/:id/incoming
       allow(RedisCall).to receive(:answered_by_machine?){ true }
@@ -162,16 +172,16 @@ context 'Machine Detection without Message Drops' do
       call_and_answer_by_human([voters[1], voters[3]])
       call_and_hangup_on_machine([voters[0], voters[2], voters[4]])
 
-      actual = campaign.next_voter_in_dial_queue(nil)
+      actual = campaign.next_in_dial_queue
 
       expect(actual).to eq voters[0]
       call_and_answer_by_human([actual])
 
-      actual = campaign.next_voter_in_dial_queue(actual)
+      actual = campaign.next_in_dial_queue
       expect(actual).to eq voters[2]
       call_and_answer_by_human([actual])
 
-      actual = campaign.next_voter_in_dial_queue(actual)
+      actual = campaign.next_in_dial_queue
       expect(actual).to eq voters[4]
     end
   end

@@ -27,9 +27,9 @@ module CallFlow
       new(campaign).next(n)
     end
 
-    def self.dialed(voter)
-      dial_queue = new(voter.campaign)
-      dial_queue.dialed(voter)
+    def self.dialed(household)
+      dial_queue = new(household.campaign)
+      dial_queue.dialed(household)
     end
 
     def self.remove(voter)
@@ -77,12 +77,14 @@ module CallFlow
       end
     end
 
-
-    def dialed(voter)
-      recycle_bin.add(voter)
-      # no need to rotate since web-ui caller will select
-      # and system will auto-select for phones only callers
-      # households.rotate(voter)
+    # tell available & recycle bin of the dialed household
+    def dialed(household)
+      unless recycle_bin.dialed(household)
+        # phone number was not added to recycle bin
+        # so will not be dialed again without admin action
+        households.remove_house(household.phone)
+      end
+      available.dialed(household.phone)
     end
 
     def remove(voter)

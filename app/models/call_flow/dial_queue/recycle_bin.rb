@@ -38,8 +38,6 @@ public
   end
 
   def add(household)
-    # return false if household.
-
     redis.zadd keys[:bin], *memberize(household)
   end
 
@@ -76,5 +74,10 @@ public
     max     = "#{campaign.recycle_rate.hours.ago.to_i}.999"
     items = redis.zrangebyscore(keys[:bin], min, max, with_scores: true)
     items.map{|item| item.rotate(1)}
+  end
+
+  def dialed(household)
+    return false if household.no_voters_to_dial?
+    add(household)
   end
 end

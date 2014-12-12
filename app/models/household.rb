@@ -40,9 +40,16 @@ public
     status == CallAttempt::Status::FAILED
   end
 
-  def dialed(status)
-    self.status = status
-    dial_queue.dialed(phone, status)
+  # record failed call
+  def failed!
+    update_attributes(status: CallAttempt::Status::FAILED)
+  end
+
+  def dialed(call_attempt)
+    self.status       = call_attempt.status
+    self.presented_at = call_attempt.call_end
+
+    dial_queue.dialed(self)
   end
 
   def presented_recently?

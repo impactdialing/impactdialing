@@ -7,7 +7,7 @@ module CallFlow::Jobs
 
     def self.perform(campaign_id, voter_ids, enabled)
       metrics    = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore.gsub('/','_'))
-      voters     = Voter.where(id: voter_ids).includes({campaign: :account}, :voter_list)
+      voters     = Voter.where(id: voter_ids).includes({campaign: :account}, :voter_list, :household)
       campaign   = Campaign.find(campaign_id)
       dial_queue = CallFlow::DialQueue.new(campaign)
 

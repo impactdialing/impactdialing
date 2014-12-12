@@ -4,11 +4,12 @@ class CallAttempt < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include SidekiqEvents
   belongs_to :voter
+  belongs_to :household
   belongs_to :campaign
   belongs_to :caller
   belongs_to :caller_session
-  has_one :transfer_attempt
   belongs_to :call
+  has_one :transfer_attempt
   has_many :answers
   has_many :note_responses
 
@@ -62,6 +63,10 @@ class CallAttempt < ActiveRecord::Base
 
   def succeeded?
     return status == CallAttempt::Status::SUCCESS
+  end
+
+  def failed?
+    status == CallAttempt::Status::FAILED
   end
 
   def duration_wrapped_up
@@ -139,6 +144,8 @@ class CallAttempt < ActiveRecord::Base
         RedisOnHoldCaller.remove_caller_session(campaign_id, caller_session_id, callee_dc)
         RedisOnHoldCaller.add_to_bottom(campaign_id, caller_session_id, callee_dc)
       end
+    else
+      raise ArgumentError, "RedisOnHoldCaller.longest_waiting_caller returned nil CallAttempt[#{self.id}] - should execute abandoned closeout"
     end
   end
 

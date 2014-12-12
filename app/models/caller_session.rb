@@ -134,6 +134,11 @@ public
     conference_ended_twiml
   end
 
+  def clear_in_progress_trackers
+    self.voter_in_progress   = nil
+    self.attempt_in_progress = nil
+  end
+
   def end_caller_session
     begin
       end_session
@@ -248,6 +253,7 @@ public
   end
 
   def assigned_to_lead?
+    # true && false
     self.on_call && !self.available_for_call
   end
 

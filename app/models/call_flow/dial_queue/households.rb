@@ -17,7 +17,7 @@
 # different households.
 #
 class CallFlow::DialQueue::Households
-  attr_reader :campaign
+  attr_reader :campaign, :type
 
   delegate :recycle_rate, to: :campaign
 
@@ -48,8 +48,9 @@ private
 
 public
 
-  def initialize(campaign)
+  def initialize(campaign, type=:active)
     @campaign = campaign
+    @type     = type
   end
 
   def add(phone, member)
@@ -91,9 +92,7 @@ public
     result
   end
 
-  # def rotate(member)
-  #   members = find(member['phone'])
-  #   members.rotate!(1)
-  #   save(member['phone'], members)
-  # end
+  def remove_house(phone)
+    redis.hdel *hkey(phone)
+  end
 end

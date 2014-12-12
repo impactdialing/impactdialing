@@ -59,20 +59,24 @@ private
     retries = 0
     begin
       phone_numbers = []
+      # completed trxns return array ['OK'...]
       redis_result = redis.watch(keys[:active]) do
         members = redis.zrange keys[:active], 0, (n-1), with_scores: true
         members.map(&:rotate!)
         phone_numbers = members.map(&:last)
+        # update score so we can push these back to active if they're here too long
+        presented     = members.map{|m| [Time.now.to_i, m[1]]}
         redis.multi do |multi|
           multi.zrem keys[:active], phone_numbers
-          multi.zadd keys[:presented], members
+          multi.zadd keys[:presented], presented
         end
       end
 
-      throw RetryZPopPush if redis_result.nil? # trxn was aborted due
+      throw RetryZPopPush if redis_result.nil? # trxn was aborted
     rescue RetryZPopPush
       if retries < retry_limit
         retries += 1
+        # todo: move retries out to job queue layer to avoid sleeping workers
         sleep(retries ** retry_backoff)
         retry
       end
@@ -95,6 +99,12 @@ public
     redis.zrange keys[list], 0, -1, options
   end
   alias :all :peak
+
+  def presented_and_stale
+    min = '-inf'
+    max = "#{campaign.recycle_rate.hours.ago.to_i}.999"
+    redis.zrangebyscore(keys[:presented], min, max)
+  end
 
   def next(n)
     # every number in :active set is guaranteed to have a corresponding presentable contact
@@ -121,4 +131,7 @@ public
   end
   alias :remove :remove_household
 
+  def dialed(phones)
+    redis.zrem keys[:presented], [*phones]
+  end
 end

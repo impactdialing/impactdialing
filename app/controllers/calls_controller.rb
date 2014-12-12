@@ -103,10 +103,6 @@ class CallsController < ApplicationController
       p "#{madd} parsed_params['notes']#{@parsed_params['notes']}"
 
       RedisCall.set_request_params(@call.id, @parsed_params)
-      unless params[:scheduled_date].blank?
-        scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_minutes]
-        @call.call_attempt.schedule_for_later(scheduled_date)
-      end
     else
       madd << "Call[NotFound:#{params[:id]}]"
     end

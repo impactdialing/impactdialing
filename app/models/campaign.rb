@@ -354,7 +354,14 @@ public
     num_remaining = all_voters.not_dialed.enabled.count
     # num_available = leads_available_now + num_remaining
     num_available = summary.households_dialed_and_available_for_retry_count + num_remaining
-    {callers_logged_in: callers_logged_in, on_call: status_count[1], wrap_up: status_count[2], on_hold: status_count[0], ringing_lines: ringing_lines, available: num_available  }
+    {
+      callers_logged_in: callers_logged_in,
+      on_call: status_count[1],
+      wrap_up: status_count[2],
+      on_hold: status_count[0],
+      ringing_lines: ringing_lines,
+      available: num_available
+    }
   end
 
   def current_callers_status

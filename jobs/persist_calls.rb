@@ -99,29 +99,32 @@ class PersistCalls
   end
 
   def self.call_valid?(call)
-    return false unless call
-    return false unless call.call_attempt
-    return false unless call.call_attempt.voter
-    true
+    call and (call_attempt = call.call_attempt) and call_attempt.household
   end
 
   def self.process_calls_base(connection, list_name, num)
     safe_pop(connection, list_name, num) do |calls_data|
-      calls = Call.where(id: calls_data.map { |c| c['id'] }).includes(call_attempt: :voter).each_with_object({}) do |call, memo|
+      calls = Call.where(id: calls_data.map { |c| c['id'] }).includes(call_attempt: [:voter, :household]).each_with_object({}) do |call, memo|
         # todo: ^^ change to CallAttempt.where(id: calls_data.map{|c| c['id']}).includes(:household).each_with_object({}) do |call_attempt, memo|
         memo[call.id] = call
       end
       result = calls_data.each_with_object({voters: [], call_attempts: []}) do |call_data, memo|
         call = calls[call_data['id'].to_i]
+        
         next unless call_valid?(call)
+        
         call_attempt = call.call_attempt
-        voter = call_attempt.voter
+        household    = call_attempt.household
+        voter        = call_attempt.voter
+        
         yield(call_data, call_attempt, voter)
+
         memo[:call_attempts] << call_attempt
+        memo[:households] << household
         memo[:voters] << voter
       end
       import_voters(result[:voters])
-      # todo: ^^ change to import_households
+      import_households(result[:households])
       import_call_attempts(result[:call_attempts])
     end
   end
@@ -129,16 +132,17 @@ class PersistCalls
   def self.abandoned_calls(num)
     process_calls_base($redis_call_flow_connection, "abandoned_call_list", num) do |abandoned_call_data, call_attempt, voter|
       call_attempt.abandoned(abandoned_call_data['current_time'])
-      voter.abandoned
-      # todo: ^^ change to update household
+      voter.try(:abandoned)
+      household.dialed(call_attempt)
+      # RedisCallFlow.del_from_abandoned_hash(abandoned_call_data['id'])
     end
   end
 
   def self.unanswered_calls(num)
     process_calls_base($redis_call_end_connection, "not_answered_call_list", num) do |unanswered_call_data, call_attempt, voter|
       call_attempt.end_unanswered_call(unanswered_call_data['call_status'], unanswered_call_data['current_time'])
-      voter.end_unanswered_call(unanswered_call_data['call_status'])
-      # todo: ^^ change to update household
+      voter.try(:end_unanswered_call(unanswered_call_data['call_status']))
+      household.dialed(call_attempt)
     end
   end
 
@@ -146,8 +150,8 @@ class PersistCalls
     process_calls_base($redis_call_flow_connection, "end_answered_by_machine_call_list", num) do |unanswered_call_data, call_attempt, voter|
       connect_time = RedisCallFlow.processing_by_machine_call_hash[unanswered_call_data['id']]
       call_attempt.end_answered_by_machine(connect_time, unanswered_call_data['current_time'])
-      voter.end_answered_by_machine
-      # todo: ^^ change to update household
+      voter.try(:end_answered_by_machine)
+      household.dialed(call_attempt)
     end
   end
 
@@ -156,7 +160,7 @@ class PersistCalls
       call_attempt.disconnect_call(disconnected_call_data['current_time'], disconnected_call_data['recording_duration'],
                                    disconnected_call_data['recording_url'], disconnected_call_data['caller_id'])
       voter.disconnect_call(disconnected_call_data['caller_id'])
-      # todo: ^^ change to update household
+      household.dialed(call_attempt)
     end
   end
 

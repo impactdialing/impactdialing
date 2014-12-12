@@ -60,36 +60,29 @@ module FakeCallData
 
     call_attempt = create(type, {
       campaign: campaign,
-      dialer_mode: campaign.type,
       voter: voter,
       household: household,
-      caller: caller
+      caller: caller,
+      dialer_mode: campaign.type
     })
-
-    # mimicing Twillio.setup_call
-    voter.update_attributes({
-      last_call_attempt_id: call_attempt.id,
-      last_call_attempt_time: call_attempt.created_at
-    })
-    CallFlow::DialQueue.dialed voter
+    call = create(:bare_call, call_attempt: call_attempt)
 
     # mimicing PersistCalls job
     case type.to_s
     when /past_recycle_time_failed_call_attempt|failed_call_attempt/
       voter.end_unanswered_call(call_attempt.tStatus)
     when /past_recycle_time_busy_call_attempt|busy_call_attempt/
-      call_attempt.call = create(:bare_call)
       voter.end_unanswered_call(call_attempt.tStatus)
     when /past_recycle_time_completed_call_attempt|completed_call_attempt/
-      call_attempt.call = create(:bare_call)
       voter.disconnect_call(call_attempt.caller_id)
     when /past_recycle_time_machine_answered_call_attempt/
-      call_attempt.call = create(:bare_call)
       voter.end_answered_by_machine
     else
       puts "Unknown CallAttempt factory type for FakeCallData#attach_call_attempt: #{type}"
     end
 
+    household.dialed(call_attempt)
+    household.save!
     voter.save!
 
     call_attempt
@@ -100,18 +93,22 @@ module FakeCallData
       voters = add_voters(campaign)
     else
       voters = campaign.all_voters
+      cache_voters(campaign.id, campaign.all_voter_ids, '1')
     end
+
+    households = campaign.households
 
     if campaign.callers.empty?
       callers = add_callers(campaign)
     else
       callers = campaign.callers
     end
-
+    voter = voters.sample
     call_attempts = build_and_import_list(:bare_call_attempt, n, {
       campaign: campaign,
       caller: callers.sample,
-      voter: voters.sample
+      voter: voter,
+      household: voter.household
     })
 
     [voters, callers, call_attempts]

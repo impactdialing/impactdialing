@@ -26,8 +26,9 @@ class Call < ActiveRecord::Base
   end
 
   def abandoned
-    RedisCallFlow.push_to_abandoned_call_list(self.id);
-    call_attempt.redirect_caller
+    RedisCallFlow.push_to_abandoned_call_list(self.id)
+    # todo: figure out how the fuck this got here.
+    # call_attempt.redirect_caller
     abandoned_twiml
   end
 
@@ -53,6 +54,7 @@ class Call < ActiveRecord::Base
   def call_ended(campaign_type, params={})
     unless caller_session.nil? # can be the case for transfers
       caller_session.publish_call_ended(params)
+      caller_session.end_call
     end
     if call_did_not_connect?
       RedisCallFlow.push_to_not_answered_call_list(self.id, redis_call_status)
@@ -60,9 +62,10 @@ class Call < ActiveRecord::Base
 
     if answered_by_machine?
       RedisCallFlow.push_to_end_by_machine_call_list(self.id)
-      if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status == 'completed'
-        call_attempt.redirect_caller
-      end
+      # todo: verify caller is redirected when answering machine twiml is served at /incoming
+      # if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status == 'completed'
+      #   call_attempt.redirect_caller
+      # end
     end
 
     if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status != 'completed'
