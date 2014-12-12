@@ -1,79 +1,44 @@
 module PreviewPowerCampaign
-  def next_voter_in_dial_queue(current_voter_id = nil)
-    bench_start = Time.now.to_f
+  def timing(&block)
     namespace   = [self.type.downcase]
+    namespace   << 'redis'
+    namespace   << "ac-#{self.account_id}"
+    namespace   << "ca-#{self.id}"
+    bench_start = Time.now.to_f
 
-    if CallFlow::DialQueue.enabled?
-      voter = redis_next_voter_in_dial_queue
-      namespace << 'redis'
-    else
-      voter = mysql_next_voter_in_dial_queue(current_voter_id)
-      namespace << 'mysql'
-    end
-    namespace << "ac-#{self.account_id}"
-    namespace << "ca-#{self.id}"
+    yield
 
     bench_end = Time.now.to_f
 
     ImpactPlatform::Metrics.measure('dialer.voter_load', (bench_end - bench_start), namespace.join('.'))
-
-    return voter
-  end
-
-  def redis_next_voter_in_dial_queue
-    begin
-      dial_queue = CallFlow::DialQueue.new(self)
-      voter_id   = dial_queue.next(1).first
-      
-      return nil if voter_id.blank?
-
-      voter = Voter.find(voter_id)
-      voter.update_attributes!(status: CallAttempt::Status::READY)
-
-    rescue ActiveRecord::StaleObjectError => e
-      Rails.logger.error "#{e.class} #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] Voter[#{voter_id}] - retrying..."
-      retry
-    end
-
-    return voter
-  end
-
-  def mysql_next_voter_in_dial_queue(current_voter_id=nil)
-    # blocked_numbers = account.blocked_numbers.for_campaign(self).pluck(:number)
-    blocked_numbers = []
-    begin
-      voter = Voter.next_voter(all_voters, recycle_rate, blocked_numbers, current_voter_id)
-
-      update_voter_status_to_ready(voter)
-    rescue ActiveRecord::StaleObjectError => e
-      Rails.logger.error "RecycleRate next_voter_in_dial_queue #{self.try(:type) || 'Campaign'}[#{self.try(:id)}] CurrentVoter[#{current_voter_id}] StaleObjectError - retrying..."
-      retry
-    end
-
-    return voter
   end
 
   def next_in_dial_queue
-    next_voter_in_dial_queue
+    house = nil
+
+    timing do
+      unless (phone_number = dial_queue.next(1).first).blank?
+        house = {
+          phone: phone_number,
+          voters: dial_queue.households.find(phone_number)
+        }
+      end
+    end
+    
+    return house
   end
 
-  def update_voter_status_to_ready(voter)
-    voter.update_attributes(status: CallAttempt::Status::READY) unless voter.nil?
-  end
-
-  def caller_conference_started_event(current_voter_id)
-    next_voter = next_voter_in_dial_queue(current_voter_id)
-    info = next_voter.nil? ? {campaign_out_of_leads: true} : next_voter.info
-    {event: 'conference_started', data: info}
+  def caller_conference_started_event
+    return {
+      event: 'conference_started',
+      data: (next_in_dial_queue || {campaign_out_of_leads: true})
+    }
   end
 
   def voter_connected_event(call)
-    {event: 'voter_connected', data: {call_id:  call.id}}
-  end
-
-  def call_answered_machine_event(call_attempt)
-    Rails.logger.info "Deprecated ImpactDialing Method: PreviewPowerCampaign#call_answered_machine_event"
-    next_voter = next_voter_in_dial_queue(call_attempt.voter.id)
-    {event: 'dial_next_voter', data: next_voter.nil? ? {} : next_voter.info}
+    return {
+      event: 'voter_connected',
+      data: {call_id: call.id}
+    }
   end
 end

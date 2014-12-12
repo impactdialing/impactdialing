@@ -205,26 +205,13 @@ public
     render xml: xml
   end
 
-  ##
   # Used by Preview & Power dial modes to dial a number.
-  # We do not perform any 'fit to dial' checks here because
-  # by the time the client is ready to hit this endpoint, the
-  # Voter identified by params[:voter_id] will already be
-  # marked READY and we do not currently have a reliable way
-  # to revert Voter#status to previous value.
   def call_voter
-    caller = Caller.find(params[:id])
-    campaign = caller.campaign
-    caller_session = caller.caller_sessions.find(params[:session_id])
+    # try loading session from params to avoid queueing jobs for nonsense resources
+    session = CallerSession.find_by_id_and_caller_id(params[:session_id], params[:id])
+    enqueue_call_flow(CallerPusherJob, [session.id, "publish_calling_voter"])
+    enqueue_call_flow(PreviewPowerDialJob, [session.id, params[:phone]])
 
-    if params[:voter_id].present?
-      voter = Voter.find params[:voter_id]
-    end
-    if params[:voter_id].blank? || (params[:voter_id].present? && campaign.within_recycle_rate?(voter))
-      enqueue_call_flow(CallerPusherJob, [caller_session.id,  "publish_caller_conference_started"])
-    else
-      caller.calling_voter_preview_power(caller_session, params[:voter_id])
-    end
     render :nothing => true
   end
 
