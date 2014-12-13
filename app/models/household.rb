@@ -4,6 +4,7 @@ class Household < ActiveRecord::Base
   
   belongs_to :campaign
   delegate :dial_queue, to: :campaign
+  delegate :call_back_after_voicemail_delivery?, to: :campaign
 
   belongs_to :last_call_attempt, class_name: 'CallAttempt'
   has_many :call_attempts
@@ -40,6 +41,22 @@ public
     status == CallAttempt::Status::FAILED
   end
 
+  def voicemail_delivered?
+    call_attempts.with_recording.count > 0
+  end
+
+  def no_voicemail_delivered?
+    not voicemail_delivered?
+  end
+
+  def complete?
+    no_presentable_voters? || (voicemail_delivered? && (not call_back_after_voicemail_delivery?))
+  end
+
+  def not_complete?
+    not complete?
+  end
+
   # record failed call
   def failed!
     update_attributes(status: CallAttempt::Status::FAILED)
@@ -57,7 +74,7 @@ public
   end
 
   def no_voters_to_dial?
-    failed? || in_dnc? || no_presentable_voters?
+    complete? || failed? || in_dnc?
   end
 
   def any_voters_to_dial?

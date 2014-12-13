@@ -12,8 +12,7 @@ module CallFlow
     end
 
     def cache_household?(household)
-      return false unless household.any_voters_to_dial?
-
+      household.not_complete? &&
       available.missing?(household.phone) &&
       recycle_bin.missing?(household.phone)
     end
@@ -59,11 +58,9 @@ module CallFlow
 
     def cache(voter)
       household = voter.household
+      return unless cache_household?(household)
 
-      if cache_household?(household)
-        available.add(household) || recycle_bin.add(household)
-      end
-
+      available.add(household) || recycle_bin.add(household)
       households.add(household.phone, voter.cache_data)
     end
 

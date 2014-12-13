@@ -28,8 +28,17 @@ FactoryGirl.define do
       tDuration { Forgery(:basic).number(at_least: 30, at_most: 180) }
     end
 
+    trait :voicemail_delivered do
+      recording_id { Forgery(:basic).number }
+      status CallAttempt::Status::VOICEMAIL
+    end
+
+    trait :machine_hangup do
+      status CallAttempt::Status::HANGUP
+    end
+
     trait :machine_answered do
-      status 'Message delivered'
+      status CallAttempt::Status::VOICEMAIL
       tStatus 'completed'
       tDuration { Forgery(:basic).number(at_least: 30, at_most: 180) }
     end

@@ -7,7 +7,7 @@ module FakeCallData
       campaign: campaign
     })
 
-    cache_voters(campaign.id, campaign.all_voter_ids, '1')
+    cache_voters(campaign.id, list.map(&:id), '1')
 
     list
   end
@@ -53,9 +53,15 @@ module FakeCallData
   #   dial_queue.dialed(twilio_params)
   # end
 
-  def attach_call_attempt(type, voter, caller=nil)
-    campaign  = voter.campaign
-    household = voter.household
+  def attach_call_attempt(type, household_or_voter, caller=nil)
+    campaign = household_or_voter.campaign
+    voter    = nil
+    unless household_or_voter.is_a? Household
+      voter     = household_or_voter
+      household = household_or_voter.household 
+    else
+      household = household_or_voter
+    end
     caller    ||= campaign.callers.sample
 
     call_attempt = create(type, {
@@ -70,22 +76,32 @@ module FakeCallData
     # mimicing PersistCalls job
     case type.to_s
     when /past_recycle_time_failed_call_attempt|failed_call_attempt/
-      voter.end_unanswered_call(call_attempt.tStatus)
+      # voter.try(:end_unanswered_call, call_attempt.tStatus)
     when /past_recycle_time_busy_call_attempt|busy_call_attempt/
-      voter.end_unanswered_call(call_attempt.tStatus)
+      # voter.try(:end_unanswered_call, call_attempt.tStatus)
     when /past_recycle_time_completed_call_attempt|completed_call_attempt/
-      voter.disconnect_call(call_attempt.caller_id)
+      voter.try(:disconnect_call, call_attempt.caller_id)
     when /past_recycle_time_machine_answered_call_attempt/
-      voter.end_answered_by_machine
+      # voter.try(:end_answered_by_machine)
     else
       puts "Unknown CallAttempt factory type for FakeCallData#attach_call_attempt: #{type}"
     end
 
-    household.dialed(call_attempt)
-    household.save!
-    voter.save!
+    mimic_persist_calls(call_attempt)
 
     call_attempt
+  end
+
+  def mimic_persist_calls(call_attempt)
+    household = call_attempt.household
+    voter     = call_attempt.voter
+    campaign  = call_attempt.campaign
+
+    household.dialed(call_attempt)
+    household.save!
+    voter.try(:save!)
+
+    CallFlow::Jobs::ProcessRecycleBin.perform(campaign.id)
   end
 
   def add_call_attempts(campaign, n=35)

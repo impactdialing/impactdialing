@@ -47,10 +47,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def update_recording!(delivered_manually=false)
-    voter.update_voicemail_history
-    voter.update_call_back_after_message_drop
-    voter.save
-
+    self.status                       = CallAttempt::Status::VOICEMAIL
     self.recording_id                 = campaign.recording_id
     self.recording_delivered_manually = delivered_manually
     self.save!
@@ -104,7 +101,12 @@ class CallAttempt < ActiveRecord::Base
     self.connecttime = connect_time
     self.wrapup_time = end_time
     self.call_end    = end_time
-    self.status      = AnsweringMachineAgent.new(voter).call_status
+    # status might have been updated already by #update_recording!
+    unless [CallAttempt::Status::VOICEMAIL, CallAttempt::Status::HANGUP].include?(status)
+      # if not then a message probably was not dropped or
+      # the job is failing in the queue and will run later
+      self.status = CallAttempt::Status::HANGUP
+    end
   end
 
   def end_unanswered_call(call_status, time)

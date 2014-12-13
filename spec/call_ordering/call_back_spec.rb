@@ -7,10 +7,10 @@ context 'Message Drops', data_heavy: true do
 
   
   def call_and_leave_messages(dial_queue, voter_count, autodropped=0)
-    voters = Voter.find(dial_queue.next(voter_count))
-
-    voters.each do |voter|
-      call_attempt = attach_call_attempt(:past_recycle_time_machine_answered_call_attempt, voter)
+    phone_numbers = dial_queue.next(voter_count)
+    households    = dial_queue.campaign.households.where(phone: phone_numbers)
+    households.each do |household|
+      call_attempt = attach_call_attempt(:past_recycle_time_machine_answered_call_attempt, household)
       call_attempt.update_recording!(autodropped)
     end
   end
@@ -138,6 +138,10 @@ context 'Machine Detection without Message Drops' do
   let(:admin){ create(:user) }
   let(:account){ admin.account }
 
+  before do
+    Redis.new.flushall
+  end
+
   describe 'Call back after machine detected' do
     let(:campaign) do
       create_campaign_with_script(:power_with_recording, account, {
@@ -145,44 +149,47 @@ context 'Machine Detection without Message Drops' do
         use_recordings: false
       }).last
     end
-    let(:voters){ add_voters(campaign, :voter, 5) }
     let(:dial_queue) do
-      voters
       CallFlow::DialQueue.new(campaign)
     end
 
-    before do
-      add_callers(campaign, 1)
-      cache_available_voters(campaign)
+    let!(:voters) do
+      create_list(:voter, 5, campaign: campaign, account: campaign.account)
     end
 
-    def call_and_hangup_on_machine(voters)
-      voters.each do |voter|
-        attach_call_attempt(:past_recycle_time_machine_answered_call_attempt, voter)
+    before do
+      expect(Voter.count).to eq 5
+      expect(Household.count).to eq 5
+
+      add_callers(campaign, 1)
+      
+      cache_available_voters(campaign)
+      expect(dial_queue.available.size).to eq 5
+    end
+
+    def call_and_hangup_on_machine(campaign, count)
+      count.times do
+        house     = campaign.next_in_dial_queue
+        household = campaign.households.where(phone: house[:phone]).first
+        attach_call_attempt(:past_recycle_time_machine_answered_call_attempt, household)
       end
     end
 
-    def call_and_answer_by_human(voters)
-      voters.each do |voter|
+    def call_and_answer_by_human(campaign, count)
+      count.times do
+        house = campaign.next_in_dial_queue
+        voter = Voter.find(house[:voters].first[:id])
         attach_call_attempt(:past_recycle_time_completed_call_attempt, voter)
       end
     end
 
-    it 'When the first pass is done and machines were detected for some voters, cycle through those voters again' do
-      call_and_answer_by_human([voters[1], voters[3]])
-      call_and_hangup_on_machine([voters[0], voters[2], voters[4]])
+    it 'When the first pass is done and machines were detected for some households, cycle through those households again' do
+      call_and_answer_by_human(campaign, 1)
+      call_and_hangup_on_machine(campaign, 1)
+      call_and_answer_by_human(campaign, 1)
+      call_and_hangup_on_machine(campaign, 2)
 
-      actual = campaign.next_in_dial_queue
-
-      expect(actual).to eq voters[0]
-      call_and_answer_by_human([actual])
-
-      actual = campaign.next_in_dial_queue
-      expect(actual).to eq voters[2]
-      call_and_answer_by_human([actual])
-
-      actual = campaign.next_in_dial_queue
-      expect(actual).to eq voters[4]
+      expect(dial_queue.available.size).to eq 3
     end
   end
 end
