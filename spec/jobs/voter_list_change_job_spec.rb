@@ -35,34 +35,6 @@ describe VoterListChangeJob do
     Voter.destroy_all
   end
 
-  shared_examples 'enabled/disabled voter list change' do
-    let(:blocked){ false }
-
-    before do
-      bits = []
-      bits << :list unless enabled
-      Voter.update_all(enabled: Voter.bitmask_for_enabled(*bits))
-      if blocked
-        bits << :blocked
-        Voter.first.update_attributes!(enabled: Voter.bitmask_for_enabled(*bits))
-      end
-    end
-    context 'Voter.first#enabled :blocked bit is set' do
-      let(:blocked){ true }
-      it 'preserves the :blocked bit' do
-        subject.perform(voter_list.id, enabled)
-        expect(Voter.with_enabled(:blocked).count).to eq 1
-      end
-    end
-
-    context 'Voter#enabled :blocked bit is not set' do
-      it 'preserves the :blocked bit' do
-        subject.perform(voter_list.id, enabled)
-        expect(Voter.with_enabled(:blocked).count).to be_zero
-      end
-    end
-  end
-
   context 'VoterList#enabled is true' do
     let(:enabled){ true }
 
@@ -70,8 +42,6 @@ describe VoterListChangeJob do
       subject.perform(voter_list.id, enabled)
       expect(Voter.with_enabled(:list).count).to eq voter_list.voters.count
     end
-
-    it_behaves_like 'enabled/disabled voter list change'
   end
 
   context 'VoterList#enabled is false' do
@@ -81,8 +51,6 @@ describe VoterListChangeJob do
       subject.perform(voter_list.id, enabled)
       expect(Voter.without_enabled(:list).count).to eq voter_list.voters.count
     end
-
-    it_behaves_like 'enabled/disabled voter list change'
   end
 
   it 'queues job to cache voters' do
