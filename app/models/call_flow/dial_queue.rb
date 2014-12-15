@@ -12,6 +12,7 @@ module CallFlow
     end
 
     def cache_household?(household)
+      household.not_blocked? &&
       household.not_complete? &&
       available.missing?(household.phone) &&
       recycle_bin.missing?(household.phone)

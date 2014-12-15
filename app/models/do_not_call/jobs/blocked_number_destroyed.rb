@@ -23,20 +23,31 @@ class DoNotCall::Jobs::BlockedNumberDestroyed
 
   def self.perform(account_id, campaign_id, phone_number)
     households = households_with(account_id, campaign_id, phone_number)
-    # households.update_all(blocked: Household.bitmask_for_blocked(:dnc))
+
+    return if households.count.zero?
+
     households.with_blocked(:cell).update_all(blocked: Household.bitmask_for_blocked(:cell))
     households.without_blocked(:cell).update_all(blocked: 0)
+
+    campaign   = Campaign.find campaign_id
+    dial_queue = CallFlow::DialQueue.new(campaign)
+    households.each do |household|
+      household.voters.each do |voter|
+        dial_queue.cache(voter) if voter.enabled?(:list)
+      end
+    end
+
     Rails.logger.info "DoNotCall::Jobs::BlockedNumberDestroyed Account[#{account_id}] Campaign[#{campaign_id}] Number[#{phone_number}] marked #{households.count} households unblocked."
   end
 
   def self.households_with(account_id, campaign_id, phone_number)
-    account = Account.find(account_id)
-    households  = if campaign_id.present?
-               account.campaigns.find(campaign_id).households
-             else
-               account.households
-             end
+    account    = Account.find(account_id)
+    households = if campaign_id.present?
+                   account.campaigns.find(campaign_id).households
+                 else
+                   account.households
+                 end
 
-    households.where(phone: phone_number)
+    households.where(phone: phone_number).includes(:voters)
   end
 end

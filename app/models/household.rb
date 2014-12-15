@@ -57,6 +57,10 @@ public
     not complete?
   end
 
+  def not_blocked?
+    not blocked?
+  end
+
   # record failed call
   def failed!
     update_attributes(status: CallAttempt::Status::FAILED)
