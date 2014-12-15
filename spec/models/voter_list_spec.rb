@@ -57,7 +57,7 @@ describe VoterList, :type => :model do
     end
     it "should queue job to enable all members when list enabled" do
       voter_list         = create(:voter_list, enabled: false)
-      household          = create(:household, :disabled, voter_list: voter_list)
+      voter          = create(:voter, :disabled, voter_list: voter_list)
       voter_list.enabled = true
       voter_list.save
       actual   = Resque.peek(:upload_download)
@@ -67,7 +67,7 @@ describe VoterList, :type => :model do
 
     it "should queue job to disable all members when list disabled" do
       voter_list         = create(:voter_list, enabled: true)
-      household          = create(:household, :disabled, voter_list: voter_list)
+      voter              = create(:voter, :disabled, voter_list: voter_list)
       voter_list.enabled = false
       voter_list.save
       actual   = Resque.peek(:upload_download)
