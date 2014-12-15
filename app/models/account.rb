@@ -17,6 +17,7 @@ class Account < ActiveRecord::Base
   has_many :callers
   has_many :voter_lists
   has_many :voters
+  has_many :households
   has_many :blocked_numbers
   has_many :moderators
   has_many :questions, :through => :scripts
