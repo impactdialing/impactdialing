@@ -7,6 +7,7 @@ class Call < ActiveRecord::Base
   delegate :connect_call, :to => :call_attempt
   delegate :campaign, :to=> :call_attempt
   delegate :voter, :to=> :call_attempt
+  delegate :household, :to => :call_attempt
   delegate :caller_session, :to=> :call_attempt
   delegate :end_caller_session, :to=> :call_attempt
   delegate :caller_session_key, :to=> :call_attempt

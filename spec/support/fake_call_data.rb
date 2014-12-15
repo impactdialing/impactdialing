@@ -87,6 +87,8 @@ module FakeCallData
       puts "Unknown CallAttempt factory type for FakeCallData#attach_call_attempt: #{type}"
     end
 
+    yield call_attempt if block_given?
+
     mimic_persist_calls(call_attempt)
 
     call_attempt
@@ -97,9 +99,10 @@ module FakeCallData
     voter     = call_attempt.voter
     campaign  = call_attempt.campaign
 
+    voter.try(:save!)
+    
     household.dialed(call_attempt)
     household.save!
-    voter.try(:save!)
 
     CallFlow::Jobs::ProcessRecycleBin.perform(campaign.id)
   end

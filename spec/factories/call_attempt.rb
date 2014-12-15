@@ -6,6 +6,7 @@ FactoryGirl.define do
       status 'Call failed'
       tDuration nil
       tStatus 'failed'
+      call_end { Time.now }
     end
 
     trait :ready do
@@ -15,36 +16,43 @@ FactoryGirl.define do
     trait :busy do
       status 'No answer busy signal'
       tStatus 'busy'
+      call_end { Time.now }
     end
 
     trait :abandoned do
       status CallAttempt::Status::ABANDONED
       tStatus 'completed'
+      call_end { Time.now }
     end
 
     trait :completed do
       status 'Call completed with success.'
       tStatus 'completed'
       tDuration { Forgery(:basic).number(at_least: 30, at_most: 180) }
+      call_end { Time.now }
     end
 
     trait :voicemail_delivered do
       recording_id { Forgery(:basic).number }
       status CallAttempt::Status::VOICEMAIL
+      call_end { Time.now }
     end
 
     trait :machine_hangup do
       status CallAttempt::Status::HANGUP
+      call_end { Time.now }
     end
 
     trait :machine_answered do
       status CallAttempt::Status::VOICEMAIL
       tStatus 'completed'
       tDuration { Forgery(:basic).number(at_least: 30, at_most: 180) }
+      call_end { Time.now }
     end
 
     trait :past_recycle_time do
       created_at 25.hours.ago
+      call_end 25.hours.ago
     end
 
     factory :busy_call_attempt, traits: [:busy]

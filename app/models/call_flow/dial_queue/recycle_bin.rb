@@ -77,7 +77,7 @@ public
   end
 
   def dialed(household)
-    return false if household.no_voters_to_dial?
+    return false if household.complete?
     add(household)
   end
 end
