@@ -23,7 +23,7 @@ private
     # todo: use PhoneNumber.sanitize
     return if number.blank?
 
-    self.number = number.gsub(/[\(\)\+ -]/, "")
+    self.number = PhoneNumber.sanitize(number)
   end
 
   def block_voters
@@ -32,6 +32,12 @@ private
 
   def unblock_voters
     Resque.enqueue DoNotCall::Jobs::BlockedNumberDestroyed, account.id, campaign.try(:id), number
+  end
+
+public
+
+  def account_wide?
+    campaign_id.blank?
   end
 end
 

@@ -95,4 +95,8 @@ public
   def remove_house(phone)
     redis.hdel *hkey(phone)
   end
+
+  def missing?(phone)
+    not redis.hexists(*hkey(phone))
+  end
 end

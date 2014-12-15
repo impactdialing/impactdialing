@@ -58,7 +58,12 @@ module CallFlow
 
     def cache(voter)
       household = voter.household
-      return unless cache_household?(household)
+      unless cache_household?(household)
+        p 'cache_household? => false'
+        return 
+      else
+        # p 'cache_household? => true'
+      end
 
       available.add(household) || recycle_bin.add(household)
       households.add(household.phone, voter.cache_data)
@@ -76,12 +81,22 @@ module CallFlow
 
     # tell available & recycle bin of the dialed household
     def dialed(household)
+      p "dialed: #{household.phone}"
       unless recycle_bin.dialed(household)
+        p "did not add to recycle bin"
         # phone number was not added to recycle bin
         # so will not be dialed again without admin action
         households.remove_house(household.phone)
+      else
+        p "added to recycle bin"
       end
       available.dialed(household.phone)
+    end
+
+    def remove_household(phone)
+      available.remove(phone)
+      recycle_bin.remove(phone)
+      households.remove_house(phone)
     end
 
     def remove(voter)
