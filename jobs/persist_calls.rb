@@ -74,9 +74,9 @@ class PersistCalls
 
   def self.setup_bitmasks(klass, collection, bitmask_columns)
     columns = klass.column_names
-    values  = collection.map do |object|
+    values  = collection.compact.map do |object|
       columns.map do |column|
-        unless bitmask_columns.include?(column)
+        if bitmask_columns.include?(column)
           object.send("#{column}_before_type_cast") 
         else
           object.send(column)
@@ -91,13 +91,21 @@ class PersistCalls
 
     # skip validations - uniqueness validation fails; ar import doesn't handle this case
     # the db has fk constraints as of Dec 2014
-    Household.import columns, values, validate: false, on_duplicate_key_update: [:status, :presented_at, :updated_at]
+    Household.import columns, values, validate: false, on_duplicate_key_update: [
+      :status,
+      :presented_at,
+      :updated_at
+    ]
   end
 
   # def self.cache_last_attempt_status
   def self.import_voters(voters)
     columns, values = setup_bitmasks(Voter, voters, ['enabled'])
-    Voter.import columns, values, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date, :voicemail_history]
+    Voter.import columns, values, on_duplicate_key_update: [
+      :status,
+      :caller_id,
+      :caller_session_id
+    ]
   end
 
   def self.import_call_attempts(call_attempts)
@@ -105,7 +113,7 @@ class PersistCalls
       on_duplicate_key_update: [
         :status, :call_end, :connecttime, :caller_id,
         :scheduled_date, :recording_url, :recording_duration,
-        :voter_response_processed, :wrapup_time
+        :voter_response_processed, :wrapup_time, :voter_id
     ]
   end
 
@@ -115,48 +123,45 @@ class PersistCalls
 
   def self.process_calls_base(connection, list_name, num)
     safe_pop(connection, list_name, num) do |calls_data|
-      calls = Call.where(id: calls_data.map { |c| c['id'] }).includes(call_attempt: [:voter, :household]).each_with_object({}) do |call, memo|
+      calls = Call.where(id: calls_data.map { |c| c['id'] }).includes(call_attempt: [:household]).each_with_object({}) do |call, memo|
         # todo: ^^ change to CallAttempt.where(id: calls_data.map{|c| c['id']}).includes(:household).each_with_object({}) do |call_attempt, memo|
         memo[call.id] = call
       end
-      result = calls_data.each_with_object({voters: [], call_attempts: [], households: []}) do |call_data, memo|
+      result = calls_data.each_with_object({call_attempts: [], households: []}) do |call_data, memo|
         call = calls[call_data['id'].to_i]
         
         next unless call_valid?(call)
         
         call_attempt = call.call_attempt
         household    = call_attempt.household
-        voter        = call_attempt.voter
         
-        yield(call_data, call_attempt, voter)
+        yield(call_data, call_attempt)
 
         household.dialed(call_attempt)
 
         memo[:call_attempts] << call_attempt
-        memo[:voters] << voter
         memo[:households] << household
       end
 
-      import_voters(result[:voters])
       import_call_attempts(result[:call_attempts])
       import_households(result[:households])
     end
   end
 
   def self.abandoned_calls(num)
-    process_calls_base($redis_call_flow_connection, "abandoned_call_list", num) do |abandoned_call_data, call_attempt, voter|
+    process_calls_base($redis_call_flow_connection, "abandoned_call_list", num) do |abandoned_call_data, call_attempt|
       call_attempt.abandoned(abandoned_call_data['current_time'])
     end
   end
 
   def self.unanswered_calls(num)
-    process_calls_base($redis_call_end_connection, "not_answered_call_list", num) do |unanswered_call_data, call_attempt, voter|
+    process_calls_base($redis_call_end_connection, "not_answered_call_list", num) do |unanswered_call_data, call_attempt|
       call_attempt.end_unanswered_call(unanswered_call_data['call_status'], unanswered_call_data['current_time'])
     end
   end
 
   def self.machine_calls(num)
-    process_calls_base($redis_call_flow_connection, "end_answered_by_machine_call_list", num) do |unanswered_call_data, call_attempt, voter|
+    process_calls_base($redis_call_flow_connection, "end_answered_by_machine_call_list", num) do |unanswered_call_data, call_attempt|
       connect_time      = RedisCallFlow.processing_by_machine_call_hash[unanswered_call_data['id']]
       message_drop_info = RedisCallFlow.get_message_drop_info(unanswered_call_data['id'])
       call_attempt.end_answered_by_machine(connect_time, unanswered_call_data['current_time'], message_drop_info['recording_id'], message_drop_info['drop_type'])
@@ -164,30 +169,36 @@ class PersistCalls
   end
 
   def self.disconnected_calls(num)
-    process_calls_base($redis_call_flow_connection, "disconnected_call_list", num) do |disconnected_call_data, call_attempt, voter|
+    process_calls_base($redis_call_flow_connection, "disconnected_call_list", num) do |disconnected_call_data, call_attempt|
       call_attempt.disconnect_call(disconnected_call_data['current_time'], disconnected_call_data['recording_duration'],
                                    disconnected_call_data['recording_url'], disconnected_call_data['caller_id'])
-      voter.disconnect_call(disconnected_call_data['caller_id'])
     end
   end
 
   def self.wrapped_up_calls(num)
-    result = []
+    updated_call_attempts = []
+    updated_voters        = []
     safe_pop($redis_call_flow_connection, "wrapped_up_call_list", num) do |wrapped_up_calls|
-      call_attempts = CallAttempt.where(id: wrapped_up_calls.map  { |c| c['id'] }).each_with_object({}) do |call_attempt, memo|
+      call_attempt_ids = wrapped_up_calls.map{ |c| c['id'] }
+      call_attempts    = CallAttempt.includes({household: [:voters]}, :campaign).where(id: call_attempt_ids).each_with_object({}) do |call_attempt, memo|
         memo[call_attempt.id] = call_attempt
       end
-      wrapped_up_calls.each do |wrapped_up_call|
-        begin
-          call_attempt = call_attempts[wrapped_up_call['id'].to_i]
-          call_attempt.wrapup_now(wrapped_up_call['current_time'], wrapped_up_call['caller_type'])
-          result << call_attempt
-        rescue Resque::TermException => e
-          Rails.logger.info "Shutting down. [wrapped_up_calls]"
-          ImpactPlatform::Metrics::JobStatus.sigterm(self.to_s.underscore)
-        end
+      voter_ids = wrapped_up_calls.map{|c| c['voter_id']}
+      voters    = Voter.where(id: voter_ids).each_with_object({}) do |voter, memo|
+        memo[voter.id] = voter
       end
-      CallAttempt.import result, :on_duplicate_key_update=>[:wrapup_time, :voter_response_processed]
+      wrapped_up_calls.each do |wrapped_up_call|
+        call_attempt = call_attempts[wrapped_up_call['id'].to_i]
+        voter        = voters[wrapped_up_call['voter_id'].to_i] || call_attempt.household.voters.presentable(call_attempt.campaign).first
+
+        call_attempt.wrapup_now(wrapped_up_call['current_time'], wrapped_up_call['caller_type'], wrapped_up_call['voter_id'])
+        voter.dispositioned(call_attempt) 
+
+        updated_call_attempts << call_attempt
+        updated_voters << voter
+      end
+      import_call_attempts(updated_call_attempts)
+      import_voters(updated_voters)
     end
   end
 end

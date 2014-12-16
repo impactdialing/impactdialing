@@ -225,6 +225,9 @@ class Voter < ActiveRecord::Base
   scope :not_presentable, lambda{|campaign|
     where(call_back: false).where(status: CallAttempt::Status.completed_list(campaign))
   }
+  scope :presentable, lambda{|campaign|
+    where('call_back = ? OR status IN (?)', true, CallAttempt::Status.available_list(campaign))
+  }
   #/Newest
 
   cattr_reader :per_page
@@ -382,13 +385,10 @@ public
     self.call_back      = false
   end
 
-  def schedule_for_later(date)
-    Rails.logger.info "Deprecated ImpactDialing Method: Voter#schedule_for_later"
-
-    scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
-    self.status = Status::SCHEDULED
-    self.scheduled_date = scheduled_date
-    self.call_back = true
+  def dispositioned(call_attempt)
+    self.status            = call_attempt.status
+    self.caller_id         = call_attempt.caller_id
+    self.caller_session_id = nil
   end
 
   def self.upload_fields

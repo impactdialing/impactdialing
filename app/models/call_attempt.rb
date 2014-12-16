@@ -132,8 +132,10 @@ class CallAttempt < ActiveRecord::Base
     self.scheduled_date = scheduled_date
   end
 
-  def wrapup_now(time, caller_type)
+  def wrapup_now(time, caller_type, voter_id)
+    self.voter_id    = voter_id
     self.wrapup_time = time
+
     if caller_type == CallerSession::CallerType::PHONE && caller.is_phones_only
       self.voter_response_processed = true
     end

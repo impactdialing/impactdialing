@@ -33,17 +33,19 @@ class AnsweredJob
     ActiveRecord::Base.verify_active_connections!
     success_count = 0
     not_found = 0
-    CallAttempt.results_not_processed.where('call_id IS NOT NULL').reorder('call_attempts.id DESC').includes(:call).find_each do |call_attempt|
+    CallAttempt.results_not_processed.where('call_id IS NOT NULL AND voter_id IS NOT NULL').reorder('call_attempts.id DESC').includes(:call, :voter).find_each do |call_attempt|
       begin
         call = call_attempt.call
         answers_data = RedisCall.questions_and_notes(call.id)
         if answers_data && (answers_data["questions"] || answers_data["notes"])
           questions = answers_data["questions"]
-          notes = answers_data["notes"]
+          notes     = answers_data["notes"]
+
           call_attempt.voter.persist_answers(questions, call_attempt)
           call_attempt.voter.persist_notes(notes, call_attempt)
           call_attempt.update_attributes(voter_response_processed: true)
           call_attempt.voter.update_attribute(:result_date, Time.now)
+
           RedisCall.delete(call.id)
           success_count += 1
         else
