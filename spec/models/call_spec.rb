@@ -51,7 +51,7 @@ describe Call, :type => :model do
           call = create(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
           RedisCall.set_request_params(call.id, call.attributes)
           expect(RedisCallFlow).to receive(:push_to_abandoned_call_list).with(call.id);
-          expect(@call_attempt).to receive(:redirect_caller)
+          # expect(@call_attempt).to receive(:redirect_caller) # 
           expect(call.incoming_call).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
         end
 
@@ -64,7 +64,7 @@ describe Call, :type => :model do
           @script = create(:script)
           @campaign =  create(:preview, script: @script, use_recordings: false)
           @voter = create(:voter, campaign: @campaign)
-          @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller: @caller)
+          @call_attempt = create(:call_attempt, voter: @voter, household: @voter.household, campaign: @campaign, caller: @caller)
         end
 
         it "should render the user recording and hangup if user recording present" do
@@ -72,7 +72,7 @@ describe Call, :type => :model do
           @campaign.update_attributes(recording_id: recording.id, use_recordings: true, answering_machine_detect: true)
           call = create(:call, answered_by: "machine", call_attempt: @call_attempt)
           RedisCall.set_request_params(call.id, call.attributes)
-          expect(RedisCallFlow).to receive(:push_to_processing_by_machine_call_hash).with(call.id);
+          expect(RedisCallFlow).to receive(:push_to_processing_by_machine_call_hash).with(call.id)
           expect(@call_attempt).to receive(:redirect_caller)
           expect(call.incoming_call).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Play>http://s3.amazonaws.com/impactdialing_production/test/uploads/unknown/#{recording.id}.mp3</Play><Hangup/></Response>")
         end

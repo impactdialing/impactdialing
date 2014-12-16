@@ -56,7 +56,7 @@ describe 'Voters (Contacts) are called in the order they are uploaded', data_hea
       (voters.count - sans).times do |inner_pass|
         inner_pass += 1
 
-        voter = campaign.next_voter_in_dial_queue(prev_voter)
+        voter = campaign.next_in_dial_queue(prev_voter)
         if voter.nil?
           # p 'moving on'
           next 

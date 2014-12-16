@@ -134,7 +134,7 @@ describe Predictive do
     it "excludes system blocked numbers" do
       unblocked_voter                 = create(:voter, campaign: campaign, account: account)
       blocked_voter                   = create(:voter, :blocked, campaign: campaign, account: account)
-      blocked_number                  = create(:blocked_number, number: blocked_voter.phone, account: account, campaign: nil)
+      blocked_number                  = create(:blocked_number, number: blocked_voter.household.phone, account: account, campaign: nil)
       cache_available_voters(campaign)
       
       actual = campaign.choose_voters_to_dial(10)
@@ -148,7 +148,7 @@ describe Predictive do
       voter_list      = create(:voter_list, campaign: campaign, active: true)
       unblocked_voter = create(:voter, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
       blocked_voter   = create(:voter, :blocked, campaign: campaign, status: 'not called', voter_list: voter_list, account: account)
-      blocked_number  = create(:blocked_number, number: blocked_voter.phone, account: account, campaign: campaign)
+      blocked_number  = create(:blocked_number, number: blocked_voter.household.phone, account: account, campaign: campaign)
       cache_available_voters(campaign)
 
       actual = campaign.choose_voters_to_dial(10)

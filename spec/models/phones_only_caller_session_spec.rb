@@ -138,7 +138,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         expect(caller_session.voter_in_progress.id).to eq(@voter.id)
       end
 
-      it 'should unset voter in progress for session when Campaign#next_voter_in_dial_queue returns nil' do
+      it 'should unset voter in progress for session when Campaign#next_in_dial_queue returns nil' do
         caller_session = CallerSession.find @caller_session.id
         caller_session.update_attributes!(voter_in_progress: @voter)
         @voter.update_attributes!(last_call_attempt_time: 10.minutes.ago)
@@ -151,14 +151,14 @@ describe PhonesOnlyCallerSession, :type => :model do
         call_attempt = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         voter = create(:voter, first_name:"first", last_name:"last")
-        expect(@campaign).to receive(:next_voter_in_dial_queue).and_return(voter)
+        expect(@campaign).to receive(:next_in_dial_queue).and_return(voter)
         expect(caller_session.ready_to_call(DataCentre::Code::TWILIO)).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/conference_started_phones_only_preview?session_id=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
       end
 
       it "should render twiml for preview when no voters present" do
         call_attempt = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
-        expect(@campaign).to receive(:next_voter_in_dial_queue).and_return(nil)
+        expect(@campaign).to receive(:next_in_dial_queue).and_return(nil)
         expect(caller_session.ready_to_call(DataCentre::Code::TWILIO)).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
       end
     end
@@ -186,14 +186,14 @@ describe PhonesOnlyCallerSession, :type => :model do
         call_attempt = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         voter = create(:voter, first_name:"first", last_name:"last")
-        expect(@campaign).to receive(:next_voter_in_dial_queue).and_return(voter)
+        expect(@campaign).to receive(:next_in_dial_queue).and_return(voter)
         expect(caller_session.ready_to_call(DataCentre::Code::TWILIO)).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>first  last.</Say><Redirect method=\"POST\">http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/conference_started_phones_only_power?session_id=#{caller_session.id}&amp;voter_id=#{voter.id}</Redirect></Response>")
       end
 
       it "should render twiml for power when no voters present" do
         call_attempt = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
-        expect(@campaign).to receive(:next_voter_in_dial_queue).and_return(nil)
+        expect(@campaign).to receive(:next_in_dial_queue).and_return(nil)
         expect(caller_session.ready_to_call(DataCentre::Code::TWILIO)).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
       end
     end

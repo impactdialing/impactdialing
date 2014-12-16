@@ -9,7 +9,7 @@ describe Power, :type => :model do
     let(:dial_queue) do
       CallFlow::DialQueue.new(campaign)
     end
-    it_behaves_like 'Preview/Power#next_voter_in_dial_queue'
+    it_behaves_like 'Preview/Power#next_in_dial_queue'
   end
 end
 

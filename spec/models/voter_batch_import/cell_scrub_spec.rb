@@ -38,7 +38,7 @@ describe 'VoterBatchImport', data_heavy: true do
   end
 
   before do
-    batch_import = VoterBatchImport.new(voter_list, mapping, csv_file.shift, csv_file.readlines, ',')
+    batch_import = VoterBatchImport.new(voter_list, mapping, csv_file.shift, csv_file.readlines)
     @counts      = batch_import.import_csv
   end
 

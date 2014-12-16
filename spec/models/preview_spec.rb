@@ -162,7 +162,7 @@ describe Preview, :type => :model do
         redis = Redis.new
         redis.flushall
       end
-      it_behaves_like 'Preview/Power#next_voter_in_dial_queue'
+      it_behaves_like 'Preview/Power#next_in_dial_queue'
     end
 
     context 'skipping voters' do
@@ -179,7 +179,7 @@ describe Preview, :type => :model do
           skip_voters @voters
           @dial_queue.next(4) # pop first 4 voters (up to @voters[3])
           expected = @voters[4]
-          actual = @campaign.next_voter_in_dial_queue(@current_voter.id)
+          actual = @campaign.next_in_dial_queue(@current_voter.id)
           expect(actual).to eq expected
         end
       end
@@ -193,7 +193,7 @@ describe Preview, :type => :model do
           skip_voters [@voters[7]]
 
           expected = @voters[8]
-          actual = @campaign.next_voter_in_dial_queue
+          actual = @campaign.next_in_dial_queue
 
           expect(actual).to eq expected
         end
@@ -206,7 +206,7 @@ describe Preview, :type => :model do
           skip_voters @voters[5..6]
 
           expected = @voters[7]
-          actual = @campaign.next_voter_in_dial_queue(@current_voter.id)
+          actual = @campaign.next_in_dial_queue(@current_voter.id)
           expect(actual).to eq expected
         end
       end
@@ -218,21 +218,21 @@ describe Preview, :type => :model do
       @dial_queue = cache_available_voters(@campaign)
 
       expected = @voters[0]
-      actual = @campaign.next_voter_in_dial_queue(nil)
+      actual = @campaign.next_in_dial_queue(nil)
       expect(actual).to eq expected
 
       actual.skip
       actual.reload
 
       expected = @voters[1]
-      actual = @campaign.next_voter_in_dial_queue(actual.id)
+      actual = @campaign.next_in_dial_queue(actual.id)
       expect(actual).to eq expected
 
       actual.skip
       actual.reload
 
       expected = @voters[2]
-      actual = @campaign.next_voter_in_dial_queue(actual.id)
+      actual = @campaign.next_in_dial_queue(actual.id)
       expect(actual).to eq expected
 
       redis = @dial_queue.available.send :redis
@@ -249,17 +249,17 @@ describe Preview, :type => :model do
       vthr = create(:voter, vopt)
       cache_available_voters(campaign)
 
-      expect(campaign.next_voter_in_dial_queue(nil)).to eq vone
+      expect(campaign.next_in_dial_queue(nil)).to eq vone
 
       vone.reload.skip
 
-      next_voter = campaign.next_voter_in_dial_queue(vone.id)
+      next_voter = campaign.next_in_dial_queue(vone.id)
       expect(next_voter).not_to eq vone
       expect(next_voter).to eq vtwo
 
       vtwo.reload.skip
 
-      next_voter = campaign.next_voter_in_dial_queue(vtwo.id)
+      next_voter = campaign.next_in_dial_queue(vtwo.id)
       expect(next_voter).not_to eq vtwo
       expect(next_voter).to eq vthr
 
