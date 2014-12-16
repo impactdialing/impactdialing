@@ -7,7 +7,7 @@ shared_examples 'Preview/Power#next_in_dial_queue' do
     uncalled_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
     cache_available_voters(campaign)
 
-    expect(campaign.next_in_dial_queue(nil)).to eq(uncalled_voter)
+    expect(campaign.next_in_dial_queue).to eq(uncalled_voter)
   end
 
   it "returns voter with respect to a current voter" do
@@ -18,14 +18,14 @@ shared_examples 'Preview/Power#next_in_dial_queue' do
     dial_queue     = cache_available_voters(campaign)
     dial_queue.next(2) # pop the uncalled & current voter off the list, this test is a bit silly
                        # todo: fix or remove this test
-    expect(campaign.next_in_dial_queue(current_voter.id)).to eq(next_voter)
+    expect(campaign.next_in_dial_queue).to eq(next_voter)
   end
 
   it "returns no number if only voter to be called a retry and last called time is within campaign recycle rate" do
     campaign        = create(:power, recycle_rate: 2)
     retry_voter     = create(:voter, :call_back, :recently_dialed, campaign: campaign)
     current_voter   = create(:voter, :success, :recently_dialed, campaign: campaign)
-    actual          = campaign.next_in_dial_queue(current_voter.id)
+    actual          = campaign.next_in_dial_queue
 
     expect(actual).to be_nil
   end
@@ -38,6 +38,6 @@ shared_examples 'Preview/Power#next_in_dial_queue' do
     create(:blocked_number, account: account, campaign: campaign, number: voter.household.phone)
     create(:blocked_number, account: account, campaign: campaign, number: priority_voter.household.phone)
 
-    expect(campaign.next_in_dial_queue(nil)).to be_nil
+    expect(campaign.next_in_dial_queue).to be_nil
   end
 end
