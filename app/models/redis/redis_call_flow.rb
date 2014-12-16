@@ -35,8 +35,8 @@ class RedisCallFlow
     $redis_call_flow_connection.lpush "disconnected_call_list", {id: call_id, recording_duration: recording_duration, recording_url: recording_url, caller_id: caller_id, current_time: Time.now.to_s}.to_json
   end
   
-  def self.push_to_wrapped_up_call_list(call_id, caller_type)    
-    $redis_call_flow_connection.lpush "wrapped_up_call_list", {id: call_id, caller_type: caller_type, current_time: Time.now.to_s}.to_json
+  def self.push_to_wrapped_up_call_list(call_id, caller_type, voter_id)
+    $redis_call_flow_connection.lpush "wrapped_up_call_list", {id: call_id, caller_type: caller_type, voter_id: voter_id, current_time: Time.now.to_s}.to_json
   end
   
   def self.not_answered_call_list
