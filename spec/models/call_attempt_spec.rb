@@ -21,10 +21,6 @@ describe CallAttempt, :type => :model do
       expect(subject.recording_delivered_manually).to be_truthy
     end
 
-    it 'calls update_voicemail_history! on associated voter' do
-      expect(voter.voicemail_history).to eq recording.id.to_s
-    end
-
     it 'save!s' do
       pre = subject
       expect(subject.reload).to eql pre

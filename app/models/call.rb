@@ -35,8 +35,21 @@ class Call < ActiveRecord::Base
 
   def call_answered_by_machine
     RedisCallFlow.push_to_processing_by_machine_call_hash(self.id)
+
     call_attempt.redirect_caller
-    call_answered_by_machine_twiml
+
+    agent = AnsweringMachineAgent.new(call_attempt.household)
+
+    twiml = Twilio::TwiML::Response.new do |r|
+      if agent.leave_message?
+        r.Play campaign.recording.file.url
+      end
+      r.Hangup
+    end.text
+
+    RedisCallFlow.record_message_drop_info(self.id, campaign.recording_id, 'automatic') if agent.leave_message?
+
+    return twiml
   end
 
   def hungup
@@ -55,7 +68,6 @@ class Call < ActiveRecord::Base
   def call_ended(campaign_type, params={})
     unless caller_session.nil? # can be the case for transfers
       caller_session.publish_call_ended(params)
-      caller_session.end_call
     end
     if call_did_not_connect?
       RedisCallFlow.push_to_not_answered_call_list(self.id, redis_call_status)

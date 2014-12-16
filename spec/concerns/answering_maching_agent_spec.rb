@@ -11,10 +11,10 @@ describe AnsweringMachineAgent do
       campaign: campaign
     })
   end
-  let(:voter) do
-    voters.first
+  let(:household) do
+    voters.first.household
   end
-  let(:subject){ AnsweringMachineAgent.new(voter) }
+  let(:subject){ AnsweringMachineAgent.new(household) }
 
   describe '#leave_message?' do
     context 'campaign is not set to leave messages' do
@@ -30,14 +30,11 @@ describe AnsweringMachineAgent do
       before do
         campaign.update_attribute(:use_recordings, true)
       end
-      context 'campaign is set to call back after leaving a message AND' do
+      context 'call back after leaving a message AND' do
         before do
           campaign.update_attribute(:call_back_after_voicemail_delivery, true)
         end
         context 'a message has not been left for this contact' do
-          before do
-            voter.update_attribute(:voicemail_history, '')
-          end
           it 'returns true' do
             expect(subject.leave_message?).to be_truthy
           end
@@ -45,7 +42,8 @@ describe AnsweringMachineAgent do
 
         context 'a message has been left for this contact' do
           before do
-            voter.update_attribute(:voicemail_history, '12')
+            household.call_attempts << create(:bare_call_attempt, :voicemail_delivered)
+            household.call_attempts << create(:bare_call_attempt, :machine_hangup)
           end
           it 'returns false' do
             expect(subject.leave_message?).to be_falsey
@@ -80,25 +78,6 @@ describe AnsweringMachineAgent do
         end
         it 'returns false' do
           expect(subject.call_back?).to be_falsey
-        end
-      end
-    end
-
-    context 'campaign is set to detect machines but not leave a message' do
-      context 'campaign is set to call back after leaving a message' do
-        before do
-          campaign.update_attribute(:call_back_after_voicemail_delivery, true)
-        end
-        it 'returns true' do
-          expect(subject.call_back?).to be_truthy
-        end
-      end
-      context 'campaign is not set to call back after leaving a message' do
-        before do
-          campaign.update_attribute(:call_back_after_voicemail_delivery, false)
-        end
-        it 'returns true' do
-          expect(subject.call_back?).to be_truthy
         end
       end
     end

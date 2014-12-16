@@ -16,12 +16,20 @@ class RedisCallFlow
   def self.push_to_processing_by_machine_call_hash(call_id)        
     processing_by_machine_call_hash.store(call_id, Time.now.to_s) 
   end
+
+  def self.record_message_drop_info(call_id, recording_id, drop_type)
+    $redis_call_flow_connection.hset "message_dropped", call_id, {recording_id: recording_id, drop_type: drop_type}.to_json
+  end
+
+  def self.get_message_drop_info(call_id)
+    info = $redis_call_flow_connection.hget "message_dropped", call_id
+    info.nil? ? {} : JSON.load(info)
+  end
   
   # done
   def self.push_to_end_by_machine_call_list(call_id)    
     $redis_call_flow_connection.lpush "end_answered_by_machine_call_list", {id: call_id, current_time: Time.now.to_s}.to_json
   end
-  
     
   def self.push_to_disconnected_call_list(call_id, recording_duration, recording_url, caller_id)    
     $redis_call_flow_connection.lpush "disconnected_call_list", {id: call_id, recording_duration: recording_duration, recording_url: recording_url, caller_id: caller_id, current_time: Time.now.to_s}.to_json

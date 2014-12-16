@@ -2,32 +2,35 @@
 # todo: document
 #
 class AnsweringMachineAgent
-  attr_reader :voter
+  attr_reader :household, :voter # tmp back compat
 
 private
   def campaign
-    @campaign ||= voter.campaign
+    @campaign ||= household.campaign
   end
 
 public
-  def initialize(voter)
-    @voter = voter
+  def initialize(household)
+    @household = household
+    @voter = household # tmp back compat
   end
 
   def leave_message?
-    yes = false
-    if campaign.use_recordings?
-      if (campaign.call_back_after_voicemail_delivery? &&
-               voter.yet_to_receive_voicemail?) ||
-         !campaign.call_back_after_voicemail_delivery?
-        yes = true
-      end
-    end
-    yes
+    return campaign.use_recordings? && household.no_voicemail_delivered?
+
+    # yes = false
+    # if campaign.use_recordings?
+    #   if (campaign.call_back_after_voicemail_delivery? &&
+    #            household.no_voicemail_delivered?) ||
+    #      !campaign.call_back_after_voicemail_delivery?
+    #     yes = true
+    #   end
+    # end
+    # yes
   end
 
   def call_back?
-    !leave_message? || campaign.call_back_after_voicemail_delivery?
+    campaign.call_back_after_voicemail_delivery?
   end
 
   def call_status
