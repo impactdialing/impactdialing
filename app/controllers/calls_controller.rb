@@ -85,7 +85,7 @@ class CallsController < ApplicationController
   end
 
   def find_call
-    @call = (Call.find_by_id(params["id"]) || Call.find_by_call_sid(params['CallSid']))
+    @call = Call.where('id = ? OR call_sid = ?', params['id'], params['CallSid']).includes(call_attempt: [:caller, :household, :campaign, :caller_session]).first
   end
 
   def find_and_update_answers_and_notes_and_scheduled_date

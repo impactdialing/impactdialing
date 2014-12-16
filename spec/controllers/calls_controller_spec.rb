@@ -30,7 +30,7 @@ describe CallsController, :type => :controller do
       before do
         allow(call).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, 'publish_message_drop_success'])
         allow(call).to receive(:enqueue_call_flow).with(Providers::Phone::Jobs::DropMessageRecorder, [call.id, 1])
-        allow(Call).to receive(:find_by_id){ call }
+        allow(Call).to receive_message_chain(:where, :includes, :first){ call }
       end
 
       it 'updates recording info on the associated CallAttempt' do
@@ -54,7 +54,7 @@ describe CallsController, :type => :controller do
   describe 'Browser endpoints' do
     describe '#drop_message' do
       it 'begins the drop message process' do
-        allow(Call).to receive(:find_by_id){ call }
+        allow(Call).to receive_message_chain(:where, :includes, :first){ call }
         expect(call).to receive(:enqueue_call_flow).with(Providers::Phone::Jobs::DropMessage, [call.id])
         post :drop_message, id: call.id
       end
