@@ -25,7 +25,12 @@ module PreviewPowerCampaign
       end
     end
     
-    return house
+    # tmp
+    return nil if house.nil?
+    
+    voter = house[:voters].first
+    voter[:fields].merge(phone: house[:phone])
+    return voter
   end
 
   def caller_conference_started_event

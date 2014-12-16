@@ -210,7 +210,7 @@ public
     # try loading session from params to avoid queueing jobs for nonsense resources
     session = CallerSession.find_by_id_and_caller_id(params[:session_id], params[:id])
     enqueue_call_flow(CallerPusherJob, [session.id, "publish_calling_voter"])
-    enqueue_call_flow(PreviewPowerDialJob, [session.id, params[:phone]])
+    enqueue_call_flow(PreviewPowerDialJob, [session.id, params[:voter_id]])
 
     render :nothing => true
   end
