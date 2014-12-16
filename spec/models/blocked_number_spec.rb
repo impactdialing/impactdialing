@@ -69,12 +69,6 @@ describe BlockedNumber, :type => :model do
     end
   end
 
-  it "doesn't strip alphabetic characters" do
-    blocked_number = build(:blocked_number, :number => "123a456a7890")
-    expect(blocked_number).not_to be_valid
-    expect(blocked_number.number).to eq('123a456a7890')
-  end
-
   it "selects system and campaign blocked numbers" do
     campaign  = create(:campaign)
     system_blocked_number = create(:blocked_number, :number => "1111111111", :campaign => nil)
