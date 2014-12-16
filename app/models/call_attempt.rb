@@ -46,11 +46,15 @@ class CallAttempt < ActiveRecord::Base
     CallAttempt.report_recording_url(self.recording_url)
   end
 
-  def update_recording!(delivered_manually=false)
+  def update_recording(delivered_manually=false)
     self.status                       = CallAttempt::Status::VOICEMAIL
     self.recording_id                 = campaign.recording_id
     self.recording_delivered_manually = delivered_manually
-    self.save!
+  end
+
+  def update_recording!(delivered_manually=false)
+    update_recording(delivered_manually)
+    save!
   end
 
   def duration
@@ -97,14 +101,13 @@ class CallAttempt < ActiveRecord::Base
     self.call_end = time
   end
 
-  def end_answered_by_machine(connect_time, end_time)
+  def end_answered_by_machine(connect_time, end_time, recording_id=nil, drop_type=nil)
     self.connecttime = connect_time
     self.wrapup_time = end_time
     self.call_end    = end_time
-    # status might have been updated already by #update_recording!
-    unless [CallAttempt::Status::VOICEMAIL, CallAttempt::Status::HANGUP].include?(status)
-      # if not then a message probably was not dropped or
-      # the job is failing in the queue and will run later
+    if recording_id or drop_type
+      self.update_recording(drop_type != 'automatic')
+    else
       self.status = CallAttempt::Status::HANGUP
     end
   end

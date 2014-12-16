@@ -6,10 +6,10 @@ describe PersistCalls do
   let!(:recording){ create(:recording) }
   let!(:campaign) { create(:campaign, {recording_id: recording.id}) }
   let!(:voter) { create(:voter, campaign: campaign) }
-  let!(:call_attempt) { create(:call_attempt, voter: voter, campaign: campaign) }
+  let!(:call_attempt) { create(:call_attempt, voter: voter, household: voter.household, campaign: campaign) }
   let!(:call) { create(:call, call_attempt: call_attempt) }
   let!(:time) { Time.zone.now.to_s }
-  let!(:new_call_attempt) { create(:call_attempt, voter: voter, campaign: campaign) }
+  let!(:new_call_attempt) { create(:call_attempt, voter: voter, household: voter.household, campaign: campaign) }
   let!(:new_call) { create(:call, call_attempt: new_call_attempt) }
 
   before(:each) do
@@ -68,13 +68,17 @@ describe PersistCalls do
   describe ".abandoned_calls" do
     before(:each) { PersistCalls.abandoned_calls(100) }
 
-    context "voter" do
-      subject { voter.reload }
+    context "household" do
+      subject { voter.household.reload }
 
-      its(:status) { should == CallAttempt::Status::ABANDONED }
-      its(:call_back) { should be_falsey }
-      its(:caller_session) { should be_nil }
-      its(:caller_id) { should be_nil }
+      it 'updates household status' do
+        expect(subject.status).to eq CallAttempt::Status::ABANDONED
+      end
+      it 'updates household presented_at' do
+        expect(subject.presented_at).to eq time
+      end
+      it '[legacy] unsets caller session'
+      it '[legacy] unsets caller'
     end
 
     context "call_attempt" do
@@ -99,10 +103,9 @@ describe PersistCalls do
     end
 
     context "voter" do
-      subject { voter.reload }
+      subject { voter.household.reload }
 
       its(:status) { should == CallAttempt::Status::BUSY }
-      its(:call_back) { should be_falsey }
     end
   end
 
@@ -131,6 +134,12 @@ describe PersistCalls do
       its(:status) { should == CallAttempt::Status::SUCCESS }
       its(:caller_id) { should == 1 }
     end
+
+    context "household" do
+      subject{ voter.household.reload }
+      its(:status){ should == CallAttempt::Status::SUCCESS }
+      its(:presented_at){ should == time }
+    end
   end
 
   context ".wrappedup" do
@@ -144,7 +153,7 @@ describe PersistCalls do
   end
 
   context ".endbymachine" do
-    context "no message to drop" do
+    context "no message was drop" do
       before(:each) do
         RedisCallFlow.processing_by_machine_call_hash.store(call.id, time)
         PersistCalls.machine_calls(100)
@@ -156,33 +165,25 @@ describe PersistCalls do
         its(:call_end) { should == time }
         its(:wrapup_time) { should == time }
       end
-      context 'voter' do
-        subject { voter.reload }
+      context 'household' do
+        subject { voter.household.reload }
         its(:status) { should == CallAttempt::Status::HANGUP }
-        # we want to call voters back if answered by a machine and we hangup
-        its(:call_back) { should == true }
       end
     end
 
-    context 'message to drop' do
-      let(:agent) do
-        double('AnsweringMachineAgent', {
-          leave_message?: true,
-          call_back?: true,
-          call_status: CallAttempt::Status::VOICEMAIL
-        })
-      end
+    context 'message was dropped' do
       before do
-        expect(AnsweringMachineAgent).to receive(:new).with(voter).at_least(:twice){ agent }
+        RedisCallFlow.record_message_drop_info(call.id, campaign.recording_id, 'automatic')
         RedisCallFlow.processing_by_machine_call_hash.store(call.id, time)
         PersistCalls.machine_calls(100)
       end
 
-      context 'voter' do
-        subject{ voter.reload }
+      context 'household' do
+        subject{ voter.household.reload }
 
-        its(:status){ should eq CallAttempt::Status::VOICEMAIL }
-        its(:call_back){ should be_truthy }
+        it 'updates status to CallAttempt::Status::VOICEMAIL' do
+          expect(subject.status).to eq CallAttempt::Status::VOICEMAIL
+        end
       end
     end
   end

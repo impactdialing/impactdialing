@@ -72,20 +72,31 @@ class PersistCalls
     end
   end
 
-  # def self.cache_last_attempt_status
-  def self.import_voters(voters)
-    use_value_after_type_cast = ['enabled']
-
-    columns = Voter.column_names
-    values  = voters.map do |voter|
+  def self.setup_bitmasks(klass, collection, bitmask_columns)
+    columns = klass.column_names
+    values  = collection.map do |object|
       columns.map do |column|
-        unless use_value_after_type_cast.include?(column)
-          voter.send("#{column}_before_type_cast") 
+        unless bitmask_columns.include?(column)
+          object.send("#{column}_before_type_cast") 
         else
-          voter.send(column)
+          object.send(column)
         end
       end
     end
+    [columns, values]
+  end
+
+  def self.import_households(households)
+    columns, values = setup_bitmasks(Household, households, ['blocked'])
+
+    # skip validations - uniqueness validation fails; ar import doesn't handle this case
+    # the db has fk constraints as of Dec 2014
+    Household.import columns, values, validate: false, on_duplicate_key_update: [:status, :presented_at, :updated_at]
+  end
+
+  # def self.cache_last_attempt_status
+  def self.import_voters(voters)
+    columns, values = setup_bitmasks(Voter, voters, ['enabled'])
     Voter.import columns, values, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date, :voicemail_history]
   end
 
@@ -108,7 +119,7 @@ class PersistCalls
         # todo: ^^ change to CallAttempt.where(id: calls_data.map{|c| c['id']}).includes(:household).each_with_object({}) do |call_attempt, memo|
         memo[call.id] = call
       end
-      result = calls_data.each_with_object({voters: [], call_attempts: []}) do |call_data, memo|
+      result = calls_data.each_with_object({voters: [], call_attempts: [], households: []}) do |call_data, memo|
         call = calls[call_data['id'].to_i]
         
         next unless call_valid?(call)
@@ -119,39 +130,36 @@ class PersistCalls
         
         yield(call_data, call_attempt, voter)
 
+        household.dialed(call_attempt)
+
         memo[:call_attempts] << call_attempt
-        memo[:households] << household
         memo[:voters] << voter
+        memo[:households] << household
       end
+
       import_voters(result[:voters])
-      import_households(result[:households])
       import_call_attempts(result[:call_attempts])
+      import_households(result[:households])
     end
   end
 
   def self.abandoned_calls(num)
     process_calls_base($redis_call_flow_connection, "abandoned_call_list", num) do |abandoned_call_data, call_attempt, voter|
       call_attempt.abandoned(abandoned_call_data['current_time'])
-      voter.try(:abandoned)
-      household.dialed(call_attempt)
-      # RedisCallFlow.del_from_abandoned_hash(abandoned_call_data['id'])
     end
   end
 
   def self.unanswered_calls(num)
     process_calls_base($redis_call_end_connection, "not_answered_call_list", num) do |unanswered_call_data, call_attempt, voter|
       call_attempt.end_unanswered_call(unanswered_call_data['call_status'], unanswered_call_data['current_time'])
-      voter.try(:end_unanswered_call(unanswered_call_data['call_status']))
-      household.dialed(call_attempt)
     end
   end
 
   def self.machine_calls(num)
     process_calls_base($redis_call_flow_connection, "end_answered_by_machine_call_list", num) do |unanswered_call_data, call_attempt, voter|
-      connect_time = RedisCallFlow.processing_by_machine_call_hash[unanswered_call_data['id']]
-      call_attempt.end_answered_by_machine(connect_time, unanswered_call_data['current_time'])
-      voter.try(:end_answered_by_machine)
-      household.dialed(call_attempt)
+      connect_time      = RedisCallFlow.processing_by_machine_call_hash[unanswered_call_data['id']]
+      message_drop_info = RedisCallFlow.get_message_drop_info(unanswered_call_data['id'])
+      call_attempt.end_answered_by_machine(connect_time, unanswered_call_data['current_time'], message_drop_info['recording_id'], message_drop_info['drop_type'])
     end
   end
 
@@ -160,7 +168,6 @@ class PersistCalls
       call_attempt.disconnect_call(disconnected_call_data['current_time'], disconnected_call_data['recording_duration'],
                                    disconnected_call_data['recording_url'], disconnected_call_data['caller_id'])
       voter.disconnect_call(disconnected_call_data['caller_id'])
-      household.dialed(call_attempt)
     end
   end
 
