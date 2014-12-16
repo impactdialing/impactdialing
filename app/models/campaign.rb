@@ -74,7 +74,7 @@ class Campaign < ActiveRecord::Base
 
   validates :name, :presence => true
   validates :caller_id, :presence => true
-  validates :caller_id, :numericality => {}, :length => {:minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
+  validates :caller_id, :numericality => true, :length => {:minimum => 10, :maximum => 10}, :unless => :skip_caller_id_validation?
   validates :script, :presence => true
   validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Power', 'Predictive']}
   validates :acceptable_abandon_rate,
@@ -91,10 +91,19 @@ class Campaign < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
-  before_validation :sanitize_caller_id
+  before_validation :sanitize_caller_id, :if => :caller_id
   before_save :sanitize_message_service_settings
 
 private
+  def skip_caller_id_validation?
+    caller_id && caller_id.start_with?('+')
+  end
+
+  def sanitize_caller_id
+    country_mark   = self.caller_id.start_with?('+') ? '+' : ''
+    self.caller_id = "#{country_mark}#{PhoneNumber.sanitize(self.caller_id)}"
+  end
+
   def sanitize_message_service_settings
     if use_recordings? and !answering_machine_detect?
       self.use_recordings = false
@@ -167,11 +176,11 @@ public
   end
 
   def set_caller_id_error_msg
-      if errors[:caller_id].any?
-        errors[:caller_id].clear
-        errors.add(:base, 'Caller ID must be a 10-digit North American phone number or begin with "+" and the country code')
-      end
+    if errors[:caller_id].any?
+      errors[:caller_id].clear
+      errors.add(:base, 'Caller ID must be a 10-digit North American phone number or begin with "+" and the country code')
     end
+  end
 
   def campaign_type_changed
     if type_changed? && callers_log_in?
@@ -182,10 +191,6 @@ public
   def is_preview_or_power
     Rails.logger.info "Deprecated ImpactDialing Method: Campaign#is_preview_or_power"
     type == Type::PREVIEW || type == Type::PROGRESSIVE
-  end
-
-  def sanitize_caller_id
-    self.caller_id = PhoneNumber.sanitize(self.caller_id)
   end
 
   def continue_on_amd
