@@ -24,7 +24,7 @@ class TwilioLib
     "#{@root}Calls.json"
   end
 
-  def shared_callback_url_params
+  def shared_callback_url_params(campaign)
     {
       host: Settings.incoming_callback_host,
       port: Settings.twilio_callback_port,
@@ -37,8 +37,8 @@ class TwilioLib
     {
       'From'           => campaign.caller_id,
       'To'             => household.phone,
-      'Url'            => incoming_call_url(attempt.call, shared_callback_url_params.merge(event: "incoming_call")),
-      'StatusCallback' => call_ended_call_url(attempt.call, shared_callback_url_params.merge(event: "call_ended")),
+      'Url'            => incoming_call_url(call_attempt.call, shared_callback_url_params(campaign).merge(event: "incoming_call")),
+      'StatusCallback' => call_ended_call_url(call_attempt.call, shared_callback_url_params(campaign).merge(event: "call_ended")),
       'Timeout'        => "15"
     }.merge!(amd_params(campaign))
   end

@@ -68,7 +68,7 @@ class Twillio
     end
 
     call_attempt = household.call_attempts.create(attempt_attrs)
-    call         = Call.create(call_attempt: attempt, state: "initial")
+    call         = Call.create(call_attempt: call_attempt, state: "initial")
 
     call_attempt
   end

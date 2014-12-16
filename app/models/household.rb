@@ -87,7 +87,7 @@ public
 
   def no_presentable_voters?
     # if campaign.contact_all_voters_in_household?
-      voters_count == voters.not_presentable(campaign).count
+      voters.count == voters.not_presentable(campaign).count
     # else
     # voters.any?{|voter| voter.not_presentable?}   
     # end
