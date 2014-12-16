@@ -22,10 +22,4 @@ describe Providers::Phone::Jobs::DropMessageRecorder do
 
     expect(call_attempt.reload.recording_delivered_manually?).to be_truthy
   end
-
-  it 'stores the recording id with the Voter' do
-    subject.perform(call.id, 1)
-
-    expect(voter.reload.voicemail_history).to eq recording.id.to_s
-  end
 end

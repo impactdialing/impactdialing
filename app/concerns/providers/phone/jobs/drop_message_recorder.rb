@@ -15,12 +15,12 @@ class Providers::Phone::Jobs::DropMessageRecorder
   include Sidekiq::Worker
   # This job should only fail in exceptional circumstances. Rely on sidekiq to retry
   # w/ exponential back-off. This gives time (~20 days by default retry settings)
-  # to correct any exceptions without losing data of message delivery mechanism used.
+  # to correct any exceptions without losing data.
   sidekiq_options :retry => true
   sidekiq_options :failures => true
 
   def perform(call_id, dropped_manually)
-    call = Call.includes(:call_attempt => [:caller_session, :campaign, :voter]).find(call_id)
+    call = Call.includes(:call_attempt => [:caller_session, :campaign, :household]).find(call_id)
     call.update_recording!(dropped_manually)
   end
 end
