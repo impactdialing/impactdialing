@@ -75,11 +75,16 @@
         <b><%= link_to 'Dials report', dials_client_reports_path(campaign_id: @campaign.id), {target: '_blank'} %></b>
         - view dial details across lists for this campaign.
       </p>
+
+      <p>
+        <b>Total households: <%= @campaign.households_count %></b>
+        - a household is a group of contacts/voters that have the same phone number.
+      </p>
+
       <table>
         <tr>
           <th>Name</th>
           <th>Total contacts</th>
-          <th>Total households</th>
         </tr>
         <% i = 0 %>
         <% @campaign.voter_lists.each do |list| %>
@@ -93,7 +98,6 @@
               <% i= i+1 %>
               </td>
               <td valign="top"><%= list.voters_count %></td>
-              <td valign="top"><%= numbers_count_for(list) %></td>
             </tr>
           <% end %>
         <% end %>
