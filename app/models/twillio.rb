@@ -1,6 +1,34 @@
 class Twillio
   include SidekiqEvents
 
+  class InflightStats
+    attr_reader :campaign
+
+    private
+      def redis
+        @redis ||= Redis.new
+      end
+      def base_key
+        "inflight_stats:#{campaign.id}"
+      end
+    public
+      def initialize(campaign)
+        @campaign = campaign
+      end
+
+      def inc(status)
+        redis.hincrby base_key, status, 1
+      end
+
+      def dec(status)
+        redis.hincrby base_key, status, -1
+      end
+
+      def get(status)
+        redis.hget(base_key, status) || 0
+      end
+  end
+
   def self.error_response_codes
     # 401: unauthorized
     # 405: method not allowed
@@ -19,6 +47,8 @@ class Twillio
 
   def self.count_dial_success(campaign, caller_session=nil)
     ImpactPlatform::Metrics.count('dialer.dial.success', '1', count_source(campaign, caller_session))
+
+    InflightStats.new(campaign).inc('ringing')
   end
 
   def self.count_dial_error(campaign, caller_session=nil)

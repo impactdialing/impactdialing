@@ -14,7 +14,15 @@ class Call < ActiveRecord::Base
   delegate :enqueue_call_flow, :to=> :call_attempt
   delegate :update_recording!, :to => :call_attempt
 
+private
+  def stats
+    @stats ||= Twillio::InflightStats.new(campaign)
+  end
+
+public
   def incoming_call
+    stats.dec('ringing')
+    
     return connected if answered_by_human_and_caller_available?
     return abandoned if answered_by_human_and_caller_not_available?
     return call_answered_by_machine if answered_by_machine?

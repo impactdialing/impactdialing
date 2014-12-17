@@ -116,6 +116,10 @@ private
     true # make sure to not halt callback chain for any reason from here
   end
 
+  def inflight_stats
+    @inflight_stats ||= Twillio::InflightStats.new(self)
+  end
+
 public
 
   module Type
@@ -354,7 +358,7 @@ public
       status_count = RedisStatus.count_by_status(self.id, current_caller_sessions.collect{|x| x.id})
     end
 
-    ringing_lines = call_attempts.with_status(CallAttempt::Status::RINGING).between(1.minute.ago, Time.now).size
+    ringing_lines = inflight_stats.get('ringing')
     available     = dial_queue.available.size
 
     return {
