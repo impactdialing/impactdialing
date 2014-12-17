@@ -31,6 +31,10 @@ public
     @campaign = campaign
   end
 
+  def range_by_score(key, min, max)
+    redis.zrangebyscore(keys[key], min, max).size
+  end
+
   def add_all(objects)
     expire keys[:bin] do
       redis.zadd keys[:bin], *memberize_collection(objects)

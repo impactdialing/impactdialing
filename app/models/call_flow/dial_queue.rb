@@ -57,6 +57,18 @@ module CallFlow
       @households ||= CallFlow::DialQueue::Households.new(campaign)
     end
 
+    def not_dialed_count
+      min = '-inf'
+      max = '0.999'
+      available.range_by_score(:active, min, max).size
+    end
+
+    def recycled_count
+      min      = '1.0'
+      max      = "#{Time.now.to_i}.999"
+      available.range_by_score(:active, min, max).size
+    end
+
     def cache(voter)
       household = voter.household
       unless cache_household?(household)

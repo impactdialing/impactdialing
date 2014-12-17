@@ -95,6 +95,10 @@ public
     redis.zcard keys[:active]
   end
 
+  def range_by_score(key, min, max)
+    redis.zrangebyscore(keys[key], min, max).size
+  end
+
   def peak(list=:active, options={})
     redis.zrange keys[list], 0, -1, options
   end
@@ -103,7 +107,8 @@ public
   def presented_and_stale
     min = '-inf'
     max = "#{campaign.recycle_rate.hours.ago.to_i}.999"
-    redis.zrangebyscore(keys[:presented], min, max)
+    # todo: verify call is not in progress to these presented numbers before considering them all stale
+    range_by_score(:presented, min, max)
   end
 
   def next(n)
