@@ -113,23 +113,17 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def end_unanswered_call(call_status, time)
-    self.status = CallAttempt::Status::MAP[call_status]
+    self.status      = CallAttempt::Status::MAP[call_status]
     self.wrapup_time = time
-    self.call_end = time
+    self.call_end    = time
   end
 
   def disconnect_call(time, duration, url, caller_id)
-    self.status = CallAttempt::Status::SUCCESS
-    self.call_end =  time
+    self.status             = CallAttempt::Status::SUCCESS
+    self.call_end           = time
     self.recording_duration = duration
-    self.recording_url = url
-    self.caller_id = caller_id
-  end
-
-  def schedule_for_later(date)
-    scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
-    self.status = Status::SCHEDULED
-    self.scheduled_date = scheduled_date
+    self.recording_url      = url
+    self.caller_id          = caller_id
   end
 
   def wrapup_now(time, caller_type, voter_id)
@@ -164,8 +158,6 @@ class CallAttempt < ActiveRecord::Base
   def not_wrapped_up?
     wrapup_time.nil?
   end
-
-
 
   def self.time_on_call(caller, campaign, from, to)
     result = CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).
