@@ -39,7 +39,7 @@ module CampaignHelper
   end
 
   def numbers_count_for(list)
-    list.voters.select('DISTINCT(phone)').count
+    list.households_count
   end
 
   def numbers_remaining_count_for(list)

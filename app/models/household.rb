@@ -2,7 +2,7 @@ class Household < ActiveRecord::Base
   # no attr_accessible for now; these records are handled entirely behind-the-scenes
   belongs_to :account
   
-  belongs_to :campaign
+  belongs_to :campaign, counter_cache: true
   delegate :dial_queue, to: :campaign
   delegate :call_back_after_voicemail_delivery?, to: :campaign
 

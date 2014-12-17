@@ -22,5 +22,7 @@ class ResetVoterListCounterCache
 
   def self.perform(voter_list_id)
     VoterList.reset_counters(voter_list_id, :voters)
+    list = VoterList.find voter_list_id
+    Campaign.reset_counters(list.campaign_id, :households)
   end
 end
