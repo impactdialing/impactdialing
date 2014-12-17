@@ -31,7 +31,7 @@ class Voter < ActiveRecord::Base
   belongs_to :account
   belongs_to :campaign
   belongs_to :voter_list, counter_cache: true
-  belongs_to :household, counter_cache: true
+  belongs_to :household
 
   has_many :call_attempts
   has_many :custom_voter_field_values, autosave: true
@@ -156,11 +156,11 @@ class Voter < ActiveRecord::Base
   scope :ringing, where('voters.status = ?', CallAttempt::Status::RINGING)
   scope :failed, where('voters.status = ?', CallAttempt::Status::FAILED)
   scope :available, lambda{|campaign| where('voters.status NOT IN (?)', CallAttempt::Status.not_available_list(campaign))}
-  # scope :recently_dialed_households, lambda{ |recycle_rate|
-  #   dialed.enabled.active.
-  #   select('DISTINCT(voters.phone), voters.id, voters.last_call_attempt_time').
-  #   where('voters.last_call_attempt_time > ?', recycle_rate.hours.ago)
-  # }
+  scope :recently_dialed_households, lambda{ |recycle_rate|
+    dialed.enabled.active.
+    select('DISTINCT(voters.phone), voters.id, voters.last_call_attempt_time').
+    where('voters.last_call_attempt_time > ?', recycle_rate.hours.ago)
+  }
   scope :available_for_retry, lambda {|campaign|
     enabled.active.
     where('voters.status IN (?) OR voters.call_back=?',
@@ -364,25 +364,10 @@ public
     voicemail_history.blank?
   end
 
-  def end_answered_by_machine
-    agent = AnsweringMachineAgent.new(self)
-
-    self.caller_session = nil
-    self.status         = agent.call_status
-    self.call_back      = agent.call_back?
-  end
-
-  def end_unanswered_call(call_status)
-    self.status = CallAttempt::Status::MAP[call_status]
-    self.call_back = false
-  end
-
-
   def disconnect_call(caller_id)
     self.status         = CallAttempt::Status::SUCCESS
     self.caller_session = nil
     self.caller_id      = caller_id
-    self.call_back      = false
   end
 
   def dispositioned(call_attempt)
@@ -424,24 +409,6 @@ public
 
   def cache_data
     info.merge(id: self.id)
-  end
-
-  def not_yet_called?(call_status)
-    status==nil || status==call_status
-  end
-
-  def call_attempted_before?(time)
-    last_call_attempt_time!=nil && last_call_attempt_time < (Time.now - time)
-  end
-
-  def self.to_be_called(campaign_id, active_list_ids, status, recycle_rate=3)
-    voters = Voter.find_all_by_campaign_id_and_active(campaign_id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})", :limit=>300, :order=>"rand()")
-    voters.select { |voter| voter.not_yet_called?(status) || (voter.call_attempted_before?(recycle_rate.hours)) }
-  end
-
-  def self.just_called_voters_call_back(campaign_id, active_list_ids)
-    uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(campaign_id, 1, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})")
-    uncalled.select { |voter| voter.call_attempted_before?(10.minutes) }
   end
 
   def unanswered_questions
