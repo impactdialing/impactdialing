@@ -155,7 +155,6 @@ end
 
   describe "call_answered_by_lead" do
     describe "submit_result" do
-
       before(:each) do
         @caller = create(:caller)
         @script = create(:script)
@@ -164,15 +163,15 @@ end
         @caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
       end
-      it "should warp up and continue" do
+
+      it "should wrap up and continue" do
         call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
         RedisCall.set_request_params(call.id, call.attributes)
-        expect(RedisCallFlow).to receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
+        expect(RedisCallFlow).to receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT, @voter.id)
         expect(@call_attempt).to receive(:redirect_caller)
         expect(RedisStatus).to receive(:set_state_changed_time).with(@campaign.id, "On hold", @caller_session.id)
-        call.wrapup_and_continue
+        call.wrapup_and_continue({voter_id: @voter.id})
       end
-
     end
 
     describe "submit_result_and_stop" do
@@ -188,11 +187,10 @@ end
       it "should wrapup and stop" do
         call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
         RedisCall.set_request_params(call.id, call.attributes)
-        expect(RedisCallFlow).to receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
+        expect(RedisCallFlow).to receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT, @voter.id)
         expect(@call_attempt).to receive(:end_caller_session)
-        call.wrapup_and_stop
+        call.wrapup_and_stop({voter_id: @voter.id})
       end
-
     end
   end
 

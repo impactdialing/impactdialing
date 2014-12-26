@@ -37,15 +37,13 @@ class CallsController < ApplicationController
 
   # Browser
   def submit_result
-    RedisCallFlow.push_to_wrapped_up_call_list(@call.call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT, params[:voter_id])
-    @call.wrapup_and_continue
+    @call.wrapup_and_continue(params)
     render nothing: true
   end
 
   # Browser
   def submit_result_and_stop
-    RedisCallFlow.push_to_wrapped_up_call_list(@call.call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT, params[:voter_id])
-    @call.wrapup_and_stop
+    @call.wrapup_and_stop(params)
     render nothing: true
   end
 

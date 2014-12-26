@@ -108,14 +108,16 @@ public
     call_ended_twiml
   end
 
-  def wrapup_and_continue
+  def wrapup_and_continue(params={})
+    RedisCallFlow.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT, params[:voter_id])
     call_attempt.redirect_caller
     unless cached_caller_session.nil?
       RedisStatus.set_state_changed_time(call_attempt.campaign_id, "On hold", cached_caller_session.id)
     end
   end
 
-  def wrapup_and_stop
+  def wrapup_and_stop(params={})
+    RedisCallFlow.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT, params[:voter_id])
     end_caller_session
   end
 
