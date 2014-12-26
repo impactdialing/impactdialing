@@ -25,7 +25,7 @@ class Twillio
       end
 
       def get(status)
-        redis.hget(base_key, status) || 0
+        (redis.hget(base_key, status) || 0).to_i
       end
   end
 

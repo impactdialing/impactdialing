@@ -410,6 +410,9 @@ describe Campaign, :type => :model do
   end
 
   describe "current status" do
+    before do
+      Redis.new.flushall
+    end
     it "should return campaign details" do
       campaign = create(:predictive)
       c1= create(:phones_only_caller_session, on_call: false, available_for_call: false, campaign: campaign)
@@ -436,9 +439,10 @@ describe Campaign, :type => :model do
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c3.id)
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c4.id)
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c10.id)
+      
+      2.times{ campaign.send(:inflight_stats).inc('ringing') }
 
       expect(campaign.current_status).to eq ({callers_logged_in: 9, on_call: 2, wrap_up: 3, on_hold: 4, ringing_lines: 2, available: 0})
-
     end
   end
 
