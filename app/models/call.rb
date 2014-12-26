@@ -20,17 +20,26 @@ private
   end
 
 public
-  def incoming_call
+  def incoming_call(params={})
     stats.dec('ringing')
     
-    return connected if answered_by_human_and_caller_available?
+    return connected(params) if answered_by_human_and_caller_available?
     return abandoned if answered_by_human_and_caller_not_available?
     return call_answered_by_machine if answered_by_machine?
   end
 
-  def connected
+  ##
+  #
+  ## voter_id
+  #
+  # A voter_id of nil means voter will be selected
+  # after call has been dispositioned. An integer voter_id
+  # allows system-determined selection of voter before call
+  # has been dispositioned.
+  # Useful as an auto-select feature eg phones only.
+  def connected(params)
     connect_call # CallAttempt
-    enqueue_call_flow(VoterConnectedPusherJob, [call_attempt.caller_session_id, self.id])
+    enqueue_call_flow(VoterConnectedPusherJob, [call_attempt.caller_session_id, self.id, params[:voter_id]])
     connected_twiml
   end
 

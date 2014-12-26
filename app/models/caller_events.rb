@@ -16,10 +16,14 @@ module CallerEvents
       pushit('start_calling', {caller_session_id: id, dialer: campaign.type})
     end
 
-    def publish_voter_connected(call_id)
-      return if caller.is_phones_only?
+    def publish_voter_connected(call_id, voter_id = nil)
+      call = Call.find(call_id)
 
-      call       = Call.find(call_id)
+      if caller.is_phones_only?
+        self.update_attributes(voter_in_progress_id: voter_id)
+        return
+      end
+
       event_hash = campaign.voter_connected_event(call)
 
       pushit(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))

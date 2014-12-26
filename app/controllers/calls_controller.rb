@@ -12,7 +12,7 @@ class CallsController < ApplicationController
       call_attempt = @call.call_attempt
       call_attempt.connect_caller_to_lead(DataCentre.code(params[:callee_dc]))
     end
-    render xml: @call.incoming_call
+    render xml: @call.incoming_call(params)
   end
 
   # TwiML

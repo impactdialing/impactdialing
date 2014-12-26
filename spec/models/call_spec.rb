@@ -19,21 +19,20 @@ describe Call, :type => :model do
 
       it "should start a conference in connected state" do
         call = create(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
+        twiml = [
+          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+          "<Response><Dial hangupOnStar=\"false\" ",
+          "action=\"http://#{Settings.twilio_callback_host}",
+          "/calls/#{call.id}/disconnected\" ",
+          "record=\"false\">",
+          "<Conference waitUrl=\"hold_music\" waitMethod=\"GET\" ",
+          "beep=\"false\" endConferenceOnExit=\"true\"/>",
+          "</Dial></Response>"
+        ]
         RedisCall.set_request_params(call.id, call.attributes)
         expect(call).to receive(:enqueue_call_flow)
-        expect(call.incoming_call).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://#{Settings.twilio_callback_host}/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\"/></Dial></Response>")
+        expect(call.incoming_call).to eq(twiml.join)
       end
-
-      it "should start a conference in connected state with callsid if call not from twilio" do
-        skip "review & removal"
-        call = create(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
-        RedisCall.set_request_params(call.id, call.attributes)
-        RedisCallerSession.set_datacentre(@caller_session.id, DataCentre::Code::ORL)
-        expect(call).to receive(:enqueue_call_flow)
-        expect(call.incoming_call).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://voxeo-prodaws.impactdialing.com/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\"/><CallerSid>123456</CallerSid></Dial></Response>")
-      end
-
-
     end
 
 
