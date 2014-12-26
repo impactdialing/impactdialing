@@ -10,79 +10,71 @@ class PhonesOnlyCallerSession < CallerSession
 
   def read_choice
     return instructions_options_twiml if pound_selected?
-    return ready_to_call_twiml if star_selected?
-    callin_choice
+    return ready_to_call if star_selected?
+    read_choice_twiml
   end
 
-  def ready_to_call(callerdc)
+  def ready_to_call
     # CalculateDialsJob determines whether dialing is allowed
-    return conference_started_phones_only_predictive(callerdc) if predictive?
+    return conference_started_phones_only_predictive if predictive?
 
     # abort call before loading voters
     return abort_dial_twiml if !fit_to_dial?
-    return choosing_voter_to_dial if preview?
-    return choosing_voter_and_dial if  power?
+
+    return setup_call
   end
 
-  def choosing_voter_to_dial
-    select_voter
-    choosing_voter_to_dial_twiml
+  def setup_call
+    house = campaign.next_in_dial_queue
+    return campaign_out_of_phone_numbers_twiml if house.nil?
+
+    voter = house[:voters].first[:fields]
+    if preview?
+      choosing_voter_to_dial_twiml(voter['id'], house[:phone], voter['first_name'], voter['last_name'])
+    elsif power?
+      choosing_voter_and_dial_twiml(voter['id'], house[:phone], voter['first_name'], voter['last_name'])
+    end
   end
 
-  def choosing_voter_and_dial
-    select_voter
-    choosing_voter_and_dial_twiml
-  end
-
-  def conference_started_phones_only_power
+  def dial(voter_id, phone)
     start_conference
-    enqueue_call_flow(PreviewPowerDialJob, [self.id, voter_in_progress.household.phone])
-    conference_started_phones_only_twiml
+    enqueue_call_flow(PreviewPowerDialJob, [self.id, phone])
+    conference_started_phones_only_twiml(voter_id, phone)
   end
 
-  def conference_started_phones_only_preview
+  def conference_started_phones_only_power(voter_id, phone)
+    dial(voter_id, phone)
+  end
+
+  def conference_started_phones_only_preview(voter_id, phone)
     if pound_selected?
-      return skip_voter
+      return skip_voter_twiml
+    elsif star_selected?
+      return dial(voter_id, phone)
+    else
+      return choosing_voter_to_dial_twiml(voter_id, phone)
     end
-    if star_selected?
-      start_conference
-      enqueue_call_flow(PreviewPowerDialJob, [self.id, voter_in_progress.household.phone])
-      return conference_started_phones_only_twiml
-    end
-    choosing_voter_to_dial_twiml
   end
 
-  def conference_started_phones_only_predictive(callerdc)
-    start_conference(callerdc)
+  def conference_started_phones_only_predictive
+    start_conference
     conference_started_phones_only_predictive_twiml
   end
 
-
-  def skip_voter
-    voter_in_progress.household.skip
-    skip_voter_twiml
+  def gather_response(voter_id)
+    return read_next_question_twiml(voter_id) if call_answered?
+    wrapup_call(voter_id)
   end
 
-
-  def gather_response
-    return read_next_question_twiml if call_answered?
-    wrapup_call
-  end
-
-  def submit_response
-    RedisPhonesOnlyAnswer.push_to_list(voter_in_progress.id, self.id, redis_digit, redis_question_id) if voter_in_progress
+  def submit_response(voter_id)
+    RedisPhonesOnlyAnswer.push_to_list(voter_id, self.id, redis_digit, redis_question_id) if voter_id
     return disconnected_twiml if disconnected?
-    return wrapup_call if skip_all_questions?
-    voter_response_twiml
+    return wrapup_call(voter_id) if skip_all_questions?
+    redirect_to_next_question_twiml(voter_id)
   end
 
-  def next_question
-    return read_next_question_twiml if more_questions_to_be_answered?
-    wrapup_call
-  end
-
-  def wrapup_call
-    wrapup_call_attempt
+  def wrapup_call(voter_id)
+    wrapup_call_attempt(voter_id)
 
     wrapup_call_twiml
   end
@@ -91,14 +83,18 @@ class PhonesOnlyCallerSession < CallerSession
     ready_to_call(RedisCallerSession.datacentre(self.id))
   end
 
+  def skip_voter
+    skip_voter_twiml
+  end
+
   def skip_all_questions?
     redis_digit == "999"
   end
 
-  def wrapup_call_attempt
+  def wrapup_call_attempt(voter_id)
     RedisStatus.set_state_changed_time(campaign_id, "On hold", self.id)
     unless attempt_in_progress.nil?
-      RedisCallFlow.push_to_wrapped_up_call_list(attempt_in_progress.id, CallerSession::CallerType::PHONE);
+      RedisCallFlow.push_to_wrapped_up_call_list(attempt_in_progress.id, CallerSession::CallerType::PHONE, voter_id)
     end
   end
 
@@ -110,18 +106,9 @@ class PhonesOnlyCallerSession < CallerSession
     attempt_in_progress.try(:connecttime) != nil && more_questions_to_be_answered?
   end
 
-
-  def select_voter
-    house = campaign.next_in_dial_queue
-    voter = house[:voters].first
-    self.update_attributes(voter_in_progress_id: voter[:id])
-  end
-
-
   def star_selected?
     redis_digit == "*"
   end
-
 
   def pound_selected?
     redis_digit == "#"
@@ -130,7 +117,6 @@ class PhonesOnlyCallerSession < CallerSession
   def preview?
     campaign.type == Campaign::Type::PREVIEW
   end
-
 
   def power?
     campaign.type == Campaign::Type::POWER
