@@ -64,15 +64,16 @@ public
   end
 
   def dial(caller_session, call, voter)
-    @caller_session = caller_session
-    @call           = call
-    @voter          = voter
+    @caller_session   = caller_session
+    @call             = call
+    @voter            = voter
     @transfer_attempt = create_transfer_attempt
 
     deactivate_transfer(caller_session.session_key)
     # twilio makes synchronous callback requests so redis flag must be set
     # before calls are made if the flags are to handle callback requests
-    response = Providers::Phone::Call.make_for(transfer, :connect)
+    params   = Providers::Phone::Call::Params::Transfer.new(transfer, :connect, transfer_attempt)
+    response = Providers::Phone::Call.make(params.from, params.to, params.url, params.params, Providers::Phone.default_options)
     transfer_attempt_dialed(response)
 
     return {
@@ -95,12 +96,14 @@ public
     # Publish transfer_type
     caller_session.publish('transfer_connected', {type: transfer_attempt.transfer_type})
     # Update current callee call with Twilio to transfers#callee, which renders conference xml
-    Providers::Phone::Call.redirect_for(transfer, :callee)
+    params = Providers::Phone::Call::Params::Transfer.new(transfer, :callee, transfer_attempt)
+    Providers::Phone::Call.redirect(params.call_sid, params.url, Providers::Phone.default_options)
     # todo: handle failures of above redirect
     if warm_transfer?
       # Keep the caller on the conference.
       # Update current caller call with Twilio to transfers#caller, which renders conference xml
-      Providers::Phone::Call.redirect_for(transfer, :caller)
+      params = Providers::Phone::Call::Params::Transfer.new(transfer, :caller, transfer_attempt)
+      Providers::Phone::Call.redirect(params.call_sid, params.url, Providers::Phone.default_options)
       # todo: handle failures of above redirect
       caller_session.publish("warm_transfer",{})
     else
@@ -114,7 +117,7 @@ public
       caller_session.publish("cold_transfer",{})
     end
 
-    phone_params = Providers::Phone::Call::Params::Transfer.new(transfer_attempt.transfer, :disconnect)
+    phone_params = Providers::Phone::Call::Params::Transfer.new(transfer_attempt.transfer, :disconnect, transfer_attempt)
 
     return Twilio::TwiML::Response.new do |r|
       # The action url for Dial will be called by Twilio when the dialed party hangs up

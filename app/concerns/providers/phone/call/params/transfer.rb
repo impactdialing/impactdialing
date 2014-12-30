@@ -3,17 +3,14 @@ class Providers::Phone::Call::Params::Transfer
 
   include Rails.application.routes.url_helpers
 
-  def initialize(transfer, type)
+  def initialize(transfer, type, transfer_attempt)
     @transfer         = transfer
-    # todo: fix race conditions when loading transfer attempts
-    # - could make attempt_in_progress polymorphic and attach transfer attempt to caller session when created
-    @transfer_attempt = transfer.transfer_attempts.last
-    @call_attempt     = transfer_attempt.caller_session.attempt_in_progress
+    @transfer_attempt = transfer_attempt
     @type             = type == :default ? :connect : type
   end
 
   def from
-    return call_attempt.household.phone
+    return transfer_attempt.call_attempt.household.phone
   end
 
   def to

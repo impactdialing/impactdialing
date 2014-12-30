@@ -4,9 +4,13 @@ describe TransferDialer do
   before do
     WebMock.disable_net_connect!
   end
-
+  let(:household) do
+    mock_model('Household')
+  end
   let(:call_attempt) do
-    mock_model('CallAttempt')
+    mock_model('CallAttempt', {
+      household: household
+    })
   end
   let(:call) do
     mock_model('Call', {
@@ -14,7 +18,9 @@ describe TransferDialer do
     })
   end
   let(:voter) do
-    mock_model('Voter')
+    mock_model('Voter', {
+      household: household
+    })
   end
   let(:session_key){ 'caller.session_key-abc123' }
   let(:caller_session) do
@@ -28,7 +34,8 @@ describe TransferDialer do
     mock_model('TransferAttempt', {
       caller_session: caller_session,
       update_attributes: true,
-      session_key: 'transfer-attempt-session-key'
+      session_key: 'transfer-attempt-session-key',
+      call_attempt: call_attempt
     })
   end
   let(:transfer_attempts) do
@@ -87,7 +94,8 @@ describe TransferDialer do
     end
 
     it 'makes the call to connect the transfer' do
-      expect(Providers::Phone::Call).to receive(:make_for).with(transfer, :connect){ success_response }
+      params = Providers::Phone::Call::Params::Transfer.new(transfer, :connect, transfer_attempt)
+      expect(Providers::Phone::Call).to receive(:make).with(params.from, params.to, params.url, params.params, Providers::Phone.default_options){ success_response }
       transfer_dialer.dial(caller_session, call, voter)
     end
 

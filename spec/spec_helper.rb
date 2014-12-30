@@ -27,6 +27,7 @@ Dir[Rails.root.join("spec/shared/**/*.rb")].each {|f| require f}
 Capybara.javascript_driver = :webkit
 
 VCR.configure do |c|
+  # c.debug_logger = File.open(Rails.root.join('log', 'vcr-debug.log'), 'w')
   if ENV['RAILS_ENV'] == 'e2e'
     c.allow_http_connections_when_no_cassette = true
   else

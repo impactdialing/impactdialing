@@ -6,7 +6,7 @@ describe TransferController, :type => :controller do
     URI.encode_www_form_component(str)
   end
   def request_body(from, to, url, fallback_url, status_callback)
-    "From=#{from}&To=#{to}&Url=#{encode(url)}&FallbackUrl=#{encode(fallback_url)}&StatusCallback=#{encode(status_callback)}&Timeout=30"
+    "From=#{from}&To=#{to}&Url=#{encode(url)}&StatusCallback=#{encode(status_callback)}&Timeout=15"
   end
 
   before do
@@ -27,17 +27,15 @@ describe TransferController, :type => :controller do
         transfer_type: Transfer::Type::WARM
       })
     end
+    let(:voter) do
+      create(:voter)
+    end
     let(:call_attempt) do
-      create(:call_attempt)
+      create(:call_attempt, {household: voter.household})
     end
     let(:call) do
       create(:call, {
         call_attempt: call_attempt
-      })
-    end
-    let(:voter) do
-      create(:voter, {
-        phone: '1234567890'
       })
     end
     let(:caller_session) do
@@ -60,11 +58,11 @@ describe TransferController, :type => :controller do
     end
 
     before do
-      throw_away = TransferAttempt.create!
-      url = "http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/transfer/#{throw_away.id + 1}/connect"
+      throw_away      = TransferAttempt.create!
+      url             = "http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/transfer/#{throw_away.id + 1}/connect"
       status_callback = "http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/transfer/#{throw_away.id + 1}/end"
       stub_request(:post, "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@#{twilio_url}").
-         with(:body => request_body(voter.phone, transfer.phone_number, url, fallback_url, status_callback)).
+         with(:body => request_body(voter.household.phone, transfer.phone_number, url, fallback_url, status_callback)).
          to_return(:status => 200, :body => "", :headers => {})
       allow(Providers::Phone::Twilio::Response).to receive(:new){ valid_twilio_response }
       post :dial, transfer: {id: transfer.id}, caller_session: caller_session.id, call: call.id, voter: voter.id
