@@ -35,8 +35,8 @@ describe RedisCallFlow, :type => :model do
   end
   
   it "should add the call params to the wrapup call list" do
-    RedisCallFlow.push_to_wrapped_up_call_list(1234, CallerSession::CallerType::TWILIO_CLIENT)
+    RedisCallFlow.push_to_wrapped_up_call_list(1234, CallerSession::CallerType::TWILIO_CLIENT, 42)
     expect(RedisCallFlow.wrapped_up_call_list.length).to eq(1)
-    expect(RedisCallFlow.wrapped_up_call_list.pop).to eq("{\"id\":1234,\"caller_type\":\"Twilio client\",\"current_time\":\"#{Time.now.to_s}\"}")
+    expect(RedisCallFlow.wrapped_up_call_list.pop).to eq("{\"id\":1234,\"caller_type\":\"Twilio client\",\"voter_id\":42,\"current_time\":\"#{Time.now.to_s}\"}")
   end  
 end

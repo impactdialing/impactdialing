@@ -105,21 +105,11 @@ describe CallAttempt, :type => :model do
      expect(call_attempt.caller_id).to eq(caller.id)
    end
 
-   it "can be scheduled for later" do
-     voter = create(:voter)
-     call_attempt = create(:call_attempt, :voter => voter)
-     scheduled_date = "10/10/2020 20:20"
-     call_attempt.schedule_for_later(scheduled_date)
-     expect(call_attempt.status).to eq(CallAttempt::Status::SCHEDULED)
-     expect(call_attempt.scheduled_date).to eq(scheduled_date)
-   end
-
-
   it "should wrapup call webui" do
     voter = create(:voter)
     call_attempt = create(:call_attempt, :voter => voter)
     now = Time.now
-    call_attempt.wrapup_now(now, CallerSession::CallerType::TWILIO_CLIENT)
+    call_attempt.wrapup_now(now, CallerSession::CallerType::TWILIO_CLIENT, voter.id)
     expect(call_attempt.wrapup_time).to eq(now)
     expect(call_attempt.voter_response_processed).to be_falsey
   end
@@ -129,7 +119,7 @@ describe CallAttempt, :type => :model do
     caller = create(:caller, is_phones_only: true)
     call_attempt = create(:call_attempt, :voter => voter, :caller => caller)
     now = Time.now
-    call_attempt.wrapup_now(now, CallerSession::CallerType::PHONE)
+    call_attempt.wrapup_now(now, CallerSession::CallerType::PHONE, voter.id)
     expect(call_attempt.wrapup_time).to eq(now)
     expect(call_attempt.voter_response_processed).to be_truthy
   end
@@ -139,7 +129,7 @@ describe CallAttempt, :type => :model do
     caller = create(:caller, is_phones_only: false)
     call_attempt = create(:call_attempt, :voter => voter, caller: caller)
     now = Time.now
-    call_attempt.wrapup_now(now, CallerSession::CallerType::PHONE)
+    call_attempt.wrapup_now(now, CallerSession::CallerType::PHONE, voter.id)
     expect(call_attempt.wrapup_time).to eq(now)
     expect(call_attempt.voter_response_processed).to be_falsey
   end

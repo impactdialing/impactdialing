@@ -71,9 +71,8 @@ describe 'CallFlow::DialQueue' do
       remaining_phones = @dial_queue.available.all(:active, with_scores: false)
       presented_phones = @dial_queue.available.all(:presented, with_scores: false)
 
-      expect(phones).to eq presented_phones
-
       phones.each do |dialed|
+        expect(presented_phones).to include dialed
         expect(remaining_phones).to_not include dialed
       end
     end

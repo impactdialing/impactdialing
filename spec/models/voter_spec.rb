@@ -204,7 +204,6 @@ describe Voter, :type => :model do
     its(:status) { should eq CallAttempt::Status::SUCCESS }
     its(:caller_session) { should be_nil }
     its(:caller_id) { should eq caller_id }
-    its(:call_back) { should be_falsey }
   end
 
   it "gives remaining voters to count" do
@@ -336,60 +335,6 @@ describe Voter, :type => :model do
       voter2 = create(:voter, :call_back =>true)
       expect(Voter.to_callback).to eq([voter2])
     end
-  end
-
-
-  describe "predictive dialing" do
-    let(:campaign) { create(:predictive, answering_machine_detect: true) }
-    let(:voter) { create(:voter, :campaign => campaign) }
-    let(:client) { double(:client).tap { |client| allow(Twilio::REST::Client).to receive(:new).and_return(client) } }
-
-    it "checks, whether voter is called or not" do
-      voter1 = create(:voter, :status => "not called")
-      voter2 = create(:voter, :status => "success")
-      expect(voter1.not_yet_called?("not called")).to be_truthy
-      expect(voter2.not_yet_called?("not called")).to be_falsey
-    end
-
-    it "checks, call attemp made before 3 hours or not" do
-      voter1 = create(:voter, :last_call_attempt_time => 4.hours.ago, :call_back => true)
-      voter2 = create(:voter, :last_call_attempt_time => 2.hours.ago, :call_back => true)
-      expect(voter1.call_attempted_before?(3.hours)).to be_truthy
-      expect(voter2.call_attempted_before?(3.hours)).to be_falsey
-      expect(voter2.call_attempted_before?(10.minutes)).to be_truthy
-    end
-
-    it "returns all the voters to be call" do
-      campaign = create(:campaign)
-      voter_list1 = create(:voter_list)
-      voter_list2 = create(:voter_list)
-      active_list_ids = [voter_list1.id, voter_list2.id]
-      status = "not called"
-      voter1 = create(:voter, :campaign => campaign, :voter_list => voter_list1)
-      voter2 = create(:voter, :campaign => campaign, :voter_list => voter_list1, last_call_attempt_time: 2.hours.ago, status: CallAttempt::Status::VOICEMAIL)
-      voter3 = create(:voter, :campaign => campaign, :voter_list => voter_list2)
-      voter4 = create(:voter, :voter_list => voter_list1)
-      voter5 = create(:voter, :campaign => campaign)
-      expect(Voter.to_be_called(campaign.id, active_list_ids, status, 3).length).to eq(2)
-    end
-
-    it "return voters, to whoom called just now, but not replied " do
-      campaign = create(:campaign)
-      voter_list1 = create(:voter_list)
-      voter_list2 = create(:voter_list)
-      active_list_ids = [voter_list1.id, voter_list2.id]
-      status = "not called"
-      voter1 = create(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list1, :last_call_attempt_time => 2.hours.ago)
-      voter2 = create(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 1.hours.ago)
-      voter3 = create(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 30.minutes.ago)
-      voter4 = create(:voter, :campaign => campaign, :call_back => false, :voter_list => voter_list2, :last_call_attempt_time => 50.minutes.ago)
-      voter5 = create(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 8.minutes.ago)
-      voter6 = create(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 1.minutes.ago)
-      voter7 = create(:voter, :voter_list => voter_list1)
-      voter8 = create(:voter, :campaign => campaign)
-      expect(Voter.just_called_voters_call_back(campaign.id, active_list_ids)).to eq([voter1, voter2, voter3])
-    end
-
   end
 
   describe "to be dialed" do

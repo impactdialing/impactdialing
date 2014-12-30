@@ -370,7 +370,7 @@ describe CallerCampaignReportStrategy, :type => :model do
 
     it "lists selected voter fields" do
       phone, custom_id, firstname = "39045098753", "24566", "first"
-      voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
+      voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname, :last_name => nil)
       expect(@strategy.selected_fields(voter.attributes, ["phone", "first_name", "last_name"])).to eq([phone, firstname, nil])
       expect(@strategy.selected_fields(voter.attributes, ["phone", "last_name", "first_name"])).to eq([phone, nil, firstname])
     end
