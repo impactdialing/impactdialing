@@ -58,6 +58,7 @@ FactoryGirl.define do
     factory :busy_call_attempt, traits: [:busy]
     factory :failed_call_attempt, traits: [:failed]
     factory :completed_call_attempt, traits: [:completed]
+    factory :machine_answered_call_attempt, traits: [:machine_answered]
     factory :past_recycle_time_failed_call_attempt, traits: [:failed, :past_recycle_time]
     factory :past_recycle_time_busy_call_attempt, traits: [:busy, :past_recycle_time]
     factory :past_recycle_time_completed_call_attempt, traits: [:completed, :past_recycle_time]

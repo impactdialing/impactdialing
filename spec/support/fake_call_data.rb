@@ -20,6 +20,10 @@ module FakeCallData
     CallFlow::Jobs::ProcessRecycleBin.perform(campaign.id)
   end
 
+  def process_presented(campaign)
+    CallFlow::Jobs::ProcessPresentedVoters.perform(campaign.id)
+  end
+
   def clean_dial_queue
     @dial_queue.clear
   end
@@ -69,42 +73,45 @@ module FakeCallData
       voter: voter,
       household: household,
       caller: caller,
-      dialer_mode: campaign.type
+      dialer_mode: campaign.type,
+      call_end: 1.minute.from_now
     })
     call = create(:bare_call, call_attempt: call_attempt)
 
     # mimicing PersistCalls job
     case type.to_s
     when /past_recycle_time_failed_call_attempt|failed_call_attempt/
-      # voter.try(:end_unanswered_call, call_attempt.tStatus)
+      household.failed!
     when /past_recycle_time_busy_call_attempt|busy_call_attempt/
-      # voter.try(:end_unanswered_call, call_attempt.tStatus)
+      household.dialed(call_attempt)
+      household.save!
     when /past_recycle_time_completed_call_attempt|completed_call_attempt/
-      voter.try(:disconnect_call, call_attempt.caller_id)
+      voter.try(:dispositioned, call_attempt)
+      voter.save!
+      household.dialed(call_attempt)
+      household.save!
     when /past_recycle_time_machine_answered_call_attempt/
-      # voter.try(:end_answered_by_machine)
+      household.dialed(call_attempt)
+      household.save!
     else
       puts "Unknown CallAttempt factory type for FakeCallData#attach_call_attempt: #{type}"
     end
 
     yield call_attempt if block_given?
 
-    mimic_persist_calls(call_attempt)
+    # mimic_persist_calls(call_attempt, voter)
 
     call_attempt
   end
 
-  def mimic_persist_calls(call_attempt)
+  def mimic_persist_calls(call_attempt, voter)
     household = call_attempt.household
-    voter     = call_attempt.voter
     campaign  = call_attempt.campaign
 
     voter.try(:save!)
     
     household.dialed(call_attempt)
     household.save!
-
-    CallFlow::Jobs::ProcessRecycleBin.perform(campaign.id)
   end
 
   def add_call_attempts(campaign, n=35)

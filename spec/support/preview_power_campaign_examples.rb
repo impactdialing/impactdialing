@@ -7,7 +7,7 @@ shared_examples 'Preview/Power#next_in_dial_queue' do
     uncalled_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
     cache_available_voters(campaign)
 
-    expect(campaign.next_in_dial_queue).to eq(uncalled_voter)
+    expect(campaign.next_in_dial_queue[:voters].first[:id]).to eq(uncalled_voter.id)
   end
 
   it "returns voter with respect to a current voter" do
@@ -18,7 +18,7 @@ shared_examples 'Preview/Power#next_in_dial_queue' do
     dial_queue     = cache_available_voters(campaign)
     dial_queue.next(2) # pop the uncalled & current voter off the list, this test is a bit silly
                        # todo: fix or remove this test
-    expect(campaign.next_in_dial_queue).to eq(next_voter)
+    expect(campaign.next_in_dial_queue[:voters].first[:id]).to eq(next_voter.id)
   end
 
   it "returns no number if only voter to be called a retry and last called time is within campaign recycle rate" do

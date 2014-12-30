@@ -24,19 +24,27 @@ module PreviewPowerCampaign
         }
       end
     end
-    
-    # tmp
-    return nil if house.nil?
-    
-    voter = house[:voters].first
-    voter[:fields].merge(phone: house[:phone])
-    return voter
+
+    return house
   end
 
   def caller_conference_started_event
+    # tmp
+    house = next_in_dial_queue
+    if house.present?
+      voter = house[:voters].first
+      data  = voter[:fields].merge(phone: house[:phone])
+    else
+      data = {campaign_out_of_leads: true}
+    end
+    # /tmp
+
     return {
       event: 'conference_started',
-      data: (next_in_dial_queue || {campaign_out_of_leads: true})
+      # tmp
+      data:  data
+      # /tmp
+      # data: (next_in_dial_queue || {campaign_out_of_leads: true})
     }
   end
 

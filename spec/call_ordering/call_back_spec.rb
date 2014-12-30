@@ -10,9 +10,14 @@ context 'Message Drops', data_heavy: true do
     phone_numbers = dial_queue.next(voter_count)
     households    = dial_queue.campaign.households.where(phone: phone_numbers)
     households.each do |household|
-      call_attempt = attach_call_attempt(:past_recycle_time_machine_answered_call_attempt, household) do |call_attempt|
+      attach_call_attempt(:machine_answered_call_attempt, household) do |call_attempt|
         call_attempt.update_recording!(autodropped)
+        household.dialed(call_attempt)
+        household.save!
       end
+    end
+    Timecop.travel(Time.now + dial_queue.campaign.recycle_rate.hours + 1.minute) do
+      process_recycle_bin(campaign)
     end
   end
 
@@ -92,7 +97,6 @@ context 'Message Drops', data_heavy: true do
 
       process_recycle_bin(campaign)
       actual = campaign.next_in_dial_queue
-
       expect(actual[:voters].first[:id]).to eq voters.first.id
     end
 
@@ -100,12 +104,12 @@ context 'Message Drops', data_heavy: true do
       remaining = voters.pop
       call_and_leave_messages(dial_queue, voters.size, true)
       actual = campaign.next_in_dial_queue
-      # binding.pry
       expect(actual[:voters].first[:id]).to eq remaining.id
     end
 
     it 'When all contacts have received a message manually' do
       call_and_leave_messages(dial_queue, voters.size, false)
+      process_recycle_bin(campaign)
       actual = campaign.next_in_dial_queue
 
       expect(actual[:voters].first[:id]).to eq voters.first.id
@@ -122,6 +126,7 @@ context 'Message Drops', data_heavy: true do
 
     it 'Drop no further messages automatically' do
       call_and_leave_messages(dial_queue, voters.size, true)
+      process_recycle_bin(campaign)
       house     = campaign.next_in_dial_queue
       household = campaign.households.where(phone: house[:phone]).first
       # mimic /calls/:id/incoming
@@ -169,7 +174,10 @@ context 'Machine Detection without Message Drops' do
       count.times do
         house     = campaign.next_in_dial_queue
         household = campaign.households.where(phone: house[:phone]).first
-        attach_call_attempt(:past_recycle_time_machine_answered_call_attempt, household)
+        attach_call_attempt(:machine_answered_call_attempt, household) do |call_attempt|
+          household.dialed(call_attempt)
+          household.save!
+        end
         @retries << house[:phone]
       end
     end
@@ -178,21 +186,27 @@ context 'Machine Detection without Message Drops' do
       count.times do
         house = campaign.next_in_dial_queue
         voter = Voter.find(house[:voters].first[:id])
-        attach_call_attempt(:past_recycle_time_completed_call_attempt, voter)
+        attach_call_attempt(:completed_call_attempt, voter) do |call_attempt|
+          voter.save!
+          voter.household.dialed(call_attempt)
+          voter.household.save!
+        end
         @completed << house[:phone]
       end
     end
 
     it 'When the first pass is done and machines were detected for some households, cycle through those households again' do
       call_and_answer_by_human(campaign, 1)
-      # binding.pry
       call_and_hangup_on_machine(campaign, 1)
       call_and_answer_by_human(campaign, 1)
-      # binding.pry
       call_and_hangup_on_machine(campaign, 2)
-      # binding.pry
-      expect(dial_queue.available.size).to eq 3
-      expect(dial_queue.available.all).to eq @retries
+
+      Timecop.travel(Time.now + campaign.recycle_rate.hours + 1.minute) do
+        process_recycle_bin(campaign)
+
+        expect(dial_queue.available.size).to eq 3
+        expect(dial_queue.available.all).to eq @retries
+      end
     end
   end
 end

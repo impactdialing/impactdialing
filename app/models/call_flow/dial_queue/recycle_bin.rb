@@ -43,6 +43,12 @@ public
 
   def add(household)
     redis.zadd keys[:bin], *memberize(household)
+
+    return(exists?(household.phone))
+  end
+
+  def exists?(phone)
+    not missing?(phone)
   end
 
   def missing?(phone)
@@ -81,7 +87,7 @@ public
   end
 
   def dialed(household)
-    return false if household.complete?
+    return false if household.no_voters_to_dial?
     add(household)
   end
 end
