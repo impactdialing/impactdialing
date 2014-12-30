@@ -18,12 +18,6 @@ describe ModeratedSession do
         status: 'Call in progress'
       })
     end
-    let(:voter) do
-      create(:voter, {
-        campaign: campaign,
-        call_attempts: [call_attempt]
-      })
-    end
     let(:caller) do
       create(:caller, {
         campaign: campaign
@@ -33,7 +27,7 @@ describe ModeratedSession do
       create(:webui_caller_session, {
         campaign: campaign,
         caller: caller,
-        voter_in_progress: voter,
+        attempt_in_progress: call_attempt,
         session_key: 'caller_session:session_key:abc123'
       })
     end
@@ -75,14 +69,12 @@ describe ModeratedSession do
       expect(@unmute_participant_request).to have_been_made
     end
     context 'status messages' do
-      it 'when status of last voter call attempt is not "Call in progress" returns a Status message that the caller is not on a call' do
-        ca = voter.call_attempts.first
-        ca.status = 'Ringing'
-        ca.save
+      it 'when status of CallerSession#attempt_in_progress call attempt is not "Call in progress" returns a Status message that the caller is not on a call' do
+        call_attempt.update_attributes! status: 'Ringing'
         msg = ModeratedSession.switch_mode(moderator, caller_session, type)
         expect(msg).to eq 'Status: Caller is not connected to a lead.'
       end
-      it 'when status of last voter call attempt is "Call in progress" returns a Status message w/ the caller identity and monitor mode' do
+      it 'when status of CallerSession#attempt_in_progress is "Call in progress" returns a Status message w/ the caller identity and monitor mode' do
         msg = ModeratedSession.switch_mode(moderator, caller_session, type)
         expect(msg).to eq "Status: Monitoring in breakin mode on #{caller_session.caller.identity_name}."
       end

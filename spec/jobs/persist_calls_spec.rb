@@ -23,7 +23,7 @@ describe PersistCalls do
     $redis_call_flow_connection.lpush "disconnected_call_list" , {id: call.id, recording_duration: 15, recording_url: "url", caller_id: 1, current_time: time}.to_json
     $redis_call_flow_connection.lpush "disconnected_call_list" , {id: new_call.id, recording_duration: 15, recording_url: "url", caller_id: 3, current_time: time}.to_json
 
-    $redis_call_flow_connection.lpush "wrapped_up_call_list" , {id: call_attempt.id, caller_type: CallerSession::CallerType::TWILIO_CLIENT, current_time: time}.to_json
+    $redis_call_flow_connection.lpush "wrapped_up_call_list" , {id: call_attempt.id, voter_id: voter.id, caller_type: CallerSession::CallerType::TWILIO_CLIENT, current_time: time}.to_json
 
     $redis_call_flow_connection.lpush "end_answered_by_machine_call_list" , {id: call.id, current_time: time}.to_json
   end
@@ -128,13 +128,6 @@ describe PersistCalls do
       its(:caller_id) { should == 3 }
     end
 
-    context "voter" do
-      subject { voter.reload }
-
-      its(:status) { should == CallAttempt::Status::SUCCESS }
-      its(:caller_id) { should == 1 }
-    end
-
     context "household" do
       subject{ voter.household.reload }
       its(:status){ should == CallAttempt::Status::SUCCESS }
@@ -143,13 +136,18 @@ describe PersistCalls do
   end
 
   context ".wrappedup" do
-    before(:each) { PersistCalls.wrapped_up_calls(100) }
+    before(:each) { PersistCalls.perform }
 
     context "call_attempt" do
       subject { call_attempt.reload }
       its(:wrapup_time) { should == time }
     end
 
+    context "voter" do
+      subject { voter.reload }
+      its(:status) { should == CallAttempt::Status::SUCCESS }
+      its(:caller_id) { should == 1 }
+    end
   end
 
   context ".endbymachine" do
