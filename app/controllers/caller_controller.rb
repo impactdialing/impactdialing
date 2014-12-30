@@ -225,13 +225,11 @@ public
   end
 
   def skip_voter
-    caller = Caller.includes(:campaign).find(params[:id])
+    caller         = Caller.includes(:campaign).find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
-    voter = Voter.find(params[:voter_id])
-    voter.skip
 
     if caller_session.fit_to_dial?
-      info = caller.campaign.caller_conference_started_event(voter.id)
+      info = caller.campaign.caller_conference_started_event
       render json: info[:data].to_json
     else
       enqueue_call_flow(RedirectCallerJob, [caller_session.id])

@@ -33,7 +33,8 @@ module PreviewPowerCampaign
     house = next_in_dial_queue
     if house.present?
       voter = house[:voters].first
-      data  = voter[:fields].merge(phone: house[:phone])
+      voter[:fields].merge!(phone: house[:phone])
+      data  = voter
     else
       data = {campaign_out_of_leads: true}
     end
