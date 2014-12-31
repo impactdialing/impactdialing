@@ -7,6 +7,7 @@ class Household < ActiveRecord::Base
   delegate :call_back_after_voicemail_delivery?, to: :campaign
 
   belongs_to :last_call_attempt, class_name: 'CallAttempt'
+
   has_many :call_attempts
   has_many :voters
 
@@ -16,6 +17,29 @@ class Household < ActiveRecord::Base
   validates_presence_of :phone, :account, :campaign
   validates_length_of :phone, minimum: 10, maximum: 16
   validates_uniqueness_of :phone, scope: :campaign_id
+
+  scope :active, without_blocked(:cell).without_blocked(:dnc)
+  scope :not_dialed, where('households.status = "not called"')
+  scope :dialed, where('households.status <> "not called"')
+  scope :failed, where('households.status = ?', CallAttempt::Status::FAILED)
+  scope :presentable, lambda{ |campaign|
+    where("households.presented_at < ?", campaign.recycle_rate.hours.ago)
+  }
+  scope :available, lambda{ |campaign|
+    active.
+    presentable(campaign).
+    where(
+      "households.status IN (?)",
+      CallAttempt::Status.available_list(campaign)
+    )
+  }
+  scope :not_available, lambda{ |campaign|
+    where(
+      "households.status IN (?) OR households.presented_at > ? OR households.blocked > 0",
+      CallAttempt::Status.not_available_list(campaign),
+      campaign.recycle_rate.hours.ago
+    )
+  }
 
 private
   def sanitize_phone

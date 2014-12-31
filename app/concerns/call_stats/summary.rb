@@ -2,13 +2,10 @@ class CallStats::Summary
   attr_reader :campaign
 
   delegate :all_voters, to: :campaign
+  delegate :households, to: :campaign
 
   def initialize(campaign)
     @campaign = campaign
-  end
-
-  def recently_dialed
-    @recently_dialed ||= all_voters.recently_dialed_households(campaign.recycle_rate).pluck(:phone)
   end
 
   def percent_of_all_voters(number)
@@ -17,42 +14,38 @@ class CallStats::Summary
   end
 
   def all_voters_count
-    @all_voters_count ||= all_voters.count(:id)
+    @all_voters_count ||= households.count(:id)
   end
 
   def per_status_counts
-    @per_status_counts ||= all_voters.select('status').group("status").count(:id)
+    @per_status_counts ||= households.select('status').group("status").count(:id)
   end
 
-  def dialed_and_complete_count
-    @dialed_and_complete_count ||= all_voters.dialed.uniq.completed(campaign).count
+  def completed_voters_count
+    @completed_voters_count ||= all_voters.completed(campaign).count
   end
 
   def dialed_count
-    @dialed_count ||= all_voters.dialed.count
+    @dialed_count ||= (households.dialed.count + ringing_count)
   end
 
   def ringing_count
-    @ringing_count ||= all_voters.ringing.count
+    Twillio::InflightStats.new(campaign).get('ringing')
   end
 
   def failed_count
-    @failed_count ||= all_voters.failed.count
+    @failed_count ||= households.failed.count
   end
 
   def not_dialed_count
-    @not_dialed_count ||= all_voters.not_dialed.count
+    @not_dialed_count ||= (households.not_dialed.count - ringing_count)
   end
 
   def dialed_and_available_for_retry_count
-    @dialed_and_available_for_retry_count ||= all_voters.dialed.available_list(campaign).without(recently_dialed).count
-  end
-
-  def households_dialed_and_available_for_retry_count
-    @households_dialed_and_available_for_retry_count ||= all_voters.dialed.available_list(campaign).without(recently_dialed).select('DISTINCT(phone)').count
+    @dialed_and_available_for_retry_count ||= households.dialed.available(campaign).count
   end
 
   def dialed_and_not_available_for_retry_count
-    @dialed_and_not_available_for_retry_count ||= all_voters.dialed.not_available_list(campaign).count
+    @dialed_and_not_available_for_retry_count ||= households.dialed.not_available(campaign).count
   end
 end

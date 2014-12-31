@@ -9,7 +9,7 @@ FactoryGirl.define do
       after(:build) do |voter|
         voter.account ||= create(:account)
         voter.campaign ||= create(:power, account: voter.account)
-        voter.household = create(:household, {
+        voter.household ||= create(:household, {
           campaign: voter.campaign,
           account: voter.account
         })
