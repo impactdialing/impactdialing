@@ -90,7 +90,7 @@ module FakeCallData
       voter.save!
       household.dialed(call_attempt)
       household.save!
-    when /past_recycle_time_machine_answered_call_attempt/
+    when /past_recycle_time_machine_answered_call_attempt|machine_answered_call_attempt/
       household.dialed(call_attempt)
       household.save!
     else

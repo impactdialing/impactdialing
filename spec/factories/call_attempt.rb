@@ -13,6 +13,10 @@ FactoryGirl.define do
       status CallAttempt::Status::READY
     end
 
+    trait :in_progress do
+      status CallAttempt::Status::INPROGRESS
+    end
+
     trait :busy do
       status 'No answer busy signal'
       tStatus 'busy'

@@ -107,12 +107,11 @@ describe CallStats::Summary do
 
       it "counts Voters w/ blank last_call_attempt_time and w/ statuses not in 'ringing', 'ready' or 'in-progress'" do
         @campaign = create(:predictive, recycle_rate: 3)
-        voter1 = create(:voter, campaign: @campaign, status: 'not called')
-        voter2 = create(:voter, :success, :not_recently_dialed, campaign: @campaign)
-        voter3 = create(:voter, :hangup, :not_recently_dialed, campaign: @campaign)
-        voter5 = create(:voter, :abandoned, :not_recently_dialed, campaign: @campaign)
-        voter6 = create(:voter, :queued, campaign: @campaign)
-        voter7 = create(:voter, :ringing, :recently_dialed, campaign: @campaign)
+        attrs = {campaign: @campaign}
+        create(:household, attrs)
+        create(:household, :success, attrs.merge(presented_at: 8.minutes.ago))
+        create(:household, :hangup, attrs.merge(presented_at: 4.minutes.ago))
+        create(:household, :abandoned, attrs.merge(presented_at: 3.minutes.ago))
 
         dial_report = CallStats::Summary.new(@campaign)
 
