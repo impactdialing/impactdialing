@@ -23,6 +23,10 @@ describe 'CalculateDialsJob' do
     create_campaign_with_script(:bare_predictive, admin.account).last
   end
 
+  before do
+    Redis.new.flushall
+  end
+
   describe '.perform(campaign_id)' do
     let(:dial_queue) do
       CallFlow::DialQueue.new(campaign)
@@ -31,7 +35,6 @@ describe 'CalculateDialsJob' do
     before do
       add_voters(campaign, :voter, 25)
       add_callers(campaign, 5)
-      cache_available_voters(campaign)
     end
 
     after do
@@ -39,7 +42,7 @@ describe 'CalculateDialsJob' do
     end
 
     shared_examples 'all calculate dial jobs' do
-      it 'removes "dial_calculate:#{campaign_id}" key from Redis, such that Predictive#calculate_dialing? returns false (flag exists to help prevent queueing multiple CalculateDialsJob from DialerLoop' do
+      it 'removes "dial_calculate:#{campaign_id}" key from Redis, such that Predictive#calculate_dialing? returns false (flag exists to help prevent queueing multiple CalculateDialsJob from DialerLoop)' do
         campaign_is_calculating_dials!(campaign)
 
         CalculateDialsJob.perform(campaign.id)
@@ -48,11 +51,33 @@ describe 'CalculateDialsJob' do
       end
     end
 
-    shared_examples 'very early returning calculate dial jobs' do
+    shared_examples 'campaign is not fit to dial' do
       it 'does not calculate how many dials should be attempted' do
-        expect(campaign).to_not receive(:number_of_voters_to_dial)
+        expect(campaign).to_not receive(:numbers_to_dial)
         expect(Campaign).to receive(:find).with(campaign.id){ campaign }
         CalculateDialsJob.perform(campaign.id)
+      end
+
+      context 'campaign is not fit to dial' do
+        context 'aborting available callers' do
+          before do
+            expect(campaign).to receive(:abort_available_callers_with).with(:dialing_prohibited)
+          end
+          it 'account not funded' do
+            campaign.account.quota.update_attributes!(minutes_allowed: 0)
+            expect(CalculateDialsJob.fit_to_dial?(campaign)).to be_falsey
+          end
+
+          it 'outside calling hours' do
+            campaign.update_attributes!(start_time: 3.hours.ago, end_time: 2.hours.ago)
+            expect(CalculateDialsJob.fit_to_dial?(campaign)).to be_falsey
+          end
+
+          it 'calling disabled' do
+            campaign.account.quota.update_attributes!(disable_calling: true)
+            expect(CalculateDialsJob.fit_to_dial?(campaign)).to be_falsey
+          end
+        end
       end
     end
 
@@ -62,7 +87,7 @@ describe 'CalculateDialsJob' do
           admin.account.quota.update_attributes(minutes_allowed: 0)
         end
 
-        it_behaves_like 'very early returning calculate dial jobs'
+        it_behaves_like 'campaign is not fit to dial'
       end
 
       context 'outside calling hours' do
@@ -70,7 +95,7 @@ describe 'CalculateDialsJob' do
           campaign.update_attributes(start_time: Time.now.hour - 2, end_time: Time.now.hour - 1)
         end
 
-        it_behaves_like 'very early returning calculate dial jobs'
+        it_behaves_like 'campaign is not fit to dial'
       end
     end
 
@@ -83,12 +108,12 @@ describe 'CalculateDialsJob' do
         end
       end
 
-      it 'queues DialerJob w/ campaign_id & list of voter ids to dial (one voter per caller)' do
-        voter_ids = Voter.order('id').limit(campaign.callers.count).pluck(:id)
+      it 'queues DialerJob w/ campaign_id & list of phone numbers to dial (one number per caller)' do
+        phone_numbers = Voter.order('id').limit(campaign.callers.count).map(&:household).map(&:phone)
         CalculateDialsJob.perform(campaign.id)
 
         actual = Resque.peek :dialer_worker
-        expected = {'class' => 'DialerJob', 'args' => [campaign.id, voter_ids]}
+        expected = {'class' => 'DialerJob', 'args' => [campaign.id, phone_numbers]}
 
         expect(actual).to(eq(expected), [
           "Expected :dialer_worker queue to contain: #{expected}",
@@ -112,9 +137,7 @@ describe 'CalculateDialsJob' do
           available_caller_session = create(:bare_caller_session, :available, :webui, {
             campaign: campaign, caller: campaign.callers.first
           })
-          create(:bare_call_attempt, :ready, {
-            campaign: campaign, caller: campaign.callers.first, caller_session: available_caller_session
-          })
+          campaign.number_presented(1)
           make_abandon_rate_acceptable(campaign)
           Resque.redis.del "queue:dialer_worker"
           Resque.redis.del "queue:call_flow"
