@@ -120,12 +120,47 @@ private
     @inflight_stats ||= Twillio::InflightStats.new(self)
   end
 
-public
+protected
+  def timing(name, &block)
+    namespace   = [self.type.downcase]
+    namespace   << 'redis'
+    namespace   << "ac-#{self.account_id}"
+    namespace   << "ca-#{self.id}"
+    bench_start = Time.now.to_f
 
+    yield
+
+    bench_end = Time.now.to_f
+
+    ImpactPlatform::Metrics.measure(name, (bench_end - bench_start), namespace.join('.'))
+  end
+
+public
   module Type
     PREVIEW = "Preview"
     PREDICTIVE = "Predictive"
     POWER = "Power"
+  end
+  
+  def number_presented(n)
+    inflight_stats.incby('presented', n)
+  end
+
+  def number_ringing
+    inflight_stats.incby('presented', -1)
+    inflight_stats.incby('ringing', 1)
+  end
+
+  def number_failed
+    inflight_stats.incby('presented', -1)
+  end
+
+  def presented_count
+    inflight_stats.get('presented')
+  end
+
+  def ringing_count
+    inflight_stats.get('ringing')
   end
 
   def dial_queue

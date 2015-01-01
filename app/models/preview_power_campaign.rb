@@ -1,22 +1,8 @@
 module PreviewPowerCampaign
-  def timing(&block)
-    namespace   = [self.type.downcase]
-    namespace   << 'redis'
-    namespace   << "ac-#{self.account_id}"
-    namespace   << "ca-#{self.id}"
-    bench_start = Time.now.to_f
-
-    yield
-
-    bench_end = Time.now.to_f
-
-    ImpactPlatform::Metrics.measure('dialer.voter_load', (bench_end - bench_start), namespace.join('.'))
-  end
-
   def next_in_dial_queue
     house = nil
 
-    timing do
+    timing('dialer.voter_load') do
       unless (phone_number = dial_queue.next(1).first).blank?
         house = {
           phone: phone_number,
@@ -35,6 +21,7 @@ module PreviewPowerCampaign
       voter = house[:voters].first
       voter[:fields].merge!(phone: house[:phone])
       data  = voter
+      inflight_stats.inc('presented')
     else
       data = {campaign_out_of_leads: true}
     end

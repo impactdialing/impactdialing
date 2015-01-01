@@ -16,12 +16,16 @@ class Twillio
         @campaign = campaign
       end
 
+      def incby(status, n)
+        redis.hincrby base_key, status, n
+      end
+
       def inc(status)
-        redis.hincrby base_key, status, 1
+        incby(status, 1)
       end
 
       def dec(status)
-        redis.hincrby base_key, status, -1
+        incby(status, -1)
       end
 
       def get(status)
@@ -47,8 +51,6 @@ class Twillio
 
   def self.count_dial_success(campaign, caller_session=nil)
     ImpactPlatform::Metrics.count('dialer.dial.success', '1', count_source(campaign, caller_session))
-
-    InflightStats.new(campaign).inc('ringing')
   end
 
   def self.count_dial_error(campaign, caller_session=nil)
@@ -119,6 +121,7 @@ class Twillio
 
   def self.handle_succeeded_call(call_attempt, caller_session, response)
     count_dial_success(call_attempt.campaign, caller_session)
+    call_attempt.campaign.number_dialed
     call_attempt.update_attributes(:sid => response["sid"])
   end
 
@@ -126,6 +129,7 @@ class Twillio
     TwilioLogger.error(response['TwilioResponse'] || response)
     count_dial_error(attempt.campaign, caller_session)
 
+    call_attempt.campaign.number_failed
     call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
 
     household.failed!
