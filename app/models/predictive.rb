@@ -15,85 +15,67 @@ class Predictive < Campaign
     Resque.redis.exists("dial_calculate:#{self.id}")
   end
 
-  def increment_campaign_dial_count(counter)
-    Rails.logger.info "Deprecated ImpactDialing Method: Predictive#increment_campaign_dial_count"
-    Resque.redis.incrby("dial_count:#{self.id}", counter)
+  def any_numbers_to_dial?
+    numbers_to_dial_count > 0
   end
 
-  def decrement_campaign_dial_count(decrement_counter)
-    Rails.logger.info "Deprecated ImpactDialing Method: Predictive#decrement_campaign_dial_count"
-    Resque.redis.decrby("dial_count:#{self.id}", decrement_counter)
+  def available_callers_count
+    caller_sessions.available.count
   end
 
-  def self.dial_campaign?(campaign_id)
-    Rails.logger.info "Deprecated ImpactDialing Method: Predictive.dial_campaign?"
-    Resque.redis.exists("dial_campaign:#{campaign_id}")
+  def answered_count
+    call_attempts.with_status(CallAttempt::Status::SUCCESS).count
   end
 
-  def dialing_count
-    call_attempts.with_status(CallAttempt::Status::READY).between(10.seconds.ago, Time.now).size
+  def abandoned_count
+    call_attempts.with_status(CallAttempt::Status::ABANDONED).count
   end
 
-  def number_of_voters_to_dial
-    num_to_call = 0
+  def abandon_rate
+    divisor = answered_count
+    divisor = divisor <= 0 ? 1 : divisor
+
+    abandoned_count.to_f / divisor
+  end
+
+  def abandon_rate_acceptable?
+    abandon_rate <= acceptable_abandon_rate
+  end
+
+  def best_dials_simulated
+    return 1 if simulated_values.nil? || simulated_values.best_dials.nil?
+    n = simulated_values.best_dials.ceil
+    return n > TwilioLimit.get ? TwilioLimit.get : n
+  end
+
+  def dial_factor
     dials_made = call_attempts.between(10.minutes.ago, Time.now).size
-    if dials_made == 0 || !abandon_rate_acceptable?
-      num_to_call = caller_sessions.available.size - call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
-    else
-      num_to_call = number_of_simulated_voters_to_dial
-    end
-    num_to_call
+
+    return 1 if dials_made.zero? || !abandon_rate_acceptable?
+    return best_dials_simulated
   end
 
-  def choose_voters_to_dial(num_voters)
-    return [] if num_voters < 1
-
-    bench_start = Time.now.to_f
-    namespace   = [self.type.downcase]
-
-    if CallFlow::DialQueue.enabled?
-      voter_ids = redis_choose_voters_to_dial(num_voters)
-      namespace << 'redis'
-    else
-      voter_ids = mysql_choose_voters_to_dial(num_voters)
-      namespace << 'mysql'
-    end
-    namespace << "ac-#{self.account_id}"
-    namespace << "ca-#{self.id}"
-    bench_end = Time.now.to_f
-    ImpactPlatform::Metrics.measure('dialer.voter_load', (bench_end - bench_start), namespace.join('.'))
-
-    return voter_ids
+  def numbers_to_dial_count
+    (
+      (dial_factor * available_callers_count) - ringing_count - presented_count
+    ).to_i
   end
 
-  def redis_choose_voters_to_dial(num_voters)
-    dial_queue = CallFlow::DialQueue.new(self)
-    # cache available voters if none cached yet
-    dial_queue.seed
-
-    voter_ids  = dial_queue.next(num_voters).map{|v| v['id'].to_i}
-
-    set_voter_status_to_read_for_dial!(voter_ids)
-
-    # dial_queue.reload_if_below_threshold
-
-    voter_ids
+  def next_in_dial_queue(n)
+    CallFlow::DialQueue.next(self, n)
   end
 
-  def mysql_choose_voters_to_dial(num_voters)
-    voter_query = all_voters.live.limit(num_voters)
-    not_dialed  = voter_query.not_dialed.where(:call_back => false).pluck(:id)
+  def numbers_to_dial
+    n             = numbers_to_dial_count
+    phone_numbers = []
+    return phone_numbers if n < 1
 
-    if not_dialed.size > 0
-      voter_ids = not_dialed
-    else
-      voter_ids = voter_query.last_call_attempt_before_recycle_rate(recycle_rate).
-                to_be_dialed.pluck(:id)
+    timing('dialer.voter_load') do
+      phone_numbers = next_in_dial_queue(n)
+      number_presented(n)
     end
-    
-    set_voter_status_to_read_for_dial!(voter_ids)
 
-    voter_ids
+    return phone_numbers
   end
 
   def abort_calling_with(caller_session, reason)
@@ -105,47 +87,6 @@ class Predictive < Campaign
       abort_calling_with(cs, twilio_redirect)
     end
     caller_sessions.available.update_all(available_for_call: false)
-  end
-
-  def check_campaign_fit_to_dial
-    return true if fit_to_dial?
-
-    abort_available_callers_with(:dialing_prohibited)
-
-    return false
-  end
-
-  def set_voter_status_to_read_for_dial!(voter_ids)
-    Voter.where(id: voter_ids).update_all(status: CallAttempt::Status::READY)
-  end
-
-  def check_campaign_out_of_numbers(voters)
-    Rails.logger.info "Deprecated ImpactDialing Method: Predictive#check_campaign_out_of_numbers"
-    if voters.blank?
-      caller_sessions.available.pluck(:id).each { |id| enqueue_call_flow(CampaignOutOfNumbersJob, [id]) }
-    end
-  end
-
-  def abandon_rate_acceptable?
-    answered_dials = call_attempts.between(Time.at(1334561385) , Time.now).with_status([CallAttempt::Status::SUCCESS, CallAttempt::Status::SCHEDULED]).size
-    abandon_count = call_attempts.between(Time.at(1334561385) , Time.now).with_status(CallAttempt::Status::ABANDONED).size
-    abandon_rate = abandon_count.to_f/(answered_dials <= 0 ? 1 : answered_dials)
-    abandon_rate <= acceptable_abandon_rate
-  end
-
-  def number_of_simulated_voters_to_dial
-    available_callers = caller_sessions.available.size
-    dials_to_make = (best_dials_simulated * available_callers) - call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
-    dials_to_make.to_i
-  end
-
-  def self.do_not_call_in_production?(campaign_id)
-    Rails.logger.info "Deprecated ImpactDialing Method: Predictive.do_not_call_in_production?"
-    !Resque.redis.exists("do_not_call:#{campaign_id}")
-  end
-
-  def best_dials_simulated
-    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > TwilioLimit.get ? TwilioLimit.get : simulated_values.best_dials.ceil
   end
 
   def best_conversation_simulated
@@ -166,11 +107,6 @@ class Predictive < Campaign
 
   def voter_connected_event(call)
     {event: 'voter_connected_dialer', data: {call_id:  call.id, voter:  call.voter.info}}
-  end
-
-  def call_answered_machine_event(call_attempt)
-    Rails.logger.info "Deprecated ImpactDialing Method: Predictive#call_answered_machine_event"
-    Hash.new
   end
 end
 
