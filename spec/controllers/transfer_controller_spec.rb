@@ -39,9 +39,7 @@ describe TransferController, :type => :controller do
       })
     end
     let(:caller_session) do
-      create(:caller_session, {
-        voter_in_progress: voter
-      })
+      create(:caller_session)
     end
     let(:call_sid){ '123123' }
     let(:twilio_url) do

@@ -7,9 +7,7 @@ describe Providers::Phone::Call::Params::Transfer do
     mock_model('Voter')
   end
   let(:caller_session) do
-    mock_model('CallerSession', {
-      voter_in_progress: voter
-    })
+    mock_model('CallerSession')
   end
   let(:call_attempt) do
     mock_model('CallAttempt', {

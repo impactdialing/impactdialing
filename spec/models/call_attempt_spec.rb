@@ -134,18 +134,6 @@ describe CallAttempt, :type => :model do
     expect(call_attempt.voter_response_processed).to be_falsey
   end
 
-  it "should connect lead to caller" do
-    voter = create(:voter)
-    call_attempt = create(:call_attempt, :voter => voter)
-    caller_session = create(:caller_session)
-    expect(RedisOnHoldCaller).to receive(:longest_waiting_caller).and_return(caller_session.id)
-    call_attempt.connect_caller_to_lead(DataCentre::Code::TWILIO)
-    expect(caller_session.attempt_in_progress).to eq(call_attempt)
-    expect(caller_session.voter_in_progress).to eq(voter)
-  end
-
-
-
   it "lists attempts between two dates" do
     too_old = create(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
     too_new = create(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }

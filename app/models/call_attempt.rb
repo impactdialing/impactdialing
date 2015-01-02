@@ -135,21 +135,6 @@ class CallAttempt < ActiveRecord::Base
     end
   end
 
-  def connect_caller_to_lead(callee_dc)
-    caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign_id, callee_dc)
-    unless caller_session_id.nil?
-      loaded_caller_session = CallerSession.find_by_id_cached(caller_session_id)
-      begin
-        loaded_caller_session.update_attributes(attempt_in_progress: self, voter_in_progress: self.voter, available_for_call: false)
-      rescue ActiveRecord::StaleObjectError
-        RedisOnHoldCaller.remove_caller_session(campaign_id, caller_session_id, callee_dc)
-        RedisOnHoldCaller.add_to_bottom(campaign_id, caller_session_id, callee_dc)
-      end
-    else
-      raise ArgumentError, "RedisOnHoldCaller.longest_waiting_caller returned nil CallAttempt[#{self.id}] - should execute abandoned closeout"
-    end
-  end
-
   def connect_call
     self.update_attributes(connecttime: Time.now)
     RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session_id)

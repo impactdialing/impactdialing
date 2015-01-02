@@ -26,7 +26,6 @@ describe TransferDialer do
   let(:caller_session) do
     mock_model('CallerSession', {
       campaign_id: 3,
-      voter_in_progress: voter,
       session_key: session_key
     })
   end

@@ -267,7 +267,7 @@ describe Call, :type => :model do
         @script = create(:script)
         @campaign =  create(:predictive, script: @script)
         @voter  = create(:voter, campaign: @campaign, caller_session: @caller_session)
-        @caller_session = create(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt)
+        @caller_session = create(:webui_caller_session, caller: @caller, campaign: @campaign, attempt_in_progress: @call_attempt)
         @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller: @caller)
       end
 
@@ -488,7 +488,7 @@ describe Call, :type => :model do
       @campaign =  create(:predictive, script: @script)
       @voter  = create(:voter, campaign: @campaign)
       @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign)
-      @caller_session = create(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt, on_call: true, available_for_call: false, state: "connected", sid: "123456")
+      @caller_session = create(:webui_caller_session, caller: @caller, campaign: @campaign, attempt_in_progress: @call_attempt, on_call: true, available_for_call: false, state: "connected", sid: "123456")
       @call_attempt.caller_session = @caller_session
       @call_attempt.save!
     end
