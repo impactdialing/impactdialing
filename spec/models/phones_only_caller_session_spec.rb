@@ -64,7 +64,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         @voters           = [
           {id: 1, phone: @phone, fields: {'id' => 1, 'phone' => @phone, 'first_name' => '', 'last_name' => ''}}
         ]
-        @campaign.stub(:next_in_dial_queue).and_return({
+        allow(@campaign).to receive(:next_in_dial_queue).and_return({
           phone: @phone,
           voters: @voters
         })
