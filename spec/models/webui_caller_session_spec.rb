@@ -19,7 +19,7 @@ describe WebuiCallerSession, :type => :model do
         expect(caller_session).to receive(:funds_not_available?).and_return(false)        
         expect(caller_session).to receive(:subscription_limit_exceeded?).and_return(false)
         expect(caller_session).to receive(:time_period_exceeded?).and_return(false)
-        expect(RedisOnHoldCaller).to receive(:add).with(@campaign.id, caller_session.id, DataCentre::Code::TWILIO)
+        expect(RedisOnHoldCaller).to receive(:add).with(@campaign.id, caller_session.id)
         expect(caller_session).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
         expect(caller_session.start_conf).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/pause?session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end
@@ -103,7 +103,7 @@ describe WebuiCallerSession, :type => :model do
         expect(caller_session).to receive(:subscription_limit_exceeded?).and_return(false)
         expect(caller_session).to receive(:time_period_exceeded?).and_return(false)
 
-        expect(RedisOnHoldCaller).to receive(:add).with(@campaign.id,caller_session.id, DataCentre::Code::TWILIO)
+        expect(RedisOnHoldCaller).to receive(:add).with(@campaign.id,caller_session.id)
         expect(caller_session).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
         expect(caller_session.start_conf).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/pause?session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end

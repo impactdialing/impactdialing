@@ -245,10 +245,9 @@ public
     RedisCallerSession.set_datacentre(self.id, callerdc)
     handle_reassign_campaign(callerdc)
     if Campaign.predictive_campaign?(campaign.type)
-      loaded_caller_session = CallerSession.find(self.id)
-      loaded_caller_session.update_attributes(on_call: true, available_for_call: true)
-      RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, callerdc)
-      RedisOnHoldCaller.add(campaign_id, self.id, callerdc)
+      update_attributes(on_call: true, available_for_call: true)
+      RedisOnHoldCaller.remove_caller_session(campaign_id, self.id)
+      RedisOnHoldCaller.add(campaign_id, self.id)
     end
   end
 
