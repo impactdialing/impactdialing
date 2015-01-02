@@ -1,4 +1,7 @@
 module FakeCallData
+  def twilio_invalid_to
+    '+15005550001'
+  end
   def add_voters(campaign, type=:voter, n=25)
     account = campaign.account
 

@@ -67,17 +67,18 @@ class Twillio
   end
 
   def self.dial(household, caller_session)
-    campaign      = caller_session.campaign
-    call_attempt  = setup_call(household, caller_session, campaign)
+    campaign      = household.campaign
+    call_attempt  = create_call_attempt(household)
     twilio_lib    = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     http_response = twilio_lib.make_call(campaign, household, call_attempt)
     handle_response(http_response, household, call_attempt, caller_session)
   end
 
   def self.dial_predictive_em(iter, household)
-    call_attempt = setup_call_predictive(household, campaign, dc)
+    campaign     = household.campaign
+    call_attempt = create_call_attempt(household)
     twilio_lib   = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    http         = twilio_lib.make_call_em(campaign, household, call_attempt, dc)
+    http         = twilio_lib.make_call_em(campaign, household, call_attempt)
     http.callback {
       handle_response(http.response, household, call_attempt)
       iter.return(http)
@@ -85,57 +86,47 @@ class Twillio
     http.errback { iter.return(http) }
   end
 
-  def self.create_call_attempt(household, campaign, caller_session=nil)
-    attempt_attrs = {
+  def self.create_call_attempt(household)
+    campaign     = household.campaign
+    call_attempt = household.call_attempts.create({
       campaign: campaign,
       dialer_mode: campaign.type,
-      status: CallAttempt::Status::RINGING,
       call_start: Time.now
-    }
-    if caller_session.present?
-      attempt_attrs.merge!({
-        caller_session: caller_session,
-        caller: caller_session.caller
-      })
-    end
-
-    call_attempt = household.call_attempts.create(attempt_attrs)
-    call         = Call.create(call_attempt: call_attempt, state: "initial")
+    })
+    Call.create(call_attempt: call_attempt, state: "initial")
 
     call_attempt
   end
 
-  def self.setup_call_predictive(household, campaign)
-    create_call_attempt(household, campaign)
-  end
+  def self.set_attempt_in_progress(caller_session, call_attempt)
+    return if caller_session.nil? # the case when call first made in predictive mode
+                                  # if predictive call is picked up, then this is called
+                                  # again w/ caller_session present from /incoming end-point
 
-  def self.setup_call(household, caller_session, campaign)
-    call_attempt = create_call_attempt(household, campaign, caller_session)
     caller_session.update_attributes({
       on_call: true,
       available_for_call: false,
       attempt_in_progress: call_attempt
     })
-    call_attempt
   end
 
   def self.handle_succeeded_call(call_attempt, caller_session, response)
     count_dial_success(call_attempt.campaign, caller_session)
-    call_attempt.campaign.number_dialed
+    call_attempt.campaign.number_ringing
+
+    set_attempt_in_progress(caller_session, call_attempt)
     call_attempt.update_attributes(:sid => response["sid"])
   end
 
   def self.handle_failed_call(call_attempt, caller_session, household, response)
     TwilioLogger.error(response['TwilioResponse'] || response)
-    count_dial_error(attempt.campaign, caller_session)
-
+    count_dial_error(call_attempt.campaign, caller_session)
     call_attempt.campaign.number_failed
-    call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
 
+    call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     household.failed!
     
     unless caller_session.nil?
-      caller_session.update_attributes(attempt_in_progress: nil, on_call: true, available_for_call: true)
       Providers::Phone::Call.redirect_for(caller_session)
     end
   end
