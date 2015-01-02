@@ -21,18 +21,39 @@ private
 
 public
   def incoming_call(params={})
-    stats.dec('ringing')
-    
-    return connected(params) if answered_by_human_and_caller_available?
-    return abandoned if answered_by_human_and_caller_not_available?
-    return call_answered_by_machine if answered_by_machine?
+    campaign.number_not_ringing
+
+    if campaign.predictive? and answered_by_human?
+      caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign.id)
+      begin
+        RescueRetryNotify.on ActiveRecord::StaleObjectError, 3 do
+          loaded_caller_session = CallerSession.find_by_id_cached(caller_session_id)
+          Twillio.set_attempt_in_progress(loaded_caller_session, call_attempt)
+        end
+      rescue ActiveRecord::StaleObjectError
+        if caller_session_id
+          RedisOnHoldCaller.add(campaign.id, caller_session_id)
+        end
+        return abandoned
+      end
+    end
+
+    if answered_by_human? and call_in_progress?
+      if caller_available?
+        return connected(params)
+      else
+        return abandoned
+      end
+    else
+      return call_answered_by_machine
+    end
   end
 
   ##
   #
-  ## voter_id
+  ## params['voter_id']
   #
-  # A voter_id of nil means voter will be selected
+  # When params['voter_id'] is nil means voter will be selected
   # after call has been dispositioned. An integer voter_id
   # allows system-determined selection of voter before call
   # has been dispositioned.
@@ -122,20 +143,30 @@ public
   end
 
   def answered_by_machine?
-    RedisCall.answered_by(self.id) == "machine"
+    redis_answered_by == "machine"
   end
 
   def answered_by_human?
-    (RedisCall.answered_by(self.id).nil? || RedisCall.answered_by(self.id) == "human")
+    !answered_by_machine?
   end
 
+  def redis_answered_by
+    RedisCall.answered_by(self.id)
+  end
+
+  def caller_available?
+    cached_caller_session.present? and cached_caller_session.assigned_to_lead?
+  end
+
+  # todo: fix the naming of these methods & their internal calls to be consistent
   def answered_by_human_and_caller_available?
-     answered_by_human?  && RedisCall.call_status(self.id) == 'in-progress' && !cached_caller_session.nil? && cached_caller_session.assigned_to_lead?
+     answered_by_human? && redis_call_status == 'in-progress' &&
+     !cached_caller_session.nil? && cached_caller_session.assigned_to_lead?
   end
-
 
   def answered_by_human_and_caller_not_available?
-    answered_by_human?  && redis_call_status == 'in-progress' && (cached_caller_session.nil? || !cached_caller_session.assigned_to_lead?)
+    answered_by_human?  && redis_call_status == 'in-progress' &&
+    (cached_caller_session.nil? || !cached_caller_session.assigned_to_lead?)
   end
 
   def call_did_not_connect?
@@ -144,6 +175,10 @@ public
 
   def call_connected?
     !call_did_not_connect?
+  end
+
+  def call_in_progress?
+    redis_call_status == 'in-progress'
   end
 
   def redis_call_status

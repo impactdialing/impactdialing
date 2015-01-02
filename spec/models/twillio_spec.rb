@@ -72,7 +72,7 @@ describe Twillio do
       create(:bare_caller_session, :webui, :available, campaign: campaign, caller: caller)
     end
     let(:household) do
-      create(:household, phone: '15418703112', campaign: campaign, account: campaign.account)
+      create(:household, phone: '15418703001', campaign: campaign, account: campaign.account)
     end
   end
 

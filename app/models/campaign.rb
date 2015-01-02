@@ -151,6 +151,10 @@ public
     inflight_stats.incby('ringing', 1)
   end
 
+  def number_not_ringing
+    inflight_stats.dec('ringing')
+  end
+
   def number_failed
     inflight_stats.incby('presented', -1)
   end
@@ -173,6 +177,10 @@ public
 
   def self.predictive_campaign?(campaign_type)
     Type::PREDICTIVE == campaign_type
+  end
+
+  def predictive?
+    self.class.predictive_campaign?(type)
   end
 
   def blocked_numbers

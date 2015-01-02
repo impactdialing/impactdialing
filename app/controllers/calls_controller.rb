@@ -8,10 +8,6 @@ class CallsController < ApplicationController
 
   # TwiML
   def incoming
-    if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human?
-      call_attempt = @call.call_attempt
-      call_attempt.connect_caller_to_lead(DataCentre.code(params[:callee_dc]))
-    end
     render xml: @call.incoming_call(params)
   end
 
@@ -117,6 +113,4 @@ class CallsController < ApplicationController
       RedisCall.set_request_params(@call.id, @parsed_params)
     end
   end
-
-
 end
