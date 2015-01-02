@@ -1,0 +1,171 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://mandrillapp.com/api/1.0/messages/send.json
+    body:
+      encoding: UTF-8
+      string: '{"message":{"to":[{"email":"exceptions@impactdialing.com"}],"subject":"Attempted
+        to Stale a stale object: CallerSession","text":"3 attempts made:<br/>0.001418<br/>0.000928<br/>0.000831<br/><br/><br/>Backtrace:<br/><br/>[\"/Users/jh/projects/Impact-Dialing/spec/models/call_spec.rb:213:in
+        `block (8 levels) in <top (required)>''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:592:in
+        `call''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:592:in
+        `block in call''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:591:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:591:in
+        `call''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:495:in
+        `invoke_incrementing_actual_calls_by''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:214:in
+        `invoke''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/proxy.rb:163:in
+        `message_received''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/proxy.rb:301:in
+        `message_received''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/method_double.rb:73:in
+        `proxy_method_invoked''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/method_double.rb:60:in
+        `block (2 levels) in define_proxy_method''\", \"/Users/jh/projects/Impact-Dialing/app/models/call.rb:32:in
+        `block in incoming_call''\", \"/Users/jh/projects/Impact-Dialing/app/concerns/rescue_retry_notify.rb:9:in
+        `on''\", \"/Users/jh/projects/Impact-Dialing/app/models/call.rb:29:in `incoming_call''\",
+        \"/Users/jh/projects/Impact-Dialing/spec/models/call_spec.rb:13:in `incoming_call''\",
+        \"/Users/jh/projects/Impact-Dialing/spec/models/call_spec.rb:216:in `block
+        (8 levels) in <top (required)>''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/vcr-2.9.3/lib/vcr/util/variable_args_block_caller.rb:9:in
+        `call''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/vcr-2.9.3/lib/vcr/util/variable_args_block_caller.rb:9:in
+        `call_block''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/vcr-2.9.3/lib/vcr.rb:182:in
+        `use_cassette''\", \"/Users/jh/projects/Impact-Dialing/spec/models/call_spec.rb:215:in
+        `block (7 levels) in <top (required)>''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:294:in
+        `instance_exec''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:294:in
+        `instance_exec''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/hooks.rb:349:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/hooks.rb:410:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/hooks.rb:410:in
+        `each''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/hooks.rb:410:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/hooks.rb:485:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:340:in
+        `run_before_example''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:147:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:301:in
+        `with_around_example_hooks''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:145:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:494:in
+        `block in run_examples''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:490:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:490:in
+        `run_examples''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:457:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:112:in
+        `block (2 levels) in run_specs''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:112:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:112:in
+        `block in run_specs''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/reporter.rb:54:in
+        `report''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:108:in
+        `run_specs''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:86:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:70:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:38:in
+        `invoke''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/exe/rspec:4:in
+        `<top (required)>''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/bin/rspec:23:in
+        `load''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/bin/rspec:23:in
+        `<main>''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/bin/ruby_executable_hooks:15:in
+        `eval''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/bin/ruby_executable_hooks:15:in
+        `<main>''\"]","html":"3 attempts made:<br/>0.001418<br/>0.000928<br/>0.000831<br/><br/><br/>Backtrace:<br/><br/>[\"/Users/jh/projects/Impact-Dialing/spec/models/call_spec.rb:213:in
+        `block (8 levels) in <top (required)>''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:592:in
+        `call''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:592:in
+        `block in call''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:591:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:591:in
+        `call''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:495:in
+        `invoke_incrementing_actual_calls_by''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/message_expectation.rb:214:in
+        `invoke''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/proxy.rb:163:in
+        `message_received''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/proxy.rb:301:in
+        `message_received''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/method_double.rb:73:in
+        `proxy_method_invoked''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-mocks-3.0.2/lib/rspec/mocks/method_double.rb:60:in
+        `block (2 levels) in define_proxy_method''\", \"/Users/jh/projects/Impact-Dialing/app/models/call.rb:32:in
+        `block in incoming_call''\", \"/Users/jh/projects/Impact-Dialing/app/concerns/rescue_retry_notify.rb:9:in
+        `on''\", \"/Users/jh/projects/Impact-Dialing/app/models/call.rb:29:in `incoming_call''\",
+        \"/Users/jh/projects/Impact-Dialing/spec/models/call_spec.rb:13:in `incoming_call''\",
+        \"/Users/jh/projects/Impact-Dialing/spec/models/call_spec.rb:216:in `block
+        (8 levels) in <top (required)>''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/vcr-2.9.3/lib/vcr/util/variable_args_block_caller.rb:9:in
+        `call''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/vcr-2.9.3/lib/vcr/util/variable_args_block_caller.rb:9:in
+        `call_block''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/vcr-2.9.3/lib/vcr.rb:182:in
+        `use_cassette''\", \"/Users/jh/projects/Impact-Dialing/spec/models/call_spec.rb:215:in
+        `block (7 levels) in <top (required)>''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:294:in
+        `instance_exec''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:294:in
+        `instance_exec''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/hooks.rb:349:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/hooks.rb:410:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/hooks.rb:410:in
+        `each''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/hooks.rb:410:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/hooks.rb:485:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:340:in
+        `run_before_example''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:147:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:301:in
+        `with_around_example_hooks''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example.rb:145:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:494:in
+        `block in run_examples''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:490:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:490:in
+        `run_examples''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:457:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `block in run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/example_group.rb:458:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:112:in
+        `block (2 levels) in run_specs''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:112:in
+        `map''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:112:in
+        `block in run_specs''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/reporter.rb:54:in
+        `report''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:108:in
+        `run_specs''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:86:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:70:in
+        `run''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/lib/rspec/core/runner.rb:38:in
+        `invoke''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/gems/rspec-core-3.0.2/exe/rspec:4:in
+        `<top (required)>''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/bin/rspec:23:in
+        `load''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/bin/rspec:23:in
+        `<main>''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/bin/ruby_executable_hooks:15:in
+        `eval''\", \"/Users/jh/.rvm/gems/ruby-2.0.0-p598@impact-dialing/bin/ruby_executable_hooks:15:in
+        `<main>''\"]","from_name":"Exception Notifier","from_email":"email@impactdialing.com"},"async":false,"key":"qlYdRXlyROwaN9Tqk1QrhA"}'
+    headers:
+      User-Agent:
+      - excon/0.25.3
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: ''
+    headers:
+      Server:
+      - nginx/1.6.1
+      Date:
+      - Fri, 02 Jan 2015 21:50:20 GMT
+      Content-Type:
+      - application/json; charset=utf-8
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Vary:
+      - Accept-Encoding
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Allow-Methods:
+      - POST, GET, OPTIONS
+      Access-Control-Allow-Headers:
+      - Content-Type
+      Access-Control-Allow-Credentials:
+      - 'false'
+    body:
+      encoding: UTF-8
+      string: '[{"email":"exceptions@impactdialing.com","status":"sent","_id":"30c2876bd1814622809c79e75980b2b4","reject_reason":null}]'
+    http_version: 
+  recorded_at: Fri, 02 Jan 2015 21:50:20 GMT
+recorded_with: VCR 2.9.3
