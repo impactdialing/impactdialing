@@ -80,7 +80,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
 
   def next_call
-    ready_to_call(RedisCallerSession.datacentre(self.id))
+    ready_to_call
   end
 
   def skip_voter

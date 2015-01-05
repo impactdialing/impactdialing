@@ -60,7 +60,7 @@ public
   # Useful as an auto-select feature eg phones only.
   def connected(params)
     connect_call # CallAttempt
-    enqueue_call_flow(VoterConnectedPusherJob, [call_attempt.caller_session_id, self.id, params[:voter_id]])
+    enqueue_call_flow(VoterConnectedPusherJob, [call_attempt.caller_session_id, self.id])
     connected_twiml
   end
 
