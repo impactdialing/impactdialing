@@ -370,10 +370,26 @@ public
     self.caller_id      = caller_id
   end
 
+  def do_not_call_back?
+    (not call_back?) and (not retry?)
+  end
+
+  def retry?
+    status == Voter::Status::RETRY
+  end
+
   def dispositioned(call_attempt)
     self.status            = call_attempt.status
     self.caller_id         = call_attempt.caller_id
     self.caller_session_id = nil
+    if do_not_call_back?
+      dial_queue = CallFlow::DialQueue.new(campaign)
+      dial_queue.households.remove_member(household.phone, self)
+    else
+      # phone-only will need the voter rotated to the end of the queue
+      # webui doesn't care...
+      # phone-only should have voter rotation tracked elsewhere
+    end
   end
 
   def self.upload_fields
@@ -423,56 +439,34 @@ public
     update_attributes(skipped_time: Time.now, status: Voter::Status::SKIPPED)
   end
 
-  def answer(question, response, recorded_by_caller = nil)
-    possible_response = question.possible_responses.where(:keypad => response).first
-    self.answer_recorded_by = recorded_by_caller
-    return unless possible_response
-    Answer.new(question: question, possible_response: possible_response, campaign: Campaign.find(campaign_id), caller: recorded_by_caller.caller, call_attempt_id: last_call_attempt.id, voter_id: self.id)
-  end
-
-  def answer_recorded_by
-    @caller_session
-  end
-
-  def answer_recorded_by=(caller_session)
-    @caller_session = caller_session
-  end
-
+  # this is called from AnsweredJob and should run only
+  # after #dispositioned has run (which is called from PersistCalls)
+  # otherwise, the status of the voter will be overwritten.
   def persist_answers(questions, call_attempt)
     return if questions.nil?
     question_answers = JSON.parse(questions)
     retry_response = nil
     question_answers.try(:each_pair) do |question_id, answer_id|
-      begin
-        voters_response = PossibleResponse.find(answer_id)
-        answers.create({
-          possible_response: voters_response,
-          question: Question.find(question_id),
-          created_at: call_attempt.created_at,
-          campaign: Campaign.find(campaign_id),
-          caller: call_attempt.caller,
-          call_attempt_id: call_attempt.id
-        })
-        retry_response ||= voters_response if voters_response.retry?
-      rescue Exception => e
-        Rails.logger.info "Persisting_Answers_Exception #{e.to_s}"
-        Rails.logger.info "Voter #{self.inspect}"
-      end
+      voters_response = PossibleResponse.find(answer_id)
+      answers.create({
+        possible_response: voters_response,
+        question: Question.find(question_id),
+        created_at: call_attempt.created_at,
+        campaign: Campaign.find(campaign_id),
+        caller: call_attempt.caller,
+        call_attempt_id: call_attempt.id
+      })
+      retry_response ||= voters_response if voters_response.retry?
     end
-    update_attributes(:status => Voter::Status::RETRY) if retry_response
+    update_attributes(call_back: true, status: Voter::Status::RETRY) if retry_response
    end
 
   def persist_notes(notes_json, call_attempt)
     return if notes_json.nil?
     notes = JSON.parse(notes_json)
-    begin
-      notes.try(:each_pair) do |note_id, note_res|
-        note = Note.find(note_id)
-        note_responses.create(response: note_res, note: Note.find(note_id), call_attempt_id: call_attempt.id, campaign_id: campaign_id)
-      end
-    rescue Exception => e
-      Rails.logger.info "Persisting_Notes_Exception #{e.to_s}"
-      Rails.logger.info "Voter #{self.inspect}"
+    notes.try(:each_pair) do |note_id, note_res|
+      note = Note.find(note_id)
+      note_responses.create(response: note_res, note: Note.find(note_id), call_attempt_id: call_attempt.id, campaign_id: campaign_id)
     end
   end
 end

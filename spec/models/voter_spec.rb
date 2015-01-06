@@ -415,47 +415,9 @@ describe Voter, :type => :model do
       pending_question = create(:question, :script => script)
       expect(voter.unanswered_questions).to eq([pending_question])
     end
-
-    it "associates the caller with the answer" do
-      caller = create(:caller)
-      session = create(:caller_session, :caller => caller)
-      voter = create(:voter, :campaign => campaign, :last_call_attempt => create(:call_attempt, :caller_session => session))
-      create(:possible_response, :question => question, :keypad => 1, :value => "response1")
-      expect(voter.answer(question, "1", session).caller_id).to eq(caller.id)
-    end
-
-    describe "phones only" do
-      let(:script) { create(:script) }
-      let(:campaign) { create(:predictive, :script => script) }
-      let(:voter) { create(:voter, :campaign => campaign, :last_call_attempt => create(:call_attempt, :caller_session => create(:caller_session))) }
-      let(:question) { create(:question, :script => script) }
-      let(:session) { create(:caller_session, :caller => create(:caller)) }
-
-      it "captures a voter response" do
-        create(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        answer = voter.answer(question, "1", session)
-        expect(answer.question_id).to eq(question.id)
-      end
-
-      it "rejects an incorrect a voter response" do
-        create(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        expect(voter.answer(question, "2", session)).to eq(nil)
-        expect(voter.answers.size).to eq(0)
-      end
-
-      it "recaptures a voter response" do
-        voter.answer(question, "1", session)
-        create(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        create(:possible_response, :question => question, :keypad => 2, :value => "response2")
-        answer = voter.answer(question, "2", session)
-        expect(answer.question_id).to eq(question.id)
-      end
-
-    end
   end
 
   describe "notes" do
-
     let(:script) { create(:script) }
     let(:note1) { create(:note, note: "Question1", script: script) }
     let(:note2) { create(:note, note: "Question2", script: script) }
@@ -466,7 +428,6 @@ describe Voter, :type => :model do
       voter.persist_notes("{\"#{note1.id}\":\"tell\",\"#{note2.id}\":\"no\"}", call_attempt)
       expect(voter.note_responses.size).to eq(2)
     end
-
   end
 
   describe "last_call_attempt_before_recycle_rate" do
