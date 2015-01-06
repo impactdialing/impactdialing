@@ -9,7 +9,7 @@ describe CallStats::Summary do
 
   describe "overview" do
 
-    describe "completed_voters_count" do
+    describe "dialed_and_complete_count" do
 
       it "returns count indicating number of voters that were successfully dispositioned" do
         @campaign     = create(:predictive)
@@ -24,7 +24,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        expect(dial_report.completed_voters_count).to eq(2)
+        expect(dial_report.dialed_and_complete_count).to eq(2)
       end
 
       it "should include all failed call attempts" do
@@ -40,7 +40,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        expect(dial_report.completed_voters_count).to eq(2)
+        expect(dial_report.dialed_and_complete_count).to eq(2)
       end
 
       it "should include all successful failed call attempts" do
@@ -56,7 +56,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        expect(dial_report.completed_voters_count).to eq(2)
+        expect(dial_report.dialed_and_complete_count).to eq(2)
       end
     end
 
@@ -103,7 +103,7 @@ describe CallStats::Summary do
       end
     end
 
-    describe "leads_not_dialed" do
+    describe "households_not_dialed_count" do
 
       it "counts Voters w/ blank last_call_attempt_time and w/ statuses not in 'ringing', 'ready' or 'in-progress'" do
         @campaign = create(:predictive, recycle_rate: 3)
@@ -115,7 +115,7 @@ describe CallStats::Summary do
 
         dial_report = CallStats::Summary.new(@campaign)
 
-        expect(dial_report.not_dialed_count).to eq(1)
+        expect(dial_report.households_not_dialed_count).to eq(1)
       end
 
     end
@@ -163,7 +163,7 @@ describe CallStats::Summary do
 
       it 'not dialed' do
         summary = CallStats::Summary.new(@campaign)
-        expect(summary.not_dialed_count).to eq @not_dialed.count
+        expect(summary.households_not_dialed_count).to eq @not_dialed.count
       end
 
       it 'dialed' do
@@ -173,7 +173,7 @@ describe CallStats::Summary do
 
       it 'not dialed + dialed = all voters' do
         summary = CallStats::Summary.new(@campaign)
-        expect( summary.not_dialed_count + summary.dialed_count ).to eq @campaign.households.count
+        expect( summary.households_not_dialed_count + summary.dialed_count ).to eq @campaign.households.count
       end
 
       it 'available' do
@@ -188,7 +188,7 @@ describe CallStats::Summary do
 
       it 'completed' do
         summary = CallStats::Summary.new(@campaign)
-        expect(summary.completed_voters_count).to eq(@completed.count)
+        expect(summary.dialed_and_complete_count).to eq(@completed.count)
       end
     end
   end
