@@ -5,8 +5,13 @@ private
   def rows
     [
       {
-        status: 'Not dialed',
-        number: :not_dialed_count
+        status: 'Households not dialed',
+        number: :households_not_dialed_count
+      },
+      {
+        status: 'Voters not reached',
+        number: :voters_not_reached,
+        perc: 'N/A'
       },
       # {
       #   status: 'Dialed',
@@ -67,7 +72,13 @@ public
       rows.each do |tpl|
         number = @stats.send(tpl[:number])
         feeder.transform{|row| row['Number'] = number}
-        feeder.transform{|row| row['Percent'] = perc(number)}
+        feeder.transform do |row|
+          unless tpl[:perc]
+            row['Percent'] = perc(number)
+          else
+            row['Percent'] = tpl[:perc]
+          end
+        end
 
         feeder << {'Status' => tpl[:status]}
       end
