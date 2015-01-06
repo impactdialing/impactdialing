@@ -11,6 +11,6 @@ describe PreviewPowerDialJob do
     
     expect(Twillio).to receive(:dial).with(voter.household, caller_session)
     
-    PreviewPowerDialJob.new.perform(caller_session.id, voter.id)
+    PreviewPowerDialJob.new.perform(caller_session.id, voter.household.phone)
   end
 end

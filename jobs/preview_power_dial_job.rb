@@ -23,11 +23,9 @@ class PreviewPowerDialJob
   sidekiq_options :retry => false
   sidekiq_options :failures => true
 
-  # def perform(caller_session_id, phone)
-  def perform(caller_session_id, voter_id)
+  def perform(caller_session_id, phone)
     caller_session = CallerSession.includes(:campaign).find_by_id(caller_session_id)
-    # household      = caller_session.campaign.households.find_by_phone(phone)
-    voter = caller_session.campaign.all_voters.find(voter_id)
-    Twillio.dial(voter.household, caller_session)
+    household      = caller_session.campaign.households.find_by_phone(phone)
+    Twillio.dial(household, caller_session)
   end
 end
