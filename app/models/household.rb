@@ -22,8 +22,15 @@ class Household < ActiveRecord::Base
   scope :not_dialed, where('households.status = "not called"')
   scope :dialed, where('households.status <> "not called"')
   scope :failed, where('households.status = ?', CallAttempt::Status::FAILED)
+  scope :presented_within, lambda{ |from, to|
+    where('households.presented_at >= ?', from).
+    where('households.presented_at <= ?', to)
+  }
+  scope :with_message_drop, joins(:call_attempts).where('call_attempts.recording_id IS NOT NULL')
+  scope :with_manual_message_drop, with_message_drop.where('call_attempts.recording_delivered_manually = ?', true)
+  scope :with_auto_message_drop, with_message_drop.where('call_attempts.recording_delivered_manually = ?', false)
   scope :presentable, lambda{ |campaign|
-    where("households.presented_at < ?", campaign.recycle_rate.hours.ago)
+    where('households.presented_at < ?', campaign.recycle_rate.hours.ago)
   }
   scope :available, lambda{ |campaign|
     active.

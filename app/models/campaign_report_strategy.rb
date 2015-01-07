@@ -81,10 +81,10 @@ public
     ]
     
     if @mode == CampaignReportStrategy::Mode::PER_LEAD
-      out << attempt_numbers[call_attempt['voter_id']][:cnt]
+      out << attempt_numbers[call_attempt['household_id']][:cnt]
     end
 
-    out << voicemail_history[call_attempt['voter_id']][:message_left_text]
+    out << voicemail_history[call_attempt['household_id']][:message_left_text]
     out << CallAttempt.report_recording_url(call_attempt['recording_url'])
     out.flatten
   end

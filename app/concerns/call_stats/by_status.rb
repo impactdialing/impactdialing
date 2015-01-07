@@ -3,6 +3,7 @@ class CallStats::ByStatus
 
   delegate :call_attempts, to: :campaign
   delegate :all_voters, to: :campaign
+  delegate :households, to: :campaign
 
   def initialize(campaign, options)
     @campaign  = campaign
@@ -25,9 +26,11 @@ class CallStats::ByStatus
       end
     elsif scoped_to?(:all_voters)
       if group_by_status_index
-        @_all_voters_group_index ||= all_voters.from('voters use index (voters_campaign_status_time)').last_call_attempt_within(@from_date, @to_date)
+        # @_all_voters_group_index ||= all_voters.from('voters use index (voters_campaign_status_time)').last_call_attempt_within(@from_date, @to_date)
+        @_all_voters_group_index ||= households.presented_within(@from_date, @to_date)
       else
-        @_all_voters ||= all_voters.last_call_attempt_within(@from_date, @to_date)
+        # @_all_voters ||= all_voters.last_call_attempt_within(@from_date, @to_date)
+        @_all_voters ||= households.presented_within(@from_date, @to_date)
       end
     else
       raise ArgumentError, "Unknown scoped_to in CallStats::ByStatus: #{scoped_to}. Use one of :call_attempts, :all_voters."

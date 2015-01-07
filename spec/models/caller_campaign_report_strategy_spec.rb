@@ -75,6 +75,7 @@ describe CallerCampaignReportStrategy, :type => :model do
       recording    = create(:recording)
       call_attempt = create(:call_attempt, {
         voter: voter,
+        household: voter.household,
         status: CallAttempt::Status::SUCCESS,
         call_start: Time.at(1338292076),
         connecttime: Time.at(1338292476),
@@ -85,14 +86,14 @@ describe CallerCampaignReportStrategy, :type => :model do
         recording_id: recording.id
       })
       attempt_numbers = {
-        voter.id => {
+        voter.household.id => {
           cnt: 12,
           last_id: call_attempt.id
         }
       }
 
       voicemail_history = {
-        voter.id => {
+        voter.household.id => {
           message_left_text: 'Yes: automatically'
         }
       }
@@ -121,6 +122,7 @@ describe CallerCampaignReportStrategy, :type => :model do
       voter = create(:voter)
       call_attempt = create(:call_attempt, {
         voter: voter,
+        household: voter.household,
         status: CallAttempt::Status::SUCCESS,
         call_start: Time.at(1338292076),
         connecttime: Time.at(1338292476),
@@ -129,13 +131,13 @@ describe CallerCampaignReportStrategy, :type => :model do
         caller: caller
       })
       attempt_numbers = {
-        voter.id => {
+        voter.household.id => {
           cnt: 12,
           last_id: call_attempt.id
         }
       }
       voicemail_history = {
-        voter.id => {
+        voter.household.id => {
           message_left_text: 'No'
         }
       }
@@ -153,8 +155,8 @@ describe CallerCampaignReportStrategy, :type => :model do
         'N/A', # transfer attempt start
         'N/A', # transfer attempt end
         'N/A', # transfer attempt duration
-        attempt_numbers[voter.id][:cnt],
-        voicemail_history[voter.id][:message_left_text],
+        attempt_numbers[voter.household.id][:cnt],
+        voicemail_history[voter.household.id][:message_left_text],
         "xyz.mp3"
       ]
       expect(actual).to eq expected
@@ -192,6 +194,7 @@ describe CallerCampaignReportStrategy, :type => :model do
       let(:call_attempt) do
         create(:call_attempt,
                 voter: voter,
+                household: voter.household,
                 status: CallAttempt::Status::SUCCESS,
                 call_start: Time.at(1338292076),
                 connecttime: Time.at(1338292476),
@@ -203,7 +206,7 @@ describe CallerCampaignReportStrategy, :type => :model do
 
       let(:attempt_numbers) do
         {
-          voter.id => {
+          voter.household.id => {
             cnt: 12,
             last_id: call_attempt.id
           }
@@ -212,7 +215,7 @@ describe CallerCampaignReportStrategy, :type => :model do
 
       let(:voicemail_history) do
         {
-          voter.id => {
+          voter.household.id => {
             message_left_text: 'No'
           }
         }
@@ -232,7 +235,7 @@ describe CallerCampaignReportStrategy, :type => :model do
           'N/A', # transfer attempt start
           'N/A', # transfer attempt end
           'N/A', # transfer attempt duration
-          voicemail_history[voter.id][:message_left_text],
+          voicemail_history[voter.household.id][:message_left_text],
           "xyz.mp3",
           "Hey",
           "Wee",
@@ -279,7 +282,16 @@ describe CallerCampaignReportStrategy, :type => :model do
       value1 = create(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
       value2 = create(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
 
-      call_attempt = create(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), connecttime: Time.at(1338292476), call_end: Time.at(1338293196), recording_url: "xyz", caller: caller)
+      call_attempt = create(:call_attempt, {
+        voter: voter,
+        household: voter.household,
+        status: CallAttempt::Status::SUCCESS,
+        call_start: Time.at(1338292076),
+        connecttime: Time.at(1338292476),
+        call_end: Time.at(1338293196),
+        recording_url: "xyz",
+        caller: caller
+      })
       question1 = create(:question, text: "Q1", script: @script)
       question2 = create(:question, text: "Q12", script: @script)
       possible_response1 = create(:possible_response, question_id: question1.id, value: "Hey")
@@ -302,13 +314,13 @@ describe CallerCampaignReportStrategy, :type => :model do
         possible_response3.id => 'Tree'
       }
       attempt_numbers = {
-        voter.id => {
+        voter.household.id => {
           cnt: 12,
           last_id: call_attempt.id
         }
       }
       voicemail_history = {
-        voter.id => {
+        voter.household.id => {
           message_left_text: 'Yes: automatically'
         }
       }
@@ -325,7 +337,7 @@ describe CallerCampaignReportStrategy, :type => :model do
         'N/A', # transfer attempt start
         'N/A', # transfer attempt end
         'N/A', # transfer attempt duration
-        voicemail_history[voter.id][:message_left_text],
+        voicemail_history[voter.household.id][:message_left_text],
         "xyz.mp3",
         "Hey",
         "Wee",
@@ -435,7 +447,8 @@ describe CallerCampaignReportStrategy, :type => :model do
         caller = create(:caller, username: "abc@hui.com")
         voter = create(:voter, account: @account, campaign: @campaign)
         phone, custom_id, firstname = "39045098753", "24566", "first"
-        voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
+        voter.update_attributes(:custom_id => custom_id, :first_name => firstname)
+        voter.household.update_attributes(phone: phone)
         field1  = create(:custom_voter_field, :name => "field1", :account => @account)
         field2 = create(:custom_voter_field, :name => "field2", :account => @account)
 
@@ -444,6 +457,7 @@ describe CallerCampaignReportStrategy, :type => :model do
 
         call_attempt = create(:call_attempt, {
           voter: voter,
+          household: voter.household,
           status: CallAttempt::Status::SUCCESS,
           call_start: Time.at(1338292076),
           connecttime: Time.at(1338292476),
@@ -496,9 +510,9 @@ describe CallerCampaignReportStrategy, :type => :model do
             "note2"
           ],
           [
-            "24566",
-            "first",
-            "39045098753",
+            custom_id,
+            firstname,
+            phone,
             "value1",
             "value2",
             "a caller",
