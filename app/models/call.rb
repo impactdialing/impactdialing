@@ -108,10 +108,12 @@ public
       caller_session.publish_call_ended(params)
     end
     if call_did_not_connect?
+      campaign.number_not_ringing
       RedisCallFlow.push_to_not_answered_call_list(self.id, redis_call_status)
     end
 
     if answered_by_machine?
+      campaign.number_not_ringing
       RedisCallFlow.push_to_end_by_machine_call_list(self.id)
       # todo: verify caller is redirected when answering machine twiml is served at /incoming
       # if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status == 'completed'
