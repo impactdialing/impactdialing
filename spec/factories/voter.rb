@@ -8,11 +8,13 @@ FactoryGirl.define do
     factory :voter do
       after(:build) do |voter|
         voter.account ||= create(:account)
-        voter.campaign ||= create(:power, account: voter.account)
-        voter.household ||= create(:household, {
+        voter.campaign ||= create([:preview, :power, :predictive].sample, account: voter.account)
+        campaign_account = {
           campaign: voter.campaign,
           account: voter.account
-        })
+        }
+        voter.household ||= create(:household, campaign_account)
+        voter.voter_list ||= create(:voter_list, campaign_account)
       end
       last_name { Forgery(:name).last_name }
       email { Forgery(:email).address }

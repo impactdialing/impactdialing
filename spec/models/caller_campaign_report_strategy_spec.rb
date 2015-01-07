@@ -526,7 +526,8 @@ describe CallerCampaignReportStrategy, :type => :model do
         caller = create(:caller, username: "abc@hui.com")
         voter = create(:voter, account: @account, campaign: @campaign)
         phone, custom_id, firstname = "39045098753", "24566", "first"
-        voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
+        voter.update_attributes(:custom_id => custom_id, :first_name => firstname)
+        voter.household.update_attributes(:phone => phone)
         field1  = create(:custom_voter_field, :name => "field1", :account => @account)
         field2 = create(:custom_voter_field, :name => "field2", :account => @account)
 
@@ -535,6 +536,7 @@ describe CallerCampaignReportStrategy, :type => :model do
 
         call_attempt = create(:call_attempt, {
           voter: voter,
+          household: voter.household,
           status: CallAttempt::Status::SUCCESS,
           call_start: Time.at(1338292076),
           connecttime: Time.at(1338292476),
@@ -545,17 +547,20 @@ describe CallerCampaignReportStrategy, :type => :model do
           recording_id: 42,
           recording_delivered_manually: false
         })
-        question1 = create(:question, text: "Q1", script: @script)
-        question2 = create(:question, text: "Q12", script: @script)
-        answer1 = create(:answer, campaign: @campaign, question_id: question1.id , voter: voter, possible_response: create(:possible_response, question_id: question1.id, value: "Hey"), call_attempt: call_attempt)
-        answer2 = create(:answer, campaign: @campaign, question_id: question2.id, voter: voter, possible_response: create(:possible_response, question_id: question2.id, value: "Wee"), call_attempt: call_attempt)
-        answer3 = create(:answer, campaign: @campaign, question_id: 13456, voter: voter, possible_response: create(:possible_response, question_id: 13456, value: "Tree"), call_attempt: call_attempt)
-        note1 = create(:note, script: @script, note:"note1")
-        note2 = create(:note, script: @script, note:"note2")
+        question1      = create(:question, text: "Q1", script: @script)
+        question2      = create(:question, text: "Q12", script: @script)
+        answer1        = create(:answer, campaign: @campaign, question_id: question1.id , voter: voter, possible_response: create(:possible_response, question_id: question1.id, value: "Hey"), call_attempt: call_attempt)
+        answer2        = create(:answer, campaign: @campaign, question_id: question2.id, voter: voter, possible_response: create(:possible_response, question_id: question2.id, value: "Wee"), call_attempt: call_attempt)
+        answer3        = create(:answer, campaign: @campaign, question_id: 13456, voter: voter, possible_response: create(:possible_response, question_id: 13456, value: "Tree"), call_attempt: call_attempt)
+        note1          = create(:note, script: @script, note:"note1")
+        note2          = create(:note, script: @script, note:"note2")
         note_response1 = create(:note_response, campaign: @campaign, note: note1 , voter: create(:voter), call_attempt: call_attempt, response: "Test2")
         note_response2 = create(:note_response, campaign: @campaign, note: note2, voter: create(:voter), call_attempt: call_attempt, response: "Test1")
-        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD,
-        @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
+
+        strategy = CallerCampaignReportStrategy.new(
+          @campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD,
+          @selected_voter_fields, @selected_custom_voter_fields, nil, nil
+        )
         expected = [
           [
             "ID",

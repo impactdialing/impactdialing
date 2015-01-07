@@ -173,12 +173,40 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
 
   def download_all_voters_lead
     Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
-      first_voter = Voter.by_campaign(@campaign).order('id').first
+      query = lambda{ Household.where(campaign_id: @campaign.id).includes(:call_attempts, :voters).
+                    joins(:call_attempts) }
+      first_household     = query.call.order('households.id').first
       @possible_responses = get_possible_responses
-      i = 1
-      Voter.by_campaign(@campaign).order('last_call_attempt_time').find_in_hashes(:batch_size => 5000, start: start_position(first_voter), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |voters|
+      i                   = 1
+      query.call.order('call_attempts.id').find_in_batches({
+        batch_size: 5000,
+        start: start_position(first_household)
+      }) do |records|
+        voters = records.map(&:voters).flatten
+        voters.map!{|voter| voter.attributes.merge({'phone' => voter.household.phone})}
         process_voters(voters)
         i = i+ 1
+      end
+    end
+  end
+
+  def download_for_date_range_lead
+    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
+      households = Household.where(campaign_id: @campaign.id).
+                    includes(:call_attempts, :voters).
+                    joins(:call_attempts).
+                    where('call_attempts.created_at >= ? AND call_attempts.created_at <= ?', @from_date, @to_date)
+
+      first_household     = households.order('households.id').first
+      @possible_responses = get_possible_responses
+
+      households.order('call_attempts.id').find_in_batches({
+        batch_size: 5000,
+        start: start_position(first_household)
+      }) do |records|
+        voters = records.map(&:voters).flatten
+        voters.map!{|voter| voter.attributes.merge({'phone' => voter.household.phone})}
+        process_voters(voters)
       end
     end
   end
@@ -189,16 +217,6 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       @possible_responses = get_possible_responses
       CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_created_id)').for_campaign(@campaign).order('created_at').includes(:answers, :note_responses, :transfer_attempt).find_in_hashes(:batch_size => 5000, start: start_position(first_attempt), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |attempts|
         process_attempts(attempts)
-      end
-    end
-  end
-
-  def download_for_date_range_lead
-    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
-      first_voter = Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('id').first
-      @possible_responses = get_possible_responses
-      Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_hashes(:batch_size => 5000, start: start_position(first_voter), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |voters|
-        process_voters(voters)
       end
     end
   end
