@@ -205,7 +205,9 @@ public
     attempts.each do |attempt|
       household = households.find{ |household| household.id == attempt['household_id'] }
       household.voters.each do |voter|
-        data[voter.id][-1] = call_attempt_details(attempt, answers[attempt['id']], note_responses[attempt['id']], caller_names, attempt_numbers, @possible_responses, transfer_attempts[attempt['id']], voter, voicemail_history)
+        if attempt['voter_id'] == voter.id or attempt['voter_id'].blank?
+          data[voter.id][-1] = call_attempt_details(attempt, answers[attempt['id']], note_responses[attempt['id']], caller_names, attempt_numbers, @possible_responses, transfer_attempts[attempt['id']], voter, voicemail_history)
+        end
       end
     end
 
