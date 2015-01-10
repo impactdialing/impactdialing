@@ -7,8 +7,14 @@ class RedisPhonesOnlyAnswer
     }
   end
 
-  def self.push_to_list(voter_id, caller_session_id, digit, question_id)
-    $redis_phones_ans_uri_connection.lpush keys[:master], {voter_id: voter_id, caller_session_id: caller_session_id, question_id: question_id, digit: digit}.to_json
+  def self.push_to_list(voter_id, household_id, caller_session_id, digit, question_id)
+    $redis_phones_ans_uri_connection.lpush keys[:master], {
+      voter_id:          voter_id,
+      household_id:      household_id,
+      caller_session_id: caller_session_id,
+      question_id:       question_id,
+      digit:             digit
+    }.to_json
   end
   
   def self.phones_only_answers_list
