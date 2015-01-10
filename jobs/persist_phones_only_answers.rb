@@ -33,7 +33,8 @@ class PersistPhonesOnlyAnswers
   end
 
   def self.perform
-    lists                       = []
+    answers                     = []
+    updated_voters              = []
     iterations_completed        = 0
     iterations_partial_data     = 0
     iterations_missing_response = 0
@@ -52,7 +53,12 @@ class PersistPhonesOnlyAnswers
         next
       end
 
-      voter             = Voter.find(answer_data['voter_id'])
+      if (index = updated_voters.index{|v| v.id == answer_data['voter_id']})
+        voter = updated_voters[index]
+      else
+        voter = Voter.find(answer_data['voter_id'])
+      end
+
       caller_session    = CallerSession.find(answer_data['caller_session_id'])
       question          = Question.find(answer_data['question_id'])
       possible_response = question.possible_responses.where({
@@ -60,7 +66,7 @@ class PersistPhonesOnlyAnswers
       }).first
       
       if possible_response.present?
-        lists << Answer.new({
+        answers << Answer.new({
           question:          question,
           possible_response: possible_response,
           campaign:          voter.campaign,
@@ -68,6 +74,14 @@ class PersistPhonesOnlyAnswers
           call_attempt_id:   voter.household.last_call_attempt.id,
           voter_id:          voter.id
         })
+        
+        if index
+          voter.update_call_back_incrementally(possible_response, false)
+          updated_voters[index] = voter
+        else
+          voter.update_call_back_incrementally(possible_response, true)
+          updated_voters << voter
+        end
 
         iterations_completed += 1
       else
@@ -81,7 +95,8 @@ class PersistPhonesOnlyAnswers
     ImpactPlatform::Metrics.sample('persistence.iterations.missing_response', iterations_missing_response, source)
     ImpactPlatform::Metrics.sample('persistence.iterations.partial_data', iterations_partial_data, source)
 
-    Answer.import lists
+    Answer.import answers
+    Voter.import updated_voters, on_duplicate_key_update: [:call_back, :status, :updated_at]
   end
 
   def self.partial_data!(raw_data)

@@ -40,6 +40,40 @@ describe 'PersistPhonesOnlyAnswers', data_heavy: true do
     return [voter, caller_session]
   end
 
+  context 'a PossibleResponse#retry is true' do
+    before do
+      possible_response = questions.first.possible_responses.sample
+      possible_response.update_attributes!({:retry => true})
+
+      voter, caller_session = create_voter_and_call
+      @retry_voter          = voter
+      question              = questions.first
+      digit                 = question.possible_responses.where(:retry => true).sample.keypad
+      RedisPhonesOnlyAnswer.push_to_list(voter.id, voter.household.id, caller_session.id, digit, question.id)
+
+      (iteration_count - 1).times do
+        voter, caller_session = create_voter_and_call
+
+        questions[1..-1].each do |question|
+          digit = question.possible_responses.where(:retry => false).sample.keypad
+          RedisPhonesOnlyAnswer.push_to_list(voter.id, voter.household.id, caller_session.id, digit, question.id)
+        end
+      end
+
+      PersistPhonesOnlyAnswers.perform
+    end
+
+    it 'sets Voter#call_back to true' do
+      expect(@retry_voter.reload.call_back).to be_truthy
+      expect(Voter.where('id <> ?', @retry_voter.id).where(call_back: true).count).to be_zero
+    end
+
+    it 'sets Voter#status to Voter::Status::RETRY' do
+      expect(@retry_voter.reload.status).to eq Voter::Status::RETRY
+      expect(Voter.where('id <> ?', @retry_voter.id).where(status: Voter::Status::RETRY).count).to be_zero
+    end
+  end
+
   context 'some items are on the list and all define a valid voter_id, caller_session_id, question_id & digit' do
     before do
       iteration_count.times do
@@ -47,7 +81,7 @@ describe 'PersistPhonesOnlyAnswers', data_heavy: true do
 
         questions.each do |question|
           digit = question.possible_responses.sample.keypad
-          RedisPhonesOnlyAnswer.push_to_list(voter.id, caller_session.id, digit, question.id)
+          RedisPhonesOnlyAnswer.push_to_list(voter.id, voter.household.id, caller_session.id, digit, question.id)
         end
       end
     end
@@ -97,10 +131,10 @@ describe 'PersistPhonesOnlyAnswers', data_heavy: true do
 
       questions[0..-2].each do |question|
         digit = question.possible_responses.sample.keypad
-        RedisPhonesOnlyAnswer.push_to_list(voter.id, nil, digit, question.id)
+        RedisPhonesOnlyAnswer.push_to_list(voter.id, voter.household.id, nil, digit, question.id)
       end
       digit = questions.last.possible_responses.sample.keypad
-      RedisPhonesOnlyAnswer.push_to_list(voter.id, caller_sessions.sample.id, digit, questions.last.id)
+      RedisPhonesOnlyAnswer.push_to_list(voter.id, voter.household.id, caller_sessions.sample.id, digit, questions.last.id)
     end
   end
 
@@ -109,10 +143,10 @@ describe 'PersistPhonesOnlyAnswers', data_heavy: true do
       voter, caller_session = create_voter_and_call
 
       questions[0..-2].each do |question|
-        RedisPhonesOnlyAnswer.push_to_list(voter.id, caller_session.id, 1234567890, question.id)
+        RedisPhonesOnlyAnswer.push_to_list(voter.id, voter.household.id, caller_session.id, 1234567890, question.id)
       end
       digit = questions.last.possible_responses.sample.keypad
-      RedisPhonesOnlyAnswer.push_to_list(voter.id, caller_sessions.sample.id, digit, questions.last.id)
+      RedisPhonesOnlyAnswer.push_to_list(voter.id, voter.household.id, caller_sessions.sample.id, digit, questions.last.id)
     end
 
     it_behaves_like 'all partial items'
@@ -124,10 +158,10 @@ describe 'PersistPhonesOnlyAnswers', data_heavy: true do
 
       questions[0..-2].each do |question|
         @digit ||= digit = question.possible_responses.sample.keypad
-        RedisPhonesOnlyAnswer.push_to_list(@voter.id, @caller_session.id, digit, question.id)
+        RedisPhonesOnlyAnswer.push_to_list(@voter.id, @voter.household.id, @caller_session.id, digit, question.id)
       end
       digit = questions.last.possible_responses.sample.keypad
-      RedisPhonesOnlyAnswer.push_to_list(@voter.id, caller_sessions.sample.id, digit, questions.last.id)
+      RedisPhonesOnlyAnswer.push_to_list(@voter.id, @voter.household.id, caller_sessions.sample.id, digit, questions.last.id)
     end
 
     it 'leaves data on the pending list' do
@@ -141,6 +175,7 @@ describe 'PersistPhonesOnlyAnswers', data_heavy: true do
       item = JSON.parse(pending_items.first)
       expected_item = {
         'voter_id' => @voter.id,
+        'household_id' => @voter.household_id,
         'caller_session_id' => @caller_session.id,
         'question_id' => questions.first.id,
         'digit' => @digit
