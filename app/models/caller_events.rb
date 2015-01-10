@@ -17,9 +17,20 @@ module CallerEvents
     end
 
     def publish_voter_connected(call_id)
-      call = Call.find(call_id)
+      call = Call.includes(call_attempt: {household: :voters}).find(call_id)
 
-      return if caller.is_phones_only?
+      if caller.is_phones_only? and campaign.predictive?
+        # assign first available voter in household to call attempt
+        household = call.call_attempt.household
+        voter     = household.voters.detect{|v| v.not_called?}
+        voter   ||= household.voters.detect{|v| v.call_back or v.retry?}
+        voter   ||= household.voters.sort_by(&:updated_at).first
+        call.call_attempt.update_attributes({
+          voter_id: voter.id
+        })
+
+        return 
+      end
 
       event_hash = campaign.voter_connected_event(call)
 
