@@ -6,21 +6,32 @@ module CallFlow
     attr_reader :campaign
     delegate :next, to: :available
   private
-
-    def load_if_nil(queue)
-      send(queue) if queues[queue].nil?
-    end
-
     def cache_household?(household)
-      household.not_blocked? &&
-      household.not_complete? &&
-      available.missing?(household.phone) &&
+      household.cache? and
+      available.missing?(household.phone) and
       recycle_bin.missing?(household.phone)
     end
 
+    def not_dialed_count
+      min = '-inf'
+      max = '0.999'
+      available.range_by_score(:active, min, max).size
+    end
+
+    def recycled_count
+      min      = '1.0'
+      max      = "#{Time.now.to_i}.999"
+      available.range_by_score(:active, min, max).size
+    end
+
   public
-    def self.enabled?
-      (ENV['USE_REDIS_DIAL_QUEUE'] || '').to_i > 0
+    def self.log(type, msg)
+      msg = "[CallFlow::DialQueue] #{msg}"
+      Rails.logger.send(type, msg)
+    end
+
+    def log(type, msg)
+      self.class.log(type, msg)
     end
 
     def self.next(campaign, n)
@@ -55,18 +66,6 @@ module CallFlow
 
     def households
       @households ||= CallFlow::DialQueue::Households.new(campaign)
-    end
-
-    def not_dialed_count
-      min = '-inf'
-      max = '0.999'
-      available.range_by_score(:active, min, max).size
-    end
-
-    def recycled_count
-      min      = '1.0'
-      max      = "#{Time.now.to_i}.999"
-      available.range_by_score(:active, min, max).size
     end
 
     def cache(voter)
