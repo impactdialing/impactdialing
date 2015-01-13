@@ -99,6 +99,7 @@ module CallFlow
     # tell available & recycle bin of the dialed household
     def dialed(household)
       unless recycle_bin.dialed(household)
+        log :info, "Rejected by recycle bin. Removing Household[#{household.id}]"
         # phone number was not added to recycle bin
         # so will not be dialed again without admin action
         households.remove_house(household.phone)
