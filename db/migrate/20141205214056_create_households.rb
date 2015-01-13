@@ -3,7 +3,6 @@ class CreateHouseholds < ActiveRecord::Migration
     create_table :households do |t|
       t.integer :account_id, null: false
       t.integer :campaign_id, null: false
-      t.integer :last_call_attempt_id
 
       t.integer :voters_count, null: false, default: 0      
       t.string :phone, null: false
@@ -16,7 +15,6 @@ class CreateHouseholds < ActiveRecord::Migration
 
     add_index :households, :account_id
     add_index :households, :campaign_id
-    add_index :households, :last_call_attempt_id
     add_index :households, :blocked
     add_index :households, :phone
     add_index :households, :status
@@ -34,12 +32,6 @@ class CreateHouseholds < ActiveRecord::Migration
         FOREIGN KEY (account_id)
         REFERENCES accounts(id)
     SQL
-
-    execute <<-SQL
-      ALTER TABLE households ADD CONSTRAINT fk_households_last_call_attempt
-        FOREIGN KEY (last_call_attempt_id)
-        REFERENCES call_attempts(id)
-    SQL
   end
 
   def down
@@ -49,10 +41,6 @@ class CreateHouseholds < ActiveRecord::Migration
 
     execute <<-SQL
       ALTER TABLE households DROP FOREIGN KEY fk_households_accounts
-    SQL
-
-    execute <<-SQL
-      ALTER TABLE households DROP FOREIGN KEY fk_households_last_call_attempt
     SQL
 
     drop_table :households

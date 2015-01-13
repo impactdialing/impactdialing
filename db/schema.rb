@@ -307,23 +307,21 @@ ActiveRecord::Schema.define(:version => 20141216233717) do
   end
 
   create_table "households", :force => true do |t|
-    t.integer  "account_id",                                     :null => false
-    t.integer  "campaign_id",                                    :null => false
-    t.integer  "last_call_attempt_id"
-    t.integer  "voters_count",         :default => 0,            :null => false
-    t.string   "phone",                                          :null => false
-    t.integer  "blocked",              :default => 0,            :null => false
-    t.string   "status",               :default => "not called", :null => false
+    t.integer  "account_id",                             :null => false
+    t.integer  "campaign_id",                            :null => false
+    t.integer  "voters_count", :default => 0,            :null => false
+    t.string   "phone",                                  :null => false
+    t.integer  "blocked",      :default => 0,            :null => false
+    t.string   "status",       :default => "not called", :null => false
     t.datetime "presented_at"
-    t.datetime "created_at",                                     :null => false
-    t.datetime "updated_at",                                     :null => false
+    t.datetime "created_at",                             :null => false
+    t.datetime "updated_at",                             :null => false
   end
 
   add_index "households", ["account_id", "campaign_id", "phone"], :name => "index_households_on_account_id_and_campaign_id_and_phone", :unique => true
   add_index "households", ["account_id"], :name => "index_households_on_account_id"
   add_index "households", ["blocked"], :name => "index_households_on_blocked"
   add_index "households", ["campaign_id"], :name => "index_households_on_campaign_id"
-  add_index "households", ["last_call_attempt_id"], :name => "index_households_on_last_call_attempt_id"
   add_index "households", ["phone"], :name => "index_households_on_phone"
   add_index "households", ["presented_at"], :name => "index_households_on_presented_at"
   add_index "households", ["status"], :name => "index_households_on_status"

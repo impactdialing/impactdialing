@@ -6,8 +6,6 @@ class Household < ActiveRecord::Base
   delegate :dial_queue, to: :campaign
   delegate :call_back_after_voicemail_delivery?, to: :campaign
 
-  belongs_to :last_call_attempt, class_name: 'CallAttempt'
-
   has_many :call_attempts
   has_many :voters
 
@@ -54,6 +52,9 @@ private
   end
 
 public
+  def last_call_attempt
+    call_attempts.last
+  end
   # make activerecord-import work with bitmask_attributes
   def blocked=(raw_value)
     if raw_value.is_a?(Fixnum) && raw_value <= Household.bitmasks[:blocked].values.sum
@@ -131,19 +132,18 @@ end
 #
 # ### Columns
 #
-# Name                        | Type               | Attributes
-# --------------------------- | ------------------ | ---------------------------
-# **`id`**                    | `integer`          | `not null, primary key`
-# **`account_id`**            | `integer`          | `not null`
-# **`campaign_id`**           | `integer`          | `not null`
-# **`last_call_attempt_id`**  | `integer`          |
-# **`voters_count`**          | `integer`          | `default(0), not null`
-# **`phone`**                 | `string(255)`      | `not null`
-# **`blocked`**               | `integer`          | `default(0), not null`
-# **`status`**                | `string(255)`      | `default("not called"), not null`
-# **`presented_at`**          | `datetime`         |
-# **`created_at`**            | `datetime`         | `not null`
-# **`updated_at`**            | `datetime`         | `not null`
+# Name                | Type               | Attributes
+# ------------------- | ------------------ | ---------------------------
+# **`id`**            | `integer`          | `not null, primary key`
+# **`account_id`**    | `integer`          | `not null`
+# **`campaign_id`**   | `integer`          | `not null`
+# **`voters_count`**  | `integer`          | `default(0), not null`
+# **`phone`**         | `string(255)`      | `not null`
+# **`blocked`**       | `integer`          | `default(0), not null`
+# **`status`**        | `string(255)`      | `default("not called"), not null`
+# **`presented_at`**  | `datetime`         |
+# **`created_at`**    | `datetime`         | `not null`
+# **`updated_at`**    | `datetime`         | `not null`
 #
 # ### Indexes
 #
@@ -157,8 +157,6 @@ end
 #     * **`blocked`**
 # * `index_households_on_campaign_id`:
 #     * **`campaign_id`**
-# * `index_households_on_last_call_attempt_id`:
-#     * **`last_call_attempt_id`**
 # * `index_households_on_phone`:
 #     * **`phone`**
 # * `index_households_on_presented_at`:
