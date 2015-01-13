@@ -68,6 +68,7 @@ public
     members = find(phone)
     members.reject!{|membr| match?(membr, member)}
     save(phone, members)
+    members
   end
 
   def save(phone, members)

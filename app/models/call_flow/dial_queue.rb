@@ -113,10 +113,12 @@ module CallFlow
     end
 
     def remove(voter)
-      phone = voter.household.phone
-      available.remove(phone)
-      recycle_bin.remove(phone)
-      households.remove_member(phone, voter)
+      phone             = voter.household.phone
+      remaining_members = households.remove_member(phone, voter)
+      if remaining_members.empty?
+        available.remove(phone)
+        recycle_bin.remove(phone)
+      end
     end
 
     def remove_all(voters)
@@ -141,7 +143,6 @@ module CallFlow
       else
         available.clear
         recycle_bin.clear
-        households.clear
       end
     end
   end

@@ -38,13 +38,20 @@ describe 'CallFlow::DialQueue::Households' do
   end
 
   describe 'removing a member from the collection' do
-    it 'remove the member from the collection' do
+    before do
       subject.add(phone_with_country_code, member_with_country_code)
       subject.add(phone_with_country_code, member_of_country_code)
+    end
+    it 'remove the member from the collection' do
       subject.remove_member(phone_with_country_code, member_with_country_code)
 
       actual = redis.hget *key(phone_with_country_code)
       expect(actual).to eq [member_of_country_code].to_json
+    end
+
+    it 'returns the remaining members of the collection' do
+      actual = subject.remove_member(phone_with_country_code, member_with_country_code)
+      expect(actual).to eq [member_of_country_code]
     end
   end
 

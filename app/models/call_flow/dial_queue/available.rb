@@ -131,10 +131,11 @@ public
     redis.zadd keys[:active], *memberize(household)
   end
 
-  def remove_household(phones)
-    redis.zrem keys[:active], [*phones]
+  def remove(phones)
+    keys.each do |label, key|
+      redis.zrem key, [*phones]
+    end
   end
-  alias :remove :remove_household
 
   def dialed(phones)
     redis.zrem keys[:presented], [*phones]

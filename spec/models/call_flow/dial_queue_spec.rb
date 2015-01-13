@@ -59,6 +59,53 @@ describe 'CallFlow::DialQueue' do
     end
   end
 
+  describe 'remove a Voter record' do
+    let(:voterA){ @campaign.all_voters.all[0] }
+    let(:voterB){ @campaign.all_voters.all[1] }
+
+    before do
+      Redis.new.flushall
+      voterB.update_attributes!(household: voterA.household)
+      @dial_queue.cache_all(@campaign.all_voters.reload)
+
+      expect(@dial_queue.households.find(voterA.household.phone).size).to eq 2
+
+      @dial_queue.remove(voterA)
+      @remaining_voters = @dial_queue.households.find(voterA.household.phone)
+    end
+
+    it 'removes the Voter record from the cache' do
+      expect(@remaining_voters.map{|v| v['id']}).not_to include(voterA.id)
+    end
+
+    it 'leaves other Voter records from same household in the cache' do
+      expect(@remaining_voters.first['id']).to eq voterB.id
+    end
+
+    context 'when last Voter record from a household is removed' do
+      before do
+        @dial_queue.recycle_bin.add(voterB.household)
+        Redis.new.zadd(@dial_queue.available.send(:keys)[:presented], [[Time.now.to_i, voterB.household.phone]])
+        expect(@dial_queue.available.all).to include(voterB.household.phone)
+        expect(@dial_queue.available.all(:presented)).to include(voterB.household.phone)
+        expect(@dial_queue.recycle_bin.all).to include(voterB.household.phone)
+        
+        @dial_queue.remove(voterB)
+      end
+      it 'removes the Household phone number from available active cache' do
+        expect(@dial_queue.available.all).not_to include(voterB.household.phone)
+      end
+
+      it 'removes the Household phone number from available presented cache' do
+        expect(@dial_queue.available.all(:presented)).not_to include(voterB.household.phone)
+      end
+
+      it 'removes the Household phone number from the recycle bin cache' do
+        expect(@dial_queue.recycle_bin.all).not_to include(voterB.household.phone)
+      end
+    end
+  end
+
   describe 'dialing through available' do
     it 'retrieve one phone number' do
       expected = [Household.first.phone]
