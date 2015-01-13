@@ -99,10 +99,9 @@ public
     redis.zrangebyscore(keys[key], min, max, opts)
   end
 
-  def peak(list=:active, options={})
+  def all(list=:active, options={})
     redis.zrange keys[list], 0, -1, options
   end
-  alias :all :peak
 
   def presented_and_stale
     min = '-inf'

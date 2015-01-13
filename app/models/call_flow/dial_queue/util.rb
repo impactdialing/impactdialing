@@ -18,13 +18,4 @@ private
 
     return out
   end
-
-public
-  def clear
-    redis.multi do
-      keys.each do |key|
-        redis.del key
-      end
-    end
-  end
 end

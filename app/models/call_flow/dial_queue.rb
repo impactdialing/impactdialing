@@ -130,21 +130,8 @@ module CallFlow
       send(queue).size
     end
 
-    def peak(queue)
-      send(queue).peak
-    end
-
     def last(queue)
       send(queue).last
-    end
-
-    def clear(queue=nil)
-      if queue.present?
-        send(queue).clear
-      else
-        available.clear
-        recycle_bin.clear
-      end
     end
   end
 end

@@ -28,12 +28,16 @@ module FakeCallData
   end
 
   def clean_dial_queue
-    @dial_queue.clear
+    redis = Redis.new
+    keys  = redis.keys('dial_queue:*')
+    keys.each do |key|
+      redis.del(key)
+    end
   end
 
   def cache_available_voters(campaign)
+    clean_dial_queue
     dial_queue = CallFlow::DialQueue.new(campaign)
-    dial_queue.clear
     cache_voters(campaign.id, campaign.all_voter_ids, '1')
     dial_queue
   end
