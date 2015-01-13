@@ -63,41 +63,92 @@ RSpec.describe Household, :type => :model do
     end
   end
 
-  describe 'in_dnc?' do
-    let(:dnc_household){ build(:household, :dnc) }
-    let(:cell_household){ build(:household, :cell) }
-
-    it 'returns true when #blocked has :dnc bit set' do
-      expect( dnc_household.in_dnc? ).to be_truthy
+  describe 'failed?' do
+    it 'returns false for default status' do
+      expect(subject.failed?).to be_falsey
     end
 
-    it 'returns true when #blocked has :cell bit set' do
-      expect( cell_household.in_dnc? ).to be_truthy
+    it 'returns true when status == CallAttempt::Status::FAILED' do
+      subject.status = CallAttempt::Status::FAILED
+      expect(subject.failed?).to be_truthy
     end
 
-    it 'returns false when #blocked does not have :dnc OR :cell bit set' do
-      expect( subject.in_dnc? ).to be_falsey
+    it 'returns false when status != CallAttempt::Status::FAILED' do
+      subject.status = CallAttempt::Status::BUSY
+      expect(subject.failed?).to be_falsey
     end
   end
 
-  # describe '#skip' do
-  #   let(:voter) do
-  #     create(:voter)
-  #   end
+  describe 'complete?' do
+    let(:campaign){ create(:power) }
+    let(:voter){ create(:voter, campaign: campaign) }
+    let(:household){ voter.household }
+    let(:recording){ create(:recording, account: campaign.account) }
 
-  #   before do
-  #     Timecop.freeze
-  #     voter.skip
-  #   end
+    before do
+      create(:voter, campaign: campaign, household: voter.household)
+    end
 
-  #   after do
-  #     Timecop.return
-  #   end
+    it 'returns false for new households' do
+      expect(household.complete?).to be_falsey
+    end
 
-  #   it 'sets status to "skipped"' do
-  #     expect(voter.status).to eq "skipped"
-  #   end
-  # end
+    it 'returns false when at least 1 voter in a household has not been contacted' do
+      voter.update_attributes!(status: CallAttempt::Status::SUCCESS)
+      expect(household.complete?).to be_falsey
+    end
+
+    it 'returns true when all voters have been contacted' do
+      household.voters.update_all(status: CallAttempt::Status::SUCCESS)
+      expect(household.complete?).to be_truthy
+    end
+
+    context 'household has received a voicemail' do
+      before do
+        create(:call_attempt, campaign: campaign, household: household, status: CallAttempt::Status::VOICEMAIL, recording_id: recording.id)
+      end
+
+      it 'returns true when campaign is configured to not call back after voicemail delivery' do
+        expect(household.complete?).to be_truthy
+      end
+
+      it 'returns false when campaign is configured to call back after voicemail delivery' do
+        campaign.update_attributes!({
+          call_back_after_voicemail_delivery: true,
+          use_recordings: true,
+          answering_machine_detect: true
+        })
+        expect(household.complete?).to be_falsey
+      end
+    end
+  end
+
+  describe 'cache?' do
+    before do
+      allow(subject).to receive(:failed?){ false }
+      allow(subject).to receive(:blocked?){ false }
+      allow(subject).to receive(:complete?){ false }
+    end
+
+    it 'returns true when household has not failed, is not blocked and is not complete' do
+      expect(subject.cache?).to be_truthy
+    end
+
+    it 'returns false when household has failed' do
+      allow(subject).to receive(:failed?){ true }
+      expect(subject.cache?).to be_falsey
+    end
+
+    it 'returns false when household is blocked by admin DNC or cell scrub' do
+      allow(subject).to receive(:blocked?){ true }
+      expect(subject.cache?).to be_falsey
+    end
+
+    it 'returns false when household has is complete' do
+      allow(subject).to receive(:complete?){ true }
+      expect(subject.cache?).to be_falsey
+    end
+  end
 end
 
 # ## Schema Information

@@ -65,12 +65,16 @@ public
     end
   end
 
-  def in_dnc?
-    blocked?(:cell) || blocked?(:dnc)
+  def cache?
+    not_failed? and not_blocked? and not_complete?
   end
 
   def failed?
     status == CallAttempt::Status::FAILED
+  end
+
+  def not_failed?
+    not failed?
   end
 
   def voicemail_delivered?
@@ -82,7 +86,7 @@ public
   end
 
   def complete?
-    no_presentable_voters? || (voicemail_delivered? && (not call_back_after_voicemail_delivery?))
+    no_presentable_voters? or (voicemail_delivered? and (not call_back_after_voicemail_delivery?))
   end
 
   def not_complete?
@@ -93,36 +97,30 @@ public
     not blocked?
   end
 
-  # record failed call
-  def failed!
-    update_attributes(status: CallAttempt::Status::FAILED)
-  end
-
-  def dialed(call_attempt)
-    self.status       = call_attempt.status
-    self.presented_at = call_attempt.call_end
+  def update_dial_queue(status, presented_at)
+    self.status       = status
+    self.presented_at = presented_at
 
     dial_queue.dialed(self)
+  end
+
+  # Handle a failed call
+  def failed!
+    update_dial_queue(CallAttempt::Status::FAILED, Time.now.utc)
+    save
+  end
+
+  # Handle a successful call
+  def dialed(call_attempt)
+    update_dial_queue(call_attempt.status, call_attempt.call_end)
   end
 
   def presented_recently?
     presented_at.to_i > campaign.recycle_rate.hours.ago.to_i
   end
 
-  def no_voters_to_dial?
-    complete? || failed? || in_dnc?
-  end
-
-  def any_voters_to_dial?
-    (not no_voters_to_dial?)
-  end
-
   def no_presentable_voters?
-    # if campaign.contact_all_voters_in_household?
-      voters.count == voters.not_presentable(campaign).count
-    # else
-    # voters.any?{|voter| voter.not_presentable?}   
-    # end
+    voters.count == voters.not_presentable(campaign).count
   end
 end
 
