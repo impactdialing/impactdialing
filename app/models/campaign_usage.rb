@@ -49,7 +49,4 @@ class CampaignUsage
   def round_for_utilization(seconds)
     (seconds.to_f/60).ceil.to_s
   end
-
-
-
 end

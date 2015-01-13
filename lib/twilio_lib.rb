@@ -67,11 +67,13 @@ class TwilioLib
   end
 
   def create_http_request(url, params, server)
-    http = Net::HTTP.new(server, @port)
-    http.use_ssl=true
-    req = Net::HTTP::Post.new(url)
+    http         = Net::HTTP.new(server, @port)
+    http.use_ssl = true
+    req          = Net::HTTP::Post.new(url)
+
     req.basic_auth @http_user, @http_password
     req.set_form_data(params)
+    
     RescueRetryNotify.on SocketError, 5 do
       http.start{ http.request(req) }
     end

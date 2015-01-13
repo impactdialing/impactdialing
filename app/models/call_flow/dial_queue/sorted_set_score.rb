@@ -13,11 +13,4 @@ module CallFlow::DialQueue::SortedSetScore
   def memberize(object)
     [score(object), object.phone]
   end
-
-  def memberize_voters(collection)
-    collection.map do |object|
-      memberize(object)
-    end
-  end
-  alias :memberize_collection :memberize_voters
 end

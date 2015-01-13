@@ -49,8 +49,8 @@ private
 public
 
   def initialize(campaign, type=:active)
-    @campaign = campaign
-    @type     = type
+    @campaign    = campaign
+    @type        = type
   end
 
   def add(phone, member)

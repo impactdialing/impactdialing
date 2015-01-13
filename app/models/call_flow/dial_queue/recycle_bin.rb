@@ -35,12 +35,6 @@ public
     redis.zrangebyscore(keys[key], min, max).size
   end
 
-  def add_all(objects)
-    expire keys[:bin] do
-      redis.zadd keys[:bin], *memberize_collection(objects)
-    end
-  end
-
   def add(household)
     redis.zadd keys[:bin], *memberize(household)
 

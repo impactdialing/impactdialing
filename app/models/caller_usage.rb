@@ -1,5 +1,4 @@
-class CallerUsage
-  
+class CallerUsage  
   def initialize(caller, campaign, from_date, to_date)
     @caller = caller
     @campaign = campaign
@@ -37,7 +36,5 @@ class CallerUsage
   
   def round_for_utilization(seconds)
     (seconds.to_f/60).ceil.to_s
-  end
-  
-  
+  end  
 end

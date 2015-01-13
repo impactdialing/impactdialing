@@ -29,6 +29,8 @@ class VoterConnectedPusherJob
     caller_session = CallerSession.find(caller_session_id)
     caller_session.send('publish_voter_connected', call_id)
 
+    
+
     metrics.completed
   end
 end

@@ -80,6 +80,8 @@ module FakeCallData
       call_end: 1.minute.from_now
     })
     call = create(:bare_call, call_attempt: call_attempt)
+    
+    yield call_attempt if block_given?
 
     # mimicing PersistCalls job
     case type.to_s
@@ -90,7 +92,7 @@ module FakeCallData
       household.save!
     when /past_recycle_time_completed_call_attempt|completed_call_attempt/
       voter.try(:dispositioned, call_attempt)
-      voter.save!
+      voter.try(:save!)
       household.dialed(call_attempt)
       household.save!
     when /past_recycle_time_machine_answered_call_attempt|machine_answered_call_attempt/
@@ -99,8 +101,6 @@ module FakeCallData
     else
       puts "Unknown CallAttempt factory type for FakeCallData#attach_call_attempt: #{type}"
     end
-
-    yield call_attempt if block_given?
 
     # mimic_persist_calls(call_attempt, voter)
 

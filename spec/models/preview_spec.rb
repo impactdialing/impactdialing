@@ -51,18 +51,30 @@ describe Preview, :type => :model do
       it 'are made available again' do
         skipped = []
         busy    = []
-        dial_one_at_a_time(campaign, 1){|house| skipped << house} # skipping
-        dial_one_at_a_time(campaign, 1){|house| busy << house; attach_call_attempt(:busy_call_attempt, Household.find_by_phone(house[:phone]), caller)}
+        dial_one_at_a_time(campaign, 1) do |house|
+          skipped << house
+        end # skipping
+        dial_one_at_a_time(campaign, 1) do |house|
+          busy << house
+          attach_call_attempt(:busy_call_attempt, Household.find_by_phone(house[:phone]), caller)
+        end
 
         current_time = Time.now
         Timecop.travel(current_time + campaign.recycle_rate.hours + 1.hour) do
-
           process_presented(campaign)
 
           expect(dial_queue.available.all[-2]).to eq skipped.first[:phone]
-          dial_one_at_a_time(campaign, 1){|house| voter = Voter.find(house[:voters].first[:id]); attach_call_attempt(:completed_call_attempt, voter, caller); voter.save!}
-          dial_one_at_a_time(campaign, 1){|house| skipped << house} # skipping
-          dial_one_at_a_time(campaign, 1){|house| attach_call_attempt(:failed_call_attempt, Household.find_by_phone(house[:phone]), caller)}
+          dial_one_at_a_time(campaign, 1) do |house|
+            voter        = Voter.find(house[:voters].first[:id])
+            attach_call_attempt(:completed_call_attempt, voter, caller)
+          end
+          dial_one_at_a_time(campaign, 1) do |house|
+            skipped << house
+          end # skipping
+          dial_one_at_a_time(campaign, 1) do |house|
+            call_attempt = attach_call_attempt(:failed_call_attempt, Household.find_by_phone(house[:phone]), caller)
+            call_attempt.household.failed!
+          end
 
           current_time = Time.now
           Timecop.travel(current_time + campaign.recycle_rate.hours + 1.minute) do
@@ -73,7 +85,6 @@ describe Preview, :type => :model do
       end
 
       it 'voters are moved to the front of the list (after recycle rate) for subsequent passes' do
-        # binding.pry
         skipped  = []
         busy     = []
         complete = []

@@ -12,8 +12,6 @@ context 'Message Drops', data_heavy: true do
     households.each do |household|
       attach_call_attempt(:machine_answered_call_attempt, household) do |call_attempt|
         call_attempt.update_recording!(autodropped)
-        household.dialed(call_attempt)
-        household.save!
       end
     end
     Timecop.travel(Time.now + dial_queue.campaign.recycle_rate.hours + 1.minute) do
