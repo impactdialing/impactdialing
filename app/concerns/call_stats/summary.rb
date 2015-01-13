@@ -8,15 +8,6 @@ class CallStats::Summary
     @campaign = campaign
   end
 
-  def percent_of_all_voters(number)
-    quo = number / all_voters_count.to_f
-    "#{(quo * 100).ceil}%"
-  end
-
-  def all_voters_count
-    @all_voters_count ||= households.count(:id)
-  end
-
   def per_status_counts
     @per_status_counts ||= households.select('status').group("status").count(:id)
   end
