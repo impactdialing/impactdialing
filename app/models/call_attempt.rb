@@ -130,7 +130,7 @@ class CallAttempt < ActiveRecord::Base
     self.voter_id    = voter_id
     self.wrapup_time = time
 
-    if caller_type == CallerSession::CallerType::PHONE && caller.is_phones_only
+    if caller_type == CallerSession::CallerType::PHONE && caller.try(:is_phones_only?)
       self.voter_response_processed = true
     end
   end
