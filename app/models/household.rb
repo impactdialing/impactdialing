@@ -28,7 +28,7 @@ class Household < ActiveRecord::Base
   scope :with_manual_message_drop, with_message_drop.where('call_attempts.recording_delivered_manually = ?', true)
   scope :with_auto_message_drop, with_message_drop.where('call_attempts.recording_delivered_manually = ?', false)
   scope :presentable, lambda{ |campaign|
-    where('households.presented_at < ?', campaign.recycle_rate.hours.ago)
+    where('households.presented_at IS NULL OR households.presented_at < ?', campaign.recycle_rate.hours.ago)
   }
   scope :available, lambda{ |campaign|
     active.

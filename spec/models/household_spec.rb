@@ -14,6 +14,31 @@ RSpec.describe Household, :type => :model do
     end
   end
 
+  describe 'scopes' do
+    let(:campaign){ create(:power) }
+    
+    before do
+      create_list(:household, 10, campaign: campaign)
+    end
+
+    describe 'presentable(campaign)' do
+      it 'returns households w/ NULL presented_at' do
+        expect(Household.presentable(campaign).count).to eq campaign.households.count
+      end
+
+      it 'returns households w/ presented_at < campaign.recycle_rate.hours.ago' do
+        limit              = 5
+        time               = 1.hour.ago - 1.minute.ago
+        households         = campaign.households.limit(limit)
+        recently_presented = campaign.households.where('id NOT IN (?)', households.map(&:id))
+        households.update_all(presented_at: time)
+        recently_presented.update_all(presented_at: 5.minutes.ago)
+
+        expect(Household.presentable(campaign).all).to eq households.all
+      end
+    end
+  end
+
   describe '#phone' do
     it 'is required' do
       subject.phone = nil
