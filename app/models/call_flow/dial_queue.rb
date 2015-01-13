@@ -12,6 +12,10 @@ module CallFlow
       recycle_bin.missing?(household.phone)
     end
 
+    def cache_voter?(voter)
+      voter.not_called? or voter.call_back? or voter.retry?
+    end
+    
     def not_dialed_count
       min = '-inf'
       max = '0.999'
@@ -70,10 +74,16 @@ module CallFlow
 
     def cache(voter)
       household = voter.household
-      return unless cache_household?(household)
 
-      available.add(household) || recycle_bin.add(household)
-      households.add(household.phone, voter.cache_data)
+      if cache_voter?(voter)
+        households.add(household.phone, voter.cache_data)
+      else
+        remove(voter)
+      end
+
+      if cache_household?(household)
+        available.add(household) or recycle_bin.add(household)
+      end
     end
 
     def cache_all(voters)

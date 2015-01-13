@@ -7,13 +7,11 @@ describe 'CallFlow::DialQueue' do
   let(:account){ admin.account }
 
   before do
+    Redis.new.flushall
     @campaign = create_campaign_with_script(:bare_preview, account).last
     create_list(:voter, 100, {campaign: @campaign, account: account})
     @dial_queue = CallFlow::DialQueue.new(@campaign)
     @dial_queue.cache_all(@campaign.all_voters)
-  end
-  after do
-    clean_dial_queue
   end
 
   describe 'caching voters available to be dialed' do
@@ -26,7 +24,7 @@ describe 'CallFlow::DialQueue' do
 
     context 'partitioning voters by available state' do
       before do
-        @dial_queue.clear
+        Redis.new.flushall
         # last 90 were busy
         Household.order('id DESC').limit(90).update_all(status: CallAttempt::Status::BUSY, presented_at: 5.minutes.ago)
         li = Household.order('id DESC').limit(90).last.id
@@ -34,19 +32,29 @@ describe 'CallFlow::DialQueue' do
         households = Household.order('id DESC').where('id < ?', li).limit(5)
         households.update_all(status: CallAttempt::Status::SUCCESS, presented_at: 2.minutes.ago)
         households.each{|household| household.voters.update_all(status: CallAttempt::Status::SUCCESS)}
-        @dial_queue.cache_all(@campaign.reload.all_voters) # 5 available, 90 recycled
+        @household_with_2_members = households.reload.first
+        @not_dialed_voter         = create(:voter, {
+          campaign: @campaign,
+          account: account,
+          household: @household_with_2_members
+        })
+
+        voters = @campaign.reload.all_voters
+        @dial_queue.cache_all(voters) # 5 available, 90 recycled
       end
 
-      it 'pushes voters that can not be dialed right away to the recycle bin set' do
-        expect(@dial_queue.size(:recycle_bin)).to eq 90
+      it 'pushes phone numbers that cannot be dialed right away to the recycle bin set' do
+        expect(@dial_queue.size(:recycle_bin)).to eq 91 # @household_with_2_members will be recycled
       end
 
-      it 'pushes voters that can be dialed right away to the available set' do
+      it 'pushes phone numbers that can be dialed right away to the available set' do
         expect(@dial_queue.size(:available)).to eq 5
       end
 
       it 'avoids pushing members that are not available for dial and not eventually retriable' do
-        # if the previous two pass, this one is good. more for documentation :)
+        cached_members = @dial_queue.households.find(@household_with_2_members.phone)
+        expect(cached_members.size).to eq 1
+        expect(cached_members.first['id']).to eq @not_dialed_voter.id
       end
     end
   end
