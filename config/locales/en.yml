@@ -30,7 +30,7 @@ en:
   caller_instruction_choice: "Press star to begin dialing or pound for instructions."
   re_assign_caller_to_another_campaign: "You have been re-assigned to %{campaign_name}."
   phones_only_caller_instructions: "After these instructions, you will be placed on hold. When someone answers the phone, the hold music will stop. You usually won't hear the person say hello, so start talking immediately. At the end of the conversation, do not hang up your phone. Instead, press star to end the call, and you will be given instructions on how to enter your call results."
-  read_voter_name: "%{first_name}  %{last_name}. Press star to dial or pound to skip."
+  read_voter_name: "%{first_name} %{last_name}. Press star to dial or pound to skip."
   read_star_to_dial_pound_to_skip: "Press star to dial or pound to skip."
   submit_results: "Then press star to submit your result."
   flash_missing_html: "Because you do not have an up-to-date version of Adobe Flash, you must dial in. If you would like to use the browser phone, please <a href=\"http://get.adobe.com/flashplayer/\">click here</a> to download and install the most recent version of Flash."
