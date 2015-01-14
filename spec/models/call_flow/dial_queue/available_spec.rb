@@ -38,7 +38,7 @@ describe 'CallFlow::DialQueue::Available' do
           end
         end
         expect{
-          @available.next(1)
+          10.times{ @available.next(1) }
         }.to raise_error{
           CallFlow::DialQueue::Available::RedisTransactionAborted
         }
