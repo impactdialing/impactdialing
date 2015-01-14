@@ -113,7 +113,8 @@ class PersistCalls
       on_duplicate_key_update: [
         :status, :call_end, :connecttime, :caller_id,
         :scheduled_date, :recording_url, :recording_duration,
-        :voter_response_processed, :wrapup_time, :voter_id
+        :voter_response_processed, :wrapup_time, :voter_id,
+        :recording_id, :recording_delivered_manually
     ]
   end
 
