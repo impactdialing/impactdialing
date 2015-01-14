@@ -25,7 +25,7 @@ class DialerJob
   
   @queue = :dialer_worker
 
-  def self.perform(campaign_id, voter_ids)
-    Dial.perform(campaign_id, voter_ids)
+  def self.perform(campaign_id, phone_numbers)
+    Dial.perform(campaign_id, phone_numbers)
   end
 end

@@ -28,7 +28,21 @@ class CallerPusherJob
     metrics = ImpactPlatform::Metrics::JobStatus.started(self.class.to_s.underscore)
     
     caller_session = CallerSession.find(caller_session_id)
-    caller_session.send(event)
+
+    begin
+      caller_session.send(event)
+    rescue CallFlow::DialQueue::Available::RedisTransactionAborted => e
+      # can be raised when event == publish_caller_conference_started
+      # which pops next number off the queue and sends it to the client
+      Sidekiq::Client.push({
+        'queue' => 'call_flow',
+        'class' => CallerPusherJob,
+        'args'  => [caller_session_id, event]
+      })
+      source = "ac-#{caller_session.campaign.account_id}.ca-#{caller_session.campaign.id}.cs-#{caller_session.id}"
+      name   = "#{event}.dial_queue.available.redis_transaction_aborted"
+      ImpactPlatform::Metrics.count(name, 1, source)
+    end
     
     metrics.completed
   end

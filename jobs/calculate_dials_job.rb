@@ -37,7 +37,13 @@ class CalculateDialsJob
       return
     end
 
-    unless (phone_numbers = campaign.numbers_to_dial).empty?
+    # This could raise CallFlow::DialQueue::Available::RedisTransactionAborted
+    # which means the key containing the list of numbers changed while pullling numbers
+    # off the queue. Let it bubble up & log as failed job since this is queued from
+    # a loop (dialer_loop).
+    phone_numbers = campaign.numbers_to_dial
+
+    unless phone_numbers.empty?
       Resque.enqueue(DialerJob, campaign_id, phone_numbers)
     else
       campaign.caller_sessions.available.pluck(:id).each do |id|
