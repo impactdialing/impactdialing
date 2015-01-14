@@ -14,6 +14,40 @@ describe 'CallFlow::DialQueue' do
     @dial_queue.cache_all(@campaign.all_voters)
   end
 
+  describe 'raise ArgumentError if initialized w/ invalid record' do
+    it 'nil' do
+      expect{
+        CallFlow::DialQueue.new
+      }.to raise_error{
+        ArgumentError
+      }
+    end
+    it 'no id' do
+      record = double('Campaign', {id: nil, account_id: 42, recycle_rate: 1})
+      expect{
+        CallFlow::DialQueue.new(record)
+      }.to raise_error{
+        ArgumentError
+      }
+    end
+    it 'no account_id' do
+      record = double('Campaign', {id: 42, account_id: nil, recycle_rate: 1})
+      expect{
+        CallFlow::DialQueue.new(record)
+      }.to raise_error{
+        ArgumentError
+      }
+    end
+    it 'no recycle_rate' do
+      record = double('Campaign', {id: 42, account_id: 42})
+      expect{
+        CallFlow::DialQueue.new(record)
+      }.to raise_error{
+        ArgumentError
+      }
+    end
+  end
+
   describe 'caching voters available to be dialed' do
     it 'preserves ordering of voters' do
       expected = @campaign.households.map(&:phone)
@@ -131,6 +165,10 @@ describe 'CallFlow::DialQueue' do
         expect(remaining_phones).to_not include dialed
       end
     end
+  end
+
+  describe 'recycling dialed numbers' do
+    it ''
   end
 
   # describe 'when a call ends' do

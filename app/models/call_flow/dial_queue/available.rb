@@ -69,6 +69,7 @@ private
 public
 
   def initialize(campaign)
+    CallFlow::DialQueue.validate_campaign!(campaign)
     @campaign = campaign
   end
 

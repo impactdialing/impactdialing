@@ -24,10 +24,6 @@ class CallFlow::DialQueue::Households
   include CallFlow::DialQueue::Util
 
 private
-  def _benchmark
-    @_benchmark ||= ImpactPlatform::Metrics::Benchmark.new("dial_queue.#{campaign.account_id}.#{campaign.id}.available")
-  end
-
   def keys
     {
       active: "dial_queue:#{campaign.id}:households:active"
@@ -49,6 +45,8 @@ private
 public
 
   def initialize(campaign, type=:active)
+    CallFlow::DialQueue.validate_campaign!(campaign)
+
     @campaign    = campaign
     @type        = type
   end

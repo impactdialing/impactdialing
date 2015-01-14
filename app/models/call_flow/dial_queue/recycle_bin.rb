@@ -18,21 +18,11 @@ private
     }
   end
 
-  def entries
-    redis.zrange keys[:bin], 0, -1
-  end
-
-  def _benchmark
-    @_benchmark ||= ImpactPlatform::Metrics::Benchmark.new("dial_queue.#{campaign.account_id}.#{campaign.id}.dialed")
-  end
-
 public
   def initialize(campaign)
-    @campaign = campaign
-  end
+    CallFlow::DialQueue.validate_campaign!(campaign)
 
-  def range_by_score(key, min, max)
-    redis.zrangebyscore(keys[key], min, max).size
+    @campaign = campaign
   end
 
   def add(household)

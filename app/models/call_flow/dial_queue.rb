@@ -6,6 +6,12 @@ module CallFlow
     attr_reader :campaign
     delegate :next, to: :available
   private
+    def self.validate_campaign!(campaign)
+      if campaign.nil? or campaign.id.nil? or campaign.account_id.nil? or (not campaign.respond_to?(:recycle_rate))
+        raise ArgumentError, "Campaign must not be nil, must have an id, account_id & respond to :recycle_rate."
+      end
+    end
+
     def cache_household?(household)
       household.cache? and
       available.missing?(household.phone) and
@@ -14,18 +20,6 @@ module CallFlow
 
     def cache_voter?(voter)
       voter.not_called? or voter.call_back? or voter.retry?
-    end
-    
-    def not_dialed_count
-      min = '-inf'
-      max = '0.999'
-      available.range_by_score(:active, min, max).size
-    end
-
-    def recycled_count
-      min      = '1.0'
-      max      = "#{Time.now.to_i}.999"
-      available.range_by_score(:active, min, max).size
     end
 
   public
@@ -38,24 +32,8 @@ module CallFlow
       self.class.log(type, msg)
     end
 
-    def self.next(campaign, n)
-      new(campaign).next(n)
-    end
-
-    def self.dialed(household)
-      dial_queue = new(household.campaign)
-      dial_queue.dialed(household)
-    end
-
-    def self.remove(voter)
-      dial_queue = new(voter.campaign)
-      dial_queue.remove(voter)
-    end
-
     def initialize(campaign)
-      if campaign.nil? or campaign.id.nil?
-        raise ArgumentError, "Campaign must not be nil and must have an id."
-      end
+      self.class.validate_campaign!(campaign)
 
       @campaign = campaign
     end

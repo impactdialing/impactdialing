@@ -20,7 +20,7 @@ describe 'CallFlow::DialQueue::Households' do
     redis.flushall
   end
 
-  describe 'adding a member from the collection' do
+  describe 'adding a new member from the collection' do
     it 'add the member to the collection' do
       subject.add(phone_with_country_code, member_with_country_code)
 
@@ -34,6 +34,21 @@ describe 'CallFlow::DialQueue::Households' do
 
       actual = redis.hget *key(phone_with_country_code)
       expect(actual).to eq [member_of_country_code, member_with_country_code].to_json
+    end
+  end
+
+  describe 're-adding an existing member to the collection' do
+    it 'updates the existing member in-place' do
+      name = 'George of the Jungle'
+
+      subject.add(phone_with_country_code, member_with_country_code)
+      subject.add(phone_with_country_code, member_of_country_code)
+      updated = member_with_country_code.merge('name' => name)
+      subject.add(phone_with_country_code, updated)
+
+      actual = redis.hget *key(phone_with_country_code)
+      actual = JSON.load(actual)
+      expect(actual.first).to eq updated
     end
   end
 
