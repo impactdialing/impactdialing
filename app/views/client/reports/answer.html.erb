@@ -61,9 +61,7 @@
         <th>Number</th>
         <th>Percentage (of answered calls)</th>
       </tr>
-      <% drops = CallAttempt.where('recording_id IS NOT NULL').
-                      where('recording_delivered_manually=?', true).
-                      where(campaign_id: @campaign.id)
+      <% drops = @campaign.call_attempts.with_recording.with_auto_message_drop
          recording_ids = drops.map(&:recording_id)
          messages = Recording.where(id: recording_ids)
          i = 1 %>
