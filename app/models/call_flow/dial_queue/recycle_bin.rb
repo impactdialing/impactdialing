@@ -12,6 +12,10 @@ class CallFlow::DialQueue::RecycleBin
   include CallFlow::DialQueue::SortedSetScore
 
 private
+  def log(*args)
+    CallFlow::DialQueue.log(*args)
+  end
+
   def keys
     {
       bin: "dial_queue:#{campaign.id}:bin"
@@ -64,14 +68,16 @@ public
   end
 
   def expired
-    min     = '-inf'
-    max     = "#{campaign.recycle_rate.hours.ago.to_i}.999"
+    min   = '-inf'
+    max   = "#{campaign.recycle_rate.hours.ago.to_i}.999"
     items = redis.zrangebyscore(keys[:bin], min, max, with_scores: true)
+
+    log :info, "Recycling #{items.size} expired items"
     items.map{|item| item.rotate(1)}
   end
 
   def dialed(household)
-    return false if household.no_voters_to_dial?
+    return false unless household.cache?
     add(household)
   end
 end
