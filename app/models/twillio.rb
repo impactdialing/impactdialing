@@ -83,7 +83,10 @@ class Twillio
       handle_response(http.response, household, call_attempt)
       iter.return(http)
     }
-    http.errback { iter.return(http) }
+    http.errback {
+      handle_response(http.response, household, call_attempt)
+      iter.return(http)
+    }
   end
 
   def self.create_call_attempt(household)

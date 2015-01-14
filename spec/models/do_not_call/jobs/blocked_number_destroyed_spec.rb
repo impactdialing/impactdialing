@@ -20,6 +20,7 @@ describe 'DoNotCall::Jobs::BlockedNumberDestroyed' do
   let(:other_campaign_wide){ create(:blocked_number, account: other_account, campaign: other_campaign, number: other_households.last.phone) }
 
   before do
+    Redis.new.flushall
     cache_available_voters(campaign)
     cache_available_voters(other_campaign)
     DoNotCall::Jobs::BlockedNumberDestroyed.perform(account.id, campaign.id, account_wide.number)

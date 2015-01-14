@@ -136,7 +136,6 @@ describe Twillio do
         yield
       end
       def errback(&block)
-        yield
       end
       def response
         {
@@ -167,6 +166,11 @@ describe Twillio do
     context 'fail' do
 
       class EmHttpFakeFail < EmHttpFake
+        def callback(&block)
+        end
+        def errback(&block)
+          yield
+        end
         def response
           {
             status: 400
