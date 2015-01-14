@@ -42,12 +42,7 @@ class PersistCalls
     result = []
     num_to_pop.times do |x|
       element = connection.lpop list_name
-      begin
-        result << JSON.parse(element) unless element.nil?
-      rescue Resque::TermException => e
-        Rails.logger.info "Shutting down. [multipop]"
-        ImpactPlatform::Metrics::JobStatus.sigterm(self.to_s.underscore)
-      end
+      result << JSON.parse(element) unless element.nil?
     end
     result
   end
@@ -190,7 +185,7 @@ class PersistCalls
       end
       wrapped_up_calls.each do |wrapped_up_call|
         call_attempt = call_attempts[wrapped_up_call['id'].to_i]
-        voter        = voters[wrapped_up_call['voter_id'].to_i] || call_attempt.household.voters.presentable(call_attempt.campaign).first
+        voter        = voters[wrapped_up_call['voter_id'].to_i]
 
         call_attempt.wrapup_now(wrapped_up_call['current_time'], wrapped_up_call['caller_type'], wrapped_up_call['voter_id'])
         voter.dispositioned(call_attempt) 
