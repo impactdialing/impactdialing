@@ -49,7 +49,7 @@ class Predictive < Campaign
   end
 
   def dial_factor
-    dials_made = call_attempts.between(10.minutes.ago, Time.now).size
+    dials_made = call_attempts.between(10.minutes.ago, Time.now).count
 
     return 1 if dials_made.zero? || !abandon_rate_acceptable?
     return best_dials_simulated
@@ -62,7 +62,8 @@ class Predictive < Campaign
   end
 
   def next_in_dial_queue(n)
-    CallFlow::DialQueue.next(self, n)
+    numbers = dial_queue.next(n)
+    numbers
   end
 
   def numbers_to_dial
