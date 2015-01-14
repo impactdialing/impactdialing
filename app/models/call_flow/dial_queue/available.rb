@@ -88,7 +88,6 @@ public
   def presented_and_stale
     min = '-inf'
     max = "#{campaign.recycle_rate.hours.ago.to_i}.999"
-    # todo: verify call is not in progress to these presented numbers before considering them all stale
     range_by_score(:presented, min, max, with_scores: true)
   end
 
