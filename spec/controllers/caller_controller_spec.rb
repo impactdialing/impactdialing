@@ -149,7 +149,7 @@ describe CallerController, :type => :controller do
       })
 
       expect(controller).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, 'publish_calling_voter'])
-      expect(controller).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, "#{voter.id}"])
+      expect(controller).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, "#{voter.household.phone}"])
 
       post :call_voter, id: caller.id, voter_id: voter.id, session_id: caller_session.id
     end

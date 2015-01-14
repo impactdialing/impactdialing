@@ -203,10 +203,12 @@ public
 
   # Used by Preview & Power dial modes to dial a number.
   def call_voter
-    # try loading session from params to avoid queueing jobs for nonsense resources
+    # try loading records from params to avoid queueing jobs for nonsense resources
     session = CallerSession.find_by_id_and_caller_id(params[:session_id], params[:id])
+    voter   = Voter.find(params[:voter_id])
+
     enqueue_call_flow(CallerPusherJob, [session.id, "publish_calling_voter"])
-    enqueue_call_flow(PreviewPowerDialJob, [session.id, params[:voter_id]])
+    enqueue_call_flow(PreviewPowerDialJob, [session.id, voter.household.phone])
 
     render :nothing => true
   end
