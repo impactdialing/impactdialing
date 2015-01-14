@@ -57,7 +57,7 @@ describe Call, :type => :model do
         expected_job = {
           'queue' => 'call_flow',
           'class' => 'VoterConnectedPusherJob',
-          'args' => [caller_session.id, call.id, nil]
+          'args' => [caller_session.id, call.id]
         }
         expected_job.keys.each do |key|
           expect(job[key]).to eq expected_job[key]
