@@ -364,14 +364,12 @@ public
     voicemail_history.blank?
   end
 
-  def disconnect_call(caller_id)
-    self.status         = CallAttempt::Status::SUCCESS
-    self.caller_session = nil
-    self.caller_id      = caller_id
+  def do_not_call_back?
+    (not not_called?) and (not call_back?) and (not retry?)
   end
 
-  def do_not_call_back?
-    (not call_back?) and (not retry?)
+  def not_called?
+    status == Voter::Status::NOTCALLED
   end
 
   def retry?
@@ -379,16 +377,12 @@ public
   end
 
   def dispositioned(call_attempt)
+    dial_queue             = CallFlow::DialQueue.new(campaign)
     self.status            = call_attempt.status
     self.caller_id         = call_attempt.caller_id
     self.caller_session_id = nil
     if do_not_call_back?
-      dial_queue = CallFlow::DialQueue.new(campaign)
-      dial_queue.households.remove_member(household.phone, self)
-    else
-      # phone-only will need the voter rotated to the end of the queue
-      # webui doesn't care...
-      # phone-only should have voter rotation tracked elsewhere
+      dial_queue.remove(self)
     end
   end
 
@@ -439,13 +433,34 @@ public
     update_attributes(skipped_time: Time.now, status: Voter::Status::SKIPPED)
   end
 
+  def update_call_back(possible_responses)
+    if possible_responses.any?(&:retry?)
+      self.call_back = true
+      self.status    = Voter::Status::RETRY
+    else
+      self.call_back = false
+    end
+  end
+
+  def update_call_back_incrementally(possible_response, first_increment = false)
+    if possible_response.retry?
+      self.call_back = true
+      self.status    = Voter::Status::RETRY
+    else
+      if updated_at.to_i <= 15.minutes.ago.to_i or first_increment
+        self.call_back = false
+      end
+    end
+  end
+
   # this is called from AnsweredJob and should run only
   # after #dispositioned has run (which is called from PersistCalls)
   # otherwise, the status of the voter will be overwritten.
   def persist_answers(questions, call_attempt)
     return if questions.nil?
-    question_answers = JSON.parse(questions)
-    retry_response = nil
+
+    question_answers   = JSON.parse(questions)
+    possible_responses = []
     question_answers.try(:each_pair) do |question_id, answer_id|
       voters_response = PossibleResponse.find(answer_id)
       answers.create({
@@ -456,10 +471,12 @@ public
         caller: call_attempt.caller,
         call_attempt_id: call_attempt.id
       })
-      retry_response ||= voters_response if voters_response.retry?
+      possible_responses << voters_response
     end
-    update_attributes(call_back: true, status: Voter::Status::RETRY) if retry_response
-   end
+    
+    update_call_back(possible_responses)
+    save
+  end
 
   def persist_notes(notes_json, call_attempt)
     return if notes_json.nil?

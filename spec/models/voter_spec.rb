@@ -15,6 +15,74 @@ describe Voter, :type => :model do
     end
   end
 
+  describe '#do_not_call_back?' do
+    let(:voter){ build(:voter) }
+    it 'returns false when status == NOTCALLED' do
+      expect(voter.status).to eq Voter::Status::NOTCALLED
+      expect(voter.do_not_call_back?).to be_falsey
+    end
+
+    it 'returns false when call_back == true' do
+      voter.call_back = true
+      voter.status    = CallAttempt::Status::SUCCESS
+      expect(voter.do_not_call_back?).to be_falsey
+    end
+
+    it 'returns false when status == RETRY' do
+      voter.status = Voter::Status::RETRY
+      expect(voter.do_not_call_back?).to be_falsey
+    end
+
+    it 'returns true when status != NOTCALLED and status != RETRY and call_back == false' do
+      voter.status = CallAttempt::Status::SUCCESS
+      expect(voter.do_not_call_back?).to be_truthy
+    end
+  end
+
+  describe '#dispositioned(call_attempt)' do
+    let(:voter) do
+      create(:voter, caller_session_id: 42)
+    end
+    let(:call_attempt) do
+      create(:call_attempt, {
+        status: CallAttempt::Status::SUCCESS,
+        caller: create(:caller, campaign: voter.campaign),
+        campaign: voter.campaign
+      })
+    end
+
+    it 'sets status to call_attempt.status' do
+      voter.dispositioned(call_attempt)
+      expect(voter.status).to eq call_attempt.status
+    end
+
+    it 'sets caller_id to call_attempt.caller_id' do
+      voter.dispositioned(call_attempt)
+      expect(voter.caller_id).to eq call_attempt.caller_id
+    end
+
+    it 'unsets caller_session_id' do
+      voter.dispositioned(call_attempt)
+      expect(voter.caller_session_id).to be_nil
+    end
+
+    context 'when Voter should not be contacted again' do
+      let(:dial_queue_instance) do
+        double('DialQueueInstance', {
+          remove: nil
+        })
+      end
+      before do
+        allow(CallFlow::DialQueue).to receive(:new){ dial_queue_instance }
+        allow(voter).to receive(:do_not_call_back?){ true }
+      end
+      it 'is removed from the dial queue' do
+        expect(dial_queue_instance).to receive(:remove).with(voter)
+        voter.dispositioned(call_attempt)
+      end
+    end
+  end
+
   describe '#info' do
     include FakeCallData
     include ERB::Util
@@ -186,24 +254,6 @@ describe Voter, :type => :model do
         end
       end
     end
-  end
-
-  context '#disconnect_call(caller_id)' do
-    subject do
-      create(:voter, {
-        status: 'hello',
-        caller_session: create(:caller_session),
-        caller_id: 1,
-        call_back: true
-      })
-    end
-    let(:caller_id){ 42 }
-    before do
-      subject.disconnect_call(caller_id)
-    end
-    its(:status) { should eq CallAttempt::Status::SUCCESS }
-    its(:caller_session) { should be_nil }
-    its(:caller_id) { should eq caller_id }
   end
 
   it "gives remaining voters to count" do
@@ -391,7 +441,7 @@ describe Voter, :type => :model do
 
     it "puts voter back in the dial list if a retry response is detected" do
       another_response = create(:possible_response, :question => create(:question, :script => script), :retry => true)
-      voter.persist_answers("{\"#{question.id}\":\"#{response.id}\",\"#{another_response.question.id}\":\"#{another_response.id}\" }",call_attempt)
+      voter.persist_answers("{\"#{question.id}\":\"#{response.id}\",\"#{another_response.question.id}\":\"#{another_response.id}\" }", call_attempt)
       expect(voter.answers.size).to eq(2)
       expect(voter.reload.status).to eq(Voter::Status::RETRY)
       expect(Voter.to_be_dialed).to include(voter)
