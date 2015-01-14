@@ -33,8 +33,8 @@ describe 'CallFlow::DialQueue::Available' do
         key = @available.send(:keys)[:active]
         Thread.new(key) do |key|
           client = Redis.new
-          15.times do
-            client.zadd key, ["0.1", phone_numbers.first]
+          25.times do |i|
+            client.zadd key, ["#{i}.0", phone_numbers.first]
           end
         end
         expect{
