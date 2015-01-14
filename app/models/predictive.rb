@@ -72,7 +72,7 @@ class Predictive < Campaign
 
     timing('dialer.voter_load') do
       phone_numbers = next_in_dial_queue(n)
-      number_presented(n)
+      number_presented(phone_numbers.size)
     end
 
     return phone_numbers
