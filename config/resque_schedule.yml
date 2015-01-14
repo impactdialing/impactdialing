@@ -1,16 +1,16 @@
-debit_money:
-  cron: "* * * * *"
-  class: DebitJob
-  queue: background_worker
-  args:
-  description: "This job debits minutes from Account#debitable_subscription."
-
 phantom_callers:
   cron: "*/5 * * * *"
   class: PhantomCallerJob
   queue: background_worker
   args:
   description: "This job destroys phantom callers. BOOOOOOOM"
+
+debit_money:
+  cron: "* * * * *"
+  class: DebitJob
+  queue: background_worker
+  args:
+  description: "This job debits minutes from Account#debitable_subscription."
 
 process_answered_attempts:
   cron: "*/3 * * * *"
@@ -19,19 +19,26 @@ process_answered_attempts:
   args:
   description: "This job processes answers and stores them in a relational schema"
 
-persist_calls:
-  cron: "* * * * *"
-  class: PersistCalls
-  queue: persist_jobs
-  args:
-  description: "This job persists  call attempts and voter data"
-
 persist_phones_only_answers:
   cron: "* * * * *"
   class: PersistPhonesOnlyAnswers
   queue: persist_jobs
   args:
-  description: "This job persists  phones only answers data"
+  description: "This job persists phones only answers data"
+
+persist_calls:
+  cron: "* * * * *"
+  class: PersistCalls
+  queue: persist_jobs
+  args:
+  description: "This job persists call attempts and voter data"
+
+recycle_dial_queue:
+  cron: "*/5 * * * *"
+  class: CallFlow::Jobs::Recycle
+  queue: upload_download
+  args:
+  description: "Clean up stale or dialed numbers and shunt them to appropriate cache silo"
 
 update_twilio_stats_attempt_em:
   cron: "* * * * *"
