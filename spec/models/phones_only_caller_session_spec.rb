@@ -81,7 +81,7 @@ describe PhonesOnlyCallerSession, :type => :model do
           "action=\"http://test.com:80/caller/#{@caller.id}/conference_started_phones_only_preview",
           "?phone=#{@phone}&amp;session_id=#{caller_session.id}&amp;voter_id=#{voter[:id]}\"",
           " method=\"POST\" finishOnKey=\"5\">",
-          "<Say> . Press pound to skip. Press any other key to dial.</Say>",
+          "<Say> . Press pound to skip. Press star to dial.</Say>",
           "</Gather></Response>"
         ]
         expect(caller_session.read_choice).to eq(ready_to_call_twiml.join)
@@ -162,7 +162,7 @@ describe PhonesOnlyCallerSession, :type => :model do
           "session_id=#{caller_session.id}&amp;",
           "voter_id=#{voter.id}\" ",
           "method=\"POST\" finishOnKey=\"5\">",
-          "<Say>first last. Press pound to skip. Press any other key to dial.</Say>",
+          "<Say>first last. Press pound to skip. Press star to dial.</Say>",
           "</Gather></Response>"
         ]
         expect(@campaign).to receive(:next_in_dial_queue).and_return({phone: voter.household.phone, voters: [voter.cache_data]})
@@ -327,7 +327,7 @@ describe PhonesOnlyCallerSession, :type => :model do
           "session_id=#{caller_session.id}&amp;",
           "voter_id=#{voter.id}\"",
           " method=\"POST\" finishOnKey=\"5\">",
-          "<Say>Press pound to skip. Press any other key to dial.</Say>",
+          "<Say>Press pound to skip. Press star to dial.</Say>",
           "</Gather></Response>"
         ]
         expect(caller_session.conference_started_phones_only_preview(voter.id, voter.household.phone)).to eq(twiml.join)
@@ -474,16 +474,30 @@ describe PhonesOnlyCallerSession, :type => :model do
     describe "disconnected" do
 
       before(:each) do
-        @script   = create(:script)
-        @campaign = create(:power, script: @script)
-        @caller   = create(:caller, campaign: @campaign)
-        @voter    = create(:voter)
-        @question = create(:question, script: @script)
+        @script       = create(:script)
+        @campaign     = create(:power, script: @script)
+        @caller       = create(:caller, campaign: @campaign)
+        @voter        = create(:voter)
+        @question     = create(:question, script: @script)
+        @call_attempt = create(:call_attempt, campaign: @campaign)
       end
 
       it "render correct twiml" do
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id)
-        RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
+        caller_session = create(:phones_only_caller_session, {
+          caller: @caller,
+          on_call: true,
+          available_for_call: false,
+          campaign: @campaign,
+          state: "read_next_question",
+          voter_in_progress: @voter,
+          attempt_in_progress: @call_attempt,
+          question_id: @question.id
+        })
+        RedisCallerSession.set_request_params(caller_session.id, {
+          digit: 1,
+          question_number: 0,
+          question_id: 1
+        })
         twiml = [
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>"
         ]
@@ -538,11 +552,21 @@ describe PhonesOnlyCallerSession, :type => :model do
       end
 
       it "should persist the answer " do
-        call_attempt = create(:call_attempt, voter: @voter)
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", question_id: @question.id, attempt_in_progress: call_attempt, voter_in_progress: @voter, digit: 1)
+        call_attempt = create(:call_attempt, voter: @voter, household: @voter.household)
+        caller_session = create(:phones_only_caller_session, {
+          caller: @caller,
+          on_call: true,
+          available_for_call: false,
+          campaign: @campaign,
+          state: "read_next_question",
+          question_id: @question.id,
+          attempt_in_progress: call_attempt,
+          voter_in_progress: @voter,
+          digit: 1
+        })
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
         expect(caller_session).to receive(:disconnected?).and_return(false)
-        expect(RedisPhonesOnlyAnswer).to receive(:push_to_list).with(@voter.id, caller_session.id, 1, 1)
+        expect(RedisPhonesOnlyAnswer).to receive(:push_to_list).with(@voter.id, @voter.household.id, caller_session.id, 1, 1)
         caller_session.submit_response(@voter.id)
       end
 

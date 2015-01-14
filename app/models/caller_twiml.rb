@@ -120,7 +120,7 @@ module CallerTwiml
     end
 
     def choosing_voter_to_dial_twiml(voter_id, phone, first_name = nil, last_name = nil)
-      what_to_do = "Press pound to skip. Press any other key to dial."
+      what_to_do = "Press pound to skip. Press star to dial."
       what_to_do = "#{first_name} #{last_name}. #{what_to_do}" if first_name and last_name
       Twilio::TwiML::Response.new do |r|
         r.Gather({
