@@ -1,7 +1,7 @@
 require 'librato_resque'
 
 ##
-# Update all +Voter+ records with `blocked: false` for a given account or campaign with a phone number matching the
+# Update all +Household+ records with `blocked: false` for a given account or campaign with a phone number matching the
 # +BlockedNumber#number+ of the given `blocked_number_id`.
 # This job is queued from after create in +BlockedNumber+.
 #
