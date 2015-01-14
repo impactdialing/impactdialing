@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'PersistPhonesOnlyAnswers', data_heavy: true do
+describe 'PersistPhonesOnlyAnswers' do
   include FakeCallData
 
   let(:redis){ Redis.new }

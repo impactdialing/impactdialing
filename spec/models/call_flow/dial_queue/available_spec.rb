@@ -33,8 +33,7 @@ describe 'CallFlow::DialQueue::Available' do
         key = @available.send(:keys)[:active]
         Thread.new(key) do |key|
           client = Redis.new
-          # should be ok w/ changing key 1 time but do 5 to avoid timing variance issues
-          5.times do
+          15.times do
             client.zadd key, ["0.1", phone_numbers.first]
           end
         end
