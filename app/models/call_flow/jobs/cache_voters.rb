@@ -4,6 +4,7 @@ module CallFlow::Jobs
   class CacheVoters
     @queue = :upload_download
     extend ImpactPlatform::Heroku::UploadDownloadHooks
+    extend LibratoResque
 
     def self.perform(campaign_id, voter_ids, enabled)
       metrics    = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore.gsub('/','_'))
