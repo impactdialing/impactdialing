@@ -20,11 +20,25 @@ module FakeCallData
   end
 
   def process_recycle_bin(campaign)
-    CallFlow::Jobs::ProcessRecycleBin.perform(campaign.id)
+    campaign.dial_queue.recycle!
   end
 
   def process_presented(campaign)
-    CallFlow::Jobs::ProcessPresentedVoters.perform(campaign.id)
+    dial_queue = campaign.dial_queue
+    stale      = dial_queue.available.presented_and_stale
+
+    stale.each do |scored_phone|
+      score     = scored_phone.last
+      phone     = scored_phone.first
+      household = campaign.households.find_by_phone(phone)
+      
+      household.update_attributes({
+        presented_at: score
+      })
+      dial_queue.dialed(household)
+    end
+
+    dial_queue.recycle!
   end
 
   def clean_dial_queue

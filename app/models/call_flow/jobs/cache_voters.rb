@@ -1,3 +1,4 @@
+require 'librato_resque'
 require 'impact_platform/heroku'
 
 module CallFlow::Jobs

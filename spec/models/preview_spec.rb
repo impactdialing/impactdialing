@@ -83,27 +83,6 @@ describe Preview, :type => :model do
           end
         end
       end
-
-      it 'voters are moved to the front of the list (after recycle rate) for subsequent passes' do
-        skipped  = []
-        busy     = []
-        complete = []
-        dial_one_at_a_time(campaign, 1){|house| skipped << house}
-        dial_one_at_a_time(campaign, 2){|house| busy << house && attach_call_attempt(:past_recycle_time_busy_call_attempt, Household.find_by_phone(house[:phone]), caller)}
-        dial_one_at_a_time(campaign, 1){|house| skipped << house}
-        dial_one_at_a_time(campaign, 1){|house| complete << house && attach_call_attempt(:past_recycle_time_completed_call_attempt, Voter.find(house[:voters].first[:id]), caller)}
-        
-        expect(dial_queue.available.all.size).to eq 0
-
-        current_time = Time.now
-        Timecop.travel(current_time + campaign.recycle_rate.hours + 1.minute) do
-          process_presented(campaign)
-
-          expect(campaign.next_in_dial_queue).to eq skipped.first
-          expect(campaign.next_in_dial_queue).to eq skipped.last
-          expect(busy).to include campaign.next_in_dial_queue
-        end
-      end
     end
   end
 
