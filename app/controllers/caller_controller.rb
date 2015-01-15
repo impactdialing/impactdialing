@@ -229,6 +229,8 @@ public
   def skip_voter
     caller         = Caller.includes(:campaign).find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
+    
+    caller.campaign.number_skipped
 
     if caller_session.fit_to_dial?
       info = caller.campaign.caller_conference_started_event

@@ -158,6 +158,7 @@ public
   def number_failed
     inflight_stats.incby('presented', -1)
   end
+  alias :number_skipped :number_failed
 
   def presented_count
     inflight_stats.get('presented')

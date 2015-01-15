@@ -429,10 +429,6 @@ public
     unanswered_questions.first
   end
 
-  def skip
-    update_attributes(skipped_time: Time.now, status: Voter::Status::SKIPPED)
-  end
-
   def update_call_back(possible_responses)
     if possible_responses.any?(&:retry?)
       self.call_back = true
