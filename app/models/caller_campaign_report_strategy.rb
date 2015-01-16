@@ -82,9 +82,9 @@ public
 
   def get_voicemail_history(household_ids)
     query = CallAttempt.where(household_id: household_ids).
-      select("household_id, recording_id, recording_delivered_manually").group(:household_id).to_sql
+      select("id, household_id, recording_id, recording_delivered_manually").to_sql
     @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
-      memo[hash['household_id']] = {
+      memo[hash['id']] = {
         message_left_text: message_left_text(hash['recording_id'], hash['recording_delivered_manually'])
       }
     end
