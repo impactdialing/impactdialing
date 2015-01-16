@@ -51,6 +51,10 @@ public
     @type        = type
   end
 
+  def exists?
+    redis.exists keys[:active]
+  end
+
   def add(phone, member)
     members = find(phone)
     if (index = members.index{|membr| match?(membr, member)})

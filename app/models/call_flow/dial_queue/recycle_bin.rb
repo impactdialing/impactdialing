@@ -29,6 +29,10 @@ public
     @campaign = campaign
   end
 
+  def exists?
+    redis.exists keys[:bin]
+  end
+
   def add(household)
     redis.zadd keys[:bin], *memberize(household)
 

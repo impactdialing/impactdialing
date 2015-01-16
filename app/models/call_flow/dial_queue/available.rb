@@ -73,6 +73,10 @@ public
     @campaign = campaign
   end
 
+  def exists?
+    redis.exists(keys[:active]) or redis.exists(keys[:presented])
+  end
+
   def size
     redis.zcard keys[:active]
   end

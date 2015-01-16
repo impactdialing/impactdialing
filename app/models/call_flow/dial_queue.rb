@@ -50,6 +50,10 @@ module CallFlow
       @households ||= CallFlow::DialQueue::Households.new(campaign)
     end
 
+    def exists?
+      available.exists? or recycle_bin.exists? or households.exists?
+    end
+
     def cache(voter)
       household = voter.household
 

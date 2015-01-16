@@ -172,6 +172,10 @@ public
     @dial_queue ||= CallFlow::DialQueue.new(self)
   end
 
+  def cached?
+    dial_queue.exists?
+  end
+
   def self.preview_power_campaign?(campaign_type)
     [Type::PREVIEW, Type::POWER].include?(campaign_type)
   end
