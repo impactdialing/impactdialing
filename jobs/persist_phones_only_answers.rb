@@ -97,6 +97,12 @@ class PersistPhonesOnlyAnswers
 
     Answer.import answers
     Voter.import updated_voters, on_duplicate_key_update: [:call_back, :status, :updated_at]
+
+    trim_pending_list!
+  end
+
+  def self.trim_pending_list!
+    redis.ltrim keys[:pending], 0, 7_999
   end
 
   def self.partial_data!(raw_data)
@@ -106,7 +112,6 @@ class PersistPhonesOnlyAnswers
 
   def self.partial_data?(data)
     data['voter_id'].blank? or data['caller_session_id'].blank? or
-    data['question_id'].blank? or data['digit'].blank? or
-    data['digit'].blank?
+    data['question_id'].blank? or data['digit'].blank?
   end
 end
