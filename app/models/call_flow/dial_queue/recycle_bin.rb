@@ -72,7 +72,7 @@ public
     max   = "#{campaign.recycle_rate.hours.ago.to_i}.999"
     items = redis.zrangebyscore(keys[:bin], min, max, with_scores: true)
 
-    log :info, "Recycling #{items.size} expired items"
+    # redis-rb returns [item, score] but expects [score, item] when pushing
     items.map{|item| item.rotate(1)}
   end
 
