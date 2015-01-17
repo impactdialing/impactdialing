@@ -93,7 +93,7 @@ describe CallerCampaignReportStrategy, :type => :model do
       }
 
       voicemail_history = {
-        voter.household.id => {
+        call_attempt.id => {
           message_left_text: 'Yes: automatically'
         }
       }
@@ -137,7 +137,7 @@ describe CallerCampaignReportStrategy, :type => :model do
         }
       }
       voicemail_history = {
-        voter.household.id => {
+        call_attempt.id => {
           message_left_text: 'No'
         }
       }
@@ -156,7 +156,7 @@ describe CallerCampaignReportStrategy, :type => :model do
         'N/A', # transfer attempt end
         'N/A', # transfer attempt duration
         attempt_numbers[voter.household.id][:cnt],
-        voicemail_history[voter.household.id][:message_left_text],
+        voicemail_history[call_attempt.id][:message_left_text],
         "xyz.mp3"
       ]
       expect(actual).to eq expected
@@ -215,7 +215,7 @@ describe CallerCampaignReportStrategy, :type => :model do
 
       let(:voicemail_history) do
         {
-          voter.household.id => {
+          call_attempt.id => {
             message_left_text: 'No'
           }
         }
@@ -235,7 +235,7 @@ describe CallerCampaignReportStrategy, :type => :model do
           'N/A', # transfer attempt start
           'N/A', # transfer attempt end
           'N/A', # transfer attempt duration
-          voicemail_history[voter.household.id][:message_left_text],
+          voicemail_history[call_attempt.id][:message_left_text],
           "xyz.mp3",
           "Hey",
           "Wee",
@@ -320,7 +320,7 @@ describe CallerCampaignReportStrategy, :type => :model do
         }
       }
       voicemail_history = {
-        voter.household.id => {
+        call_attempt.id => {
           message_left_text: 'Yes: automatically'
         }
       }
@@ -337,7 +337,7 @@ describe CallerCampaignReportStrategy, :type => :model do
         'N/A', # transfer attempt start
         'N/A', # transfer attempt end
         'N/A', # transfer attempt duration
-        voicemail_history[voter.household.id][:message_left_text],
+        voicemail_history[call_attempt.id][:message_left_text],
         "xyz.mp3",
         "Hey",
         "Wee",

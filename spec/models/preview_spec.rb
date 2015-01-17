@@ -192,13 +192,9 @@ describe Preview, :type => :model do
 
       expect(campaign.next_in_dial_queue[:voters].first[:id]).to eq vone.id
 
-      vone.reload.skip
-
       next_voter = campaign.next_in_dial_queue
       expect(next_voter[:voters].first[:id]).not_to eq vone.id
       expect(next_voter[:voters].first[:id]).to eq vtwo.id
-
-      vtwo.reload.skip
 
       next_voter = campaign.next_in_dial_queue
       expect(next_voter[:voters].first[:id]).not_to eq vtwo.id
