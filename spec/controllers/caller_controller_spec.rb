@@ -76,14 +76,20 @@ describe CallerController, :type => :controller do
         current_voter
         next_voter
         dial_queue = cache_available_voters(campaign)
-        dial_queue.next(1) # pop the current_voter off the list
+        campaign.caller_conference_started_event # pop the current_voter off the list
         login_as(caller)
+      end
+
+      it 'maintains Campaign#presented_count' do
+        expect(campaign.presented_count).to eq 1
+        post :skip_voter, valid_params
+        expect(campaign.presented_count).to eq 1
       end
 
       context 'when fit to dial' do
         it 'renders next lead (voter) data' do
           post :skip_voter, valid_params
-          data = next_voter.reload.info
+          data = next_voter.reload.cache_data
           data[:fields].merge!(phone: next_voter.household.phone)
           data.merge!(id: next_voter.id)
           expect(response.body).to eq data.to_json
