@@ -89,7 +89,7 @@ describe Voter, :type => :model do
 
     shared_context 'Voter#info setup' do
       def setup_custom_fields(account, script, voter, voter_fields)
-        script.update_attributes!(voter_fields: voter_fields)
+        script.update_attributes!(voter_fields: voter_fields) if voter_fields.present?
 
         custom_field = create(:custom_voter_field, {
           account: account,
@@ -144,6 +144,29 @@ describe Voter, :type => :model do
     shared_context 'Voter#info with custom fields' do
       let(:voter_fields) do
         "[\"Phone\", \"FirstName\", \"LastName\", \"Email\", \"ImportedFromOldSystem\", \"MoreInfo\"]"
+      end
+    end
+
+    describe '#cache_data' do 
+      include_context 'Voter#info setup'
+
+      before do
+        setup_custom_fields(account, script, voter, nil)
+      end
+
+      it 'returns a hash with :fields => Voter#attributes' do
+        expected_attributes = {}
+        voter.attributes.each{|k,v| (Voter::UPLOAD_FIELDS + ['id']).include?(k) ? expected_attributes[k] = v.to_s : nil}
+        expected_attributes['email'] = "<a target=\"_blank\" href=\"mailto:#{expected_attributes['email']}\">#{expected_attributes['email']}</a>"
+
+        expect(voter.cache_data[:fields]).to eq(expected_attributes)
+      end
+
+      it 'returns a hash with :custom_fields => Voter#custom_voter_field_values' do
+        expected_attributes = {}
+        voter.custom_voter_field_values.each{|v| expected_attributes[v.custom_voter_field.name] = v.value.to_s}
+        expected_attributes['MoreInfo'] = "<a target=\"_blank\" href=\"http://#{expected_attributes['MoreInfo']}\">#{expected_attributes['MoreInfo']}</a>"
+        expect(voter.cache_data[:custom_fields]).to eq(expected_attributes)
       end
     end
 

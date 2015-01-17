@@ -418,7 +418,23 @@ public
   end
 
   def cache_data
-    info.merge(id: self.id)
+    whitelisted_fields = UPLOAD_FIELDS + ['id']
+    data = {
+      id: self.id,
+      fields: {},
+      custom_fields: {}
+    }
+    self.attributes.each do |field, value|
+      next unless whitelisted_fields.include?(field)
+
+      data[:fields][field] = autolink(value)
+    end
+
+    custom_voter_field_values.each do |custom_value|
+      data[:custom_fields][custom_value.custom_voter_field.name] = autolink(custom_value.value)
+    end
+
+    data
   end
 
   def unanswered_questions
