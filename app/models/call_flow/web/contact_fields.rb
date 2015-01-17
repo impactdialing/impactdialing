@@ -32,6 +32,10 @@ public
     redis.hset keys[:active], object.id, fields.to_json
   end
 
+  def cache_raw(fields_json)
+    redis.hset keys[:active], object.id, fields_json
+  end
+
   def data
     fields = redis.hget(keys[:active], object.id)
     JSON.load(fields) or []

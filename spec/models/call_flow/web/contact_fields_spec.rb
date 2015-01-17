@@ -27,9 +27,15 @@ describe 'CallFlow::Web::ContactFields' do
   end
 
   describe 'adding selected fields' do
-    it 'stores given Array as JSON string' do
+    it '#cache(arr) stores given Array as JSON string' do
       subject.cache(fields)
       stored_fields = redis.hget "contact_fields", instance.id
+      expect(stored_fields).to eq fields.to_json
+    end
+
+    it '#cache_raw(str) stores given String (assumes already JSON)' do
+      subject.cache_raw(fields.to_json)
+      stored_fields = redis.hget 'contact_fields', instance.id
       expect(stored_fields).to eq fields.to_json
     end
   end
