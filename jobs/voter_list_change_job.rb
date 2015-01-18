@@ -40,7 +40,7 @@ class VoterListChangeJob
   end
 
   def self.enqueue_cache_voters(campaign_id, voter_ids, enabled)
-    Resque.enqueue(CallFlow::Jobs::CacheVoters, campaign_id, voter_ids, enabled)
+    Resque.enqueue(CallFlow::DialQueue::Jobs::CacheVoters, campaign_id, voter_ids, enabled)
   end
 
   def self.requeue(voter_list_id, enabled)

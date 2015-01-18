@@ -41,7 +41,7 @@ When 7 days have passed and no user associated with the account has logged in.
 
 Is handled by a few different background jobs.
 
-#### CallFlow::Jobs::CacheVoters
+#### CallFlow::DialQueue::Jobs::CacheVoters
 
 Queued from VoterListChangeJob when a list is enabled/disabled or created.
 

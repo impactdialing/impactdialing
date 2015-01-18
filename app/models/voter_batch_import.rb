@@ -154,9 +154,9 @@ class VoterBatchImport
         import_from_hashes(Voter, leads)
       end
 
-      Resque.enqueue(CallFlow::Jobs::CacheVoters, campaign.id, created_voter_ids, 1)
+      Resque.enqueue(CallFlow::DialQueue::Jobs::CacheVoters, campaign.id, created_voter_ids, 1)
       if (existing_voter_ids = leads.map{|l| l[:id]}.compact).any?
-        Resque.enqueue(CallFlow::Jobs::CacheVoters, campaign.id, existing_voter_ids, 1)
+        Resque.enqueue(CallFlow::DialQueue::Jobs::CacheVoters, campaign.id, existing_voter_ids, 1)
       end
 
       # persist custom field data

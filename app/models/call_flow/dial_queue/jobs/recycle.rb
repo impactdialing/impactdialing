@@ -1,7 +1,7 @@
 require 'librato_resque'
 require 'impact_platform'
 
-module CallFlow::Jobs
+module CallFlow::DialQueue::Jobs
   class Recycle
     @queue = :upload_download
     extend ImpactPlatform::Heroku::UploadDownloadHooks

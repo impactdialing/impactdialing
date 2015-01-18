@@ -1,7 +1,7 @@
 require 'librato_resque'
 require 'impact_platform/heroku'
 
-module CallFlow::Jobs
+module CallFlow::DialQueue::Jobs
   class CacheVoters
     @queue = :upload_download
     extend ImpactPlatform::Heroku::UploadDownloadHooks

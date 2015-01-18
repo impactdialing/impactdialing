@@ -16,7 +16,7 @@ module FakeCallData
   end
 
   def cache_voters(campaign_id, voter_ids, enabled='1')
-    CallFlow::Jobs::CacheVoters.perform(campaign_id, voter_ids, enabled)
+    CallFlow::DialQueue::Jobs::CacheVoters.perform(campaign_id, voter_ids, enabled)
   end
 
   def process_recycle_bin(campaign)
