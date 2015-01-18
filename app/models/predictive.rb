@@ -107,7 +107,14 @@ class Predictive < Campaign
   end
 
   def voter_connected_event(call)
-    {event: 'voter_connected_dialer', data: {call_id:  call.id, voter:  call.voter.info}}
+    data  = CallFlow::Web::Data.new(script)
+    phone = call.call_attempt.household.phone
+    house = {
+      phone: phone,
+      voters: dial_queue.households.find(phone)
+    }
+    hash = data.build(house)
+    {event: 'voter_connected_dialer', data: hash.merge({call_id:  call.id})}
   end
 end
 

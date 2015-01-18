@@ -15,24 +15,16 @@ module PreviewPowerCampaign
   end
 
   def caller_conference_started_event
-    # tmp
-    house = next_in_dial_queue
-    if house.present?
-      voter = house[:voters].first
-      voter[:fields].merge!(phone: house[:phone])
-      data  = voter
-      inflight_stats.inc('presented')
-    else
-      data = {campaign_out_of_leads: true}
+    json = CallFlow::Web::Data.new(script)
+    data = json.build(next_in_dial_queue)
+
+    unless data[:campaign_out_of_leads]
+      number_presented(1)
     end
-    # /tmp
 
     return {
       event: 'conference_started',
-      # tmp
       data:  data
-      # /tmp
-      # data: (next_in_dial_queue || {campaign_out_of_leads: true})
     }
   end
 
