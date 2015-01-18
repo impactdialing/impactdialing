@@ -8,7 +8,7 @@ class Script < ActiveRecord::Base
 
   # callbacks
   after_update :update_questions_and_possible_responses_cache
-  after_update :publish_update_notification
+  after_save :publish_update_notification
 
   # associations
   belongs_to :account
@@ -29,7 +29,8 @@ class Script < ActiveRecord::Base
   @@per_page = 25
 
   def publish_update_notification
-    ActiveSupport::Notifications.instrument('scripts.updated', script: self)
+    ActiveSupport::Notifications.instrument('scripts.saved', script: self)
+  end
   end
 
   def ability
