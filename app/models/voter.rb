@@ -418,14 +418,14 @@ public
   end
 
   def cache_data
-    whitelisted_fields = UPLOAD_FIELDS + ['id']
+    system_fields = UPLOAD_FIELDS + ['id']
     data = {
       id: self.id,
       fields: {},
       custom_fields: {}
     }
     self.attributes.each do |field, value|
-      next unless whitelisted_fields.include?(field)
+      next unless system_fields.include?(field)
 
       data[:fields][field] = autolink(value)
     end
