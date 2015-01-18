@@ -5,14 +5,23 @@ describe Script, :type => :model do
   describe 'after_update' do
     include FakeCallData
 
-    it 'queues job to update redis cache (job will only alter cache if data already cached and does not match fresh data)' do
-      admin   = create(:user)
-      account = admin.account
-      script  = create_campaign_with_script(:bare_power, account).first
+    let(:admin){ create(:user) }
+    let(:account){ admin.account }
+    let(:script){ create_campaign_with_script(:bare_power, account).first }
 
+    it 'queues job to update redis cache (job will only alter cache if data already cached and does not match fresh data)' do
       expect(CachePhonesOnlyScriptQuestions).to receive(:add_to_queue).with(script.id, 'update')
 
       script.update_attributes(name: 'Updated Script Name')
+    end
+
+    it 'publishes update notification via ActiveSupport::Notifications' do
+      actual_payload = nil
+      ActiveSupport::Notifications.subscribe('scripts.updated') do |name, start, finish, id, payload|
+        actual_payload = payload
+      end
+      script.update_attributes(name: "Updated")
+      expect(actual_payload[:script]).to eq script
     end
   end
 
