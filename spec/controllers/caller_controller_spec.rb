@@ -73,6 +73,7 @@ describe CallerController, :type => :controller do
       include FakeCallData
 
       before do
+        Redis.new.flushall
         current_voter
         next_voter
         dial_queue = cache_available_voters(campaign)
@@ -88,10 +89,17 @@ describe CallerController, :type => :controller do
 
       context 'when fit to dial' do
         it 'renders next lead (voter) data' do
+          campaign.update_attributes! script: create(:script)
+          data            = {
+            id: next_voter.id,
+            fields: {phone: next_voter.household.phone},
+            custom_fields: {},
+            'Phone_flag' => true
+          }
+          CallFlow::Web::Data.new(campaign.script)
+
           post :skip_voter, valid_params
-          data = next_voter.reload.cache_data
-          data[:fields].merge!(phone: next_voter.household.phone)
-          data.merge!(id: next_voter.id)
+          
           expect(response.body).to eq data.to_json
         end
       end

@@ -39,8 +39,11 @@ describe BlockedNumber, :type => :model do
     let!(:blocked_number){ BlockedNumber.create(account: account, campaign: campaign, number: '1234567890') }
 
     it 'queues DoNotCall::Jobs::BlockedNumberCreated after a BlockedNumber record is created' do
-      actual = Resque.peek :background_worker
-      expect(actual).to eq({'class' => 'DoNotCall::Jobs::BlockedNumberCreated', 'args' => [blocked_number.id]})
+      actual = Resque.peek :background_worker, 0, 100
+      expect(actual).to include({
+        'class' => 'DoNotCall::Jobs::BlockedNumberCreated',
+        'args' => [blocked_number.id]
+      })
     end
 
     it 'queues DoNotCall::Jobs::BlockedNumberDestroyed after a BlockedNumber record is destroyed' do

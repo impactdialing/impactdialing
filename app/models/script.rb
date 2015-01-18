@@ -7,8 +7,7 @@ class Script < ActiveRecord::Base
   validate :check_subscription_type_for_transfers
 
   # callbacks
-  after_update :update_questions_and_possible_responses_cache
-  after_save :publish_update_notification
+  after_save :publish_save_notification
 
   # associations
   belongs_to :account
@@ -28,9 +27,8 @@ class Script < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
-  def publish_update_notification
+  def publish_save_notification
     ActiveSupport::Notifications.instrument('scripts.saved', script: self)
-  end
   end
 
   def ability
@@ -110,12 +108,6 @@ class Script < ActiveRecord::Base
       ]
     })
     json["script"].merge({questions: questions_possible_responses})
-  end
-
-  def update_questions_and_possible_responses_cache
-    if active?
-      CachePhonesOnlyScriptQuestions.add_to_queue(id, 'update')
-    end
   end
 end
 

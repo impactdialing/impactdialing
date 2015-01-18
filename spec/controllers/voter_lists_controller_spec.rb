@@ -115,12 +115,14 @@ describe VoterListsController, :type => :controller do
 
         it "renders voter_list attributes as json" do
           VCR.use_cassette('API CSV voter list upload', match_requests_on: [:host, :method]) do
-            allow(Resque).to receive(:enqueue).once.with(VoterListChangeJob, anything, anything)
-            expect(Resque).to receive(:enqueue).at_least(:once).with(VoterListUploadJob, anything, anything, anything, anything)
-
             post :create, params.merge(upload: csv_upload)
             
             expect(response.body).to match(/\{\"voter_list\":\{\"enabled\":true,\"id\":(.*),\"name\":\"abc.csv\"\}\}/)
+
+            expect(Resque.peek(:upload_download, 0, 100)).to include({
+              'class' => 'VoterListUploadJob',
+              'args' => [anything, anything, anything, anything]
+            })
           end
         end
       end

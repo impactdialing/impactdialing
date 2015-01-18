@@ -15,13 +15,26 @@ describe Script, :type => :model do
       script.update_attributes(name: 'Updated Script Name')
     end
 
-    it 'publishes update notification via ActiveSupport::Notifications' do
+    it 'queues :background_worker job to cache Script#voter_fields' do
+      script.update_attributes(name: 'Updated')
+      actual = Resque.peek :background_worker, 0, 100
+      expect(actual).to include({
+        'class' => 'CallFlow::Web::Jobs::CacheContactFields',
+        'args' => [script.id]
+      })
+    end
+
+    it 'publishes save notification via ActiveSupport::Notifications' do
       actual_payload = nil
-      ActiveSupport::Notifications.subscribe('scripts.updated') do |name, start, finish, id, payload|
+      ActiveSupport::Notifications.subscribe('scripts.saved') do |name, start, finish, id, payload|
         actual_payload = payload
       end
+
       script.update_attributes(name: "Updated")
       expect(actual_payload[:script]).to eq script
+
+      new_script = create(:script)
+      expect(actual_payload[:script]).to eq new_script
     end
   end
 
