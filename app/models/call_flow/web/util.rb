@@ -1,7 +1,11 @@
 class CallFlow::Web::Util
   def self.filter(whitelisted_keys, data)
     return data if data.nil?
-    data.select{|key,value| whitelisted_keys.include?(key)}
+    
+    data.select do |key,value|
+      mapped_value = VoterList::VOTER_DATA_COLUMNS[key]
+      whitelisted_keys.include?(mapped_value)
+    end
   end
 
   def self.build_flags(whitelisted_keys = [])

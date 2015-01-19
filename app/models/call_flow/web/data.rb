@@ -7,7 +7,8 @@ private
   end
 
   def fields(data)
-    clean         = util.filter(whitelist, data)
+    clean      = util.filter(whitelist, data)
+    clean[:id] = data[:id]
     if clean[:phone].nil?
       clean[:phone] = data[:phone]
     end
