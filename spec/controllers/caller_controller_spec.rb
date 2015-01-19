@@ -92,7 +92,7 @@ describe CallerController, :type => :controller do
           campaign.update_attributes! script: create(:script)
           data            = {
             id: next_voter.id,
-            fields: {phone: next_voter.household.phone},
+            fields: {id: "#{next_voter.id}", phone: next_voter.household.phone},
             custom_fields: {},
             'Phone_flag' => true
           }

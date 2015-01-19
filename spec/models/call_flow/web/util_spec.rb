@@ -3,7 +3,7 @@ require 'spec_helper'
 describe 'CallFlow::Web::Util' do
   describe '.filter(whitelisted_keys, hash_of_data)' do
     it 'returns a copy of hash_of_data with only whitelisted_keys/values' do
-      whitelist = ['first_name', 'email', 'phone']
+      whitelist = ['FirstName', 'Email', 'Phone']
       data = {
         'first_name' => Forgery(:name).first_name,
         'last_name' => Forgery(:name).last_name,

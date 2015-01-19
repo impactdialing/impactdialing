@@ -46,6 +46,7 @@ describe 'CallFlow::Web::Data' do
       expect(subject.build(house)).to eq({
         id: 42,
         fields: {
+          id: 42,
           phone: house[:phone]
         },
         custom_fields: {},
