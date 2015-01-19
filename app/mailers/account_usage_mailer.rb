@@ -63,6 +63,16 @@ public
       to = [{email: SALES_EMAIL}, {email: TECH_EMAIL}]
     end
 
+    if Rails.env.development?
+      print "Sending account usage report: To[#{to}] Subject[#{subject}]\n"
+      print "Body text:\n"
+      print text
+      print "\n"
+      print "Body HTML:\n"
+      print html
+      print "\n"
+    end
+
     send_email({
       :subject      => subject,
       :html         => html,
