@@ -72,8 +72,8 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 # - survey:reload - triggers re-fetch/load of survey form data & transfer list
 #
 surveyForm.controller('SurveyFormCtrl', [
-  '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor',
-  ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   $timeout,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache,   idJanitor) ->
+  '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'ContactCache',
+  ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   $timeout,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache,   idJanitor,   ContactCache) ->
     # Public 
     survey = {
       hideButtons: true
@@ -101,6 +101,7 @@ surveyForm.controller('SurveyFormCtrl', [
     reset = ->
       console.log 'reset survey'
       survey.responses = {
+        voter_id: null
         notes: {}
         question: {}
       }
@@ -153,19 +154,28 @@ surveyForm.controller('SurveyFormCtrl', [
 
       normalized
 
+    callAndVoter = ->
+      call_id  = CallCache.get('id')
+      contact  = ContactCache.get('data') || {fields: {}}
+      voter_id = contact.fields.id
+
+      unless call_id? and voter_id?
+        ErrorCache.put('survey.save.failed', "Call or Voter had no ID: Call[#{call_id}] Voter[#{voter_id}].")
+        idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.')
+        return false
+      else
+        return {call_id, voter_id}
+
     requestInProgress = false
     survey.save = ($event, andContinue) ->
       if requestInProgress
         console.log 'survey.requestInProgress, returning'
         return
 
-      call_id = CallCache.get('id')
-      unless call_id?
-        ErrorCache.put('survey.save.failed', "CallCache had no ID.")
-        idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.')
-        return
-
       usSpinnerService.spin('global-spinner')
+
+      ids = callAndVoter()
+      return unless ids.call_id? and ids.voter_id?
 
       action = 'submit_result'
       unless andContinue
@@ -210,17 +220,20 @@ surveyForm.controller('SurveyFormCtrl', [
       $rootScope.transitionInProgress = true
       
       # make a request, get a promise
-      $http.post("/call_center/api/#{call_id}/#{action}", {
+      $http.post("/call_center/api/#{ids.call_id}/#{action}", {
+        voter_id: ids.voter_id,
         notes: survey.responses.notes,
         question: normalizeQuestion()
       })
       .then(success, error).finally(always)
 
     survey.autoSubmitConfig = ->
-      call_id = CallCache.get('id')
+      ids = callAndVoter()
+      return unless ids.call_id? and ids.voter_id?
       {
-        url: "/call_center/api/#{call_id}/submit_result_and_stop"
+        url: "/call_center/api/#{ids.call_id}/submit_result_and_stop"
         data: {
+          voter_id: ids.voter_id
           notes: survey.responses.notes
           question: normalizeQuestion()
         }

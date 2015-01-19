@@ -163,7 +163,7 @@ mod.factory('idCallFlow', [
             # console.log 'dialing for Power', caller
             idHttpDialerFactory.dialContact(caller.id, {
               session_id: caller.session_id,
-              voter_id: contact.fields.id
+              voter_id: contact.id
             })
 
         ##
