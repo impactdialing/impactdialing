@@ -113,8 +113,14 @@ class Predictive < Campaign
       phone: phone,
       voters: dial_queue.households.find(phone)
     }
-    hash = data.build(house)
-    {event: 'voter_connected_dialer', data: hash.merge({call_id:  call.id})}
+
+    return {
+      event: 'voter_connected_dialer',
+      data: {
+        voter: data.build(house),
+        call_id:  call.id
+      }
+    }
   end
 end
 
