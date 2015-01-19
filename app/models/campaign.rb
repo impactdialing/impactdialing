@@ -1,5 +1,5 @@
 require Rails.root.join("lib/twilio_lib")
-
+require 'impact_platform/metrics'
 ##
 # Attributes
 # +use_recordings+ boolean
