@@ -22,20 +22,18 @@ mod.constant('validTransitions', {
 })
 
 mod.factory('transitionValidator', [
-  '$rootScope', 'validTransitions', 'ErrorCache', 'ContactCache', 'usSpinnerService',
-  ($rootScope,   validTransitions,   ErrorCache,   ContactCache,   usSpinnerService) ->
+  '$rootScope', 'validTransitions', 'ErrorCache', 'HouseholdCache', 'usSpinnerService',
+  ($rootScope,   validTransitions,   ErrorCache,   HouseholdCache,   usSpinnerService) ->
     {
       reviewTransition: (eventObj, toState, toParams, fromState, fromParams) ->
         toName   = toState.name
         fromName = fromState.name || 'root'
-        getContact = ->
-          contact = ContactCache.get('data')
+        getPhone = ->
+          household = HouseholdCache.get('data')
           phone   = ''
-          id      = ''
-          if contact? and contact.fields?
-            id    = contact.fields.id
-            phone = contact.fields.phone
-          {id, phone}
+          if household? and household.phone?
+            phone = household.phone
+          phone
         getMeta = ->
           caller = CallStationCache.get('caller')
           campaign = CallStationCache.get('campaign')
@@ -44,8 +42,8 @@ mod.factory('transitionValidator', [
         entry = validTransitions[fromName]
 
         if !entry? || entry.indexOf(toName) == -1
-          contact = getContact()
-          ErrorCache.put('InvalidTransition prevented', {toName, fromName, contact})
+          phone = getPhone()
+          ErrorCache.put('InvalidTransition prevented', {toName, fromName, phone})
           $rootScope.transitionInProgress = false
           usSpinnerService.stop('global-spinner')
           eventObj.preventDefault()

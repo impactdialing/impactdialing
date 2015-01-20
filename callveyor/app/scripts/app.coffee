@@ -139,17 +139,15 @@ callveyor.directive('idLogout', ->
 )
 
 callveyor.controller('AppCtrl', [
-  '$rootScope', '$scope', '$state', '$timeout', '$window', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'ContactCache', 'CallStationCache', 'ErrorCache',
-  ($rootScope,   $scope,   $state,   $timeout,   $window,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache,   ContactCache,   CallStationCache,   ErrorCache) ->
+  '$rootScope', '$scope', '$state', '$timeout', '$window', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'HouseholdCache', 'CallStationCache', 'ErrorCache',
+  ($rootScope,   $scope,   $state,   $timeout,   $window,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache,   HouseholdCache,   CallStationCache,   ErrorCache) ->
     $rootScope.transitionInProgress = false
-    getContact = ->
-      contact = ContactCache.get('data')
+    getPhone = ->
+      household = HouseholdCache.get('data')
       phone   = ''
-      id      = ''
-      if contact? and contact.fields?
-        id    = contact.fields.id
-        phone = contact.fields.phone
-      {id, phone}
+      if household? and household.phone?
+        phone = household.phone
+      phone
     getMeta = ->
       caller = CallStationCache.get('caller')
       campaign = CallStationCache.get('campaign')
@@ -163,7 +161,7 @@ callveyor.controller('AppCtrl', [
       usSpinnerService.stop('global-spinner')
     transitionError = (event, unfoundState, fromState, fromParams) ->
       console.error 'Error transitioning $state', event #, unfoundState, fromState, fromParams
-      contact = getContact()
+      phone = getPhone()
       meta  = getMeta()
       
       err = new Error("$state change failed to transition")
@@ -171,7 +169,7 @@ callveyor.controller('AppCtrl', [
         'To': unfoundState.name,
         'From': fromState.name,
         'ErrorCache': angular.toJson(ErrorCache, true),
-        'Contact': angular.toJson(contact, true),
+        'Phone': phone,
         'Meta': angular.toJson(meta, true)
       }
       # console.log 'Sending to pusher', err
