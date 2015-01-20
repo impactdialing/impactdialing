@@ -20,8 +20,8 @@ hold.config([
 ])
 
 hold.controller('HoldCtrl.buttons', [
-  '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService',
-  ($scope,   $state,   $timeout,   $cacheFactory,   callStation,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService) ->
+  '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService',
+  ($scope,   $state,   $timeout,   $cacheFactory,   callStation,   HouseholdCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService) ->
     holdCache = $cacheFactory.get('hold') || $cacheFactory('hold')
     hold = holdCache.get('sharedScope')
     unless hold?
@@ -40,10 +40,10 @@ hold.controller('HoldCtrl.buttons', [
       # update status > 'Dialing...'
       params            = {}
 
-      contact           = (ContactCache.get('data') || {}).fields
+      household         = HouseholdCache.get('data') || {}
       caller            = callStation.caller || {}
       params.session_id = caller.session_id
-      params.voter_id   = contact.id
+      params.phone      = household.phone
 
       idHttpDialerFactory.dialContact(caller.id, params)
 
@@ -53,19 +53,17 @@ hold.controller('HoldCtrl.buttons', [
     hold.skip = ->
       params            = {}
 
-      contact           = (ContactCache.get('data') || {}).fields
       caller            = callStation.caller || {}
       params.session_id = caller.session_id
-      params.voter_id   = contact.id
 
       hold.callStatusText         = 'Skipping...'
       $scope.transitionInProgress = true
-      promise                     = idHttpDialerFactory.skipContact(caller.id, params)
+      promise                     = idHttpDialerFactory.skipHousehold(caller.id, params)
 
       skipSuccess = (payload) ->
-        ContactCache.put('data', payload.data)
+        HouseholdCache.put('data', payload.data)
         hold.callStatusText = 'Waiting to dial...'
-        $scope.$emit('contact:changed')
+        $scope.$emit('household:changed')
       skipErr = (errObj) ->
         $scope.transitionInProgress = false
         hold.callStatusText = 'Error skipping.'

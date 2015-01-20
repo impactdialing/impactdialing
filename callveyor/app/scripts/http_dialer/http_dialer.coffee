@@ -47,7 +47,7 @@ mod.factory('idHttpDialerFactory', [
       url          = "/call_center/api/#{caller_id}/call_voter"
       dial(url, params).then(success, error)
 
-    dialer.skipContact = (caller_id, params) ->
+    dialer.skipHousehold = (caller_id, params) ->
       dialer.retry = false
       usSpinnerService.spin('global-spinner')
 
