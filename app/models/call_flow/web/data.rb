@@ -7,8 +7,7 @@ private
   end
 
   def fields(data)
-    clean      = util.filter(whitelist, data)
-    clean[:id] = data[:id]
+    clean = util.filter(whitelist, data)
     if clean[:phone].nil?
       clean[:phone] = data[:phone]
     end
@@ -38,11 +37,16 @@ public
 
   def build(house)
     if house.present?
-      voter                  = house[:voters].first.dup
-      voter[:fields][:phone] = house[:phone]
-      voter[:fields]         = fields(voter[:fields])
-      voter[:custom_fields]  = custom_fields(voter[:custom_fields])
-      data                   = voter.merge(whitelist_flags)
+      members = house[:voters].map do |member|
+        {
+          fields:        fields(member[:fields]),
+          custom_fields: custom_fields(member[:custom_fields])
+        }
+      end
+      data = {
+        phone: house[:phone],
+        members: members
+      }
     else
       data = {campaign_out_of_leads: true}
     end
