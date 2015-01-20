@@ -32,8 +32,8 @@ mod.factory('idHttpDialerFactory', [
     dialer.retry = false
 
     dialer.dialContact = (caller_id, params, retry) ->
-      unless caller_id? and params? and params.session_id? and params.voter_id?
-        throw new Error("idHttpDialerFactory.dialContact(#{caller_id}, #{(params || {}).session_id}, #{(params || {}).voter_id}) called with invalid arguments. caller_id, params.session_id and params.voter_id are all required")
+      unless caller_id? and params? and params.session_id? and params.phone?
+        throw new Error("idHttpDialerFactory.dialContact(#{caller_id}, #{(params || {}).session_id}, #{(params || {}).phone}) called with invalid arguments. caller_id, params.session_id and params.phone are all required")
 
       if retry
         dialer.caller_id = caller_id
