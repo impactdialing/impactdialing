@@ -8,7 +8,7 @@
 #   (ie for simplicity, these events should never be handled by another module in anyway, e.g. via $broadcast events or pusher directly)
 # - should never make any $http requests directly
 # - has sole-authority over the 'call' cache
-# - manage a 'contact' cache
+# - manage a 'household' cache
 # - read from the 'callStation' cache
 #
 mod = angular.module('callveyor.call_flow', [
@@ -46,8 +46,8 @@ mod.factory('CallerReassignedMessage', [
 ])
 
 mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', 
-    ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   idJanitor,   TransferCache,   FlashCache,   ContactCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache,   CallerReassignedMessage) ->
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', 
+    ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   idJanitor,   TransferCache,   FlashCache,   HouseholdCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache,   CallerReassignedMessage) ->
       isWarmTransfer = -> /warm/i.test(TransferCache.get('type'))
 
       $window.idDebugData ||= {}
@@ -104,7 +104,7 @@ mod.factory('idCallFlow', [
         # This event is published immediately after `start_calling` is published.
         # It is also published each time a caller transitions from wrap-up to on-hold.
         #
-        # Purpose: notify the client of new contact data.
+        # Purpose: notify the client of new household data.
         #
         # IMPORTANT: Event only applies to Preview & Power dialer modes.
         #
@@ -127,33 +127,35 @@ mod.factory('idCallFlow', [
         ###
         LEGACY-way
         - unset call_id on campaign call model
-        - clear & set contact (aka lead) info
+        - clear & set household (aka lead) info
         - clear script form
-        - hide placeholder contact message
-        - render contact info
+        - hide placeholder household message
+        - render household info
         - update caller action buttons
         ###
-        conferenceStarted: (contact) ->
-          # console.log 'conference_started (preview & power only)', contact
+        conferenceStarted: (household) ->
+          # console.log 'conference_started (preview & power only)', household
 
           campaign      = CallStationCache.get('campaign')
-          campaign.type = contact.dialer
-          delete(contact.dialer)
+          campaign.type = household.dialer
+          delete(household.dialer)
 
-          if contact.campaign_out_of_leads
+          if household.campaign_out_of_leads
             TwilioCache.put('disconnect_pending', true)
-            FlashCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.')
-            ContactCache.put('data', {})
-            $rootScope.$broadcast('contact:changed')
+            FlashCache.put('error', 'All numbers have been dialed! Please get in touch with your account admin for further instructions.')
+            HouseholdCache.put('data', {})
+            $rootScope.$broadcast('household:changed')
             p = $state.go('abort')
             p.catch(idTransitionPrevented)
             return
 
-          ContactCache.put('data', contact)
-          $rootScope.$broadcast('contact:changed')
+          console.log 'caching household', household
+
+          HouseholdCache.put('data', household)
+          $rootScope.$broadcast('household:changed')
           
-          $window.idDebugData.campaign = campaign
-          $window.idDebugData.contact  = contact
+          $window.idDebugData.campaign  = campaign
+          $window.idDebugData.household = household
 
           p = $state.go('dialer.hold')
           p.catch(idTransitionPrevented)
@@ -163,7 +165,7 @@ mod.factory('idCallFlow', [
             # console.log 'dialing for Power', caller
             idHttpDialerFactory.dialContact(caller.id, {
               session_id: caller.session_id,
-              voter_id: contact.id
+              phone: household.phone
             })
 
         ##
@@ -179,17 +181,17 @@ mod.factory('idCallFlow', [
         ###
         LEGACY-way
         - unset call_id on campaign call model
-        - clear & set contact (aka lead) info
+        - clear & set household (aka lead) info
         - clear script form
-        - show placeholder contact message
-        - hide contact info
+        - show placeholder household message
+        - hide household info
         - update caller action buttons
         ###
         callerConnectedDialer: ->
           # console.log 'caller_connected_dialer (predictive only)'
           transitionSuccess = ->
-            ContactCache.put('data', {})
-            $rootScope.$broadcast('contact:changed')
+            HouseholdCache.put('data', {})
+            $rootScope.$broadcast('household:changed')
 
           p = $state.go('dialer.hold')
           p.then(transitionSuccess, idTransitionPrevented)
@@ -218,34 +220,34 @@ mod.factory('idCallFlow', [
         #                                                         country
         #                                                        }}
         #
-        # When received, the script should be fetched and the contact object passed
+        # When received, the script should be fetched and the household object passed
         # as the param should be rendered and a message displayed to the caller.
         ###
         LEGACY-way
         - fetch script for new campaign, if successful then continue
         - render new script
-        - clear & set contact (aka lead) info
+        - clear & set household (aka lead) info
         - clear script form
-        - hide placeholder contact message
-        - show contact info
+        - hide placeholder household message
+        - show household info
         - update caller action buttons
         - alert('You have been reassigned')
         ###
-        callerReassigned: (contact) ->
-          # console.log 'caller_reassigned', contact
+        callerReassigned: (household) ->
+          # console.log 'caller_reassigned', household
           deregister    = {}
           campaign      = CallStationCache.get('campaign')
           old_campaign  = angular.copy(campaign)
-          campaign.name = contact.campaign_name
-          campaign.type = contact.campaign_type
-          campaign.id   = contact.campaign_id
-          delete(contact.campaign_name)
-          delete(contact.campaign_type)
-          delete(contact.campaign_id)
+          campaign.name = household.campaign_name
+          campaign.type = household.campaign_type
+          campaign.id   = household.campaign_id
+          delete(household.campaign_name)
+          delete(household.campaign_type)
+          delete(household.campaign_id)
 
           update = ->
             deregister()
-            handlers.conferenceStarted(contact)
+            handlers.conferenceStarted(household)
             idFlashFactory.now('info', CallerReassignedMessage(old_campaign, campaign))
 
           deregister = $rootScope.$on('survey:load:success', update)
@@ -253,10 +255,10 @@ mod.factory('idCallFlow', [
         ##
         # calling_voter
         #
-        # This event is published when a contact (aka voter) is being dialed and
+        # This event is published when a household (aka voter) is being dialed and
         # the dialer is in preview or power mode.
         #
-        # Purpose: notify the client that the contact (aka voter) is being dialed.
+        # Purpose: notify the client that the household (aka voter) is being dialed.
         ###
         LEGACY-way
         - update caller action buttons
@@ -267,10 +269,10 @@ mod.factory('idCallFlow', [
         ##
         # voter_connected
         #
-        # This event is published when a contact (aka voter) answers the phone in
+        # This event is published when a household (aka voter) answers the phone in
         # preview or power mode.
         #
-        # Purpose: notify the client that the contact (aka voter) has answered.
+        # Purpose: notify the client that the household (aka voter) has answered.
         #
         # @param {object} {call_id: Integer} The MySQL ID of the call record.
         ###
@@ -288,41 +290,41 @@ mod.factory('idCallFlow', [
         ##
         # voter_connected_dialer
         #
-        # This event is published when a contact (aka voter) answers the phone in
+        # This event is published when a household (aka voter) answers the phone in
         # predictive mode.
         #
-        # Purpose: notify the client that the contact (aka voter) has answered and
-        # who the contact is (i.e. send contact data to the client).
+        # Purpose: notify the client that the household (aka voter) has answered and
+        # who the household is (i.e. send household data to the client).
         #
         # @param {object} {call_id: Integer, voter: Object} The Object assigned to
-        # the voter key describes the contact.
+        # the voter key describes the household.
         ###
         LEGACY-way
         - set call_id on campaign call model
-        - clear & set contact (aka lead) info
+        - clear & set household (aka lead) info
         - clear script form
-        - hide placeholder contact message
-        - show contact info
+        - hide placeholder household message
+        - show household info
         - update caller action buttons
         ###
         voterConnectedDialer: (data) ->
           # console.log 'voter_connected_dialer', data
           transitionSuccess = ->
-            ContactCache.put('data', data.voter)
-            $rootScope.$broadcast('contact:changed')
+            HouseholdCache.put('data', data.household)
+            $rootScope.$broadcast('household:changed')
             CallCache.put('id', data.call_id)
-            $window.idDebugData.contact = data.voter
-            $window.idDebugData.call_id = data.call_id
+            $window.idDebugData.household = data.household
+            $window.idDebugData.call_id   = data.call_id
 
           p = $state.go('dialer.active')
           p.then(transitionSuccess, idTransitionPrevented)
         ##
         # voter_disconnected
         #
-        # This event is published when a contact (aka voter) hangs up or is
+        # This event is published when a household (aka voter) hangs up or is
         # otherwise disconnected from call in preview, power or predictive modes.
         #
-        # Purpose: notify the client that the contact (aka voter) is no longer
+        # Purpose: notify the client that the household (aka voter) is no longer
         # connected.
         #
         # No parameters.
