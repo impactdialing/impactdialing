@@ -1,0 +1,46 @@
+<div class="row fixed-contact panel panel-default">
+  <div class="panel-heading">
+    Contact details
+  </div>
+  <div class="panel-body">
+    <p class="col-xs-12" data-ng-hide="household.members">Name, phone, address, etc will be listed here when connected.</p>
+
+    <dl class="dl-horizontal col-xs-6 col-sm-12">
+      <dt data-ng-hide="!household.phone">Phone</dt>
+      <dd data-ng-hide="!household.phone">{{household.phone}}</dd>
+    </dl>
+
+    <div data-ng-repeat="member in household.members">
+      <!-- system fields -->
+      <dl class="dl-horizontal col-xs-6 col-sm-12">
+        <dt data-ng-hide="!member.fields.custom_id">Contact ID</dt>
+        <dd data-ng-hide="!member.fields.custom_id" data-ng-bind-html="member.fields.custom_id"></dd>
+        <dt data-ng-hide="!member.fields.first_name">First name</dt>
+        <dd data-ng-hide="!member.fields.first_name" data-ng-bind-html="member.fields.first_name"></dd>
+        <dt data-ng-hide="!member.fields.middle_name">Middle name</dt>
+        <dd data-ng-hide="!member.fields.middle_name" data-ng-bind-html="member.fields.middle_name"></dd>
+        <dt data-ng-hide="!member.fields.last_name">Last name</dt>
+        <dd data-ng-hide="!member.fields.last_name" data-ng-bind-html="member.fields.last_name"></dd>
+        <dt data-ng-hide="!member.fields.suffix">Suffix</dt>
+        <dd data-ng-hide="!member.fields.suffix" data-ng-bind-html="member.fields.suffix"></dd>
+        <dt data-ng-hide="!member.fields.address">Address</dt>
+        <dd data-ng-hide="!member.fields.address" data-ng-bind-html="member.fields.address"></dd>
+        <dt data-ng-hide="!member.fields.city">City</dt>
+        <dd data-ng-hide="!member.fields.city" data-ng-bind-html="member.fields.city"></dd>
+        <dt data-ng-hide="!member.fields.state">State</dt>
+        <dd data-ng-hide="!member.fields.state" data-ng-bind-html="member.fields.state"></dd>
+        <dt data-ng-hide="!member.fields.zip_code">Zip / Postal code</dt>
+        <dd data-ng-hide="!member.fields.zip_code" data-ng-bind-html="member.fields.zip_code"></dd>
+        <dt data-ng-hide="!member.fields.country">Country</dt>
+        <dd data-ng-hide="!member.fields.country" data-ng-bind-html="member.fields.country"></dd>
+        <dt data-ng-hide="!member.fields.email">Email</dt>
+        <dd data-ng-hide="!member.fields.email" data-ng-bind-html="member.fields.email"></dd>
+      </dl>
+      <!-- custom fields -->
+      <dl class="dl-horizontal col-xs-6 col-sm-12">
+        <dt data-ng-repeat-start="tuple in member.custom_fields" data-ng-bind-html="tuple[0]"></dt>
+        <dd data-ng-repeat-end data-ng-bind-html="tuple[1]"></dd>
+      </dl>
+    </div>
+  </div>
+</div>

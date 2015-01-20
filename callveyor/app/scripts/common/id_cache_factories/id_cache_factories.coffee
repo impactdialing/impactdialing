@@ -51,6 +51,7 @@ simpleCache('Twilio')
 
 # stores active contact data
 simpleCache('Contact')
+simpleCache('Household')
 
 # stores active survey data
 simpleCache('Survey')
