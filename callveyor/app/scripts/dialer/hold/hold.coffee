@@ -20,8 +20,8 @@ hold.config([
 ])
 
 hold.controller('HoldCtrl.buttons', [
-  '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService',
-  ($scope,   $state,   $timeout,   $cacheFactory,   callStation,   HouseholdCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService) ->
+  '$rootScope', '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'TwilioCache', 'FlashCache',
+  ($rootScope,   $scope,   $state,   $timeout,   $cacheFactory,   callStation,   HouseholdCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   TwilioCache,   FlashCache) ->
     holdCache = $cacheFactory.get('hold') || $cacheFactory('hold')
     hold = holdCache.get('sharedScope')
     unless hold?
@@ -61,6 +61,15 @@ hold.controller('HoldCtrl.buttons', [
       promise                     = idHttpDialerFactory.skipHousehold(caller.id, params)
 
       skipSuccess = (payload) ->
+        if payload.data.campaign_out_of_leads
+          TwilioCache.put('disconnect_pending', true)
+          FlashCache.put('error', 'All numbers have been dialed! Please get in touch with your account admin for further instructions.')
+          HouseholdCache.put('data', {})
+          $rootScope.$broadcast('household:changed')
+          p = $state.go('abort')
+          p.catch(idTransitionPrevented)
+          return
+
         HouseholdCache.put('data', payload.data)
         hold.callStatusText = 'Waiting to dial...'
         $scope.$emit('household:changed')
