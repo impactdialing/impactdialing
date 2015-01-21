@@ -105,6 +105,8 @@ surveyForm.controller('SurveyFormCtrl', [
         notes: {}
         question: {}
       }
+      CallCache.remove('id')
+      CallCache.remove('voter_id')
 
       selectDefaults()
 
@@ -154,10 +156,11 @@ surveyForm.controller('SurveyFormCtrl', [
 
       normalized
 
+    updateVoterId = (voter) -> CallCache.put('voter_id', voter.id)
+
     callAndVoter = ->
       call_id  = CallCache.get('id')
-      contact  = ContactCache.get('data') || {fields: {}}
-      voter_id = contact.fields.id
+      voter_id = CallCache.get('voter_id')
 
       unless call_id? and voter_id?
         ErrorCache.put('survey.save.failed', "Call or Voter had no ID: Call[#{call_id}] Voter[#{voter_id}].")
@@ -242,6 +245,7 @@ surveyForm.controller('SurveyFormCtrl', [
     unless SurveyCache.get('eventsBound')
       $rootScope.$on('survey:save:click', survey.save)
       $rootScope.$on('survey:reload', loadForm)
+      $rootScope.$on('household:member:selected', updateVoterId)
       idJanitor.cleanUpUnload(true, survey.autoSubmitConfig)
       SurveyCache.put('eventsBound', true)
 

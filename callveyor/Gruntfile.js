@@ -403,6 +403,15 @@ module.exports = function (grunt) {
           'dialer/contact/*.tpl.html'
         ]
       },
+      'callveyor.household': {
+        module: 'callveyor.household',
+        standalone: false,
+        dest: 'app/scripts/household-templates.js',
+        cwd: 'app/scripts',
+        src: [
+          'dialer/household/*.tpl.html'
+        ]
+      },
       'idFlash': {
         module: 'idFlash',
         standalone: false,
