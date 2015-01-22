@@ -39,7 +39,9 @@ private
   end
 
   def match?(member_one, member_two)
-    member_one['id'] == member_two['id']
+    id_one = member_one[:id].present? ? member_one[:id] : member_one['id']
+    id_two = member_two[:id].present? ? member_two[:id] : member_two['id']
+    id_one == id_two
   end
 
 public
