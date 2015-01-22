@@ -91,10 +91,17 @@ describe CallerController, :type => :controller do
         it 'renders next lead (voter) data' do
           campaign.update_attributes! script: create(:script)
           data            = {
-            id: next_voter.id,
-            fields: {id: "#{next_voter.id}", phone: next_voter.household.phone},
-            custom_fields: {},
-            'Phone_flag' => true
+            phone: next_voter.household.phone,
+            members: [
+              {
+                id: next_voter.id,
+                fields: {
+                  first_name: next_voter.first_name,
+                  last_name:  next_voter.last_name
+                },
+                custom_fields: {}
+              }
+            ]
           }
           CallFlow::Web::Data.new(campaign.script)
 
@@ -165,7 +172,7 @@ describe CallerController, :type => :controller do
       expect(controller).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, 'publish_calling_voter'])
       expect(controller).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, "#{voter.household.phone}"])
 
-      post :call_voter, id: caller.id, voter_id: voter.id, session_id: caller_session.id
+      post :call_voter, id: caller.id, phone: voter.household.phone, session_id: caller_session.id
     end
   end
 

@@ -72,6 +72,10 @@ private
     {}
   end
 
+  def caller_line_completed?
+    params['CallStatus'] == 'completed'
+  end
+
 public
 
   def logout
@@ -121,6 +125,12 @@ public
   # This is the Dial:action for most caller TwiML
   # so expect Caller to hit here for >1 state changes
   def pause
+    if caller_line_completed?
+      # CallStatus == 'completed' ie caller is no longer on the phone
+      @caller_session.end_session
+      xml = Twilio::TwiML::Response.new{|response| response.Hangup}.text
+      render xml: xml and return
+    end
     # ^^ Work around; this url can be removed from some Dial:actions
     # todo: remove pause_url from unnecessary TwiML responses
     logger.debug "DoublePause: Caller#pause - #{params}"
