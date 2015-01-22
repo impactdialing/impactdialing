@@ -36,13 +36,12 @@ household.controller('HouseholdCtrl', [
       console.log 'setting household members', members
       $scope.household = {
         phone: data.phone,
-        members: members
+        members: members,
+        selected: null
       }
 
     $rootScope.$on('household:changed', updateFromCache)
     $rootScope.$on('$stateChangeSuccess', handleStateChange)
-
-    $scope.household = household
 ])
 
 household.directive('idHousehold', ->
