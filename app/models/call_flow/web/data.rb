@@ -8,9 +8,21 @@ private
 
   def fields(data)
     clean = util.filter(whitelist, data)
-    if clean[:phone].nil?
-      clean[:phone] = data[:phone]
+    if clean.empty? or clean.keys == [:id]
+      if data[:first_name].present?
+        clean[:first_name] = data[:first_name]
+      end
+
+      if data[:last_name].present?
+        clean[:last_name] = data[:last_name]
+      end
+
+      if clean.empty? or clean.keys == [:id]
+        # no first or last name...
+        clean[:use_id] = '1'
+      end
     end
+
     clean
   end
 
@@ -26,10 +38,6 @@ private
     @whitelist ||= contact_fields.data
   end
 
-  def whitelist_flags
-    util.build_flags(whitelist)
-  end
-
 public
   def initialize(script)
     @script = script
@@ -39,6 +47,7 @@ public
     if house.present?
       members = house[:voters].map do |member|
         {
+          id:            member[:id],
           fields:        fields(member[:fields]),
           custom_fields: custom_fields(member[:custom_fields])
         }
