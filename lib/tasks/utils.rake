@@ -178,14 +178,14 @@ end
 
 desc "Read phone numbers from csv file and output as array."
 task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_index] => :environment do |t, args|
-  raise "Do Not Do This. BlockedNumber.import will bypass after create hooks, breaking the dialer because then blocked numbers could be dialed."
+  # raise "Do Not Do This. BlockedNumber.import will bypass after create hooks, breaking the dialer because then blocked numbers could be dialed."
   require 'csv'
 
-  account_id = args[:account_id]
-  campaign_id = args[:campaign_id]
+  account_id          = args[:account_id]
+  campaign_id         = args[:campaign_id]
   target_column_index = args[:target_column_index].to_i
-  filepath = args[:filepath]
-  numbers = []
+  filepath            = args[:filepath]
+  numbers             = []
 
   CSV.foreach(File.join(Rails.root, filepath)) do |row|
     numbers << row[target_column_index]
@@ -197,13 +197,10 @@ task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_ind
   print "account = Account.find(#{account_id})\n"
   if campaign_id.present?
     print "campaign = account.campaigns.find(#{campaign_id})\n"
-    print "columns = [:account_id, :campaign_id, :number]\n"
-    print "values = numbers.map{|number| [account.id, campaign.id, number]}\n"
+    print "numbers.each{ |number| BlockedNumber.create!({account_id: account.id, campaign_id: campaign.id, number: number}) }\n"
   else
-    print "columns = [:account_id, :number]\n"
-    print "values = numbers.map{|number| [account.id, number]}\n"
+    print "numbers.each{ |number| BlockedNumber.create!({account_id: account.id, number: number}) }\n"
   end
-  print "BlockedNumber.import columns, values\n"
   print "\n"
 end
 
