@@ -14,10 +14,16 @@ describe 'dialer.hold', ->
   }
   contact = {
     data: {
+      id: 9
       fields: {
-        id: 9
+        first_name: 'Awnry'
+        last_name: 'Aviary'
       }
     }
+  }
+  household = {
+    phone: '123-543-1234'
+    members: [contact.data]
   }
 
   beforeEach module('callveyor.dialer.hold', ($provide) ->
@@ -58,9 +64,9 @@ describe 'dialer.hold', ->
         expect($state.go).toHaveBeenCalledWith('dialer.stop')
 
     describe '$scope.hold.dial()', ->
-      describe '$cacheFactory("contact") exists and has "data"', ->
+      describe '$cacheFactory("Household") exists and has "data"', ->
         beforeEach ->
-          $cacheFactory.get('Contact').put('data', contact.data)
+          $cacheFactory.get('Household').put('data', household)
 
         it 'updates status message', ->
           curStatus = $scope.hold.callStatusText
@@ -72,10 +78,10 @@ describe 'dialer.hold', ->
           $scope.hold.dial()
           expect($scope.transitionInProgress).toBeTruthy()
 
-        it 'calls idHttpDialerFactory.dialContact(caller_id, {session_id: Num, voter_id: Num})', ->
+        it 'calls idHttpDialerFactory.dialContact(caller_id, {session_id: Num, phone: Num})', ->
           caller_id = callStation.caller.id
           params = {
-            voter_id: contact.data.fields.id
+            phone: household.phone
             session_id: callStation.caller.session_id
           }
           $scope.hold.dial()

@@ -64,11 +64,15 @@ describe 'callveyor.call_flow', ->
         actual = cache.get('caller')
         expect(actual.session_id).toEqual(data.caller_session_id)
 
-    describe 'conferenceStarted(contact)', ->
+    describe 'conferenceStarted(household)', ->
       callStationCache = ''
       contactCache     = ''
       campaign = {type: 'blah'}
       contact = {dialer: campaign.type}
+      household = {
+        phone: '123-456-7890'
+        members: [contact]
+      }
 
       beforeEach ->
         callStationCache = $cacheFactory.get('CallStation')
@@ -77,18 +81,18 @@ describe 'callveyor.call_flow', ->
 
       describe 'when the campaign is out of leads', ->
         beforeEach ->
-          contact = {
+          household = {
             campaign_out_of_leads: true
             dialer: campaign.type
           }
 
         it 'caches a warning message to the user to be displayed after $state transition completes', ->
-          service.conferenceStarted(contact)
+          service.conferenceStarted(household)
           actual = $cacheFactory.get('Flash')
-          expect(actual.get('error')).toContain("All contacts have been dialed!")
+          expect(actual.get('error')).toContain("All numbers have been dialed!")
 
         it 'transitions to abort', ->
-          service.conferenceStarted(contact)
+          service.conferenceStarted(household)
           $rootScope.$apply()
           expect($state.is('abort')).toBeTruthy()
 
@@ -97,24 +101,29 @@ describe 'callveyor.call_flow', ->
           station = {campaign}
           callStationCache.put("campaign", campaign)
           contact = {
-            fields: {id: 12, first_name: 'John', last_name: 'Apple'}
+            id: 12
+            fields: {first_name: 'John', last_name: 'Apple'}
+          }
+          household = {
+            phone: '1234567890'
+            members: [contact]
             dialer: campaign.type
           }
 
-        it 'stores contact as "data" in the "contact" cache', ->
-          service.conferenceStarted(contact)
-          cache = $cacheFactory.get('Contact')
+        it 'stores phone & members of household as "data" in the "household" cache', ->
+          service.conferenceStarted(household)
+          cache = $cacheFactory.get('Household')
           data = cache.get('data')
-          expect(data).toEqual(contact)
+          expect(data).toEqual(household)
 
-        it 'broadcasts "contact:changed on $rootScope', ->
-          contactChange = jasmine.createSpy('-contact:changed event spy-')
-          $rootScope.$on('contact:changed', contactChange)
-          service.conferenceStarted(contact)
+        it 'broadcasts "household:changed on $rootScope', ->
+          contactChange = jasmine.createSpy('-household:changed event spy-')
+          $rootScope.$on('household:changed', contactChange)
+          service.conferenceStarted(household)
           expect(contactChange).toHaveBeenCalled()
 
         it 'transitions to dialer.hold', ->
-          service.conferenceStarted(contact)
+          service.conferenceStarted(household)
           $rootScope.$apply()
           expect($state.is('dialer.hold')).toBeTruthy()
 
@@ -128,16 +137,16 @@ describe 'callveyor.call_flow', ->
               id: 12,
               session_id: 42
             }
-            angular.extend(contact, {dialer: campaign.type})
+            angular.extend(household, {dialer: campaign.type})
 
             callStationCache.put("campaign", campaign)
             callStationCache.put("caller", caller)
 
           it 'dials the contact', ->
-            service.conferenceStarted(contact)
+            service.conferenceStarted(household)
             expect(idHttpDialerFactory.dialContact).toHaveBeenCalledWith(caller.id, {
-              session_id: caller.session_id,
-              voter_id: contact.fields.id
+              session_id: caller.session_id
+              phone: household.phone
             })
 
     describe 'callerConnectedDialer', ->
@@ -147,9 +156,10 @@ describe 'callveyor.call_flow', ->
         expect($state.is('dialer.hold')).toBeTruthy()
 
       it 'removes "data" from "contact" cache', ->
-        cache = $cacheFactory.get('Contact')
+        cache = $cacheFactory.get('Household')
         contact = {fields: {id: 42}}
-        cache.put('data', contact)
+        household = {phone: '123-456-7839', members: [contact]}
+        cache.put('data', household)
         service.callerConnectedDialer()
         $rootScope.$apply()
         expect(cache.get('data')).toEqual({})
@@ -177,18 +187,19 @@ describe 'callveyor.call_flow', ->
         expect($state.is('dialer.active')).toBeTruthy()
 
     describe 'voterConnectedDialer(data)', ->
-      contactCache = ''
-      voter = {fields: {id: 40}}
-      data = {call_id: 41, voter}
+      householdCache = ''
+      voter          = {fields: {id: 40}}
+      household      = {phone: '123-545-2342', members: [voter]}
+      data           = {call_id: 41, household}
 
       beforeEach ->
-        contactCache = $cacheFactory.get('Contact')
+        householdCache = $cacheFactory.get('Household')
 
-      it 'updates "data" on "contact" cache with data.voter', ->
+      it 'updates "data" on "contact" cache with data.household', ->
         service.voterConnectedDialer(data)
         $rootScope.$apply()
-        cache = $cacheFactory.get('Contact')
-        expect(cache.get('data')).toEqual(data.voter)
+        cache = $cacheFactory.get('Household')
+        expect(cache.get('data')).toEqual(data.household)
 
       it 'updates "id" on "call" cache with data.call_id', ->
         service.voterConnectedDialer(data)

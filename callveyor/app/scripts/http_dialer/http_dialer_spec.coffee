@@ -8,7 +8,7 @@ describe 'callveyor.http_dialer', ->
     id: 3
   }
   params = {
-    voter_id: 12
+    phone: '1234325234'
     session_id: 42
   }
   call = {
@@ -30,11 +30,11 @@ describe 'callveyor.http_dialer', ->
     usSpinnerService.stop = jasmine.createSpy('-usSpinnerService.stop spy-')
 
   describe 'dial(caller_id, params, retry)', ->
-    describe 'when called with invalid or undefined caller_id, params.session_id or params.voter_id', ->
+    describe 'when called with invalid or undefined caller_id, params.session_id or params.phone', ->
       it 'throws an Error', ->
-        expect(-> factory.dialContact(1, {session_id: 3})).toThrow()
-        expect(-> factory.dialContact(undefined, {session_id: 3, voter_id: 1})).toThrow()
-        expect(-> factory.dialContact(1, {voter_id: 1})).toThrow()
+        expect(-> factory.dialContact(1, {session_id: params.session_id})).toThrow()
+        expect(-> factory.dialContact(undefined, {session_id: params.session_id, phone: params.phone})).toThrow()
+        expect(-> factory.dialContact(1, {phone: params.phone})).toThrow()
 
     beforeEach ->
       $httpBackend.whenPOST(dialerUrl).respond({})

@@ -10,6 +10,7 @@ describe 'survey controller', ->
   idFlashFactory = ''
 
   call = {id: 3}
+  voter = {id: 42}
 
   beforeEach(module('survey'))
 
@@ -26,6 +27,7 @@ describe 'survey controller', ->
     SurveyFormFieldsFactory = _SurveyFormFieldsFactory_
 
     CallCache.put('id', call.id)
+    CallCache.put('voter_id', voter.id)
     $httpBackend.whenGET('/call_center/api/survey_fields.json').respond({})
     $controller('SurveyFormCtrl', {$scope})
   ))
@@ -109,7 +111,7 @@ describe 'survey controller', ->
       it 'resets survey.responses', ->
         $scope.survey.save({}, true)
         $httpBackend.flush()
-        expect($scope.survey.responses).toEqual({notes: {}, question: {}})
+        expect($scope.survey.responses).toEqual({voter_id: null, notes: {}, question: {}})
 
       it 'broadcasts survey:save:success', ->
         successSpy = jasmine.createSpy('-survey:save:success callback spy-')
@@ -187,6 +189,7 @@ describe 'survey controller', ->
           notes: {"1": "Some text"}
         }
         expectedData = {
+          voter_id: voter.id
           question: {"1": responses.question["1"].id},
           notes: responses.notes
         }
