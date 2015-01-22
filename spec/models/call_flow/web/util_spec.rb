@@ -18,34 +18,4 @@ describe 'CallFlow::Web::Util' do
       })
     end
   end
-
-  describe '.build_flags(whitelisted_keys)' do
-    it 'returns a hash w/ elements like "#{key}_flag" => true' do
-      whitelist = ['Phone', 'Email']
-      expect(CallFlow::Web::Util.build_flags(whitelist)).to eq({
-        'Phone_flag' => true,
-        'Email_flag' => true
-      })
-    end
-
-    it 'the returned hash only contains keys that are VoterList::VOTER_DATA_COLUMNS values' do
-      whitelist = ['Phone', 'Email', 'ContributionLevel']
-      expect(CallFlow::Web::Util.build_flags(whitelist)).to eq({
-        'Phone_flag' => true,
-        'Email_flag' => true
-      })
-    end
-
-    it 'always returns at least {"Phone_flag" => true}' do
-      expect(CallFlow::Web::Util.build_flags([])).to eq({
-        'Phone_flag' => true
-      })
-    end
-
-    it 'can handle nil argument' do
-      expect(CallFlow::Web::Util.build_flags).to eq({
-        'Phone_flag' => true
-      })
-    end
-  end
 end
