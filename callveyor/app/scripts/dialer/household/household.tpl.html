@@ -15,6 +15,8 @@
         <input type="radio" data-ng-model="household.selected" data-ng-value="member.id" data-ng-change="$emit('household:member:selected', member)" class="col-xs-1 col-sm-1 pull-right" name="voter_id">
         <!-- system fields -->
         <dl class="dl-horizontal col-xs-5 col-sm-11">
+          <dt data-ng-show="member.fields.use_id">Contact</dt>
+          <dd data-ng-show="member.fields.use_id" data-ng-bind="$index + 1"></dd>
           <dt data-ng-hide="!member.fields.custom_id">Contact ID</dt>
           <dd data-ng-hide="!member.fields.custom_id" data-ng-bind-html="member.fields.custom_id"></dd>
           <dt data-ng-hide="!member.fields.first_name">First name</dt>
