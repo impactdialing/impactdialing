@@ -117,8 +117,8 @@ class Predictive < Campaign
     return {
       event: 'voter_connected_dialer',
       data: {
-        voter: data.build(house),
-        call_id:  call.id
+        household: data.build(house),
+        call_id:   call.id
       }
     }
   end
