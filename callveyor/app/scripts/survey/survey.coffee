@@ -156,18 +156,26 @@ surveyForm.controller('SurveyFormCtrl', [
 
       normalized
 
-    updateVoterId = (voter) -> CallCache.put('voter_id', voter.id)
+    updateVoterId = ($event, voter) ->
+      console.log 'survey received household:member:selected with', voter
+      CallCache.put('voter_id', voter.id)
 
     callAndVoter = ->
       call_id  = CallCache.get('id')
       voter_id = CallCache.get('voter_id')
 
-      unless call_id? and voter_id?
-        ErrorCache.put('survey.save.failed', "Call or Voter had no ID: Call[#{call_id}] Voter[#{voter_id}].")
+      console.log 'survey callAndVoter is returning call_id & voter_id of', call_id, voter_id
+
+      unless call_id?
+        ErrorCache.put('survey.save.failed', "Call had no ID: Call[#{call_id}].")
         idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.')
         return false
-      else
-        return {call_id, voter_id}
+
+      unless voter_id?
+        idFlashFactory.now('warning', 'Select a Contact before saving.')
+        return false
+
+      return {call_id, voter_id}
 
     requestInProgress = false
     survey.save = ($event, andContinue) ->
