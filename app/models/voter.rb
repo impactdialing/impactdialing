@@ -31,7 +31,7 @@ class Voter < ActiveRecord::Base
   belongs_to :account
   belongs_to :campaign
   belongs_to :voter_list, counter_cache: true
-  belongs_to :household
+  belongs_to :household, counter_cache: true
 
   has_many :call_attempts
   has_many :custom_voter_field_values, autosave: true
