@@ -70,8 +70,10 @@ public
 
   def remove_member(phone, member)
     members = find(phone)
-    members.reject!{|membr| match?(membr, member)}
-    save(phone, members)
+    if members.detect{|membr| match?(membr, member)}
+      members.reject!{|membr| match?(membr, member)}
+      save(phone, members)
+    end
     members
   end
 
