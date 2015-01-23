@@ -154,13 +154,13 @@ class VoterBatchImport
         import_from_hashes(Voter, leads)
       end
 
+      # persist custom field data
+      save_field_values(successful_voters, created_voter_ids, updated_leads)
+
       Resque.enqueue(CallFlow::DialQueue::Jobs::CacheVoters, campaign.id, created_voter_ids, 1)
       if (existing_voter_ids = leads.map{|l| l[:id]}.compact).any?
         Resque.enqueue(CallFlow::DialQueue::Jobs::CacheVoters, campaign.id, existing_voter_ids, 1)
       end
-
-      # persist custom field data
-      save_field_values(successful_voters, created_voter_ids, updated_leads)
     end
     @result
   end
