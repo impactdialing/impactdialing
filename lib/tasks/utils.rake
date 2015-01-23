@@ -13,6 +13,52 @@
 # end
 # print out
 
+desc "Create Households w/ relevant Voter data & update relevant Voter#household_id & CallAttempt#household_id"
+task :migrate_householding => :environment do
+  require 'householding/migrate'
+  # Account#activated: now meaningless, all accounts created in last year => false
+  # account_ids = Account.all.pluck(:id)
+  # campaign_ids = Campaign.pluck(:id)
+  # voter_count = 0
+  # campaign_ids = Campaign.where('created_at > ?', 7.months.ago.beginning_of_month).where(active: true).pluck(:id)
+  # campaign_ids.each_slice(10){ |ids| voter_count += Voter.where(campaign_id: ids).with_enabled(:list).count(:campaign_id); p voter_count}
+  # voter_count = 0
+  # campaign_ids.each_slice(10){ |ids| voter_count += Voter.where(campaign_id: ids).count(:campaign_id); p voter_count}
+  # voters to process (production): 16,151,793 over 3,156 active (not deleted) campaigns
+  # for every voter in an active account and active campaign
+  # - find or create a household
+  #   - phone       = Voter#phone
+  #   - blocked     = [:dnc, :cell] <= Voter#blocked & VoterList#skip_wireless
+  #   - account_id  = Voter#account_id
+  #   - campaign_id = Voter#campaign_id
+  # - update Voter#household_id
+  # - update Voter#enabled, removing :blocked from all
+  # - refresh Household#voters_count
+  # - refresh Campaign#households_count
+  # for every created household
+  # - find most recent call attempt across members of the household
+  # - update status w/ most recent call attempt status
+  # - update presented_at w/ most recent call attempt
+  quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
+  subscription_account_ids = Billing::Subscription.where(
+    'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
+    ['trial', 'per_minute', 'enterprise'],
+    ['basic', 'pro', 'business'],
+    'active'
+  ).pluck(:account_id)
+  account_ids = (quota_account_ids + subscription_account_ids).uniq
+  Campaign.where(account_id: account_ids).where('created_at > ?', 6.months.ago.beginning_of_month).find_in_batches(batch_size: 10) do |campaigns|
+    p "Migrating Campaigns[#{campaigns.map(&:id)}]"
+    p "AccountRange[#{campaigns.first.account_id}..#{campaigns.last.account_id}]"
+    p "CreatedAtRange[#{campaigns.first.created_at}..#{campaigns.last.created_at}]"
+
+    Householding::Migrate.voters(campaigns)
+
+    p "Household count by campaign id: #{Household.group(:campaign_id).count}"
+    p "======================================================================"
+  end
+end
+
 desc "Migrate Voter#voicemail_history to CallAttempt#recording_id & #recording_delivered_manually"
 task :migrate_voicemail_history => :environment do
   voters = Voter.includes(:call_attempts).where('status != "not called"').where('voicemail_history is not null')
@@ -77,75 +123,12 @@ task :sync_all_voter_lists_to_voter => :environment do |t, args|
   print "done\n"
 end
 
-desc "Migrate Voter#blocked_number_id values to Voter#blocked bool flags"
-task :migrate_voter_blocked_number_id_to_enabled_bitmask => :environment do |t, args|
-  print "#{Voter.with_exact_enabled(:blocked).count} blocked/disabled voters\n"
-  print "#{Voter.with_exact_enabled(:list, :blocked).count} blocked/enabled voters\n"
-
-  enabled          = Voter.where(enabled: 1).where('blocked_number_id IS NOT NULL AND blocked_number_id > 0')
-  enabled_bitmask  = Voter.bitmask_for_enabled(:list, :blocked)
-  disabled         = Voter.where(enabled: 0).where('blocked_number_id IS NOT NULL AND blocked_number_id > 0')
-  disabled_bitmask = Voter.bitmask_for_enabled(:blocked)
-  untouched        = Voter.where('blocked_number_id IS NULL OR blocked_number_id = 0')
-  
-  print "Blocking #{enabled.count} enabled w/ bitmask #{enabled_bitmask}...\n"
-  enabled.update_all(enabled: enabled_bitmask)
-  print "Blocked #{Voter.with_exact_enabled(:list, :blocked).count} voters\n"
-  print "Blocking #{disabled.count} disabled Voters w/ bitmask #{disabled_bitmask}...\n"
-  disabled.update_all(enabled: disabled_bitmask)
-  print "Blocked #{Voter.with_exact_enabled(:blocked).count} voters\n"
-  print "Left #{untouched.count} voters untouched because they're not blocked...\n"
-end
-
-desc "Fix-up DNC for Account 895"
-task :fix_up_account_895 => :environment do |t,args|
-  account        = Account.find 895
-  tmp_campaign   = account.campaigns.find 4465
-  reg_campaign   = account.campaigns.find 4388
-  account.blocked_numbers.for_campaign(tmp_campaign).update_all(campaign_id: reg_campaign.id)
-
-  blocked_numbers = account.blocked_numbers.for_campaign(reg_campaign)
-  blocked_voters  = reg_campaign.all_voters.where(phone: blocked_numbers.map(&:number))
-
-  blocked_voters.enabled.update_all(enabled: Voter.bitmask_for_enabled(:list, :blocked))
-  blocked_voters.disabled.update_all(enabled: Voter.bitmask_for_enabled(:blocked))
-end
-
 desc "Inspect voter blocked ids"
 task :inspect_voter_dnc => :environment do |t,args|
   x = Voter.with_enabled(:blocked).group(:campaign_id).count
   y = Voter.without_enabled(:blocked).group(:campaign_id).count
   print "Blocked: #{x}\n"
   print "Not blocked: #{y}\n"
-end
-
-desc "De-duplicate BlockedNumber records"
-task :dedup_blocked_numbers => :environment do |t,args|
-  dup_numbers = BlockedNumber.group(:account_id, :campaign_id, :number).count.reject{|k,v| v < 2}
-  dup_numbers.each do |tuple, count|
-    account_id  = tuple[0]
-    campaign_id = tuple[1]
-    number      = tuple[2]
-    
-    raise ArgumentError, "Bad Data... Account[#{account_id}] Campaign[#{campaign_id}] Count[#{count}]" if account_id.blank? or count == 1
-
-    duplicate_ids = BlockedNumber.where(account_id: account_id, campaign_id: campaign_id, number: number).limit(count-1).pluck(:id)
-    to_delete     = BlockedNumber.where(id: duplicate_ids)
-    deleted       = to_delete.map{|n| {account_id: n.account_id, campaign_id: n.campaign_id, number: n.number}}.to_json
-    to_delete.delete_all
-
-    print "Deleted #{deleted.size} BlockedNumber records (as JSON):\n#{deleted}\n"
-  end
-end
-
-desc "Inspect duplicate BlockedNumber entries"
-task :inspect_dup_blocked_numbers => :environment do |t,args|
-  dup_numbers = BlockedNumber.group(:account_id, :campaign_id, :number).count.reject{|k,v| v < 2}
-  print "Account ID, Campaign ID, Number, Count\n"
-  dup_numbers.each do |tuple, count|
-    print tuple.join(',') + ", #{count}\n"
-  end
-  print "\n"
 end
 
 desc "Update VoterList voters_count cache"
