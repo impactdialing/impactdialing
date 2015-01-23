@@ -25,6 +25,9 @@ FactoryGirl.define do
       country { Forgery(:address).country }
       enabled [:list]
 
+      # tmp
+      phone { Forgery(:address).phone.scan(/\d/).join }
+
       trait :ringing do
         status CallAttempt::Status::RINGING
         last_call_attempt_time { 30.seconds.ago }
