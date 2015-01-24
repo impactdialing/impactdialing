@@ -53,10 +53,9 @@ class TransferController < ApplicationController
     transfer        = Transfer.find params[:transfer][:id]
     caller_session  = CallerSession.find params[:caller_session]
     call            = Call.find params[:call]
-    voter           = Voter.find params[:voter]
 
     transfer_dialer = TransferDialer.new(transfer)
-    json            = transfer_dialer.dial(caller_session, call, voter)
+    json            = transfer_dialer.dial(caller_session, call)
 
     render json: json
   end

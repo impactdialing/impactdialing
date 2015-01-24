@@ -63,10 +63,9 @@ public
     RedisCallerSession.deactivate_transfer(session_key)
   end
 
-  def dial(caller_session, call, voter)
+  def dial(caller_session, call)
     @caller_session   = caller_session
     @call             = call
-    @voter            = voter
     @transfer_attempt = create_transfer_attempt
 
     deactivate_transfer(caller_session.session_key)

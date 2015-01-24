@@ -95,7 +95,6 @@ transfer.controller('TransferButtonCtrl.selected', [
 
       contact                   = (ContactCache.get('data') || {}).fields
       caller                    = CallStationCache.get('caller')
-      params.voter              = contact.id
       params.call               = CallCache.get('id')
       params.caller_session     = caller.session_id
       params.transfer           = {id: selected.id}

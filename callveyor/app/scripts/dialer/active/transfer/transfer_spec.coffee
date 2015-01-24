@@ -48,7 +48,6 @@ describe 'callveyor.dialer.active.transfer module', ->
         spyOn(usSpinnerService, 'spin')
         spyOn(usSpinnerService, 'stop')
         TransferCache.put('selected', transfer)
-        ContactCache.put('data', contact)
         CallStationCache.put('caller', caller)
         $controller('TransferButtonCtrl.selected', {$scope})
 
