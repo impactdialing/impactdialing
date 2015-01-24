@@ -39,6 +39,10 @@ household.controller('HouseholdCtrl', [
         members: members,
         selected: null
       }
+      if members.length == 1
+        member = members[0]
+        $scope.household.selected = member.id
+        $rootScope.$emit('household:member:selected', member)
 
     $rootScope.$on('household:changed', updateFromCache)
     $rootScope.$on('$stateChangeSuccess', handleStateChange)
