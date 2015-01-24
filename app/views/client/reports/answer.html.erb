@@ -54,6 +54,7 @@
       </table>
     <% end %>
 
+    <% unless (drops = @campaign.call_attempts.with_recording.with_auto_message_drop).count.zero? %>
     <h3>Messages Left</h3>
     <table>
       <tr>
@@ -61,8 +62,7 @@
         <th>Number</th>
         <th>Percentage (of answered calls)</th>
       </tr>
-      <% drops = @campaign.call_attempts.with_recording.with_auto_message_drop
-         recording_ids = drops.map(&:recording_id)
+      <% recording_ids = drops.map(&:recording_id)
          messages = Recording.where(id: recording_ids)
          i = 1 %>
       <% messages.each do |message| %>
@@ -74,6 +74,7 @@
         <% i += 1 %>
       <% end %>
     </table>
+    <% end %>
 
     <%= render('selective_date_range_picker', {
       datepicker_path: answer_client_reports_path,
