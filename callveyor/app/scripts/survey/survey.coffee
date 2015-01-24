@@ -157,8 +157,10 @@ surveyForm.controller('SurveyFormCtrl', [
       normalized
 
     updateVoterId = ($event, voter) ->
-      console.log 'survey received household:member:selected with', voter
       CallCache.put('voter_id', voter.id)
+
+    clearVoterId = ->
+      CallCache.remove('voter_id')
 
     callAndVoter = ->
       call_id  = CallCache.get('id')
@@ -172,7 +174,7 @@ surveyForm.controller('SurveyFormCtrl', [
         return false
 
       unless voter_id?
-        idFlashFactory.now('warning', 'Select a Contact before saving.')
+        idFlashFactory.now('warning', 'Select a contact before saving.')
         return false
 
       return {call_id, voter_id}
@@ -254,6 +256,7 @@ surveyForm.controller('SurveyFormCtrl', [
       $rootScope.$on('survey:save:click', survey.save)
       $rootScope.$on('survey:reload', loadForm)
       $rootScope.$on('household:member:selected', updateVoterId)
+      $rootScope.$on('household:changed', clearVoterId)
       idJanitor.cleanUpUnload(true, survey.autoSubmitConfig)
       SurveyCache.put('eventsBound', true)
 
