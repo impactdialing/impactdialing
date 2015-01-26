@@ -9,9 +9,8 @@ class Householding::Migrate
   @queue = :data_migrations
 
   def self.perform(account_id, campaign_id, lower_voter_id, upper_voter_id)
-    campaign = Account.find(account_id)
-              .campaigns
-              .find(campaign_id)
+    campaign = Campaign.where(account_id: account_id, id: campaign_id).first
+    
     p "Householding::Migrate.perform[START] Voters[#{lower_voter_id}..#{upper_voter_id}] on Campaign[id:#{campaign.id}[name:#{campaign.name}]"
 
     stats = process_voters(campaign, lower_voter_id, upper_voter_id)
