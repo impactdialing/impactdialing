@@ -15,7 +15,7 @@
 
 desc "Create Households w/ relevant Voter data & update relevant Voter#household_id & CallAttempt#household_id"
 task :migrate_householding => :environment do
-  require 'householding/migrate'
+  # require 'householding/migrate'
   # Account#activated: now meaningless, all accounts created in last year => false
   # account_ids = Account.all.pluck(:id)
   # campaign_ids = Campaign.pluck(:id)
@@ -52,10 +52,60 @@ task :migrate_householding => :environment do
     p "AccountRange[#{campaigns.first.account_id}..#{campaigns.last.account_id}]"
     p "CreatedAtRange[#{campaigns.first.created_at}..#{campaigns.last.created_at}]"
 
-    Householding::Migrate.voters(campaigns)
+    campaigns.each do |campaign|
+      campaign.all_voters.find_in_batches(batch_size: 1000) do |voters|
+        lower_voter_id = voters.first.id
+        upper_voter_id = voters.last.id
+        # p "Running migrate job Campaign[#{campaign.id}] Lower[#{lower_voter_id}] Upper[#{upper_voter_id}]"
+        # Householding::Migrate.perform(campaign.account_id, campaign.id, lower_voter_id, upper_voter_id)
+        p "Queueing migrate job"
+        Resque.enqueue(Householding::Migrate, campaign.account_id, campaign.id, lower_voter_id, upper_voter_id)
+      end
+    end
 
     p "Household count by campaign id: #{Household.group(:campaign_id).count}"
     p "======================================================================"
+  end
+end
+
+desc "Update Householding related counter caches"
+task :update_householding_counter_cache => :environment do
+  Campaign.find_in_batches(batch_size: 100) do |campaigns|
+    campaigns.each do |campaign|
+      Campaign.reset_counters(campaign.id, :households)
+      campaign.households.find_in_batches(batch_size: 500) do |households|
+        households.each do |household|
+          Household.reset_counters(household.id, :voters)
+        end
+      end
+    end
+  end
+end
+
+desc "Cache households to dial queue"
+task :seed_dial_queue => :environment do
+  Campaign.includes(:voter_lists).find_in_batches(batch_size: 1) do |campaigns|
+    campaigns.each do |campaign|
+      p "Campaign: #{campaign.id} - #{campaign.name}"
+      campaign.voter_lists.each do |voter_list|
+        if voter_list.enabled?
+          p "List: #{voter_list.id} - #{voter_list.name}"
+          p "Voter count: #{voter_list.voters.count}"
+          p "Phoneless Voter count: #{voter_list.voters.where('phone IS NULL or phone = ""').count}"
+          voter_list.voters.includes({campaign: :account, custom_voter_field_values: :custom_voter_field}, :voter_list, :household).find_in_batches(batch_size: 50) do |voters|
+            p "Processing Voter batch: #{voters.first.id} - #{voters.last.id}"
+            campaign.dial_queue.cache_all(voters)
+            # voters.each_slice(10) do |voters_10|
+            #   p "Processing Voter batch: #{voters_10.first.id} - #{voters_10.last.id}"
+            #   campaign.dial_queue.cache_all(voters_10)
+              p "Available: #{campaign.dial_queue.available.size}"
+              p "RecycleBin: #{campaign.dial_queue.recycle_bin.size}"
+              p "Households: #{campaign.dial_queue.households.find_all(voters.map(&:phone).uniq)}"
+            # end
+          end
+        end
+      end
+    end
   end
 end
 
