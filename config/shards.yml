@@ -32,22 +32,22 @@ octopus:
       host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       database: staging
       username: root
-      password: '}HYQq7UHj8VsBP}'
+      password: VeYx42NVRVsJMuG
 
     read_slave2:
       adapter: mysql2
       host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       database: staging
       username: root
-      password: '}HYQq7UHj8VsBP}'
+      password: VeYx42NVRVsJMuG
 
     simulator_slave:
       adapter: mysql2
       host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       database: staging
       username: root
-      password: '}HYQq7UHj8VsBP}'
-      # mysql2://root:}HYQq7UHj8VsBP}@impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com:3306/staging?reconnect=true
+      password: VeYx42NVRVsJMuG
+      # mysql2://root:VeYx42NVRVsJMuG@impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com/staging?reconnect=true
 
   aws_staging:
     <<: *heroku_staging
