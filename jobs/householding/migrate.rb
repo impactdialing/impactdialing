@@ -58,9 +58,9 @@ class Householding::Migrate
       household_id = household_ids_by_phone[voter.phone]
       if household_id.blank?
         household    = campaign.households.where(phone: voter.phone).first
-        household_id = household.id
+        household_id = household.try(:id)
         if household_id.blank?
-          raise "Householding::Migrate::DataError Household not found for Phone[#{voter.phone}] Campaign[#{campaign.id}] Voter[id:#{voter.id}][status:#{voter.status}]"
+          p "Householding::Migrate::DataError Household not found for Phone[#{voter.phone}] Campaign[#{campaign.id}] Voter[id:#{voter.id}][status:#{voter.status}]"
         end
       end
       enabled            = calculate_enabled(voter)
@@ -68,12 +68,18 @@ class Householding::Migrate
       voter.enabled      = enabled
 
       voter.call_attempts.each do |call_attempt|
-        call_attempt.household_id = household_id
-        call_attempts << call_attempt
+        if household_id.present?
+          call_attempt.household_id = household_id
+          call_attempts << call_attempt
+        end
       end
 
-      voter
-    end
+      if voter.household_id.present?
+        voter
+      else
+        nil
+      end
+    end.compact
     household_ids_by_phone = {}
 
     stats[:updated_voters] = updated_voters.size
