@@ -39,6 +39,7 @@ task :migrate_householding => :environment do
   # - find most recent call attempt across members of the household
   # - update status w/ most recent call attempt status
   # - update presented_at w/ most recent call attempt
+  # mysql2://root:pfsdh37sl203jq@householding-data-migration-proving-ground.cjo94dhm4pos.us-east-1.rds.amazonaws.com/heroku_production?reconnect=true
   quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
   subscription_account_ids = Billing::Subscription.where(
     'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
@@ -72,11 +73,11 @@ desc "Update Householding related counter caches"
 task :update_householding_counter_cache => :environment do
   Campaign.find_in_batches(batch_size: 100) do |campaigns|
     campaigns.each do |campaign|
-      Campaign.reset_counters(campaign.id, :households)
+      Resque.enqueue(Householding::SeedCounterCache, 'campaign', campaign.id)
+      # Householding::SeedCounterCache.perform('campaign', campaign.id)
       campaign.households.find_in_batches(batch_size: 500) do |households|
-        households.each do |household|
-          Household.reset_counters(household.id, :voters)
-        end
+        Resque.enqueue(Householding::SeedCounterCache, 'households', campaign.id, households.first.id, households.last.id)
+        # Householding::SeedCounterCache.perform('households', campaign.id, households.first.id, households.last.id)
       end
     end
   end
@@ -86,26 +87,18 @@ desc "Cache households to dial queue"
 task :seed_dial_queue => :environment do
   Campaign.includes(:voter_lists).find_in_batches(batch_size: 1) do |campaigns|
     campaigns.each do |campaign|
-      p "Campaign: #{campaign.id} - #{campaign.name}"
+      p "Seeding DialQueue Account[#{campaign.account_id}] Campaign[#{campaign.name}]"
       campaign.voter_lists.each do |voter_list|
         if voter_list.enabled?
-          p "List: #{voter_list.id} - #{voter_list.name}"
-          p "Voter count: #{voter_list.voters.count}"
-          p "Phoneless Voter count: #{voter_list.voters.where('phone IS NULL or phone = ""').count}"
-          voter_list.voters.includes({campaign: :account, custom_voter_field_values: :custom_voter_field}, :voter_list, :household).find_in_batches(batch_size: 50) do |voters|
-            p "Processing Voter batch: #{voters.first.id} - #{voters.last.id}"
-            campaign.dial_queue.cache_all(voters)
-            # voters.each_slice(10) do |voters_10|
-            #   p "Processing Voter batch: #{voters_10.first.id} - #{voters_10.last.id}"
-            #   campaign.dial_queue.cache_all(voters_10)
-              p "Available: #{campaign.dial_queue.available.size}"
-              p "RecycleBin: #{campaign.dial_queue.recycle_bin.size}"
-              p "Households: #{campaign.dial_queue.households.find_all(voters.map(&:phone).uniq)}"
-            # end
+          voter_list.voters.find_in_batches(batch_size: 500) do |voters|
+            Resque.enqueue(Householding::SeedDialQueue, campaign.id, voter_list.id, voters.first.id, voters.last.id)
+            # Householding::SeedDialQueue.perform(campaign.id, voter_list.id, voters.first.id, voters.last.id)
           end
+          print '.'
         end
       end
     end
+    print "\n\nDone!!\n"
   end
 end
 
