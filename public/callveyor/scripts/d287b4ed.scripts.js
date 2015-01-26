@@ -34360,22 +34360,17 @@ angular.module("config", [])
   });
 
   callveyor.controller('AppCtrl', [
-    '$rootScope', '$scope', '$state', '$timeout', '$window', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'ContactCache', 'CallStationCache', 'ErrorCache', function($rootScope, $scope, $state, $timeout, $window, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented, TransitionCache, ContactCache, CallStationCache, ErrorCache) {
-      var abortAllAndNotifyUser, getContact, getMeta, markPusherReady, transitionComplete, transitionError, transitionStart;
+    '$rootScope', '$scope', '$state', '$timeout', '$window', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'HouseholdCache', 'CallStationCache', 'ErrorCache', function($rootScope, $scope, $state, $timeout, $window, usSpinnerService, PusherService, pusherConnectionHandlerFactory, idFlashFactory, idTransitionPrevented, TransitionCache, HouseholdCache, CallStationCache, ErrorCache) {
+      var abortAllAndNotifyUser, getMeta, getPhone, markPusherReady, transitionComplete, transitionError, transitionStart;
       $rootScope.transitionInProgress = false;
-      getContact = function() {
-        var contact, id, phone;
-        contact = ContactCache.get('data');
+      getPhone = function() {
+        var household, phone;
+        household = HouseholdCache.get('data');
         phone = '';
-        id = '';
-        if ((contact != null) && (contact.fields != null)) {
-          id = contact.fields.id;
-          phone = contact.fields.phone;
+        if ((household != null) && (household.phone != null)) {
+          phone = household.phone;
         }
-        return {
-          id: id,
-          phone: phone
-        };
+        return phone;
       };
       getMeta = function() {
         var caller, campaign;
@@ -34395,16 +34390,16 @@ angular.module("config", [])
         return usSpinnerService.stop('global-spinner');
       };
       transitionError = function(event, unfoundState, fromState, fromParams) {
-        var contact, err, meta;
+        var err, meta, phone;
         console.error('Error transitioning $state', event);
-        contact = getContact();
+        phone = getPhone();
         meta = getMeta();
         err = new Error("$state change failed to transition");
         $window._errs.meta = {
           'To': unfoundState.name,
           'From': fromState.name,
           'ErrorCache': angular.toJson(ErrorCache, true),
-          'Contact': angular.toJson(contact, true),
+          'Phone': phone,
           'Meta': angular.toJson(meta, true)
         };
         $window._errs.push(err);
@@ -34490,6 +34485,8 @@ angular.module("config", [])
 
   simpleCache('Contact');
 
+  simpleCache('Household');
+
   simpleCache('Survey');
 
   simpleCache('CallStation');
@@ -34528,25 +34525,20 @@ angular.module("config", [])
   });
 
   mod.factory('transitionValidator', [
-    '$rootScope', 'validTransitions', 'ErrorCache', 'ContactCache', 'usSpinnerService', function($rootScope, validTransitions, ErrorCache, ContactCache, usSpinnerService) {
+    '$rootScope', 'validTransitions', 'ErrorCache', 'HouseholdCache', 'usSpinnerService', function($rootScope, validTransitions, ErrorCache, HouseholdCache, usSpinnerService) {
       return {
         reviewTransition: function(eventObj, toState, toParams, fromState, fromParams) {
-          var contact, entry, fromName, getContact, getMeta, toName;
+          var entry, fromName, getMeta, getPhone, phone, toName;
           toName = toState.name;
           fromName = fromState.name || 'root';
-          getContact = function() {
-            var contact, id, phone;
-            contact = ContactCache.get('data');
+          getPhone = function() {
+            var household, phone;
+            household = HouseholdCache.get('data');
             phone = '';
-            id = '';
-            if ((contact != null) && (contact.fields != null)) {
-              id = contact.fields.id;
-              phone = contact.fields.phone;
+            if ((household != null) && (household.phone != null)) {
+              phone = household.phone;
             }
-            return {
-              id: id,
-              phone: phone
-            };
+            return phone;
           };
           getMeta = function() {
             var caller, campaign;
@@ -34559,11 +34551,11 @@ angular.module("config", [])
           };
           entry = validTransitions[fromName];
           if ((entry == null) || entry.indexOf(toName) === -1) {
-            contact = getContact();
+            phone = getPhone();
             ErrorCache.put('InvalidTransition prevented', {
               toName: toName,
               fromName: fromName,
-              contact: contact
+              phone: phone
             });
             $rootScope.transitionInProgress = false;
             usSpinnerService.stop('global-spinner');
@@ -34850,7 +34842,7 @@ to fix it.');
   ]);
 
   mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', function($rootScope, $state, $window, $cacheFactory, CallCache, idJanitor, TransferCache, FlashCache, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache, TwilioCache, CallerReassignedMessage) {
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', function($rootScope, $state, $window, $cacheFactory, CallCache, idJanitor, TransferCache, FlashCache, HouseholdCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache, TwilioCache, CallerReassignedMessage) {
       var beforeunloadBeenBound, handlers, isWarmTransfer;
       isWarmTransfer = function() {
         return /warm/i.test(TransferCache.get('type'));
@@ -34871,56 +34863,57 @@ to fix it.');
         /*
         LEGACY-way
         - unset call_id on campaign call model
-        - clear & set contact (aka lead) info
+        - clear & set household (aka lead) info
         - clear script form
-        - hide placeholder contact message
-        - render contact info
+        - hide placeholder household message
+        - render household info
         - update caller action buttons
         */
 
-        conferenceStarted: function(contact) {
+        conferenceStarted: function(household) {
           var caller, campaign, p;
           campaign = CallStationCache.get('campaign');
-          campaign.type = contact.dialer;
-          delete contact.dialer;
-          if (contact.campaign_out_of_leads) {
+          campaign.type = household.dialer;
+          delete household.dialer;
+          if (household.campaign_out_of_leads) {
             TwilioCache.put('disconnect_pending', true);
-            FlashCache.put('error', 'All contacts have been dialed! Please get in touch with your account admin for further instructions.');
-            ContactCache.put('data', {});
-            $rootScope.$broadcast('contact:changed');
+            FlashCache.put('error', 'All numbers have been dialed! Please get in touch with your account admin for further instructions.');
+            HouseholdCache.put('data', {});
+            $rootScope.$broadcast('household:changed');
             p = $state.go('abort');
             p["catch"](idTransitionPrevented);
             return;
           }
-          ContactCache.put('data', contact);
-          $rootScope.$broadcast('contact:changed');
+          console.log('caching household', household);
+          HouseholdCache.put('data', household);
+          $rootScope.$broadcast('household:changed');
           $window.idDebugData.campaign = campaign;
-          $window.idDebugData.contact = contact;
+          $window.idDebugData.household = household;
           p = $state.go('dialer.hold');
           p["catch"](idTransitionPrevented);
           if (campaign.type === 'Power') {
             caller = CallStationCache.get('caller');
             return idHttpDialerFactory.dialContact(caller.id, {
               session_id: caller.session_id,
-              voter_id: contact.fields.id
+              phone: household.phone
             });
           }
         },
         /*
         LEGACY-way
         - unset call_id on campaign call model
-        - clear & set contact (aka lead) info
+        - clear & set household (aka lead) info
         - clear script form
-        - show placeholder contact message
-        - hide contact info
+        - show placeholder household message
+        - hide household info
         - update caller action buttons
         */
 
         callerConnectedDialer: function() {
           var p, transitionSuccess;
           transitionSuccess = function() {
-            ContactCache.put('data', {});
-            return $rootScope.$broadcast('contact:changed');
+            HouseholdCache.put('data', {});
+            return $rootScope.$broadcast('household:changed');
           };
           p = $state.go('dialer.hold');
           return p.then(transitionSuccess, idTransitionPrevented);
@@ -34929,28 +34922,28 @@ to fix it.');
         LEGACY-way
         - fetch script for new campaign, if successful then continue
         - render new script
-        - clear & set contact (aka lead) info
+        - clear & set household (aka lead) info
         - clear script form
-        - hide placeholder contact message
-        - show contact info
+        - hide placeholder household message
+        - show household info
         - update caller action buttons
         - alert('You have been reassigned')
         */
 
-        callerReassigned: function(contact) {
+        callerReassigned: function(household) {
           var campaign, deregister, old_campaign, update;
           deregister = {};
           campaign = CallStationCache.get('campaign');
           old_campaign = angular.copy(campaign);
-          campaign.name = contact.campaign_name;
-          campaign.type = contact.campaign_type;
-          campaign.id = contact.campaign_id;
-          delete contact.campaign_name;
-          delete contact.campaign_type;
-          delete contact.campaign_id;
+          campaign.name = household.campaign_name;
+          campaign.type = household.campaign_type;
+          campaign.id = household.campaign_id;
+          delete household.campaign_name;
+          delete household.campaign_type;
+          delete household.campaign_id;
           update = function() {
             deregister();
-            handlers.conferenceStarted(contact);
+            handlers.conferenceStarted(household);
             return idFlashFactory.now('info', CallerReassignedMessage(old_campaign, campaign));
           };
           deregister = $rootScope.$on('survey:load:success', update);
@@ -34980,20 +34973,20 @@ to fix it.');
         /*
         LEGACY-way
         - set call_id on campaign call model
-        - clear & set contact (aka lead) info
+        - clear & set household (aka lead) info
         - clear script form
-        - hide placeholder contact message
-        - show contact info
+        - hide placeholder household message
+        - show household info
         - update caller action buttons
         */
 
         voterConnectedDialer: function(data) {
           var p, transitionSuccess;
           transitionSuccess = function() {
-            ContactCache.put('data', data.voter);
-            $rootScope.$broadcast('contact:changed');
+            HouseholdCache.put('data', data.household);
+            $rootScope.$broadcast('household:changed');
             CallCache.put('id', data.call_id);
-            $window.idDebugData.contact = data.voter;
+            $window.idDebugData.household = data.household;
             return $window.idDebugData.call_id = data.call_id;
           };
           p = $state.go('dialer.active');
@@ -35319,8 +35312,8 @@ to fix it.');
       dialer.retry = false;
       dialer.dialContact = function(caller_id, params, retry) {
         var url;
-        if (!((caller_id != null) && (params != null) && (params.session_id != null) && (params.voter_id != null))) {
-          throw new Error("idHttpDialerFactory.dialContact(" + caller_id + ", " + (params || {}).session_id + ", " + (params || {}).voter_id + ") called with invalid arguments. caller_id, params.session_id and params.voter_id are all required");
+        if (!((caller_id != null) && (params != null) && (params.session_id != null) && (params.phone != null))) {
+          throw new Error("idHttpDialerFactory.dialContact(" + caller_id + ", " + (params || {}).session_id + ", " + (params || {}).phone + ") called with invalid arguments. caller_id, params.session_id and params.phone are all required");
         }
         if (retry) {
           dialer.caller_id = caller_id;
@@ -35334,7 +35327,7 @@ to fix it.');
         url = "/call_center/api/" + caller_id + "/call_voter";
         return dial(url, params).then(success, error);
       };
-      dialer.skipContact = function(caller_id, params) {
+      dialer.skipHousehold = function(caller_id, params) {
         var url;
         dialer.retry = false;
         usSpinnerService.spin('global-spinner');
@@ -35448,7 +35441,7 @@ to fix it.');
   'use strict';
   var dialer;
 
-  dialer = angular.module('callveyor.dialer', ['ui.router', 'doowb.angular-pusher', 'transitionGateway', 'callveyor.dialer.ready', 'callveyor.dialer.hold', 'callveyor.dialer.active', 'callveyor.dialer.wrap', 'callveyor.dialer.stop', 'survey', 'callveyor.contact', 'callveyor.call_flow', 'idTransition', 'idCacheFactories', 'HttpErrors']);
+  dialer = angular.module('callveyor.dialer', ['ui.router', 'doowb.angular-pusher', 'transitionGateway', 'callveyor.dialer.ready', 'callveyor.dialer.hold', 'callveyor.dialer.active', 'callveyor.dialer.wrap', 'callveyor.dialer.stop', 'survey', 'callveyor.contact', 'callveyor.household', 'callveyor.call_flow', 'idTransition', 'idCacheFactories', 'HttpErrors']);
 
   dialer.config([
     '$stateProvider', function($stateProvider) {
@@ -35573,6 +35566,72 @@ to fix it.');
 //@ sourceMappingURL=contact.js.map
 */
 (function() {
+  'strict';
+  var household;
+
+  household = angular.module('callveyor.household', ['idCacheFactories']);
+
+  household.controller('HouseholdCtrl', [
+    '$rootScope', '$scope', '$state', '$http', '$sce', 'HouseholdCache', function($rootScope, $scope, $state, $http, $sce, HouseholdCache) {
+      var handleStateChange, updateFromCache;
+      handleStateChange = function(event, toState, toParams, fromState, fromParams) {
+        switch (toState.name) {
+          case 'dialer.stop':
+          case 'dialer.ready':
+            return $scope.household = {};
+        }
+      };
+      updateFromCache = function() {
+        var data, member, members;
+        data = angular.copy(HouseholdCache.get('data'));
+        console.log('updating household from cache', data);
+        members = [];
+        angular.forEach(data.members, function(member) {
+          var trustedCustomFields, trustedFields;
+          trustedFields = {};
+          angular.forEach(member.fields, function(value, key) {
+            return trustedFields[key] = $sce.trustAsHtml(value);
+          });
+          trustedCustomFields = [];
+          angular.forEach(member.custom_fields, function(value, key) {
+            var trusted;
+            trusted = [$sce.trustAsHtml(key), $sce.trustAsHtml(value)];
+            return trustedCustomFields.push(trusted);
+          });
+          member.fields = trustedFields;
+          member.custom_fields = trustedCustomFields;
+          return members.push(member);
+        });
+        console.log('setting household members', members);
+        $scope.household = {
+          phone: data.phone,
+          members: members,
+          selected: null
+        };
+        if (members.length === 1) {
+          member = members[0];
+          $scope.household.selected = member.id;
+          return $rootScope.$emit('household:member:selected', member);
+        }
+      };
+      $rootScope.$on('household:changed', updateFromCache);
+      return $rootScope.$on('$stateChangeSuccess', handleStateChange);
+    }
+  ]);
+
+  household.directive('idHousehold', function() {
+    return {
+      restrict: 'A',
+      templateUrl: '/callveyor/dialer/household/household.tpl.html'
+    };
+  });
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=household.js.map
+*/
+(function() {
   'use strict';
   var surveyForm;
 
@@ -35634,8 +35693,8 @@ to fix it.');
   ]);
 
   surveyForm.controller('SurveyFormCtrl', [
-    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', function($rootScope, $scope, $filter, $state, $http, $window, $timeout, TransferCache, CallCache, TwilioCache, usSpinnerService, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache, idJanitor) {
-      var cacheTransferList, fetchErr, handleStateChange, loadForm, normalizeQuestion, prepForm, requestInProgress, reset, selectDefaults, survey;
+    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'ContactCache', function($rootScope, $scope, $filter, $state, $http, $window, $timeout, TransferCache, CallCache, TwilioCache, usSpinnerService, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache, idJanitor, ContactCache) {
+      var cacheTransferList, callAndVoter, clearVoterId, fetchErr, handleStateChange, loadForm, normalizeQuestion, prepForm, requestInProgress, reset, selectDefaults, survey, updateVoterId;
       survey = {
         hideButtons: true,
         responses: {
@@ -35659,9 +35718,12 @@ to fix it.');
       reset = function() {
         console.log('reset survey');
         survey.responses = {
+          voter_id: null,
           notes: {},
           question: {}
         };
+        CallCache.remove('id');
+        CallCache.remove('voter_id');
         return selectDefaults();
       };
       cacheTransferList = function(payload) {
@@ -35709,20 +35771,43 @@ to fix it.');
         }
         return normalized;
       };
+      updateVoterId = function($event, voter) {
+        return CallCache.put('voter_id', voter.id);
+      };
+      clearVoterId = function() {
+        return CallCache.remove('voter_id');
+      };
+      callAndVoter = function() {
+        var call_id, voter_id;
+        call_id = CallCache.get('id');
+        voter_id = CallCache.get('voter_id');
+        console.log('survey callAndVoter is returning call_id & voter_id of', call_id, voter_id);
+        if (call_id == null) {
+          ErrorCache.put('survey.save.failed', "Call had no ID: Call[" + call_id + "].");
+          idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.');
+          return false;
+        }
+        if (voter_id == null) {
+          idFlashFactory.now('warning', 'Select a contact before saving.');
+          return false;
+        }
+        return {
+          call_id: call_id,
+          voter_id: voter_id
+        };
+      };
       requestInProgress = false;
       survey.save = function($event, andContinue) {
-        var action, always, call_id, error, success, successRan;
+        var action, always, error, ids, success, successRan;
         if (requestInProgress) {
           console.log('survey.requestInProgress, returning');
           return;
         }
-        call_id = CallCache.get('id');
-        if (call_id == null) {
-          ErrorCache.put('survey.save.failed', "CallCache had no ID.");
-          idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.');
+        usSpinnerService.spin('global-spinner');
+        ids = callAndVoter();
+        if (!((ids.call_id != null) && (ids.voter_id != null))) {
           return;
         }
-        usSpinnerService.spin('global-spinner');
         action = 'submit_result';
         if (!andContinue) {
           action += '_and_stop';
@@ -35773,17 +35858,22 @@ to fix it.');
         };
         requestInProgress = true;
         $rootScope.transitionInProgress = true;
-        return $http.post("/call_center/api/" + call_id + "/" + action, {
+        return $http.post("/call_center/api/" + ids.call_id + "/" + action, {
+          voter_id: ids.voter_id,
           notes: survey.responses.notes,
           question: normalizeQuestion()
         }).then(success, error)["finally"](always);
       };
       survey.autoSubmitConfig = function() {
-        var call_id;
-        call_id = CallCache.get('id');
+        var ids;
+        ids = callAndVoter();
+        if (!((ids.call_id != null) && (ids.voter_id != null))) {
+          return;
+        }
         return {
-          url: "/call_center/api/" + call_id + "/submit_result_and_stop",
+          url: "/call_center/api/" + ids.call_id + "/submit_result_and_stop",
           data: {
+            voter_id: ids.voter_id,
             notes: survey.responses.notes,
             question: normalizeQuestion()
           }
@@ -35792,6 +35882,8 @@ to fix it.');
       if (!SurveyCache.get('eventsBound')) {
         $rootScope.$on('survey:save:click', survey.save);
         $rootScope.$on('survey:reload', loadForm);
+        $rootScope.$on('household:member:selected', updateVoterId);
+        $rootScope.$on('household:changed', clearVoterId);
         idJanitor.cleanUpUnload(true, survey.autoSubmitConfig);
         SurveyCache.put('eventsBound', true);
       }
@@ -35943,7 +36035,7 @@ to fix it.');
   ]);
 
   hold.controller('HoldCtrl.buttons', [
-    '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'ContactCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', function($scope, $state, $timeout, $cacheFactory, callStation, ContactCache, idHttpDialerFactory, idFlashFactory, usSpinnerService) {
+    '$rootScope', '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'TwilioCache', 'FlashCache', function($rootScope, $scope, $state, $timeout, $cacheFactory, callStation, HouseholdCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, TwilioCache, FlashCache) {
       var holdCache;
       holdCache = $cacheFactory.get('hold') || $cacheFactory('hold');
       hold = holdCache.get('sharedScope');
@@ -35960,30 +36052,38 @@ to fix it.');
         return $scope.transitionInProgress = false;
       };
       hold.dial = function() {
-        var caller, contact, params;
+        var caller, household, params;
         params = {};
-        contact = (ContactCache.get('data') || {}).fields;
+        household = HouseholdCache.get('data') || {};
         caller = callStation.caller || {};
         params.session_id = caller.session_id;
-        params.voter_id = contact.id;
+        params.phone = household.phone;
         idHttpDialerFactory.dialContact(caller.id, params);
         hold.callStatusText = 'Dialing...';
         return $scope.transitionInProgress = true;
       };
       hold.skip = function() {
-        var always, caller, contact, params, promise, skipErr, skipSuccess;
+        var always, caller, params, promise, skipErr, skipSuccess;
         params = {};
-        contact = (ContactCache.get('data') || {}).fields;
         caller = callStation.caller || {};
         params.session_id = caller.session_id;
-        params.voter_id = contact.id;
         hold.callStatusText = 'Skipping...';
         $scope.transitionInProgress = true;
-        promise = idHttpDialerFactory.skipContact(caller.id, params);
+        promise = idHttpDialerFactory.skipHousehold(caller.id, params);
         skipSuccess = function(payload) {
-          ContactCache.put('data', payload.data);
+          var p;
+          if (payload.data.campaign_out_of_leads) {
+            TwilioCache.put('disconnect_pending', true);
+            FlashCache.put('error', 'All numbers have been dialed! Please get in touch with your account admin for further instructions.');
+            HouseholdCache.put('data', {});
+            $rootScope.$broadcast('household:changed');
+            p = $state.go('abort');
+            p["catch"](idTransitionPrevented);
+            return;
+          }
+          HouseholdCache.put('data', payload.data);
           hold.callStatusText = 'Waiting to dial...';
-          return $scope.$emit('contact:changed');
+          return $scope.$emit('household:changed');
         };
         skipErr = function(errObj) {
           $scope.transitionInProgress = false;
@@ -36287,7 +36387,6 @@ to fix it.');
         params = {};
         contact = (ContactCache.get('data') || {}).fields;
         caller = CallStationCache.get('caller');
-        params.voter = contact.id;
         params.call = CallCache.get('id');
         params.caller_session = caller.session_id;
         params.transfer = {
@@ -36564,6 +36663,15 @@ angular.module('callveyor.contact').run(['$templateCache', function($templateCac
 
   $templateCache.put('/callveyor/dialer/contact/info.tpl.html',
     "<div class=\"row fixed-contact panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"contact.data.fields\">Name, phone, address, etc will be listed here when connected.</p><!-- system fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!contact.data.fields.custom_id || !contact.data.ID_flag\">ID</dt><dd data-ng-hide=\"!contact.data.fields.custom_id || !contact.data.ID_flag\" data-ng-bind-html=\"contact.data.fields.custom_id\"></dd><dt data-ng-hide=\"!contact.data.fields.first_name || !contact.data.FirstName_flag\">First name</dt><dd data-ng-hide=\"!contact.data.fields.first_name || !contact.data.FirstName_flag\" data-ng-bind-html=\"contact.data.fields.first_name\"></dd><dt data-ng-hide=\"!contact.data.fields.middle_name || !contact.data.MiddleName_flag\">Middle name</dt><dd data-ng-hide=\"!contact.data.fields.middle_name || !contact.data.MiddleName_flag\" data-ng-bind-html=\"contact.data.fields.middle_name\"></dd><dt data-ng-hide=\"!contact.data.fields.last_name || !contact.data.LastName_flag\">Last name</dt><dd data-ng-hide=\"!contact.data.fields.last_name || !contact.data.LastName_flag\" data-ng-bind-html=\"contact.data.fields.last_name\"></dd><dt data-ng-hide=\"!contact.data.fields.suffix || !contact.data.Suffix_flag\">Suffix</dt><dd data-ng-hide=\"!contact.data.fields.suffix || !contact.data.Suffix_flag\" data-ng-bind-html=\"contact.data.fields.suffix\"></dd><dt data-ng-hide=\"!contact.data.fields.address || !contact.data.Address_flag\">Address</dt><dd data-ng-hide=\"!contact.data.fields.address || !contact.data.Address_flag\" data-ng-bind-html=\"contact.data.fields.address\"></dd><dt data-ng-hide=\"!contact.data.fields.city || !contact.data.City_flag\">City</dt><dd data-ng-hide=\"!contact.data.fields.city || !contact.data.City_flag\" data-ng-bind-html=\"contact.data.fields.city\"></dd><dt data-ng-hide=\"!contact.data.fields.state || !contact.data.State/Province_flag\">State</dt><dd data-ng-hide=\"!contact.data.fields.state || !contact.data.State/Province_flag\" data-ng-bind-html=\"contact.data.fields.state\"></dd><dt data-ng-hide=\"!contact.data.fields.zip_code || !contact.data.Zip/Postal_flag\">Zip / Postal code</dt><dd data-ng-hide=\"!contact.data.fields.zip_code || !contact.data.Zip/Postal_flag\" data-ng-bind-html=\"contact.data.fields.zip_code\"></dd><dt data-ng-hide=\"!contact.data.fields.country || !contact.data.Country_flag\">Country</dt><dd data-ng-hide=\"!contact.data.fields.country || !contact.data.Country_flag\" data-ng-bind-html=\"contact.data.fields.country\"></dd><dt data-ng-hide=\"!contact.data.fields.phone || !contact.data.Phone_flag\">Phone</dt><dd data-ng-hide=\"!contact.data.fields.phone || !contact.data.Phone_flag\" data-ng-bind-html=\"contact.data.fields.phone\"></dd><dt data-ng-hide=\"!contact.data.fields.email || !contact.data.Email_flag\">Email</dt><dd data-ng-hide=\"!contact.data.fields.email || !contact.data.Email_flag\" data-ng-bind-html=\"contact.data.fields.email\"></dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-repeat-start=\"tuple in contact.data.custom_fields\" data-ng-bind-html=\"tuple[0]\"></dt><dd data-ng-repeat-end data-ng-bind-html=\"tuple[1]\"></dd></dl></div></div>"
+  );
+
+}]);
+
+angular.module('callveyor.household').run(['$templateCache', function($templateCache) {
+  'use strict';
+
+  $templateCache.put('/callveyor/dialer/household/household.tpl.html',
+    "<div class=\"row fixed-contact panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"household.members\">Name, phone, address, etc will be listed here when connected.</p><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!household.phone\">Phone</dt><dd data-ng-hide=\"!household.phone\">{{household.phone}}</dd></dl><div data-ng-repeat=\"member in household.members\"><label style=\"font: inherit; width: 100%\" data-ng-class=\"household.selected == member.id ? 'well well-sm' : ''\"><input type=\"radio\" data-ng-model=\"household.selected\" data-ng-value=\"member.id\" data-ng-change=\"$emit('household:member:selected', member)\" class=\"col-xs-1 col-sm-1 pull-right\" name=\"voter_id\"><!-- system fields --><dl class=\"dl-horizontal col-xs-5 col-sm-11\"><dt data-ng-show=\"member.fields.use_id\">Contact</dt><dd data-ng-show=\"member.fields.use_id\" data-ng-bind=\"$index + 1\"></dd><dt data-ng-hide=\"!member.fields.custom_id\">Contact ID</dt><dd data-ng-hide=\"!member.fields.custom_id\" data-ng-bind-html=\"member.fields.custom_id\"></dd><dt data-ng-hide=\"!member.fields.first_name\">First name</dt><dd data-ng-hide=\"!member.fields.first_name\" data-ng-bind-html=\"member.fields.first_name\"></dd><dt data-ng-hide=\"!member.fields.middle_name\">Middle name</dt><dd data-ng-hide=\"!member.fields.middle_name\" data-ng-bind-html=\"member.fields.middle_name\"></dd><dt data-ng-hide=\"!member.fields.last_name\">Last name</dt><dd data-ng-hide=\"!member.fields.last_name\" data-ng-bind-html=\"member.fields.last_name\"></dd><dt data-ng-hide=\"!member.fields.suffix\">Suffix</dt><dd data-ng-hide=\"!member.fields.suffix\" data-ng-bind-html=\"member.fields.suffix\"></dd><dt data-ng-hide=\"!member.fields.address\">Address</dt><dd data-ng-hide=\"!member.fields.address\" data-ng-bind-html=\"member.fields.address\"></dd><dt data-ng-hide=\"!member.fields.city\">City</dt><dd data-ng-hide=\"!member.fields.city\" data-ng-bind-html=\"member.fields.city\"></dd><dt data-ng-hide=\"!member.fields.state\">State</dt><dd data-ng-hide=\"!member.fields.state\" data-ng-bind-html=\"member.fields.state\"></dd><dt data-ng-hide=\"!member.fields.zip_code\">Zip / Postal code</dt><dd data-ng-hide=\"!member.fields.zip_code\" data-ng-bind-html=\"member.fields.zip_code\"></dd><dt data-ng-hide=\"!member.fields.country\">Country</dt><dd data-ng-hide=\"!member.fields.country\" data-ng-bind-html=\"member.fields.country\"></dd><dt data-ng-hide=\"!member.fields.email\">Email</dt><dd data-ng-hide=\"!member.fields.email\" data-ng-bind-html=\"member.fields.email\"></dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-5 col-sm-11\"><dt data-ng-repeat-start=\"tuple in member.custom_fields\" data-ng-bind-html=\"tuple[0]\"></dt><dd data-ng-repeat-end data-ng-bind-html=\"tuple[1]\"></dd></dl></label></div></div></div>"
   );
 
 }]);
