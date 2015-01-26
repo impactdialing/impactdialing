@@ -29,21 +29,21 @@ octopus:
   heroku_staging: &heroku_staging
     read_slave1:
       adapter: mysql2
-      host: householding-data-migration-proving-ground.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      host: householding-proving-ground.cjo94dhm4pos.us-east-1.rds.amazonaws.com:3306
       database: heroku_production
       username: root
       password: pfsdh37sl203jq
 
     read_slave2:
       adapter: mysql2
-      host: householding-data-migration-proving-ground.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      host: householding-proving-ground.cjo94dhm4pos.us-east-1.rds.amazonaws.com:3306
       database: heroku_production
       username: root
       password: pfsdh37sl203jq
 
     simulator_slave:
       adapter: mysql2
-      host: householding-data-migration-proving-ground.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      host: householding-proving-ground.cjo94dhm4pos.us-east-1.rds.amazonaws.com:3306
       database: heroku_production
       username: root
       password: pfsdh37sl203jq
