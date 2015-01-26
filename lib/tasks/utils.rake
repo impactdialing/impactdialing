@@ -53,7 +53,7 @@ task :migrate_householding => :environment do
     p "CreatedAtRange[#{campaigns.first.created_at}..#{campaigns.last.created_at}]"
 
     campaigns.each do |campaign|
-      campaign.all_voters.find_in_batches(batch_size: 1000) do |voters|
+      campaign.all_voters.where('household_id IS NULL AND phone IS NOT NULL').find_in_batches(batch_size: 1000) do |voters|
         lower_voter_id = voters.first.id
         upper_voter_id = voters.last.id
         # p "Running migrate job Campaign[#{campaign.id}] Lower[#{lower_voter_id}] Upper[#{upper_voter_id}]"
