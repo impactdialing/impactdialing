@@ -10,7 +10,7 @@ class Householding::Migrate
 
   def self.perform(account_id, campaign_id, lower_voter_id, upper_voter_id)
     campaign = Campaign.where(account_id: account_id, id: campaign_id).first
-    
+
     p "Householding::Migrate.perform[START] Voters[#{lower_voter_id}..#{upper_voter_id}] on Campaign[id:#{campaign.id}[name:#{campaign.name}]"
 
     stats = process_voters(campaign, lower_voter_id, upper_voter_id)
@@ -48,7 +48,7 @@ class Householding::Migrate
 
     stats[:households] = households.size
     import = Household.import households
-    raise_if_any_failed(import, 'Household')
+    log_if_any_failed(import, 'Household')
     households             = []
 
     household_ids_by_phone = {}
@@ -97,6 +97,17 @@ class Householding::Migrate
         import.failed_instances.map{|i| [i.errors.full_messages]}.uniq.join("; ")
       ]
       raise "Householding::Migrate::ImportError #{messages.join("\n")}"
+    end
+  end
+
+  def self.log_if_any_failed(import, type)
+    if import.failed_instances.any?
+      messages = [
+        "#{type}.import",
+        'InstancesFailed',
+        import.failed_instances.map{|i| [i.errors.full_messages]}.uniq.join("; ")
+      ]
+      p messages.join("\n")
     end
   end
 
