@@ -71,7 +71,15 @@ end
 
 desc "Update Householding related counter caches"
 task :update_householding_counter_cache => :environment do
-  Campaign.find_in_batches(batch_size: 100) do |campaigns|
+  quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
+  subscription_account_ids = Billing::Subscription.where(
+    'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
+    ['trial', 'per_minute', 'enterprise'],
+    ['basic', 'pro', 'business'],
+    'active'
+  ).pluck(:account_id)
+  account_ids = (quota_account_ids + subscription_account_ids).uniq
+  Campaign.where(account_id: account_ids).where('created_at > ?', 6.months.ago.beginning_of_month).find_in_batches(batch_size: 100) do |campaigns|
     campaigns.each do |campaign|
       Resque.enqueue(Householding::SeedCounterCache, 'campaign', campaign.id)
       # Householding::SeedCounterCache.perform('campaign', campaign.id)
@@ -85,7 +93,15 @@ end
 
 desc "Cache households to dial queue"
 task :seed_dial_queue => :environment do
-  Campaign.includes(:voter_lists).find_in_batches(batch_size: 100) do |campaigns|
+  quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
+  subscription_account_ids = Billing::Subscription.where(
+    'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
+    ['trial', 'per_minute', 'enterprise'],
+    ['basic', 'pro', 'business'],
+    'active'
+  ).pluck(:account_id)
+  account_ids = (quota_account_ids + subscription_account_ids).uniq
+  Campaign.where(account_id: account_ids).where('created_at > ?', 6.months.ago.beginning_of_month).includes(:voter_lists).find_in_batches(batch_size: 100) do |campaigns|
     campaigns.each do |campaign|
       p "Seeding DialQueue Account[#{campaign.account_id}] Campaign[#{campaign.name}]"
       campaign.voter_lists.each do |voter_list|
