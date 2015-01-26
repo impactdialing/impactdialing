@@ -18,18 +18,15 @@ class CallStats::ByStatus
 
   def items(group_by_status_index=false)
     if scoped_to?(:call_attempts)
-      # @_call_attempts ||= call_attempts.from('call_attempts use index (index_sync_calls)').between(@from_date, @to_date)
       if group_by_status_index
-        @_call_attempts_group_index ||= call_attempts.from('call_attempts use index (index_sync_calls)').between(@from_date, @to_date)
+        @_call_attempts_group_index ||= call_attempts.between(@from_date, @to_date)
       else
-        @_call_attempts_row_index ||= call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').between(@from_date, @to_date)
+        @_call_attempts_row_index ||= call_attempts.between(@from_date, @to_date)
       end
     elsif scoped_to?(:all_voters)
       if group_by_status_index
-        # @_all_voters_group_index ||= all_voters.from('voters use index (voters_campaign_status_time)').last_call_attempt_within(@from_date, @to_date)
         @_all_voters_group_index ||= households.presented_within(@from_date, @to_date)
       else
-        # @_all_voters ||= all_voters.last_call_attempt_within(@from_date, @to_date)
         @_all_voters ||= households.presented_within(@from_date, @to_date)
       end
     else
@@ -119,21 +116,5 @@ class CallStats::ByStatus
     query = yield query if block_given?
 
     @total_count = query.count(:id)
-  end
-
-  # def not_ringing_total_count
-  #   total_count do |query|
-  #     query = query.not_ringing
-  #   end
-  # end
-
-  def caller_left_message_count
-    @caller_left_message_count ||= items.with_manual_message_drop.count
-  end
-
-  def caller_left_message_percent
-    n = caller_left_message_count || 0
-    perc = (n / (answered_count.zero? ? 1 : answered_count).to_f) * 100
-    "#{perc.round}%"
   end
 end
