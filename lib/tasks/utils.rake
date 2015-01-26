@@ -85,7 +85,7 @@ end
 
 desc "Cache households to dial queue"
 task :seed_dial_queue => :environment do
-  Campaign.includes(:voter_lists).find_in_batches(batch_size: 1) do |campaigns|
+  Campaign.includes(:voter_lists).find_in_batches(batch_size: 100) do |campaigns|
     campaigns.each do |campaign|
       p "Seeding DialQueue Account[#{campaign.account_id}] Campaign[#{campaign.name}]"
       campaign.voter_lists.each do |voter_list|
