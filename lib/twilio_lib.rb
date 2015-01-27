@@ -33,13 +33,24 @@ class TwilioLib
     }
   end
 
+  def shared_failover_url_params(campaign)
+    if Settings.twilio_failover_host.present?
+      shared_callback_url_params(campaign).merge({
+        host: Settings.twilio_failover_host
+      })
+    else
+      shared_callback_url_params(campaign)
+    end
+  end
+
   def make_call_params(campaign, household, call_attempt)
     {
       'From'           => campaign.caller_id,
       'To'             => household.phone,
       'Url'            => incoming_call_url(call_attempt.call, shared_callback_url_params(campaign).merge(event: "incoming_call")),
       'StatusCallback' => call_ended_call_url(call_attempt.call, shared_callback_url_params(campaign).merge(event: "call_ended")),
-      'Timeout'        => "15"
+      'Timeout'        => "15",
+      'FallbackUrl'    => incoming_call_url(call_attempt.call, shared_failover_url_params(campaign).merge(event: "incoming_call"))
     }.merge!(amd_params(campaign))
   end
 
@@ -53,7 +64,8 @@ class TwilioLib
   end
 
   def make_call(campaign, household, call_attempt)
-    response = create_http_request(twilio_calls_url, make_call_params(campaign, household, call_attempt), Settings.voip_api_url)
+    params   = make_call_params(campaign, household, call_attempt)
+    response = create_http_request(twilio_calls_url, params, Settings.voip_api_url)
     response.body
   end
 

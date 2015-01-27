@@ -14,7 +14,7 @@ class Settings
       'twilio_callback_host', 'call_end_callback_host',
       'incoming_callback_host', 'voip_api_url',
       'twilio_callback_port', 'recording_env',
-      'callin_phone'
+      'callin_phone', 'twilio_failover_host'
     ].each do |str|
       define_method(str) do
         ENV[str.upcase]
