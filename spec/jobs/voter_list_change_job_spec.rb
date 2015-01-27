@@ -56,10 +56,12 @@ describe VoterListChangeJob do
   it 'queues job to cache voters' do
     subject.perform(voter_list.id, enabled)
 
-    expected = {'class' => 'CallFlow::DialQueue::Jobs::CacheVoters', 'args' => [voter_list.campaign_id, voters.map(&:id), enabled]}
     actual = Resque.peek :upload_download, 0, 100
 
-    expect(actual).to include expected
+    expect(actual).to include({
+      'class' => 'CallFlow::DialQueue::Jobs::CacheVoters',
+      'args' => [voter_list.campaign_id, voters.map(&:id), '0']
+    })
   end
 
   it 'properly requeues itself if the worker is stopped during a run' do
