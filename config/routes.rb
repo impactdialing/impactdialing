@@ -6,8 +6,6 @@ ImpactDialing::Application.routes.draw do
   root :to => "callers/station#show", :constraints => {:subdomain => "caller"}
   root :to => "client#login"
 
-  match "/pong", to: "ping#pong", as: :ping
-
   resources :calls, :protocol => PROTOCOL do
     member do
       post :flow
