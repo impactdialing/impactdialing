@@ -176,7 +176,7 @@ describe Voter, :type => :model do
       it 'html encodes all `fields`' do
         voter.first_name = '<script>alert("blah");</script>'
         voter.save!
-        actual = voter.info[:fields]['first_name']
+        actual = voter.cache_data[:fields]['first_name']
         expect(actual).to eq html_escape(voter.first_name)
       end
 
@@ -185,7 +185,7 @@ describe Voter, :type => :model do
         value = field.custom_voter_field_values.first
         value.value = '<script>alert("blah");</script>'
         value.save!
-        actual = voter.info[:custom_fields]['ImportedFromOldSystem']
+        actual = voter.cache_data[:custom_fields]['ImportedFromOldSystem']
         expect(actual).to eq html_escape(value.value)
       end
     end
@@ -221,23 +221,29 @@ describe Voter, :type => :model do
       end
 
       it 'converts plain text email addresses (e.g. joe@test.com) to links' do
-        expect(voter.info[:fields]['email']).to eq "<a target=\"_blank\" href=\"mailto:#{voter.email}\">#{voter.email}</a>"
+        expect(voter.cache_data[:fields]['email']).to eq "<a target=\"_blank\" href=\"mailto:#{voter.email}\">#{voter.email}</a>"
       end
 
       it 'converts plain text URLs (e.g. www.test.com or test.com) to links' do
-        expect(voter.info[:custom_fields]['MoreInfo']).to eq "<a target=\"_blank\" href=\"http://test.com\">test.com</a>"
+        expect(voter.cache_data[:custom_fields]['MoreInfo']).to eq "<a target=\"_blank\" href=\"http://test.com\">test.com</a>"
       end
 
       it 'makes best effort to ignore typos that look like domains' do
         voter.email = 'No-email.Please use phone'
         voter.save!
-        expect(voter.info[:fields]['email']).to eq voter.email
+        expect(voter.cache_data[:fields]['email']).to eq voter.email
       end
 
       it 'makes best effort to ignore typos that look like emails' do
         voter.email = 'Holla-@twit'
         voter.save!
-        expect(voter.info[:fields]['email']).to eq voter.email
+        expect(voter.cache_data[:fields]['email']).to eq voter.email
+      end
+
+      it 'ignores leading and trailing whitespace' do
+        voter.email = ' john@test.com'
+        voter.save!
+        expect(voter.cache_data[:fields]['email']).to eq "<a target=\"_blank\" href=\"mailto:#{voter.email}\">#{voter.email}</a>"
       end
 
       it 'performs html escaping on all fields'

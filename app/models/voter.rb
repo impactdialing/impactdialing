@@ -239,10 +239,11 @@ private
     email_regex  = /[\w\-\.]+[\w\-\+\.]?@/i
     proto_regex  = /\bhttp(s)?:\/\//i
     space_regex  = /\s+/
+    stripped_text = text.kind_of?(String) ? text.strip : text
 
-    if text =~ domain_regex and text !~ space_regex
+    if stripped_text =~ domain_regex and stripped_text !~ space_regex
       # it looks like a domain, is it an email?
-      if text =~ email_regex
+      if stripped_text =~ email_regex
         return "<a target=\"_blank\" href=\"mailto:#{html_escape(text)}\">#{html_escape(text)}</a>"
       else
         proto = text =~ proto_regex ? '' : 'http://'
@@ -425,8 +426,7 @@ public
       custom_fields: {}
     }
     self.attributes.each do |field, value|
-      next unless system_fields.include?(field)
-
+      next unless system_fields.include?(field) 
       data[:fields][field] = autolink(value)
     end
 
