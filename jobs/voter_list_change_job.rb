@@ -31,7 +31,8 @@ class VoterListChangeJob
         bitmasks << :list if enabled
 
         Voter.where(id: ids).update_all(enabled: Voter.bitmask_for_enabled(*bitmasks))
-        enqueue_cache_voters(voter_list.campaign_id, ids, enabled)
+        flag = enabled ? '1' : '0'
+        enqueue_cache_voters(voter_list.campaign_id, ids, flag)
       end
     rescue Resque::TermException, ActiveRecord::StatementInvalid => exception
       handle_exception(voter_list_id, enabled, exception)
