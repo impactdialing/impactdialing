@@ -8,6 +8,7 @@ module CallFlow::DialQueue::Jobs
     extend LibratoResque
 
     def self.perform(campaign_id, voter_ids, enabled)
+      p "CacheVoters: Campaign[#{campaign_id}] Voters[#{voter_ids}] Enabled[#{enabled}]"
       metrics    = ImpactPlatform::Metrics::JobStatus.started(self.to_s.underscore.gsub('/','_'))
       voters     = Voter.where(id: voter_ids).includes({
         campaign: :account,
@@ -17,8 +18,10 @@ module CallFlow::DialQueue::Jobs
       dial_queue = CallFlow::DialQueue.new(campaign)
 
       if enabled.to_i > 0
+        p "- caching all voters"
         dial_queue.cache_all(voters)
       else
+        p "- removing all voters"
         dial_queue.remove_all(voters)
       end
 
