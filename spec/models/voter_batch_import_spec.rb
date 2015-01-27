@@ -82,6 +82,12 @@ describe 'VoterBatchImport' do
       it 'each created Voter record has :list bit enabled' do
         expect(Voter.with_enabled(:list).count).to eq Voter.count
       end
+      it 'queues CallFlow::DialQueue::Jobs::CacheVoters with created voter ids' do
+        expect(Resque.peek(:upload_download, 0, 100)).to include({
+          'class' => 'CallFlow::DialQueue::Jobs::CacheVoters',
+          'args' => [campaign.id, Voter.all.map(&:id), 1]
+        })
+      end
       describe 'returns a Hash with' do
         it 'success => int' do
           expect(@counts[:success]).to eq (Voter.count - @counts[:dnc])

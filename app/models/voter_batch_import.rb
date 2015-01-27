@@ -160,7 +160,6 @@ class VoterBatchImport
       save_field_values(successful_voters, created_voter_ids, updated_leads)
 
       Resque.enqueue(CallFlow::DialQueue::Jobs::CacheVoters, campaign.id, voter_ids_for_cache, 1)
-      p "voter_ids_for_cache: #{voter_ids_for_cache}"
       if (existing_voter_ids = leads.map{|l| l[:id]}.compact).any?
         Resque.enqueue(CallFlow::DialQueue::Jobs::CacheVoters, campaign.id, existing_voter_ids, 1)
       end
@@ -168,7 +167,7 @@ class VoterBatchImport
     @result
   end
 
-  protected
+protected
 
   def found_voters(voter_info_list)
     custom_ids = voter_info_list.map do |voter_info|
@@ -188,7 +187,6 @@ class VoterBatchImport
     yield
     last_id ? relation.where("id > #{last_id}").pluck(:id) : relation.pluck(:id)
   end
-
 
   def save_field_values(voter_info_list, created_voter_ids, updated_leads)
     updated_ids = updated_leads.values.map { |l| l[:id] }
@@ -223,7 +221,6 @@ class VoterBatchImport
     import_from_hashes(CustomVoterFieldValue, custom_voter_values)
   end
 
-
   def import_from_hashes(klass, hashes)
     return if hashes.empty?
     new_records = {values: []}
@@ -243,7 +240,6 @@ class VoterBatchImport
                  validate: false, timestamps: false) if existing_records[:values].any?
     klass.import(new_records[:columns], new_records[:values]) if new_records[:values].any?
   end
-
 
   def create_custom_attributes
     result = {}
