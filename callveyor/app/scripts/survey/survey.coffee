@@ -72,8 +72,8 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 # - survey:reload - triggers re-fetch/load of survey form data & transfer list
 #
 surveyForm.controller('SurveyFormCtrl', [
-  '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'ContactCache',
-  ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   $timeout,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache,   idJanitor,   ContactCache) ->
+  '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'HouseholdCache',
+  ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   $timeout,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache,   idJanitor,   HouseholdCache) ->
     # Public 
     survey = {
       hideButtons: true
@@ -106,7 +106,6 @@ surveyForm.controller('SurveyFormCtrl', [
         question: {}
       }
       CallCache.remove('id')
-      CallCache.remove('voter_id')
 
       selectDefaults()
 
@@ -156,15 +155,10 @@ surveyForm.controller('SurveyFormCtrl', [
 
       normalized
 
-    updateVoterId = ($event, voter) ->
-      CallCache.put('voter_id', voter.id)
-
-    clearVoterId = ->
-      CallCache.remove('voter_id')
 
     callAndVoter = ->
       call_id  = CallCache.get('id')
-      voter_id = CallCache.get('voter_id')
+      voter_id = (HouseholdCache.get('selected') || {}).id
 
       console.log 'survey callAndVoter is returning call_id & voter_id of', call_id, voter_id
 
@@ -255,8 +249,6 @@ surveyForm.controller('SurveyFormCtrl', [
     unless SurveyCache.get('eventsBound')
       $rootScope.$on('survey:save:click', survey.save)
       $rootScope.$on('survey:reload', loadForm)
-      $rootScope.$on('household:member:selected', updateVoterId)
-      $rootScope.$on('household:changed', clearVoterId)
       idJanitor.cleanUpUnload(true, survey.autoSubmitConfig)
       SurveyCache.put('eventsBound', true)
 

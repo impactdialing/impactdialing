@@ -12,6 +12,10 @@ household.controller('HouseholdCtrl', [
         when 'dialer.stop', 'dialer.ready'
           $scope.household = {}
 
+    # update HouseholdCache
+    $scope.contactSelected = ->
+      HouseholdCache.put('selected', $scope.household.selected)
+
     updateFromCache = ->
       data    = angular.copy(HouseholdCache.get('data'))
       console.log 'updating household from cache', data
@@ -36,13 +40,15 @@ household.controller('HouseholdCtrl', [
       console.log 'setting household members', members
       $scope.household = {
         phone: data.phone,
-        members: members,
-        selected: null
+        members: members
       }
+
       if members.length == 1
-        member = members[0]
-        $scope.household.selected = member.id
-        $rootScope.$emit('household:member:selected', member)
+        $scope.household.selected = members[0]
+      else
+        $scope.household.selected = null
+
+      $scope.contactSelected()
 
     $rootScope.$on('household:changed', updateFromCache)
     $rootScope.$on('$stateChangeSuccess', handleStateChange)

@@ -35581,8 +35581,11 @@ to fix it.');
             return $scope.household = {};
         }
       };
+      $scope.contactSelected = function() {
+        return HouseholdCache.put('selected', $scope.household.selected);
+      };
       updateFromCache = function() {
-        var data, member, members;
+        var data, members;
         data = angular.copy(HouseholdCache.get('data'));
         console.log('updating household from cache', data);
         members = [];
@@ -35605,14 +35608,14 @@ to fix it.');
         console.log('setting household members', members);
         $scope.household = {
           phone: data.phone,
-          members: members,
-          selected: null
+          members: members
         };
         if (members.length === 1) {
-          member = members[0];
-          $scope.household.selected = member.id;
-          return $rootScope.$emit('household:member:selected', member);
+          $scope.household.selected = members[0];
+        } else {
+          $scope.household.selected = null;
         }
+        return $scope.contactSelected();
       };
       $rootScope.$on('household:changed', updateFromCache);
       return $rootScope.$on('$stateChangeSuccess', handleStateChange);
@@ -35693,8 +35696,8 @@ to fix it.');
   ]);
 
   surveyForm.controller('SurveyFormCtrl', [
-    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'ContactCache', function($rootScope, $scope, $filter, $state, $http, $window, $timeout, TransferCache, CallCache, TwilioCache, usSpinnerService, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache, idJanitor, ContactCache) {
-      var cacheTransferList, callAndVoter, clearVoterId, fetchErr, handleStateChange, loadForm, normalizeQuestion, prepForm, requestInProgress, reset, selectDefaults, survey, updateVoterId;
+    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'HouseholdCache', function($rootScope, $scope, $filter, $state, $http, $window, $timeout, TransferCache, CallCache, TwilioCache, usSpinnerService, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache, idJanitor, HouseholdCache) {
+      var cacheTransferList, callAndVoter, fetchErr, handleStateChange, loadForm, normalizeQuestion, prepForm, requestInProgress, reset, selectDefaults, survey;
       survey = {
         hideButtons: true,
         responses: {
@@ -35723,7 +35726,6 @@ to fix it.');
           question: {}
         };
         CallCache.remove('id');
-        CallCache.remove('voter_id');
         return selectDefaults();
       };
       cacheTransferList = function(payload) {
@@ -35771,16 +35773,10 @@ to fix it.');
         }
         return normalized;
       };
-      updateVoterId = function($event, voter) {
-        return CallCache.put('voter_id', voter.id);
-      };
-      clearVoterId = function() {
-        return CallCache.remove('voter_id');
-      };
       callAndVoter = function() {
         var call_id, voter_id;
         call_id = CallCache.get('id');
-        voter_id = CallCache.get('voter_id');
+        voter_id = (HouseholdCache.get('selected') || {}).id;
         console.log('survey callAndVoter is returning call_id & voter_id of', call_id, voter_id);
         if (call_id == null) {
           ErrorCache.put('survey.save.failed', "Call had no ID: Call[" + call_id + "].");
@@ -35882,8 +35878,6 @@ to fix it.');
       if (!SurveyCache.get('eventsBound')) {
         $rootScope.$on('survey:save:click', survey.save);
         $rootScope.$on('survey:reload', loadForm);
-        $rootScope.$on('household:member:selected', updateVoterId);
-        $rootScope.$on('household:changed', clearVoterId);
         idJanitor.cleanUpUnload(true, survey.autoSubmitConfig);
         SurveyCache.put('eventsBound', true);
       }
@@ -36671,7 +36665,7 @@ angular.module('callveyor.household').run(['$templateCache', function($templateC
   'use strict';
 
   $templateCache.put('/callveyor/dialer/household/household.tpl.html',
-    "<div class=\"row fixed-contact panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"household.members\">Name, phone, address, etc will be listed here when connected.</p><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!household.phone\">Phone</dt><dd data-ng-hide=\"!household.phone\">{{household.phone}}</dd></dl><div data-ng-repeat=\"member in household.members\"><label style=\"font: inherit; width: 100%\" data-ng-class=\"household.selected == member.id ? 'well well-sm' : ''\"><input type=\"radio\" data-ng-model=\"household.selected\" data-ng-value=\"member.id\" data-ng-change=\"$emit('household:member:selected', member)\" class=\"col-xs-1 col-sm-1 pull-right\" name=\"voter_id\"><!-- system fields --><dl class=\"dl-horizontal col-xs-5 col-sm-11\"><dt data-ng-show=\"member.fields.use_id\">Contact</dt><dd data-ng-show=\"member.fields.use_id\" data-ng-bind=\"$index + 1\"></dd><dt data-ng-hide=\"!member.fields.custom_id\">Contact ID</dt><dd data-ng-hide=\"!member.fields.custom_id\" data-ng-bind-html=\"member.fields.custom_id\"></dd><dt data-ng-hide=\"!member.fields.first_name\">First name</dt><dd data-ng-hide=\"!member.fields.first_name\" data-ng-bind-html=\"member.fields.first_name\"></dd><dt data-ng-hide=\"!member.fields.middle_name\">Middle name</dt><dd data-ng-hide=\"!member.fields.middle_name\" data-ng-bind-html=\"member.fields.middle_name\"></dd><dt data-ng-hide=\"!member.fields.last_name\">Last name</dt><dd data-ng-hide=\"!member.fields.last_name\" data-ng-bind-html=\"member.fields.last_name\"></dd><dt data-ng-hide=\"!member.fields.suffix\">Suffix</dt><dd data-ng-hide=\"!member.fields.suffix\" data-ng-bind-html=\"member.fields.suffix\"></dd><dt data-ng-hide=\"!member.fields.address\">Address</dt><dd data-ng-hide=\"!member.fields.address\" data-ng-bind-html=\"member.fields.address\"></dd><dt data-ng-hide=\"!member.fields.city\">City</dt><dd data-ng-hide=\"!member.fields.city\" data-ng-bind-html=\"member.fields.city\"></dd><dt data-ng-hide=\"!member.fields.state\">State</dt><dd data-ng-hide=\"!member.fields.state\" data-ng-bind-html=\"member.fields.state\"></dd><dt data-ng-hide=\"!member.fields.zip_code\">Zip / Postal code</dt><dd data-ng-hide=\"!member.fields.zip_code\" data-ng-bind-html=\"member.fields.zip_code\"></dd><dt data-ng-hide=\"!member.fields.country\">Country</dt><dd data-ng-hide=\"!member.fields.country\" data-ng-bind-html=\"member.fields.country\"></dd><dt data-ng-hide=\"!member.fields.email\">Email</dt><dd data-ng-hide=\"!member.fields.email\" data-ng-bind-html=\"member.fields.email\"></dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-5 col-sm-11\"><dt data-ng-repeat-start=\"tuple in member.custom_fields\" data-ng-bind-html=\"tuple[0]\"></dt><dd data-ng-repeat-end data-ng-bind-html=\"tuple[1]\"></dd></dl></label></div></div></div>"
+    "<div class=\"row fixed-contact panel panel-default\"><div class=\"panel-heading\">Contact details</div><div class=\"panel-body\"><p class=\"col-xs-12\" data-ng-hide=\"household.members\">Name, phone, address, etc will be listed here when connected.</p><dl class=\"dl-horizontal col-xs-6 col-sm-12\"><dt data-ng-hide=\"!household.phone\">Phone</dt><dd data-ng-hide=\"!household.phone\">{{household.phone}}</dd></dl><div data-ng-repeat=\"member in household.members\"><label style=\"font: inherit; width: 100%\" data-ng-class=\"household.selected == member ? 'well well-sm' : ''\"><input type=\"radio\" data-ng-change=\"contactSelected()\" data-ng-model=\"household.selected\" data-ng-value=\"member\" class=\"col-xs-1 col-sm-1 pull-right\" name=\"voter_id\"><!-- system fields --><dl class=\"dl-horizontal col-xs-5 col-sm-11\"><dt data-ng-show=\"member.fields.use_id\">Contact</dt><dd data-ng-show=\"member.fields.use_id\" data-ng-bind=\"$index + 1\"></dd><dt data-ng-hide=\"!member.fields.custom_id\">Contact ID</dt><dd data-ng-hide=\"!member.fields.custom_id\" data-ng-bind-html=\"member.fields.custom_id\"></dd><dt data-ng-hide=\"!member.fields.first_name\">First name</dt><dd data-ng-hide=\"!member.fields.first_name\" data-ng-bind-html=\"member.fields.first_name\"></dd><dt data-ng-hide=\"!member.fields.middle_name\">Middle name</dt><dd data-ng-hide=\"!member.fields.middle_name\" data-ng-bind-html=\"member.fields.middle_name\"></dd><dt data-ng-hide=\"!member.fields.last_name\">Last name</dt><dd data-ng-hide=\"!member.fields.last_name\" data-ng-bind-html=\"member.fields.last_name\"></dd><dt data-ng-hide=\"!member.fields.suffix\">Suffix</dt><dd data-ng-hide=\"!member.fields.suffix\" data-ng-bind-html=\"member.fields.suffix\"></dd><dt data-ng-hide=\"!member.fields.address\">Address</dt><dd data-ng-hide=\"!member.fields.address\" data-ng-bind-html=\"member.fields.address\"></dd><dt data-ng-hide=\"!member.fields.city\">City</dt><dd data-ng-hide=\"!member.fields.city\" data-ng-bind-html=\"member.fields.city\"></dd><dt data-ng-hide=\"!member.fields.state\">State</dt><dd data-ng-hide=\"!member.fields.state\" data-ng-bind-html=\"member.fields.state\"></dd><dt data-ng-hide=\"!member.fields.zip_code\">Zip / Postal code</dt><dd data-ng-hide=\"!member.fields.zip_code\" data-ng-bind-html=\"member.fields.zip_code\"></dd><dt data-ng-hide=\"!member.fields.country\">Country</dt><dd data-ng-hide=\"!member.fields.country\" data-ng-bind-html=\"member.fields.country\"></dd><dt data-ng-hide=\"!member.fields.email\">Email</dt><dd data-ng-hide=\"!member.fields.email\" data-ng-bind-html=\"member.fields.email\"></dd></dl><!-- custom fields --><dl class=\"dl-horizontal col-xs-5 col-sm-11\"><dt data-ng-repeat-start=\"tuple in member.custom_fields\" data-ng-bind-html=\"tuple[0]\"></dt><dd data-ng-repeat-end data-ng-bind-html=\"tuple[1]\"></dd></dl></label></div></div></div>"
   );
 
 }]);
