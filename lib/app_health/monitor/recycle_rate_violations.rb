@@ -2,7 +2,7 @@ require 'impact_platform/metrics'
 
 ## Monitor possible recycle rate violations (ie calling the same voter multiple times in less than an hour)
 #
-# Monitor our data. Count call attempts with a created_at time in the last hour grouped by voter_id.
+# Monitor our data. Count call attempts with a created_at time in the last hour grouped by household_id.
 # Given recent events (Twilio API errors) our data is probably more reliable from an
 # availability/freshness perspective.
 #
@@ -12,18 +12,18 @@ require 'impact_platform/metrics'
 # -- alert query, run often to check for problem
 #  SELECT COUNT(id) FROM call_attempts
 #  WHERE created_at >= NOW() - INTERVAL 1 HOUR
-#  GROUP BY voter_id
+#  GROUP BY household_id
 #  HAVING COUNT(*) > 1
 #
 # -- report query, run once problem is identified
 #
-#  SELECT COUNT(*),voter_id,GROUP_CONCAT(dialer_mode) dial_mode,
+#  SELECT COUNT(*),household_id,GROUP_CONCAT(dialer_mode) dial_mode,
 #         GROUP_CONCAT(campaign_id) campaigns,GROUP_CONCAT(status) statuses,
 #         GROUP_CONCAT(created_at) time,NOW() cur_time,
 #         GROUP_CONCAT(tDuration) seconds,GROUP_CONCAT(sid) SIDs
 #  FROM call_attempts
 #  WHERE created_at >= NOW() - INTERVAL 1 HOUR
-#  GROUP BY voter_id,campaign_id HAVING COUNT(*) > 1
+#  GROUP BY household_id,campaign_id HAVING COUNT(*) > 1
 # ```
 
 module AppHealth
@@ -49,7 +49,7 @@ module AppHealth
         %Q{
           SELECT COUNT(DISTINCT(id)) count FROM call_attempts
           WHERE created_at >= UTC_TIMESTAMP() - INTERVAL 1 HOUR
-          GROUP BY voter_id
+          GROUP BY household_id
           HAVING COUNT(id) > 1
         }
       end
@@ -57,13 +57,13 @@ module AppHealth
       # This will run infrequently; when alarm condition is noticed.
       def self.inspect_violators_sql
         %Q{
-          SELECT COUNT(*) count,voter_id,GROUP_CONCAT(dialer_mode) dial_mode,
+          SELECT COUNT(*) count,household_id,GROUP_CONCAT(dialer_mode) dial_mode,
                  GROUP_CONCAT(campaign_id) campaigns,GROUP_CONCAT(status) statuses,
                  GROUP_CONCAT(created_at) time,NOW() cur_time,
                  GROUP_CONCAT(tDuration) seconds,GROUP_CONCAT(sid) SIDs
           FROM call_attempts
           WHERE created_at >= UTC_TIMESTAMP() - INTERVAL 1 HOUR
-          GROUP BY voter_id,campaign_id HAVING COUNT(*) > 1
+          GROUP BY household_id,campaign_id HAVING COUNT(*) > 1
         }
       end
 
@@ -108,8 +108,8 @@ module AppHealth
       def alert_key
         time      = Time.now.strftime('%d/%m/%Y')
         campaigns = violators.first['campaigns']
-        voter_id  = violators.first['voter_id']
-        "#{time} - #{campaigns} - #{voter_id}"
+        household_id  = violators.first['household_id']
+        "#{time} - #{campaigns} - #{household_id}"
       end
 
       def alert_client
