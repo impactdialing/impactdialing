@@ -29,7 +29,15 @@ class CallStats::Summary
   end
 
   def households_not_dialed_count
-    @not_dialed_count ||= (households.not_dialed.count - ringing_count)
+    return @households_not_dialed_count if defined?(@households_not_dialed_count)
+    
+    actual_count                 = households.not_dialed.count
+    adjusted_count               = actual_count - ringing_count
+    @households_not_dialed_count = if adjusted_count < 0
+                                     actual_count
+                                   else
+                                     adjusted_count
+                                   end
   end
 
   def voters_not_reached
