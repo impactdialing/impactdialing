@@ -36,12 +36,30 @@ class PersistCalls
     wrapped_up_calls(LIMIT)
   end
 
+  def self.pending_key(list_name)
+    "#{list_name}.pending"
+  end
+
+  def self.rpoplpush(connection, list_name)
+    connection.rpoplpush list_name, pending_key(list_name)
+  end
+
+  def self.del_pending(connection, list_name)
+    connection.del pending_key(list_name)
+  end
+
+  def self.pending_list_sizes
+    list_names = %w(abandoned_call_list not_answered_call_list disconnected_call_list wrapped_up_call_list end_answered_by_machine_call_list)
+    redis = Redis.new
+    list_names.map{ |list| [list, redis.llen(pending_key(list))] }
+  end
+
   def self.multipop(connection, list_name, num)
     num_of_elements = connection.llen list_name
-    num_to_pop = num_of_elements < num ? num_of_elements : num
-    result = []
+    num_to_pop      = num_of_elements < num ? num_of_elements : num
+    result          = []
     num_to_pop.times do |x|
-      element = connection.lpop list_name
+      element = rpoplpush(connection, list_name)
       result << JSON.parse(element) unless element.nil?
     end
     result
@@ -51,6 +69,7 @@ class PersistCalls
     data.each do |element|
       connection.lpush(list_name, element.to_json)
     end
+    del_pending(connection, list_name)
   end
 
   def self.safe_pop(connection, list_name, number)
@@ -61,10 +80,12 @@ class PersistCalls
       Rails.logger.info "Shutting down. Saving popped data. [safe_pop]"
       ImpactPlatform::Metrics::JobStatus.sigterm(self.to_s.underscore)
       multipush(connection, list_name, data)
+      raise
     rescue => exception
       multipush(connection, list_name, data)
       raise
     end
+    del_pending(connection, list_name) # clean-up now all have processed successfully
   end
 
   def self.setup_bitmasks(klass, collection, bitmask_columns)

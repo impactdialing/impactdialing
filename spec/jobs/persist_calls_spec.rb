@@ -34,7 +34,7 @@ describe PersistCalls do
 
       context "success" do
         before(:each) { PersistCalls.perform }
-        it "should remove data from all redis lists" do
+        it "should atomically remove data from all redis lists" do
           expect($redis_call_flow_connection.llen("abandoned_call_list")).to eq(0)
           expect($redis_call_end_connection.llen("not_answered_call_list")).to eq(0)
           expect($redis_call_flow_connection.llen("disconnected_call_list")).to eq(0)
@@ -47,15 +47,30 @@ describe PersistCalls do
         before(:each) do
           allow(Call).to receive(:where) { raise 'exception' }
           allow(CallAttempt).to receive(:where) { raise 'exception' }
-          # expect{ PersistCalls.perform }.to raise_error{ 'exception' }
+        end
+
+        it "should NOT remove data from all redis lists" do
           begin
             PersistCalls.perform
           rescue Exception
           end
+
+          expect($redis_call_flow_connection.llen("abandoned_call_list")).to eq(2)
+          expect($redis_call_end_connection.llen("not_answered_call_list")).to eq(1)
+          expect($redis_call_flow_connection.llen("disconnected_call_list")).to eq(3)
+          expect($redis_call_flow_connection.llen("wrapped_up_call_list")).to eq(1)
+          expect($redis_call_flow_connection.llen("end_answered_by_machine_call_list")).to eq(1)
         end
 
-        it "should NOT remove data from all redis lists" do
-          expect($redis_call_flow_connection.llen("abandoned_call_list")).to eq(2)
+        it 'should leave data in pending list if there is an error handling exceptions' do
+          allow(PersistCalls).to receive(:multipush).and_raise("NetworkFailure")
+          begin
+            PersistCalls.perform
+          rescue Exception
+          end
+
+          # errors are raised again, so only one list will have any pending items due to abort before others are processed
+          expect($redis_call_flow_connection.llen("abandoned_call_list.pending")).to eq(2)
           expect($redis_call_end_connection.llen("not_answered_call_list")).to eq(1)
           expect($redis_call_flow_connection.llen("disconnected_call_list")).to eq(3)
           expect($redis_call_flow_connection.llen("wrapped_up_call_list")).to eq(1)

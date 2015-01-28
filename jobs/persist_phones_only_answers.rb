@@ -105,6 +105,13 @@ class PersistPhonesOnlyAnswers
     redis.ltrim keys[:pending], 0, 7_999
   end
 
+  def self.pending_list_sizes
+    [
+      ['pending', redis.llen(keys[:pending])],
+      ['partial', redis.llen(keys[:partial])]
+    ]
+  end
+
   def self.partial_data!(raw_data)
     redis.lpop keys[:pending]
     redis.rpush keys[:partial], raw_data
