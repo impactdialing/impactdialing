@@ -8,7 +8,12 @@ class CallsController < ApplicationController
 
   # TwiML
   def incoming
-    render xml: @call.incoming_call(params)
+    unless params['ErrorCode'] and params['ErrorUrl']
+      xml = @call.incoming_call(params)
+    else
+      xml = @call.incoming_call_failed(params)
+    end
+    render xml: xml
   end
 
   # TwiML

@@ -1,3 +1,5 @@
+require 'impact_platform/metrics'
+
 class Call < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallTwiml
@@ -47,6 +49,21 @@ public
     else
       return call_answered_by_machine
     end
+  end
+
+  def incoming_call_failed(params={})
+    source      = [
+      "ac-#{campaign.account_id}",
+      "ca-#{campaign.id}",
+      "at-#{call_attempt.id}",
+      "code-#{params['ErrorCode']}",
+      "url-#{params['ErrorUrl']}"
+    ]
+    metric_name = "twiml.http_error"
+    ImpactPlatform::Metrics.count(metric_name, 1, source.join('.'))
+
+    campaign.number_not_ringing
+    return abandoned
   end
 
   ##
