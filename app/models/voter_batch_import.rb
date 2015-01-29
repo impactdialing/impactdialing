@@ -154,6 +154,10 @@ class VoterBatchImport
         import_from_hashes(Voter, leads)
       end
 
+      Resque.enqueue(Householding::ResetCounterCache, 'campaign', @list.campaign_id)
+      household_ids = households.values.sort
+      Resque.enqueue(Householding::ResetCounterCache, 'household', @list.campaign_id, household_ids.first, household_ids.last)
+
       voter_ids_for_cache = created_voter_ids.dup
 
       # persist custom field data
