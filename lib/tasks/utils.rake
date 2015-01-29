@@ -57,8 +57,6 @@ task :migrate_householding => :environment do
       campaign.all_voters.where('household_id IS NULL AND phone IS NOT NULL').find_in_batches(batch_size: 1000) do |voters|
         lower_voter_id = voters.first.id
         upper_voter_id = voters.last.id
-        # p "Running migrate job Campaign[#{campaign.id}] Lower[#{lower_voter_id}] Upper[#{upper_voter_id}]"
-        # Householding::Migrate.perform(campaign.account_id, campaign.id, lower_voter_id, upper_voter_id)
         p "Queueing migrate job"
         Resque.enqueue(Householding::Migrate, campaign.account_id, campaign.id, lower_voter_id, upper_voter_id)
       end
@@ -81,11 +79,9 @@ task :update_householding_counter_cache => :environment do
   account_ids = (quota_account_ids + subscription_account_ids).uniq
   Campaign.where(account_id: account_ids).where('created_at > ?', 6.months.ago.beginning_of_month).find_in_batches(batch_size: 100) do |campaigns|
     campaigns.each do |campaign|
-      Resque.enqueue(Householding::SeedCounterCache, 'campaign', campaign.id)
-      # Householding::SeedCounterCache.perform('campaign', campaign.id)
+      Resque.enqueue(Householding::ResetCounterCache, 'campaign', campaign.id)
       campaign.households.find_in_batches(batch_size: 500) do |households|
-        Resque.enqueue(Householding::SeedCounterCache, 'households', campaign.id, households.first.id, households.last.id)
-        # Householding::SeedCounterCache.perform('households', campaign.id, households.first.id, households.last.id)
+        Resque.enqueue(Householding::ResetCounterCache, 'households', campaign.id, households.first.id, households.last.id)
       end
     end
   end
@@ -108,7 +104,6 @@ task :seed_dial_queue => :environment do
         if voter_list.enabled?
           voter_list.voters.find_in_batches(batch_size: 500) do |voters|
             Resque.enqueue(Householding::SeedDialQueue, campaign.id, voter_list.id, voters.first.id, voters.last.id)
-            # Householding::SeedDialQueue.perform(campaign.id, voter_list.id, voters.first.id, voters.last.id)
           end
           print '.'
         end
