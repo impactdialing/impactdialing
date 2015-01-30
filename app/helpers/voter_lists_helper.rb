@@ -8,6 +8,16 @@ module VoterListsHelper
     match || csv_header
   end
 
+  def selected_system_or_custom_header_for(csv_header, account)
+    normalized_header = csv_header.underscore.strip
+    select_options    = system_column_headers(csv_header, account)
+    selected = select_options.find do |select_option|
+      select_option.include?(normalized_header) or
+      select_option.include?(csv_header.strip)
+    end
+    selected.try(:last)
+  end
+
   def system_column_headers(csv_header, account)
     basic_header = [["(Discard this column)", nil]]
     basic_header.concat(VoterList::VOTER_DATA_COLUMNS.values.zip(VoterList::VOTER_DATA_COLUMNS.keys))
