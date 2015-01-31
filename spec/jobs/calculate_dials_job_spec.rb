@@ -159,26 +159,29 @@ describe 'CalculateDialsJob' do
 
       context 'no voters returned from load attempt' do
         before do
+          CallerSession.delete_all
           create_list(:bare_caller_session, 5, :available, :webui, {
+            campaign: campaign, caller: campaign.callers.first
+          })
+          create_list(:bare_caller_session, 5, :not_available, :webui, {
             campaign: campaign, caller: campaign.callers.first
           })
 
           dial_queue = CallFlow::DialQueue.new(campaign)
           dial_queue.next(Voter.count)
-          Voter.update_all({last_call_attempt_time: 20.minutes.ago})
         end
 
         it_behaves_like 'all calculate dial jobs'
 
-        it 'queues CampaignOutOfNumbersJob for all available callers' do
-          expect(campaign.caller_sessions.available.count).to eq 5
+        it 'queues CampaignOutOfNumbersJob for all on_call callers' do
+          expect(campaign.caller_sessions.on_call.count).to eq 10
           expect(CallFlow::DialQueue.new(campaign).size(:available)).to be_zero
 
           CalculateDialsJob.perform(campaign.id)
 
-          actual = Resque.peek(:call_flow, 0, 10)
+          actual = Sidekiq::Queue.new :call_flow
 
-          expect(actual.size).to eq 5
+          expect(actual.size).to eq 10
 
           actual.each do |job|
             expect(job['class']).to eq 'CampaignOutOfNumbersJob'

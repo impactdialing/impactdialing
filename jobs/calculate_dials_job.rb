@@ -46,8 +46,12 @@ class CalculateDialsJob
     unless phone_numbers.empty?
       Resque.enqueue(DialerJob, campaign_id, phone_numbers)
     else
-      campaign.caller_sessions.available.pluck(:id).each do |id|
-        Sidekiq::Client.push('queue' => 'call_flow', 'class' => CampaignOutOfNumbersJob, 'args' => [id])
+      campaign.caller_sessions.on_call.pluck(:id).each do |id|
+        Sidekiq::Client.push({
+          'queue' => 'call_flow',
+          'class' => CampaignOutOfNumbersJob,
+          'args' => [id]
+        })
       end
     end
 

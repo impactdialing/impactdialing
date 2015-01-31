@@ -17,11 +17,14 @@ class CampaignOutOfNumbersJob
   # Retries should occur in lower-level dependencies.
   # Sidekiq should not be used to retry it will almost certainly retry after
   # the call has ended.
-  sidekiq_options :retry => false
-  sidekiq_options :failures => true
+  sidekiq_options retry: false, failures: true, queue: 'call_flow'
 
-   def perform(caller_session_id)
-     caller_session = CallerSession.find(caller_session_id)
-     Providers::Phone::Call.redirect_for(caller_session, :out_of_numbers)
-   end
+  def perform(caller_session_id)
+    caller_session = CallerSession.find(caller_session_id)
+    if caller_session.available?
+      Providers::Phone::Call.redirect_for(caller_session, :out_of_numbers)
+    else
+      CampaignOutOfNumbersJob.perform_in(1.minute, caller_session_id)
+    end
+  end
 end
