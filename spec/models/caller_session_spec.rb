@@ -33,6 +33,27 @@ describe CallerSession, :type => :model do
     expect(session.voter_in_progress).to eq(new_voter)
   end
 
+  describe '#available?' do
+    let(:caller_session) do
+      build(:webui_caller_session)
+    end
+    before do
+      caller_session.on_call            = true
+      caller_session.available_for_call = true
+    end
+    it 'returns true when on_call is true and available_for_call is true' do
+      expect(caller_session.available?).to be_truthy
+    end
+    it 'returns false if on_call is false' do
+      caller_session.on_call = false
+      expect(caller_session.available?).to be_falsey
+    end
+    it 'returns false if available_for_call is false' do
+      caller_session.available_for_call = false
+      expect(caller_session.available?).to be_falsey
+    end
+  end
+
   describe "Calling in" do
     it "puts the caller on hold" do
       session = create(:caller_session)

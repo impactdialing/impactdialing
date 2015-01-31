@@ -66,7 +66,9 @@ private
   end
 
 public
-
+  def available?
+    on_call? and available_for_call?
+  end
   def minutes_used
     return 0 if self.tDuration.blank?
     self.tDuration/60.ceil
