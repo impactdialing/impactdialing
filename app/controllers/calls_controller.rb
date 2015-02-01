@@ -86,7 +86,11 @@ class CallsController < ApplicationController
   end
 
   def find_call
-    @call = Call.where('id = ? OR call_sid = ?', params['id'], params['CallSid']).first
+    if params[:id]
+      @call = Call.find(params[:id])
+    elsif params['CallSid']
+      @call = Call.where(call_sid: params['CallSid']).first
+    end
   end
 
   def find_and_update_answers_and_notes_and_scheduled_date
