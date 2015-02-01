@@ -15,31 +15,6 @@
 
 desc "Create Households w/ relevant Voter data & update relevant Voter#household_id & CallAttempt#household_id"
 task :migrate_householding => :environment do
-  # require 'householding/migrate'
-  # Account#activated: now meaningless, all accounts created in last year => false
-  # account_ids = Account.all.pluck(:id)
-  # campaign_ids = Campaign.pluck(:id)
-  # voter_count = 0
-  # campaign_ids = Campaign.where('created_at > ?', 7.months.ago.beginning_of_month).where(active: true).pluck(:id)
-  # campaign_ids.each_slice(10){ |ids| voter_count += Voter.where(campaign_id: ids).with_enabled(:list).count(:campaign_id); p voter_count}
-  # voter_count = 0
-  # campaign_ids.each_slice(10){ |ids| voter_count += Voter.where(campaign_id: ids).count(:campaign_id); p voter_count}
-  # voters to process (production): 16,151,793 over 3,156 active (not deleted) campaigns
-  # for every voter in an active account and active campaign
-  # - find or create a household
-  #   - phone       = Voter#phone
-  #   - blocked     = [:dnc, :cell] <= Voter#blocked & VoterList#skip_wireless
-  #   - account_id  = Voter#account_id
-  #   - campaign_id = Voter#campaign_id
-  # - update Voter#household_id
-  # - update Voter#enabled, removing :blocked from all
-  # - refresh Household#voters_count
-  # - refresh Campaign#households_count
-  # for every created household
-  # - find most recent call attempt across members of the household
-  # - update status w/ most recent call attempt status
-  # - update presented_at w/ most recent call attempt
-  # mysql2://root:pfsdh37sl203jq@householding-data-migration-proving-ground.cjo94dhm4pos.us-east-1.rds.amazonaws.com/heroku_production?reconnect=true
   quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
   subscription_account_ids = Billing::Subscription.where(
     'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
@@ -57,7 +32,6 @@ task :migrate_householding => :environment do
       campaign.all_voters.where('household_id IS NULL AND phone IS NOT NULL').find_in_batches(batch_size: 1000) do |voters|
         lower_voter_id = voters.first.id
         upper_voter_id = voters.last.id
-        p "Queueing migrate job"
         Resque.enqueue(Householding::Migrate, campaign.account_id, campaign.id, lower_voter_id, upper_voter_id)
       end
     end
@@ -79,10 +53,13 @@ task :update_householding_counter_cache => :environment do
   account_ids = (quota_account_ids + subscription_account_ids).uniq
   Campaign.where(account_id: account_ids).where('created_at > ?', 6.months.ago.beginning_of_month).find_in_batches(batch_size: 100) do |campaigns|
     campaigns.each do |campaign|
+      p "Resetting Campaign[#{campaign.id}].households_count"
       Resque.enqueue(Householding::ResetCounterCache, 'campaign', campaign.id)
       campaign.households.find_in_batches(batch_size: 500) do |households|
+        print '.'
         Resque.enqueue(Householding::ResetCounterCache, 'households', campaign.id, households.first.id, households.last.id)
       end
+      p "--"
     end
   end
 end
@@ -108,6 +85,7 @@ task :seed_dial_queue => :environment do
           print '.'
         end
       end
+      p "--"
     end
     print "\n\nDone!!\n"
   end
