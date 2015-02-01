@@ -95,11 +95,8 @@ module Householding
 
     def self.raise_if_any_failed(import, type)
       if import.failed_instances.any?
-        messages = [
-          "#{type}.import",
-          'InstancesFailed',
-          import.failed_instances.map{|i| [i.errors.full_messages]}.uniq.join("; ")
-        ]
+        log_if_any_failed(import, type)
+        
         raise "Householding::Migrate::ImportError #{messages.join("\n")}"
       end
     end
@@ -108,7 +105,7 @@ module Householding
       if import.failed_instances.any?
         messages = [
           "#{type}.import",
-          'InstancesFailed',
+          "#{import.failed_instances.size} InstancesFailed",
           import.failed_instances.map{|i| [i.errors.full_messages]}.uniq.join("; ")
         ]
         p messages.join("\n")
