@@ -14,7 +14,7 @@ module Householding
         # households = campaign.households.where(id: (lower_household_id..upper_household_id))
         campaign.households.where(id: (lower_household_id..upper_household_id)).each do |household|
           Household.reset_counters(household.id, :voters)
-          if household.voters_count.zero?
+          if household.voters.count.zero?
             household.destroy
           end
         end
