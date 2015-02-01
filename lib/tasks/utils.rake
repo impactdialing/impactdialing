@@ -91,6 +91,15 @@ task :seed_dial_queue => :environment do
   end
 end
 
+desc "Cache selected Script fields"
+task :seed_script_fields => :environment do
+  Script.find_in_batches do |scripts|
+    scripts.each do |script|
+      Resque.enqueue(CallFlow::Web::Jobs::CacheContactFields, script.id)
+    end
+  end
+end
+
 desc "Migrate Voter#voicemail_history to CallAttempt#recording_id & #recording_delivered_manually"
 task :migrate_voicemail_history => :environment do
   voters = Voter.includes(:call_attempts).where('status != "not called"').where('voicemail_history is not null')
