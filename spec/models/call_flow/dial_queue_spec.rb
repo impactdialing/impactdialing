@@ -68,6 +68,7 @@ describe 'CallFlow::DialQueue' do
         households.each{|household| household.voters.update_all(status: CallAttempt::Status::SUCCESS)}
         @household_with_2_members       = households.reload.first
         @other_household_with_2_members = households.reload.last
+        @that_household_with_2_members  = households.reload[2]
         @not_dialed_voter               = create(:voter, {
           campaign: @campaign,
           account: account,
@@ -78,6 +79,12 @@ describe 'CallFlow::DialQueue' do
           account: account,
           household: @other_household_with_2_members,
           status: CallAttempt::Status::ABANDONED
+        })
+        @failed_voter = create(:voter, {
+          campaign: @campaign,
+          account: account,
+          household: @that_household_with_2_members,
+          status: CallAttempt::Status::FAILED
         })
 
         voters = @campaign.reload.all_voters
@@ -102,6 +109,11 @@ describe 'CallFlow::DialQueue' do
         cached_members = @dial_queue.households.find(@other_household_with_2_members.phone)
         expect(cached_members.size).to eq 1
         expect(cached_members.first['id']).to eq @abandoned_voter.id
+      end
+
+      it 'does not cache members that have failed' do
+        cached_members = @dial_queue.households.find(@that_household_with_2_members)
+        expect(cached_members.size).to eq 0
       end
     end
   end

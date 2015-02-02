@@ -378,7 +378,7 @@ public
   end
 
   def complete?
-    status == CallAttempt::Status::SUCCESS
+    CallAttempt::Status.completed_list(campaign).include?(status)
   end
 
   def dispositioned(call_attempt)
