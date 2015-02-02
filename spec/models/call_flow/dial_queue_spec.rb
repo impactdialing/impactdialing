@@ -66,11 +66,18 @@ describe 'CallFlow::DialQueue' do
         households = Household.order('id DESC').where('id < ?', li).limit(5)
         households.update_all(status: CallAttempt::Status::SUCCESS, presented_at: 2.minutes.ago)
         households.each{|household| household.voters.update_all(status: CallAttempt::Status::SUCCESS)}
-        @household_with_2_members = households.reload.first
-        @not_dialed_voter         = create(:voter, {
+        @household_with_2_members       = households.reload.first
+        @other_household_with_2_members = households.reload.last
+        @not_dialed_voter               = create(:voter, {
           campaign: @campaign,
           account: account,
           household: @household_with_2_members
+        })
+        @abandoned_voter = create(:voter, {
+          campaign: @campaign,
+          account: account,
+          household: @other_household_with_2_members,
+          status: CallAttempt::Status::ABANDONED
         })
 
         voters = @campaign.reload.all_voters
@@ -78,7 +85,7 @@ describe 'CallFlow::DialQueue' do
       end
 
       it 'pushes phone numbers that cannot be dialed right away to the recycle bin set' do
-        expect(@dial_queue.size(:recycle_bin)).to eq 91 # @household_with_2_members will be recycled
+        expect(@dial_queue.size(:recycle_bin)).to eq 92 # @(other_)household_with_2_members will be recycled
       end
 
       it 'pushes phone numbers that can be dialed right away to the available set' do
@@ -89,6 +96,12 @@ describe 'CallFlow::DialQueue' do
         cached_members = @dial_queue.households.find(@household_with_2_members.phone)
         expect(cached_members.size).to eq 1
         expect(cached_members.first['id']).to eq @not_dialed_voter.id
+      end
+
+      it 'caches members that have been called but not completed' do
+        cached_members = @dial_queue.households.find(@other_household_with_2_members.phone)
+        expect(cached_members.size).to eq 1
+        expect(cached_members.first['id']).to eq @abandoned_voter.id
       end
     end
   end

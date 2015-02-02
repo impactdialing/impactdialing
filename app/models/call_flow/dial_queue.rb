@@ -19,7 +19,8 @@ module CallFlow
     end
 
     def cache_voter?(voter)
-      voter.not_called? or voter.call_back? or voter.retry?
+      # check if voter.complete? to handle legacy statuses like abandoned, etc that are now attached to households
+      voter.not_called? or voter.call_back? or voter.retry? or (not voter.complete?)
     end
 
   public

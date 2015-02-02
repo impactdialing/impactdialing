@@ -377,6 +377,10 @@ public
     status == Voter::Status::RETRY
   end
 
+  def complete?
+    status == CallAttempt::Status::SUCCESS
+  end
+
   def dispositioned(call_attempt)
     dial_queue             = CallFlow::DialQueue.new(campaign)
     self.status            = call_attempt.status
