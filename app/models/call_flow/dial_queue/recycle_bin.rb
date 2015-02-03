@@ -36,11 +36,7 @@ public
   def add(household)
     redis.zadd keys[:bin], *memberize(household)
 
-    return(exists?(household.phone))
-  end
-
-  def exists?(phone)
-    not missing?(phone)
+    return (not missing?(household.phone))
   end
 
   def missing?(phone)
