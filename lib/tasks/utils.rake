@@ -64,6 +64,49 @@ task :update_householding_counter_cache => :environment do
   end
 end
 
+desc "Find campaigns with corrupted caches"
+task :patch_corrupt_dial_queues => :environment do
+  corrupt_count = 0
+
+  Campaign.where('created_at > ?', 6.months.ago.beginning_of_month).each do |campaign|
+    campaign.dial_queue.available.all.each do |phone|
+      if campaign.dial_queue.households.find(phone).empty?
+        campaign.dial_queue.available.remove(phone)
+        campaign.dial_queue.recycle_bin.remove(phone)
+        unless campaign.dial_queue.households.missing?(phone)
+          campaign.dial_queue.households.remove_house(phone)
+        end
+      end
+    end
+  end
+  
+  print "\n\nFound & patched #{corrupt_count} corrupted dial queues\n\n"
+end
+
+desc "Rebuild dial queue cache"
+task :rebuild_dial_queues => :environment do |t,args|
+  quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
+  subscription_account_ids = Billing::Subscription.where(
+    'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
+    ['trial', 'per_minute', 'enterprise'],
+    ['basic', 'pro', 'business'],
+    'active'
+  ).pluck(:account_id)
+  account_ids = (quota_account_ids + subscription_account_ids).uniq
+
+  VoterList.where(account_id: account_ids).where('created_at > ?', 6.months.ago.beginning_of_month).includes(:campaign).find_in_batches(batch_size: 100) do |voter_lists|
+    print 'b'
+    voter_lists.each do |voter_list|
+      next if voter_list.voters.count.zero?
+      lower_voter_id = voter_list.voters.order('id asc').first.id
+      upper_voter_id = voter_list.voters.order('id desc').first.id
+      Resque.enqueue(Householding::SeedDialQueue, voter_list.campaign_id, voter_list.id, lower_voter_id, upper_voter_id)
+      print 'q'
+    end
+  end
+  print "\n\nDone!!\n\n"
+end
+
 desc "Cache households to dial queue"
 task :seed_dial_queue => :environment do
   quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
