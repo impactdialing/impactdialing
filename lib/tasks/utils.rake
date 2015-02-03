@@ -37,6 +37,30 @@ task :migrate_householding => :environment do
   end
 end
 
+desc "Migrate priority accounts to Householding"
+task :migrate_householding_priority => :environment do
+  account_ids = [
+    1277, 1165, 1153, 1278, 781, 978, 1159, 1297, 850,
+    1286, 1173, 399, 298, 1294, 121, 224, 244, 268, 487,
+    525, 558, 598, 875, 1283, 94, 159, 1264, 899, 34
+  ]
+
+  account_ids.each do |account_id|
+    VoterList.where(account_id: account_id).includes(:campaign).find_in_batches(batch_size: 100) do |voter_lists|
+      print 'b'
+      voter_lists.each do |voter_list|
+        voter_list.voters.where('household_id IS NULL AND phone IS NOT NULL').find_in_batches(batch_size: 1000) do |voters|
+          lower_voter_id = voters.first.id
+          upper_voter_id = voters.last.id
+          Resque.enqueue(Householding::Migrate, voter_list.account_id, voter_list.campaign_id, lower_voter_id, upper_voter_id)
+          print 'q'
+        end
+      end
+      print "\n"
+    end
+  end
+end
+
 desc "Update Householding related counter caches"
 task :update_householding_counter_cache => :environment do
   quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
