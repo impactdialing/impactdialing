@@ -64,18 +64,38 @@ task :update_householding_counter_cache => :environment do
   end
 end
 
-desc "Find campaigns with corrupted caches"
+desc "Patch all campaigns with corrupted caches"
 task :patch_corrupt_dial_queues => :environment do
   corrupt_count = 0
 
   Campaign.where('created_at > ?', 6.months.ago.beginning_of_month).each do |campaign|
     campaign.dial_queue.available.all.each do |phone|
       if campaign.dial_queue.households.find(phone).empty?
+        corrupt_count += 1
         campaign.dial_queue.available.remove(phone)
         campaign.dial_queue.recycle_bin.remove(phone)
         unless campaign.dial_queue.households.missing?(phone)
           campaign.dial_queue.households.remove_house(phone)
         end
+      end
+    end
+  end
+  
+  print "\n\nFound & patched #{corrupt_count} corrupted dial queues\n\n"
+end
+
+desc "Patch given campaign if cache is corrupted"
+task :patch_corrupt_dial_queue, [:campaign_id] => :environment do |t,args|
+  corrupt_count = 0
+  campaign      = Campaign.find(args[:campaign_id])
+
+  campaign.dial_queue.available.all.each do |phone|
+    if campaign.dial_queue.households.find(phone).empty?
+      corrupt_count += 1
+      campaign.dial_queue.available.remove(phone)
+      campaign.dial_queue.recycle_bin.remove(phone)
+      unless campaign.dial_queue.households.missing?(phone)
+        campaign.dial_queue.households.remove_house(phone)
       end
     end
   end
