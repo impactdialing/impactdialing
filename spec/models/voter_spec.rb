@@ -15,6 +15,53 @@ describe Voter, :type => :model do
     end
   end
 
+  describe 'cache?' do
+    let(:voter){ create(:voter) }
+    let(:household){ voter.household }
+    let(:possible_legacy_statuses) do
+      [
+        Voter::Status::NOTCALLED, Voter::Status::RETRY,
+        CallAttempt::Status::FAILED, CallAttempt::Status::SUCCESS,
+        CallAttempt::Status::ABANDONED, CallAttempt::Status::INPROGRESS,
+        CallAttempt::Status::NOANSWER, CallAttempt::Status::BUSY,
+        CallAttempt::Status::HANGUP, CallAttempt::Status::READY,
+        CallAttempt::Status::CANCELLED, CallAttempt::Status::RINGING
+      ]
+    end
+    context 'household.cache? is false' do
+      before do
+        allow(household).to receive(:cache?){ false }
+        allow(voter).to receive(:household){ household }
+      end
+      it 'returns false regardless of voter.status' do
+        possible_legacy_statuses.each do |status|
+          voter.status = status
+          expect(voter.cache?).to(be_falsey, "Expected Voter with status of #{status} to not be cacheable")
+        end
+      end
+    end
+    context 'household.cache? is true' do
+      before do
+        allow(household).to receive(:cache?){ true }
+        allow(voter).to receive(:household){ household }
+      end
+      it 'returns true when voter status is not CallAttempt::Status::SUCCESS or CallAttempt::Status::FAILED' do
+        statuses_for_true = possible_legacy_statuses - [CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED]
+        statuses_for_true.each do |status|
+          voter.status = status
+          expect(voter.cache?).to(be_truthy, "Expected Voter with status of #{status} to be cacheable")
+        end
+      end
+      it 'returns false when voter status is CallAttempt::Status::SUCCESS or CallAttempt::Status::FAILED' do
+        statuses_for_false = [CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED]
+        statuses_for_false.each do |status|
+          voter.status = status
+          expect(voter.cache?).to(be_falsey, "Expected Voter with status of #{status} to not be cacheable")
+        end
+      end
+    end
+  end
+
   describe '#do_not_call_back?' do
     let(:voter){ build(:voter) }
     it 'returns false when status == NOTCALLED' do

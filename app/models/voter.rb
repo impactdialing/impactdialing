@@ -378,7 +378,19 @@ public
   end
 
   def complete?
-    CallAttempt::Status.completed_list(campaign).include?(status)
+    [
+      CallAttempt::Status::SUCCESS,
+      CallAttempt::Status::FAILED
+    ].include?(status)
+  end
+
+  def cache?
+    household.cache? and (
+      not_called? or
+      call_back? or
+      retry? or
+      (not complete?)
+    )
   end
 
   def dispositioned(call_attempt)
