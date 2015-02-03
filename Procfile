@@ -24,3 +24,5 @@ clock: rake environment resque:scheduler VERBOSE=true
 app_health: rake environment monitor_app_health APP_HEALTH_RUN_INTERVAL=90
 
 migration_worker: rake environment resque:work QUEUE=data_migrations RESQUE_TERM_TIMEOUT=10 TERM_CHILD=1
+
+trickle: rake environment resque:work QUEUE=migrating RESQUE_TERM_TIMEOUT=10 TERM_CHILD=1

@@ -23,21 +23,17 @@ task :migrate_householding => :environment do
     'active'
   ).pluck(:account_id)
   account_ids = (quota_account_ids + subscription_account_ids).uniq
-  Campaign.where(account_id: account_ids).where('created_at > ?', 6.months.ago.beginning_of_month).find_in_batches(batch_size: 10) do |campaigns|
-    p "Migrating Campaigns[#{campaigns.map(&:id)}]"
-    p "AccountRange[#{campaigns.first.account_id}..#{campaigns.last.account_id}]"
-    p "CreatedAtRange[#{campaigns.first.created_at}..#{campaigns.last.created_at}]"
-
-    campaigns.each do |campaign|
-      campaign.all_voters.where('household_id IS NULL AND phone IS NOT NULL').find_in_batches(batch_size: 1000) do |voters|
+  VoterList.where(account_id: account_ids).order('created_at desc').includes(:campaign).find_in_batches(batch_size: 100) do |voter_lists|
+    print 'b'
+    voter_lists.each do |voter_list|
+      voter_list.voters.where('household_id IS NULL AND phone IS NOT NULL').find_in_batches(batch_size: 1000) do |voters|
         lower_voter_id = voters.first.id
         upper_voter_id = voters.last.id
-        Resque.enqueue(Householding::Migrate, campaign.account_id, campaign.id, lower_voter_id, upper_voter_id)
+        Resque.enqueue(Householding::Migrate, voter_list.account_id, voter_list.campaign_id, lower_voter_id, upper_voter_id)
+        print 'q'
       end
     end
-
-    p "Household count by campaign id: #{Household.group(:campaign_id).count}"
-    p "======================================================================"
+    print "\n"
   end
 end
 

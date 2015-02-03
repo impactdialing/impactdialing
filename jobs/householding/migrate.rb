@@ -4,7 +4,7 @@ module Householding
   class Migrate
     include Resque::Plugins::UniqueJob
     extend LibratoResque
-    @queue = :data_migrations
+    @queue = :migrating
 
     def self.perform(account_id, campaign_id, lower_voter_id, upper_voter_id)
       campaign = Campaign.where(account_id: account_id, id: campaign_id).first
@@ -78,7 +78,6 @@ module Householding
           nil
         end
       end.compact
-      household_ids_by_phone = {}
 
       stats[:updated_voters] = updated_voters.size
       import         = Voter.import updated_voters, on_duplicate_key_update: [:household_id, :enabled]
@@ -89,6 +88,17 @@ module Householding
       import        = CallAttempt.import call_attempts, on_duplicate_key_update: [:household_id]
       call_attempts = []
       raise_if_any_failed(import, 'CallAttempt')
+
+      Campaign.reset_counters(campaign.id, :households)
+      household_ids_by_phone.values.each do |household_id|
+        Household.reset_counters(household_id, :voters)
+      end
+
+      Voter.where(campaign_id: campaign.id, id: (lower_voter_id..upper_voter_id)).where('household_id IS NOT NULL').with_enabled(:list).find_in_batches do |migrated_voters|
+        campaign.dial_queue.cache_all(migrated_voters)
+      end
+
+      stats[:cache_count] = campaign.dial_queue.available.size + campaign.dial_queue.recycle_bin.size
 
       return stats
     end
