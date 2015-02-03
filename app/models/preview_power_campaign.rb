@@ -20,6 +20,8 @@ module PreviewPowerCampaign
 
     unless data[:campaign_out_of_leads]
       number_presented(1)
+    else
+      puts "#{self.type}[#{self.id}] - CampaignOutOfNumbers"
     end
 
     return {
