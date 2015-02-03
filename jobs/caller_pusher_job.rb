@@ -25,7 +25,7 @@ class CallerPusherJob
   sidekiq_options :failures => true
 
   def perform(caller_session_id, event)
-    metrics = ImpactPlatform::Metrics::JobStatus.started(self.class.to_s.underscore)
+    metrics = ImpactPlatform::Metrics::JobStatus.started("#{self.class.to_s.underscore}.#{event}")
     
     caller_session = CallerSession.find(caller_session_id)
 
