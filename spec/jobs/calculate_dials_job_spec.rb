@@ -149,11 +149,11 @@ describe 'CalculateDialsJob' do
           CalculateDialsJob.perform(campaign.id)
           resque_actual = Resque.peek :dialer_worker
           resque_expected = nil
-          sidekiq_actual = Resque.peek :call_flow
-          sidekiq_expected = nil
+          sidekiq_actual = Sidekiq::Queue.new 'call_flow'
+          sidekiq_expected = 0
 
           expect(resque_actual).to eq resque_expected
-          expect(sidekiq_actual).to eq sidekiq_expected
+          expect(sidekiq_actual.size).to eq sidekiq_expected
         end
       end
 
@@ -185,6 +185,30 @@ describe 'CalculateDialsJob' do
 
           actual.each do |job|
             expect(job['class']).to eq 'CampaignOutOfNumbersJob'
+          end
+        end
+
+        context 'no voters returned from load attempt but voters still in available set' do
+          let(:voters) do
+            create_list(:voter, 2, campaign: campaign)
+          end
+          let(:dial_queue) do
+            CallFlow::DialQueue.new(campaign)
+          end
+          before do
+            dial_queue.cache_all(voters)
+            # bypass initial check
+            allow(CalculateDialsJob).to receive(:fit_to_dial?){ true }
+            allow(campaign).to receive(:ringing_count){ 5 }
+            allow(campaign).to receive(:presented_count){ 5 }
+            allow(Campaign).to receive(:find){ campaign }
+          end
+
+          it 'does not queue CampaignOutOfNumbersJob' do
+            expect(dial_queue.available.size).to eq 2
+            CalculateDialsJob.perform(campaign.id)
+            queue = Sidekiq::Queue.new :call_flow
+            expect(queue.size).to be_zero
           end
         end
       end
