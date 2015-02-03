@@ -500,11 +500,29 @@ describe Call, :type => :model do
       call.call_ended("Preview")
     end
 
-    it "should push to end by machine call list if answered by machine" do
-      call = create(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'initial', call_status: "busy")
-      RedisCall.set_request_params(call.id, call.attributes)
-      expect(RedisCallFlow).to receive(:push_to_end_by_machine_call_list).with(call.id)
-      expect(call.call_ended("Preview")).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+    context 'answered by machine' do
+      let(:call) do
+        create(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'initial', call_status: "busy")
+      end
+      before do
+        RedisCall.set_request_params(call.id, call.attributes)
+      end
+      it "should push to end by machine call list if answered by machine" do
+        expect(RedisCallFlow).to receive(:push_to_end_by_machine_call_list).with(call.id)
+        call.call_ended('Preview')
+      end
+
+      it 'should redirect caller when AMD is on and campaign is not dropping messages' do
+        allow(call).to receive(:call_attempt){ @call_attempt }
+        expect(@call_attempt).to receive(:redirect_caller)
+        call.call_ended('Power')
+      end
+
+      it 'should not redirect caller when AMD is on and campaign is dropping messages (caller will have been redirected just before dropping message)' do
+        @campaign.update_attributes!(use_recordings: true, answering_machine_detect: true)
+        allow(call).to receive(:call_attempt){ @call_attempt }
+        expect(@call_attempt).to_not receive(:redirect_caller)
+      end
     end
   end
 end

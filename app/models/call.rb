@@ -91,6 +91,7 @@ public
   def call_answered_by_machine
     RedisCallFlow.push_to_processing_by_machine_call_hash(self.id)
 
+    # redirect caller here instead of call_end to get them on the next call more quickly
     call_attempt.redirect_caller
 
     agent = AnsweringMachineAgent.new(call_attempt.household)
@@ -131,13 +132,14 @@ public
 
     if answered_by_machine?
       RedisCallFlow.push_to_end_by_machine_call_list(self.id)
-      # todo: verify caller is redirected when answering machine twiml is served at /incoming
-      # if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status == 'completed'
-      #   call_attempt.redirect_caller
-      # end
+
+      if Campaign.preview_power_campaign?(campaign_type) && !campaign.use_recordings? && redis_call_status == 'completed'
+        # redirect caller here because /incoming is not requested when answering machine detection is set to Hangup
+        call_attempt.redirect_caller
+      end
     end
 
-    if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status != 'completed'
+    if Campaign.preview_power_campaign?(campaign_type) && redis_call_status != 'completed'
       call_attempt.redirect_caller
     end
 
