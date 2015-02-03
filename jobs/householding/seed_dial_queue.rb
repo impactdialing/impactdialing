@@ -13,9 +13,9 @@ module Householding
 
       if voter_list.enabled?
         p "Seeding DialQueue Campaign[#{campaign_id}] EnabledList[#{voter_list_id}] Voter[#{lower_voter_id}..#{upper_voter_id}]"
-        p "Phoneless/Houseless Voter count: #{voters.where('phone IS NULL or phone = ""').count} / #{voters.where('household_id IS NULL').count}"
+        p "Houseless Voter count: #{voters.where('household_id IS NULL').count}"
 
-        voters.with_enabled(:list).where('phone IS NOT NULL AND household_id IS NOT NULL').find_in_batches do |migrated_voters|
+        voters.with_enabled(:list).where('household_id IS NOT NULL').find_in_batches do |migrated_voters|
           campaign.dial_queue.cache_all(migrated_voters)
         end
       else
@@ -23,7 +23,7 @@ module Householding
 
         return unless campaign.dial_queue.exists?
 
-        voters.without_enabled(:list).where('phone IS NOT NULL AND household_id IS NOT NULL').find_in_batches do |migrated_voters|
+        voters.without_enabled(:list).where('household_id IS NOT NULL').find_in_batches do |migrated_voters|
           campaign.dial_queue.remove_all(migrated_voters)
         end
       end
