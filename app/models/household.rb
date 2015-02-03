@@ -120,7 +120,7 @@ public
   end
 
   def no_presentable_voters?
-    voters.with_enabled(:list).count == voters.not_presentable(campaign).count
+    voters.with_enabled(:list).count == voters.with_enabled(:list).not_presentable(campaign).count
   end
 end
 

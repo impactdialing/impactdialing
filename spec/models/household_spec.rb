@@ -98,8 +98,14 @@ RSpec.describe Household, :type => :model do
       expect(household.complete?).to be_falsey
     end
 
-    it 'returns true when all voters have been contacted' do
+    it 'returns true when all enabled voters have been contacted' do
       household.voters.update_all(status: CallAttempt::Status::SUCCESS)
+      voter = create(:voter, {
+        household: household,
+        enabled: [],
+        status: Voter::Status::NOTCALLED
+      })
+      expect(household.voters).to include(voter)
       expect(household.complete?).to be_truthy
     end
 
@@ -144,7 +150,7 @@ RSpec.describe Household, :type => :model do
       expect(subject.cache?).to be_falsey
     end
 
-    it 'returns false when household has is complete' do
+    it 'returns false when household is complete' do
       allow(subject).to receive(:complete?){ true }
       expect(subject.cache?).to be_falsey
     end
