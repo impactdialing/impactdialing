@@ -69,7 +69,17 @@ describe 'CallFlow::DialQueue' do
         @household_with_2_members       = households.reload.first
         @other_household_with_2_members = households.reload.last
         @that_household_with_2_members  = households.reload[2]
-        @not_dialed_voter               = create(:voter, {
+        @household_with_voicemail       = households.reload[3]
+
+        @household_with_voicemail.update_attributes!(status: CallAttempt::Status::VOICEMAIL)
+        @household_with_voicemail.voters.update_all(status: CallAttempt::Status::VOICEMAIL)
+        # campaign config'd to not call back after voicemail
+        create(:bare_call_attempt, :voicemail_delivered, {
+          campaign: @campaign,
+          household: @household_with_voicemail
+        })
+
+        @not_dialed_voter = create(:voter, {
           campaign: @campaign,
           account: account,
           household: @household_with_2_members
@@ -105,15 +115,22 @@ describe 'CallFlow::DialQueue' do
         expect(cached_members.first['id']).to eq @not_dialed_voter.id
       end
 
-      it 'caches members that have been called but not completed' do
-        cached_members = @dial_queue.households.find(@other_household_with_2_members.phone)
-        expect(cached_members.size).to eq 1
-        expect(cached_members.first['id']).to eq @abandoned_voter.id
-      end
+      context 'handling legacy Voter#status values' do
+        it 'caches members that have been called but not completed' do
+          cached_members = @dial_queue.households.find(@other_household_with_2_members.phone)
+          expect(cached_members.size).to eq 1
+          expect(cached_members.first['id']).to eq @abandoned_voter.id
+        end
 
-      it 'does not cache members that have failed' do
-        cached_members = @dial_queue.households.find(@that_household_with_2_members)
-        expect(cached_members.size).to eq 0
+        it 'does not cache members that have failed' do
+          cached_members = @dial_queue.households.find(@that_household_with_2_members)
+          expect(cached_members.size).to eq 0
+        end
+
+        it 'does not cache members w/ voicemail delivered (household.cache? should return false)' do
+          cached_members = @dial_queue.households.find(@household_with_voicemail.phone)
+          expect(cached_members.size).to eq 0
+        end
       end
     end
   end
