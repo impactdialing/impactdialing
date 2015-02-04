@@ -55,6 +55,8 @@ class CalculateDialsJob
   def self.out_of_numbers(campaign)
     return unless campaign.dial_queue.available.size.zero?
 
+    puts "#{campaign.type}[#{campaign.id}] - CampaignOutOfNumbers"
+
     campaign.caller_sessions.on_call.pluck(:id).each do |id|
       Sidekiq::Client.push({
         'queue' => 'call_flow',
