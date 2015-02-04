@@ -23,7 +23,7 @@ class CampaignOutOfNumbersJob
     caller_session = CallerSession.find(caller_session_id)
     if caller_session.available?
       Providers::Phone::Call.redirect_for(caller_session, :out_of_numbers)
-    else
+    elsif caller_session.on_call?
       CampaignOutOfNumbersJob.perform_in(1.minute, caller_session_id)
     end
   end
