@@ -54,7 +54,8 @@ public
   end
 
   def exists?
-    redis.exists keys[:active]
+    cursor, results = redis.scan(0, match: "#{keys[:active]}:*")
+    results.any?
   end
 
   def add(phone, member)

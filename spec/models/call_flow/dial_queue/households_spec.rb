@@ -35,6 +35,16 @@ describe 'CallFlow::DialQueue::Households' do
       actual = redis.hget *key(phone_with_country_code)
       expect(actual).to eq [member_of_country_code, member_with_country_code].to_json
     end
+
+  describe 'existence' do
+    it 'returns true when any households exist' do
+      subject.add(phone_with_country_code, member_with_country_code)
+      expect(subject.exists?).to be_truthy
+    end
+
+    it 'returns false otherwise' do
+      expect(subject.exists?).to be_falsey
+    end
   end
 
   describe 're-adding an existing member to the collection' do
