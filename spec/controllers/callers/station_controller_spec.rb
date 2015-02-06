@@ -24,6 +24,18 @@ describe Callers::StationController do
         expect(response).to render_template 'callers/station/login'
       end
     end
+    context 'Caller#campaign is archived' do
+      before do
+        campaign = @caller.campaign
+        campaign.active = false
+        campaign.save!
+        post :login, username: @caller.username, password: @caller.password
+      end
+
+      it 're-renders login form' do
+        expect(response).to render_template 'callers/station/login'
+      end
+    end
     context 'campaign_id is present in params' do
       before do
         login_as(@caller)
