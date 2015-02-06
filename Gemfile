@@ -73,6 +73,9 @@ gem 'acts_as_reportable'
 # Non-blocking DNS look-ups for EventMachine
 gem 'em-resolv-replace'
 
+# redis lua scripts
+gem 'wolverine'
+
 group :development do
   gem 'annotate'
   gem 'guard'
