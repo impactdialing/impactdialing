@@ -17,19 +17,20 @@ class Caller < ActiveRecord::Base
   has_many :caller_identities
   has_many :call_attempts
   has_many :answers
+
   before_create :create_uniq_pin
   before_validation :assign_to_caller_group_campaign
+  before_validation { |caller| caller.username = username.downcase  unless username.nil?}
   before_save :reassign_caller_campaign
-  validates :campaign_id, presence: true
-  validate :restored_caller_has_campaign
+
   validate :check_subscription_for_caller_groups
+
 
   scope :active, where(:active => true)
 
   delegate :subscription_allows_caller?, :to => :account
   delegate :funds_available?, :to => :account
   delegate :as_time_zone, :to=> :campaign
-  before_validation { |caller| caller.username = username.downcase  unless username.nil?}
 
   cattr_reader :per_page
   @@per_page = 25

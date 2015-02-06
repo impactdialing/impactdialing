@@ -63,14 +63,6 @@ describe Caller, :type => :model do
     expect(Caller.active).to include(active_caller)
   end
 
-  it "validates that a restored caller has an active campaign" do
-    campaign = create(:campaign, active: false)
-    caller = create(:caller, campaign: campaign, active: false)
-    caller.active = true
-    expect(caller.save).to be_falsey
-    expect(caller.errors[:base]).to eq(['The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.'])
-  end
-
   it "asks for pin" do
     expect(Caller.ask_for_pin(0, nil)).to eq(
         Twilio::Verb.new do |v|
