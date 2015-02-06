@@ -3,6 +3,8 @@
 -- this means we don't need to worry about looking up keys because
 -- we can rely on the zets as a canonical source
 local sets = {}
+local purged_count = 0
+
 for _,key in pairs(KEYS) do
   sets[#sets + 1] = redis.call("ZRANGE", key, "0", "-1")
 end
@@ -10,7 +12,9 @@ end
 for _,set in pairs(sets) do
   for _,phone in pairs(set) do
     -- delete hashes
-    redis.call("DEL", ARGV[1] .. ":" .. string.sub(phone, 1, 5))
+    local key = ARGV[1] .. ":" .. string.sub(phone, 1, 5)
+    redis.call("DEL", key)
+    purged_count = purged_count + 1
   end
 end
 
@@ -18,3 +22,5 @@ end
 for _,key in pairs(KEYS) do
   redis.call("DEL", key)
 end
+
+return purged_count

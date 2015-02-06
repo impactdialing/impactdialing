@@ -249,8 +249,12 @@ describe 'CallFlow::DialQueue' do
 
   describe 'removing all data from redis' do
     let(:redis){ Redis.new }
+
     before do
-      @dial_queue.purge
+      @expected_purge_count = @dial_queue.available.size + 
+                              @dial_queue.available.all(:presented).size +
+                              @dial_queue.recycle_bin.size
+      @result = @dial_queue.purge
     end
 
     it 'removes all data from Households' do
@@ -271,6 +275,10 @@ describe 'CallFlow::DialQueue' do
     it 'removes all data from Available:presented' do
       key = @campaign.dial_queue.available.send(:keys)[:presented]
       expect(redis.keys).to_not include(key)
+    end
+
+    it 'returns count of household keys purged' do
+      expect(@result).to eq @expected_purge_count
     end
   end
 

@@ -121,8 +121,15 @@ module CallFlow
       set_keys        += available.send(:keys).values
       set_keys        += recycle_bin.send(:keys).values
       household_prefix = households.send(:keys)[:active]
+      purged_count     = 0
 
-      Wolverine.dial_queue.purge(keys: set_keys, argv: [household_prefix])
+      campaign.timing("dial_queue.purge.time") do
+        purged_count = Wolverine.dial_queue.purge(keys: set_keys, argv: [household_prefix])
+      end
+
+      ImpactPlatform::Metrics.sample("dial_queue.purge.count", purged_count, campaign.metric_source.join('.'))
+
+      return purged_count
     end
   end
 end
