@@ -58,6 +58,8 @@ public
           flash_now(:error, "Wrong username or password.")
         elsif !@caller.active?
           flash_now(:error, "That account has been deleted.")
+        elsif @caller.campaign_id.blank?
+          flash_now(:error, "That account is not assigned to any active campaigns.")
         else
           # pass campaign_id along to #show to enable auto-reassignment
           pass_along_params = {}

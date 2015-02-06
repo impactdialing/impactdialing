@@ -14,7 +14,17 @@ describe Callers::StationController do
       @other_campaign      = create_campaign_with_script(:bare_power, @other_account).last
       @caller              = create(:caller, {campaign: @campaign, account: @account})
     end
-    context 'campaign_id is present' do
+    context 'Caller#campaign_id is blank' do
+      before do
+        @caller.update_attributes!(campaign_id: nil)
+        post :login, username: @caller.username, password: @caller.password
+      end
+
+      it 're-renders login form' do
+        expect(response).to render_template 'callers/station/login'
+      end
+    end
+    context 'campaign_id is present in params' do
       before do
         login_as(@caller)
       end
