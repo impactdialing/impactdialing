@@ -250,9 +250,7 @@ describe 'CallFlow::DialQueue' do
   describe 'removing all data from redis' do
     let(:redis){ Redis.new }
     before do
-      # binding.pry
-      # redis.eval('redis.call("SCAN", 0, "MATCH *:households:*")')
-      @dial_queue.delete
+      @dial_queue.purge
     end
 
     it 'removes all data from Households' do

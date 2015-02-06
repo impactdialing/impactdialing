@@ -116,7 +116,7 @@ module CallFlow
       send(queue).last
     end
 
-    def delete
+    def purge
       set_keys         = []
       set_keys        += available.send(:keys).values
       set_keys        += recycle_bin.send(:keys).values
