@@ -247,9 +247,127 @@ describe 'CallFlow::DialQueue' do
     end
   end
 
-  describe 'recycling dialed numbers' do
-    it ''
+  describe 'removing all data from redis' do
+    let(:redis){ Redis.new }
+    before do
+      # binding.pry
+      # redis.eval('redis.call("SCAN", 0, "MATCH *:households:*")')
+      @dial_queue.delete
+    end
+
+    it 'removes all data from Households' do
+      key = @campaign.dial_queue.households.send(:keys)[:active]
+      expect(redis.keys("#{key}*")).to be_empty
+    end
+
+    it 'removes all data from RecycleBin' do
+      key = @campaign.dial_queue.recycle_bin.send(:keys)[:bin]
+      expect(redis.keys).to_not include(key)
+    end
+
+    it 'removes all data from Available:active' do
+      key = @campaign.dial_queue.available.send(:keys)[:active]
+      expect(redis.keys).to_not include(key)
+    end
+
+    it 'removes all data from Available:presented' do
+      key = @campaign.dial_queue.available.send(:keys)[:presented]
+      expect(redis.keys).to_not include(key)
+    end
   end
+
+#   describe 'quick benchmark' do
+#     let(:redis){ Redis.new }
+
+#     def seed_redis
+#       members = []
+#       3.times do
+#         members << {id: Forgery(:basic).number, first_name: Forgery(:name).first_name, last_name: Forgery(:name).last_name, other_stuff: Forgery(:basic).text}
+#       end
+#       json = members.to_json
+#       200_000.times do |i|
+#         phone = Forgery(:address).phone.gsub(/[^\d]/, '')
+#         redis.zadd "test:available", i, phone
+#         redis.hset "test:households:#{phone[0..4]}", phone[5..-1], json
+#       end
+#     end
+
+#     let(:lua_scan) do
+#       # redis.call("DEL", KEYS[1]) # available
+#       # redis.call()
+#     end
+
+#     let(:lua_iter) do
+# <<-SCRIPT
+# local phones = redis.call("ZRANGE", KEYS[1], "0", "-1")
+# for _,phone in pairs(phones) do
+#   redis.call("DEL", ARGV[1] .. ":" .. string.sub(phone, 1, 5))
+# end
+# redis.call("DEL", KEYS[1])
+# SCRIPT
+#     end
+
+#     it 'takes time' do
+#       require 'benchmark'
+#       seed_time = Time.now
+
+#       Benchmark.bm(18) do |x|
+#         seed_redis
+#         p "seeded 1: #{Time.now.to_i - seed_time.to_i}"
+#         expect(redis.zcard("test:available") > 195_000).to be_truthy
+#         expect(redis.keys("test:households:*").size > 1_000).to be_truthy
+#         x.report("ruby: del + scan"){
+#           redis.del "test:available"
+
+#           matcher               = "test:households:*"
+#           cursor, existing_keys = redis.scan(0, match: matcher)
+#           existing_keys.each{ |key| redis.del(key) }
+
+#           until cursor.to_i.zero?
+#             cursor, existing_keys = redis.scan(cursor, match: matcher)
+#             existing_keys.each{ |key| redis.del(key) }
+#           end
+#         }
+#         expect(redis.zcard("test:available")).to eq 0
+#         expect(redis.keys("test:households:*")).to be_empty
+
+#         seed_time = Time.now
+#         seed_redis
+#         expect(redis.zcard("test:available") > 195_000).to be_truthy
+#         expect(redis.keys("test:households:*").size > 1_000).to be_truthy
+#         p "seeded 2: #{Time.now.to_i - seed_time.to_i}"
+#         x.report("ruby: set iter"){
+#           redis.zrange("test:available", 0, -1).each do |phone|
+#             redis.del("test:households:#{phone[0..4]}")
+#           end
+#           redis.del("test:available")
+#         }
+#         expect(redis.zcard("test:available")).to eq 0
+#         expect(redis.keys("test:households:*")).to be_empty
+
+#         seed_time = Time.now
+#         seed_redis
+#         expect(redis.zcard("test:available") > 195_000).to be_truthy
+#         expect(redis.keys("test:households:*").size > 1_000).to be_truthy
+#         p "seeded 2: #{Time.now.to_i - seed_time.to_i}"
+#         x.report("lua: set iter"){
+#           redis.eval(lua_iter, keys: ["test:available"], argv: ["test:households"])
+#         }
+#         expect(redis.zcard("test:available")).to eq 0
+#         expect(redis.keys("test:households:*")).to be_empty
+
+#         seed_time = Time.now
+#         seed_redis
+#         expect(redis.zcard("test:available") > 195_000).to be_truthy
+#         expect(redis.keys("test:households:*").size > 1_000).to be_truthy
+#         x.report("lua: set iter v2"){
+#           Wolverine.dial_queue.purge(keys: ["test:available"], argv: ["test:households"])
+#         }
+#         expect(redis.zcard("test:available")).to eq 0
+#         expect(redis.keys("test:households:*")).to be_empty
+#       end
+#     end
+#   end
 
   # describe 'when a call ends' do
   #   let(:phone_number){ @dial_queue.next(1).first }

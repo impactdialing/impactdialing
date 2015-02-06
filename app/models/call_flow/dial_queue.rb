@@ -115,5 +115,14 @@ module CallFlow
     def last(queue)
       send(queue).last
     end
+
+    def delete
+      set_keys         = []
+      set_keys        += available.send(:keys).values
+      set_keys        += recycle_bin.send(:keys).values
+      household_prefix = households.send(:keys)[:active]
+
+      Wolverine.dial_queue.purge(keys: set_keys, argv: [household_prefix])
+    end
   end
 end
