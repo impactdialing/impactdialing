@@ -65,6 +65,32 @@ describe Campaign, :type => :model do
         expect(campaign.caller_can_drop_message_manually).to be_truthy
       end
     end
+
+    describe 'dial queue lifecycle' do
+      def resque_jobs(queue)
+        Resque.peek(queue, 0, 100)
+      end
+      let(:purge_job) do
+        {
+          'class' => 'CallFlow::DialQueue::Jobs::Purge',
+          'args'  => [campaign.id]
+        }
+      end
+      it 'queues purge when a campaign is archived and a dial queue is present' do
+        campaign.dial_queue.cache(create(:voter, campaign: campaign))
+        campaign.active = false
+        campaign.save!
+
+        expect(resque_jobs(:background_worker)).to include(purge_job)
+      end
+
+      it 'does not queue purge when campaign is archived and dial queue not present' do
+        campaign.active = false
+        campaign.save!
+
+        expect(resque_jobs(:background_worker)).to_not include(purge_job)
+      end
+    end
   end
 
   describe "validations" do
@@ -183,6 +209,15 @@ describe Campaign, :type => :model do
       end
     end
 
+  end
+
+  describe 'archived campaign' do
+    let(:campaign){ build(:campaign) }
+
+    it '#archived? => false' do
+      campaign.active = false
+      expect(campaign.archived?).to be_truthy
+    end
   end
 
 

@@ -10,3 +10,13 @@ ActiveSupport::Notifications.subscribe('scripts.saved') do |name, start, finish,
     end
   end
 end 
+
+ActiveSupport::Notifications.subscribe('campaigns.saved') do |name, start, finish, id, payload|
+  campaign = payload[:campaign]
+
+  if campaign.created_at != campaign.updated_at
+    if campaign.archived? and campaign.dial_queue.exists?
+      CallFlow::DialQueue::Jobs::Purge.add_to_queue(campaign.id)
+    end
+  end
+end

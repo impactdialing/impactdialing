@@ -93,8 +93,13 @@ class Campaign < ActiveRecord::Base
 
   before_validation :sanitize_caller_id, :if => :caller_id
   before_save :sanitize_message_service_settings
+  after_save :publish_save_notification
 
 private
+  def publish_save_notification
+    ActiveSupport::Notifications.instrument('campaigns.saved', campaign: self)
+  end
+
   def skip_caller_id_validation?
     caller_id && caller_id.start_with?('+')
   end
@@ -177,6 +182,10 @@ public
 
   def cached?
     dial_queue.exists?
+  end
+
+  def archived?
+    not active?
   end
 
   def self.preview_power_campaign?(campaign_type)
