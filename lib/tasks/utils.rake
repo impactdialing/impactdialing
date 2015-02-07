@@ -123,6 +123,46 @@ task :patch_corrupt_dial_queue, [:campaign_id] => :environment do |t,args|
   print "\n\nFound & patched #{corrupt_count} corrupted dial queues\n\n"
 end
 
+desc "Sweep up dial queue cache of any data from campaigns inactive since :days ago"
+task :sweep_dial_queue, [:days] => :environment do |t,args|
+  days           = (args[:days] || 90).to_i
+  time_threshold = days.days.ago
+  purged_total   = {}
+  available      = {}
+  accounts       = {}
+
+  recently_called_campaign_ids = CallAttempt.where('created_at > ?', time_threshold).select('DISTINCT(campaign_id)').pluck(:campaign_id)
+
+  Campaign.where(active: true).
+    where('updated_at < ?', time_threshold).
+    where('id NOT IN (?)', recently_called_campaign_ids).
+    find_in_batches(batch_size: 500) do |campaigns|
+      campaigns.each do |campaign|
+        accounts[campaign.id]     = campaign.account_id
+        purged_total[campaign.id] = campaign.dial_queue.purge
+      end
+    end
+
+  Campaign.where(id: recently_called_campaign_ids).find_in_batches(batch_size: 500) do |campaigns|
+    campaigns.each do |campaign|
+      accounts[campaign.id]  = campaign.account_id
+      available[campaign.id] = campaign.dial_queue.available.size
+    end
+  end
+  print "\nDone!\n"
+  print "\nInactive/Purged Report\n"
+  print "Account ID,Campaign ID,#s Purged\n"
+  purged_total.each do |k,v|
+    print "#{accounts[k]},#{k},#{v}\n"
+  end
+
+  print "\nActive/Available Report\n"
+  print "Account ID,Campaign ID,#s Available\n"
+  available.each do |k,v|
+    print "#{accounts[k]},#{k},#{v}\n"
+  end
+end
+
 desc "Rebuild dial queue cache"
 task :rebuild_dial_queues => :environment do |t,args|
   quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
