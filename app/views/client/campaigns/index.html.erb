@@ -15,9 +15,21 @@
     </tr>
     <% @campaigns.each do |c| %>
       <tr>
-        <td><strong><%= link_to c.name, edit_client_campaign_path(c) %></strong></td>
-        <td><% @caller_counts[c.id] %></td>
-        <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
+        <td>
+          <%= '<b>'.html_safe if @caller_counts[c.id] %>
+          <%= link_to c.name, edit_client_campaign_path(c) %>
+          <%= '</b>'.html_safe if @caller_counts[c.id] %>
+        </td>
+        <td>
+          <%= '<b>'.html_safe if @caller_counts[c.id] %>
+          <%= @caller_counts[c.id] || 0 %>
+          <%= '</b>'.html_safe if @caller_counts[c.id] %>
+        </td>
+        <td>
+          <%= '<b>'.html_safe if @caller_counts[c.id] %>
+          <%= c.created_at.strftime("%m/%d/%Y") %>
+          <%= '</b>'.html_safe if @caller_counts[c.id] %>
+        </td>
         <td><%= link_to '',
                 client_campaign_path(c),
                 :confirm => 'Are you sure you want to archive this campaign?',
