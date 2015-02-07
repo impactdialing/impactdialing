@@ -9,7 +9,7 @@ class Caller < ActiveRecord::Base
   validates_format_of :username, :with => /^[^ ]*$/, :message => "cannot contain blank space.",  :if => lambda {|s| !s.is_phones_only  }
   validates_presence_of :username,  :if => lambda {|s| !s.is_phones_only  }
   validates_presence_of :name,  :if => lambda {|s| s.is_phones_only }
-  validates_uniqueness_of :username, :if => lambda {|s| !s.is_phones_only and s.campaign_id.present? }, :message => 'another caller with that username is assigned to this campaign already'
+  validates_uniqueness_of :username, :scope => :campaign_id, :if => lambda {|s| !s.is_phones_only and s.campaign_id.present? }, :message => 'another caller with that username is assigned to this campaign already'
   validates_presence_of :campaign, :if => lambda {|s| s.campaign_id.present?}, :message => 'invalid campaign'
   belongs_to :campaign
   belongs_to :account
@@ -25,7 +25,7 @@ class Caller < ActiveRecord::Base
   before_save :reassign_caller_campaign
 
   validate :check_subscription_for_caller_groups
-
+  validate :campaign_and_caller_on_same_account
 
   scope :active, where(:active => true)
 
@@ -36,6 +36,16 @@ class Caller < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
+private
+  def campaign_and_caller_on_same_account
+    return true if campaign_id.nil? or campaign.nil? # presence validation will catch nil campaigns
+
+    unless self.account_id == campaign.account_id
+      errors.add(:campaign, 'invalid campaign')
+    end
+  end
+
+public
   def identity_name
     is_phones_only?  ? name : username
   end

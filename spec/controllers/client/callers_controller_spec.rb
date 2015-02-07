@@ -28,7 +28,7 @@ describe Client::CallersController, :type => :controller do
 
     it "should create a phones only caller" do
       name = "preethi_is_not_evil"
-      post :create, :caller => {:name => name, :is_phones_only => true, :campaign_id => "1234"}
+      post :create, :caller => {:name => name, :is_phones_only => true, :campaign_id => create(:campaign, account: account).id}
       caller = Caller.find_by_name(name)
       expect(caller).not_to be_nil
       expect(caller.is_phones_only).to be_truthy
@@ -36,12 +36,18 @@ describe Client::CallersController, :type => :controller do
 
     it "should create a phones only caller" do
       username = "preethi@evil.com"
-      post :create, :caller => {:username => username, :is_phones_only => false, :campaign_id => "1234"}
+      post :create, :caller => {:username => username, :is_phones_only => false, :campaign_id => create(:campaign, account: account).id}
       caller = Caller.find_by_username(username)
       expect(caller).not_to be_nil
       expect(caller.is_phones_only).to be_falsey
     end
 
+    it 'should not create a caller whose campaign.account_id is different from the callers' do
+      campaign_2 = create(:campaign)
+      post :create, :caller => {:username => 'bob', :campaign_id => campaign_2.id}
+      caller = Caller.find_by_username('bob')
+      expect(caller).to be_nil
+    end
 
     describe "call details report" do
 
@@ -100,7 +106,7 @@ describe Client::CallersController, :type => :controller do
         expect {
           post :create, api_key: account.api_key,
                         format: 'json',
-                        caller: {name: 'caller', is_phones_only: 'true', campaign_id: 1}
+                        caller: {name: 'caller', is_phones_only: 'true', campaign_id: create(:campaign, account: account)}
         }.to change {account.reload.callers.size}.by 1
       end
 

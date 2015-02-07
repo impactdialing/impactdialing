@@ -123,11 +123,15 @@ FactoryGirl.define do
   factory :caller do
     username { generate(:username) }
     name 'a caller'
-    campaign
-    account
     password 'secret'
     created_at Time.now
     updated_at Time.now
+
+    after(:build) do |caller|
+      caller.account ||= create(:account)
+      caller.campaign ||= create([:preview, :power, :predictive].sample, account: caller.account)
+      caller.account = caller.campaign.account
+    end
   end
 
   factory :voter_list do

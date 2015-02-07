@@ -3,42 +3,44 @@ require "spec_helper"
 describe Caller, :type => :model do
   include Rails.application.routes.url_helpers
 
+  let(:account){ create(:account) }
+
   it {is_expected.to belong_to :caller_group}
 
   it 'assigns itself to the campaign of its caller group' do
-    campaign = create(:preview)
+    campaign = create(:preview, account: account)
     caller_group = create(:caller_group, campaign_id: campaign.id)
-    caller = create(:caller, caller_group_id: caller_group.id)
+    caller = create(:caller, caller_group_id: caller_group.id, account: account)
     expect(caller.campaign).to eq campaign
   end
 
   it 'saves successfully if it does not have a caller group' do
-    caller_group = create(:caller_group)
-    caller = create(:caller, caller_group_id: caller_group.id)
-    campaign = create(:preview)
+    campaign     = create(:preview, account: account)
+    caller_group = create(:caller_group, account: account, campaign: campaign)
+    caller       = create(:caller, caller_group_id: caller_group.id, account: account)
     caller.update_attributes(caller_group_id: nil, campaign: campaign)
     expect(caller.save).to be_truthy
   end
 
   it "should validate name for phones only callers" do
     caller_group = create(:caller_group)
-    caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: true, name: "")
+    caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: true, name: "", account: account)
     expect(caller.save).to be_falsey
-    expect(caller.errors.messages).to eq({:name=>["can't be blank"]})
+    expect(caller.errors.messages[:name]).to eq(["can't be blank"])
   end
 
   it "should validate username for web callers" do
     caller_group = create(:caller_group)
-    caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "")
+    caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "", account: account)
     expect(caller.save).to be_falsey
-    expect(caller.errors.messages).to eq({:username=>["can't be blank"]})
+    expect(caller.errors.messages[:username]).to eq(["can't be blank"])
   end
 
   it "should validate username cant contain spces for web callers" do
     caller_group = create(:caller_group)
-    caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "john doe")
+    caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "john doe", account: account)
     expect(caller.save).to be_falsey
-    expect(caller.errors.messages).to eq({:username=>["cannot contain blank space."]})
+    expect(caller.errors.messages[:username]).to eq(["cannot contain blank space."])
   end
 
   context 'campaign_id is present' do
@@ -55,6 +57,11 @@ describe Caller, :type => :model do
       caller_2 = build(:caller, campaign: campaign, username: caller.username)
       caller_2.valid?
       expect(caller_2.errors[:username]).to eq ['another caller with that username is assigned to this campaign already']
+    end
+    it 'validates campaign.account_id == self.account_id' do
+      caller.account_id = campaign.account_id + 1
+      caller.valid?
+      expect(caller.errors[:campaign]).to eq ['invalid campaign']
     end
   end
 
@@ -76,7 +83,7 @@ describe Caller, :type => :model do
 
   let(:user) { create(:user) }
   it "restoring makes it active" do
-    caller_object = create(:caller, :active => false)
+    caller_object = create(:caller, :active => false, :account => account)
     caller_object.restore
     expect(caller_object.active?).to eq(true)
   end
@@ -219,18 +226,18 @@ describe Caller, :type => :model do
     end
 
     it "should set on call caller session to reassigned yes" do
-      campaign = create(:campaign)
-      other_campaign = create(:campaign)
-      caller = create(:caller, campaign: campaign, is_phones_only: true)
+      campaign = create(:campaign, account: account)
+      other_campaign = create(:campaign, account: account)
+      caller = create(:caller, campaign: campaign, is_phones_only: true, account: account)
       caller_session = create(:caller_session, on_call: true, campaign: campaign, caller_id: caller.id)
       caller.update_attributes!(campaign: other_campaign)
       expect(caller_session.reload.reassign_campaign).to eq(CallerSession::ReassignCampaign::YES)
     end
 
     it "should set on ReassignedCallerSession campaign id" do
-      campaign = create(:campaign)
-      other_campaign = create(:campaign)
-      caller = create(:caller, campaign: campaign, is_phones_only: true)
+      campaign = create(:campaign, account: account)
+      other_campaign = create(:campaign, account: account)
+      caller = create(:caller, campaign: campaign, is_phones_only: true, account: account)
       caller_session = create(:caller_session, on_call: true, campaign: campaign, caller_id: caller.id)
       caller.update_attributes!(campaign: other_campaign)
       expect(RedisReassignedCallerSession.campaign_id(caller_session.id)).to eq(other_campaign.id.to_s)
