@@ -18,8 +18,6 @@ describe Client::CallersController, :type => :controller do
       expect(response.code).to eq('200')
     end
 
-
-
     it "doesn't list deleted campaigns, in the dropdown list" do
       c1 = create(:preview, :active => false, :account => @user.account)
       c2 = create(:predictive, :active => true, :account => @user.account)
@@ -108,7 +106,11 @@ describe Client::CallersController, :type => :controller do
 
       it 'return validation errors' do
         post :create, api_key: account.api_key, format: 'json'
-        expect(JSON.parse(response.body)).to eq({"errors"=>{"username"=>["can't be blank"], "campaign_id"=>["can't be blank"]}})
+        expect(JSON.parse(response.body)).to eq({
+          "errors" => {
+            "username"    => ["can't be blank"]
+          }
+        })
       end
     end
 
@@ -135,8 +137,12 @@ describe Client::CallersController, :type => :controller do
 
       it 'returns validation errors for invalid requests' do
         caller = create(:caller, account: account)
-        put :update, id: caller.id, api_key: account.api_key, format: 'json', caller: {campaign_id: ''}
-        expect(JSON.parse(response.body)).to eq({"errors"=>{"campaign_id"=>["can't be blank"]}})
+        put :update, id: caller.id, api_key: account.api_key, format: 'json', caller: {username: ''}
+        expect(JSON.parse(response.body)).to eq({
+          "errors" => {
+            "username" => ["can't be blank"]
+          }
+        })
       end
     end
 

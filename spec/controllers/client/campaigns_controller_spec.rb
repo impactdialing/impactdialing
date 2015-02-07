@@ -117,11 +117,11 @@ describe Client::CampaignsController, :type => :controller do
         expect(response.body).to eq("{\"message\":\"Cannot access campaign.\"}")
       end
 
-      it "should not delete and return validation error" do
+      it "should archive if callers are assigned and return validation error" do
         caller = create(:caller)
         predictive_campaign = create(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now, callers: [caller])
         delete :destroy, :id=> predictive_campaign.id, :api_key=> account.api_key, :format => "json"
-        expect(response.body).to eq("{\"errors\":{\"caller_id\":[],\"base\":[\"There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.\"]}}")
+        expect(response.body).to eq({message: "Campaign deleted"}.to_json)
       end
     end
 
