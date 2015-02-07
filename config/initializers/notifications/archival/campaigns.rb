@@ -1,4 +1,4 @@
-ActiveSupport::Notifications.subscribe('campaigns.saved') do |name, start, finish, id, payload|
+ActiveSupport::Notifications.subscribe('campaigns.archived') do |name, start, finish, id, payload|
   campaign = payload[:campaign]
 
   if campaign.archived? 

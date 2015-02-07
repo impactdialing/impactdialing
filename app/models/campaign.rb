@@ -93,11 +93,22 @@ class Campaign < ActiveRecord::Base
 
   before_validation :sanitize_caller_id, :if => :caller_id
   before_save :sanitize_message_service_settings
-  after_save :publish_save_notification
+  after_save :publish_archival_notification
 
 private
-  def publish_save_notification
-    ActiveSupport::Notifications.instrument('campaigns.saved', campaign: self)
+  def publish_archival_notification
+    case active_change
+    when [true, false]
+      event = 'campaigns.archived'
+    else
+      event = nil
+    end
+
+    unless event.nil?
+      ActiveSupport::Notifications.instrument(event, campaign: self)
+    end
+
+    return true
   end
 
   def skip_caller_id_validation?
@@ -223,12 +234,6 @@ public
       errors.add(:base, 'Your subscription does not allow this mode of Dialing.')
     end
     type.to_s
-  end
-
-  def no_caller_assigned_on_deletion
-    if active_change == [true, false] && callers.active.any?
-      errors.add(:base, 'There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.')
-    end
   end
 
   def within_recycle_rate?(obj)
