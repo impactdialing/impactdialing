@@ -1,5 +1,6 @@
 module Archival::Jobs
-  class Campaign
+  class CampaignArchived
+    extend LibratoResque
     @queue = :background_worker
 
     def self.add_to_queue(campaign_id)

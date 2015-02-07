@@ -93,6 +93,10 @@ end
 
 include ActionDispatch::TestProcess
 
+def resque_jobs(queue)
+  Resque.peek(queue, 0, 100)
+end
+
 def login_as(user)
   allow(@controller).to receive(:current_user).and_return(user)
   session[:user] = user.id

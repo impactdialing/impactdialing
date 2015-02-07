@@ -1,10 +1,6 @@
 require "spec_helper"
 
 describe Campaign, :type => :model do
-  def resque_jobs(queue)
-    Resque.peek(queue, 0, 100)
-  end
-
   describe '#fit_to_dial?' do
     include FakeCallData
 
@@ -198,7 +194,7 @@ describe Campaign, :type => :model do
         let(:campaign){ create(:campaign) }
         let(:campaign_job) do
           {
-            'class' => 'Archival::Jobs::Campaign',
+            'class' => 'Archival::Jobs::CampaignArchived',
             'args' => [campaign.id]
           }
         end
