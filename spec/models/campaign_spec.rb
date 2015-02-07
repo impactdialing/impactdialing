@@ -1,6 +1,9 @@
 require "spec_helper"
 
 describe Campaign, :type => :model do
+  def resque_jobs(queue)
+    Resque.peek(queue, 0, 100)
+  end
 
   describe '#fit_to_dial?' do
     include FakeCallData
@@ -67,9 +70,10 @@ describe Campaign, :type => :model do
     end
 
     describe 'dial queue lifecycle' do
-      def resque_jobs(queue)
-        Resque.peek(queue, 0, 100)
+      before do
+        Redis.new.flushall
       end
+
       let(:purge_job) do
         {
           'class' => 'CallFlow::DialQueue::Jobs::Purge',
@@ -184,31 +188,33 @@ describe Campaign, :type => :model do
       expect(campaign.call_back_after_voicemail_delivery).to be_falsey
     end
 
-    describe "delete campaign" do
-
-      it "should not delete a campaign that has active callers assigned to it" do
-        caller = create(:caller)
-        campaign = create(:preview, callers: [caller])
+    describe "archive campaign" do
+      it 'is considered archived when Campaign#active => false' do
         campaign.active = false
-        expect(campaign.save).to be_falsey
-        expect(campaign.errors[:base]).to eq(['There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.'])
+        campaign.save!
+        expect(campaign.archived?).to be_truthy
       end
+      context 'when callers (active or inactive) are assigned' do
+        let(:campaign){ create(:campaign) }
+        let(:campaign_job) do
+          {
+            'class' => 'Archival::Jobs::Campaign',
+            'args' => [campaign.id]
+          }
+        end
+        before do
+          create(:caller, {campaign: campaign, active: true})
+          create(:caller, {campaign: campaign, active: false})
+          campaign.reload
+          campaign.active = false
+          campaign.save!
+        end
 
-      it "should  delete a campaign that has no active callers assigned to it" do
-        caller = create(:caller)
-        campaign = create(:preview)
-        campaign.active = false
-        expect(campaign.save).to be_truthy
-      end
-
-      it "should delete a campaign that has inactive callers assigned to it and change their campaign to nil" do
-        campaign = create(:campaign)
-        caller = create(:caller, campaign: campaign, active: false)
-        campaign.active = false
-        expect(campaign.save).to be_truthy
+        it 'queues job to un-assign callers from campaign' do
+          expect(resque_jobs(:background_worker)).to include(campaign_job)
+        end
       end
     end
-
   end
 
   describe 'archived campaign' do

@@ -86,7 +86,6 @@ class Campaign < ActiveRecord::Base
   validates :end_time, :presence => true
   validate :set_caller_id_error_msg
   validate :campaign_type_changed, on: :update
-  validate :no_caller_assigned_on_deletion
   validate :campaign_type_based_on_subscription
   cattr_reader :per_page
   @@per_page = 25
@@ -285,6 +284,10 @@ public
 
   def callers_log_in?
     caller_sessions.on_call.size > 0
+  end
+
+  def callers_assigned?
+    callers.count > 0
   end
 
   def as_time_zone
