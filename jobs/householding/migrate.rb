@@ -19,10 +19,11 @@ module Householding
 
     def self.process_voters(campaign, lower_voter_id, upper_voter_id)
       stats = {
-        households: 0,
-        call_attempts: 0,
+        households:       0,
+        call_attempts:    0,
         processed_voters: 0,
-        updated_voters: 0
+        updated_voters:   0,
+        cache_count:      0
       }
       voters = campaign.all_voters.where(id: (lower_voter_id..upper_voter_id)).includes(:voter_list, :call_attempts, :campaign).where('household_id IS NULL AND phone IS NOT NULL')
       stats[:processed_voters] = voters.count
@@ -94,11 +95,14 @@ module Householding
         Household.reset_counters(household_id, :voters)
       end
 
-      Voter.where(campaign_id: campaign.id, id: (lower_voter_id..upper_voter_id)).where('household_id IS NOT NULL').with_enabled(:list).find_in_batches do |migrated_voters|
-        campaign.dial_queue.cache_all(migrated_voters)
-      end
+      last_campaign_call_attempt = campaign.call_attempts.order('id DESC').first
+      if campaign.active? and (campaign.updated_at > 90.days.ago or last_campaign_call_attempt.created_at > 90.days.ago)
+        Voter.where(campaign_id: campaign.id, id: (lower_voter_id..upper_voter_id)).where('household_id IS NOT NULL').with_enabled(:list).find_in_batches do |migrated_voters|
+          campaign.dial_queue.cache_all(migrated_voters)
+        end
 
-      stats[:cache_count] = campaign.dial_queue.available.size + campaign.dial_queue.recycle_bin.size
+        stats[:cache_count] = campaign.dial_queue.available.size + campaign.dial_queue.recycle_bin.size
+      end
 
       return stats
     end
