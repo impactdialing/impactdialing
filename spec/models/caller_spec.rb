@@ -41,6 +41,38 @@ describe Caller, :type => :model do
     expect(caller.errors.messages).to eq({:username=>["cannot contain blank space."]})
   end
 
+  context 'campaign_id is present' do
+    let(:campaign){ create(:campaign) }
+    let(:caller){ build(:caller, campaign: campaign) }
+
+    it 'validates campaign presence' do
+      caller.campaign_id = Campaign.all.last.id + 1
+      caller.valid?
+      expect(caller.errors[:campaign]).to eq ['invalid campaign']
+    end
+    it 'validates username uniqueness' do
+      caller.save!
+      caller_2 = build(:caller, campaign: campaign, username: caller.username)
+      caller_2.valid?
+      expect(caller_2.errors[:username]).to eq ['another caller with that username is assigned to this campaign already']
+    end
+  end
+
+  context 'campaign_id is not present' do
+    let(:caller){ build(:caller) }
+    before do
+      caller.campaign_id = nil
+    end
+    it 'does not validate campaign presence' do
+      caller.valid?
+      expect(caller.errors[:campaign]).to be_empty
+    end
+    it 'does not validate username uniqueness' do
+      caller.save!
+      caller_2 = build(:caller, username: caller.username, campaign_id: nil)
+      expect(caller_2.errors[:username]).to be_empty
+    end
+  end
 
   let(:user) { create(:user) }
   it "restoring makes it active" do
