@@ -9,12 +9,14 @@
   <table data-intro="This is a list of all the campaigns you have created." data-step="2">
     <tr>
       <th>Name</th>
+      <th>Callers Assigned</th>
       <th>Date added</th>
       <th width="55" class="ac"></th>
     </tr>
     <% @campaigns.each do |c| %>
       <tr>
         <td><strong><%= link_to c.name, edit_client_campaign_path(c) %></strong></td>
+        <td><% @caller_counts[c.id] %></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <td><%= link_to '',
                 client_campaign_path(c),
