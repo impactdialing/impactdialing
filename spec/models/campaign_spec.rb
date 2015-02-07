@@ -90,6 +90,20 @@ describe Campaign, :type => :model do
 
         expect(resque_jobs(:background_worker)).to_not include(purge_job)
       end
+
+      it 'queues job to populate dial queue when campaign is restored' do
+        campaign.active = false
+        campaign.save!
+        create(:voter, campaign: campaign)
+        campaign.active = true
+        campaign.save!
+
+        restore_job = {
+          'class' => 'Archival::Jobs::CampaignRestored',
+          'args'  => [campaign.id]
+        }
+        expect(resque_jobs(:background_worker)).to include(restore_job)
+      end
     end
   end
 

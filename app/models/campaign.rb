@@ -93,19 +93,27 @@ class Campaign < ActiveRecord::Base
 
   before_validation :sanitize_caller_id, :if => :caller_id
   before_save :sanitize_message_service_settings
+  before_save :flag_archive_changes
   after_save :publish_archival_notification
 
 private
-  def publish_archival_notification
+  # flag archive-related changes for use by notification after changes have persisted
+  def flag_archive_changes
+    @archive_flag = nil
+
     case active_change
     when [true, false]
-      event = 'campaigns.archived'
-    else
-      event = nil
+      @archive_flag = 'campaigns.archived'
+    when [false, true]
+      @archive_flag = 'campaigns.restored'
     end
 
-    unless event.nil?
-      ActiveSupport::Notifications.instrument(event, campaign: self)
+    return true
+  end
+
+  def publish_archival_notification
+    unless @archive_flag.nil?
+      ActiveSupport::Notifications.instrument(@archive_flag, campaign: self)
     end
 
     return true
