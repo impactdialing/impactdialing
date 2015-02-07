@@ -24,7 +24,7 @@
       </tr>
     <% end %>
   </table>
-  <p><%= page_entries_info @scripts %> <%= will_paginate @scripts %></p>
+  <p><%= page_entries_info @scripts, model: 'script' %> <%= will_paginate @scripts %></p>
 <% end %>
 
 <p><strong>Phones-only users: </strong>The "Phones-only keypad" values refer to the buttons that your callers press on their phones to enter results after each call. Callers can press * to hang up the current call, then enter their results on their keypad and press * again to submit each result.</p>

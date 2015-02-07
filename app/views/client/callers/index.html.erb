@@ -55,7 +55,7 @@
       </tr>
     <% end %>
   </table>
-  <p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
+  <p><%= page_entries_info @callers, model: 'caller' %> <%= will_paginate @callers %></p>
 <% end %>
 
 <p class="actions"><%= link_to 'Add new caller',
