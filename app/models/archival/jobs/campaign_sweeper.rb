@@ -3,8 +3,11 @@ module Archival::Jobs
     extend LibratoResque
     @queue = :background_worker
 
+    def self.time_threshold
+      (ENV['CAMPAIGN_EXPIRY'].try(:to_i) || 90).days.ago.beginning_of_day
+    end
+
     def self.perform
-      time_threshold               = 30.days.ago
       recently_called_campaign_ids = CallAttempt.where('created_at > ?', time_threshold).select('DISTINCT(campaign_id)').pluck(:campaign_id)
 
       Campaign.where(active: true).

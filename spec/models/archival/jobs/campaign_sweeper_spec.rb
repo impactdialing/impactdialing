@@ -9,8 +9,8 @@ describe 'Archival::Jobs::CampaignSweeper' do
       account: account,
       script: script,
       active: true,
-      created_at: 60.days.ago,
-      updated_at: 31.days.ago
+      created_at: 100.days.ago,
+      updated_at: 91.days.ago
     })
   end
   let(:active_campaign) do
@@ -20,8 +20,8 @@ describe 'Archival::Jobs::CampaignSweeper' do
   let!(:caller2){ create(:caller, account: account, campaign: active_campaign) }
   before do
     Redis.new.flushall # some tests are not cleaning up after themselves...
-    create(:bare_call_attempt, {campaign: inactive_campaign, created_at: 30.days.ago - 1.hour})
-    create(:bare_call_attempt, {campaign: active_campaign, created_at: 30.days.ago + 1.hour})
+    create(:bare_call_attempt, {campaign: inactive_campaign, created_at: 90.days.ago - 1.hour})
+    create(:bare_call_attempt, {campaign: active_campaign, created_at: 90.days.ago + 1.hour})
     inactive_campaign.dial_queue.cache(create(:voter, campaign: inactive_campaign))
     active_campaign.dial_queue.cache(create(:voter, campaign: active_campaign))
   end
@@ -30,7 +30,7 @@ describe 'Archival::Jobs::CampaignSweeper' do
     Redis.new.flushall
   end
 
-  it 'archives campaigns where the last call attempt is older than 30 days' do
+  it 'archives campaigns where the last call attempt is older than 90 days' do
     subject.perform
     expect(Campaign.archived.count).to eq 1
     expect(Campaign.archived.first).to eq inactive_campaign
@@ -44,7 +44,7 @@ describe 'Archival::Jobs::CampaignSweeper' do
     })
   end
 
-  it 'does nothing with campaigns where the last call attempt is younger than 30 days' do
+  it 'does nothing with campaigns where the last call attempt is younger than 90 days' do
     subject.perform
     expect(Campaign.active.count).to eq 1
     expect(Campaign.active.first).to eq active_campaign
@@ -58,8 +58,8 @@ describe 'Archival::Jobs::CampaignSweeper' do
     })
   end
 
-  it 'does nothing with campaigns that were updated in the last 30 days' do
-    inactive_campaign.updated_at = 29.days.ago
+  it 'does nothing with campaigns that were updated in the last 90 days' do
+    inactive_campaign.updated_at = 89.days.ago
     inactive_campaign.save!
     subject.perform
 
