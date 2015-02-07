@@ -59,7 +59,8 @@ public
         elsif !@caller.active?
           flash_now(:error, "That account has been deleted.")
         elsif @caller.campaign_id.blank? or @caller.campaign.archived?
-          flash_now(:error, "That account is not assigned to any active campaigns.")
+          flash_now(:error, "Your account is not assigned to a campaign. Please
+contact your account administrator.")
         else
           # pass campaign_id along to #show to enable auto-reassignment
           pass_along_params = {}
