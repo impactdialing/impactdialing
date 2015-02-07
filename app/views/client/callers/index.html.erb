@@ -30,6 +30,7 @@
   <table data-intro="This is a list of all the caller logins you have created." data-step="3">
     <tr>
       <th>Name</th>
+      <th>Campaign</th>
       <th>Date added</th>
       <th></th>
       <th width="55" class="ac"></th>
@@ -37,6 +38,13 @@
     <% @callers.each do |c| %>
       <tr>
         <td><strong><%= link_to c.identity_name, edit_client_caller_path(c.id)%></strong></td>
+        <td>
+          <% if c.campaign %>
+            <%= link_to c.campaign.name, edit_client_campaign_path(c.campaign) %>
+          <% else %>
+            Not assigned
+          <% end %>
+        </td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <td><%= "PIN: #{c.pin} " if c.is_phones_only %></td>
         <td><%= link_to '',
