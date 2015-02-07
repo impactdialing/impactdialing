@@ -20,8 +20,8 @@ describe 'Archival::Jobs::CampaignSweeper' do
   let!(:caller2){ create(:caller, account: account, campaign: active_campaign) }
   before do
     Redis.new.flushall # some tests are not cleaning up after themselves...
-    create(:bare_call_attempt, {campaign: inactive_campaign, created_at: 90.days.ago - 1.hour})
-    create(:bare_call_attempt, {campaign: active_campaign, created_at: 90.days.ago + 1.hour})
+    create(:bare_call_attempt, {campaign: inactive_campaign, created_at: 91.days.ago})
+    create(:bare_call_attempt, {campaign: active_campaign, created_at: 89.days.ago})
     inactive_campaign.dial_queue.cache(create(:voter, campaign: inactive_campaign))
     active_campaign.dial_queue.cache(create(:voter, campaign: active_campaign))
   end
