@@ -1,11 +1,11 @@
-<h1>Deleted campaigns</h1>
+<h1>Archived campaigns</h1>
 <% if @campaigns.empty? %>
-  <p>No campaigns deleted.</p>
+  <p>No campaigns archived.</p>
 <% else %>
   <table>
     <tr>
       <th>Name</th>
-      <th>Date deleted</th>
+      <th>Date archived</th>
       <th width="55" class="ac"></th>
     </tr>
     <% @campaigns.each do |c| %>
@@ -16,5 +16,5 @@
       </tr>
     <% end %>
   </table>
-  <p><%= page_entries_info @campaigns %> <%= will_paginate @campaigns %></p>
+  <p><%= page_entries_info @campaigns, model: Campaign %> <%= will_paginate @campaigns %></p>
 <% end %>

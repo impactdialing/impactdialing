@@ -105,7 +105,7 @@ describe Client::CampaignsController, :type => :controller do
       it "should delete campaign" do
         predictive_campaign = create(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now)
         delete :destroy, :id=> predictive_campaign.id, :api_key=> account.api_key, :format => "json"
-        expect(response.body).to eq("{\"message\":\"Campaign deleted\"}")
+        expect(response.body).to eq("{\"message\":\"Campaign archived\"}")
       end
 
       it "should not delete a campaign from another account" do
@@ -121,7 +121,7 @@ describe Client::CampaignsController, :type => :controller do
         caller = create(:caller)
         predictive_campaign = create(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now, callers: [caller])
         delete :destroy, :id=> predictive_campaign.id, :api_key=> account.api_key, :format => "json"
-        expect(response.body).to eq({message: "Campaign deleted"}.to_json)
+        expect(response.body).to eq({message: "Campaign archived"}.to_json)
       end
     end
 

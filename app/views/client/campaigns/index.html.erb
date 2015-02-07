@@ -18,13 +18,13 @@
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <td><%= link_to '',
                 client_campaign_path(c),
-                :confirm => 'Are you sure you want to delete this campaign?',
+                :confirm => 'Are you sure you want to archive this campaign?',
                 :method => :delete,
                 :class => "ico del" %></td>
       </tr>
     <% end %>
   </table>
-  <p><%= page_entries_info @campaigns %> <%= will_paginate @campaigns %></p>
+  <p><%= page_entries_info @campaigns, model: Campaign %> <%= will_paginate @campaigns %></p>
 <% end %>
 
 <p class="actions"><%= link_to 'Add new campaign',
@@ -32,10 +32,10 @@
                                :class => 'action primary',
                                :data => {"intro" => "Click here to create a new campaign.",
                                          "step" => "1"} %></p>
-<p class="actions"><%= link_to 'View deleted campaigns',
-                               client_deleted_campaigns_path,
+<p class="actions"><%= link_to 'View archived campaigns',
+                               client_archived_campaigns_path,
                                :class => 'action secondary',
-                               :data => {"intro" => "Click here to view and restore your deleted scripts.",
+                               :data => {"intro" => "Click here to view and restore your archived campaigns.",
                                          "step" => "3"} %></p>
 <p class="actions"><%= link_to 'Manage Do Not Call list',
                                blocked_numbers_path,
