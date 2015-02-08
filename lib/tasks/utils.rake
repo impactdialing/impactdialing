@@ -163,19 +163,11 @@ end
 
 desc "Rebuild dial queue cache"
 task :rebuild_dial_queues => :environment do |t,args|
-  quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
-  subscription_account_ids = Billing::Subscription.where(
-    'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
-    ['trial', 'per_minute', 'enterprise'],
-    ['basic', 'pro', 'business'],
-    'active'
-  ).pluck(:account_id)
-  account_ids = (quota_account_ids + subscription_account_ids).uniq
-
-  VoterList.where(account_id: account_ids).where('created_at > ?', 6.months.ago.beginning_of_month).includes(:campaign).find_in_batches(batch_size: 100) do |voter_lists|
+  VoterList.includes(:campaign).find_in_batches(batch_size: 100) do |voter_lists|
     print 'b'
     voter_lists.each do |voter_list|
       next if voter_list.voters.count.zero?
+
       lower_voter_id = voter_list.voters.order('id asc').first.id
       upper_voter_id = voter_list.voters.order('id desc').first.id
       Resque.enqueue(Householding::SeedDialQueue, voter_list.campaign_id, voter_list.id, lower_voter_id, upper_voter_id)
@@ -183,6 +175,15 @@ task :rebuild_dial_queues => :environment do |t,args|
     end
   end
   print "\n\nDone!!\n\n"
+end
+
+desc "Rebuild dial queue for a specific campaign"
+task :rebuild_dial_queue => :environment do |t,args|
+  campaign_id = args[:campaign_id]
+  campaign    = Campaign.find(campaign_id)
+  campaign.all_voters.with_enabled(:list).find_in_batches(batch_size: 500) do |voters|
+    campaign.dial_queue.cache_all(voters)
+  end
 end
 
 desc "Cache households to dial queue"
