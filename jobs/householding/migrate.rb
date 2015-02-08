@@ -96,7 +96,7 @@ module Householding
       end
 
       last_campaign_call_attempt = campaign.call_attempts.order('id DESC').first
-      if campaign.active? and (campaign.updated_at > 90.days.ago or last_campaign_call_attempt.created_at > 90.days.ago)
+      if campaign.active? and (campaign.updated_at > 90.days.ago or (last_campaign_call_attempt.present? and last_campaign_call_attempt.created_at > 90.days.ago))
         Voter.where(campaign_id: campaign.id, id: (lower_voter_id..upper_voter_id)).where('household_id IS NOT NULL').with_enabled(:list).find_in_batches do |migrated_voters|
           campaign.dial_queue.cache_all(migrated_voters)
         end
