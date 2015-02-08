@@ -15,15 +15,13 @@
 
 desc "Create Households w/ relevant Voter data & update relevant Voter#household_id & CallAttempt#household_id"
 task :migrate_householding => :environment do
-  quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
-  subscription_account_ids = Billing::Subscription.where(
-    'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
-    ['trial', 'per_minute', 'enterprise'],
-    ['basic', 'pro', 'business'],
-    'active'
-  ).pluck(:account_id)
-  account_ids = (quota_account_ids + subscription_account_ids).uniq
-  VoterList.where(account_id: account_ids).order('created_at desc').includes(:campaign).find_in_batches(batch_size: 100) do |voter_lists|
+  priority_account_ids = [
+    1277, 1165, 1153, 1278, 781, 978, 1159, 1297, 850,
+    1286, 1173, 399, 298, 1294, 121, 224, 244, 268, 487,
+    525, 558, 598, 875, 1283, 94, 159, 1264, 899, 34
+  ]
+
+  VoterList.where('account_id NOT IN (?)', priority_account_ids).order('created_at desc').includes(:campaign).find_in_batches(batch_size: 100) do |voter_lists|
     print 'b'
     voter_lists.each do |voter_list|
       voter_list.voters.where('household_id IS NULL AND phone IS NOT NULL').find_in_batches(batch_size: 1000) do |voters|
