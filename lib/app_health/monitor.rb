@@ -16,6 +16,8 @@ module AppHealth
         RecycleRateViolations.alert_if_not_ok
 
         CallFlow::Jobs::ActiveCallerMonitor.perform
+
+        CallFlow::DialQueue::Jobs::Monitor.perform
         
         LibratoSidekiq.record_stats
 
