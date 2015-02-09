@@ -36,6 +36,24 @@ describe 'CallFlow::DialQueue::Households' do
       expect(actual).to eq [member_of_country_code, member_with_country_code].to_json
     end
 
+    context 'when adding a new member and the members collection changes before new member can be committed' do
+      it 'raises CallFlow::DialQueue::Available::RedisTransactionAborted' # do
+      #   key = @available.send(:keys)[:active]
+      #   Thread.new(key) do |key|
+      #     client = Redis.new
+      #     25.times do |i|
+      #       client.zadd key, ["#{i}.0", phone_numbers.first]
+      #     end
+      #   end
+      #   expect{
+      #     10.times{ @available.next(1) }
+      #   }.to raise_error{
+      #     CallFlow::DialQueue::Available::RedisTransactionAborted
+      #   }
+      # end
+    end
+  end
+
   describe 'existence' do
     it 'returns true when any households exist' do
       subject.add(phone_with_country_code, member_with_country_code)
