@@ -152,10 +152,10 @@ public
   end
 
   def metric_source
-    source = [self.type.downcase]
-    source << 'redis'
+    source = []
     source << "ac-#{self.account_id}"
     source << "ca-#{self.id}"
+    source << "dm-#{self.type.downcase}"
     source
   end
 
