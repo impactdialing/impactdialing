@@ -137,10 +137,7 @@ public
     end
 
     if live_call.state_missed?(:incoming)
-      if redis_call_status != 'failed'
-        # failed calls don't ring
-        campaign.number_not_ringing
-      end
+      campaign.number_not_ringing
 
       if Campaign.preview_power_campaign?(campaign_type)
         # if incoming is not visited then a caller of predictive campaign won't

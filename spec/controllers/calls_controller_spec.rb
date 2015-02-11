@@ -11,6 +11,9 @@ describe CallsController, :type => :controller do
 
   describe 'TwiML endpoints' do
     describe '#incoming' do
+      after do
+        Redis.new.flushall
+      end
       it 'uses CallFlow::Call to record that :incoming was visited' do
         caller                      = create(:caller)
         call                        = create(:call, answered_by: "human", state: 'initial', call_status: "completed")
@@ -35,11 +38,33 @@ describe CallsController, :type => :controller do
     end
     describe "#call_ended" do
       context 'ringing count' do
-        it 'is decremented if :incoming was not visited'
-        it 'is decremented if call status is no-answer'
-        it 'is decremented if call status is busy'
-        it 'is NOT decremented if call status is failed'
-        it 'is decremented if call answered by machine and AMD set to Hangup'
+        after do
+          Redis.new.flushall
+        end
+        it 'is decremented if :incoming was not visited' do
+          caller                      = create(:caller, campaign: campaign)
+          call                        = create(:call, answered_by: "human", state: 'initial', call_status: "completed")
+          caller_session              = create(:webui_caller_session, {caller: caller})
+          call_attempt                = call.call_attempt
+          call_attempt.campaign       = campaign
+          call_attempt.caller_session = caller_session
+          call_attempt.caller         = caller
+          call_attempt.save!
+          campaign.number_ringing
+
+          expect(campaign.ringing_count).to eq 1
+          
+          incoming_params = {
+            'CallStatus' => 'failed',
+            'id'         => call.id,
+            'CallSid'    => 'CA123',
+            'AccountSid' => 'AC432'
+          }
+
+          post :call_ended, incoming_params
+
+          expect(campaign.ringing_count).to eq 0
+        end
       end
     end
 
