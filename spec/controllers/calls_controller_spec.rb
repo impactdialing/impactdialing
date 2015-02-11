@@ -10,8 +10,8 @@ describe CallsController, :type => :controller do
   let(:call){ create(:call, {call_attempt: call_attempt}) }
 
   describe 'TwiML endpoints' do
-    describe "#call_ended" do
-      it "should only render twiml if call connected" do
+    describe '#incoming' do
+      it 'uses CallFlow::Call to record that :incoming was visited' do
         caller                      = create(:caller)
         call                        = create(:call, answered_by: "human", state: 'initial', call_status: "completed")
         caller_session              = create(:webui_caller_session, {caller: caller})
@@ -19,10 +19,27 @@ describe CallsController, :type => :controller do
         call_attempt.caller_session = caller_session
         call_attempt.caller         = caller
         call_attempt.save!
+        
+        incoming_params = {
+          'CallStatus' => 'in-progress',
+          'id'         => call.id,
+          'CallSid'    => 'CA123',
+          'AccountSid' => 'AC432'
+        }
 
-        post :call_ended, CallStatus: "completed", id: call.id
-        expect(RedisCallFlow).not_to receive(:push_to_not_answered_call_list)
-        expect(response.body).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+        post :incoming, incoming_params
+
+        live_call = CallFlow::Call.new(incoming_params)
+        expect(live_call.state_visited?(:incoming)).to be_truthy
+      end
+    end
+    describe "#call_ended" do
+      context 'ringing count' do
+        it 'is decremented if :incoming was not visited'
+        it 'is decremented if call status is no-answer'
+        it 'is decremented if call status is busy'
+        it 'is NOT decremented if call status is failed'
+        it 'is decremented if call answered by machine and AMD set to Hangup'
       end
     end
 

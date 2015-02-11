@@ -8,6 +8,9 @@ class CallsController < ApplicationController
 
   # TwiML
   def incoming
+    live_call = CallFlow::Call.new(params)
+    live_call.update_history(:incoming)
+
     unless params['ErrorCode'] and params['ErrorUrl']
       xml = @call.incoming_call(params)
     else

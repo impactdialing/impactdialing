@@ -122,31 +122,38 @@ public
   end
 
   def call_ended(campaign_type, params={})
+    live_call = CallFlow::Call.new(params)
+
     unless caller_session.nil? # can be the case for transfers
       caller_session.publish_call_ended(params)
     end
-    if call_did_not_connect?
-      campaign.number_not_ringing
+
+    if call_did_not_connect? # Status in (no-answer, busy, failed)
       RedisCallFlow.push_to_not_answered_call_list(self.id, redis_call_status)
     end
 
-    if answered_by_machine?
-      campaign.number_not_ringing
+    if answered_by_machine? # AnsweredBy == 'machine'
       RedisCallFlow.push_to_end_by_machine_call_list(self.id)
-
-      if Campaign.preview_power_campaign?(campaign_type) && !campaign.use_recordings? && redis_call_status == 'completed'
-        # redirect caller here because /incoming is not requested when answering machine detection is set to Hangup
-        call_attempt.redirect_caller
-      end
     end
 
-    if Campaign.preview_power_campaign?(campaign_type) && redis_call_status != 'completed'
-      call_attempt.redirect_caller
+    if live_call.state_missed?(:incoming)
+      if redis_call_status != 'failed'
+        # failed calls don't ring
+        campaign.number_not_ringing
+      end
+
+      if Campaign.preview_power_campaign?(campaign_type)
+        # if incoming is not visited then a caller of predictive campaign won't
+        # have been assigned the call and the call attempt will not have been
+        # associated with the caller session.
+        call_attempt.redirect_caller
+      end
     end
 
     if call_did_not_connect?
       RedisCall.delete(self.id)
     end
+
     call_ended_twiml
   end
 
