@@ -168,21 +168,48 @@ public
 
     ImpactPlatform::Metrics.measure(name, (bench_end - bench_start), metric_source.join('.'))
   end
+
+  def debug_number(name, counter, &block)
+    source = metric_source.join('.')
+    prefix = "debug.dialer.dial_queue.number_#{name}"
+
+    ImpactPlatform::Metrics.sample("#{prefix}.#{counter}.before", send("#{counter}_count"), source)
+
+    result = yield
+
+    ImpactPlatform::Metrics.sample("#{prefix}.#{name}.after", result, source)
+  end
+
+  def debug_number_ringing(counts)
+    source = metric_source.join('.')
+    prefix = "debug.dialer.dial_queue.number_ringing"
+    ImpactPlatform::Metrics.sample("#{prefix}.presented.before", counts[0], source)
+    ImpactPlatform::Metrics.sample("#{prefix}.ringing.before", counts[1], source)
+    ImpactPlatform::Metrics.sample("#{prefix}.presented.after", counts[2], source)
+    ImpactPlatform::Metrics.sample("#{prefix}.ringing.after", counts[3], source)
+  end
   
   def number_presented(n)
-    inflight_stats.incby('presented', n)
+    debug_number('presented', 'presented') do
+      inflight_stats.incby('presented', n)
+    end
   end
 
   def number_ringing
-    Wolverine.dial_queue.number_ringing(keys: [Twillio::InflightStats.key(self)])
+    counts = Wolverine.dial_queue.number_ringing(keys: [Twillio::InflightStats.key(self)])
+    debug_number_ringing(counts)
   end
 
   def number_not_ringing
-    inflight_stats.dec('ringing')
+    debug_number('not_ringing', 'ringing') do
+      inflight_stats.dec('ringing')
+    end
   end
 
   def number_failed
-    inflight_stats.incby('presented', -1)
+    debug_number('failed', 'presented') do
+      inflight_stats.incby('presented', -1)
+    end
   end
   alias :number_skipped :number_failed
 
