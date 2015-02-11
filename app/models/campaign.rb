@@ -174,8 +174,7 @@ public
   end
 
   def number_ringing
-    inflight_stats.incby('presented', -1)
-    inflight_stats.incby('ringing', 1)
+    Wolverine.dial_queue.number_ringing(keys: [Twillio::InflightStats.key(self)])
   end
 
   def number_not_ringing

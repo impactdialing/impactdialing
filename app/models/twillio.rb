@@ -12,6 +12,10 @@ class Twillio
         "inflight_stats:#{campaign.id}"
       end
     public
+      def self.key(campaign)
+        new(campaign).send(:base_key)
+      end
+
       def initialize(campaign)
         @campaign = campaign
       end
