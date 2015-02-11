@@ -100,7 +100,16 @@ class Twillio
       dialer_mode: campaign.type,
       call_start: Time.now
     })
-    Call.create(call_attempt: call_attempt, state: "initial")
+
+    unless call_attempt.present? and call_attempt.id > 0
+      Rails.logger.error "[DEBUG] DQ Numbers failed to create CallAttempt record #{campaign.type}[#{campaign.id}] Phone[#{household.phone}]"
+    end
+
+    call = Call.create(call_attempt: call_attempt, state: "initial")
+
+    unless call.present? and call.id > 0
+      Rails.logger.error "[DEBUG] DQ Numbers failed to create Call record #{campaign.type}[#{campaign.id}] Phone[#{household.phone}] CallAttempt[#{call_attempt.id}]"
+    end
 
     call_attempt
   end
