@@ -177,7 +177,7 @@ public
 
     result = yield
 
-    ImpactPlatform::Metrics.sample("#{prefix}.#{name}.after", result, source)
+    ImpactPlatform::Metrics.sample("#{prefix}.#{counter}.after", result, source)
   end
 
   def debug_number_ringing(counts)
