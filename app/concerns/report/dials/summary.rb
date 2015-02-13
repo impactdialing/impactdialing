@@ -52,11 +52,11 @@ private
   end
 
   def total_voters
-    @total_voters ||= campaign.all_voters.count(:id)
+    @total_voters ||= stats.total_voters
   end
 
   def total_households
-    @total_households ||= campaign.households.count(:id)
+    @total_households ||= stats.total_households
   end
 
   def perc(n)

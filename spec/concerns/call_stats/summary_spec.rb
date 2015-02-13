@@ -120,6 +120,83 @@ describe CallStats::Summary do
 
     end
 
+    describe 'total' do
+      include FakeCallData
+
+      let(:admin){ create(:user) }
+      let(:account){ admin.account }
+
+      def summary(campaign)
+        CallStats::Summary.new(campaign)
+      end
+
+      before do
+        @campaign = create_campaign_with_script(:bare_predictive, account).last
+        all_attrs = {campaign: @campaign, account: account}
+        attrs     = all_attrs.merge(presented_at: 5.minutes.ago)
+
+        create_list(:household, 5, :busy, :cell, attrs)
+        create_list(:household, 5, :success, :dnc, attrs)
+        @dialed_and_blocked_total = 10
+
+        create_list(:household, 5, attrs)
+        @not_dialed_and_not_blocked_total = 5
+
+        create_list(:household, 5, :cell, attrs)
+        create_list(:household, 5, :dnc, attrs)
+
+        @total_households = @dialed_and_blocked_total + @not_dialed_and_not_blocked_total
+      end
+
+      describe 'households' do
+        it 'counts dialed households that have been blocked' do
+          expect(summary(@campaign).total_households).to eq @total_households
+        end
+
+        it 'counts all households that are not currently blocked' do
+          expect(summary(@campaign).total_households).to eq @total_households
+        end
+
+        it 'does not count blocked and not dialed households' do
+          expect(summary(@campaign).total_households).to eq @total_households
+        end
+      end
+
+      describe 'total voters' do
+        before do
+          all_attrs = {campaign: @campaign, account: account}
+
+          create_list(:voter, 5, :disabled, all_attrs)
+
+          @campaign.households.dialed.limit(5).each do |household|
+            create(:voter, :disabled, all_attrs.merge(household: household, status: household.status))
+          end
+
+          @campaign.households.where('blocked <> 0').limit(5).each do |household|
+            create(:voter, all_attrs.merge(household: household, status: CallAttempt::Status::BUSY))
+          end
+
+          @campaign.households.where('blocked <> 0').limit(5).each do |household|
+            create(:voter, all_attrs.merge(household: household))
+          end
+
+          @total_voters = 10
+        end
+        it 'counts dialed voters from disabled lists' do
+          expect(summary(@campaign).total_voters).to eq @total_voters
+        end
+        it 'counts dialed voters from blocked households' do
+          expect(summary(@campaign).total_voters).to eq @total_voters
+        end
+        it 'does not count not dialed voters from disabled lists' do
+          expect(summary(@campaign).total_voters).to eq @total_voters
+        end
+        it 'does not count not dialed voters from blocked households' do
+          expect(summary(@campaign).total_voters).to eq @total_voters
+        end
+      end
+    end
+
     describe 'the math' do
       include FakeCallData
 

@@ -8,6 +8,21 @@ class CallStats::Summary
     @campaign = campaign
   end
 
+  def total_voters
+    @total_voters ||= campaign.all_voters.
+                      joins("LEFT JOIN `households` ON voters.household_id = households.id").
+                      where(
+                        '(voters.status = ? AND households.blocked = 0 AND voters.enabled <> 0) OR (voters.status <> ?)',
+                        Voter::Status::NOTCALLED,
+                        Voter::Status::NOTCALLED
+                      ).
+                      count(:id)
+  end
+
+  def total_households
+    @total_households ||= campaign.households.where('blocked = 0 OR status <> ?', Voter::Status::NOTCALLED).count(:id)
+  end
+
   def dialed_and_complete_count
     @dialed_and_complete_count ||= all_voters.completed(campaign).count
   end
