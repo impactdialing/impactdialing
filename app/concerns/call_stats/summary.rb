@@ -37,7 +37,9 @@ class CallStats::Summary
   end
 
   def voters_not_reached
-    @voters_not_reached ||= all_voters.with_enabled(:list).where(status: Voter::Status::NOTCALLED).joins(:household).where('households.blocked = 0').count
+    @voters_not_reached ||= all_voters.with_enabled(:list).where(status: Voter::Status::NOTCALLED).
+                            joins("LEFT JOIN `households` ON voters.household_id = households.id").
+                            where("households.blocked = 0").count
   end
 
   def dialed_and_available_for_retry_count
