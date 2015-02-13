@@ -11,12 +11,11 @@ class CallStats::Summary
   def total_voters
     @total_voters ||= campaign.all_voters.
                       joins("LEFT JOIN `households` ON voters.household_id = households.id").
-                      where(
-                        '(voters.status = ? AND households.blocked = 0 AND voters.enabled <> 0) OR (voters.status <> ?)',
-                        Voter::Status::NOTCALLED,
-                        Voter::Status::NOTCALLED
-                      ).
-                      count(:id)
+                      where('households.blocked = 0').
+                      where('voters.status = ?', Voter::Status::NOTCALLED).
+                      with_enabled(:list).
+                      count(:id) + 
+                      campaign.all_voters.where('status <> ?', Voter::Status::NOTCALLED).count
   end
 
   def total_households
