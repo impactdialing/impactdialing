@@ -105,7 +105,7 @@ describe CallStats::Summary do
 
     describe "households_not_dialed_count" do
 
-      it "counts Voters w/ blank last_call_attempt_time and w/ statuses not in 'ringing', 'ready' or 'in-progress'" do
+      it "counts Households w/ blank last_call_attempt_time and w/ statuses not in 'ringing', 'ready' or 'in-progress'" do
         @campaign = create(:predictive, recycle_rate: 3)
         attrs = {campaign: @campaign}
         create(:household, attrs)
@@ -155,25 +155,44 @@ describe CallStats::Summary do
         @not_available += create_list(:household, 5, :hangup, attrs)
         @not_available += create_list(:household, 5, :voicemail, attrs)
 
+        @blocked_and_completed = create_list(:household, 5, :success, attrs.merge({blocked: [:cell]}))
+        @blocked_and_completed.each{|h| create(:voter, :success, all_attrs.merge(household: h))}
+        @blocked_and_busy      = create_list(:household, 5, :busy, attrs.merge({blocked: [:dnc]}))
+
         attrs.merge!(presented_at: nil)
-        @not_dialed = create_list(:household, 5, attrs)
+        @not_dialed         = create_list(:household, 5, attrs)
+        @not_dialed.each{|h| create(:voter, all_attrs.merge(household: h))}
+        @not_dialed_blocked = create_list(:household, 5, attrs.merge({blocked: [:cell]}))
+        @not_dialed_blocked.each{|h| create(:voter, all_attrs.merge(household: h))}
+        @not_dialed        += @not_dialed_blocked
+
+        @blocked_and_not_dialed = create_list(:household, 5, attrs.merge({blocked: [:cell]}))
+        @blocked_and_not_dialed += create_list(:household, 5, attrs.merge({blocked: [:dnc]}))
 
         @dialed = @completed + @available + @not_available[5..-1] # 5 voicemail in both completed & not_available
       end
 
-      it 'not dialed' do
+      it 'includes active (not blocked) not dialed numbers' do
         summary = CallStats::Summary.new(@campaign)
-        expect(summary.households_not_dialed_count).to eq @not_dialed.count
+        expect(summary.households_not_dialed_count).to eq (@not_dialed.count - @not_dialed_blocked.count)
       end
 
       it 'dialed' do
         summary = CallStats::Summary.new(@campaign)
-        expect(summary.dialed_count).to eq @dialed.count
+        expect(summary.dialed_count).to eq (@dialed.count + @blocked_and_completed.count + @blocked_and_busy.count)
       end
 
       it 'not dialed + dialed = all voters' do
+        summary  = CallStats::Summary.new(@campaign)
+        actual   = summary.households_not_dialed_count + summary.dialed_count
+        expected = @campaign.households.active.not_dialed.count + @campaign.households.dialed.count
+        expect( actual ).to eq expected
+      end
+
+      it 'voters not reached' do
         summary = CallStats::Summary.new(@campaign)
-        expect( summary.households_not_dialed_count + summary.dialed_count ).to eq @campaign.households.count
+        actual  = summary.voters_not_reached
+        expect( actual ).to eq @campaign.all_voters.where(status: Voter::Status::NOTCALLED).with_enabled(:list).joins(:household).where('households.blocked = 0').count
       end
 
       it 'available' do
@@ -183,12 +202,12 @@ describe CallStats::Summary do
 
       it 'not available' do
         summary = CallStats::Summary.new(@campaign)
-        expect(summary.dialed_and_not_available_for_retry_count).to eq(@not_available.count + @completed.count - 5) # 5 voicemail
+        expect(summary.dialed_and_not_available_for_retry_count).to eq(@not_available.count + @completed.count - 5 + @blocked_and_busy.count + @blocked_and_completed.count) # 5 voicemail
       end
 
       it 'completed' do
         summary = CallStats::Summary.new(@campaign)
-        expect(summary.dialed_and_complete_count).to eq(@completed.count)
+        expect(summary.dialed_and_complete_count).to eq(@completed.count + @blocked_and_completed.count)
       end
     end
   end

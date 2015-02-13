@@ -8,10 +8,6 @@ class CallStats::Summary
     @campaign = campaign
   end
 
-  def per_status_counts
-    @per_status_counts ||= households.select('status').group("status").count(:id)
-  end
-
   def dialed_and_complete_count
     @dialed_and_complete_count ||= all_voters.completed(campaign).count
   end
@@ -31,7 +27,7 @@ class CallStats::Summary
   def households_not_dialed_count
     return @households_not_dialed_count if defined?(@households_not_dialed_count)
     
-    actual_count                 = households.not_dialed.count
+    actual_count                 = households.active.not_dialed.count
     adjusted_count               = actual_count - ringing_count
     @households_not_dialed_count = if adjusted_count < 0
                                      actual_count
@@ -41,11 +37,11 @@ class CallStats::Summary
   end
 
   def voters_not_reached
-    @voters_not_reached ||= all_voters.where(status: Voter::Status::NOTCALLED).count
+    @voters_not_reached ||= all_voters.with_enabled(:list).where(status: Voter::Status::NOTCALLED).joins(:household).where('households.blocked = 0').count
   end
 
   def dialed_and_available_for_retry_count
-    @dialed_and_available_for_retry_count ||= households.dialed.available(campaign).count
+    @dialed_and_available_for_retry_count ||= households.active.dialed.available(campaign).count
   end
 
   def dialed_and_not_available_for_retry_count
