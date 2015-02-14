@@ -6,6 +6,7 @@ require 'zip'
 
 module DoNotCall::Jobs
   class CacheWirelessBlockList
+    extend LibratoResque
     @queue = :upload_download
 
     def self.url
@@ -17,6 +18,8 @@ module DoNotCall::Jobs
       filename, file = *unzip(temp_file)
       dest_path      = "#{s3_root_path}/#{filename}"
       AmazonS3.new.write(dest_path, file)
+
+      Resque.enqueue(DoNotCall::Jobs::RefreshWirelessBlockList, filename)
     end
 
     def self.download
