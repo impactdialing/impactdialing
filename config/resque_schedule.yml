@@ -60,3 +60,11 @@ update_twilio_stats_session:
   queue: twilio_stats
   args:
   description: "This job update twilio stats caller session"
+
+cache_ported_lists:
+  cron: "59 00 * * *"
+  class: DoNotCall::Jobs::CachePortedLists
+  queue: upload_download
+  args: '_system/do_not_call'
+  description: "Download fresh PortedList files & store them on S3"
+
