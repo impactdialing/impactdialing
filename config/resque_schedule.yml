@@ -68,3 +68,9 @@ cache_ported_lists:
   args: '_system/do_not_call'
   description: "Download fresh PortedList files & store them on S3"
 
+cache_wireless_block_list:
+  cron: "59 00 13 * *"
+  class: DoNotCall::Jobs::CacheWirelessBlockList
+  queue: upload_download
+  args: '_system/do_not_call'
+  description: "Download fresh WirelessBlockList file, unzip & store it on S3"
