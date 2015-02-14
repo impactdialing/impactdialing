@@ -4,7 +4,6 @@ ruby '2.0.0'
 
 gem 'rails', '~> 3.2.19'
 gem 'unicorn'
-gem 'will_paginate', '~> 3.0.4'
 gem 'mysql2', '~> 0.3.13'
 gem 'newrelic_rpm'
 gem 'json', '~> 1.7.7'
@@ -21,6 +20,7 @@ gem 'jquery-rails', '~> 3.0.4'
 # activerecord extensions
 gem 'activerecord-import', '~> 0.4.1'
 gem 'bitmask_attributes'
+gem 'will_paginate', '~> 3.0.4'
 
 gem 'uuid', '~> 2.3.7'
 gem 'eventmachine', '1.0.3'
@@ -51,6 +51,11 @@ gem 'cancan', '~>1.6.10'
 # REST clients
 gem 'stripe', '~>1.8.4'
 gem 'platform-api'
+
+# HTTP client
+gem 'faraday'
+gem 'faraday_middleware'
+gem 'faraday-cookie_jar'
 
 # monitoring
 gem 'librato-rails'
