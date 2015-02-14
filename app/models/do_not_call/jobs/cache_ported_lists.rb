@@ -2,6 +2,7 @@ require 'uri'
 
 module DoNotCall::Jobs
   class CachePortedLists
+    extend LibratoResque
     @queue = :upload_download
 
     def self.url
@@ -21,6 +22,8 @@ module DoNotCall::Jobs
         file      = download(filename).body
         AmazonS3.new.write(dest_path, file)
       end
+
+      Resque.enqueue(DoNotCall::Jobs::RefreshPortedLists)
     end
 
     # Based on: https://www.tcpacompliance.us/content/tcpa_popup_autoScript.html
