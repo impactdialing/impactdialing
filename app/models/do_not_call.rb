@@ -24,19 +24,4 @@ module DoNotCall
 
     "#{DoNotCall.s3_root}/#{filename}"
   end
-
-  def self.ported_file_url
-    ENV['DO_NOT_CALL_PORTED_URL']
-  end
-
-  def self.block_file_url
-    ENV['DO_NOT_CALL_BLOCK_URL']
-  end
-
-  def self.auth_ids
-    {
-      ported: ported_file_url,
-      block: block_file_url
-    }
-  end
 end

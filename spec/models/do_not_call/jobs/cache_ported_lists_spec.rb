@@ -1,0 +1,32 @@
+require 'spec_helper'
+require 'uri'
+
+describe 'DoNotCall::Jobs::CacheProviderFile.perform', data_heavy: true do
+  # https://user:secret@www.tcpacompliance.us/dnc/private/corpuser/download.do
+  let(:host){ 'www.tcpacompliance.us' }
+  let(:login_path){ '/dnclogin/login.fcc' }
+  let(:download_path){ '/dnc/private/corpuser/download.do' }
+  let(:s3_config){ YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml")) }
+  let(:s3_connection){ AWS::S3.new(access_key_id: s3_config['access_key_id'], secret_access_key: s3_config['secret_access_key']) }
+  subject{ DoNotCall::Jobs::CachePortedLists }
+
+  it 'downloads files' do
+    VCR.use_cassette('cache ported lists provider download file') do
+      filename = subject.source_filenames.first
+      response = subject.download(filename)
+      expect(response.body.size).to be > 10_000_000
+    end
+  end
+
+  it 'copies each remote file in .source_filenames to configured s3 bucket in "_system/do_not_call/"' do
+    VCR.use_cassette('cache ported wireless numbers lists to s3') do
+      s3_root = "_system/do_not_call/test"
+      subject.perform(s3_root)
+
+      s3_keys  = s3_connection.buckets[s3_config['bucket']].objects.with_prefix(s3_root).map(&:key)
+      subject.source_filenames.each do |filename|
+        expect(s3_keys).to include "#{s3_root}/#{filename}"
+      end
+    end
+  end
+end
