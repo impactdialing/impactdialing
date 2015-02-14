@@ -2,10 +2,6 @@ require 'spec_helper'
 require 'uri'
 
 describe 'DoNotCall::Jobs::CacheProviderFile.perform', data_heavy: true do
-  # https://user:secret@www.tcpacompliance.us/dnc/private/corpuser/download.do
-  let(:host){ 'www.tcpacompliance.us' }
-  let(:login_path){ '/dnclogin/login.fcc' }
-  let(:download_path){ '/dnc/private/corpuser/download.do' }
   let(:s3_config){ YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml")) }
   let(:s3_connection){ AWS::S3.new(access_key_id: s3_config['access_key_id'], secret_access_key: s3_config['secret_access_key']) }
   subject{ DoNotCall::Jobs::CachePortedLists }
