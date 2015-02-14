@@ -358,6 +358,7 @@ GEM
       rspec-mocks (~> 3.0.0)
       rspec-support (~> 3.0.0)
     rspec-support (3.0.2)
+    rubyzip (1.1.0)
     rufus-scheduler (2.0.23)
       tzinfo (>= 0.3.23)
     ruport (1.6.3)
@@ -520,6 +521,7 @@ DEPENDENCIES
   rspec-instafail
   rspec-its
   rspec-rails
+  rubyzip
   ruport
   settingslogic (~> 2.0.9)
   shoulda

@@ -57,6 +57,9 @@ gem 'faraday'
 gem 'faraday_middleware'
 gem 'faraday-cookie_jar'
 
+# Files
+gem 'rubyzip'
+
 # monitoring
 gem 'librato-rails'
 group :production, :heroku, :heroku_staging do
