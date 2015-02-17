@@ -172,7 +172,7 @@ class VoterBatchImport
       end
     end
 
-    @list.update_attributes(households_count: households_count)
+    @list.update_column(:households_count, households_count)
 
     @result
   end

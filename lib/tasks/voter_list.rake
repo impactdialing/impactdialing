@@ -6,7 +6,7 @@ namespace :voter_list do
     VoterList.find_in_batches(batch_size: 500) do |voter_lists|
       voter_lists.each do |voter_list|
         households_count = voter_list.voters.select('DISTINCT(household_id)').count
-        voter_list.update_attributes(households_count: households_count)
+        voter_list.update_column(:households_count, households_count)
 
         report << [
           voter_list.id,
