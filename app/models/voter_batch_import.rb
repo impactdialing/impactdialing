@@ -90,6 +90,7 @@ class VoterBatchImport
   end
 
   def import_csv
+    households_count = 0
     @voters_list.each_slice(1000).each do |voter_info_list|
       custom_fields     = []
       leads             = []
@@ -98,6 +99,8 @@ class VoterBatchImport
 
       households  = create_or_update_households(voter_info_list)
       found_leads = found_voters(voter_info_list) if custom_id_present?
+
+      households_count += households.keys.size
 
       voter_info_list.each do |voter_info|
         raw_phone_number = voter_info[@csv_phone_column_location]
@@ -168,6 +171,9 @@ class VoterBatchImport
         Resque.enqueue(CallFlow::DialQueue::Jobs::CacheVoters, campaign.id, existing_voter_ids, 1)
       end
     end
+
+    @list.update_attributes(households_count: households_count)
+
     @result
   end
 

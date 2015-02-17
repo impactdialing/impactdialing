@@ -1,6 +1,6 @@
 require 'ostruct'
 class VoterList < ActiveRecord::Base
-  attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id, :uploaded_file_name, :enabled, :skip_wireless
+  attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id, :uploaded_file_name, :enabled, :skip_wireless, :households_count
 
   serialize :csv_to_system_map, JSON
   
