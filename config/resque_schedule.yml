@@ -74,3 +74,10 @@ cache_wireless_block_list:
   queue: upload_download
   args: '_system/do_not_call'
   description: "Download fresh WirelessBlockList file, unzip & store it on S3"
+
+campaign_sweeper:
+  cron: "59 07 * * *"
+  class: Archival::Jobs::CampaignSweeper
+  queue: background_worker
+  args:
+  description: "Archive all campaigns not updated or called in the last CAMPAIGN_EXPIRY days"
