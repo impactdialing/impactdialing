@@ -1,13 +1,7 @@
-# class Settings < Settingslogic
-#   source "#{Rails.root}/config/application.yml"
-#   namespace Rails.env
-# end
-
 class Settings
   def self.current_class
     class << self; self; end
   end
-
 
   current_class.instance_eval do
     [

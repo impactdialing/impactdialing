@@ -2,84 +2,104 @@ source 'https://rubygems.org'
 
 ruby '2.0.0'
 
-gem 'rails', '~> 3.2.19'
-gem 'unicorn'
-gem 'mysql2', '~> 0.3.13'
-gem 'newrelic_rpm'
-gem 'json', '~> 1.7.7'
-gem 'nokogiri', '~> 1.6.0'
-gem 'pusher', '~> 0.11.3'
-gem 'aws-sdk'
-gem 'paperclip', '~> 3.5.0'
-gem 'twilio', '~> 3.1.1'
-gem 'settingslogic', '~> 2.0.9'
-gem 'twilio-ruby', '~> 3.10.0'
-gem 'dynamic_form', '~> 1.1.4'
+gem 'rails', '~> 4.0.0'
 gem 'jquery-rails', '~> 3.0.4'
 
-# activerecord extensions
+# No longer needed
+# gem 'settingslogic', '~> 2.0.9'
+# ???
+gem 'sinatra', '~>1.4.3'
+gem 'json', '~> 1.7.7'
+gem 'nokogiri', '~> 1.6.0'
+
+gem 'unicorn'
+
+gem 'uuid', '~> 2.3.7' # used to generate unique filenames for download reports - overkill much?
+
+# 911
+gem 'pagerduty'
+gem 'bugsnag'
+
+# ActiveRecord extensions
 gem 'activerecord-import', '~> 0.4.1'
 gem 'bitmask_attributes'
 gem 'will_paginate', '~> 3.0.4'
+gem 'deep_cloneable', '~> 1.5.3'
 
-gem 'uuid', '~> 2.3.7'
-gem 'eventmachine', '1.0.3'
-gem 'em-http-request', '~> 1.1.0'
-gem 'em-synchrony', '~> 1.0.3'
+# Assets
+gem 'slim', '~>2.0.0'
+gem 'sprockets', '~>2.2.1'
+
+# Auth/z
+gem 'cancan', '~>1.6.10'
+
+# Background
 gem 'resque', '~> 1.24.1'
 gem 'resque-scheduler', '~> 2.0.1', :require => 'resque_scheduler'
 gem 'resque-lock', '~> 1.1.0'
 gem 'resque-loner', '~>1.2.1'
+gem 'sidekiq', '~> 2.13.0'
+gem 'sidekiq-failures', '~> 0.2.1'
+
+# Databases
+gem 'mysql2' #, '~> 0.3.13'
+gem 'redis', '~> 3.0.4'
+gem 'redis-objects', '~>0.7.0',:require => 'redis/objects'
 gem 'hiredis', '~>0.4.5'
 gem 'em-hiredis', '~>0.2.1'
-gem 'formtastic', '~>2.2.1'
-gem 'cocoon', '~>1.0.22'
-gem 'deep_cloneable', '~> 1.5.3'
-gem 'redis-objects', '~>0.7.0',:require => 'redis/objects'
-gem 'redis', '~> 3.0.4'
 gem 'ar-octopus', :git => 'git://github.com/tchandy/octopus.git'
-gem 'newrelic-redis'
-gem 'sidekiq', '~> 2.13.0'
-gem 'slim', '~>2.0.0'
-gem 'sprockets', '~>2.2.1'
-gem 'sinatra', '~>1.4.3'
-gem 'mandrill-api', '~>1.0.37'
-gem 'sidekiq-failures', '~> 0.2.1'
-gem 'lograge', '~>0.2.0'
-gem 'cancan', '~>1.6.10'
 
-# REST clients
-gem 'stripe', '~>1.8.4'
-gem 'platform-api'
+# DNS
+gem 'em-resolv-replace' # non-blocking lookups for eventmachine
+
+# EventMachine
+gem 'eventmachine', '1.0.3'
+gem 'em-http-request', '~> 1.1.0'
+gem 'em-synchrony', '~> 1.0.3'
+
+# Files
+gem 'paperclip', '~> 3.5.0'
+gem 'rubyzip'
+
+# Forms
+gem 'formtastic', '~>2.2.1'
+gem 'dynamic_form', '~> 1.1.4'
+gem 'cocoon', '~>1.0.22'
 
 # HTTP client
 gem 'faraday'
 gem 'faraday_middleware'
 gem 'faraday-cookie_jar'
 
-# Files
-gem 'rubyzip'
-
-# monitoring
-gem 'librato-rails'
-group :production, :heroku, :heroku_staging do
-  gem 'rack-timing'
-  gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
-end
-
-# 911
-gem 'pagerduty'
-gem 'bugsnag'
-
-# Text -> HTML processors
-gem 'redcarpet'
+# Logging
+gem 'lograge', '~>0.2.0'
 
 # Reporting
 gem 'ruport'
 gem 'acts_as_reportable'
 
-# Non-blocking DNS look-ups for EventMachine
-gem 'em-resolv-replace'
+# Text -> HTML processors
+gem 'redcarpet'
+
+# Provider clients
+gem 'aws-sdk'
+gem 'platform-api'
+gem 'pusher', '~> 0.11.3'
+gem 'stripe', '~>1.8.4'
+gem 'twilio', '~> 3.1.1'
+gem 'twilio-ruby', '~> 3.10.0'
+
+# SMTP
+gem 'mandrill-api', '~>1.0.37'
+
+# Monitoring
+gem 'librato-rails'
+gem 'newrelic_rpm'
+gem 'newrelic-redis'
+group :production, :heroku, :heroku_staging do
+  gem 'rack-timing'
+  gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
+end
 
 # redis lua scripts
 gem 'wolverine'
