@@ -1,8 +1,62 @@
 PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku_staging' ? 'http://' : 'https://'
-#PROTOCOL = 'http://'
-ImpactDialing::Application.routes.draw do
 
-  match "/v1", :to => "caller#v1", :constraints => {:subdomain => "caller"}
+ImpactDialing::Application.routes.draw do
+  # The priority is based upon order of creation: first created -> highest priority.
+  # See how all your routes lay out with "rake routes".
+
+  # You can have the root of your site routed with "root"
+  # root 'welcome#index'
+
+  # Example of regular route:
+  #   get 'products/:id' => 'catalog#view'
+
+  # Example of named route that can be invoked with purchase_url(id: product.id)
+  #   get 'products/:id/purchase' => 'catalog#purchase', as: :purchase
+
+  # Example resource route (maps HTTP verbs to controller actions automatically):
+  #   resources :products
+
+  # Example resource route with options:
+  #   resources :products do
+  #     member do
+  #       get 'short'
+  #       post 'toggle'
+  #     end
+  #
+  #     collection do
+  #       get 'sold'
+  #     end
+  #   end
+
+  # Example resource route with sub-resources:
+  #   resources :products do
+  #     resources :comments, :sales
+  #     resource :seller
+  #   end
+
+  # Example resource route with more complex sub-resources:
+  #   resources :products do
+  #     resources :comments
+  #     resources :sales do
+  #       get 'recent', on: :collection
+  #     end
+  #   end
+
+  # Example resource route with concerns:
+  #   concern :toggleable do
+  #     post 'toggle'
+  #   end
+  #   resources :posts, concerns: :toggleable
+  #   resources :photos, concerns: :toggleable
+
+  # Example resource route within a namespace:
+  #   namespace :admin do
+  #     # Directs /admin/products/* to Admin::ProductsController
+  #     # (app/controllers/admin/products_controller.rb)
+  #     resources :products
+  #   end
+
+  match "/v1", :to => "caller#v1", :constraints => {:subdomain => "caller"}, :method => :get
   root :to => "callers/station#show", :constraints => {:subdomain => "caller"}
   root :to => "client#login"
 
@@ -76,7 +130,7 @@ ImpactDialing::Application.routes.draw do
 
   # new customer facing end-point
   get '/app', :to => 'callers/station#show', :as => :callveyor
-  match '/app/login', :to => 'callers/station#login', :as => :callveyor_login
+  match '/app/login', :to => 'callers/station#login', :as => :callveyor_login, :method => :get
   post '/app/logout', :to => 'callers/station#logout', :as => :callveyor_logout
   # /new customer facing end-point
   # new api rough draft
@@ -96,8 +150,8 @@ ImpactDialing::Application.routes.draw do
   post 'call_center/api/:id/drop_message', :to => 'calls#drop_message'
   # /new api rough draft
 
-  match '/policies', :to => 'client#policies'
-  match '/client/policies', :to => 'client#policies', :as => :client_policies
+  match '/policies', :to => 'client#policies', :method => :get
+  match '/client/policies', :to => 'client#policies', :as => :client_policies, :method => :get
 
   # Webhooks
   post 'webhooks/billing/stripe', :to => 'client/billing/events#stripe'
@@ -128,21 +182,21 @@ ImpactDialing::Application.routes.draw do
       root to: 'subscription#show', as: :home
       resource :credit_card, :only => [:show, :update, :create], :controller => 'credit_card'
       resource :subscription, :only => [:show, :update, :edit], :controller => 'subscription' do
-        put :cancel
+        patch :cancel
       end
     end
-    resources :subscriptions do
-      member do
-        put :update_callers
-        put :cancel
-        get :add_funds
-        put :add_to_balance
-        get :configure_auto_recharge
-        put :auto_recharge
-        get :update_billing
-        put :update_billing_info
-      end
-    end
+    # resources :subscriptions do
+    #   member do
+    #     put :update_callers
+    #     put :cancel
+    #     get :add_funds
+    #     put :add_to_balance
+    #     get :configure_auto_recharge
+    #     put :auto_recharge
+    #     get :update_billing
+    #     put :update_billing_info
+    #   end
+    # end
     resources :scripts do
       collection do
         get :questions_answered
@@ -221,7 +275,7 @@ ImpactDialing::Application.routes.draw do
   end
 
   scope 'client' do
-    match '/', :to => 'client#index', :as => 'client_root'
+    match '/', :to => 'client#index', :as => 'client_root', :method => :get
 
     resources :campaigns, :only => [] do
       member { post :verify_callerid }
@@ -248,13 +302,13 @@ ImpactDialing::Application.routes.draw do
         get :deactivate_session
         post :monitor_session
       end
-      match "toggle_call_recording" => "monitors#toggle_call_recording"
+      match "toggle_call_recording" => "monitors#toggle_call_recording", :method => :get
     end
   end
 
   scope 'caller' do
-    match '/', :to => 'caller#index', :as => 'caller_root'
-    match 'logout', :to => 'caller#logout', :as => 'caller_logout'
+    match '/', :to => 'caller#index', :as => 'caller_root', :method => :get
+    match 'logout', :to => 'caller#logout', :as => 'caller_logout', :method => :get
   end
 
   scope 'client' do
@@ -299,15 +353,8 @@ ImpactDialing::Application.routes.draw do
 
   get '/reset_password', :to => 'client/users#reset_password', :as => 'reset_password'
 
-  match '/client/login', :to => 'client#login', :as => :login
-  match '/caller/login', :to => 'caller#login', :as => :caller_login
-
-  match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
-  match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
-  match '/twilio_create_call', :to => 'twilio#create_call', :as => :twilio_create_call, :protocol => PROTOCOL
-
-  match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error, :protocol => PROTOCOL
-  match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended, :protocol => PROTOCOL
+  match '/client/login', :to => 'client#login', :as => :login, :method => :get
+  match '/caller/login', :to => 'caller#login', :as => :caller_login, :method => :get
 
   get 'admin/status', :to => 'admin#state'
   get 'admin/abandonment', :to => 'admin#abandonment'
@@ -320,6 +367,6 @@ ImpactDialing::Application.routes.draw do
 
   resource :call_attempts, :only => :create
 
-  match ':controller/:action/:id'
-  match ':controller/:action'
+  # match ':controller/:action/:id'
+  # match ':controller/:action'
 end

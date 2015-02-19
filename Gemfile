@@ -5,12 +5,11 @@ ruby '2.0.0'
 gem 'rails', '~> 4.0.0'
 gem 'jquery-rails', '~> 3.0.4'
 
-# No longer needed
-# gem 'settingslogic', '~> 2.0.9'
 # ???
 gem 'sinatra', '~>1.4.3'
 gem 'json', '~> 1.7.7'
 gem 'nokogiri', '~> 1.6.0'
+gem 'sprockets'
 
 gem 'unicorn'
 
@@ -22,13 +21,13 @@ gem 'bugsnag'
 
 # ActiveRecord extensions
 gem 'activerecord-import', '~> 0.4.1'
+gem 'ar-octopus'
 gem 'bitmask_attributes'
 gem 'will_paginate', '~> 3.0.4'
 gem 'deep_cloneable', '~> 1.5.3'
 
 # Assets
 gem 'slim', '~>2.0.0'
-gem 'sprockets', '~>2.2.1'
 
 # Auth/z
 gem 'cancan', '~>1.6.10'
@@ -47,7 +46,6 @@ gem 'redis', '~> 3.0.4'
 gem 'redis-objects', '~>0.7.0',:require => 'redis/objects'
 gem 'hiredis', '~>0.4.5'
 gem 'em-hiredis', '~>0.2.1'
-gem 'ar-octopus', :git => 'git://github.com/tchandy/octopus.git'
 
 # DNS
 gem 'em-resolv-replace' # non-blocking lookups for eventmachine
