@@ -17,6 +17,7 @@ class User < ActiveRecord::Base
   has_many :downloaded_reports
 
   attr_accessor :new_password, :captcha
+  attr_accessible :fname, :lname, :email, :new_password, :captcha
 
   before_save :hash_new_password, :if => :password_changed?
 

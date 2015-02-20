@@ -5,8 +5,11 @@ module Client
     before_filter :check_tos_accepted, :except => [:create, :reset_password, :update_password]
 
     def create
-      @user = User.new(:account => Account.new(:domain_name => request.domain), role: User::Role::ADMINISTRATOR)
+      @user            = User.new
       @user.attributes = params[:user]
+      @user.account    = Account.new(:domain_name => request.domain)
+      @user.role       = User::Role::ADMINISTRATOR
+      
       if @user.save
         if ["aws", "heroku"].include?(ENV['RAILS_ENV'])
           user_mailer = UserMailer.new
