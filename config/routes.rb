@@ -56,8 +56,8 @@ ImpactDialing::Application.routes.draw do
   #     resources :products
   #   end
 
-  match "/v1", :to => "caller#v1", :constraints => {:subdomain => "caller"}, :method => :get
-  root :to => "callers/station#show", :constraints => {:subdomain => "caller"}
+  get "/v1", :to => "caller#v1", :constraints => {:subdomain => "caller"}
+  get "/", :to => "callers/station#show", :constraints => {:subdomain => "caller"}
   root :to => "client#login"
 
   resources :calls, :protocol => PROTOCOL do
@@ -130,7 +130,7 @@ ImpactDialing::Application.routes.draw do
 
   # new customer facing end-point
   get '/app', :to => 'callers/station#show', :as => :callveyor
-  match '/app/login', :to => 'callers/station#login', :as => :callveyor_login, :method => :get
+  get '/app/login', :to => 'callers/station#login', :as => :callveyor_login
   post '/app/logout', :to => 'callers/station#logout', :as => :callveyor_logout
   # /new customer facing end-point
   # new api rough draft
@@ -150,8 +150,8 @@ ImpactDialing::Application.routes.draw do
   post 'call_center/api/:id/drop_message', :to => 'calls#drop_message'
   # /new api rough draft
 
-  match '/policies', :to => 'client#policies', :method => :get
-  match '/client/policies', :to => 'client#policies', :as => :client_policies, :method => :get
+  get '/policies', :to => 'client#policies'
+  get '/client/policies', :to => 'client#policies', :as => :client_policies
 
   # Webhooks
   post 'webhooks/billing/stripe', :to => 'client/billing/events#stripe'
@@ -179,7 +179,7 @@ ImpactDialing::Application.routes.draw do
   namespace 'client' do
     resource :session, :only => [:create, :destroy]
     namespace 'billing' do
-      root to: 'subscription#show', as: :home
+      get "/", to: 'subscription#show', as: :home
       resource :credit_card, :only => [:show, :update, :create], :controller => 'credit_card'
       resource :subscription, :only => [:show, :update, :edit], :controller => 'subscription' do
         patch :cancel
@@ -239,8 +239,6 @@ ImpactDialing::Application.routes.draw do
       end
     end
 
-
-
     resources :campaigns, :only => [] do
       resources :reports do
         collection do
@@ -275,14 +273,14 @@ ImpactDialing::Application.routes.draw do
   end
 
   scope 'client' do
-    match '/', :to => 'client#index', :as => 'client_root', :method => :get
+    get 'index', :to => 'client#index', :as => 'client_root'
 
     resources :campaigns, :only => [] do
       member { post :verify_callerid }
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
 
-
+    get "toggle_call_recording", :to => "monitors#toggle_call_recording"
     namespace "monitors" do
       resources :campaigns
       resources :callers do
@@ -302,13 +300,12 @@ ImpactDialing::Application.routes.draw do
         get :deactivate_session
         post :monitor_session
       end
-      match "toggle_call_recording" => "monitors#toggle_call_recording", :method => :get
     end
   end
 
   scope 'caller' do
-    match '/', :to => 'caller#index', :as => 'caller_root', :method => :get
-    match 'logout', :to => 'caller#logout', :as => 'caller_logout', :method => :get
+    get '/', :to => 'caller#index', :as => 'caller_root'
+    post 'logout', :to => 'caller#logout', :as => 'caller_logout'
   end
 
   scope 'client' do
@@ -353,10 +350,13 @@ ImpactDialing::Application.routes.draw do
 
   get '/reset_password', :to => 'client/users#reset_password', :as => 'reset_password'
 
-  match '/client/login', :to => 'client#login', :as => :login, :method => :get
-  match '/caller/login', :to => 'caller#login', :as => :caller_login, :method => :get
+  get '/client/login', :to => 'client#login', :as => :login
+  get '/caller/login', :to => 'caller#login', :as => :caller_login
 
+  get 'admin/login/:id', :to => 'admin#login'
+  get 'admin/users', :to => 'admin#users'
   get 'admin/status', :to => 'admin#state'
+  get 'admin/state', :to => 'admin#state'
   get 'admin/abandonment', :to => 'admin#abandonment'
   get 'admin/caller_sessions/:id', :to => 'admin#caller_sessions', :as => :admin_caller_sessions
   post 'admin/twilio_limit', :to => 'admin#twilio_limit'
