@@ -416,10 +416,6 @@ public
     call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(tDuration/60)').to_i
   end
 
-  def leads_available_now
-    sanitize_dials(all_voters.live.avialable_to_be_retried(recycle_rate).count  + all_voters.live.by_status(CallAttempt::Status::ABANDONED).count)
-  end
-
   def sanitize_dials(dial_count)
     dial_count.nil? ? 0 : dial_count
   end

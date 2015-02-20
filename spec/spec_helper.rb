@@ -18,6 +18,7 @@ ENV['DIAL_QUEUE_AVAILABLE_LIMIT'] ||= '10'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
 require 'webmock/rspec'
+require 'impact_platform'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
