@@ -1,7 +1,7 @@
 class User < ActiveRecord::Base
   validates_uniqueness_of :email
   validates_presence_of :email
-  validates_format_of :email, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i
+  validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i
   validates_presence_of :new_password, :on => :create
   validates_length_of :new_password, :within => 5..50, :on => :create
   validate :reverse_captcha
