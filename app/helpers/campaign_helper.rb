@@ -29,10 +29,6 @@ module CampaignHelper
     ["7 PM", "19"],["8 PM", "20"],["9 PM", "21"],["10 PM", "22"],["11 PM", "23"],["Midnight", "0"],]
   end
 
-  def numbers_count_for(list)
-    list.households_count
-  end
-
   def dials_summary
     return '' unless @campaign.errors.empty? and !@campaign.new_record?
 

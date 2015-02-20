@@ -1,4 +1,4 @@
-##
+## 
 # Models a Voter record. These records make-up the dial-pool.
 #
 # Columns:
