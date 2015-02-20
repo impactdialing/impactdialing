@@ -22,7 +22,7 @@ class CallerSession < ActiveRecord::Base
   scope :on_call_in_campaigns, lambda{|campaign_ids|
     on_call.where(campaign_id: campaign_ids)
   }
-  scope :on_call, :conditions => {:on_call => true}
+  scope :on_call, -> { where(:on_call => true) }
   scope :available, :conditions => {:available_for_call => true, :on_call => true}
   scope :not_available, :conditions => {:available_for_call => false, :on_call => true}
   scope :connected_to_voter, where('voter_in_progress is not null')

@@ -131,6 +131,7 @@ ImpactDialing::Application.routes.draw do
   # new customer facing end-point
   get '/app', :to => 'callers/station#show', :as => :callveyor
   get '/app/login', :to => 'callers/station#login', :as => :callveyor_login
+  post '/app/login', :to => 'callers/station#login'
   post '/app/logout', :to => 'callers/station#logout', :as => :callveyor_logout
   # /new customer facing end-point
   # new api rough draft
@@ -183,6 +184,7 @@ ImpactDialing::Application.routes.draw do
       resource :credit_card, :only => [:show, :update, :create], :controller => 'credit_card'
       resource :subscription, :only => [:show, :update, :edit], :controller => 'subscription' do
         patch :cancel
+        get :cancel
       end
     end
     # resources :subscriptions do

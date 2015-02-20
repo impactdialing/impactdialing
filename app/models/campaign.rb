@@ -52,21 +52,20 @@ class Campaign < ActiveRecord::Base
 
   delegate :questions_and_responses, :to => :script
 
-  scope :manual
   scope :for_account, lambda { |account| {:conditions => ["account_id = ?", account.id]} }
   scope :for_script, lambda { |script| {:conditions => ["script_id = ?", script.id]} }
-  scope :active, where(active: true)
-  scope :archived, where(active: false)
-  scope :with_running_caller_sessions, {
-      :select => "distinct campaigns.*",
-      :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
-      :conditions => {"caller_sessions.on_call" => true}
+  scope :active, -> { where(active: true) }
+  scope :archived, -> { where(active: false) }
+  scope :with_running_caller_sessions, -> {
+    select("distinct campaigns.*").
+    joins("inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)").
+    where("caller_sessions.on_call" => true)
   }
 
-  scope :with_non_running_caller_sessions, {
-      :select => "distinct campaigns.*",
-      :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
-      :conditions => {"caller_sessions.on_call" => false}
+  scope :with_non_running_caller_sessions, -> {
+    select("distinct campaigns.*").
+    joins("inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)").
+    where("caller_sessions.on_call" => false)
   }
 
   scope :for_caller, lambda { |caller| joins(:caller_sessions).where(caller_sessions: {caller_id: caller}) }

@@ -65,7 +65,7 @@ RSpec.configure do |config|
 
   config.after(:suite) do
     DatabaseCleaner.clean
-    
+
     module ImpactPlatform::Heroku::UploadDownloadHooks
       alias_method :after_enqueue_scale_up, :real_after_enqueue_scale_up
     end

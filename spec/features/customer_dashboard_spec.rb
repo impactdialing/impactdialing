@@ -150,7 +150,7 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
             expect(page).to have_content callers.first.username
           end
         end
-        it 'displays the campaign the caller is logged in for in a drop down menu' do
+        it 'displays the campaign the caller is logged in for in a drop down menu' do          
           within_nth_caller_cell 2, 2 do
             expect(page.find("select.reassign-campaign option[value='#{power_campaign.id}']")).to be_selected
           end
