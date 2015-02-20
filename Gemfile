@@ -5,6 +5,9 @@ ruby '2.0.0'
 gem 'rails', '~> 4.0.0'
 gem 'jquery-rails', '~> 3.0.4'
 
+# tmp backward compat helpers
+gem 'protected_attributes'
+
 # ???
 gem 'sinatra', '~>1.4.3'
 gem 'json', '~> 1.7.7'
@@ -62,7 +65,7 @@ gem 'rubyzip'
 # Forms
 gem 'formtastic', '~>2.2.1'
 gem 'dynamic_form', '~> 1.1.4'
-gem 'cocoon', '~>1.0.22'
+gem 'cocoon'
 
 # HTTP client
 gem 'faraday'
