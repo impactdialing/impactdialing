@@ -32,7 +32,8 @@ describe Client::CallerGroupsController, :type => :controller do
       post :create, api_key: account.api_key,
                     format: 'json',
                     caller_group: {name: 'caller_group', campaign_id: 1}
-      expect(response.body).to eq CallerGroup.last.to_json
+      returned = JSON.load(response.body)
+      expect(CallerGroup.find(returned['caller_group']['id'])).to eq CallerGroup.last
     end
 
     it 'gives a validation error if the name is missing' do
@@ -50,7 +51,7 @@ describe Client::CallerGroupsController, :type => :controller do
     it 'should return the caller group as json' do
       caller_group = create(:caller_group, account: account)
       get :show, id: caller_group.id, api_key: account.api_key, format: 'json'
-      expect(response.body).to eq caller_group.to_json
+      expect(response.body).to eq CallerGroup.last.to_json
     end
 
     it 'does not show a campaign from another account' do
