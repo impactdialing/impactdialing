@@ -223,7 +223,9 @@ ImpactDialing::Application.routes.draw do
       get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
       get "/archived_#{type_plural}", :to => "#{type_plural}#deleted", :as => "archived_#{type_plural}"
       resources type_plural, :only => [:new, :index, :show, :destroy, :create, :update, :edit] do
-        put 'restore', :to => "#{type_plural}#restore"
+        member do
+          put 'restore', :to => "#{type_plural}#restore"
+        end
       end
     end
 

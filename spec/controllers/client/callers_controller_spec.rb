@@ -124,7 +124,8 @@ describe Client::CallersController, :type => :controller do
       it 'returns the caller as json' do
         caller = create(:caller, account: account)
         get :show, id: caller.id, api_key: account.api_key, format: 'json'
-        expect(response.body).to eq(caller.to_json)
+        returned = JSON.load(response.body)
+        expect(response.body).to eq(Caller.find(caller.id).to_json)
       end
 
       it 'gives an error if you try to access a caller from another account' do
