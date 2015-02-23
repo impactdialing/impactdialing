@@ -23,7 +23,7 @@ gem 'pagerduty'
 gem 'bugsnag'
 
 # ActiveRecord extensions
-gem 'activerecord-import', '~> 0.4.1'
+gem 'activerecord-import'
 gem 'ar-octopus'
 gem 'bitmask_attributes'
 gem 'will_paginate', '~> 3.0.4'
