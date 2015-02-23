@@ -1,4 +1,6 @@
 class Moderator < ActiveRecord::Base
+  attr_accessible :caller_session, :caller_session_id, :call_sid, :session, :active, :account, :account_id
+
   belongs_to :caller_session
   belongs_to :account
   scope :active, -> { where({:active => true}) }

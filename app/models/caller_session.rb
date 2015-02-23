@@ -1,4 +1,10 @@
 class CallerSession < ActiveRecord::Base
+attr_accessible :campaign, :campaign_id, :caller, :caller_id, :attempt_in_progress, :session_key, :endtime,
+                :starttime, :sid, :available_for_call, :voter_in_progress_id, :on_call, :caller_number,
+                :tCallSegmentSid, :tAccountSid, :tCalled, :tCaller, :tPhoneNumberSid, :tStatus, :tDuration,
+                :tFlags, :tStartTime, :tEndTime, :tPrice, :session_key, :state, :type, :digit, :debited,
+                :question, :question_id, :caller_type, :question_number, :script, :script_id, :reassign_campaign  
+
   ##
   # PHONE: Call in sessions
   # TWILIO_CLIENT: Web based sessions

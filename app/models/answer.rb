@@ -4,7 +4,9 @@
 #
 # See also +Note+ and its cousin Voter#persist_notes.
 class Answer < ActiveRecord::Base
-  attr_accessible :question_id, :possible_response_id, :call_attempt_id, :caller_id, :question, :possible_response, :call_attempt, :caller
+  attr_accessible :voter, :voter_id, :question_id, :question, 
+                  :call_attempt, :call_attempt_id, :caller_id, :caller,
+                  :possible_response, :possible_response_id
 
   belongs_to :voter
   belongs_to :caller

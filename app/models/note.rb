@@ -1,5 +1,5 @@
 class Note < ActiveRecord::Base
-  attr_accessible :note, :script_id, :script_order
+  attr_accessible :note, :script_id, :script_order, :note_id, :script
 
   validates :note, presence: true
   validates :script, presence: true

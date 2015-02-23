@@ -1,6 +1,8 @@
 require Rails.root.join("lib/twilio_lib")
 
 class CallAttempt < ActiveRecord::Base
+  attr_accessible :status
+
   include Rails.application.routes.url_helpers
   include SidekiqEvents
   belongs_to :voter

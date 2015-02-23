@@ -1,4 +1,7 @@
 class CustomVoterFieldValue < ActiveRecord::Base
+  attr_accessible :custom_voter_field, :custom_voter_field_id,
+                  :voter, :voter_id, :value
+                  
   belongs_to :custom_voter_field
   belongs_to :voter
   validates_presence_of :voter_id, :custom_voter_field_id

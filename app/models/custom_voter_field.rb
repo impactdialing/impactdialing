@@ -1,4 +1,6 @@
 class CustomVoterField < ActiveRecord::Base
+  attr_accessible :name, :account, :account_id
+  
   belongs_to :account
   has_many :custom_voter_field_values
 end
