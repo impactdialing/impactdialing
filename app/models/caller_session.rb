@@ -23,25 +23,21 @@ class CallerSession < ActiveRecord::Base
     on_call.where(campaign_id: campaign_ids)
   }
   scope :on_call, -> { where(:on_call => true) }
-  scope :available, :conditions => {:available_for_call => true, :on_call => true}
-  scope :not_available, :conditions => {:available_for_call => false, :on_call => true}
-  scope :connected_to_voter, where('voter_in_progress is not null')
-  scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
-  scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}
-  scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}
-  scope :undebited, where(debited: false)
-  scope(:phone_caller, where(caller_type: CallerType::PHONE))
-  scope(:with_time_and_duration,
-        where('tStartTime IS NOT NULL').
-        where('tEndTime IS NOT NULL').
-        where('tDuration IS NOT NULL')
-  )
-  scope :debit_pending, undebited.phone_caller.with_time_and_duration
-  scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
-  scope :first_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at ASC", :limit => 1}  unless caller.nil?}
-  scope :last_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at DESC", :limit => 1}  unless caller.nil?}
-  scope :first_campaign_time, lambda { |campaign| {:select => "created_at", :conditions => ["campaign_id = ?", campaign.id], :order => "created_at ASC", :limit => 1}  unless campaign.nil?}
-  scope :last_campaign_time, lambda { |campaign| {:select => "created_at", :conditions => ["campaign_id = ?", campaign.id], :order => "created_at DESC", :limit => 1}  unless campaign.nil?}
+  scope :available, -> { where({:available_for_call => true, :on_call => true}) }
+  scope :not_available, -> { where({:available_for_call => false, :on_call => true}) }
+  scope :connected_to_voter, -> { where('voter_in_progress is not null') }
+  scope :between, -> (from_date, to_date) { where({:created_at => from_date..to_date}) }
+  scope :on_campaign, -> (campaign) { where("campaign_id = #{campaign.id}") unless campaign.nil?}
+  scope :for_caller, -> (caller) { where("caller_id = #{caller.id}") unless caller.nil?}
+  scope :undebited, -> { where(debited: false) }
+  scope :phone_caller, -> { where(caller_type: CallerType::PHONE) }
+  scope :with_time_and_duration, -> { where('tStartTime IS NOT NULL').where('tEndTime IS NOT NULL').where('tDuration IS NOT NULL') }
+  scope :debit_pending, -> { undebited.phone_caller.with_time_and_duration }
+  scope :campaigns_on_call, -> { select("campaign_id").on_call.group("campaign_id") }
+  scope :first_caller_time, -> (caller) { select("created_at").where(["caller_id = ?", caller.id]).order("created_at ASC").limit(1) unless caller.nil? }
+  scope :last_caller_time, -> (caller) { select("created_at").where(["caller_id = ?", caller.id]).order("created_at DESC").limit(1) unless caller.nil? }
+  scope :first_campaign_time, -> (campaign) { select("created_at").where(["campaign_id = ?", campaign.id]).order("created_at ASC").limit(1) unless campaign.nil? }
+  scope :last_campaign_time, -> (campaign) { select("created_at").where(["campaign_id = ?", campaign.id]).order("created_at DESC").limit(1) unless campaign.nil? }
 
   belongs_to :caller
   belongs_to :campaign

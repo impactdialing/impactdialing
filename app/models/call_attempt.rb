@@ -13,30 +13,30 @@ class CallAttempt < ActiveRecord::Base
   has_many :answers
   has_many :note_responses
 
-  scope :dial_in_progress, where('call_end is null')
-  scope :not_wrapped_up, where('wrapup_time is null')
-  scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]}  unless campaign.nil?}
-  scope :for_caller, lambda { |caller| {:conditions => ["caller_id = ?", caller.id]}  unless caller.nil?}
+  scope :dial_in_progress, -> { where('call_end is null') }
+  scope :not_wrapped_up, -> { where('wrapup_time is null') }
+  scope :for_campaign, -> (campaign) { where(["campaign_id = ?", campaign.id])  unless campaign.nil? }
+  scope :for_caller, -> (caller) { where(["caller_id = ?", caller.id])  unless caller.nil? }
 
-  scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
-  scope :between, lambda { |from, to| where(:created_at => (from..to)) }
-  scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
-  scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
-  scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS).where('wrapup_time is not null') }
+  scope :for_status, -> (status) { where(["call_attempts.status = ?", status]) }
+  scope :between, -> (from, to) { where(:created_at => (from..to)) }
+  scope :without_status, -> (statuses) { where(['status not in (?)', statuses]) }
+  scope :with_status, -> (statuses) { where(['status in (?)', statuses]) }
+  scope :results_not_processed, -> { where(:voter_response_processed => "0", :status => Status::SUCCESS).where('wrapup_time is not null') }
 
-  scope :undebited, where(debited: false)
-  scope :successful_call, where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')")
-  scope(:with_time_and_duration,
-        where('tStartTime IS NOT NULL').
-        where('tEndTime IS NOT NULL').
-        where('tDuration IS NOT NULL')
-  )
-  scope :debit_pending, undebited.successful_call.with_time_and_duration
+  scope :undebited, -> { where(debited: false) }
+  scope :successful_call, -> { where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')") }
+  scope(:with_time_and_duration, -> { 
+    where('tStartTime IS NOT NULL').
+    where('tEndTime IS NOT NULL').
+    where('tDuration IS NOT NULL')
+  })
+  scope :debit_pending, -> { undebited.successful_call.with_time_and_duration }
 
-  scope :with_recording, where('recording_id IS NOT NULL')
-  scope :with_manual_message_drop, with_recording.where('recording_delivered_manually=?', true)
-  scope :with_auto_message_drop, with_recording.where('recording_delivered_manually=?', false)
-  scope :not_ringing, lambda{ where('status <> ?', Status::RINGING) }
+  scope :with_recording, -> { where('recording_id IS NOT NULL') }
+  scope :with_manual_message_drop, -> { with_recording.where('recording_delivered_manually=?', true) }
+  scope :with_auto_message_drop, -> { with_recording.where('recording_delivered_manually=?', false) }
+  scope :not_ringing, -> { where('status <> ?', Status::RINGING) }
 
   def self.report_recording_url(url)
     "#{url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if url

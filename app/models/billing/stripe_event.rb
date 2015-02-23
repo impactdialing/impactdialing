@@ -6,7 +6,7 @@ class Billing::StripeEvent < ActiveRecord::Base
   validates_uniqueness_of :provider_id
   validates_presence_of :provider_id
 
-  scope :pending, where('processed IS NULL')
+  scope :pending, -> { where('processed IS NULL') }
 
   def cache_event!(remote_event)
     self.data                = HashWithIndifferentAccess.new(JSON.parse(remote_event.data.to_json))

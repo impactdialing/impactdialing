@@ -52,8 +52,8 @@ class Campaign < ActiveRecord::Base
 
   delegate :questions_and_responses, :to => :script
 
-  scope :for_account, lambda { |account| {:conditions => ["account_id = ?", account.id]} }
-  scope :for_script, lambda { |script| {:conditions => ["script_id = ?", script.id]} }
+  scope :for_account, -> (account) { where(["account_id = ?", account.id]) }
+  scope :for_script, -> (script) { where(["script_id = ?", script.id]) }
   scope :active, -> { where(active: true) }
   scope :archived, -> { where(active: false) }
   scope :with_running_caller_sessions, -> {

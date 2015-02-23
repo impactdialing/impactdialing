@@ -1,7 +1,7 @@
 class Moderator < ActiveRecord::Base
   belongs_to :caller_session
   belongs_to :account
-  scope :active, :conditions => {:active => true}
+  scope :active, -> { where({:active => true}) }
 
   def switch_monitor_mode(type)
     caller_session = CallerSession.find(caller_session_id)

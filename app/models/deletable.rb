@@ -16,10 +16,10 @@ module Deletable
     receiver.extend         ClassMethods
     receiver.send :include, InstanceMethods
 
-    receiver.scope :by_updated, lambda { { :order => ['updated_at desc'] } }
-    receiver.scope :deleted, lambda { { :conditions => {:active => false} } }
-    receiver.scope :active, lambda { { :conditions => {:active => true} } }
-    receiver.scope :for_account, lambda {|account| { :conditions => ["account_id = ?", account.id] }}
+    receiver.scope :by_updated, -> { order('updated_at desc') }
+    receiver.scope :deleted, -> { where({:active => false}) }
+    receiver.scope :active, -> { where({:active => true}) }
+    receiver.scope :for_account, -> (account) { where(["account_id = ?", account.id]) }
   end
 end
 

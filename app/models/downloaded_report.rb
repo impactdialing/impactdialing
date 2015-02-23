@@ -2,9 +2,9 @@ class DownloadedReport < ActiveRecord::Base
   belongs_to :user
   belongs_to :campaign
 
-  scope :with_user, where('user_id IS NOT NULL')
-  scope :without_user, where('user_id IS NULL')
-  scope :active_reports, lambda{|campaign_id, internal_admin|
+  scope :with_user, -> { where('user_id IS NOT NULL') }
+  scope :without_user, -> { where('user_id IS NULL') }
+  scope :active_reports, -> (campaign_id, internal_admin) {
     query = where(campaign_id: campaign_id).
     where(['created_at > ?', 24.hours.ago]).
     order('created_at DESC')

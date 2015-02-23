@@ -7,7 +7,7 @@ class Recording < ActiveRecord::Base
   belongs_to :account
   has_many :campaigns
 
-  scope :active, where(:active => true)
+  scope :active, -> { where(:active => true) }
 
   has_attached_file :file,
                     :storage => :s3,

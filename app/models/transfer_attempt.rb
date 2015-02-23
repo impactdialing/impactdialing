@@ -8,14 +8,14 @@ class TransferAttempt < ActiveRecord::Base
   scope :within, lambda { |from, to, campaign_id| where(:created_at => from..to).where(campaign_id: campaign_id)}
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
 
-  scope :undebited, where(debited: false)
-  scope :successful_call, where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')")
-  scope(:with_time_and_duration,
-        where('tStartTime IS NOT NULL').
-        where('tEndTime IS NOT NULL').
-        where('tDuration IS NOT NULL')
-  )
-  scope :debit_pending, undebited.successful_call.with_time_and_duration
+  scope :undebited, -> { where(debited: false) }
+  scope :successful_call, -> { where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')") }
+  scope(:with_time_and_duration, -> { 
+    where('tStartTime IS NOT NULL').
+    where('tEndTime IS NOT NULL').
+    where('tDuration IS NOT NULL')
+  })
+  scope :debit_pending, -> { undebited.successful_call.with_time_and_duration }
 
   def conference
     Twilio::TwiML::Response.new do |r|

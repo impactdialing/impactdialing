@@ -9,7 +9,7 @@ class PossibleResponse < ActiveRecord::Base
   validates :possible_response_order, presence: true, numericality: true
   validates :keypad, uniqueness: {scope: :question_id, message: 'values must be unique'}, allow_blank: true, allow_nil: true
 
-  default_scope :order=>"possible_response_order"
+  default_scope { order("possible_response_order") }
 
   def stats(answer_count, total_count)
     number_of_answers = answer_count[self.id] || 0

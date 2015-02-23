@@ -22,7 +22,7 @@ class Script < ActiveRecord::Base
   accepts_nested_attributes_for :notes, :allow_destroy => true
   accepts_nested_attributes_for :transfers, :allow_destroy => true
 
-  scope :active, {:conditions => {:active => 1}}
+  scope :active, -> { where({:active => 1}) }
 
   cattr_reader :per_page
   @@per_page = 25

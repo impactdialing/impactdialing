@@ -27,7 +27,7 @@ class Caller < ActiveRecord::Base
   validate :check_subscription_for_caller_groups
   validate :campaign_and_caller_on_same_account
 
-  scope :active, where(:active => true)
+  scope :active, -> { where(:active => true) }
 
   delegate :subscription_allows_caller?, :to => :account
   delegate :funds_available?, :to => :account

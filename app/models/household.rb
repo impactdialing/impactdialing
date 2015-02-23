@@ -16,21 +16,21 @@ class Household < ActiveRecord::Base
   validates_length_of :phone, minimum: 10, maximum: 16
   validates_uniqueness_of :phone, scope: :campaign_id
 
-  scope :active, without_blocked(:cell).without_blocked(:dnc)
-  scope :not_dialed, where('households.status = "not called"')
-  scope :dialed, where('households.status <> "not called"')
-  scope :failed, where('households.status = ?', CallAttempt::Status::FAILED)
-  scope :presented_within, lambda{ |from, to|
+  scope :active, -> { without_blocked(:cell).without_blocked(:dnc) }
+  scope :not_dialed, -> { where('households.status = "not called"') }
+  scope :dialed, -> { where('households.status <> "not called"') }
+  scope :failed, -> { where('households.status = ?', CallAttempt::Status::FAILED) }
+  scope :presented_within, -> (from, to) {
     where('households.presented_at >= ?', from).
     where('households.presented_at <= ?', to)
   }
-  scope :with_message_drop, joins(:call_attempts).where('call_attempts.recording_id IS NOT NULL')
-  scope :with_manual_message_drop, with_message_drop.where('call_attempts.recording_delivered_manually = ?', true)
-  scope :with_auto_message_drop, with_message_drop.where('call_attempts.recording_delivered_manually = ?', false)
-  scope :presentable, lambda{ |campaign|
+  scope :with_message_drop, -> { joins(:call_attempts).where('call_attempts.recording_id IS NOT NULL') }
+  scope :with_manual_message_drop, -> { with_message_drop.where('call_attempts.recording_delivered_manually = ?', true) }
+  scope :with_auto_message_drop, -> { with_message_drop.where('call_attempts.recording_delivered_manually = ?', false) }
+  scope :presentable, -> (campaign) {
     where('households.presented_at IS NULL OR households.presented_at < ?', campaign.recycle_rate.hours.ago)
   }
-  scope :available, lambda{ |campaign|
+  scope :available, -> (campaign) {
     active.
     presentable(campaign).
     where(
@@ -38,7 +38,7 @@ class Household < ActiveRecord::Base
       CallAttempt::Status.available_list(campaign)
     )
   }
-  scope :not_available, lambda{ |campaign|
+  scope :not_available, -> (campaign) {
     where(
       "households.status IN (?) OR households.presented_at > ? OR households.blocked > 0",
       CallAttempt::Status.not_available_list(campaign),
