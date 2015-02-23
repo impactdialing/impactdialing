@@ -27,7 +27,7 @@ class UpdateStatsAttemptsEm
   @queue = :twilio_stats
 
   def self.perform
-    ActiveRecord::Base.verify_active_connections!
+    ActiveRecord::Base.clear_active_connections!
     results = []
     stats = []
     twillio_lib = TwilioLib.new

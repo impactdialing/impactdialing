@@ -30,7 +30,7 @@ class AnsweredJob
   @queue = :persist_jobs
 
   def self.perform
-    ActiveRecord::Base.verify_active_connections!
+    ActiveRecord::Base.clear_active_connections!
 
     CallAttempt.results_not_processed.where('call_id IS NOT NULL AND voter_id IS NOT NULL').reorder('call_attempts.id DESC').includes(:call, :voter).find_each do |call_attempt|
       call = call_attempt.call

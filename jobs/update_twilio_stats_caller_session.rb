@@ -25,7 +25,7 @@ class UpdateTwilioStatsCallerSession
   @queue = :twilio_stats
 
   def self.perform
-    ActiveRecord::Base.verify_active_connections!
+    ActiveRecord::Base.clear_active_connections!
     caller_sessions = []
     twillio_lib = TwilioLib.new
 

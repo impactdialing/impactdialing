@@ -84,7 +84,7 @@ class VoterListUploadJob
   end
 
   def self.perform(voter_list_id, email, domain, callback_url, strategy="webui")
-    ActiveRecord::Base.verify_active_connections!
+    ActiveRecord::Base.clear_active_connections!
 
     begin
       voter_list  = VoterList.find(voter_list_id)

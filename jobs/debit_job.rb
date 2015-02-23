@@ -44,7 +44,7 @@ class DebitJob
   end
 
   def self.perform
-    ActiveRecord::Base.verify_active_connections!
+    ActiveRecord::Base.clear_active_connections!
 
     CALL_TIME_CLASSES.each do |klass_name, limit|
       klass = klass_name.constantize
