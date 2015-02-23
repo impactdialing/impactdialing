@@ -145,7 +145,14 @@ describe CallerController, :type => :controller do
       expect(caller).to receive(:create_caller_session).and_return(caller_session)
       expect(RedisPredictiveCampaign).to receive(:add).with(caller.campaign_id, caller.campaign.type)
       post :start_calling, caller_id: caller.id, session_key: caller_identity.session_key, CallSid: "abc"
-      expect(response.body).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{caller.id}/pause?session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
+      twiml = [
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+        "<Response>",
+        "<Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}/caller/#{caller.id}/pause?session_id=#{caller_session.id}\">",
+        "<Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/>",
+        "</Dial></Response>"
+      ]
+      expect(response.body).to eq(twiml.join)
     end
   end
 
@@ -254,12 +261,14 @@ describe CallerController, :type => :controller do
     end
   end
 
-  describe '#pause session_id:, CallSid:, clear_active_transfer:' do
+  describe '#pause id:, session_id:, CallSid:, clear_active_transfer:' do
     let(:campaign){ create(:power) }
+    let(:caller){ create(:caller, campaign: campaign) }
     let(:caller_session) do
       create(:webui_caller_session, {
         session_key: 'caller-session-key',
-        campaign: campaign
+        campaign:    campaign,
+        caller:      caller
       })
     end
     let(:caller_session_key){ caller_session.session_key }
@@ -269,7 +278,7 @@ describe CallerController, :type => :controller do
     context 'caller arrives here after disconnecting from the lead' do
       before do
         expect(RedisCallerSession.party_count(transfer_session_key)).to eq 0
-        post :pause, session_id: session_id
+        post :pause, id: caller.id, session_id: session_id
       end
       it 'Says: "Please enter your call results."' do
         expect(response.body).to have_content 'Please enter your call results.'
@@ -280,7 +289,7 @@ describe CallerController, :type => :controller do
       before do
         RedisCallerSession.activate_transfer(caller_session_key, transfer_session_key)
         expect(RedisCallerSession.party_count(transfer_session_key)).to eq -1
-        post :pause, session_id: session_id
+        post :pause, id: caller.id, session_id: session_id
       end
       after do
         RedisCallerSession.deactivate_transfer(caller_session_key)
@@ -295,7 +304,7 @@ describe CallerController, :type => :controller do
         RedisCallerSession.activate_transfer(caller_session_key, transfer_session_key)
         RedisCallerSession.add_party(transfer_session_key)
         expect(RedisCallerSession.party_count(transfer_session_key)).to eq 0
-        post :pause, session_id: session_id, clear_active_transfer: true
+        post :pause, id: caller.id, session_id: session_id, clear_active_transfer: true
       end
       after do
         RedisCallerSession.deactivate_transfer(caller_session_key)
