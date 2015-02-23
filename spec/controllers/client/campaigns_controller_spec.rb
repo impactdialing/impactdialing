@@ -36,7 +36,7 @@ describe Client::CampaignsController, :type => :controller do
     it "restore campaigns" do
       request.env['HTTP_REFERER'] = 'http://referer'
       campaign = create(:preview, :account => account, :active => true)
-      put :restore, :campaign_id => campaign.id
+      put :restore, :id => campaign.id
       expect(campaign.reload).to be_active
       expect(response).to redirect_to 'http://test.host/client/campaigns'
     end
@@ -53,11 +53,7 @@ describe Client::CampaignsController, :type => :controller do
       expect(campaign.script).to eq(script)
       expect(campaign.account.callers).to eq(callers)
     end
-
-
   end
-
-
 
   describe "api" do
 
@@ -181,7 +177,6 @@ describe Client::CampaignsController, :type => :controller do
     end
 
     describe "deleted" do
-
       it "should show deleted campaigns" do
         manual_campaign = create(:preview, :account => account, :active => true)
         inactive_campaign = create(:power, :account => account, :active => false)
@@ -191,10 +186,9 @@ describe Client::CampaignsController, :type => :controller do
     end
 
     describe "restore" do
-
       it "should restore inactive campaign" do
         inactive_campaign = create(:power, :account => account, :active => false)
-        put :restore, campaign_id: inactive_campaign.id, :api_key=> account.api_key, :format => "json"
+        put :restore, id: inactive_campaign.id, :api_key=> account.api_key, :format => "json"
         expect(response.body).to eq("{\"message\":\"Campaign restored\"}")
       end
     end
