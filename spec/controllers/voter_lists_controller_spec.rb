@@ -13,7 +13,7 @@ describe VoterListsController, :type => :controller do
         voter_list = create(:voter_list)
         campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list])
         get :index, campaign_id: campaign.id, :api_key=> account.api_key, :format => "json"
-        expect(response.body).to eq( "[{\"voter_list\":{\"enabled\":true,\"id\":#{voter_list.id},\"name\":\"#{voter_list.name}\"}}]")
+        expect(response.body).to eq campaign.voter_lists.select([:id, :name, :enabled]).to_json
       end
     end
 
@@ -22,7 +22,7 @@ describe VoterListsController, :type => :controller do
         voter_list = create(:voter_list)
         campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list, create(:voter_list)])
         get :show, campaign_id: campaign.id, id: voter_list.id, :api_key=> account.api_key, :format => "json"
-        expect(response.body).to eq( "{\"voter_list\":{\"enabled\":true,\"id\":#{voter_list.id},\"name\":\"#{voter_list.name}\"}}")
+        expect(response.body).to eq VoterList.select([:id, :name, :enabled]).find(voter_list.id).to_json
       end
 
       it "should throws 404 if campaign not found " do
@@ -48,7 +48,6 @@ describe VoterListsController, :type => :controller do
         put :enable, campaign_id: campaign.id, id: voter_list.id, :api_key=> account.api_key, :format => "json"
         expect(response.body).to eq( "{\"message\":\"Voter List enabled\"}")
       end
-
     end
 
     describe "disable" do
@@ -117,7 +116,8 @@ describe VoterListsController, :type => :controller do
           VCR.use_cassette('API CSV voter list upload', match_requests_on: [:host, :method]) do
             post :create, params.merge(upload: csv_upload)
             
-            expect(response.body).to match(/\{\"voter_list\":\{\"enabled\":true,\"id\":(.*),\"name\":\"abc.csv\"\}\}/)
+            expect(response.body).to eq VoterList.select([:id, :name, :enabled]).last.to_json
+            # match(/\{\"voter_list\":\{\"enabled\":true,\"id\":(.*),\"name\":\"abc.csv\"\}\}/)
 
             expect(Resque.peek(:upload_download, 0, 100)).to include({
               'class' => 'VoterListUploadJob',

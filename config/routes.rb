@@ -161,7 +161,12 @@ ImpactDialing::Application.routes.draw do
   namespace 'api' do
     resources :leads
     resources :callers
-    resources :voter_lists
+    resources :voter_lists do
+      member do
+        put :enable
+        put :disable
+      end
+    end
     resources :reports
     resource 'account' do
       collection do
@@ -279,6 +284,19 @@ ImpactDialing::Application.routes.draw do
   scope 'client' do
     get 'index', :to => 'client#index', :as => 'client_root'
 
+    resources :campaigns do
+      resources :voter_lists do
+        member do
+          put :enable
+          put :disable
+        end
+        collection do
+          post :import
+          post :column_mapping
+        end
+      end
+    end
+
     resources :campaigns, :only => [] do
       member { post :verify_callerid }
     end
@@ -312,16 +330,6 @@ ImpactDialing::Application.routes.draw do
     post 'logout', :to => 'caller#logout', :as => 'caller_logout'
   end
 
-  scope 'client' do
-    resources :campaigns do
-      resources :voter_lists do
-        collection do
-          post :import
-          post :column_mapping
-        end
-      end
-    end
-  end
 
 
   resources :call_attempts, :protocol => PROTOCOL, :only => [:create, :update] do
