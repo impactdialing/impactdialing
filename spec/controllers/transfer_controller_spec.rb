@@ -63,7 +63,9 @@ describe TransferController, :type => :controller do
          with(:body => request_body(voter.household.phone, transfer.phone_number, url, fallback_url, status_callback)).
          to_return(:status => 200, :body => "", :headers => {})
       allow(Providers::Phone::Twilio::Response).to receive(:new){ valid_twilio_response }
-      post :dial, transfer: {id: transfer.id}, caller_session: caller_session.id, call: call.id, voter: voter.id
+      VCR.use_cassette('Dialing a warm transfer') do
+        post :dial, transfer: {id: transfer.id}, caller_session: caller_session.id, call: call.id, voter: voter.id
+      end
     end
 
     it "renders json describing the type of transfer" do

@@ -1,5 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 class TransferAttempt < ActiveRecord::Base
+  attr_accessible :status, :call_end, :call_attempt, :call_attempt_id
+
   belongs_to :transfer
   belongs_to :caller_session
   belongs_to :call_attempt
