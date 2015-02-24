@@ -28,7 +28,7 @@ RSpec.describe Household, :type => :model do
 
       it 'returns households w/ presented_at < campaign.recycle_rate.hours.ago' do
         limit              = 5
-        time               = 1.hour.ago - 1.minute.ago
+        time               = Time.now - (1.hour + 1.minute)
         households         = campaign.households.limit(limit)
         recently_presented = campaign.households.where('id NOT IN (?)', households.map(&:id))
         households.update_all(presented_at: time)
