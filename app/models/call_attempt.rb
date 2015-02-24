@@ -1,7 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class CallAttempt < ActiveRecord::Base
-  attr_accessible :status
+  attr_accessible :status, :connecttime
 
   include Rails.application.routes.url_helpers
   include SidekiqEvents

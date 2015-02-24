@@ -1,9 +1,12 @@
 require 'impact_platform/metrics'
 
 class Call < ActiveRecord::Base
+  attr_accessible :id, :call_sid, :call_status, :caller, :state, :call_attempt,
+                  :questions, :notes, :answered_by, :campaign_type,
+                  :recording_url, :recording_duration
+
   include Rails.application.routes.url_helpers
   include CallTwiml
-  attr_accessible :id, :call_sid, :call_status, :caller, :state, :call_attempt, :questions, :notes, :answered_by, :campaign_type, :recording_url, :recording_duration
 
   has_one :call_attempt
   delegate :connect_call, :to => :call_attempt
