@@ -6,7 +6,8 @@
 class Answer < ActiveRecord::Base
   attr_accessible :voter, :voter_id, :question_id, :question, 
                   :call_attempt, :call_attempt_id, :caller_id, :caller,
-                  :possible_response, :possible_response_id
+                  :possible_response, :possible_response_id,
+                  :campaign, :campaign_id
 
   belongs_to :voter
   belongs_to :caller
