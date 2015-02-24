@@ -1,4 +1,5 @@
 class Script < ActiveRecord::Base
+  attr_accessible :name, :voter_fields
 
   include Deletable
   # validations

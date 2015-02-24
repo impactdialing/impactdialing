@@ -23,9 +23,7 @@ describe Client::ScriptsController, :type => :controller do
       expect(response).to redirect_to(client_scripts_url)
       expect(Script.find_by_name("script1").voter_fields).to eq(selected_voter_fields.to_json)
     end
-
   end
-
 
   describe "api" do
     before(:each) do
@@ -53,7 +51,8 @@ describe Client::ScriptsController, :type => :controller do
         active_script = create(:script, :account => account, :active => true)
         script_text = create(:script_text, script_order: 1, script: active_script)
         get :show, id: active_script.id, :api_key=> account.api_key, :format => "json"
-        expect(response.body).to eq(active_script.to_json)
+
+        expect(response.body).to eq(active_script.reload.to_json)
       end
     end
 
@@ -62,7 +61,7 @@ describe Client::ScriptsController, :type => :controller do
         active_script = create(:script, :account => account, :active => true)
         script_text = create(:script_text, script_order: 1, script: active_script)
         get :edit, id: active_script.id, :api_key=> account.api_key, :format => "json"
-        expect(response.body).to eq(active_script.to_json)
+        expect(response.body).to eq(active_script.reload.to_json)
       end
     end
 
@@ -141,7 +140,7 @@ describe Client::ScriptsController, :type => :controller do
 
       it "should restore inactive campaign" do
         in_active_active_script = create(:script, :account => account, :active => false)
-        put :restore, script_id: in_active_active_script.id, :api_key=> account.api_key, :format => "json"
+        put :restore, id: in_active_active_script.id, :api_key=> account.api_key, :format => "json"
         expect(response.body).to eq("{\"message\":\"Script restored\"}")
       end
     end
