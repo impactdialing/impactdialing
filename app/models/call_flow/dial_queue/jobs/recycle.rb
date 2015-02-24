@@ -3,8 +3,7 @@ require 'impact_platform'
 
 module CallFlow::DialQueue::Jobs
   class Recycle
-    @queue = :upload_download
-    extend ImpactPlatform::Heroku::UploadDownloadHooks
+    @queue = :background_worker
     extend LibratoResque
 
     def self.perform

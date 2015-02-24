@@ -36,7 +36,7 @@ persist_calls:
 recycle_dial_queue:
   cron: "*/5 * * * *"
   class: CallFlow::DialQueue::Jobs::Recycle
-  queue: upload_download
+  queue: background_worker
   args:
   description: "Clean up stale or dialed numbers and shunt them to appropriate cache silo"
 
