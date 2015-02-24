@@ -21,10 +21,10 @@ describe Client::QuestionsController, :type => :controller do
   describe "show" do
     it "should return question " do
       active_script = create(:script, :account => account, :active => true)
-      question = create(:question, text: "abc", script_order: 1, script: active_script)
-      get :show, script_id: active_script.id, id: question.id,  :api_key=> account.api_key, :format => "json"
-      expect(response.body).to eq "{\"id\":#{question.id},\"text\":\"abc\",\"script_order\":1,\"external_id_field\":null,\"script_id\":#{active_script.id},\"possible_responses\":[{\"external_id_field\":null,\"id\":#{question.possible_responses.first.id},\"keypad\":0,\"possible_response_order\":1,\"question_id\":#{question.id},\"retry\":false,\"value\":\"[No response]\"}]}"
+      question      = create(:question, text: "abc", script_order: 1, script: active_script)
 
+      get :show, script_id: active_script.id, id: question.id,  :api_key=> account.api_key, :format => "json"
+      expect(response.body).to eq question.to_json
     end
 
     it "should 404 if script not found" do
@@ -58,7 +58,7 @@ describe Client::QuestionsController, :type => :controller do
       active_script = create(:script, :account => account, :active => true)
       post :create, script_id: active_script.id, question: {text: "Hi", script_order: 1},  :api_key=> account.api_key, :format => "json"
       question = active_script.questions.first
-      expect(response.body).to eq "{\"id\":#{question.id},\"text\":\"Hi\",\"script_order\":1,\"external_id_field\":null,\"script_id\":#{active_script.id},\"possible_responses\":[{\"external_id_field\":null,\"id\":#{question.possible_responses.first.id},\"keypad\":0,\"possible_response_order\":1,\"question_id\":#{question.id},\"retry\":false,\"value\":\"[No response]\"}]}"
+      expect(response.body).to eq question.to_json
     end
 
     it "should throw validation error" do
