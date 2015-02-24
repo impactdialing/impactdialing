@@ -46,7 +46,6 @@ class Question < ActiveRecord::Base
     end
   end
 
-
   def self.question_texts(question_ids)
     texts = []
     questions = Question.select("id, text").where("id in (?)",question_ids).order('id')

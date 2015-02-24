@@ -6,15 +6,18 @@ describe Client::PossibleResponsesController, :type => :controller do
     @user = create(:user, account_id: account.id)
   end
 
-
-
   describe "index" do
     it "should return possible responses for a question" do
-      active_script = create(:script, :account => account, :active => true)
-      question = create(:question, :script => active_script)
-      possible_response1 = create(:possible_response, question_id: question.id)      
+      active_script      = create(:script, :account => account, :active => true)
+      question           = create(:question, :script => active_script)
+      possible_response1 = create(:possible_response, question_id: question.id)
+      question.possible_responses << possible_response1
+      question.save!
+
       get :index, script_id: active_script.id, question_id: question.id, :api_key=> account.api_key, :format => "json"
-      expect(response.body).to eq("[{\"possible_response\":{\"external_id_field\":null,\"id\":#{question.possible_responses.first.id},\"keypad\":0,\"possible_response_order\":1,\"question_id\":#{question.id},\"retry\":false,\"value\":\"[No response]\"}},#{possible_response1.to_json}]")
+
+      possible_responses = question.possible_responses
+      expect(response.body).to eq(possible_responses.to_json)
     end
   end
 
@@ -24,7 +27,7 @@ describe Client::PossibleResponsesController, :type => :controller do
       question = create(:question, :script => active_script)
       possible_response = create(:possible_response, question_id: question.id)
       get :show, script_id: active_script.id, question_id: question.id, id: possible_response.id, :api_key=> account.api_key, :format => "json"
-      expect(response.body).to eq("{\"possible_response\":{\"external_id_field\":null,\"id\":#{possible_response.id},\"keypad\":null,\"possible_response_order\":1,\"question_id\":#{question.id},\"retry\":false,\"value\":\"no_response\"}}")
+      expect(response.body).to eq(possible_response.to_json)
     end
 
     it "should 404 if script not found" do
@@ -50,7 +53,6 @@ describe Client::PossibleResponsesController, :type => :controller do
       get :show, script_id: active_script.id, question_id: question.id, id: 100, :api_key=> account.api_key, :format => "json"
       expect(response.body).to eq("{\"message\":\"Resource not found\"}")
     end
-
   end
 
   describe "destroy" do
@@ -66,9 +68,13 @@ describe Client::PossibleResponsesController, :type => :controller do
   describe "create" do
     it "should create possible response" do
       active_script = create(:script, :account => account, :active => true)
-      question = create(:question, text: "abc", script_order: 1, script: active_script)
-      post :create, script_id: active_script.id, question_id: question.id, possible_response: {value: "Hi", possible_response_order: 1},  :api_key=> account.api_key, :format => "json"
-      expect(response.body).to match(/{\"possible_response\":{\"external_id_field\":null,\"id\":(.*),\"keypad\":null,\"possible_response_order\":1,\"question_id\":#{question.id},\"retry\":false,\"value\":\"Hi\"}}/)
+      question      = create(:question, text: "abc", script_order: 1, script: active_script)
+      data          = {value: "Hi", possible_response_order: 1}
+
+      post :create, script_id: active_script.id, question_id: question.id, possible_response: data,  :api_key=> account.api_key, :format => "json"
+
+      response_id = JSON.load(response.body)['possible_response']['id']
+      expect(response.body).to eq PossibleResponse.find(response_id).to_json
     end
 
     it "should throw validation error" do
@@ -77,7 +83,6 @@ describe Client::PossibleResponsesController, :type => :controller do
       post :create, script_id: active_script.id, question_id: question.id, possible_response: {value: nil, possible_response_order: 1},  :api_key=> account.api_key, :format => "json"
       expect(response.body).to eq("{\"errors\":{\"value\":[\"can't be blank\"]}}")
     end
-
   end
 
   describe "update" do
@@ -99,8 +104,4 @@ describe Client::PossibleResponsesController, :type => :controller do
     end
 
   end
-
-
-
-
 end
