@@ -1,4 +1,4 @@
-PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku_staging' ? 'http://' : 'https://'
+# PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku_staging' ? 'http://' : 'https://'
 
 ImpactDialing::Application.routes.draw do
   # The priority is based upon order of creation: first created -> highest priority.
@@ -60,7 +60,7 @@ ImpactDialing::Application.routes.draw do
   get "/", :to => "callers/station#show", :constraints => {:subdomain => "caller"}
   root :to => "client#login"
 
-  resources :calls, :protocol => PROTOCOL do
+  resources :calls do
     member do
       post :flow
       post :call_ended
@@ -73,15 +73,15 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
-  resources :caller, :protocol => PROTOCOL, :only => [:index] do
+  resources :caller, :only => [:index] do
     collection do
       get :login
       post :end_session # twilio
       post :phones_only
+      post :start_calling
     end
 
     member do
-      post :start_calling # twilio
       post :pause
       post :ready_to_call
       post :conference_started_phones_only_preview
@@ -110,6 +110,25 @@ ImpactDialing::Application.routes.draw do
       post :dialing_prohibited
     end
   end
+  # other TwiML
+  post 'caller/start_calling', :to => 'caller#start_calling'
+  resources :calls, only: [] do
+    member do
+      post :incoming
+      post :play_message
+    end
+  end
+  resource :callin, only: [] do
+    post :create
+    post :identify
+  end
+
+  post :receive_call, :to => 'callin#create'
+  post :end_caller_session, :to =>'caller/end_session'
+  post :identify_caller, :to => 'callin#identify'
+  get :default_message, :to => 'callin#default_message'
+  get :hold_call, :to => 'callin#hold'
+  # /other TwiML
 
   namespace "callers" do
     resources :campaign_calls do
@@ -139,7 +158,6 @@ ImpactDialing::Application.routes.draw do
   get 'call_center/api/twilio_token', :to => 'callers/station#twilio_token'
   get 'call_center/api/survey_fields', :to => 'callers/station#script'
     # include :id in path for back compat. remove later...
-  post 'call_center/api/:id/start_calling', :to => 'caller#start_calling'
   post 'call_center/api/:id/submit_result', :to => 'calls#submit_result'
   post 'call_center/api/:id/submit_result_and_stop', :to => 'calls#submit_result_and_stop'
   post 'call_center/api/:id/hangup', :to => 'calls#hangup'
@@ -175,12 +193,6 @@ ImpactDialing::Application.routes.draw do
       resources :campaigns, only: [:index]
     end
   end
-
-  post :receive_call, :to => 'callin#create', :protocol => PROTOCOL
-  post :end_caller_session, :to =>'caller/end_session'
-  post :identify_caller, :to => 'callin#identify', :protocol => PROTOCOL
-  get :default_message, :to => 'callin#default_message', :protocol => PROTOCOL
-  get :hold_call, :to => 'callin#hold', :protocol => PROTOCOL
 
   namespace 'client' do
     resource :session, :only => [:create, :destroy]
@@ -300,6 +312,7 @@ ImpactDialing::Application.routes.draw do
     resources :campaigns, :only => [] do
       member { post :verify_callerid }
     end
+
     resources :blocked_numbers, :only => [:index, :create, :destroy]
 
     get "toggle_call_recording", :to => "monitors#toggle_call_recording"
@@ -331,8 +344,7 @@ ImpactDialing::Application.routes.draw do
   end
 
 
-
-  resources :call_attempts, :protocol => PROTOCOL, :only => [:create, :update] do
+  resources :call_attempts, :only => [:create, :update] do
     member do
       post :connect
       post :end
@@ -342,7 +354,7 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
-  resources :transfer, :protocol => PROTOCOL do
+  resources :transfer do
     member do
       post :connect
       post :end
@@ -378,7 +390,4 @@ ImpactDialing::Application.routes.draw do
 
 
   resource :call_attempts, :only => :create
-
-  # match ':controller/:action/:id'
-  # match ':controller/:action'
 end
