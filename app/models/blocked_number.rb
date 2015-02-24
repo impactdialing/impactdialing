@@ -1,4 +1,5 @@
 class BlockedNumber < ActiveRecord::Base
+  attr_accessible :number, :account, :campaign
   belongs_to :account
   belongs_to :campaign
 
