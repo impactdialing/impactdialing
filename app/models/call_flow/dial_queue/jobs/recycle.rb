@@ -23,10 +23,12 @@ module CallFlow::DialQueue::Jobs
             phone     = scored_phone.first
             household = campaign.households.find_by_phone(phone)
             
-            household.update_attributes({
-              presented_at: score
-            })
-            dial_queue.dialed(household)
+            if household.present?
+              household.update_attributes({
+                presented_at: score
+              })
+              dial_queue.dialed(household)
+            end
           end
 
           dial_queue.recycle!
