@@ -5,6 +5,26 @@ describe Client::UsersController, :type => :controller do
     request.env['HTTP_REFERER'] = 'http://referer'
   end
 
+  it 'creates a user' do
+    valid_attrs = {
+      user: {
+        email: Forgery(:email).address,
+        new_password: 'secret',
+        fname: Forgery(:name).first_name,
+        lname: Forgery(:name).last_name,
+        phone: Forgery(:address).phone
+      },
+      domain_name: 'impactdialing.com'
+    }
+    expect{
+      post :create, valid_attrs
+    }.to change{User.count}.by 1
+    new_user = User.last
+    [:email, :fname, :lname, :phone].each do |attr|
+      expect(new_user[attr]).to eq valid_attrs[:user][attr]
+    end
+  end
+
   it "resets a user's password" do
     user = create(:user)
     user.create_reset_code!
