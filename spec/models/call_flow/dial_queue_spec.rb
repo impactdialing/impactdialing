@@ -174,8 +174,8 @@ describe 'CallFlow::DialQueue' do
   end
 
   describe 'remove a Voter record' do
-    let(:voterA){ @campaign.all_voters.all[0] }
-    let(:voterB){ @campaign.all_voters.all[1] }
+    let(:voterA){ @campaign.all_voters.to_a[0] }
+    let(:voterB){ @campaign.all_voters.to_a[1] }
 
     before do
       Redis.new.flushall
