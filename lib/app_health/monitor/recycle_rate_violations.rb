@@ -38,7 +38,7 @@ module AppHealth
       end
 
       def self.sample(result)
-        ImpactPlatform::Metrics.sample(sample_name, result.size, metric_source)
+        ImpactPlatform::Metrics.sample(sample_name, result.rows.size, metric_source)
       end
 
       # This will run often (every minute or so).
@@ -102,7 +102,7 @@ module AppHealth
       end
 
       def ok?
-        violator_counts.size.zero?
+        violator_counts.rows.size.zero?
       end
 
       def alert_key
@@ -117,7 +117,7 @@ module AppHealth
       end
 
       def alert_description
-        "#{violator_counts.size} Recycle Rate Violators"
+        "#{violator_counts.rows.size} Recycle Rate Violators"
       end
 
       def alert_details
