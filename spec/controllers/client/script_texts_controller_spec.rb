@@ -6,8 +6,6 @@ describe Client::ScriptTextsController, :type => :controller do
     @user = create(:user, account_id: account.id)
   end
 
-
-
   describe "index" do
     it "should return texts for a script" do
       active_script = create(:script, :account => account, :active => true)
@@ -24,7 +22,7 @@ describe Client::ScriptTextsController, :type => :controller do
       script_text = create(:script_text, content: "abc", script_order: 1, script: active_script)
       create(:script_text, content: "def", script_order: 2, script: active_script)
       get :show, script_id: active_script.id, id: script_text.id,  :api_key=> account.api_key, :format => "json"
-      expect(response.body).to eq("{\"script_text\":{\"content\":\"abc\",\"id\":#{script_text.id},\"script_id\":#{active_script.id},\"script_order\":1,\"markdown_content\":\"\\n<p>abc</p>\\n\"}}")
+      expect(response.body).to eq script_text.to_json
     end
 
     it "should 404 if script not found" do
@@ -42,8 +40,6 @@ describe Client::ScriptTextsController, :type => :controller do
       get :show, script_id: active_script.id, id: 100,  :api_key=> account.api_key, :format => "json"
       expect(response.body).to eq("{\"message\":\"Resource not found\"}")
     end
-
-
   end
 
   describe "destroy" do
@@ -61,7 +57,9 @@ describe Client::ScriptTextsController, :type => :controller do
       active_script = create(:script, :account => account, :active => true)
       create(:script_text, content: "def", script_order: 2, script: active_script)
       post :create, script_id: active_script.id, script_text: {content: "Hi", script_order: 1},  :api_key=> account.api_key, :format => "json"
-      expect(response.body).to match(/{\"script_text\":{\"content\":\"Hi\",\"id\":(.*),\"script_id\":#{active_script.id},\"script_order\":1,\"markdown_content\":\"\\n<p>Hi<\/p>\\n\"}}/)
+
+      returned = JSON.load(response.body)
+      expect(response.body).to eq ScriptText.find(returned['script_text']['id']).to_json
     end
 
     it "should throw validation error" do
