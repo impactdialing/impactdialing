@@ -1,7 +1,10 @@
 require "spec_helper"
 
 describe PhonesOnlyCallerSession, :type => :model do
-
+  include Rails.application.routes.url_helpers
+  def default_url_options
+    {host: 'test.com'}
+  end
   describe "initial" do
     describe "callin_choice " do
       before(:each) do
@@ -13,7 +16,14 @@ describe PhonesOnlyCallerSession, :type => :model do
 
       it "should render correct twiml" do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        expect(caller_session.callin_choice).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/read_instruction_options?session_id=#{caller_session.id}\" method=\"POST\" finishOnKey=\"5\"><Say>Press star to begin dialing or pound for instructions.</Say></Gather></Response>")
+
+        expect(caller_session.callin_choice).to gather({
+          numDigits:   1,
+          timeout:     10,
+          action:      read_instruction_options_caller_url(@caller, session_id: caller_session.id),
+          method:      "POST",
+          finishOnKey: "5"
+        }).with_nested_say("Press star to begin dialing or pound for instructions.")
       end
     end
 
@@ -32,7 +42,16 @@ describe PhonesOnlyCallerSession, :type => :model do
       it "should render correct twiml" do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "#", state: "read_choice")
         RedisCallerSession.set_request_params(caller_session.id, {digit: "#", question_number: 0})
-        expect(caller_session.read_choice).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>After these instructions, you will be placed on hold. When someone answers the phone, the hold music will stop. You usually won't hear the person say hello, so start talking immediately. At the end of the conversation, do not hang up your phone. Instead, press star to end the call, and you will be given instructions on how to enter your call results.</Say><Redirect>http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/callin_choice?session_id=#{caller_session.id}</Redirect></Response>")
+        say_text = [
+          "After these instructions, you will be placed on hold. ",
+          "When someone answers the phone, the hold music will stop. ",
+          "You usually won't hear the person say hello, so start talking immediately. ",
+          "At the end of the conversation, do not hang up your phone. ",
+          "Instead, press star to end the call, and you will be given instructions on ",
+          "how to enter your call results."
+        ].join
+
+        expect(caller_session.read_choice).to say(say_text).and_redirect(callin_choice_caller_url(@caller, session_id: caller_session.id))
       end
 
     end
@@ -49,7 +68,14 @@ describe PhonesOnlyCallerSession, :type => :model do
       it "should render twiml if wrong option selected" do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "x", state: "read_choice")
         RedisCallerSession.set_request_params(caller_session.id, {digit: "x", question_number: 0})
-        expect(caller_session.read_choice).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/read_instruction_options?session_id=#{caller_session.id}\" method=\"POST\" finishOnKey=\"5\"><Say>Press star to begin dialing or pound for instructions.</Say></Gather></Response>")
+
+        expect(caller_session.read_choice).to gather({
+          numDigits: 1,
+          timeout: 10,
+          action: read_instruction_options_caller_url(@caller, session_id: caller_session.id),
+          method: "POST",
+          finishOnKey: "5"
+        }).with_nested_say("Press star to begin dialing or pound for instructions.")
       end
 
     end
@@ -74,17 +100,15 @@ describe PhonesOnlyCallerSession, :type => :model do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "read_choice", digit: "*")
         RedisCallerSession.set_request_params(caller_session.id, {digit: "*", question_number: 0})
         voter = @voters.first
-        ready_to_call_twiml = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response>",
-          "<Gather numDigits=\"1\" timeout=\"10\" ",
-          "action=\"http://test.com:80/caller/#{@caller.id}/conference_started_phones_only_preview",
-          "?phone=#{@phone}&amp;session_id=#{caller_session.id}&amp;voter_id=#{voter[:id]}\"",
-          " method=\"POST\" finishOnKey=\"5\">",
-          "<Say> . Press pound to skip. Press star to dial.</Say>",
-          "</Gather></Response>"
-        ]
-        expect(caller_session.read_choice).to eq(ready_to_call_twiml.join)
+        what_to_do = "Press pound to skip. Press star to dial."
+
+        expect(caller_session.read_choice).to gather({
+          numDigits:   1,
+          timeout:     10,
+          action:      conference_started_phones_only_preview_caller_url(@caller, phone: @phone, session_id: caller_session.id, voter_id: voter[:id]),
+          method:      "POST",
+          finishOnKey: "5"
+        }).with_nested_say(what_to_do)
       end
     end
   end
@@ -177,33 +201,27 @@ describe PhonesOnlyCallerSession, :type => :model do
         call_attempt   = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         voter          = create(:voter, first_name:"first", last_name:"last", campaign: @campaign)
-        twiml          = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response><Gather numDigits=\"1\" timeout=\"10\" ",
-          "action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}",
-          "/caller/#{@caller.id}/conference_started_phones_only_preview?",
-          "phone=#{voter.household.phone}&amp;",
-          "session_id=#{caller_session.id}&amp;",
-          "voter_id=#{voter.id}\" ",
-          "method=\"POST\" finishOnKey=\"5\">",
-          "<Say>first last. Press pound to skip. Press star to dial.</Say>",
-          "</Gather></Response>"
-        ]
+
         expect(@campaign).to receive(:next_in_dial_queue).and_return({phone: voter.household.phone, voters: [voter.cache_data]})
-        expect(caller_session.ready_to_call).to eq(twiml.join)
+        expect(caller_session.ready_to_call).to gather({
+          numDigits: 1,
+          timeout: 10,
+          action: conference_started_phones_only_preview_caller_url(@caller, {
+            phone: voter.household.phone,
+            session_id: caller_session.id,
+            voter_id: voter.id
+          }),
+          method: "POST",
+          finishOnKey: 5
+        }).with_nested_say("first last. Press pound to skip. Press star to dial.")
       end
 
       it "should render twiml for preview when no voters present" do
         call_attempt   = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
-        twiml          = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response>",
-          "<Say>This campaign has run out of phone numbers.</Say>",
-          "<Hangup/></Response>"
-        ]
+        
         expect(@campaign).to receive(:next_in_dial_queue).and_return(nil)
-        expect(caller_session.ready_to_call).to eq(twiml.join)
+        expect(caller_session.ready_to_call).to say("This campaign has run out of phone numbers.").and_hangup
       end
     end
 
@@ -222,33 +240,23 @@ describe PhonesOnlyCallerSession, :type => :model do
         call_attempt   = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         voter          = create(:voter, first_name:"first", last_name:"last")
-        twiml          = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response>",
-          "<Say>first last.</Say>",
-          "<Redirect method=\"POST\">",
-          "http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}",
-          "/caller/#{@caller.id}/conference_started_phones_only_power?",
-          "phone=#{voter.household.phone}&amp;",
-          "session_id=#{caller_session.id}&amp;",
-          "voter_id=#{voter.id}",
-          "</Redirect></Response>"
-        ]
+
+        redirect_options = {method: "POST"}
+        redirect_url     = conference_started_phones_only_power_caller_url(@caller, {
+          phone: voter.household.phone,
+          session_id: caller_session.id,
+          voter_id: voter.id
+        })
         expect(@campaign).to receive(:next_in_dial_queue).and_return({phone: voter.household.phone, voters: [voter.cache_data]})
-        expect(caller_session.ready_to_call).to eq(twiml.join)
+        expect(caller_session.ready_to_call).to say("first last.").and_redirect(redirect_url, redirect_options)
       end
 
       it "should render twiml for power when no voters present" do
         call_attempt   = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
-        twiml          = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response>",
-          "<Say>This campaign has run out of phone numbers.</Say>",
-          "<Hangup/></Response>"
-        ]
+
         expect(@campaign).to receive(:next_in_dial_queue).and_return(nil)
-        expect(caller_session.ready_to_call).to eq(twiml.join)
+        expect(caller_session.ready_to_call).to say("This campaign has run out of phone numbers.").and_hangup
       end
     end
 
@@ -282,8 +290,24 @@ describe PhonesOnlyCallerSession, :type => :model do
 
       it "render correct twiml" do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
+
+        dial_options = {
+          hangupOnStar: true,
+          action: gather_response_caller_url(@caller.id, {
+            session_id: caller_session.id,
+            question_number: 0
+          })
+        }
+        conference_options = {
+          startConferenceOnEnter: false,
+          endConferenceOnExit: true,
+          beep: true,
+          waitUrl: 'hold_music',
+          waitMethod: 'GET'
+        }
+
         expect(caller_session).to receive(:predictive?).and_return(true)
-        expect(caller_session.ready_to_call).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/gather_response?question_number=0&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
+        expect(caller_session.ready_to_call).to dial_conference(dial_options, conference_options)
       end
     end
   end
@@ -299,16 +323,12 @@ describe PhonesOnlyCallerSession, :type => :model do
       it "should render correct twiml if pound selected" do
         voter          = create(:voter, first_name:"first", last_name:"last")
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "#", voter_in_progress: voter)
-        twiml          = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response><Redirect>",
-          "http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}",
-          "/caller/#{@caller.id}/ready_to_call?",
-          "session_id=#{caller_session.id}",
-          "</Redirect></Response>"
-        ]
+        
         RedisCallerSession.set_request_params(caller_session.id, {digit: "#", question_number: 0})
-        expect(caller_session.conference_started_phones_only_preview(voter.id, voter.household.phone)).to eq(twiml.join)
+
+        actual = caller_session.conference_started_phones_only_preview(voter.id, voter.household.phone)
+        url    = ready_to_call_caller_url(@caller, session_id: caller_session.id)
+        expect(actual).to redirect(url)
       end
     end
 
@@ -324,8 +344,22 @@ describe PhonesOnlyCallerSession, :type => :model do
         question = create(:question, script: @script)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
         RedisCallerSession.set_request_params(caller_session.id, {digit: "*", question_number: 0})
+
         expect(caller_session).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.household.phone])
-        expect(caller_session.conference_started_phones_only_preview(@voter.id, @voter.household.phone)).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/gather_response?question_number=0&amp;session_id=#{caller_session.id}&amp;voter_id=#{@voter.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
+
+        actual       = caller_session.conference_started_phones_only_preview(@voter.id, @voter.household.phone)
+        dial_options = {
+          hangupOnStar: true,
+          action: gather_response_caller_url(@caller, question_number: 0, session_id: caller_session.id, voter_id: @voter.id)
+        }
+        conference_options = {
+          startConferenceOnEnter: false,
+          endConferenceOnExit:    true,
+          beep:                   true,
+          waitUrl:                'hold_music',
+          waitMethod:             'GET'
+        }
+        expect(actual).to dial_conference(dial_options, conference_options)
       end
     end
 
@@ -341,20 +375,20 @@ describe PhonesOnlyCallerSession, :type => :model do
         voter          = create(:voter, first_name:"first", last_name:"last")
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial")
         RedisCallerSession.set_request_params(caller_session.id, {question_number: 0})
-        twiml = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response>",
-          "<Gather numDigits=\"1\" timeout=\"10\" ",
-          "action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}",
-          "/caller/#{@caller.id}/conference_started_phones_only_preview?",
-          "phone=#{voter.household.phone}&amp;",
-          "session_id=#{caller_session.id}&amp;",
-          "voter_id=#{voter.id}\"",
-          " method=\"POST\" finishOnKey=\"5\">",
-          "<Say>Press pound to skip. Press star to dial.</Say>",
-          "</Gather></Response>"
-        ]
-        expect(caller_session.conference_started_phones_only_preview(voter.id, voter.household.phone)).to eq(twiml.join)
+
+        actual         = caller_session.conference_started_phones_only_preview(voter.id, voter.household.phone)
+        gather_options = {
+          numDigits: 1,
+          timeout: 10,
+          action: conference_started_phones_only_preview_caller_url(@caller, {
+            phone: voter.household.phone,
+            session_id: caller_session.id,
+            voter_id: voter.id
+          }),
+          method: 'POST',
+          finishOnKey: 5
+        }
+        expect(actual).to gather(gather_options).with_nested_say("Press pound to skip. Press star to dial.")
       end
     end
   end
@@ -371,21 +405,26 @@ describe PhonesOnlyCallerSession, :type => :model do
       it "render correct twiml" do
         question       = create(:question, script: @script)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        twiml = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response><Dial hangupOnStar=\"true\" ",
-          "action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}",
-          "/caller/#{@caller.id}/gather_response?",
-          "question_number=0&amp;",
-          "session_id=#{caller_session.id}&amp;",
-          "voter_id=#{@voter.id}\">",
-          "<Conference startConferenceOnEnter=\"false\" ",
-          "endConferenceOnExit=\"true\" beep=\"true\" ",
-          "waitUrl=\"hold_music\" waitMethod=\"GET\"/>",
-          "</Dial></Response>"
-        ]
+
         expect(caller_session).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.household.phone])
-        expect(caller_session.conference_started_phones_only_power(@voter.id, @voter.household.phone)).to eq(twiml.join)
+
+        actual = caller_session.conference_started_phones_only_power(@voter.id, @voter.household.phone)
+        dial_options = {
+          hangupOnStar: true,
+          action: gather_response_caller_url(@caller, {
+            question_number: 0,
+            session_id: caller_session.id,
+            voter_id: @voter.id
+          })
+        }
+        conference_options = {
+          startConferenceOnEnter: false,
+          endConferenceOnExit: true,
+          beep: true,
+          waitUrl: 'hold_music',
+          waitMethod: 'GET'
+        }
+        expect(actual).to dial_conference(dial_options, conference_options)
       end
     end
   end
@@ -408,23 +447,25 @@ describe PhonesOnlyCallerSession, :type => :model do
         expect(caller_session).to receive(:call_answered?).and_return(true)
         expect(RedisQuestion).to receive(:get_question_to_read).with(@script.id, caller_session.question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
         expect(RedisPossibleResponse).to receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])
-        twiml = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response><Gather timeout=\"60\" finishOnKey=\"*\" ",
-          "action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}",
-          "/caller/#{@caller.id}/submit_response?",
-          "question_id=#{@question.id}&amp;",
-          "question_number=0&amp;",
-          "session_id=#{caller_session.id}&amp;",
-          "voter_id=#{@voter.id}\" ",
-          "method=\"POST\">",
-          "<Say>How do you like Impactdialing</Say>",
-          "<Say>press 1 for Great</Say>",
-          "<Say>press 2 for Super</Say>",
-          "<Say>Then press star to submit your result.</Say>",
-          "</Gather></Response>"
+        
+        gather_options = {
+          timeout: 60,
+          finishOnKey: '*',
+          action: submit_response_caller_url(@caller, {
+            question_id: @question.id,
+            question_number: 0,
+            session_id: caller_session.id,
+            voter_id: @voter.id
+          }),
+          method: 'POST'
+        }
+        say_texts = [
+          "How do you like Impactdialing",
+          "press 1 for Great",
+          "press 2 for Super",
+          "Then press star to submit your result."
         ]
-        expect(caller_session.gather_response(@voter.id)).to eq(twiml.join)
+        expect(caller_session.gather_response(@voter.id)).to gather(gather_options).with_nested_say(say_texts)
       end
     end
   end
@@ -453,26 +494,29 @@ describe PhonesOnlyCallerSession, :type => :model do
         call_attempt = create(:call_attempt, voter: @voter)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0, script_id: @script.id)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0})
-        twiml = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response>",
-          "<Gather timeout=\"60\" finishOnKey=\"*\" ",
-          "action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}",
-          "/caller/#{@caller.id}/submit_response?",
-          "question_id=#{@question.id}&amp;",
-          "question_number=0&amp;",
-          "session_id=#{caller_session.id}&amp;",
-          "voter_id=#{@voter.id}\" method=\"POST\">",
-          "<Say>How do you like Impactdialing</Say>",
-          "<Say>press 1 for Great</Say>",
-          "<Say>press 2 for Super</Say>",
-          "<Say>Then press star to submit your result.</Say>",
-          "</Gather></Response>"
+
+        gather_options = {
+          timeout: 60,
+          finishOnKey: '*',
+          action: submit_response_caller_url(@caller, {
+            question_id: @question.id,
+            question_number: 0,
+            session_id: caller_session.id,
+            voter_id: @voter.id
+          }),
+          method: 'POST'
+        }
+        say_texts = [
+          "How do you like Impactdialing",
+          "press 1 for Great",
+          "press 2 for Super",
+          "Then press star to submit your result."
         ]
+
         expect(RedisQuestion).to receive(:get_question_to_read).with(@script.id, caller_session.question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
         expect(RedisPossibleResponse).to receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])
         expect(caller_session).to receive(:call_answered?).and_return(true)
-        expect(caller_session.gather_response(@voter.id)).to eq(twiml.join)
+        expect(caller_session.gather_response(@voter.id)).to gather(gather_options).with_nested_say(say_texts)
       end
     end
 
@@ -481,13 +525,8 @@ describe PhonesOnlyCallerSession, :type => :model do
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "conference_started_phones_only_predictive", voter_in_progress: nil)
         @campaign.caller_sessions << caller_session
         @campaign.save!
-        twiml = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response>",
-          "<Say>This campaign has run out of phone numbers.</Say>",
-          "<Hangup/></Response>"
-        ]
-        expect(caller_session.campaign_out_of_phone_numbers).to eq(twiml.join)
+
+        expect(caller_session.campaign_out_of_phone_numbers).to say("This campaign has run out of phone numbers.").and_hangup
       end
     end
   end
@@ -522,11 +561,9 @@ describe PhonesOnlyCallerSession, :type => :model do
           question_number: 0,
           question_id: 1
         })
-        twiml = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>"
-        ]
+
         expect(caller_session).to receive(:disconnected?).and_return(true)
-        expect(caller_session.submit_response(@voter.id)).to eq(twiml.join)
+        expect(caller_session.submit_response(@voter.id)).to hangup
       end
     end
 
@@ -553,7 +590,9 @@ describe PhonesOnlyCallerSession, :type => :model do
         expect(caller_session).to receive(:disconnected?).and_return(false)
         expect(caller_session).to receive(:skip_all_questions?).and_return(true)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
-        expect(caller_session.submit_response(@voter.id)).to eq(twiml.join)
+
+        url = next_call_caller_url(@caller, session_id: caller_session.id)
+        expect(caller_session.submit_response(@voter.id)).to redirect(url)
       end
     end
 
@@ -598,18 +637,10 @@ describe PhonesOnlyCallerSession, :type => :model do
         call_attempt = create(:call_attempt, voter: @voter)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
-        twiml = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response><Redirect>",
-          "http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}",
-          "/caller/#{@caller.id}/gather_response?",
-          "question_number=1&amp;",
-          "session_id=#{caller_session.id}&amp;",
-          "voter_id=#{@voter.id}",
-          "</Redirect></Response>"
-        ]
+        
         expect(caller_session).to receive(:disconnected?).and_return(false)
-        expect(caller_session.submit_response(@voter.id)).to eq(twiml.join)
+        url = gather_response_caller_url(@caller, question_number: 1, session_id: caller_session.id, voter_id: @voter.id)
+        expect(caller_session.submit_response(@voter.id)).to redirect(url)
       end
     end
   end
@@ -628,28 +659,29 @@ describe PhonesOnlyCallerSession, :type => :model do
       it "should move to read_next_question state" do
         call_attempt = create(:call_attempt, voter: @voter, connecttime: Time.now)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, script_id: @script.id)
-        twiml = [
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-          "<Response>",
-          "<Gather timeout=\"60\" finishOnKey=\"*\" ",
-          "action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}",
-          "/caller/#{@caller.id}/submit_response?",
-          "question_id=#{@question.id}&amp;",
-          "question_number=0&amp;",
-          "session_id=#{caller_session.id}&amp;",
-          "voter_id=#{@voter.id}\" ",
-          "method=\"POST\">",
-          "<Say>How do you like Impactdialing</Say>",
-          "<Say>press 1 for Great</Say>",
-          "<Say>press 2 for Super</Say>",
-          "<Say>Then press star to submit your result.</Say>",
-          "</Gather></Response>"
-        ]
+
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
         expect(RedisQuestion).to receive(:get_question_to_read).with(@script.id, caller_session.redis_question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
         expect(RedisPossibleResponse).to receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])
         expect(caller_session).to receive(:more_questions_to_be_answered?).and_return(true)
-        expect(caller_session.gather_response(@voter.id)).to eq(twiml.join)
+        gather_options = {
+          timeout: 60,
+          finishOnKey: '*',
+          action: submit_response_caller_url(@caller, {
+            question_id:     @question.id,
+            question_number: 0,
+            session_id:      caller_session.id,
+            voter_id:        @voter.id
+          }),
+          method: 'POST'
+        }
+        say_texts = [
+          "How do you like Impactdialing",
+          "press 1 for Great",
+          "press 2 for Super",
+          "Then press star to submit your result."
+        ]
+        expect(caller_session.gather_response(@voter.id)).to gather(gather_options).with_nested_say(say_texts)
       end
 
     end
@@ -669,7 +701,8 @@ describe PhonesOnlyCallerSession, :type => :model do
         expect(caller_session).to receive(:more_questions_to_be_answered?).and_return(false)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
         expect(RedisStatus).to receive(:set_state_changed_time).with(@campaign.id, "On hold",caller_session.id)
-        expect(caller_session.gather_response(@voter.id)).to eq(twiml.join)
+        url = next_call_caller_url(@caller, session_id: caller_session.id)
+        expect(caller_session.gather_response(@voter.id)).to redirect(url)
       end
 
     end
