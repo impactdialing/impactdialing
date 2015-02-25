@@ -33,7 +33,7 @@ module FakeCallData
       household = campaign.households.find_by_phone(phone)
       
       household.update_attributes({
-        presented_at: score
+        presented_at: Time.at(score)
       })
       dial_queue.dialed(household)
     end

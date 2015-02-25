@@ -41,7 +41,6 @@ describe Preview, :type => :model do
 
   describe 'dialing' do
     before do
-      ENV['USE_REDIS_DIAL_QUEUE'] = '1'
       add_voters(campaign, :voter, 5)
     end
     let(:dial_queue) do
@@ -62,8 +61,8 @@ describe Preview, :type => :model do
         current_time = Time.now
         Timecop.travel(current_time + campaign.recycle_rate.hours + 1.hour) do
           process_presented(campaign)
-
           expect(dial_queue.available.all[-2]).to eq skipped.first[:phone]
+
           dial_one_at_a_time(campaign, 1) do |house|
             voter        = Voter.find(house[:voters].first[:id])
             attach_call_attempt(:completed_call_attempt, voter, caller)
