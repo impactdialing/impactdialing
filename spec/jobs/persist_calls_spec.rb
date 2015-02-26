@@ -156,12 +156,28 @@ describe PersistCalls do
     context "call_attempt" do
       subject { call_attempt.reload }
       its(:wrapup_time) { should == time }
+      its(:household_id) { should_not be_nil }
     end
 
     context "voter" do
       subject { voter.reload }
       its(:status) { should == CallAttempt::Status::SUCCESS }
       its(:caller_id) { should == 1 }
+      its(:household_id) { should_not be_nil }
+      its(:household_id) { should == call_attempt.reload.household_id }
+    end
+  end
+
+  context 'houseless voter .wrappedup' do
+    before do
+      voter.update_column :household_id, nil
+      expect(voter.reload.household_id).to be_nil
+      PersistCalls.perform
+    end
+    context 'voter' do
+      subject { voter.reload }
+      its(:household_id) { should_not be_nil }
+      its(:household_id) { should == call_attempt.reload.household_id }
     end
   end
 

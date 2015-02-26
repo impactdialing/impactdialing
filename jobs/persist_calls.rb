@@ -116,12 +116,14 @@ class PersistCalls
 
   # def self.cache_last_attempt_status
   def self.import_voters(voters)
+    update_keys = [:status, :caller_id, :caller_session_id]
+    
+    # workaround bug where Voter has no associated household
+    update_keys += [:household_id]
+    # /workaround
+
     columns, values = setup_bitmasks(Voter, voters, ['enabled'])
-    Voter.import columns, values, on_duplicate_key_update: [
-      :status,
-      :caller_id,
-      :caller_session_id
-    ]
+    Voter.import columns, values, on_duplicate_key_update: update_keys
   end
 
   def self.import_call_attempts(call_attempts)
@@ -208,11 +210,29 @@ class PersistCalls
         call_attempt = call_attempts[wrapped_up_call['id'].to_i]
         voter        = voters[wrapped_up_call['voter_id'].to_i]
 
-        call_attempt.wrapup_now(wrapped_up_call['current_time'], wrapped_up_call['caller_type'], wrapped_up_call['voter_id'])
-        voter.dispositioned(call_attempt) 
+        # workaround bug where Voter has no associated household
+        houseless_voter_workaround_impossible = false
+        if voter.household.nil? and call_attempt.household.present?
+          Rails.logger.error("[HouselessVoters] Account[#{voter.account_id}] Campaign[#{voter.campaign_id}] Voter[#{voter.id}] CallAttempt[#{call_attempt.id}] Household[#{call_attempt.household.id}] Setting Voter#household from CallAttempt#household")
+          voter.household_id = call_attempt.household_id
+        elsif voter.household.nil? and call_attempt.household.nil?
+          houseless_voter_workaround_impossible = true
+          Rails.logger.error("[HouselessVoters] Account[#{voter.account_id}] Campaign[#{voter.campaign_id}] Voter[#{voter.id}] CallAttempt[#{call_attempt.id}] Pushing Voter to houseless list. Both Voter and CallAttempt are houseless.")
+          houseless_key          = "houseless_voters:campaign:#{voter.campaign_id}"
+          houseless_manifest_key = "houseless_voters:manifest"
 
-        updated_call_attempts << call_attempt
-        updated_voters << voter
+          $redis_call_flow_connection.lpush(houseless_key, wrapped_up_call.to_json)
+          $redis_call_flow_connection.lpush(houseless_manifest_key, voter.campaign_id)
+        end
+
+        unless houseless_voter_workaround_impossible
+          call_attempt.wrapup_now(wrapped_up_call['current_time'], wrapped_up_call['caller_type'], wrapped_up_call['voter_id'])
+          voter.dispositioned(call_attempt)
+
+          updated_call_attempts << call_attempt
+          updated_voters        << voter
+        end
+        # /workaround
       end
       import_call_attempts(updated_call_attempts)
       import_voters(updated_voters)
