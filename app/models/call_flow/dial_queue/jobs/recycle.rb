@@ -24,7 +24,7 @@ module CallFlow::DialQueue::Jobs
             
             if household.present?
               household.update_attributes({
-                presented_at: score
+                presented_at: Time.at(score)
               })
               dial_queue.dialed(household)
             end
