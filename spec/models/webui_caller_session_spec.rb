@@ -5,7 +5,6 @@ describe WebuiCallerSession, :type => :model do
   def default_url_options
     {host: 'test.com'}
   end
-
   describe "initial state" do
     describe "caller moves to connected" do
       before(:each) do

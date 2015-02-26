@@ -26,11 +26,9 @@ describe PhonesOnlyCallerSession, :type => :model do
         }).with_nested_say("Press star to begin dialing or pound for instructions.")
       end
     end
-
   end
 
   describe "read_choice" do
-
     describe "readinstruction to instructions_options  if # selected" do
       before(:each) do
         @script = create(:script)
@@ -53,7 +51,6 @@ describe PhonesOnlyCallerSession, :type => :model do
 
         expect(caller_session.read_choice).to say(say_text).and_redirect(callin_choice_caller_url(@caller, session_id: caller_session.id))
       end
-
     end
 
     describe "readinstruction to read_choice  if wrong option selected" do
@@ -77,7 +74,6 @@ describe PhonesOnlyCallerSession, :type => :model do
           finishOnKey: "5"
         }).with_nested_say("Press star to begin dialing or pound for instructions.")
       end
-
     end
 
     describe "present voter & options when * selected" do

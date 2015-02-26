@@ -45,10 +45,7 @@ class WebuiCallerSession < CallerSession
 
   def handleReassignedCampaign
     super
-
   end
-
-
 end
 
 # ## Schema Information

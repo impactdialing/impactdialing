@@ -14,7 +14,7 @@ describe 'routes for CallCenter (draft)', :type => :routing do
   end
 
   [
-    'start_calling', 'call_voter', 'skip_voter'
+    'call_voter', 'skip_voter'
   ].each do |action|
     it "POST /call_center/api/:id/#{action} => caller##{action}" do
       expect({post: "/call_center/api/1/#{action}"}).to route_to(controller: 'caller', action: action, id: '1')

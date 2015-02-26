@@ -25,6 +25,9 @@ describe ExceptionMailer, :type => :mailer do
         with('SHOW ENGINE INNODB STATUS').
         and_return(status_msg)
     end
+    after do
+      allow(ActiveRecord::Base.connection).to receive(:execute).and_call_original
+    end
     it 'sends an email to EXCEPTION_EMAIL with the exception message and innodb status' do
       email_text = "#{msg}\n#{status_msg.first.join("\n")}"
       email_html = "<p>#{msg}</p><pre>#{status_msg.first.join("\n")}</pre>"

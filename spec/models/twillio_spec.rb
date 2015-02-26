@@ -16,6 +16,15 @@ describe Twillio do
     ENV['VOIP_API_URL']           = 'api.twilio.com'
   end
 
+  after do
+    TWILIO_ACCOUNT                = "blahblahblah"
+    TWILIO_AUTH                   = "blahblahblah"
+    ENV['TWILIO_CALLBACK_HOST']   = 'test.com'
+    ENV['CALL_END_CALLBACK_HOST'] = 'test.com'
+    ENV['INCOMING_CALLBACK_HOST'] = 'test.com'
+    ENV['VOIP_API_URL']           = 'test.com'
+  end
+
   shared_examples 'all Twillio.dials' do
     it 'create CallAttempt record associated to target household & campaign' do
       call_attempt = CallAttempt.last
