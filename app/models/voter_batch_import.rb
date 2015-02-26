@@ -58,10 +58,13 @@ class VoterBatchImport
   end
 
   # don't validate existing households, just update blocked bits
-  def update_household(id, phone)
+  def update_household(id, phone, campaign)
     household = {
-      id: id,
-      blocked: Household.bitmask_for_blocked( *calculate_blocked(phone) )
+      id:          id,
+      campaign_id: campaign.id,
+      account_id:  campaign.account_id,
+      phone:       phone,
+      blocked:     Household.bitmask_for_blocked( *calculate_blocked(phone) )
     }
 
     return household
@@ -74,7 +77,7 @@ class VoterBatchImport
     households          = load_as_hash(household_query)
     new_numbers         = numbers - households.keys
     new_households      = new_numbers.map{|n| build_household(n)}.compact
-    existing_households = households.map{|phone, id| update_household(id, phone) }
+    existing_households = households.map{|phone, id| update_household(id, phone, campaign) }
     created_households  = {}
 
     if new_households.any?
