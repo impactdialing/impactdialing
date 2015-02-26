@@ -10,8 +10,6 @@ RSpec::Matchers.define :gather do |gather_options|
       end
     end.text
 
-    print "Expected: #{twiml}\n\n"
-
     actual == twiml
   end
 
@@ -30,8 +28,11 @@ RSpec::Matchers.define :say do |say_text|
       if @hangup
         r.Hangup
       end
+      if @pause_options
+        r.Pause(@pause_options)
+      end
     end.text
-    print "Expected: #{twiml}\n"
+
     actual == twiml
   end
 
@@ -42,6 +43,10 @@ RSpec::Matchers.define :say do |say_text|
 
   chain :and_hangup do
     @hangup = true
+  end
+
+  chain :and_pause do |pause_options|
+    @pause_options = pause_options
   end
 end
 
