@@ -25,7 +25,15 @@ class PhonesOnlyCallerSession < CallerSession
   end
 
   def setup_call
-    house = campaign.next_in_dial_queue
+    begin
+      house = campaign.next_in_dial_queue
+    rescue CallFlow::DialQueue::Available::RedisTransactionAborted => e
+      source = "ac-#{self.campaign.account_id}.ca-#{self.campaign.id}.cs-#{self.id}"
+      name   = "phones_only.dial_queue.available.redis_transaction_aborted"
+      ImpactPlatform::Metrics.count(name, 1, source)
+      return twiml_redirect_to_next_call # have Twilio retry this request
+    end
+
     return campaign_out_of_phone_numbers_twiml if house.nil?
 
     voter = house[:voters].first[:fields]

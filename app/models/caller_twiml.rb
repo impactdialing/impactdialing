@@ -196,6 +196,11 @@ module CallerTwiml
       r.Redirect(next_call_caller_url(caller_id, default_twiml_url_params))
     end.text
   end
+  def twiml_redirect_to_next_call
+    Twilio::TwiML::Response.new do |r|
+      r.Redirect(next_call_caller_url(caller_id, default_twiml_url_params))
+    end.text
+  end
  end
   def self.included(receiver)
     receiver.extend         ClassMethods

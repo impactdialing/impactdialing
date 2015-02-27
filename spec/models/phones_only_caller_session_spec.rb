@@ -134,6 +134,30 @@ describe PhonesOnlyCallerSession, :type => :model do
       end
     end
 
+    context 'in preview and power modes' do
+      let(:campaign) do
+        create(:power)
+      end
+      let(:caller_session) do
+        create(:phones_only_caller_session, caller: create(:caller), campaign: campaign)
+      end
+      before do
+        expect(caller_session).to receive(:campaign).at_least(:once).and_return(campaign)
+      end
+      after do
+        allow(caller_session).to receive(:campaign).and_call_original
+      end
+
+      it 'returns twiml to redirect caller back to /caller/next_call and effectively retry this request' do
+        expect(campaign).to receive(:next_in_dial_queue).and_raise(CallFlow::DialQueue::Available::RedisTransactionAborted)
+
+        ready_to_call_twiml         = caller_session.ready_to_call
+        redirect_to_next_call_twiml = caller_session.twiml_redirect_to_next_call
+
+        expect(ready_to_call_twiml).to eq (redirect_to_next_call_twiml)
+      end
+    end
+
     describe "choose voter for preview" do
       include FakeCallData
 
@@ -415,7 +439,7 @@ describe PhonesOnlyCallerSession, :type => :model do
       @voters           = [
         {id: 1, phone: @phone, fields: {id: 1, phone: @phone, first_name: '', last_name: ''}}
       ]
-      @campaign.stub(:next_in_dial_queue).and_return({
+      allow(@campaign).to receive(:next_in_dial_queue).and_return({
         phone: @phone,
         voters: @voters
       })

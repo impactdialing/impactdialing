@@ -17,10 +17,6 @@
 # todo: handle failure gracefully
 class CallerPusherJob
   include Sidekiq::Worker
-  # This job should only fail in exceptional circumstances. Retries should occur
-  # in lower-level dependencies (ie `CallerSession#{trigger_event_method}`).
-  # Sidekiq should not be used to retry it will almost certainly retry after
-  # the relevant session has ended.
   sidekiq_options :retry => false
   sidekiq_options :failures => true
 
