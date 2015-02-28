@@ -6,7 +6,7 @@ class CustomVoterFieldValue < ActiveRecord::Base
   scope :voter_fields, lambda { |voter, field| where(voter_id: voter, custom_voter_field_id: field) }
   scope :for, lambda { |voter| {:conditions => ["voter_id = ? ", voter.id]} }
   scope :for_field, lambda { |field| where("custom_voter_field_id = ?", field.id) }
-  end
+end
 
 # ## Schema Information
 #

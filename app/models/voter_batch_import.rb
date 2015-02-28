@@ -77,13 +77,13 @@ class VoterBatchImport
     existing_households = households.map{|phone, id| update_household(id, phone) }
     created_households  = {}
 
-    if new_households.any?    
+    if new_households.any?
       Household.import new_households.first.keys, new_households.map(&:values)
       created_households = load_as_hash(Household.where(campaign_id: campaign.id, phone: new_numbers).select([:phone, :id]))
     end
 
     if existing_households.any?
-      Household.import existing_households.first.keys, existing_households.map(&:values), validate: false, on_duplicate_key_update: [:blocked]
+      Household.import existing_households.first.keys, existing_households.map(&:values), on_duplicate_key_update: [:blocked]
     end
 
     households.merge(created_households)
@@ -217,13 +217,16 @@ protected
         lead_id = created_voter_ids.shift
       end
       @csv_headers.each_with_index do |csv_column_title, column_location|
-        system_column = @csv_to_system_map.system_column_for csv_column_title
-        value = voter_info[column_location]
+        system_column    = @csv_to_system_map.system_column_for csv_column_title
+        value            = voter_info[column_location]
         custom_attribute = @custom_attributes[system_column]
         if custom_attribute
           custom_field_value = custom_field_values[lead_id][custom_attribute] if custom_field_values[lead_id]
-          custom_field_value ||= {voter_id: lead_id, custom_voter_field_id: custom_attribute}
-          custom_voter_values << custom_field_value.merge(value: value)
+          custom_field_value ||= {}
+          custom_field_value[:voter_id] ||= lead_id
+          custom_field_value[:custom_voter_field_id] ||= custom_attribute
+          custom_field_value[:value] = value
+          custom_voter_values << custom_field_value
         end
       end
     end
@@ -245,10 +248,15 @@ protected
       end
     end
 
-    klass.import(existing_records[:columns], existing_records[:values],
-                 on_duplicate_key_update: existing_records[:columns],
-                 validate: false, timestamps: false) if existing_records[:values].any?
-    klass.import(new_records[:columns], new_records[:values]) if new_records[:values].any?
+    if existing_records[:values].any?
+      klass.import(existing_records[:columns], existing_records[:values], {
+        timestamps:              false,
+        on_duplicate_key_update: existing_records[:columns]
+      })
+    end
+    if new_records[:values].any?
+      klass.import(new_records[:columns], new_records[:values])
+    end
   end
 
   def create_custom_attributes
