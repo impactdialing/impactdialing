@@ -101,7 +101,7 @@ public
   end
 
   def missing?(phone)
-    redis.zscore(keys[:active], phone).nil?
+    redis.zscore(keys[:active], phone).nil? and redis.zscore(keys[:presented], phone).nil?
   end
 
   def insert(scored_members)
