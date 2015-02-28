@@ -36,6 +36,7 @@
 
 <div role='main'>
   <%= form_tag(download_client_campaign_reports_path(@campaign), :method => "POST") do %>
+    <%= hidden_field_tag :archived, '1' if params[:archived].present? %>
     <fieldset>
       <div id="fields">
       <legend>Fields to include</legend>

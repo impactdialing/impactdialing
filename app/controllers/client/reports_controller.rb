@@ -182,7 +182,7 @@ module Client
       respond_with(@campaign, location:  client_reports_url) do |format|
         format.html {
             flash_message(:notice, I18n.t(:client_report_processing))
-            redirect_to client_reports_url
+            redirect_to params[:archived].nil? ? client_reports_url : client_archived_campaigns_url
           }
         format.json {
           render :json => {message: "Response will be sent to the callback url once the report is ready for download." }}
@@ -199,7 +199,7 @@ module Client
 
     def load_campaign
       Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
-        @campaign = Account.find(account).campaigns.find(params[:campaign_id])
+        @campaign = Campaign.where(id: params[:campaign_id], account_id: account.id).first
       end
       @datepicker_target = performance_client_campaign_reports_path({campaign_id: @campaign.id})
       @campaign

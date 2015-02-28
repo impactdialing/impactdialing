@@ -1,13 +1,13 @@
 <%= csrf_meta_tag %>
 
-<h1>Deleted callers</h1>
+<h1>Archived callers</h1>
 <% if @callers.empty? %>
-  <p>No callers deleted.</p>
+  <p>No callers archived.</p>
 <% else %>
   <table>
     <tr>
       <th>Name</th>
-      <th>Date deleted</th>
+      <th>Date archived</th>
       <th width="55" class="ac"></th>
     </tr>
     <% @callers.each do |c| %>
