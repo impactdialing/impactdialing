@@ -179,12 +179,13 @@ describe 'VoterBatchImport' do
 
         it_behaves_like 'all valid Voter uploads'
 
-        describe 'duplicate phone number treatment (going away w/ householding)' do
+        describe 'duplicate phone number treatment' do
           let(:phone) do
             csv = CSV.new(File.open(csv_file_upload).read)
             csv.shift
             csv.first.split(',').first.first.gsub(/[^\d]/, '')
           end
+
           it 'creates a new Voter record when phone number is duplicated on same list' do
             expect(Voter.count).to eq 2
           end
@@ -220,6 +221,7 @@ describe 'VoterBatchImport' do
         expect(actual[:success]).to eq(29)
         expect(actual[:failed]).to eq(0)
       end
+
       it "ignores columns with blank headers" do
         missing_field_file = File.open("#{fixture_path}/files/missing_field_list.csv").read
         missing_field_csv = CSV.new(missing_field_file)

@@ -108,6 +108,11 @@ class VoterBatchImport
 
         lead = nil
 
+        if (not PhoneNumber.valid?(phone_number))
+          result[:failed] += 1
+          next
+        end
+
         if custom_id_present?
           custom_id = voter_info[@csv_custom_id_column_location]
           lead_id   = found_leads[custom_id]
@@ -119,10 +124,6 @@ class VoterBatchImport
               enabled: Voter.bitmask_for_enabled(:list)
             }
             updated_leads[custom_id] = lead
-
-          elsif (not PhoneNumber.valid?(phone_number))
-            result[:failed] += 1
-            next
           end
         end
 
