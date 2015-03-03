@@ -80,32 +80,33 @@ module ImpactPlatform
     end
 
     class JobStatus
-      attr_reader :process
+      attr_reader :process, :source
 
     private
       def count(name, number)
-        ImpactPlatform::Metrics.count("#{self.class.to_s.underscore.split('/').last}.#{process}.#{name}", number)
+        ImpactPlatform::Metrics.count("#{self.class.to_s.underscore.split('/').last}.#{process}.#{name}", number, source)
       end
 
     public
-      def self.completed(process)
-        self.new(process).completed
+      def self.completed(process, source=nil)
+        self.new(process, source).completed
       end
 
-      def self.started(process)
-        self.new(process).started
+      def self.started(process, source=nil)
+        self.new(process, source).started
       end
 
-      def self.error(process)
-        self.new(process).error
+      def self.error(process, source=nil)
+        self.new(process, source).error
       end
 
       def self.sigterm(process)
         self.new(process).sigterm
       end
 
-      def initialize(process)
+      def initialize(process, source=nil)
         @process = process
+        @source  = source
       end
 
       def completed

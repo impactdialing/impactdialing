@@ -21,9 +21,10 @@ class CallerPusherJob
   sidekiq_options :failures => true
 
   def perform(caller_session_id, event)
-    metrics = ImpactPlatform::Metrics::JobStatus.started("#{self.class.to_s.underscore}.#{event}")
-    
     caller_session = CallerSession.find(caller_session_id)
+
+    source         = "ac-#{caller_session.campaign.account_id}.ca-#{caller_session.campaign.id}.cs-#{caller_session.id}"
+    metrics        = ImpactPlatform::Metrics::JobStatus.started("#{self.class.to_s.underscore}.#{event}", source)
 
     begin
       caller_session.send(event)
@@ -35,7 +36,6 @@ class CallerPusherJob
         'class' => CallerPusherJob,
         'args'  => [caller_session_id, event]
       })
-      source = "ac-#{caller_session.campaign.account_id}.ca-#{caller_session.campaign.id}.cs-#{caller_session.id}"
       name   = "#{event}.dial_queue.available.redis_transaction_aborted"
       ImpactPlatform::Metrics.count(name, 1, source)
     end
