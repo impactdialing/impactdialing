@@ -14,8 +14,16 @@ module Householding
         # households = campaign.households.where(id: (lower_household_id..upper_household_id))
         campaign.households.where(id: (lower_household_id..upper_household_id)).each do |household|
           Household.reset_counters(household.id, :voters)
-          if household.voters.count.zero? and household.call_attempts.count.zero?
-            household.destroy
+          if household.voters.count.zero?
+            if campaign.dial_queue.exists?
+              # remove it from the cache
+              campaign.dial_queue.remove_household(household.phone)
+            end
+
+            if household.call_attempts.count.zero?
+              # remove it from the rdb
+              household.destroy
+            end
           end
         end
       end
