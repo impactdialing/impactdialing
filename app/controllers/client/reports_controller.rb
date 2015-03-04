@@ -26,8 +26,8 @@ module Client
     end
 
     def campaigns_and_callers_exist?
-      campaign_flag = account.campaigns.empty?
-      caller_flag   = account.callers.empty?
+      campaign_flag = Campaign.where(account_id: account.id).count.zero?
+      caller_flag   = Caller.where(account_id: account.id).count.zero?
       if campaign_flag or caller_flag
         notice = 'Please create at least one campaign and one caller before loading reports. '
         notice << 'Missing: '
