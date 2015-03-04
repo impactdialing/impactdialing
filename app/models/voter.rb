@@ -395,8 +395,8 @@ public
 
   def dispositioned(call_attempt)
     dial_queue             = CallFlow::DialQueue.new(campaign)
-    self.status            = call_attempt.status
-    self.caller_id         = call_attempt.caller_id
+    self.status            = CallAttempt::Status::SUCCESS
+    self.caller_id         = call_attempt.caller_id || caller_session.try(:caller).try(:id)
     self.caller_session_id = nil
     if do_not_call_back?
       dial_queue.remove(self)

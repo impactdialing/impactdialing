@@ -87,8 +87,14 @@ describe Voter, :type => :model do
   end
 
   describe '#dispositioned(call_attempt)' do
+    let(:caller) do
+      create(:caller)
+    end
+    let(:caller_session) do
+      create(:webui_caller_session, campaign: caller.campaign, caller: caller)
+    end
     let(:voter) do
-      create(:voter, caller_session_id: 42)
+      create(:voter, caller_session: caller_session, campaign: caller.campaign)
     end
     let(:call_attempt) do
       create(:call_attempt, {
@@ -98,14 +104,21 @@ describe Voter, :type => :model do
       })
     end
 
-    it 'sets status to call_attempt.status' do
+    it 'sets status to CallAttempt::Status::SUCCESS' do
+      call_attempt.status = nil
       voter.dispositioned(call_attempt)
-      expect(voter.status).to eq call_attempt.status
+      expect(voter.status).to eq CallAttempt::Status::SUCCESS
     end
 
-    it 'sets caller_id to call_attempt.caller_id' do
+    it 'tries to set caller_id to call_attempt.caller_id' do
       voter.dispositioned(call_attempt)
       expect(voter.caller_id).to eq call_attempt.caller_id
+    end
+
+    it 'falls back to set caller_id to Voter#caller_session.caller.id' do
+      call_attempt.caller_id = nil
+      voter.dispositioned(call_attempt)
+      expect(voter.caller_id).to eq caller_session.caller.id
     end
 
     it 'unsets caller_session_id' do
