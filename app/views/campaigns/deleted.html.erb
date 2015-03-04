@@ -11,7 +11,7 @@
     </tr>
     <% @campaigns.each_with_index do |c, index| %>
       <tr>
-        <td><strong><%= link_to c.name, edit_client_campaign_path(c) %></strong></td>
+        <td><strong><%= c.name %></strong></td>
         <td>
           <% options = [
             ['Usage', usage_client_reports_path(:campaign_id => c.id)],

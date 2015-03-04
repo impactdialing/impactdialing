@@ -12,7 +12,7 @@
     </tr>
     <% @scripts.each do |c| %>
       <tr>
-        <td><strong><%= link_to c.name, edit_client_script_path(c) %></strong></td>
+        <td><strong><%= c.name %></strong></td>
         <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
         <td><%= link_to 'Restore', client_script_restore_path(c), :method => :put %></td>
       </tr>
