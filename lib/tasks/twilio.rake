@@ -1,19 +1,17 @@
 namespace :calls do
-  desc "List Twilio Calls to a given number."
-  task :list_to, [:to, :start_time, :end_time] => [:environment] do |t, args|
-    def p(c)
-      print "#{c}\n"
-    end
-    require 'twilio-ruby'
-    # Get your Account Sid and Auth Token from twilio.com/user/account
-    numbers     = args[:to].split(':')
-    start_time  = args[:start_time]
-    end_time    = args[:end_time]
-    account_sid = 'AC422d17e57a30598f8120ee67feae29cd'
+  require 'twilio-ruby'
+
+  def account_sid
+    'AC422d17e57a30598f8120ee67feae29cd'
+  end
+
+  def twilio_client
     auth_token  = '897298ab9f34357f651895a7011e1631'
-    client      = Twilio::REST::Client.new account_sid, auth_token
-    call_list   = client.accounts.get(account_sid).calls
-    call_attrs  = [
+    @client      ||= Twilio::REST::Client.new account_sid, auth_token
+  end
+
+  def call_attrs
+    [
       :sid,
       :date_created,
       :to,
@@ -22,7 +20,10 @@ namespace :calls do
       :duration,
       :answered_by
     ]
-    results = {
+  end
+
+  def results
+    {
       'completed'   => [],
       'queued'      => [],
       'ringing'     => [],
@@ -32,29 +33,40 @@ namespace :calls do
       'busy'        => [],
       'no-answer'   => []
     }
+  end
 
-    l = 0
-    results.keys.each{|k| l = k.size > l ? k.size : l}
-
-    numbers.each do |to|
-      print "+1#{to}\n"
-      results.keys.each do |status|
-        opts = {to: to, status: status}
+  desc "List Twilio Calls to a given number."
+  task :list, [:numbers, :direction, :start_time, :end_time] => [:environment] do |t, args|
+    numbers     = args[:numbers].split(':')
+    direction   = args[:direction]
+    start_time  = args[:start_time]
+    end_time    = args[:end_time]
+    call_list   = twilio_client.accounts.get(account_sid).calls
+    report = []
+    numbers.each do |number|
+        #results.keys.each do |status|
+        #opts = {direction => number, 'status' => status}
+        opts = {direction => number}
         opts.merge!({'start_time>' => start_time}) if start_time.present?
         opts.merge!({'end_time<' => end_time}) if end_time.present?
-        results[status] = call_list.list(opts)
-      end
-
-      results.each do |status, calls|
-        print "\t#{status}:".ljust(l + 1) + " #{calls.total}\n"
-        calls.each do |call|
-          print "\t\t#{call.sid}\n"
-          print "\t\t\t#{call.start_time} - #{call.end_time}\n"
-          print "\t\t\t#{call.duration} - $#{call.price}\n"
+        #results[status] = call_list.list(opts)
+        #print "Found #{results[status].size} calls, from #{opts}\n"
+      #end
+      #results.each do |status, calls|
+        call_list.list(opts).each do |call|
+          summary = []
+          summary << number
+          summary << call.status
+          summary << call.sid
+          summary << call.start_time
+          summary << call.end_time
+          summary << call.duration
+          summary << call.price
+          report << summary
         end
-      end
-      print "==================================================\n"
+      #end
     end
-    print "\n"
+    print "Number,Status,Calls,SID,Start time,End time,Duration,Price\n"
+    print report.map{|row| row.join(',')}.join("\n") + "\n"
   end
 end
