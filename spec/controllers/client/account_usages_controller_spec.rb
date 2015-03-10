@@ -12,10 +12,10 @@ describe Client::AccountUsagesController, :type => :controller do
   let(:from_date){ '09/09/2013' }
   let(:to_date){ '01/24/2014' }
   let(:db_from_date) do
-    Time.new('2013','09','09').in_time_zone(account.time_zone).beginning_of_day.utc
+    Time.new('2013','09','09',0,0,0,account.time_zone.now.formatted_offset).beginning_of_day.utc
   end
   let(:db_to_date) do
-    Time.new('2014','01','24').in_time_zone(account.time_zone).end_of_day.utc
+    Time.new('2014','01','24',0,0,0,account.time_zone.now.formatted_offset).end_of_day.utc
   end
   let(:report_type){ 'campaigns' }
   let(:valid_params) do

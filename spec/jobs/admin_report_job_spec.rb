@@ -20,9 +20,9 @@ describe AdminReportJob do
 
   it 'instantiates a Reports::BillableMinutes obj with start & end dates' do
     month, day, year = from_date.split('/')
-    expected_from    = Time.new(year, month, day, 12, 0, 0, time_zone.formatted_offset).beginning_of_day.utc
+    expected_from    = Time.new(year, month, day, 12, 0, 0, time_zone.now.formatted_offset).beginning_of_day.utc
     month, day, year = to_date.split('/')
-    expected_to      = Time.new(year, month, day, 12, 0, 0, time_zone.formatted_offset).end_of_day.utc
+    expected_to      = Time.new(year, month, day, 12, 0, 0, time_zone.now.formatted_offset).end_of_day.utc
 
     expect(Reports::BillableMinutes).to receive(:new).
       with(expected_from, expected_to).

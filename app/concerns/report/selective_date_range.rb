@@ -16,10 +16,12 @@ private
 
       month, day, year = datetime.split('/')
       if month and day and year
-        datetime = Time.new(year, month, day, 12, 0, 0, @time_zone.formatted_offset)
+        datetime = Time.new(year, month, day, 12, 0, 0, time_zone.now.formatted_offset)
       end
+    else
+      datetime = datetime.in_time_zone(time_zone)
     end
-    datetime.in_time_zone(@time_zone)
+    datetime
   end
 
 public
@@ -34,7 +36,7 @@ public
   end
 
   def to_before_normalize
-    to_pool.compact.first || Time.now
+    to_pool.compact.first || @time_zone.now
   end
 
   def from

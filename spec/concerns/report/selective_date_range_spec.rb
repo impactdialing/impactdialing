@@ -20,7 +20,7 @@ describe Report::SelectiveDateRange do
 
     it 'parses any String elements (e.g. mm/dd/yy) to Date objects' do
       from_pool[0]  = '02/17/1982'
-      expected_from = Time.new(1982, 2, 17, 0, 0, 0).in_time_zone(default_time_zone)
+      expected_from = Time.new(1982, 2, 17, 0, 0, 0, default_time_zone.now.formatted_offset)
       date_range    = Report::SelectiveDateRange.new(from_pool)
 
       expect(date_range.from).to eq expected_from
