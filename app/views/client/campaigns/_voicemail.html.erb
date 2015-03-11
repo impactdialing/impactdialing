@@ -48,7 +48,7 @@
           <%= form.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();",name: 'campaign[recording_id]', id: "campaign_recording_id"}) %>
         </p>
 
-        <div id="sndPreview"></div>
+        <div id="sndPreview" style="vertical-align: middle;"></div>
 
         <%= render partial: 'javascript' %>
       </div>
