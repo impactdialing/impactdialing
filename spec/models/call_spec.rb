@@ -115,7 +115,7 @@ describe Call, :type => :model do
           twiml = [
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
             "<Response><Play>",
-            "http://s3.amazonaws.com/impactdialing_production/test/uploads/unknown/#{recording.id}.mp3",
+            "https://s3.amazonaws.com/impactdialing_production/test/uploads/unknown/#{recording.id}.mp3",
             "</Play><Hangup/></Response>"
           ]
 
