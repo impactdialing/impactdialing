@@ -188,10 +188,12 @@ FactoryGirl.define do
   end
 
   factory :custom_voter_field do
-    name 'name'
+    name { generate(:name) }
   end
 
   factory :custom_voter_field_value do
+    custom_voter_field
+    value { generate(:name) }
   end
 
   factory :blocked_number do

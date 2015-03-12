@@ -43,7 +43,7 @@ module Client
 
     def update
       if params[:save_as]
-        @script = @script.dup include: [:transfers, :notes, :script_texts, questions: :possible_responses], except: :name
+        @script = @script.deep_clone include: [:transfers, :notes, :script_texts, questions: :possible_responses], except: :name
         load_voter_fields
         render 'new'
       else

@@ -27,7 +27,7 @@ gem 'activerecord-import'
 gem 'ar-octopus'
 gem 'bitmask_attributes'
 gem 'will_paginate', '~> 3.0.4'
-gem 'deep_cloneable', '~> 1.5.3'
+gem 'deep_cloneable'
 
 # Assets
 gem 'slim', '~>2.0.0'

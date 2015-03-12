@@ -1,3 +1,8 @@
+##
+# Notes are not the notes themselves but a script-specific category
+# of note. Callers will be presented with a text field that will
+# be labeled with Note#note.
+#@
 class Note < ActiveRecord::Base
   attr_accessible :note, :script_id, :script_order, :note_id, :script
 

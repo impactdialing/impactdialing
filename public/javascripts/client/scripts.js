@@ -41,9 +41,6 @@ var Scripts = function(){
       self.add_new_response_when_question_added();
 
   });
-
-
-
 }
 
 Scripts.prototype.set_elements_order = function(){
@@ -53,7 +50,6 @@ Scripts.prototype.set_elements_order = function(){
   });
 }
 
-
 Scripts.prototype.display_question_numbers = function(){
   var question_count = 1;
   $.each($('.question_label'), function(){
@@ -61,7 +57,6 @@ Scripts.prototype.display_question_numbers = function(){
       $(this).text("Question "+question_count++);
     }
   });
-
 }
 
 Scripts.prototype.display_script_text_numbers = function(){
@@ -71,7 +66,6 @@ Scripts.prototype.display_script_text_numbers = function(){
       $(this).text("Script text "+script_text_count++);
     }
   });
-
 }
 
 Scripts.prototype.set_possible_response_order = function(){
@@ -83,10 +77,7 @@ Scripts.prototype.set_possible_response_order = function(){
     $(this).val(possible_response_order++);
   });
   });
-
 }
-
-
 
 Scripts.prototype.mark_answered = function(){
   question_ids = new Array();
@@ -95,7 +86,6 @@ Scripts.prototype.mark_answered = function(){
   })
   questions_answered();
   possible_response_answered(question_ids);
-
 }
 
 Scripts.prototype.display_text_field_numbers = function(){

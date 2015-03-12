@@ -1,23 +1,23 @@
 <table class="nested-fields possible_response">
-  <%= f.hidden_field :id, {"class"=> "possible_response_identity"} %>
-  <%= f.hidden_field :possible_response_order, {"class"=> "possible_response_order"} %>
+  <%= f.hidden_field :id, {class: "possible_response_identity"} %>
+  <%= f.hidden_field :possible_response_order, {class: "possible_response_order"} %>
   <tr class="ui-icon ui-icon-arrowthick-2-n-s" style="top: 30px;left: -11px;position: relative;"></tr>
-  <tr>
+  <tr class="js-script-possible-response">
     <% if request.domain == 'pdidialer.com' %>
-      <td width = 10%>
+      <td style="width: 10%;">
         <%= f.text_field :external_id_field %>
       </td>
     <% end %>
-    <td width = 30%>
+    <td class="js-script-possible-response-value" style="width: 30%;">
       <%= f.text_field :value %>
     </td>
-    <td width = 30%>
+    <td style="width: 30%;">
       <%= f.text_field :keypad, :class =>"keypad" %>
     </td>
-    <td width = 10%>
+    <td style="width: 10%;">
       <%= f.check_box :retry %>
     </td>
-    <td width = 10%>
+    <td style="width: 10%;">
       <%= link_to_remove_association "", f , {:class => "ico del", "data-removal-validation"=>"possible_response_delete"}%>
     </td>
   </tr>

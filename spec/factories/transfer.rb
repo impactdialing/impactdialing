@@ -8,4 +8,12 @@ FactoryGirl.define do
     phone_number   { Forgery(:address).phone }
     transfer_type  { generate(:transfer_type) }
   end
+
+  trait :warm do
+    transfer_type 'warm'
+  end
+
+  trait :cold do
+    transfer_type 'cold'
+  end
 end
