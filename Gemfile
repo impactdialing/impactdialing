@@ -3,7 +3,8 @@ source 'https://rubygems.org'
 ruby '2.0.0'
 
 gem 'rails', '~> 4.0.0'
-gem 'jquery-rails', '~> 3.0.4'
+gem 'jquery-rails'
+gem 'jquery-ui-rails'
 
 # tmp backward compat helpers
 gem 'protected_attributes'
@@ -59,7 +60,7 @@ gem 'em-http-request', '~> 1.1.0'
 gem 'em-synchrony', '~> 1.0.3'
 
 # Files
-gem 'paperclip', '~> 3.5.0'
+gem 'paperclip'
 gem 'rubyzip'
 
 # Forms
@@ -83,7 +84,7 @@ gem 'acts_as_reportable'
 gem 'redcarpet'
 
 # Provider clients
-gem 'aws-sdk'
+gem 'aws-sdk', '~> 1.6'
 gem 'platform-api'
 gem 'pusher', '~> 0.11.3'
 gem 'stripe', '~>1.8.4'
@@ -148,5 +149,5 @@ group :test, :e2e do
   gem 'timecop'
   gem 'webmock'
   gem 'vcr'
-  gem 'capybara-webkit'
+  gem 'selenium-webdriver'
 end

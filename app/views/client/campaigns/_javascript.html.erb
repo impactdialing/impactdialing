@@ -1,23 +1,30 @@
-<script>
-    <% if !@campaign.account.recordings.blank? %>
-    function updatePreview() {
+<% if !@campaign.account.recordings.blank? %>
+  <%= content_for :javascripts do %>
+    <script type="text/javascript">
+      function updatePreview() {
+        console.log('updatePreview called');
         path = '';
         recording_id = $("#campaign_recording_id").val();
-    <%@account.recordings.each do |recording| %>
-        if (recording_id ==<%= recording.id %>) {
+        <% @account.recordings.each do |recording| %>
+          if( recording_id == <%= recording.id %> ) {
             path = '<%= recording.file.url %>';
             name = '<%= escape_javascript recording.name %>';
-        }
-    <% end %>
-
+          }
+        <% end %>
+    
         var o = '<p>Previewing <b>' + name + '</b></p>';
-
-        if (path.indexOf('mp3') > -1)
-            o = o + '<object type="application/x-shockwave-flash" width="200" height="14" data="/xspf_player_slim.swf?player_title=' + name + '&song_title=' + name + '&song_url=' + escape(path) + '"><param name="movie" value="/xspf_player_slim.swf?player_title=' + name + '&song_title=' + name + '&song_url=' + escape(path) + '" /></object>';
-        else
-            o = o + '<embed height="74" pluginspace="http://www.apple.com/quicktime/" src="' + path + '"></embed>';
+    
+        if( path.indexOf('mp3') > -1 ) {
+          o = o + '<object type="application/x-shockwave-flash" width="200" height="14"   data="/xspf_player_slim.swf?player_title=' + name + '&song_title=' + name + '  &song_url=' +   escape(path) + '"><param name="movie" value="/xspf_player_slim.  swf?player_title=' +   name + '&song_title=' + name + '&song_url=' + escape(path)   + '" /></object>';
+        } else {
+          o = o + '<embed height="74" pluginspace="http://www.apple.com/quicktime/" src="' +   path   + '"></embed>';
+        }
         $('#sndPreview').html(o);
-    }
-    <% end %>
-    updatePreview();
-</script>
+      }
+
+      $(function() {
+        updatePreview();
+      });
+    </script>
+  <% end %>
+<% end %>

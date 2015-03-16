@@ -29,20 +29,13 @@
 
 
 <%= render :partial => "layouts/errorception" %>
-<% if logged_in_as_client? and not Rails.env.test? and not Rails.env.development? %>
+<% if logged_in_as_client? and not Rails.env.test? and not Rails.env.development? and not Rails.env.e2e? %>
   <%= render :partial => "layouts/olark" %>
 <% end %>
-
-<%= javascript_include_tag 'application' %>
-<%= javascript_include_tag 'intro.min' %>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
 
 <%= yield :stylesheets %>
 <%= stylesheet_link_tag "application", "caller", "jquery-ui-1.8.14.custom", 'intro.min' %>
 <%= csrf_meta_tag %>
-<%= yield :jquery_extension_javascripts %>
-<%= yield :javascripts %>
 <%= yield :meta %>
 
 <!-- JavaScript at bottom except for Modernizr -->

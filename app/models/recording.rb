@@ -1,9 +1,10 @@
 require "paperclip"
 
 class Recording < ActiveRecord::Base
-  validates_presence_of :file_file_name, :message => "File can't be blank"
+  attr_accessible :file_file_name, :name, :file
+
   validates_presence_of :name
-  validate :validate_file_name
+
   belongs_to :account
   has_many :campaigns
 
@@ -12,19 +13,19 @@ class Recording < ActiveRecord::Base
   has_attached_file :file,
                     :storage => :s3,
                     :s3_credentials => Rails.root.join('config', 'amazon_s3.yml').to_s,
-                    :s3_protocol => 'https',
-                    :path => "/#{Settings.recording_env}/uploads/:account_id/:id.:extension"
+                    :s3_protocol => 'https', # force https
+                    :path => "/#{Settings.recording_env}/uploads/:account_id/:id.:extension",
+                    :default_url => '' # avoid generating default urls
 
-  def validate_file_name
-    if file_file_name.blank?
-      errors.add(:file, "can't be blank")
-    else
-      extension = file_file_name.split(".").last
-      if !['wav', 'mp3', 'aif', 'aiff', ].include?(extension)
-        errors.add(:base, "Filetype #{extension} is not supported.  Please upload a file ending in .mp3, .wav, or .aiff")
-      end
-    end
-  end
+  validates_attachment_content_type(:file, {
+    content_type: [
+      'audio/wav', 'audio/x-wav', 'audio/vnd.wave',
+      'audio/mpeg3', 'audio/x-mpeg-3', 'audio/mpeg',
+      'audio/aiff', 'audio/x-aiff'
+    ],
+    message: 'Please upload an audio file encoded with one of WAV, MP3, or AIF.'
+  })
+  validates_attachment_presence :file
 end
 
 # ## Schema Information

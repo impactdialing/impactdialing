@@ -142,21 +142,18 @@ class ClientController < ApplicationController
   def recording_add
     if request.post?
       @recording = @account.recordings.new(params[:recording])
-      if params[:recording][:file].blank?
-        flash_now(:error, "You must choose a recording to upload.")
-        return
-      end
-      if params[:recording][:name].blank?
-        flash_now(:error, "You must enter a name for the voicemail.")
-        return
-      end
-      @recording.save!
-      campaign = Campaign.find(params[:campaign_id])
-      campaign.update_attribute(:recording, @recording)
+      if @recording.save
+        campaign = Campaign.find(params[:campaign_id])
+        campaign.update_attribute(:recording, @recording)
 
-      flash_message(:notice, "Vociemail added.")
-      redirect_to client_campaign_path(params[:campaign_id])
-      return
+        flash_message(:notice, "Voicemail added.")
+        redirect_to edit_client_campaign_path(params[:campaign_id])
+        return
+      else
+        flash_message(:error, @recording.errors.full_messages.first)
+        render :recording_add
+        return
+      end
     else
       @recording = @account.recordings.new
     end

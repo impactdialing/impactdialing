@@ -1,4 +1,4 @@
-if Rails.env == 'test'
+if Rails.env.test? or Rails.env.e2e?
   class Net::HTTP
     alias_method :old_initialize, :initialize
     def initialize(*args)

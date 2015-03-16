@@ -128,7 +128,7 @@ describe VoterListsController, :type => :controller do
       end
 
       context 'uploading voter lists that are not CSV or TSV format' do
-        let(:file_upload){ '/files/voter_list.xsl' }
+        let(:file_upload){ '/files/valid_voters_list.xlsx' }
         let(:csv_upload) do
           {
             'datafile' => fixture_file_upload(file_upload)

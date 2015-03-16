@@ -293,9 +293,10 @@ ImpactDialing::Application.routes.draw do
     post 'change_role', :to => 'users#change_role', :as => 'change_role'
   end
 
+  get 'client', :to => 'client#index', :as => 'client_root'
   scope 'client' do
-    get 'index', :to => 'client#index', :as => 'client_root'
-
+    get 'recording_add', :to => 'client#recording_add'
+    post 'recording_add', :to => 'client#recording_add'
     resources :campaigns do
       resources :voter_lists do
         member do

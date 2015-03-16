@@ -19,13 +19,14 @@ require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
 require 'webmock/rspec'
 require 'impact_platform'
+require 'paperclip/matchers'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
 Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
 Dir[Rails.root.join("spec/shared/**/*.rb")].each {|f| require f}
 
-Capybara.javascript_driver = :webkit
+Capybara.javascript_driver = :selenium
 
 VCR.configure do |c|
   # c.debug_logger = File.open(Rails.root.join('log', 'vcr-debug.log'), 'w')
@@ -43,6 +44,7 @@ RSpec.configure do |config|
   config.include FactoryGirl::Syntax::Methods
   config.include TwilioRequestStubs
   config.include FactoryGirlImportHelpers
+  config.include Paperclip::Shoulda::Matchers
 
   config.mock_with :rspec
 
@@ -50,7 +52,6 @@ RSpec.configure do |config|
     WebMock.allow_net_connect!
 
     if ENV['RAILS_ENV'] == 'e2e'
-      Capybara.javascript_driver = :webkit
       DatabaseCleaner.strategy = :truncation
     else
       DatabaseCleaner.strategy = :transaction

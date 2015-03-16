@@ -7,7 +7,7 @@ module Client
       user = User.authenticate(params[:email], params[:password])
       if user
         session[:user] = user.id
-        redirect_to '/client/index'
+        redirect_to client_root_path
       else
         flash_now(:error, "The email or password you entered was incorrect. Please try again.")
         render 'client/sessions/new'
