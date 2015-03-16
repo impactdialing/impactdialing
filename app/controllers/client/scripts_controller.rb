@@ -90,7 +90,11 @@ module Client
   private
     def load_and_verify_script
       begin
-        @script = Script.find(params[:id] || params[:script_id])
+        @script = Script
+        if params[:action] =~ /(update|edit)/
+          @script = @script.includes(:notes, :script_texts, questions: :possible_responses)
+        end
+        @script = @script.find(params[:id] || params[:script_id])
       rescue ActiveRecord::RecordNotFound => e
         render :json=> {"message"=>"Resource not found"}, :status => :not_found
         return
