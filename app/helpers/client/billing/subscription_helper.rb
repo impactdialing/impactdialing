@@ -36,9 +36,11 @@ module Client::Billing::SubscriptionHelper
         action: 'cancel'
       }
       button << {
-        method: 'put',
+        method: 'patch',
         class: 'action secondary',
-        confirm: 'Are you sure you want to cancel your subscription?'
+        data: {
+          confirm: 'Are you sure you want to cancel your subscription?'
+        }
       }
     end
     return button

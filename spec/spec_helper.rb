@@ -12,7 +12,6 @@ ENV['VOIP_API_URL'] ||= 'test.com'
 ENV['TWILIO_CALLBACK_PORT'] ||= '80'
 ENV['RECORDING_ENV'] = 'test'
 ENV['CALLIN_PHONE'] ||= '5555551234'
-ENV['DIAL_QUEUE_AVAILABLE_LIMIT'] ||= '10'
 
 # require 'rubygems'
 require File.expand_path("../../config/environment", __FILE__)
@@ -24,7 +23,6 @@ require 'paperclip/matchers'
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
 Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
-Dir[Rails.root.join("spec/shared/**/*.rb")].each {|f| require f}
 
 Capybara.javascript_driver = :selenium
 

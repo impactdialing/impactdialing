@@ -204,18 +204,7 @@ ImpactDialing::Application.routes.draw do
         get :cancel
       end
     end
-    # resources :subscriptions do
-    #   member do
-    #     put :update_callers
-    #     put :cancel
-    #     get :add_funds
-    #     put :add_to_balance
-    #     get :configure_auto_recharge
-    #     put :auto_recharge
-    #     get :update_billing
-    #     put :update_billing_info
-    #   end
-    # end
+
     resources :scripts do
       collection do
         get :questions_answered
