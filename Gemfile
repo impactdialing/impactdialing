@@ -13,7 +13,6 @@ gem 'protected_attributes'
 gem 'sinatra', '~>1.4.3'
 gem 'json', '~> 1.7.7'
 gem 'nokogiri', '~> 1.6.0'
-gem 'sprockets'
 
 gem 'unicorn'
 
@@ -31,7 +30,7 @@ gem 'will_paginate'
 gem 'deep_cloneable'
 
 # Assets
-gem 'slim', '~>2.0.0'
+# gem 'slim', '~>2.0.0'
 
 # Auth/z
 gem 'cancan', '~>1.6.10'
@@ -131,9 +130,6 @@ group :development, :test, :e2e do
   gem 'pry'
   gem 'pry-debugger'
   gem 'compass'
-  # cli tool to reload app when files change, whether background, web, initializer, etc
-  # usage e.g. rerun foreman start
-  gem 'rerun'
 end
 
 group :test, :e2e do
