@@ -176,11 +176,11 @@ describe Client::CampaignsController, :type => :controller do
 
     end
 
-    describe "deleted" do
-      it "should show deleted campaigns" do
+    describe "archived" do
+      it "should show archived campaigns" do
         manual_campaign = create(:preview, :account => account, :active => true)
         inactive_campaign = create(:power, :account => account, :active => false)
-        get :deleted, :api_key=> account.api_key, :format => "json"
+        get :archived, :api_key=> account.api_key, :format => "json"
         expect(JSON.parse(response.body).length).to eq(1)
       end
     end

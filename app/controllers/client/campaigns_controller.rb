@@ -1,6 +1,6 @@
 module Client
   class CampaignsController < ClientController
-    before_filter :load_and_verify_campaign, :except => [:index, :new, :create, :deleted]
+    before_filter :load_and_verify_campaign, :except => [:index, :new, :create, :archived]
     respond_to :html, :json
 
 
@@ -56,22 +56,26 @@ module Client
       end
     end
 
-    def deleted
+    def archived
       @campaigns = Campaign.deleted.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc')
       @download_report_count = DownloadedReport.accounts_active_report_count(@campaigns.collect{|c| c.id}, session[:internal_admin])
       respond_with @campaigns do |format|
-        format.html { render 'campaigns/deleted' }
+        format.html { render 'campaigns/archived' }
         format.json { render :json => @campaigns.to_json }
       end
     end
 
     def restore
       @campaign.active = true
-      save_campaign
-      respond_with @campaign,  location: client_campaigns_url do |format|
-        format.json { render :json => {message: "Campaign restored" }, :status => :ok } if @campaign.errors.empty?
+      if @campaign.save
+        flash_message(:notice, 'Campaign restored')
+      else
+        flash_message(:error, @campaign.errors.full_messages.join('; '))
       end
 
+      respond_with @campaign, location: client_campaigns_url do |format|
+        format.json { render :json => {message: "Campaign restored" }, :status => :ok } if @campaign.errors.empty?
+      end
     end
 
     def can_change_script

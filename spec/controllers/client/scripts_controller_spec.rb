@@ -87,7 +87,6 @@ describe Client::ScriptsController, :type => :controller do
         delete :destroy, :id=> active_script.id, :api_key=> account.api_key, :format => "json"
         expect(response.body).to eq("{\"errors\":{\"base\":[\"This script cannot be archived, as it is currently assigned to an active campaign.\"]}}")
       end
-
     end
 
     describe "create" do
@@ -104,7 +103,6 @@ describe Client::ScriptsController, :type => :controller do
           }.to change {account.reload.scripts.size} .by(0)
           expect(response.body).to eq("{\"errors\":{\"name\":[\"can't be blank\"]}}")
       end
-
     end
 
     describe "update" do
@@ -123,21 +121,17 @@ describe Client::ScriptsController, :type => :controller do
         }.to change {account.reload.scripts.size} .by(0)
         expect(response.body).to  eq("{\"errors\":{\"name\":[\"can't be blank\"]}}")
       end
-
-
     end
 
-    describe "deleted" do
-
-      it "should show deleted scripts" do
+    describe "archived" do
+      it "should show archived scripts" do
         active_script = create(:script, :account => account, :active => false)
-        get :deleted, :api_key=> account.api_key, :format => "json"
+        get :archived, :api_key=> account.api_key, :format => "json"
         expect(JSON.parse(response.body).length).to eq(1)
       end
     end
 
     describe "restore" do
-
       it "should restore inactive campaign" do
         in_active_active_script = create(:script, :account => account, :active => false)
         put :restore, id: in_active_active_script.id, :api_key=> account.api_key, :format => "json"
@@ -165,10 +159,5 @@ describe Client::ScriptsController, :type => :controller do
         expect(response.body).to eq("{\"data\":{}}")
       end
     end
-
-
-
-
   end
-
 end

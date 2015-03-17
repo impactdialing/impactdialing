@@ -1,3 +1,5 @@
+require 'librato_resque'
+
 module Archival::Jobs
   class CampaignRestored
     extend LibratoResque

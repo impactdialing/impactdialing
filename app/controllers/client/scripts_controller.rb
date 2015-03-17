@@ -87,7 +87,7 @@ module Client
         flash_message(:error, @script.errors.full_messages.join('; '))
       end
 
-      respond_with @script,  location: client_scripts_path do |format|
+      respond_with @script, location: client_scripts_path do |format|
         format.json { render :json => {message: "Script restored" }, :status => :ok } if @script.errors.empty?
       end
     end
