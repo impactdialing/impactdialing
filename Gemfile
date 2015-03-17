@@ -9,8 +9,11 @@ gem 'jquery-ui-rails'
 # tmp backward compat helpers
 gem 'protected_attributes'
 
+# resque/sidekiq -web
+gem 'sinatra'
+gem 'slim'
+
 # ???
-gem 'sinatra', '~>1.4.3'
 gem 'json', '~> 1.7.7'
 gem 'nokogiri', '~> 1.6.0'
 
@@ -44,7 +47,7 @@ gem 'sidekiq', '~> 2.13.0'
 gem 'sidekiq-failures', '~> 0.2.1'
 
 # Databases
-gem 'mysql2' #, '~> 0.3.13'
+gem 'mysql2'
 gem 'redis', '~> 3.0.4'
 gem 'redis-objects', '~>0.7.0',:require => 'redis/objects'
 gem 'hiredis', '~>0.4.5'
