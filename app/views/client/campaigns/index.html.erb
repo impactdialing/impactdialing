@@ -32,7 +32,9 @@
         </td>
         <td><%= link_to '',
                 client_campaign_path(c),
-                :confirm => 'Are you sure you want to archive this campaign?',
+                :data => {
+                  :confirm => 'Are you sure you want to archive this campaign?'
+                },
                 :method => :delete,
                 :class => "ico del" %></td>
       </tr>

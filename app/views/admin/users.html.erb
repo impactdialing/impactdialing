@@ -19,9 +19,10 @@
       <td><%= account.id %></td>
       <td><% account.users.each do |user| %>
             <%= link_to user.email, "/admin/login/#{user.id}" %>
-            <%= link_to '(delete)',
-                    "/admin/destroy_user/#{user.id}",
-                    :confirm => 'Are you sure you want to delete this user?' %>,
+            <%= link_to '(delete)', "/admin/destroy_user/#{user.id}",
+                    data: {
+                      confirm: 'Are you sure you want to delete this user?'
+                    } %>
           <% end %></td>
       <td><%= account.domain_name %> </td>
       <td>

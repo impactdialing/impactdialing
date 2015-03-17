@@ -49,7 +49,9 @@
         <td><%= "PIN: #{c.pin} " if c.is_phones_only %></td>
         <td><%= link_to '',
                 client_caller_path(c),
-                :confirm => 'Are you sure you want to delete this caller?',
+                :data => {
+                  :confirm => 'Are you sure you want to delete this caller?'
+                },
                 :method => :delete,
                 :class => "ico del" %></td>
       </tr>
