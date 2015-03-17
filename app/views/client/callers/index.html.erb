@@ -68,10 +68,10 @@
                                :class => 'action primary',
                                :data => {"intro" => "If you're a political campaign using the phones-only system without the web interface, click here to create a new phones-only caller.",
                                          "step" => "2"} %></p>
-<p class="actions"><%= link_to 'View deleted callers',
-                               client_deleted_callers_path,
+<p class="actions"><%= link_to 'View archived callers',
+                               client_archived_callers_path,
                                :class => 'action secondary',
-                               :data => {"intro" => "Click here to view and restore your deleted callers.",
+                               :data => {"intro" => "Click here to view and restore your archived callers.",
                                          "step" => "5"} %></p>
 <% if can? :manage, CallerGroup %>
   <p class="actions"><%= link_to 'Manage caller groups',

@@ -4,8 +4,8 @@ module Client
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
     skip_before_filter :check_tos_accepted, :only => [:reassign_to_campaign]
     before_filter :full_access, :except => [:reassign_to_campaign, :usage, :call_details]
-    before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
-    before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
+    before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
+    before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
 
     respond_to :html, :json
 
@@ -46,9 +46,9 @@ module Client
 
     def destroy
       @caller.active = false
-      @caller.save ? flash_message(:notice, "Caller deleted") : flash_message(:error, @caller.errors.full_messages.join)
+      @caller.save ? flash_message(:notice, "Caller archived") : flash_message(:error, @caller.errors.full_messages.join)
       respond_with @caller, location: client_callers_path do |format|
-        format.json {render :json => {message: 'Caller deleted'}, :status => :ok} if @caller.errors.empty?
+        format.json {render :json => {message: 'Caller archived'}, :status => :ok} if @caller.errors.empty?
       end
     end
 
@@ -81,18 +81,22 @@ module Client
       @questions_and_responses = @campaign.try(:questions_and_responses) || {}
     end
 
-    def deleted
-      @callers = Caller.deleted.for_account(account).paginate(:page => params[:page], :order => 'id desc')
+    def archived
+      @callers = Caller.archived.for_account(account).paginate(:page => params[:page], :order => 'id desc')
       respond_with @callers do |format|
-        format.html{render 'client/callers/deleted'}
-        format.json {render :json => @callers.to_json}
+        format.html{ render 'client/callers/archived' }
+        format.json{ render :json => @callers.to_json }
       end
     end
 
     def restore
       @caller.active = true
-      save_caller
-      respond_with @caller,  location: client_callers_path do |format|
+      if @caller.save
+        flash_message(:notice, 'Caller restored')
+      else
+        flash_message(:error, @caller.errors.full_messages.join('; '))
+      end
+      respond_with @caller, location: client_callers_path do |format|
         format.json { render :json => {message: "Caller restored" }, :status => :ok } if @caller.errors.empty?
         format.html do
           if @caller.errors.any?

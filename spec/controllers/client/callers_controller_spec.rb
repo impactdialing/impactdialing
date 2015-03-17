@@ -154,10 +154,10 @@ describe Client::CallersController, :type => :controller do
     end
 
     describe 'destroy' do
-      it 'returns JSON saying the caller was deleted' do
+      it 'returns JSON saying the caller was archived' do
         caller = create(:caller, account: account)
         delete :destroy, id: caller.id, api_key: account.api_key, format: 'json'
-        expect(JSON.parse(response.body)).to eq({'message' => 'Caller deleted'})
+        expect(JSON.parse(response.body)).to eq({'message' => 'Caller archived'})
       end
 
       it 'marks the caller as inactive' do
@@ -173,10 +173,10 @@ describe Client::CallersController, :type => :controller do
       end
     end
 
-    describe 'deleted' do
-      it 'should show deleted callers' do
+    describe 'archived' do
+      it 'should show archived callers' do
         caller = create(:caller, account: account, active: false)
-        get :deleted, api_key: account.api_key, format: 'json'
+        get :archived, api_key: account.api_key, format: 'json'
         expect(JSON.parse(response.body).length).to eq 1
       end
     end
