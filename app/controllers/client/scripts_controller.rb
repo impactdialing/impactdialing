@@ -1,6 +1,6 @@
 module Client
   class ScriptsController < ClientController
-    before_filter :load_and_verify_script, :except => [:index, :new, :create, :deleted]
+    before_filter :load_and_verify_script, :except => [:index, :new, :create, :archived]
     before_filter :load_voter_fields, :only => [ :show, :edit]
 
     respond_to :html, :json
@@ -71,11 +71,11 @@ module Client
       render :json => { :data => PossibleResponse.possible_response_count(params[:question_ids]) }
     end
 
-    def deleted
-      @scripts = Script.deleted.for_account(account).paginate(:page => params[:page], :order => 'id desc')
+    def archived
+      @scripts = account.scripts.archived.paginate(:page => params[:page], :order => 'id desc')
       respond_with @scripts do |format|
-        format.html{render 'scripts/deleted'}
-        format.json {render :json => @scripts.to_json}
+        format.html{ render 'scripts/archived' }
+        format.json{ render :json => @scripts.to_json }
       end
     end
 

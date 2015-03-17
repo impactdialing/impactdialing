@@ -5,6 +5,9 @@ module Deletable
     end
 
     def deleted
+      archived
+    end
+    def archived
       where(active: false)
     end
 

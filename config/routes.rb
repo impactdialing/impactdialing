@@ -227,7 +227,7 @@ ImpactDialing::Application.routes.draw do
 
     [:campaigns, :scripts, :callers].each do |type_plural|
       get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
-      get "/archived_#{type_plural}", :to => "#{type_plural}#deleted", :as => "archived_#{type_plural}"
+      get "/archived_#{type_plural}", :to => "#{type_plural}#archived", :as => "archived_#{type_plural}"
       resources type_plural, :only => [:new, :index, :show, :destroy, :create, :update, :edit] do
         member do
           put 'restore', :to => "#{type_plural}#restore"
