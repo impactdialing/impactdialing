@@ -57,9 +57,9 @@ module Client
 
     def destroy
       @script.active = false
-      @script.save ?  flash_message(:notice, "Script deleted") : flash_message(:error, @script.errors.full_messages.join)
+      @script.save ?  flash_message(:notice, "Script archived") : flash_message(:error, @script.errors.full_messages.join)
       respond_with @script,  location: client_scripts_path do |format|
-        format.json { render :json => {message: "Script deleted" }, :status => :ok } if @script.errors.empty?
+        format.json { render :json => {message: "Script archived" }, :status => :ok } if @script.errors.empty?
       end
     end
 
@@ -81,7 +81,12 @@ module Client
 
     def restore
       @script.active = true
-      save_script
+      if @script.save
+        flash_message(:notice, 'Script restored')
+      else
+        flash_message(:error, @script.errors.full_messages.join('; '))
+      end
+
       respond_with @script,  location: client_scripts_path do |format|
         format.json { render :json => {message: "Script restored" }, :status => :ok } if @script.errors.empty?
       end

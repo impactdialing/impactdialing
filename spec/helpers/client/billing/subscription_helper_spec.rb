@@ -67,9 +67,11 @@ describe Client::Billing::SubscriptionHelper, :type => :helper do
           action: 'cancel'
         })
         expect(actual[2]).to eq({
-          method: 'put',
+          method: 'patch',
           class: 'action secondary',
-          confirm: 'Are you sure you want to cancel your subscription?'
+          data: {
+            confirm: 'Are you sure you want to cancel your subscription?'
+          }
         })
       end
     end

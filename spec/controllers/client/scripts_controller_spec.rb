@@ -69,7 +69,7 @@ describe Client::ScriptsController, :type => :controller do
       it "should delete script" do
         active_script = create(:script, :account => account, :active => true)
         delete :destroy, :id=> active_script.id, :api_key=> account.api_key, :format => "json"
-        expect(response.body).to eq("{\"message\":\"Script deleted\"}")
+        expect(response.body).to eq("{\"message\":\"Script archived\"}")
       end
 
       it "should not delete a script from another account" do
@@ -85,7 +85,7 @@ describe Client::ScriptsController, :type => :controller do
         active_script = create(:script, :account => account, :active => true)
         predictive_campaign = create(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now, script: active_script)
         delete :destroy, :id=> active_script.id, :api_key=> account.api_key, :format => "json"
-        expect(response.body).to eq("{\"errors\":{\"base\":[\"This script cannot be deleted, as it is currently assigned to an active campaign.\"]}}")
+        expect(response.body).to eq("{\"errors\":{\"base\":[\"This script cannot be archived, as it is currently assigned to an active campaign.\"]}}")
       end
 
     end

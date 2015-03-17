@@ -231,6 +231,7 @@ ImpactDialing::Application.routes.draw do
       resources type_plural, :only => [:new, :index, :show, :destroy, :create, :update, :edit] do
         member do
           put 'restore', :to => "#{type_plural}#restore"
+          patch 'restore', :to => "#{type_plural}#restore"
         end
       end
     end

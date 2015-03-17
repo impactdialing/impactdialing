@@ -87,7 +87,7 @@ describe Script, :type => :model do
       campaign = create(:campaign, script: script)
       script.active = false
       expect(script.save).to be_falsey
-      expect(script.errors[:base]).to eq([I18n.t(:script_cannot_be_deleted)])
+      expect(script.errors[:base]).to eq([I18n.t(:script_cannot_be_archived)])
     end
 
     it "should delete a script that is not used by any campaign" do

@@ -1,20 +1,20 @@
 <%= csrf_meta_tag %>
 
-<h1>Deleted scripts</h1>
+<h1>Archived scripts</h1>
 <% if @scripts.empty? %>
-  <p>No scripts deleted.</p>
+  <p>No scripts archived.</p>
 <% else %>
   <table>
     <tr>
       <th>Name</th>
-      <th>Date deleted</th>
+      <th>Date archived</th>
       <th width="55" class="ac"></th>
     </tr>
     <% @scripts.each do |c| %>
       <tr>
         <td><strong><%= c.name %></strong></td>
         <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
-        <td><%= link_to 'Restore', client_script_restore_path(c), :method => :put %></td>
+        <td><%= link_to 'Restore', restore_client_script_path(c), :method => :patch %></td>
       </tr>
     <% end %>
   </table>
