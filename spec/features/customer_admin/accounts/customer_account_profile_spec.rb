@@ -409,9 +409,7 @@ describe 'Account profile', type: :feature, admin: true do
         expect(page).to have_content "Minutes left: 2500"
         go_to_billing
         click_on 'Cancel subscription'
-        # should work to handle alerts/confirms on selenium, but not currently
-        # a = page.driver.browser.switch_to.alert
-        # a.accept  # can also be a.dismiss
+        page.driver.browser.switch_to.alert.accept # handle alert for selenium
       end
       it 'displays flash notice when successful' do
         expect(page).to have_content I18n.t('subscriptions.cancelled')
