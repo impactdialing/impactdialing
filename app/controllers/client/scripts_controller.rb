@@ -132,7 +132,17 @@ module Client
       unless params[:script].nil?
         params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
       end
-      flash_message(:notice, "Script saved") if @script.update_attributes(params[:script])
+      flash_message(:notice, "Script saved") if @script.update_attributes(script_params)
+    end
+
+    def script_params
+      params.require(:script).permit(
+        :name, :voter_fields,
+        notes_attributes: [:note, :script_id, :script_order],
+        script_texts_attributes: [:content, :script_id, :script_order],
+        questions_attributes: [:text, :script_id, :script_order],
+        transfers_attributes: [:label, :phone_number, :transfer_type, :script_id]
+      )
     end
   end
 end
