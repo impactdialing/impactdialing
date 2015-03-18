@@ -15,7 +15,8 @@ module Client
     end
 
     def new
-      @caller = account.callers.new(:is_phones_only => params[:is_phones_only])
+      @caller                = account.callers.new
+      @caller.is_phones_only = params[:is_phones_only]
       load_caller_groups
       respond_with @caller
     end
@@ -139,7 +140,11 @@ module Client
     def save_caller
       load_campaigns
       load_caller_groups
-      flash_message(:notice, "Caller saved") if @caller.update_attributes(params[:caller])
+      flash_message(:notice, "Caller saved") if @caller.update_attributes(caller_params)
+    end
+
+    def caller_params
+      params.require(:caller).permit(:name, :username, :campaign_id, :is_phones_only, :caller_group_id)
     end
   end
 end

@@ -3,8 +3,6 @@
 # @available_for_call:: boolean field; returns true when caller can take another call
 #
 class Caller < ActiveRecord::Base
-  attr_accessible :name, :username, :campaign, :campaign_id, :is_phones_only, :caller_group, :caller_group_id
-  
   include Rails.application.routes.url_helpers
   include Deletable
   include SidekiqEvents

@@ -27,8 +27,11 @@ describe Client::CallersController, :type => :controller do
     end
 
     it "should create a phones only caller" do
-      name = "preethi_is_not_evil"
-      post :create, :caller => {:name => name, :is_phones_only => true, :campaign_id => create(:campaign, account: account).id}
+      name     = "preethi_is_not_evil"
+      campaign = create(:campaign, account: account)
+
+      post :create, :caller => {:name => name, :is_phones_only => true, :campaign_id => campaign.id}
+      
       caller = Caller.find_by_name(name)
       expect(caller).not_to be_nil
       expect(caller.is_phones_only).to be_truthy
@@ -111,7 +114,7 @@ describe Client::CallersController, :type => :controller do
       end
 
       it 'return validation errors' do
-        post :create, api_key: account.api_key, format: 'json'
+        post :create, caller: {username: ''}, api_key: account.api_key, format: 'json'
         expect(JSON.parse(response.body)).to eq({
           "errors" => {
             "username"    => ["can't be blank"]
