@@ -2,6 +2,8 @@
 //= require jquery_ujs
 //= require jquery-ui
 //= require cocoon
+//= require helper
+//= require plugins
 
 $(function() {
   $(document).ajaxSend(function(e, xhr, options) {

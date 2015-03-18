@@ -7,11 +7,8 @@ $(document).ready(function(){
 
   $('.user_role').change(function(){
     $(this).parent('form').submit(function() {
-    });  
+    });
     $(this).parent('form').trigger("submit");
     $(this).parent('form').unbind("submit");
-
   });
-
-
 });
