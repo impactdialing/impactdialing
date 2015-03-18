@@ -47,8 +47,7 @@ module Client
       end
     end
 
-    private
-
+  private
     def new_caller_group
       @caller_group = account.caller_groups.new
     end
@@ -72,7 +71,11 @@ module Client
 
     def save_caller_group
       load_campaigns
-      flash_message(:notice, "Caller Group saved") if @caller_group.update_attributes(params[:caller_group])
+      flash_message(:notice, "Caller Group saved") if @caller_group.update_attributes(caller_group_params)
+    end
+
+    def caller_group_params
+      params.require(:caller_group).permit(:name, :campaign_id)
     end
   end
 end
