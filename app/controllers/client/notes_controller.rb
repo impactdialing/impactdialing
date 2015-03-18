@@ -9,9 +9,9 @@ module Client
     end
 
     def create
-      note = @script.notes.new(params[:note])
+      note = @script.notes.new(note_params)
       note.save
-      respond_with note,  location: client_script_notes_path      
+      respond_with note, location: client_script_notes_path      
     end
 
     def show
@@ -19,7 +19,7 @@ module Client
     end
 
     def update
-      @note.update_attributes(params[:note])
+      @note.update_attributes(note_params)
       respond_with @note,  location: client_script_note_path do |format|         
         format.json { render :json => {message: "Note updated" }, :status => :ok } if @note.errors.empty?
       end            
@@ -31,28 +31,30 @@ module Client
     end
   
   private
-  
-  def load_note
-    begin
-      @note = @script.notes.find(params[:id])
-    rescue ActiveRecord::RecordNotFound => e
-      render :json=> {"message"=>"Resource not found"}, :status => :not_found
-      return
+    def load_note
+      begin
+        @note = @script.notes.find(params[:id])
+      rescue ActiveRecord::RecordNotFound => e
+        render :json=> {"message"=>"Resource not found"}, :status => :not_found
+        return
+      end
     end
-  end
-  
-  
-  def load_and_verify_script
-    begin
-      @script = Script.find(params[:script_id])
-    rescue ActiveRecord::RecordNotFound => e
-      render :json=> {"message"=>"Resource not found"}, :status => :not_found
-      return
+    
+    def load_and_verify_script
+      begin
+        @script = Script.find(params[:script_id])
+      rescue ActiveRecord::RecordNotFound => e
+        render :json=> {"message"=>"Resource not found"}, :status => :not_found
+        return
+      end
+      if @script.account != account
+        render :json => {message: 'Cannot access script.'}, :status => :unauthorized
+        return
+      end
     end
-    if @script.account != account
-      render :json => {message: 'Cannot access script.'}, :status => :unauthorized
-      return
+
+    def note_params
+      params.require(:note).permit(:note, :script_id, :script_order)
     end
-  end
  end  
 end
