@@ -8,6 +8,10 @@ private
     end
   end
 
+  def blocked_number_params
+    params.require(:blocked_number).permit(:number, :campaign_id)
+  end
+
 public
   def index
     @blocked_numbers = account.blocked_numbers.includes(:campaign).paginate :page => params[:page], :order => 'id'
@@ -15,7 +19,7 @@ public
   end
 
   def create
-    @blocked_number = account.blocked_numbers.create(params[:blocked_number])
+    @blocked_number = account.blocked_numbers.create(blocked_number_params)
     unless @blocked_number.valid?
       @blocked_number.errors.full_messages.each do |message|
         flash_message(:error, message)

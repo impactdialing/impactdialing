@@ -52,7 +52,7 @@ describe 'Blocked Number management', type: :feature, rack: true do
       number = Array.new(5, '3b').join
       fill_in 'Number', with: number
       click_on 'Add'
-      expect(page).to have_content I18n.t(:not_a_number, scope: i18n_scope)
+      expect(page).to have_content I18n.t(:too_short, scope: i18n_scope) # number is sanitized before validaiton so 10 alphnumeric chars after sanitize will be too short
     end
 
     it 'requires number be unique for associated account when creating account-wide number' do

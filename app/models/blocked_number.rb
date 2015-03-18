@@ -1,5 +1,4 @@
 class BlockedNumber < ActiveRecord::Base
-  attr_accessible :number, :account, :campaign
   belongs_to :account
   belongs_to :campaign
 
@@ -21,7 +20,6 @@ class BlockedNumber < ActiveRecord::Base
 
 private
   def sanitize_phone
-    # todo: use PhoneNumber.sanitize
     return if number.blank?
 
     self.number = PhoneNumber.sanitize(number)
