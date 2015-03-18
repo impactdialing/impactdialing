@@ -18,7 +18,7 @@ class TransferController < ApplicationController
   def disconnect
     logger.debug "DoublePause: Transfer#disconnect - #{params}"
     transfer_attempt = TransferAttempt.find(params[:id])
-    transfer_attempt.update_attributes(:status => CallAttempt::Status::SUCCESS)
+    transfer_attempt.update_attribute(:status, CallAttempt::Status::SUCCESS)
     if transfer_attempt.caller_session.attempt_in_progress != nil && transfer_attempt.caller_session.attempt_in_progress.id == transfer_attempt.call_attempt.id
       transfer_attempt.caller_session.publish('transfer_conference_ended', {})
     end
