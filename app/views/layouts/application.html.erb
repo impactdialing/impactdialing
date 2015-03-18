@@ -63,11 +63,6 @@
     <%= render 'layouts/legal' %>
 
     </footer>
-
-    <%= javascript_include_tag 'application' %>
-    <%= javascript_include_tag 'intro.min' %>
-    <%= yield :jquery_extension_javascripts %>
-    <%= yield :javascripts %>
     
     <% if logged_in_as_client? %>
     <script type="text/javascript">
@@ -93,5 +88,9 @@
       })();
     </script>
     <% end %>
+    
+    <%= javascript_include_tag 'application', 'intro.min' %>
+    <%= yield :jquery_extension_javascripts %>
+    <%= yield :javascripts %>
   </body>
 </html>

@@ -32,9 +32,6 @@ gem 'bitmask_attributes'
 gem 'will_paginate'
 gem 'deep_cloneable'
 
-# Assets
-# gem 'slim', '~>2.0.0'
-
 # Auth/z
 gem 'cancan', '~>1.6.10'
 

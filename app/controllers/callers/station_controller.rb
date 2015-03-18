@@ -1,6 +1,8 @@
 module Callers
   class StationController < ::CallerController
+    layout :caller, except: :show
     layout false, only: :show
+    
     include ActionView::Helpers::NumberHelper
     respond_to :json, :html
 
