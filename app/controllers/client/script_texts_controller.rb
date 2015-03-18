@@ -18,22 +18,21 @@ module Client
     end
     
     def create
-      script_text = @script.script_texts.new(params[:script_text])
+      script_text = @script.script_texts.new(script_text_params)
       script_text.save
       respond_with script_text,  location: client_script_script_texts_path      
     end
 
 
     def update
-      @script_text.update_attributes(params[:script_text])
+      @script_text.update_attributes(script_text_params)
       respond_with @script_text,  location: client_script_script_texts_path do |format|         
         format.json { render :json => {message: "Script Text updated" }, :status => :ok } if @script_text.errors.empty?
       end            
     end
 
     
-    private
-    
+  private
     def load_script_text
       begin
         @script_text = @script.script_texts.find(params[:id])
@@ -42,7 +41,6 @@ module Client
         return
       end
     end
-    
     
     def load_and_verify_script
       begin
@@ -57,6 +55,8 @@ module Client
       end
     end
     
-    
+    def script_text_params
+      params.require(:script_text).permit(:content, :script_id, :script_order)
+    end    
   end
 end
