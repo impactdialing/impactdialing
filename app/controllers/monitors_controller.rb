@@ -31,5 +31,4 @@ class MonitorsController < ClientController
     flash_message(:notice, "Call recording turned #{account.record_calls? ? "on" : "off"}.")
     redirect_to monitors_path
   end
-
 end

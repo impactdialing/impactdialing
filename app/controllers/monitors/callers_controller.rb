@@ -5,6 +5,12 @@ module Monitors
     skip_before_filter :check_tos_accepted, :only => [:kick_off, :start, :switch_mode, :reassignable_campaigns, :reassign_campaign]
     respond_to :json
 
+  private
+    def moderator_params
+      params.permit('CallSid')
+    end
+
+  public
     def index
       authorize! :view_dashboard, @account
       Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
@@ -29,8 +35,9 @@ module Monitors
 
     def start
       caller_session = CallerSession.find(params[:session_id])
-      moderator = Moderator.find(params["monitor_session_id"])
-      moderator.update_attributes(caller_session_id: caller_session.id, call_sid: params['CallSid'])
+      moderator      = Moderator.find(params["monitor_session_id"])
+      moderator.update_attributes(caller_session_id: caller_session.id, call_sid: moderator_params['CallSid'])
+
       if caller_session.attempt_in_progress && (caller_session.attempt_in_progress.status == "Call in progress")
         status_msg = "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.identity_name + "."
       else
@@ -52,7 +59,5 @@ module Monitors
       caller_session = CallerSession.find(params[:caller_session_id])
       caller_sesion.update_attribute(:campaign_id, params[:campaign_id])
     end
-
-
   end
 end
