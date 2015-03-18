@@ -1,8 +1,6 @@
 class Question < ActiveRecord::Base
   include Rails.application.routes.url_helpers
 
-  attr_accessible :text, :script_id, :script_order, :possible_responses_attributes, :external_id_field
-
   validates :text, presence: true
   validates :script, presence: true
   validates :script_order, presence:true, numericality: true

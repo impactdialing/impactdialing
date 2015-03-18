@@ -4,13 +4,12 @@ module Client
     before_filter :load_question, only: [:show, :destroy, :update]
     respond_to :json
     
-    
     def index
       respond_with(@script.questions)
     end
 
     def create
-      question = @script.questions.new(params[:question])
+      question = @script.questions.new(question_params)
       question.save
       respond_with question,  location: client_script_questions_path      
     end
@@ -20,8 +19,8 @@ module Client
     end
 
     def update
-      @question.update_attributes(params[:question])
-      respond_with @question,  location: client_script_questions_path do |format|         
+      @question.update_attributes(question_params)
+      respond_with @question, location: client_script_questions_path do |format|         
         format.json { render :json => {message: "Question updated" }, :status => :ok } if @question.errors.empty?
       end            
     end
@@ -31,7 +30,7 @@ module Client
       render :json => { message: 'Question Deleted', status: :ok}
     end
     
-    private
+  private
     def load_question
       begin
         @question = @script.questions.find(params[:id])
@@ -40,7 +39,6 @@ module Client
         return
       end
     end
-
 
     def load_and_verify_script
       begin
@@ -53,6 +51,10 @@ module Client
         render :json => {message: 'Cannot access script.'}, :status => :unauthorized
         return
       end
+    end
+
+    def question_params
+      params.require(:question).permit(:script_id, :text, :script_order)
     end
   end
 end
