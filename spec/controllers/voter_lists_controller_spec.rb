@@ -5,6 +5,7 @@ describe VoterListsController, :type => :controller do
   describe "API Usage (JSON)" do
     let(:account) { create(:account) }
     before(:each) do
+      Redis.new.flushall
       @user = create(:user, account_id: account.id)
     end
 

@@ -7,6 +7,7 @@ class VoterListsController < ClientController
   respond_to :html
   respond_to :json, :only => [:index, :create, :show, :update, :destroy]
 
+public
   def index
     respond_with(@campaign.voter_lists, :only => [:id, :name, :enabled])
   end
@@ -32,7 +33,7 @@ class VoterListsController < ClientController
   end
 
   def update
-    @voter_list.update_attributes(params[:voter_list])
+    @voter_list.update_attributes(voter_list_params)
     respond_with @voter_list,  location: campaign_voter_lists_path(@campaign) do |format|
       format.json { render :json => {message: "Voter List updated" }, :status => :ok } if @voter_list.errors.empty?
     end
@@ -48,9 +49,10 @@ class VoterListsController < ClientController
     s3path = VoterList.upload_file_to_s3(upload.try('read'), VoterList.csv_file_name(params[:voter_list][:name]))
     params[:voter_list][:s3path] = s3path
     params[:voter_list][:uploaded_file_name] = upload.try('original_filename')
-    voter_list = @campaign.voter_lists.new(params[:voter_list].merge!({account_id: account.id}))
+    params[:voter_list].merge!({account_id: account.id})
+    voter_list = @campaign.voter_lists.new(voter_list_params)
 
-    respond_with(voter_list, location:  edit_client_campaign_path(@campaign.id)) do |format|
+    respond_with(voter_list, location: edit_client_campaign_path(@campaign.id)) do |format|
       if voter_list.save
         Resque.enqueue(VoterListUploadJob, voter_list.id, current_user.email, current_user.domain ,"")
         flash_message(:notice, I18n.t(:voter_list_upload_scheduled))
@@ -85,8 +87,15 @@ class VoterListsController < ClientController
     render layout: false
   end
 
-  private
-
+private
+  def voter_list_params
+    params.require(:voter_list).
+      permit(
+        :name, :s3path, :uploaded_file_name, :account_id,
+        :upload, :campaign_id, :headers, :separator,
+        csv_to_system_map: params[:voter_list][:csv_to_system_map].try(:keys)
+      )
+  end
 
   def load_voter_list
     begin
@@ -96,7 +105,6 @@ class VoterListsController < ClientController
       return
     end
   end
-
 
   def load_and_verify_campaign
     begin
@@ -109,9 +117,7 @@ class VoterListsController < ClientController
       render :json => {message: 'Cannot access campaign.'}, :status => :unauthorized
       return
     end
-
   end
-
 
   def setup_based_on_type
     @campaign_path = client_campaign_path(@campaign)
