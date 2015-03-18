@@ -4,13 +4,12 @@ module Client
     before_filter :load_possible_response, only: [:show, :destroy, :update]
     respond_to :json
 
-
     def index
       respond_with(@question.possible_responses)
     end
 
     def create
-      possible_response = @question.possible_responses.new(params[:possible_response])
+      possible_response = @question.possible_responses.new(possible_response_params)
       possible_response.save
       respond_with possible_response,  location: client_script_question_possible_responses_path            
     end
@@ -20,7 +19,7 @@ module Client
     end
 
     def update
-      @possible_response.update_attributes(params[:possible_response])
+      @possible_response.update_attributes(possible_response_params)
       respond_with @possible_response,  location: client_script_question_possible_responses_path do |format|         
         format.json { render :json => {message: "Possible Response updated" }, :status => :ok } if @possible_response.errors.empty?
       end            
@@ -31,7 +30,7 @@ module Client
       render :json => { message: 'Possible Response Deleted', status: :ok}
     end
     
-    private
+  private
     def load_possible_response
       begin
         @possible_response = @question.possible_responses.find(params[:id])
@@ -55,6 +54,11 @@ module Client
         return
       end
     end
-    
+
+    def possible_response_params
+      params.require(:possible_response).permit(
+        :question_id, :keypad, :value, :retry, :possible_response_order
+      )
+    end    
   end
 end
