@@ -6,9 +6,6 @@ gem 'rails', '~> 4.0.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 
-# tmp backward compat helpers
-gem 'protected_attributes'
-
 # resque/sidekiq -web
 gem 'sinatra'
 gem 'slim'
