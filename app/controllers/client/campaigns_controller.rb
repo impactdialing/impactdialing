@@ -113,7 +113,16 @@ module Client
 
     def save_campaign
       load_scripts
-      flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])
+      flash_message(:notice, "Campaign saved") if @campaign.update_attributes(campaign_params)
+    end
+
+    def campaign_params
+      params.require(:campaign).permit(
+        :name, :script_id, :caller_id, :type, :recording_id, :use_recordings,
+        :recycle_rate, :answering_machine_detect, :start_time, :end_time,
+        :time_zone, :acceptable_abandon_rate, :call_back_after_voicemail_delivery,
+        :caller_can_drop_message_manually, voter_lists_attributes: [:id, :enabled]
+      )
     end
   end
 end
