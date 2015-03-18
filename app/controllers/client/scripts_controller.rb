@@ -74,7 +74,7 @@ module Client
     def archived
       @scripts = account.scripts.archived.paginate(:page => params[:page], :order => 'id desc')
       respond_with @scripts do |format|
-        format.html{ render 'scripts/archived' }
+        format.html{ render :archived }
         format.json{ render :json => @scripts.to_json }
       end
     end

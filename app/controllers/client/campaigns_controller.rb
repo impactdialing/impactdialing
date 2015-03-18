@@ -60,7 +60,7 @@ module Client
       @campaigns = Campaign.deleted.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc')
       @download_report_count = DownloadedReport.accounts_active_report_count(@campaigns.collect{|c| c.id}, session[:internal_admin])
       respond_with @campaigns do |format|
-        format.html { render 'campaigns/archived' }
+        format.html { render :archived }
         format.json { render :json => @campaigns.to_json }
       end
     end
