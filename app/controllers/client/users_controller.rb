@@ -4,9 +4,15 @@ module Client
     skip_before_filter :check_login, :only => [:create, :reset_password, :update_password]
     before_filter :check_tos_accepted, :except => [:create, :reset_password, :update_password]
 
+  private
+    def user_params
+      params.require(:user).permit(:phone, :email, :new_password, :fname, :lname, :orgname, :role)
+    end
+
+  public
     def create
       @user            = User.new
-      @user.attributes = params[:user]
+      @user.attributes = user_params
       @user.account    = Account.new(:domain_name => request.domain)
       @user.role       = User::Role::ADMINISTRATOR
       
@@ -24,7 +30,7 @@ module Client
 
     def update
       @user = current_user
-      if @user.update_attributes(params[:user])
+      if @user.update_attributes(user_params)
         flash_message(:notice, "Your information has been updated.")
         redirect_to '/client/account'
       else
@@ -64,7 +70,7 @@ module Client
         flash_message(:error, "#{params[:email]} is already part of a different account.")
       else
         random_password = rand(Time.now.to_i)
-        new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s, role: params[:user][:role])
+        new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s, role: user_params[:role])
         new_user.create_reset_code!
         Resque.enqueue(DeliverInvitationEmailJob, new_user.id, current_user.id)
         flash_message(:notice, "#{params[:email]} has been invited.")
@@ -73,11 +79,11 @@ module Client
     end
 
     def change_role
-      user_to_change = User.find(params[:user][:id])
+      user_to_change = User.find(user_params[:id])
       if @user == user_to_change
         flash_message(:error, I18n.t(:failure_change_role))
       else
-        user_to_change.update_attribute(:role, params[:user][:role])
+        user_to_change.update_attribute(:role, user_params[:role])
         flash_message(:notice, I18n.t(:success_change_role))
       end
       redirect_to :back
