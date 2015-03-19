@@ -13,7 +13,7 @@
 
 <% end %>
 
-<% content_for :javascripts do %>
+<%= content_for :javascripts do %>
   <script type ="text/javascript">
     $(document).ready(function() {
       script = new Scripts();
@@ -26,7 +26,6 @@
     });
   </script>
 
-  <%= javascript_include_tag :cocoon %>
   <%= javascript_include_tag "orderable" %>
   <%= javascript_include_tag "client/scripts" %>
 <% end %>

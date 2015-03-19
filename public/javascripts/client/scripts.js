@@ -124,8 +124,12 @@ if(($('#script_questions').children('.nested-fields').length - $('fieldset.quest
 }
 
 function possible_response_answered(question_ids){
+  if( $('#script_id').length == 0 ){
+    return;
+  }
+
   $.ajax({
-    url : "/client/scripts//possible_responses_answered",
+    url : "/client/scripts/possible_responses_answered",
     data : {question_ids : question_ids, id: $("#script_id").val() },
     type : "GET",
   async : false,
@@ -143,21 +147,25 @@ function possible_response_answered(question_ids){
 
 
 function questions_answered(){
+  if( $('#script_id').length == 0 ){
+    return;
+  }
+
   var script_id = $('#script_id').val();
   $.ajax({
-    url : "/client/scripts/questions_answered",
-    data : {id : $("#script_id").val() },
-    type : "GET",
-  async : false,
-    success : function(response) {
-    for (myKey in response["data"]){
-      $('#script_questions').find('.identity').each(function(){
-        if ($(this).val() == myKey) {
-          $(this).attr('answered', true)
-        }
-      });
+    url:     "/client/scripts/questions_answered",
+    data:    {id : $("#script_id").val() },
+    type:    "GET",
+    async:   false,
+    success: function(response) {
+      for (myKey in response["data"]){
+        $('#script_questions').find('.identity').each(function(){
+          if ($(this).val() == myKey) {
+            $(this).attr('answered', true)
+          }
+        });
+      }
     }
-  }
   });
 }
 

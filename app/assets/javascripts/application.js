@@ -3,6 +3,7 @@
 //= require jquery
 //= require jquery_ujs
 //= require jquery-ui
+//= require cocoon
 
 $(function() {
   $(document).ajaxSend(function(e, xhr, options) {

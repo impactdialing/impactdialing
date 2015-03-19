@@ -10,13 +10,19 @@
   </tr>
 </table>
 
-  <div class="possible_response_sortable">
-    <%= f.semantic_fields_for :possible_responses do |form, possible_response| %>
-      <%= render "possible_response_fields", f: form %>
-    <%end%>
-  </div>
-  <p class='actions'>
-    <%= link_to_add_association "New Response", f, :possible_responses , {:class => "action secondary add_response", "data-association-insertion-node"=> "sibling", "data-association-insertion-node-sibling-class"=>"possible_response_sortable","data-association-insertion-method"=>"append", partial: 'possible_response_fields' } %>
+<div class="possible_response_sortable">
+  <%= f.semantic_fields_for :possible_responses do |form, possible_response| %>
+    <%= render "possible_response_fields", f: form %>
+  <%end%>
+</div>
+<p class='actions'>
+  <%= link_to_add_association "New response", f, :possible_responses, {
+    :class => "action secondary add_response",
+    partial: 'possible_response_fields',
+    "data-association-insertion-node"               => ".possible_response_sortable",
+    # "data-association-insertion-node-sibling-class" => "possible_response_sortable",
+    "data-association-insertion-method"             => "append"
+  } %>
 
-    <%= link_to_remove_association "Delete this question", f , {:class => "action secondary delete_question", "data-removal-validation"=>"question_delete" }%>
-  </p>
+  <%= link_to_remove_association "Delete this question", f , {:class => "action secondary delete_question", "data-removal-validation"=>"question_delete" }%>
+</p>

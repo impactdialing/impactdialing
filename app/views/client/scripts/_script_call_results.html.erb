@@ -2,18 +2,18 @@
 
   <div id="script_elements">
     <% @script.script_texts.each_with_index do |text, index| %>
-      <%= f.fields_for :script_texts, text do |builder| %>
+      <%= f.semantic_fields_for :script_texts, text do |builder| %>
         <%= render "script_section", {f: builder}  %>
       <% end %>
     <%end%>
 
     <% @script.questions.each_with_index do |question, index| %>
-      <%= f.fields_for :questions, question do |builder| %>
+      <%= f.semantic_fields_for :questions, question do |builder| %>
         <%= render "question_fields", {f: builder, question: question}  %>
       <% end %>
     <%end%>
 
-    <%= f.fields_for :notes do |builder| %>
+    <%= f.semantic_fields_for :notes do |builder| %>
       <%= render "note_fields", f: builder %>
     <% end %>
   </div>

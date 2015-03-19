@@ -434,7 +434,7 @@ DEPENDENCIES
   bullet
   cancan (~> 1.6.10)
   capybara
-  cocoon
+  cocoon (~> 1.2.0)
   compass
   database_cleaner
   deep_cloneable

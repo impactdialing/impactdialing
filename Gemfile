@@ -62,7 +62,7 @@ gem 'rubyzip'
 # Forms
 gem 'formtastic', '~>2.2.1'
 gem 'dynamic_form', '~> 1.1.4'
-gem 'cocoon'
+gem 'cocoon', '~> 1.2.0'
 
 # HTTP client
 gem 'faraday'
