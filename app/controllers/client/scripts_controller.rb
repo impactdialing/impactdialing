@@ -138,10 +138,13 @@ module Client
     def script_params
       params.require(:script).permit(
         :name, :voter_fields,
-        notes_attributes: [:note, :script_id, :script_order],
-        script_texts_attributes: [:content, :script_id, :script_order],
-        questions_attributes: [:text, :script_id, :script_order],
-        transfers_attributes: [:label, :phone_number, :transfer_type, :script_id]
+        notes_attributes: [:id, :note, :script_id, :script_order, :_destroy],
+        script_texts_attributes: [:id, :content, :script_id, :script_order, :_destroy],
+        questions_attributes: [
+          :id, :text, :script_id, :script_order, :_destroy,
+          possible_responses_attributes: [:id, :possible_response_order, :value, :retry, :keypad, :question_id, :_destroy]
+        ],
+        transfers_attributes: [:id, :label, :phone_number, :transfer_type, :script_id, :_destroy]
       )
     end
   end
