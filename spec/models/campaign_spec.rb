@@ -148,7 +148,7 @@ describe Campaign, :type => :model do
       campaign.save(:validate => false)
       expect(campaign.update_attributes(:caller_id => '23456yuiid')).to be_falsey
       expect(campaign.errors[:base]).to eq(['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code'])
-      expect(campaign.update_attributes(:called_id => '')).to be_falsey
+      expect(campaign.update_attributes(:caller_id => '')).to be_falsey
       expect(campaign.errors[:base]).to eq(['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code'])
     end
 

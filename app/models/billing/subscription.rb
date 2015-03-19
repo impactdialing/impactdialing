@@ -1,5 +1,4 @@
 class Billing::Subscription < ActiveRecord::Base
-  attr_accessible :account_id, :plan, :provider_status, :provider_id
   serialize :settings, HashWithIndifferentAccess
 
   belongs_to :account

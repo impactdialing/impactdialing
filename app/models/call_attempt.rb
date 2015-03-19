@@ -1,9 +1,6 @@
 require Rails.root.join("lib/twilio_lib")
 
 class CallAttempt < ActiveRecord::Base
-  attr_accessible :status, :connecttime, :campaign, :dialer_mode, :call_start, :sid,
-                  :wrapup_time
-
   include Rails.application.routes.url_helpers
   include SidekiqEvents
   belongs_to :voter

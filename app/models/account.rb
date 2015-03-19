@@ -26,8 +26,6 @@ class Account < ActiveRecord::Base
   has_many :possible_responses, :through => :scripts, :source => :questions
   has_many :caller_groups
 
-  attr_accessible :api_key, :domain_name, :abandonment, :activated, :record_calls, :status, :tos_accepted_date
-
   before_create :assign_api_key
   after_create :setup_trial!
   validate :check_subscription_type_for_call_recording, on: :update

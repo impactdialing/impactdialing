@@ -1,6 +1,4 @@
 class SimulatedValues < ActiveRecord::Base
-  attr_accessible :campaign_id, :best_dials, :best_conversation,
-                  :longest_conversation, :best_wrapup_time
 end
 
 # ## Schema Information

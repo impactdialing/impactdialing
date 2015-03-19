@@ -1,6 +1,4 @@
 class Household < ActiveRecord::Base
-  attr_accessible :status, :presented_at, :phone, :blocked, :voters_count,
-                  :campaign, :campaign_id, :account, :account_id
   belongs_to :account
   
   belongs_to :campaign, counter_cache: true

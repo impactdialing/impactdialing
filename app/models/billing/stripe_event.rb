@@ -1,6 +1,4 @@
 class Billing::StripeEvent < ActiveRecord::Base
-  attr_accessible :data, :name, :pending_webhooks, :processed, :provider_created_at, :provider_id, :request
-
   serialize :data, HashWithIndifferentAccess
 
   validates_uniqueness_of :provider_id

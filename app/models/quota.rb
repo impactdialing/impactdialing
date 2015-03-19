@@ -2,8 +2,6 @@ class Quota < ActiveRecord::Base
   # Help out rails...
   self.table_name = 'quotas'
 
-  attr_accessible :account_id, :callers_allowed, :disable_calling, :minutes_allowed, :minutes_pending, :minutes_used
-
   belongs_to :account
 
   validates_presence_of :account

@@ -9,8 +9,6 @@
 # enabled and may be dialed depending on other settings.
 #
 class Voter < ActiveRecord::Base
-  attr_accessible :household, :household_id, :custom_id, :first_name, :last_name
-  
   include Rails.application.routes.url_helpers
   include CallAttempt::Status
   include ERB::Util

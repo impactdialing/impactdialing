@@ -1,6 +1,4 @@
 class Billing::CreditCard < ActiveRecord::Base
-  attr_accessible :account_id, :exp_month, :exp_year, :last4, :provider_id
-
   belongs_to :account
 
   validates_presence_of :account

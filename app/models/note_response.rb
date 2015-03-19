@@ -1,5 +1,4 @@
 class NoteResponse < ActiveRecord::Base
-  attr_accessible :note_id, :response, :campaign_id, :call_attempt_id, :note, :response_id, :campaign, :call_attempt
   belongs_to :voter
   belongs_to :note
   belongs_to :call_attempt

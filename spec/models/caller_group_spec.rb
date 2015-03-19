@@ -2,8 +2,6 @@ require 'spec_helper'
 
 describe CallerGroup, :type => :model do
   context 'validations' do
-    it {is_expected.to allow_mass_assignment_of :name}
-    it {is_expected.to allow_mass_assignment_of :campaign_id}
     it {is_expected.to validate_presence_of :name}
     it {is_expected.to have_many :callers}
     it {is_expected.to belong_to :campaign}
