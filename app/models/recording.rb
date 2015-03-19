@@ -1,8 +1,6 @@
 require "paperclip"
 
 class Recording < ActiveRecord::Base
-  attr_accessible :file_file_name, :name, :file
-
   validates_presence_of :name
 
   belongs_to :account

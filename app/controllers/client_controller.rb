@@ -141,7 +141,7 @@ class ClientController < ApplicationController
 
   def recording_add
     if request.post?
-      @recording = @account.recordings.new(params[:recording])
+      @recording = @account.recordings.new(recording_params)
       if @recording.save
         campaign = Campaign.find(params[:campaign_id])
         campaign.update_attribute(:recording, @recording)
@@ -160,5 +160,10 @@ class ClientController < ApplicationController
   end
   def policies
     render 'client/tos/policies'
+  end
+
+private
+  def recording_params
+    params.require(:recording).permit(:file, :name)
   end
 end
