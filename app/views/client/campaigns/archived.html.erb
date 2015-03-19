@@ -1,3 +1,15 @@
+<%= content_for(:javascripts) do %>
+<script type="text/javascript">
+  $(function(){
+    $('.report_select_menu').change(function(eventObj){
+      eventObj.preventDefault();
+      window.location = $(eventObj.target).val();
+      $('.report_select_menu').val('');
+    });
+  });
+</script>
+<% end %>
+
 <h1>Archived campaigns</h1>
 <% if @campaigns.empty? %>
   <p>No campaigns archived.</p>
@@ -30,11 +42,3 @@
   </table>
   <p><%= page_entries_info @campaigns, model: Campaign %> <%= will_paginate @campaigns %></p>
 <% end %>
-
-<script type="text/javascript">
-  $('.report_select_menu').change(function(eventObj){
-    eventObj.preventDefault();
-    window.location = $(eventObj.target).val();
-    $('.report_select_menu').val('');
-  });
-</script>
