@@ -7,6 +7,9 @@ class ApplicationController < ActionController::Base
   include ApplicationHelper
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
+
+  before_bugsnag_notify :log_bugsnag_notification
+
   # Scrub sensitive parameters from your log
   rescue_from InvalidDateException, :with=> :return_invalid_date
   rescue_from CanCan::AccessDenied do |exception|
@@ -26,7 +29,11 @@ class ApplicationController < ActionController::Base
     redirect_to :back
   end
 
-  private
+  def log_bugsnag_notification(notification)
+    puts "DEBUG BUGSNAG: #{notification.inspect}"
+  end
+
+private
 
   def generate_session_key
     secure_digest(Time.now, (1..10).map{ rand.to_s })
