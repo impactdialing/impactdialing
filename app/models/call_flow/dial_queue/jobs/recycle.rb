@@ -13,7 +13,7 @@ module CallFlow::DialQueue::Jobs
         puts msg
       }
 
-      raise "Testing Bugsnag notifications"
+      Bugsnag.notify('Test exception', 'testing bugsnag')
 
       # 2 weeks is a long time but there are currently no restrictions on Campaign#recycle_rate
       # if the campaign is created via API or the form is hacked then recycle rate could be > 72 hours
