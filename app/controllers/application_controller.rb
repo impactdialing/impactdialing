@@ -30,7 +30,9 @@ class ApplicationController < ActionController::Base
   end
 
   def log_bugsnag_notification(notification)
-    puts "DEBUG BUGSNAG: #{notification.inspect}"
+    msg = "DEBUG BUGSNAG: #{notification.inspect}"
+    Rails.logger.error msg
+    puts msg
   end
 
 private
