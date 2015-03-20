@@ -8,8 +8,6 @@ class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
 
-  before_bugsnag_notify :log_bugsnag_notification
-
   # Scrub sensitive parameters from your log
   rescue_from InvalidDateException, :with=> :return_invalid_date
   rescue_from CanCan::AccessDenied do |exception|
@@ -27,12 +25,6 @@ class ApplicationController < ActionController::Base
   def return_invalid_date
     flash_message(:error, I18n.t(:invalid_date_format))
     redirect_to :back
-  end
-
-  def log_bugsnag_notification(notification)
-    msg = "DEBUG BUGSNAG: #{notification.inspect}"
-    Rails.logger.error msg
-    puts msg
   end
 
 private

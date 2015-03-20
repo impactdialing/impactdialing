@@ -7,14 +7,6 @@ module CallFlow::DialQueue::Jobs
     extend LibratoResque
 
     def self.perform
-      Bugsnag.before_notify_callbacks << lambda {|notification|
-        msg = "DEBUG BUGSNAG (bg wrk): #{notification.inspect}"
-        Rails.logger.error msg
-        puts msg
-      }
-
-      Bugsnag.notify('Test exception', 'testing bugsnag')
-
       # 2 weeks is a long time but there are currently no restrictions on Campaign#recycle_rate
       # if the campaign is created via API or the form is hacked then recycle rate could be > 72 hours
       # 2014 (w/ mid-term election) saw total of 1103 different campaigns though so 
@@ -41,9 +33,6 @@ module CallFlow::DialQueue::Jobs
           dial_queue.recycle!
         end
       end
-
-      # Clear the callbacks
-      Bugsnag.before_notify_callbacks.clear
     end
   end
 end
