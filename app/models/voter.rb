@@ -490,15 +490,26 @@ public
     question_answers   = JSON.parse(questions)
     possible_responses = []
     question_answers.try(:each_pair) do |question_id, answer_id|
-      voters_response = PossibleResponse.find(answer_id)
+      begin
+        question        = Question.find(question_id)
+        voters_response = PossibleResponse.find(answer_id)
+      rescue ActiveRecord::RecordNotFound => e
+        # Questions & PossibleResponses may be deleted while a script is being used for dials.
+        # This can lead to record not found errors but we don't want to throw away other questions/answers
+        # that might still exist. So log the event and allow processing to continue.
+        Rails.logger.error "#{e.message} Called from Voter#persist_answers for CallAttempt#{call_attempt.id}"
+        next
+      end
+
       answers.create({
         possible_response: voters_response,
-        question: Question.find(question_id),
+        question: question,
         created_at: call_attempt.created_at,
         campaign: Campaign.find(campaign_id),
         caller: call_attempt.caller,
         call_attempt_id: call_attempt.id
       })
+
       possible_responses << voters_response
     end
     

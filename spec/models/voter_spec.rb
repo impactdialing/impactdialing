@@ -520,7 +520,9 @@ describe Voter, :type => :model do
     let(:campaign) { create(:predictive, :script => script) }
     let(:voter) { create(:voter, :campaign => campaign, :caller_session => create(:caller_session, :caller => create(:caller))) }
     let(:question) { create(:question, :script => script) }
+    let(:question_to_delete) { create(:question, :script => script) }
     let(:response) { create(:possible_response, :question => question) }
+    let(:response_to_delete) { create(:possible_response, :question => question_to_delete) }
     let(:call_attempt) { create(:call_attempt, :caller => create(:caller)) }
 
     it "captures call responses" do
@@ -534,6 +536,16 @@ describe Voter, :type => :model do
       expect(voter.answers.size).to eq(2)
       expect(voter.reload.status).to eq(Voter::Status::RETRY)
       expect(Voter.to_be_dialed).to include(voter)
+    end
+
+    it 'ignores questions that have been deleted but not processed' do
+      answer_json = {
+        "#{question.id}" => "#{response.id}",
+        "#{question_to_delete.id}" => "#{response_to_delete.id}"
+      }.to_json
+      question_to_delete.destroy
+
+      expect{ voter.persist_answers(answer_json, call_attempt) }.not_to raise_error
     end
 
     it "does not override old responses with newer ones" do
