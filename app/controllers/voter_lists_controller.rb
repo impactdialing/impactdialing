@@ -43,7 +43,6 @@ public
     render :json=> {"message"=>"This operation is not permitted"}, :status => :method_not_allowed
   end
 
-
   def create
     upload = params[:upload].try(:[], "datafile")
     s3path = VoterList.upload_file_to_s3(upload.try('read'), VoterList.csv_file_name(params[:voter_list][:name]))
@@ -64,7 +63,6 @@ public
         }
       end
     end
-
   end
 
   def column_mapping
@@ -92,7 +90,7 @@ private
     params.require(:voter_list).
       permit(
         :name, :s3path, :uploaded_file_name, :account_id,
-        :upload, :campaign_id, :headers, :separator,
+        :upload, :campaign_id, :headers, :separator, :skip_wireless,
         csv_to_system_map: params[:voter_list][:csv_to_system_map].try(:keys)
       )
   end

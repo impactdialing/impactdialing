@@ -58,7 +58,6 @@ describe VoterListsController, :type => :controller do
         put :disable, campaign_id: campaign.id, id: voter_list.id, :api_key=> account.api_key, :format => "json"
         expect(response.body).to eq( "{\"message\":\"Voter List disabled\"}")
       end
-
     end
 
     describe "update" do
@@ -97,56 +96,90 @@ describe VoterListsController, :type => :controller do
             headers: "[]",
             csv_to_system_map: {
               'Phone' => 'Phone'
-            },
-            s3path: "abc"
+            }
           },
           api_key: account.api_key,
           format: "json"
         }
       end
 
-      context 'uploading a valid voter list' do
-        let(:file_upload){ '/files/valid_voters_list.csv' }
-        let(:csv_upload) do
-          {
-            'datafile' => fixture_file_upload(file_upload)
-          }
-        end
+      context 'API' do
+        context 'uploading a valid voter list' do
+          let(:file_upload){ '/files/valid_voters_list.csv' }
+          let(:csv_upload) do
+            {
+              'datafile' => fixture_file_upload(file_upload)
+            }
+          end
 
-        it "renders voter_list attributes as json" do
-          VCR.use_cassette('API CSV voter list upload', match_requests_on: [:host, :method]) do
-            post :create, params.merge(upload: csv_upload)
-            
-            expect(response.body).to eq VoterList.select([:id, :name, :enabled]).last.to_json
-            # match(/\{\"voter_list\":\{\"enabled\":true,\"id\":(.*),\"name\":\"abc.csv\"\}\}/)
+          def vcr(&block)
+            VCR.use_cassette('API CSV voter list upload', match_requests_on: [:host, :method]) do
+              yield
+            end
+          end
 
-            expect(Resque.peek(:upload_download, 0, 100)).to include({
-              'class' => 'VoterListUploadJob',
-              'args' => [anything, anything, anything, anything]
-            })
+          it 'creates a new VoterList record' do
+            vcr do
+              expect{
+                post :create, params.merge(upload: csv_upload, skip_wireless: 0)
+              }.to change{ VoterList.count }.by(1)
+            end
+          end
+
+          it 'preserves submitted attributes' do
+            vcr do
+              submitted_params                              = params.merge(upload: csv_upload)
+              submitted_params[:voter_list][:skip_wireless] = '0'
+              post :create, submitted_params
+              list = VoterList.last
+
+              expect(list.name).to eq submitted_params[:voter_list][:name]
+              expect(list.separator).to eq submitted_params[:voter_list][:separator]
+              expect(list.headers).to eq submitted_params[:voter_list][:headers]
+              expect(list.csv_to_system_map).to eq submitted_params[:voter_list][:csv_to_system_map]
+              expect(list.campaign_id).to eq submitted_params[:campaign_id]
+              expect(list.skip_wireless).to be_falsey
+            end
+          end
+
+          it "renders voter_list attributes as json" do
+            vcr do
+              post :create, params.merge(upload: csv_upload)
+              expect(response.body).to eq VoterList.select([:id, :name, :enabled]).last.to_json
+            end
+          end
+
+          it 'queues VoterListUploadJob' do
+            vcr do
+              post :create, params.merge(upload: csv_upload)
+              expect(Resque.peek(:upload_download, 0, 100)).to include({
+                'class' => 'VoterListUploadJob',
+                'args' => [anything, anything, anything, anything]
+              })
+            end
           end
         end
-      end
 
-      context 'uploading voter lists that are not CSV or TSV format' do
-        let(:file_upload){ '/files/valid_voters_list.xlsx' }
-        let(:csv_upload) do
-          {
-            'datafile' => fixture_file_upload(file_upload)
-          }
-        end
-        it 'renders a json error message telling the consumer of the incorrect file format' do
-          VCR.use_cassette('API invalid file format voter list upload', match_requests_on: [:host, :method]) do
-            post :create, params.merge(upload: csv_upload)
-            expect(response.body).to eq("{\"errors\":{\"base\":[\"Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \\\"Save As\\\" to change it to one of these formats.\"]}}")
+        context 'uploading voter lists that are not CSV or TSV format' do
+          let(:file_upload){ '/files/valid_voters_list.xlsx' }
+          let(:csv_upload) do
+            {
+              'datafile' => fixture_file_upload(file_upload)
+            }
+          end
+          it 'renders a json error message telling the consumer of the incorrect file format' do
+            VCR.use_cassette('API invalid file format voter list upload', match_requests_on: [:host, :method]) do
+              post :create, params.merge(upload: csv_upload)
+              expect(response.body).to eq("{\"errors\":{\"base\":[\"Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \\\"Save As\\\" to change it to one of these formats.\"]}}")
+            end
           end
         end
-      end
 
-      context 'upload requested when no file is submitted' do
-        it 'renders a json error message telling the consumer to upload a file' do
-          post :create, params.merge(upload: nil)
-          expect(response.body).to eq("{\"errors\":{\"uploaded_file_name\":[\"can't be blank\"],\"base\":[\"Please upload a file.\"]}}")
+        context 'upload requested when no file is submitted' do
+          it 'renders a json error message telling the consumer to upload a file' do
+            post :create, params.merge(upload: nil)
+            expect(response.body).to eq("{\"errors\":{\"uploaded_file_name\":[\"can't be blank\"],\"base\":[\"Please upload a file.\"]}}")
+          end
         end
       end
     end
