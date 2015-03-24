@@ -6,7 +6,9 @@ module Callers
     include ActionView::Helpers::NumberHelper
     respond_to :json, :html
 
-    skip_before_filter :verify_authenticity_token, only: [:create]
+    # it is ok to skip csrf verification for :create, :logout
+    # since these are innocuous if called by a nefarious 3rd-party
+    skip_before_filter :verify_authenticity_token, only: [:create, :logout]
 
     before_filter :disable_header_cache, only: [:show]
 

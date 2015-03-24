@@ -1,9 +1,31 @@
 require 'spec_helper'
 
 describe Callers::StationController do
-  describe '#show?campaign_id' do
-    include FakeCallData
+  include FakeCallData
 
+  describe '#logout' do
+    before do
+      admin                = create(:user)
+      other_admin          = create(:user)
+      @account             = admin.account
+      @campaign            = create_campaign_with_script(:bare_power, @account).last
+      @caller              = create(:caller, {campaign: @campaign, account: @account})
+      post :login, username: @caller.username, password: @caller.password
+      expect(response.headers['Location']).to match /#{callveyor_path}/
+    end
+
+    it 'clears session[:caller]' do
+      post :logout
+      expect(session[:caller]).to be_nil
+    end
+
+    it 'redirects to /login' do
+      post :logout
+      expect(response).to redirect_to callveyor_login_path
+    end
+  end
+  
+  describe '#show?campaign_id' do
     before do
       admin                = create(:user)
       other_admin          = create(:user)
