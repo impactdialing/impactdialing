@@ -39,7 +39,7 @@ describe CallinController, :type => :controller do
       expect(response.body).to eq(Twilio::Verb.new do |v|
         3.times do
           v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :attempt => 2), :method => "POST") do
-            v.say "Incorrect Pin. Please enter your pin and then press star."
+            v.say "Incorrect pin. Please enter your pin and then press star."
           end
         end
       end.response)
@@ -50,7 +50,7 @@ describe CallinController, :type => :controller do
       allow(CallerIdentity).to receive(:find_by_pin).and_return(nil)
       post :identify, :Digits => pin, :attempt => 3
       expect(response.body).to eq(Twilio::Verb.new do |v|
-        v.say "Incorrect Pin."
+        v.say "Incorrect pin."
         v.hangup
       end.response)
     end

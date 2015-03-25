@@ -118,7 +118,7 @@ describe Caller, :type => :model do
     expect(Caller.ask_for_pin(1,nil)).to eq(Twilio::Verb.new do |v|
       3.times do
         v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => 'http://', :attempt => 2), :method => "POST") do
-          v.say "Incorrect Pin. Please enter your pin and then press star."
+          v.say "Incorrect pin. Please enter your pin and then press star."
         end
       end
     end.response)

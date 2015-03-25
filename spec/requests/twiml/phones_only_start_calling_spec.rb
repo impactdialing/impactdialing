@@ -2,6 +2,10 @@ require 'rails_helper'
 
 describe 'Phone-only caller dials TwiML app number' do
   let(:caller){ create(:caller, is_phones_only: true) }
+  before do
+    Redis.new.flushall
+    caller.campaign.update_attribute(:end_time, caller.campaign.start_time)
+  end
 
   it 'POSTs to callin/create & asks for PIN' do
     post callin_caller_path
@@ -29,6 +33,7 @@ describe 'Phone-only caller dials TwiML app number' do
     end
     it 'caches phones-only script questions' do
       post identify_caller_path, {Digits: caller.pin, attempt: 2}
+      expect(response).to be_success
       expect(resque_jobs(:persist_jobs)).to include({
         'class' => 'CachePhonesOnlyScriptQuestions',
         'args' => [caller.campaign.script_id, 'seed']
