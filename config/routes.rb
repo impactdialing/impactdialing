@@ -167,7 +167,7 @@ ImpactDialing::Application.routes.draw do
   get '/client/policies', :to => 'client#policies', :as => :client_policies
 
   # Webhooks
-  post 'webhooks/billing/stripe', :to => 'client/billing/events#stripe'
+  post 'webhooks/billing/stripe', :to => 'client/billing/events#stripe', :as => :billing_events_stripe
   # /Webhooks
 
   namespace 'api' do

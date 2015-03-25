@@ -14,7 +14,11 @@ class Client::Billing::EventsController < ApplicationController
 private
   def stripe_livemode?
     # Rails normalizes this to True or False class.
-    params[:livemode]
+    if params[:livemode].kind_of?(TrueClass) or params[:livemode].kind_of?(FalseClass)
+      return params[:livemode]
+    else
+      return params[:livemode] == '1' 
+    end
   end
 
   def stripe_production?
@@ -29,13 +33,17 @@ private
     stripe_production? || stripe_development?
   end
 
+  def stripe_event_id
+    params.require(:id)
+  end
+
 public
   def stripe
     if process_stripe_event?
       # Register this event id to avoid processing it again.
-      ::Billing::StripeEvent.create!({provider_id: params[:id]})
+      ::Billing::StripeEvent.create!({provider_id: stripe_event_id})
       # Queue job to pull and process event matching this id.
-      Resque.enqueue(Billing::Jobs::StripeEvent, params[:id])
+      Resque.enqueue(Billing::Jobs::StripeEvent, stripe_event_id)
     end
 
     # Raise an exception to return a response other than 200.
