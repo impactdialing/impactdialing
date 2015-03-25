@@ -247,7 +247,7 @@ public
         @from_date,
         @to_date
       )
-      first_household = query.order('households.id').first
+      first_household = query.order('households.id').references(:households, :call_attempts).first
       download_by_lead(query, start_position(first_household))
     end
   end

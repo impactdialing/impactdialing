@@ -32,7 +32,7 @@ class AnsweredJob
   def self.perform
     ActiveRecord::Base.clear_active_connections!
 
-    CallAttempt.results_not_processed.where('call_id IS NOT NULL AND voter_id IS NOT NULL').reorder('call_attempts.id DESC').includes(:call, :voter).find_each do |call_attempt|
+    CallAttempt.results_not_processed.where('call_attempts.call_id IS NOT NULL AND call_attempts.voter_id IS NOT NULL').reorder('call_attempts.id DESC').references(:call_attempts).includes(:call, :voter).find_each do |call_attempt|
       call = call_attempt.call
       answers_data = RedisCall.questions_and_notes(call.id)
       if answers_data && (answers_data["questions"] || answers_data["notes"])
