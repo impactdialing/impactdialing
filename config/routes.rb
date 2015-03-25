@@ -118,16 +118,10 @@ ImpactDialing::Application.routes.draw do
       post :play_message
     end
   end
-  resource :callin, only: [] do
-    post :create
-    post :identify
-  end
 
-  post :receive_call, :to => 'callin#create'
+  post 'callin/create', :to => 'callin#create', :as => :callin_caller
   post :end_caller_session, :to =>'caller/end_session'
-  post :identify_caller, :to => 'callin#identify'
-  get :default_message, :to => 'callin#default_message'
-  get :hold_call, :to => 'callin#hold'
+  post :identify_caller, :to => 'callin#identify', :as => :identify_caller
   # /other TwiML
 
   namespace "callers" do
