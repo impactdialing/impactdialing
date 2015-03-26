@@ -81,12 +81,6 @@ describe CallerController, :type => :controller do
         login_as(caller)
       end
 
-      it 'maintains Campaign#presented_count' do
-        expect(campaign.presented_count).to eq 1
-        post :skip_voter, valid_params
-        expect(campaign.presented_count).to eq 1
-      end
-
       context 'when fit to dial' do
         it 'renders next lead (voter) data' do
           campaign.update_attributes! script: create(:script)

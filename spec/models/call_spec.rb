@@ -7,8 +7,9 @@ describe Call, :type => :model do
     RedisCall.set_request_params(call.id, params)
     unless campaign.predictive?
       caller_session.update_attributes!({available_for_call: false, on_call: true, attempt_in_progress: call_attempt})
+    else
+      campaign.number_presented(1)
     end
-    campaign.number_presented(1)
     campaign.number_ringing
     call.incoming_call(params)
   end
@@ -265,7 +266,7 @@ describe Call, :type => :model do
       before(:each) do
         @caller = create(:caller)
         @script = create(:script)
-        @campaign =  create(:predictive, script: @script)
+        @campaign =  create(:predictive, script: @script, account: @script.account)
         @voter  = create(:voter, campaign: @campaign, caller_session: @caller_session)
         @caller_session = create(:webui_caller_session, caller: @caller, campaign: @campaign, attempt_in_progress: @call_attempt)
         @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller: @caller)
@@ -287,7 +288,7 @@ describe Call, :type => :model do
       before(:each) do
         @caller = create(:caller)
         @script = create(:script)
-        @campaign =  create(:campaign, script: @script)
+        @campaign =  create(:bare_power, script: @script, account: @caller.account)
         @voter = create(:voter, campaign: @campaign)
         @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, sid: "abc", caller: @caller)
       end
@@ -303,8 +304,8 @@ describe Call, :type => :model do
     describe "disconnect"  do
       before(:each) do
         @script = create(:script)
-        @campaign =  create(:campaign, script: @script)
         @caller = create(:caller)
+        @campaign =  create(:bare_power, script: @script, account: @caller.account)
         @caller_session = create(:caller_session, caller: @caller)
         @voter = create(:voter, campaign: @campaign, caller_session: @caller_session)
         @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
@@ -325,8 +326,8 @@ describe Call, :type => :model do
     describe "disconnect call" do
       before(:each) do
        @script = create(:script)
-       @campaign =  create(:campaign, script: @script)
        @caller = create(:caller)
+       @campaign =  create(:bare_preview, script: @script, account: @caller.account)
        @caller_session = create(:caller_session, caller: @caller)
        @voter = create(:voter, campaign: @campaign, caller_session: @caller_session)
        @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
@@ -349,7 +350,7 @@ describe Call, :type => :model do
       before(:each) do
         @caller = create(:caller)
         @script = create(:script)
-        @campaign =  create(:campaign, script: @script)
+        @campaign =  create(:bare_predictive, script: @script, account: @caller.account)
         @voter = create(:voter, campaign: @campaign)
         @caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
@@ -369,7 +370,7 @@ describe Call, :type => :model do
       before(:each) do
         @caller = create(:caller)
         @script = create(:script)
-        @campaign =  create(:campaign, script: @script)
+        @campaign =  create(:bare_predictive, script: @script, account: @caller.account)
         @voter = create(:voter, campaign: @campaign)
         @caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
@@ -401,7 +402,7 @@ describe Call, :type => :model do
     describe "answered_by_human_and_caller_available?" do
       before(:each) do
         @script = create(:script)
-        @campaign =  create(:campaign, script: @script)
+        @campaign =  create(:bare_preview, script: @script, account: @script.account)
         @voter = create(:voter, campaign: @campaign)
         @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
         @caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, attempt_in_progress: @call_attempt, state: "connected")
@@ -485,7 +486,7 @@ describe Call, :type => :model do
     before(:each) do
       @caller = create(:caller)
       @script = create(:script)
-      @campaign =  create(:predictive, script: @script)
+      @campaign =  create(:predictive, script: @script, account: @script.account)
       @voter  = create(:voter, campaign: @campaign)
       @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign)
       @caller_session = create(:webui_caller_session, caller: @caller, campaign: @campaign, attempt_in_progress: @call_attempt, on_call: true, available_for_call: false, state: "connected", sid: "123456")

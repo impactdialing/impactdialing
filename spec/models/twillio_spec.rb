@@ -40,17 +40,24 @@ describe Twillio do
       expect(call_attempt.sid).to be =~ /CA.*/
     end
 
-    it 'subtracts 1 from campaign.presented_count and adds 1 to campaign.ringing_count' do
-      expect(campaign.presented_count).to eq 0
+    it 'adds 1 to campaign.ringing_count' do
       expect(campaign.ringing_count).to eq 1
     end
   end
 
-  shared_examples 'all failed Twillio.dials' do
+  shared_examples 'Predictive success Twillio.dials' do
+    it 'subtracts 1 from campaign.presented_count and ' do
+      expect(campaign.presented_count).to eq 0
+    end
+  end
+
+  shared_examples 'Predictive failed Twillio.dials' do
     it 'subtracts 1 from campaign.presented_count' do
       expect(campaign.presented_count).to eq 0
     end
+  end
 
+  shared_examples 'all failed Twillio.dials' do
     it 'updates CallAttempt status to FAILED' do
       expect(CallAttempt.last.status).to eq CallAttempt::Status::FAILED
     end
@@ -85,8 +92,6 @@ describe Twillio do
 
     context 'success' do
       before do
-        campaign.number_presented(1)
-
         VCR.use_cassette('Twillio.dial success') do
           Twillio.dial(household, caller_session)
         end
@@ -108,7 +113,6 @@ describe Twillio do
         # todo: move this from before block to it
         expect(Providers::Phone::Call).to receive(:redirect_for).with(caller_session)
 
-        campaign.number_presented(1)
         household.update_attributes!(phone: twilio_invalid_to)
 
         VCR.use_cassette('Twillio.dial fail-invalid to') do
@@ -161,6 +165,7 @@ describe Twillio do
 
       it_behaves_like 'all Twillio.dials'
       it_behaves_like 'all success Twillio.dials'
+      it_behaves_like 'Predictive success Twillio.dials'
     end
 
     context 'fail' do
@@ -195,6 +200,7 @@ describe Twillio do
 
       it_behaves_like 'all Twillio.dials'
       it_behaves_like 'all failed Twillio.dials'
+      it_behaves_like 'Predictive failed Twillio.dials'
 
       it 'does not redirect caller' do
         # todo: move expectation in before block to here

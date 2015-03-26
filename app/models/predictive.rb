@@ -1,6 +1,23 @@
 class Predictive < Campaign
   include SidekiqEvents
 
+  def number_ringing
+    counts = Wolverine.dial_queue.number_ringing(keys: [Twillio::InflightStats.key(self)])
+    debug_number_ringing(counts)
+  end
+
+  def number_failed
+    debug_number('failed', 'presented') do
+      inflight_stats.incby('presented', -1)
+    end
+  end
+  
+  def number_presented(n)
+    debug_number('presented', 'presented') do
+      inflight_stats.incby('presented', n)
+    end
+  end
+
   def dial_resque
     set_calculate_dialing
     Resque.enqueue(CalculateDialsJob, self.id)

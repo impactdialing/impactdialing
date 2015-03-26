@@ -1,4 +1,12 @@
 module PreviewPowerCampaign
+  def number_ringing
+    inflight_stats.incby('ringing', 1)
+  end
+
+  def number_failed
+    # noop: provides consistent interface as Predictive
+  end
+
   def next_in_dial_queue
     house = nil
 
@@ -17,12 +25,6 @@ module PreviewPowerCampaign
   def caller_conference_started_event
     json = CallFlow::Web::Data.new(script)
     data = json.build(next_in_dial_queue)
-
-    unless data[:campaign_out_of_leads]
-      number_presented(1)
-    else
-      puts "#{self.type}[#{self.id}] - CampaignOutOfNumbers"
-    end
 
     return {
       event: 'conference_started',

@@ -2,8 +2,6 @@
 # Used when a Campaign is set to phones only.
 #
 class PhonesOnlyCallerSession < CallerSession
-
-
   def callin_choice
     read_choice_twiml
   end
@@ -56,7 +54,6 @@ class PhonesOnlyCallerSession < CallerSession
 
   def conference_started_phones_only_preview(voter_id, phone)
     if pound_selected?
-      Voter.includes(:campaign).find(voter_id).campaign.number_skipped
       return skip_voter_twiml
     elsif star_selected?
       return dial(voter_id, phone)
