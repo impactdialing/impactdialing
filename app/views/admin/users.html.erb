@@ -4,7 +4,7 @@
   </div>
 <% end %>
 
-<%= form_tag ("/admin/users") do %>
+<%= form_tag("/admin/users", method: :get) do %>
   <p>
     <label>Email or Account id:</label>
     <input  id="query" name="query" type="text" style="width:250px">
