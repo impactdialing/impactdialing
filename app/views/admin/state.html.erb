@@ -1,25 +1,25 @@
-<%= javascript_include_tag 'jquery' %>
-<%= javascript_tag  do -%>
-  $(function() {
-    $('.js-show-caller').bind('click', function(event) {
-      event.preventDefault();
-      $.get($(this).attr('href'), function(data) {
-        $('.js-callers-block').html(data.html);
+<%= content_for(:javascripts) do -%>
+  <script type="text/javascript">
+    $(function() {
+      $('.js-show-caller').bind('click', function(event) {
+        event.preventDefault();
+        $.get($(this).attr('href'), function(data) {
+          $('.js-callers-block').html(data.html);
+        });
+        return false;
       });
-      return false;
     });
-  });
+  </script>
 <% end -%>
 
-<%= form_tag  '/admin/twilio_limit' do  %>
+<%= form_tag '/admin/twilio_limit' do  %>
   <label for="twilio_limit">Twilio Limit:</label>
   <input id="twilio_limit" type="text" class= "field", name="twilio_limit", value="<%= TwilioLimit.get %>">
-  <%=  submit_tag "Change" %>
+  <%= submit_tag "Change" %>
 <% end -%>
 
 <h1>System Status</h1>
 <table>
-
   <tr>
     <td>Logged in campaigns:</td>
     <td><%= @logged_in_campaigns.count %></td>
@@ -34,14 +34,14 @@
   <tr>
     <td style="vertical-align:top">
       <table>
-          <% @logged_in_campaigns.each do |k| %>
-            <tr>
-              <td valign="top"><a target="_blank" href="/admin/login/<%= User.where(account_id: k.account_id).first.id %>" style="font-size:13px;">login</a> <%= k.name %></td>
-              <td>
-                <%= link_to "Callers Number: #{k.caller_sessions.on_call.count}", admin_caller_sessions_path(k), class: "js-show-caller" %>
-              </td>
-        </tr>
-      <% end -%>
+        <% @logged_in_campaigns.each do |k| %>
+          <tr>
+            <td valign="top"><a target="_blank" href="/admin/login/<%= User.where(account_id: k.account_id).first.id %>" style="font-size:13px;">login</a> <%= k.name %></td>
+            <td>
+              <%= link_to "Callers Number: #{k.caller_sessions.on_call.count}", admin_caller_sessions_path(k), class: "js-show-caller" %>
+            </td>
+          </tr>
+        <% end -%>
       </table>
     </td>
     <td style="vertical-align:top">
