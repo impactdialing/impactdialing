@@ -1,8 +1,9 @@
 namespace :reports do
   desc "Report account-wide dials"
-  task :account_dials, [:account_ids] => :environment do |t, args|
+  task :account_dials, [:account_ids,:start_date] => :environment do |t, args|
     account_ids = args[:account_ids].split(',').compact
-    start_time  = Time.new(2014, 9, 1, 0, 0, 0)
+    year, month, day = args[:start_date].split('/')
+    start_time  = Time.new(year, month, day, 0, 0, 0)
 
     headers = ['Dials', 'Call status']
     reports = []
