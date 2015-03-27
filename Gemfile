@@ -6,6 +6,9 @@ gem 'rails', '~> 4.0.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 
+# heroku
+gem 'rails_12factor'
+
 # resque/sidekiq -web
 gem 'sinatra'
 gem 'slim'
