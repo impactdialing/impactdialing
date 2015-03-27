@@ -1,1 +1,0 @@
-require "#{Rails.root}/config/environments/heroku_staging.rb"
