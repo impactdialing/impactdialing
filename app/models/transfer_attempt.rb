@@ -5,8 +5,8 @@ class TransferAttempt < ActiveRecord::Base
   belongs_to :call_attempt
   belongs_to :campaign
   include Rails.application.routes.url_helpers
-  scope :within, lambda { |from, to, campaign_id| where(:created_at => from..to).where(campaign_id: campaign_id)}
-  scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
+  scope :within, -> (from, to, campaign_id) { where(created_at: from..to).where(campaign_id: campaign_id) }
+  scope :between, -> (from_date, to_date) { where({created_at: from_date..to_date}) }
 
   scope :undebited, -> { where(debited: false) }
   scope :successful_call, -> { where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')") }
