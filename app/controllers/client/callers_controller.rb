@@ -144,7 +144,7 @@ module Client
     end
 
     def caller_params
-      params.require(:caller).permit(:name, :username, :campaign_id, :is_phones_only, :caller_group_id)
+      params.require(:caller).permit(:name, :username, :campaign_id, :is_phones_only, :caller_group_id, :password)
     end
   end
 end

@@ -52,6 +52,22 @@ describe Client::CallersController, :type => :controller do
       expect(caller).to be_nil
     end
 
+    it 'creates a caller w/ valid params' do
+      campaign = create(:power, account: account)
+      caller_params = {
+        caller: {
+          username: 'bob',
+          campaign_id: campaign.id,
+          password: 'secret'
+        }
+      }
+      post :create, caller_params
+      created_caller = Caller.last
+      expect(created_caller.username).to eq caller_params[:caller][:username]
+      expect(created_caller.campaign).to eq campaign
+      expect(created_caller.password).to eq caller_params[:caller][:password]
+    end
+
     describe "call details report" do
 
       let(:script) { create(:script) }
