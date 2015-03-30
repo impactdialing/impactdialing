@@ -1,4 +1,11 @@
 class RedisStatus
+  def self.redis
+    $redis_dialer_connection
+  end
+
+  def self.redis_key(campaign_id)
+    "campaign:#{campaign_id}:status"
+  end
 
   def self.set_state_changed_time(campaign_id, status, caller_session_id)
     $redis_dialer_connection.hset "campaign:#{campaign_id}:status", caller_session_id, {status: status, time: Time.now.to_s}.to_json
@@ -41,4 +48,16 @@ class RedisStatus
     [on_hold, on_call, wrap_up]
   end
 
+  def self.on_hold_times(campaign_id, *caller_session_ids)
+    elements = redis.hmget redis_key(campaign_id), *caller_session_ids.compact.flatten
+    elements.map do |element|
+      next if element.nil?
+      parsed_element = JSON.parse(element)
+      next if parsed_element['status'] != 'On hold'
+
+      parsed_time = Time.parse(parsed_element['time'])
+
+      (Time.now - parsed_time).to_i / 60
+    end
+  end
 end
