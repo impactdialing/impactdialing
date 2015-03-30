@@ -1,4 +1,5 @@
 require 'impact_platform/metrics'
+require 'app_health/alarm'
 
 ## Monitor possible recycle rate violations (ie calling the same voter multiple times in less than an hour)
 #
@@ -105,22 +106,18 @@ module AppHealth
         violator_counts.rows.size.zero?
       end
 
-      def alert_key
+      def alarm_key
         time      = Time.now.strftime('%d/%m/%Y')
         campaigns = violators.first['campaigns']
         household_id  = violators.first['household_id']
         "#{time} - #{campaigns} - #{household_id}"
       end
 
-      def alert_client
-        'impact-dialing-app-health'
-      end
-
-      def alert_description
+      def alarm_description
         "#{violator_counts.rows.size} Recycle Rate Violators"
       end
 
-      def alert_details
+      def alarm_details
         violators.to_json
       end
 
@@ -128,33 +125,12 @@ module AppHealth
         unless ok?
           @violators = self.class.inspect_violators
 
-          alert!
+          AppHealth::Alarm.trigger!(alarm_key, alarm_description, alarm_details)
 
           return false
         end
 
         return true
-      end
-
-      def alert!
-        alert_by_pager_duty
-        alert_by_email
-      end
-
-      def alert_by_pager_duty
-        return if @pager_duty_service.blank?
-
-        pager_duty = Pagerduty.new(@pager_duty_service)
-        pager_duty.trigger(alert_description, {
-          incident_key: alert_key,
-          client: alert_client,
-          details: alert_details
-        })
-      end
-
-      def alert_by_email
-        return if @pager_duty_service.present?
-        # todo: alert recycle rate violations by email
       end
     end
   end
