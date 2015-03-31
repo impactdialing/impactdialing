@@ -1,5 +1,6 @@
 # Procfile: app_health: bundle exec rake monitor_app_health
 require 'app_health/monitor/recycle_rate_violations'
+require 'app_health/monitor/predictive_dial_rate'
 require 'librato_sidekiq'
 
 module AppHealth
@@ -14,6 +15,8 @@ module AppHealth
 
       loop do
         RecycleRateViolations.alert_if_not_ok
+
+        PredictiveDialRate.alert_if_not_ok
 
         CallFlow::Jobs::ActiveCallerMonitor.perform
 
