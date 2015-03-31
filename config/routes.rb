@@ -360,6 +360,8 @@ ImpactDialing::Application.routes.draw do
   get '/client/login', :to => 'client#login', :as => :login
   get '/caller/login', :to => 'caller#login', :as => :caller_login
 
+  get 'admin/report', :to => 'admin#report'
+  post 'admin/report', :to => 'admin#report'
   get 'admin/login/:id', :to => 'admin#login'
   get 'admin/users', :to => 'admin#users'
   get 'admin/status', :to => 'admin#state'
