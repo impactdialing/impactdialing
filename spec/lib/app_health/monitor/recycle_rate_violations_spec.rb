@@ -63,21 +63,16 @@ describe AppHealth::Monitor::RecycleRateViolations do
         create_attempts(voter, 45.minutes.ago)
       end
       it 'triggers a PagerDuty event, providing some info about the violators' do
-        VCR.use_cassette('pagerduty recycle rate alert') do
-          subject.alert_if_not_ok
-          expect(WebMock).to have_requested(:post, pager_duty_events_url)
-        end
-      end
-
-      context 'PagerDuty event fails to trigger' do
-        context 'due to temporary network failure' do
-          it 'retries connection timeouts'
-        end
+        expect(AppHealth::Alarm).to receive(:trigger!).with(subject.alarm_key, subject.alarm_description, subject.alarm_details)
+        subject.alert_if_not_ok
       end
     end
 
     context '.ok? => true' do
-      it 'does nothing'
+      it 'does nothing' do
+        expect(AppHealth::Alarm).not_to receive(:trigger!)
+        subject.alert_if_not_ok
+      end
     end
   end
 end

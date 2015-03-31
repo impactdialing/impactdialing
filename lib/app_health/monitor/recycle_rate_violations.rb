@@ -93,7 +93,7 @@ module AppHealth
         db.select_all(count_violators_sql)
       end
 
-      attr_reader :violator_counts, :violators
+      attr_reader :violator_counts
 
       def initialize
         @pager_duty_service = ENV['PAGER_DUTY_SERVICE']
@@ -121,10 +121,12 @@ module AppHealth
         violators.to_json
       end
 
+      def violators
+        @violators ||= self.class.inspect_violators
+      end
+
       def alert_if_not_ok
         unless ok?
-          @violators = self.class.inspect_violators
-
           AppHealth::Alarm.trigger!(alarm_key, alarm_description, alarm_details)
 
           return false

@@ -14,11 +14,10 @@ module AppHealth
     end
 
     def trigger!(key, description, details)
-      alert_by_pager_duty(key, description, details)
-      alert_by_email(key, description, details)
+      notify_pager_duty(key, description, details)
     end
 
-    def alert_by_pager_duty(key, description, details)
+    def notify_pager_duty(key, description, details)
       return if @pager_duty_service.blank?
 
       pager_duty = Pagerduty.new(@pager_duty_service)
@@ -27,11 +26,6 @@ module AppHealth
         client: alarm_client,
         details: details
       })
-    end
-
-    def alert_by_email(key, description, details)
-      return if @pager_duty_service.present?
-      # todo: alert recycle rate violations by email
     end
   end
 end
