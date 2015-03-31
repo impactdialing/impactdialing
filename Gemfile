@@ -7,7 +7,7 @@ gem 'jquery-rails'
 gem 'jquery-ui-rails'
 
 # heroku
-gem 'rails_12factor'
+gem 'rails_12factor', group: :production
 
 # resque/sidekiq -web
 gem 'sinatra'
