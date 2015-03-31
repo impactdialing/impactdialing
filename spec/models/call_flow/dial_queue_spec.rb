@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'CallFlow::DialQueue' do
   include FakeCallData

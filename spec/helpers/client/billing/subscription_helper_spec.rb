@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Client::Billing::SubscriptionHelper, :type => :helper do
   let(:account){ mock_model('Account') }

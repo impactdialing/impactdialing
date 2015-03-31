@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe AccountUsageRender, :type => :mailer do
   let(:values) do

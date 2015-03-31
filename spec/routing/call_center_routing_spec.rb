@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'routes for CallCenter (draft)', :type => :routing do
   it 'GET /call_center/api/twilio_token => station#twilio_token' do

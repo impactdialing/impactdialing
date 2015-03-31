@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Billing::Jobs::StripeEvent, :type => :model do
   subject{ Billing::Jobs::StripeEvent }

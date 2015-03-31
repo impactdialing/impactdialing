@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 require 'impact_platform/metrics'
 
 describe ImpactPlatform::Metrics do

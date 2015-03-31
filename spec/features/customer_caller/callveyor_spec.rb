@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 include JSHelpers
 
 describe 'Calling leads on a Preview campaign', type: :feature, caller_ui: true, e2e: true, js: true do

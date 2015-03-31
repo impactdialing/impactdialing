@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 include JSHelpers
 
 describe 'Account profile', type: :feature, admin: true do

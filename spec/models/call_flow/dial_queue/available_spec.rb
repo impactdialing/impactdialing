@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'CallFlow::DialQueue::Available' do
   let(:phone_numbers) do

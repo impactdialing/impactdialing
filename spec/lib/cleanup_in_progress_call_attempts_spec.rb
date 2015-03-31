@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 require Rails.root.join("lib/cleanup_in_progress_call_attempts.rb")
 
 describe CleanupInProgressCallAttempts do

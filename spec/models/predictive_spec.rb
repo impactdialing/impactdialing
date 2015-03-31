@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe Predictive do
   def attach_simulated_values(campaign, simulated_values)

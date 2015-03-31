@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe Client::NotesController, :type => :controller do
   let(:account) { create(:account) }

@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe Campaign, :type => :model do
   describe '#fit_to_dial?' do

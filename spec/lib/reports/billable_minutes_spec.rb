@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 require 'reports'
 
 def create_calls(campaigns_or_callers, attrs={})

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'Archival::Jobs::CampaignSweeper' do
   subject{ Archival::Jobs::CampaignSweeper }

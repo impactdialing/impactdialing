@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Report::SelectiveDateRange do
   let(:from_pool){ [nil, 10.days.ago, nil, 2.days.ago] }

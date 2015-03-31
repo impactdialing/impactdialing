@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 require 'reports'
 
 describe Reports::Customer::ByStatus do

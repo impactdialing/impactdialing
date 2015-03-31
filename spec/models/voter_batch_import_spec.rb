@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'VoterBatchImport' do
   include_context 'voter csv import' do

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'CacheVoters.perform(voter_ids, enabled)' do
   context 'enabled.to_i > 0' do

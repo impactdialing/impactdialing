@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Billing::Plans, :type => :model do
   let(:plans){ Billing::Plans.new }

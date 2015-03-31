@@ -1,4 +1,5 @@
-require "spec_helper"
+require 'rails_helper'
+require 'transfer_attempt'
 
 describe CallerController, :type => :controller do
 

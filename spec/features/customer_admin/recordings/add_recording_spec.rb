@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'Upload a recording', js: true, type: :feature do
   def upload_recording(path)

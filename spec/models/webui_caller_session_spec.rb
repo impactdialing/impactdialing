@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe WebuiCallerSession, :type => :model do
   include Rails.application.routes.url_helpers

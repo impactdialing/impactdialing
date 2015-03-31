@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Client::CallerGroupsController, :type => :controller do
   let(:account) {create(:account, api_key: 'abc123')}

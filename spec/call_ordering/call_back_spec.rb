@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 context 'Message Drops', data_heavy: true do
   include FakeCallData

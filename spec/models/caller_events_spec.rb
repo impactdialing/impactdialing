@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'CallerEvents' do
   describe 'caller reassigned event' do

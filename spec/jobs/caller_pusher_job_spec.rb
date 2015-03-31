@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe CallerPusherJob do
   describe '.perform(caller_session_id, event)' do

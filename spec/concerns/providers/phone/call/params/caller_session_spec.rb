@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Providers::Phone::Call::Params::CallerSession do
   include Rails.application.routes.url_helpers

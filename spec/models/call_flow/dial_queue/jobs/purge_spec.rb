@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'CallFlow::DialQueue::Jobs::Purge.perform(campaign_id)' do
   let(:campaign){ create(:power) }

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Billing::SubscriptionManager, :type => :model do
   def new_manager(subscription, quota)

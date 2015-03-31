@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Providers::Phone::Twilio::Response do
   def httparty_response(code, body)

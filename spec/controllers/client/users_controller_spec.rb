@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe Client::UsersController, :type => :controller do
   before(:each) do

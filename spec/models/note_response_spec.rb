@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe NoteResponse, :type => :model do  
   it "should return note ids ids for a campaign" do

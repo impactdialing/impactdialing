@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe RedisQuestion, :type => :model do
   let(:questions) do

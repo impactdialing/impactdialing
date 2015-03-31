@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'Display message to create callers and campaigns before viewing reports', type: :feature do
   include FakeCallData

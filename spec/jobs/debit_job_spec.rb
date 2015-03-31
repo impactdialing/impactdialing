@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe DebitJob do
   let(:account1){ create(:account) }

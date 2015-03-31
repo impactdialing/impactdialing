@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'Caller Management', :type => :feature do
   let(:admin){ create(:user) }

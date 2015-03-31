@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe ReportAccountUsageJob do
   let(:from_date){ 10.days.ago }

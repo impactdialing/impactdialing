@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe Caller, :type => :model do
   include Rails.application.routes.url_helpers

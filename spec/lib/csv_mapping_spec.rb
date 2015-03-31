@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe CsvMapping do
   it "should not use the same system column as mapping for more than one csv column" do

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Billing::Jobs::AutoRecharge, :type => :model do
   subject{ Billing::Jobs::AutoRecharge }

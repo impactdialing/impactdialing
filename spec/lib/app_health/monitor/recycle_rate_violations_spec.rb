@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 require 'app_health/monitor/recycle_rate_violations'
 require 'app_health/alarm'
 

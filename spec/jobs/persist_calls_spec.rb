@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 require Rails.root.join('app/models/redis/redis_call.rb')
 
 describe PersistCalls do

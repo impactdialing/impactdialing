@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'Customer Reports', type: :feature, admin: true do
   def caller_session_attrs(caller)

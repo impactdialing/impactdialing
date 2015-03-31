@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe Recording, :type => :model do
   it { should have_attached_file :file }

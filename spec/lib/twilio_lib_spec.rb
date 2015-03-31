@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe TwilioLib do
   let(:twilio_lib){ TwilioLib.new }

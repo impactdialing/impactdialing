@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe CallStats::Velocity do
   # let(:campaign){ create(:power) }

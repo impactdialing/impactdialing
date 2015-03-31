@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Billing::Subscription, :type => :model do
   let(:valid_settings) do

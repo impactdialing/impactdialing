@@ -1,9 +1,13 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe Script, :type => :model do
 
   describe 'after_update' do
     include FakeCallData
+
+    before do
+      Redis.new.flushall
+    end
 
     let(:admin){ create(:user) }
     let(:account){ admin.account }

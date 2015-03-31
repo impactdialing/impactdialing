@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'Internal Admin pages', type: :feature, admin: true do
   let(:admin) do

@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe CallsController, :type => :controller do
   let(:recording){ create(:recording) }

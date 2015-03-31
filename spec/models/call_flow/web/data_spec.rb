@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'CallFlow::Web::Data' do
   let(:script){ double('Script', {id: 42}) }

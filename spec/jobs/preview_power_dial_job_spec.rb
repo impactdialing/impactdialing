@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe PreviewPowerDialJob do  
   it "should dial voter" do

@@ -1,7 +1,6 @@
-require "spec_helper"
+require 'rails_helper'
 
-describe TransferAttempt, :type => :model do
-
+describe TransferAttempt do
   describe "conference" do
     it "should return the conference twiml" do
       caller_session = create(:caller_session)
@@ -69,7 +68,6 @@ describe TransferAttempt, :type => :model do
       expect(result[transfer3.id][:label]).to eq("C")
       expect(result[transfer3.id][:number]).to eq(1)
       expect(result[transfer3.id][:percentage]).to eq(16)
-
     end
   end
 end

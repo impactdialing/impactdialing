@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'CallFlow::Web::Util' do
   describe '.filter(whitelisted_keys, hash_of_data)' do

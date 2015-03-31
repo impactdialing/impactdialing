@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'Caller Group Management', type: :feature, rack: true do
   let(:customer) do

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe DoNotCall::Jobs::CacheWirelessBlockList, data_heavy: true do
   subject{ DoNotCall::Jobs::CacheWirelessBlockList }

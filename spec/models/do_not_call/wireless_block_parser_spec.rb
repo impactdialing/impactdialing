@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'DoNotCall::WirelessBlockParser' do
   let(:filepath) do

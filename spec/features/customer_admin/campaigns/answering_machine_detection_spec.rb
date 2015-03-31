@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'Answering Machine Detection', type: :feature, js: true, admin: true do
   def save_campaign(campaign, field, value)

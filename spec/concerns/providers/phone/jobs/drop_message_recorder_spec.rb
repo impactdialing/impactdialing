@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Providers::Phone::Jobs::DropMessageRecorder do
   let(:recording){ create(:recording) }

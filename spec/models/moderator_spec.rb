@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Moderator, :type => :model do
   xit "switch from eavesdrop to breakin and vice versa" do

@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe RedisPossibleResponse, :type => :model do
   let(:possible_responses) do

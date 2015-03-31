@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe ExceptionMailer, :type => :mailer do
   describe 'mailer = ExceptionMailer.new(exception)' do

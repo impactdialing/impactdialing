@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 def within_nth_campaign_cell(row_n, cell_n, &block)
   within "#campaigns-monitor tbody tr:nth-of-type(#{row_n}) td:nth-of-type(#{cell_n})" do

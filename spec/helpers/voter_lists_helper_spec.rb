@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe VoterListsHelper, :type => :helper do
   describe 'system column headers' do

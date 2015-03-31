@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'CallFlow::Call' do
   describe 'tracking the TwiML request history of a Call' do

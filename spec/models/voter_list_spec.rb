@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe VoterList, :type => :model do
   let(:valid_attrs) do

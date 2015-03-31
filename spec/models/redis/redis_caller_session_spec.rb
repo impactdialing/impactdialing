@@ -1,4 +1,4 @@
-require "spec_helper"
+require 'rails_helper'
 
 describe RedisCallerSession, :type => :model do
   subject{ RedisCallerSession }

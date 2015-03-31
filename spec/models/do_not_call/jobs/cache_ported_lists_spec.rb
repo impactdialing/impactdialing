@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 require 'uri'
 
 describe 'DoNotCall::Jobs::CacheProviderFile.perform', data_heavy: true do

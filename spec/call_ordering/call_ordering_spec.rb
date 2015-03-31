@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'Voters (Contacts) are called in the order they are uploaded', data_heavy: true do
   include FakeCallData

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'Blocked Number management', type: :feature, rack: true do
   let(:i18n_scope){ 'activerecord.errors.models.blocked_number' }

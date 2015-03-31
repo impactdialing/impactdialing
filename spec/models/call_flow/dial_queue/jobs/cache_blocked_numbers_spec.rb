@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'CacheBlockedNumbers.perform(record_id, record_type)' do
   context 'record_type == "Account"' do

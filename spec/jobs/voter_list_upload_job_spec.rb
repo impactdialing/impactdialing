@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe 'VoterListUploadJob' do
   let(:amazon_s3) do

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec::Matchers.define :have_script_text do |script_text|
   match do |actual|
