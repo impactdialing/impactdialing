@@ -3,18 +3,17 @@ require 'rails_helper'
 describe Providers::Phone::Call::Params::CallerSession do
   include Rails.application.routes.url_helpers
 
-  let(:caller) do
-    mock_model('Caller')
-  end
   let(:campaign) do
-    mock_model('Campaign')
+    create(:power)
+  end
+  let(:caller) do
+    create(:caller, campaign: campaign)
   end
   let(:caller_session) do
-    mock_model('CallerSession', {
+    create(:caller_session, {
       sid: '123123',
       caller: caller,
-      campaign: campaign,
-      fit_to_dial?: true
+      campaign: campaign
     })
   end
   let(:param_class) do

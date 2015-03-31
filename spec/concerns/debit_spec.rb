@@ -2,7 +2,8 @@ require 'rails_helper'
 
 describe Debit do
   let(:call_time) do
-    mock_model('CallTime', {
+    double('CallTime', {
+      :id => 42,
       :debited => false,
       :debited= => nil,
       :tDuration => nil,
@@ -11,20 +12,17 @@ describe Debit do
     })
   end
   let(:subscription) do
-    double('Billing::Subscription', {
-      autorecharge_trigger: 100,
-      autorecharge_pending?: false,
-      autorecharge_active?: false
+    build(:bare_subscription, {
+      settings: {autorecharge: {trigger: 100}}
     })
   end
   let(:quota) do
-    mock_model('Quota', {
-      debit: nil,
-      minutes_available: subscription.autorecharge_trigger + 5
+    build(:bare_quota, {
+      minutes_allowed: subscription.autorecharge_trigger + 5
     })
   end
   let(:account) do
-    mock_model('Account', {
+    build(:bare_account, {
       quota: quota,
       billing_subscription: subscription
     })

@@ -4,7 +4,7 @@ describe Providers::Phone::Call::Params::Call do
   include Rails.application.routes.url_helpers
 
   let(:call) do
-    mock_model('Call')
+    create(:call)
   end
   let(:param_class) do
     Providers::Phone::Call::Params::Call

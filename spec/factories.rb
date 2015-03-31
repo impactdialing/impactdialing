@@ -225,7 +225,7 @@ FactoryGirl.define do
   end
 
   factory :transfer do
-
+    phone_number { Forgery(:address).phone }
   end
   factory :transfer_attempt do
   end

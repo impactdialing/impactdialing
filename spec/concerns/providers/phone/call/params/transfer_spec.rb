@@ -4,25 +4,24 @@ describe Providers::Phone::Call::Params::Transfer do
   include Rails.application.routes.url_helpers
 
   let(:voter) do
-    mock_model('Voter')
+    create(:voter)
   end
   let(:caller_session) do
-    mock_model('CallerSession')
+    create(:caller_session)
   end
   let(:call_attempt) do
-    mock_model('CallAttempt', {
+    create(:call_attempt, {
       sid: 'call-attempt-sid-123'
     })
   end
-  let(:transfer_attempt) do
-    mock_model('TransferAttempt',{
-      caller_session: caller_session,
-      call_attempt: call_attempt
-    })
-  end
   let(:transfer) do
-    mock_model('Transfer', {
-      transfer_attempts: [transfer_attempt]
+    create(:transfer)
+  end
+  let(:transfer_attempt) do
+    create(:transfer_attempt,{
+      caller_session: caller_session,
+      call_attempt: call_attempt,
+      transfer: transfer
     })
   end
   let(:param_class) do

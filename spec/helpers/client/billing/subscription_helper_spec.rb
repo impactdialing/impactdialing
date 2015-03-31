@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 describe Client::Billing::SubscriptionHelper, :type => :helper do
-  let(:account){ mock_model('Account') }
-  let(:user){ mock_model('User') }
+  let(:account){ create(:account) }
+  let(:user){ create(:user, account: account) }
   let(:ability) do
     double('Ability', {
       can?: false

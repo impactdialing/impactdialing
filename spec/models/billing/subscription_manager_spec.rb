@@ -15,18 +15,17 @@ describe Billing::SubscriptionManager, :type => :model do
         callers_allowed: callers_allowed
       }
     end
-
+    let(:account){ create(:account) }
     let(:subscription) do
-      mock_model(Billing::Subscription, {
-        plan: 'trial',
-        plan_changed!: nil
+      create(:bare_subscription, {
+        account: account,
+        plan: 'trial'
       })
     end
     let(:quota) do
-      mock_model(Quota, {
-        callers_allowed: callers_allowed,
-        minutes_available?: true,
-        plan_changed!: nil
+      create(:bare_quota, {
+        account: account,
+        callers_allowed: callers_allowed
       })
     end
     let(:payment_gateway) do
@@ -108,18 +107,17 @@ describe Billing::SubscriptionManager, :type => :model do
         callers_allowed: callers_allowed
       }
     end
-
+    let(:account){ create(:account) }
     let(:subscription) do
-      mock_model(Billing::Subscription, {
-        plan: 'trial',
-        plan_changed!: nil
+      create(:bare_subscription, {
+        account: account,
+        plan: 'trial'
       })
     end
     let(:quota) do
-      mock_model(Quota, {
-        callers_allowed: callers_allowed,
-        minutes_available?: true,
-        plan_changed!: nil
+      create(:bare_quota, {
+        account: account,
+        callers_allowed: callers_allowed
       })
     end
     let(:payment_gateway) do
