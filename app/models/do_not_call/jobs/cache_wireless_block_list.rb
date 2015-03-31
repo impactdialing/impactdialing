@@ -3,6 +3,7 @@
 require 'tempfile'
 require 'uri'
 require 'zip'
+require 'librato_resque'
 
 module DoNotCall::Jobs
   class CacheWirelessBlockList
