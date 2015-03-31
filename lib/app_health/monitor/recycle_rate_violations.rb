@@ -1,5 +1,4 @@
 require 'impact_platform/metrics'
-require 'app_health/alarm'
 
 ## Monitor possible recycle rate violations (ie calling the same voter multiple times in less than an hour)
 #

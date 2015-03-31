@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'app_health/monitor/recycle_rate_violations'
+require 'app_health/alarm'
 
 describe AppHealth::Monitor::RecycleRateViolations do
   let(:account){ create(:account) }
