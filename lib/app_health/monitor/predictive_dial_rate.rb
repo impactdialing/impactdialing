@@ -45,10 +45,8 @@ module AppHealth
       def alert_if_not_ok
         unless ok?
           AppHealth::Alarm.trigger!(alarm_key, alarm_description, alarm_details)
-          p "PredictiveDialRate: NOT OK: #{alarm_key}, #{alarm_description}, #{alarm_details}"
           return false
         end
-        p "PredictiveDialRate: OK"
         return true
       end
 
