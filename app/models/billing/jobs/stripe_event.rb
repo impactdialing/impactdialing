@@ -1,3 +1,5 @@
+require 'librato_resque'
+
 ##
 # Pull and cache all Stripe events registered via webhook and process relevant items.
 #
@@ -22,6 +24,7 @@
 # Last updated: Mar 16 2014
 #
 class Billing::Jobs::StripeEvent
+  extend LibratoResque
   @queue = :background_worker
 
   def self.perform(stripe_event_id)

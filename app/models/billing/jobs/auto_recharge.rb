@@ -1,4 +1,7 @@
+require 'librato_resque'
+
 class Billing::Jobs::AutoRecharge
+  extend LibratoResque
   @queue = :background_worker
 
   def self.perform(account_id)
