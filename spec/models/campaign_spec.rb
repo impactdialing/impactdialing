@@ -17,7 +17,9 @@ describe Campaign, :type => :model do
       end
 
       it 'outside calling hours' do
-        campaign.update_attributes!(start_time: 3.hours.ago, end_time: 2.hours.ago)
+        now = Time.now
+        anchor = now.hour % 12 == 0 ? 10 : now.hour
+        campaign.update_attributes!(start_time: Time.new(2015, 1, 1, anchor - 2), end_time: Time.new(2015, 1, 1, anchor - 1))
         expect(campaign.fit_to_dial?).to be_falsey
       end
 

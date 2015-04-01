@@ -3,8 +3,8 @@ FactoryGirl.define do
     name         { Forgery(:name).company_name }
     caller_id    '+15005550006'
     recycle_rate 1
-    start_time   (6.hours.ago)
-    end_time     (6.hours.ago)
+    start_time   (Time.now)
+    end_time     (Time.now)
     time_zone    "Pacific Time (US & Canada)"
 
     trait :preview do

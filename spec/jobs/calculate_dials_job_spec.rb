@@ -92,7 +92,9 @@ describe 'CalculateDialsJob' do
 
       context 'outside calling hours' do
         before do
-          campaign.update_attributes(start_time: Time.now.hour - 2, end_time: Time.now.hour - 1)
+          now = Time.now
+          anchor = now.hour % 12 == 0 ? 10 : now.hour
+          campaign.update_attributes(start_time: Time.new(2015, 1, 1, anchor - 2), end_time: Time.new(2015, 1, 1, anchor - 1))
         end
 
         it_behaves_like 'campaign is not fit to dial'

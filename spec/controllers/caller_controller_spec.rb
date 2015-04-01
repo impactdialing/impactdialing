@@ -108,7 +108,9 @@ describe CallerController, :type => :controller do
 
       context 'when not fit to dial' do
         before do
-          campaign.update_attributes!(start_time: Time.now - 3.hours, end_time: Time.now - 2.hours)
+          now = Time.now
+          anchor = now.hour % 12 == 0 ? 10 : now.hour
+          campaign.update_attributes!(start_time: Time.new(2015, 1, 1, anchor - 2), end_time: Time.new(2015, 1, 1, anchor - 1))
         end
 
         it 'queues RedirectCallerJob, relying on calculated redirect url to return :dialing_prohibited' do
