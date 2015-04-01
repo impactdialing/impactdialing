@@ -14,13 +14,13 @@ describe 'AppHealth::Monitor::PredictiveDialRate' do
   end
 
   before do
+    Redis.new.flushall
     RedisPredictiveCampaign.add(predictiveA.id, predictiveA.type)
     RedisPredictiveCampaign.add(predictiveB.id, predictiveB.type)
   end
 
   after do
-    RedisPredictiveCampaign.remove(predictiveA.id, predictiveA.type)
-    RedisPredictiveCampaign.remove(predictiveB.id, predictiveB.type)
+    Redis.new.flushall
   end
 
   describe 'ok?' do
@@ -69,17 +69,15 @@ describe 'AppHealth::Monitor::PredictiveDialRate' do
           end
           context 'no new dials have been made in last 2 minutes' do
             before do
-              create(:call_attempt, campaign: predictiveA, created_at: 3.minutes.ago, caller_session: predictiveA.caller_sessions.sample)
+              create(:bare_call_attempt, campaign: predictiveA, created_at: 3.minutes.ago, caller_session: predictiveA.caller_sessions.sample)
             end
             it 'returns false' do
               expect(subject.ok?).to be_falsey
             end
           end
           context '1 new dial was made in last minute' do
-            before do
-              create(:call_attempt, campaign: predictiveA, caller_session: predictiveA.caller_sessions.sample)
-            end
             it 'returns true' do
+              call_attempt = create(:bare_call_attempt, campaign: predictiveA, caller_session: predictiveA.caller_sessions.sample)
               expect(subject.ok?).to be_truthy
             end
           end
@@ -118,6 +116,7 @@ describe 'AppHealth::Monitor::PredictiveDialRate' do
     context '.ok? => true' do
       it 'does nothing' do
         expect(AppHealth::Alarm).not_to receive(:trigger!)
+        subject.alert_if_not_ok
       end
     end
   end
