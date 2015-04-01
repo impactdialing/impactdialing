@@ -38,7 +38,7 @@ class CalculateDialsJob
     end
 
     # This could raise CallFlow::DialQueue::Available::RedisTransactionAborted
-    # which means the key containing the list of numbers changed while pullling numbers
+    # which means the key containing the list of numbers changed while pulling numbers
     # off the queue. Let it bubble up & log as failed job since this is queued from
     # a loop (dialer_loop).
     phone_numbers = campaign.numbers_to_dial
