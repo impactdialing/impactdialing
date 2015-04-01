@@ -93,5 +93,14 @@ describe ReportAccountUsageJob do
         ReportAccountUsageJob.perform('nonsense', user.id, from_date, to_date, internal_admin)
       }.to raise_error NoMethodError
     end
+
+    it 'requeues itself on TERM' do
+      allow(ReportAccountUsageJob).to receive(:mail_campaigns_usage){ raise Resque::TermException, 'TERM' }
+      ReportAccountUsageJob.perform('campaigns', user.id, from_date, to_date, internal_admin)
+      expect(resque_jobs(:upload_download)).to include({
+        'class' => 'ReportAccountUsageJob',
+        'args' => ['campaigns', user.id, from_date.iso8601(3), to_date.iso8601(3), internal_admin]
+      })
+    end
   end
 end

@@ -27,8 +27,12 @@ class ReportAccountUsageJob
   @queue = :upload_download
 
   def self.perform(report_type, user_id, from_date, to_date, internal_admin=false)
-    method = "mail_#{report_type}_usage"
-    self.send(method, user_id, from_date, to_date, internal_admin)
+    begin
+      method = "mail_#{report_type}_usage"
+      self.send(method, user_id, from_date, to_date, internal_admin)
+    rescue Resque::TermException => e
+      Resque.enqueue(self, report_type, user_id, from_date, to_date, internal_admin)
+    end
   end
 
   def self.mail_campaigns_usage(user_id, from_date, to_date, internal_admin)
