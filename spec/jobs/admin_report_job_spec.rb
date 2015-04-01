@@ -10,12 +10,13 @@ describe AdminReportJob do
   let(:to_date){ to.strftime('%m/%d/%Y') }
 
   before do
+    Redis.new.flushall
     allow(Reports::BillableMinutes).to receive(:new){ billable_minutes }
     allow(Reports::Admin::EnterpriseByAccount).to receive(:new){ report }
   end
 
   after do
-    AdminReportJob.perform(from_date, to_date, 'Enterprise', nil)
+    Redis.new.flushall
   end
 
   it 'instantiates a Reports::BillableMinutes obj with start & end dates' do
@@ -27,6 +28,7 @@ describe AdminReportJob do
     expect(Reports::BillableMinutes).to receive(:new).
       with(expected_from, expected_to).
       and_return(billable_minutes)
+    AdminReportJob.perform(from_date, to_date, 'Enterprise', nil)
   end
 
   it 'instantiates a Reports::Admin::EnterpriseByAccount obj' do
@@ -35,5 +37,15 @@ describe AdminReportJob do
     expect(Reports::Admin::EnterpriseByAccount).to receive(:new).
       with(billable_minutes).
       and_return(report)
+    AdminReportJob.perform(from_date, to_date, 'Enterprise', nil)
+  end
+
+  it 'requeues itself on TERM' do
+    allow(Reports::BillableMinutes).to receive(:new){ raise Resque::TermException, 'TERM' }
+    AdminReportJob.perform(from_date, to_date, 'Enterprise', nil)
+    expect(resque_jobs(:upload_download)).to include({
+      'class' => 'AdminReportJob',
+      'args' => [from_date, to_date, 'Enterprise', nil]
+    })
   end
 end
