@@ -41,7 +41,9 @@ class Twillio
     # 401: unauthorized
     # 405: method not allowed
     # 429: too many requests
-    [400, 401, 404, 405, 429, 500]
+    # 666: there be dragons: JSON::ParserError: A JSON text must at least contain two octets!
+    #                        Began appearing before rails 4 upgrade approx Mar 19 2015.
+    [400, 401, 404, 405, 429, 500, 666]
   end
 
   def self.count_source(campaign, caller_session=nil)
@@ -62,7 +64,20 @@ class Twillio
   end
   
   def self.handle_response(http_response, household, call_attempt, caller_session=nil)
-    response = JSON.parse(http_response)
+    response = if http_response.blank?
+                 {
+                  'status' => 666,
+                  'RestException' => [
+                    'Invalid JSON response returned from REST request',
+                    'to Twilio for new call.',
+                    "Phone[#{household.phone}]",
+                    "Household[#{household.id}]",
+                    "Campaign[#{household.campaign.id}]"
+                  ].join(' ')
+                }
+               else
+                 JSON.load(http_response)
+               end
     if error_response_codes.include?(response["status"])
       handle_failed_call(call_attempt, caller_session, household, response)
     else

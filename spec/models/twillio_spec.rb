@@ -214,6 +214,37 @@ describe Twillio do
       it 'does not redirect caller' do
         # todo: move expectation in before block to here
       end
+
+      context 'An empty response is returned from HTTP request' do
+        class EmHttpFakeFail < EmHttpFake
+          def response
+            ''
+          end
+        end
+
+        let(:iterator){ double('EmHttpIterator', {return: nil}) }
+
+        before do
+          campaign.number_presented(1)
+
+          twilio_lib = double('TwilioLib instance', {
+            make_call_em: EmHttpFakeFail.new
+          })
+          allow(TwilioLib).to receive(:new){ twilio_lib }
+
+          household.update_attributes!(phone: twilio_invalid_to)
+          Twillio.dial_predictive_em(iterator, household)
+        end
+
+        it_behaves_like 'all failed Twillio.dials'
+        it_behaves_like 'Predictive failed Twillio.dials'
+        
+        it 'does not raise JSON::ParseError' do
+          expect{
+            Twillio.dial_predictive_em(iterator, household)
+          }.not_to raise_error
+        end
+      end
     end
   end
 end
