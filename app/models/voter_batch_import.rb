@@ -94,6 +94,7 @@ class VoterBatchImport
 
   def import_csv
     households_count = 0
+    household_ids    = []
     @voters_list.each_slice(1000).each do |voter_info_list|
       custom_fields     = []
       leads             = []
@@ -161,10 +162,9 @@ class VoterBatchImport
         import_from_hashes(Voter, leads)
       end
 
-      Resque.enqueue(Householding::ResetCounterCache, 'campaign', @list.campaign_id)
-      household_ids = households.values.sort
-      Resque.enqueue(Householding::ResetCounterCache, 'household', @list.campaign_id, household_ids.first, household_ids.last)
-
+      household_ids += households.values.sort
+      household_ids.uniq!
+      
       voter_ids_for_cache = created_voter_ids.dup
 
       # persist custom field data
@@ -174,6 +174,10 @@ class VoterBatchImport
       if (existing_voter_ids = leads.map{|l| l[:id]}.compact).any?
         Resque.enqueue(CallFlow::DialQueue::Jobs::CacheVoters, campaign.id, existing_voter_ids, 1)
       end
+    end
+    
+    household_ids.each_slice(100) do |ids|
+      Resque.enqueue(CallFlow::Jobs::PruneHouseholds, @list.campaign_id, *ids)
     end
 
     @list.update_column(:households_count, households_count)

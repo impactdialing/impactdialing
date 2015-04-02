@@ -91,6 +91,14 @@ describe 'VoterBatchImport' do
           'args' => [campaign.id, Voter.all.map(&:id), 1]
         })
       end
+      it 'queues CallFlow::Jobs::PruneHouseholds 100 households at a time' do
+        campaign.household_ids.each_slice(100) do |ids|
+          expect(resque_jobs(:data_migrations)).to include({
+            'class' => 'CallFlow::Jobs::PruneHouseholds',
+            'args' => [campaign.id, *ids]
+          })
+        end
+      end
       describe 'returns a Hash with' do
         it 'success => int' do
           expect(@counts[:success]).to eq (Voter.count - @counts[:dnc])

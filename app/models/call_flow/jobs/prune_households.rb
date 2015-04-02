@@ -1,19 +1,15 @@
 require 'librato_resque'
 
-module Householding
-  class ResetCounterCache
+module CallFlow::Jobs
+  class PruneHouseholds
     include Resque::Plugins::UniqueJob
     extend LibratoResque
     @queue = :data_migrations
 
-    def self.perform(type, campaign_id, lower_household_id=nil, upper_household_id=nil)
-      if type == 'campaign'
-        Campaign.reset_counters(campaign_id, :households)
-      else
+    def self.perform(campaign_id, *household_ids)
+      begin
         campaign   = Campaign.find campaign_id
-        # households = campaign.households.where(id: (lower_household_id..upper_household_id))
-        campaign.households.where(id: (lower_household_id..upper_household_id)).each do |household|
-          Household.reset_counters(household.id, :voters)
+        campaign.households.includes(:voters, :call_attempts).where(id: household_ids).each do |household|
           if household.voters.count.zero?
             if campaign.dial_queue.exists?
               # remove it from the cache
@@ -26,6 +22,8 @@ module Householding
             end
           end
         end
+      rescue Resque::TermException => e
+        Resque.enqueue(self, campaign_id, *household_ids)
       end
     end
   end
