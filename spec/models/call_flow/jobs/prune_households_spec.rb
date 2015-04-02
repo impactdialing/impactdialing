@@ -74,7 +74,7 @@ describe 'CallFlow::Jobs::PruneHouseholds' do
     allow(campaign).to receive(:households){ raise Resque::TermException, 'TERM' }
     allow(Campaign).to receive(:find){ campaign }
     subject.perform(campaign.id, *campaign.household_ids)
-    expect(resque_jobs(:data_migrations)).to include({
+    expect(resque_jobs(:dial_queue)).to include({
       'class' => subject.to_s,
       'args' => [campaign.id, *campaign.household_ids]
     })

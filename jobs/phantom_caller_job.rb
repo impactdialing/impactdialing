@@ -21,7 +21,7 @@ class PhantomCallerJob
   include Resque::Plugins::UniqueJob
   extend LibratoResque
 
-  @queue = :background_worker
+  @queue = :general
 
   def self.perform
     t = TwilioLib.new(TWILIO_ACCOUNT,TWILIO_AUTH)

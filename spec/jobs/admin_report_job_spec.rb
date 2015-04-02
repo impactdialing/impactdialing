@@ -43,7 +43,7 @@ describe AdminReportJob do
   it 'requeues itself on TERM' do
     allow(Reports::BillableMinutes).to receive(:new){ raise Resque::TermException, 'TERM' }
     AdminReportJob.perform(from_date, to_date, 'Enterprise', nil)
-    expect(resque_jobs(:upload_download)).to include({
+    expect(resque_jobs(:reports)).to include({
       'class' => 'AdminReportJob',
       'args' => [from_date, to_date, 'Enterprise', nil]
     })

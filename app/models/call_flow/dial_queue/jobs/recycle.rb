@@ -3,7 +3,7 @@ require 'impact_platform'
 
 module CallFlow::DialQueue::Jobs
   class Recycle
-    @queue = :background_worker
+    @queue = :dial_queue
     extend LibratoResque
 
     def self.perform

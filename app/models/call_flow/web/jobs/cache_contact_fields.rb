@@ -2,7 +2,7 @@ require 'librato_resque'
 require 'impact_platform/heroku'
 
 class CallFlow::Web::Jobs::CacheContactFields
-  @queue = :background_worker
+  @queue = :dial_queue
   extend LibratoResque
 
   def self.perform(script_id)

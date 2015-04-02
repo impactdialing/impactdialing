@@ -19,7 +19,7 @@ require 'librato_resque'
 class DoNotCall::Jobs::BlockedNumberDestroyed
   extend LibratoResque
   
-  @queue = :background_worker
+  @queue = :dial_queue
 
   def self.perform(account_id, campaign_id, phone_number)
     households = households_with(account_id, campaign_id, phone_number)

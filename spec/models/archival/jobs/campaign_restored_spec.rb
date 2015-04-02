@@ -33,7 +33,7 @@ describe 'Archival::Jobs::CampaignRestored' do
     allow(Campaign).to receive(:find){ campaign }
     allow(campaign).to receive(:all_voters){ raise Resque::TermException, 'TERM' }
     subject.perform(campaign.id)
-    expect(resque_jobs(:background_worker)).to include({
+    expect(resque_jobs(:dial_queue)).to include({
       'class' => subject.to_s,
       'args' => [campaign.id]
     })

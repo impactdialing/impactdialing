@@ -21,7 +21,7 @@ class VoterListChangeJob
   extend ImpactPlatform::Heroku::UploadDownloadHooks
   extend LibratoResque
 
-  @queue = :upload_download
+  @queue = :dial_queue
 
   def self.perform(voter_list_id, enabled)
     begin

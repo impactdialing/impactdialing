@@ -52,17 +52,13 @@ describe VoterList, :type => :model do
   end
 
   describe "voter enable callback after save" do
-    before do
-      Resque.redis.del "queue:upload_download"
-    end
     it "should queue job to enable all members when list enabled" do
       voter_list         = create(:voter_list, enabled: false)
       voter          = create(:voter, :disabled, voter_list: voter_list)
       voter_list.enabled = true
       voter_list.save
-      actual   = Resque.peek(:upload_download)
-      expected = {'class' => 'VoterListChangeJob', 'args' => [voter_list.id, true]}
-      expect(actual).to eq expected
+      voter_list_change_job = {'class' => 'VoterListChangeJob', 'args' => [voter_list.id, true]}
+      expect(resque_jobs(:dial_queue)).to include voter_list_change_job
     end
 
     it "should queue job to disable all members when list disabled" do
@@ -70,9 +66,8 @@ describe VoterList, :type => :model do
       voter              = create(:voter, :disabled, voter_list: voter_list)
       voter_list.enabled = false
       voter_list.save
-      actual   = Resque.peek(:upload_download)
-      expected = {'class' => 'VoterListChangeJob', 'args' => [voter_list.id, false]}
-      expect(actual).to eq expected
+      voter_list_change_job = {'class' => 'VoterListChangeJob', 'args' => [voter_list.id, false]}
+      expect(resque_jobs(:dial_queue)).to include voter_list_change_job
     end
   end
 end

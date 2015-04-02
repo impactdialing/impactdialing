@@ -4,7 +4,7 @@ module CallFlow::Jobs
   class PruneHouseholds
     include Resque::Plugins::UniqueJob
     extend LibratoResque
-    @queue = :data_migrations
+    @queue = :dial_queue
 
     def self.perform(campaign_id, *household_ids)
       begin

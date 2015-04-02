@@ -1,7 +1,7 @@
 module Archival::Jobs
   class CampaignSweeper
     extend LibratoResque
-    @queue = :background_worker
+    @queue = :general
 
     def self.time_threshold
       (ENV['CAMPAIGN_EXPIRY'].try(:to_i) || 90).days.ago.beginning_of_day

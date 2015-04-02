@@ -23,7 +23,7 @@ class DebitJob
   include Resque::Plugins::UniqueJob
   extend LibratoResque
 
-  @queue = :background_worker
+  @queue = :billing
 
   CALL_TIME_CLASSES = {
     'CallerSession' => 1000,

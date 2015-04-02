@@ -8,7 +8,7 @@ require 'librato_resque'
 module DoNotCall::Jobs
   class CacheWirelessBlockList
     extend LibratoResque
-    @queue = :upload_download
+    @queue = :general
 
     def self.url
       ENV['DO_NOT_CALL_WIRELESS_BLOCK_LIST_PROVIDER_URL']

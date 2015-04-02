@@ -34,11 +34,11 @@ describe 'Archival::Jobs::CampaignSweeper' do
     subject.perform
     expect(Campaign.archived.count).to eq 1
     expect(Campaign.archived.first).to eq inactive_campaign
-    expect(resque_jobs(:background_worker)).to include({
+    expect(resque_jobs(:general)).to include({
       'class' => 'CallFlow::DialQueue::Jobs::Purge',
       'args' => [inactive_campaign.id]
     })
-    expect(resque_jobs(:background_worker)).to include({
+    expect(resque_jobs(:general)).to include({
       'class' => 'Archival::Jobs::CampaignArchived',
       'args' => [inactive_campaign.id]
     })
@@ -48,11 +48,11 @@ describe 'Archival::Jobs::CampaignSweeper' do
     subject.perform
     expect(Campaign.active.count).to eq 1
     expect(Campaign.active.first).to eq active_campaign
-    expect(resque_jobs(:background_worker)).to_not include({
+    expect(resque_jobs(:general)).to_not include({
       'class' => 'CallFlow::DialQueue::Jobs::Purge',
       'args' => [active_campaign.id]
     })
-    expect(resque_jobs(:background_worker)).to_not include({
+    expect(resque_jobs(:general)).to_not include({
       'class' => 'Archival::Jobs::CampaignArchived',
       'args' => [active_campaign.id]
     })
@@ -65,11 +65,11 @@ describe 'Archival::Jobs::CampaignSweeper' do
 
     expect(Campaign.active.count).to eq 2
     expect(Campaign.active.all).to include inactive_campaign
-    expect(resque_jobs(:background_worker)).to_not include({
+    expect(resque_jobs(:general)).to_not include({
       'class' => 'CallFlow::DialQueue::Jobs::Purge',
       'args' => [inactive_campaign.id]
     })
-    expect(resque_jobs(:background_worker)).to_not include({
+    expect(resque_jobs(:general)).to_not include({
       'class' => 'Archival::Jobs::CampaignArchived',
       'args' => [inactive_campaign.id]
     })

@@ -21,7 +21,7 @@ class ReportDownloadJob
   extend ImpactPlatform::Heroku::UploadDownloadHooks
   extend LibratoResque
   
-  @queue = :upload_download
+  @queue = :reports
 
   def self.perform(campaign_id, user_id, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
     begin

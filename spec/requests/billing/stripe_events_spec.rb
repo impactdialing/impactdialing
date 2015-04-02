@@ -28,7 +28,7 @@ describe 'Store a new Stripe Event' do
 
   it 'queues Billing::Jobs::StripeEvent for new event record' do
     post billing_events_stripe_path, stripe_params
-    expect(resque_jobs(:background_worker)).to include({
+    expect(resque_jobs(:billing)).to include({
       'class' => 'Billing::Jobs::StripeEvent',
       'args' => [stripe_params[:id]]
     })

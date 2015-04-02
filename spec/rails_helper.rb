@@ -98,10 +98,12 @@ RSpec.configure do |config|
   end
 
   config.before(:each) do
+    Redis.new.flushall
     DatabaseCleaner.start
   end
 
   config.after(:each) do
+    Redis.new.flushall
     DatabaseCleaner.clean
   end
 end

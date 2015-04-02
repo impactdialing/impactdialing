@@ -19,9 +19,9 @@ describe Script, :type => :model do
       script.update_attributes(name: 'Updated Script Name')
     end
 
-    it 'queues :background_worker job to cache Script#voter_fields' do
+    it 'queues job to cache Script#voter_fields' do
       script.update_attributes(name: 'Updated')
-      actual = Resque.peek :background_worker, 0, 100
+      actual = Resque.peek :dial_queue, 0, 100
       expect(actual).to include({
         'class' => 'CallFlow::Web::Jobs::CacheContactFields',
         'args' => [script.id]

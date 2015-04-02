@@ -24,7 +24,7 @@ class ReportAccountUsageJob
   extend TimeZoneHelper
   extend LibratoResque
   
-  @queue = :upload_download
+  @queue = :reports
 
   def self.perform(report_type, user_id, from_date, to_date, internal_admin=false)
     begin

@@ -3,7 +3,7 @@ require 'librato_resque'
 module Archival::Jobs
   class CampaignArchived
     extend LibratoResque
-    @queue = :background_worker
+    @queue = :general
 
     def self.add_to_queue(campaign_id)
       Resque.enqueue(self, campaign_id)

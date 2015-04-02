@@ -3,7 +3,7 @@ require 'uri'
 module DoNotCall::Jobs
   class CachePortedLists
     extend LibratoResque
-    @queue = :upload_download
+    @queue = :general
 
     def self.url
       ENV['DO_NOT_CALL_PORTED_LISTS_PROVIDER_URL']

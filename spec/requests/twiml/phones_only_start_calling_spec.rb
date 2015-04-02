@@ -34,7 +34,7 @@ describe 'Phone-only caller dials TwiML app number' do
     it 'caches phones-only script questions' do
       post identify_caller_path, {Digits: caller.pin, attempt: 2}
       expect(response).to be_success
-      expect(resque_jobs(:persist_jobs)).to include({
+      expect(resque_jobs(:dial_queue)).to include({
         'class' => 'CachePhonesOnlyScriptQuestions',
         'args' => [caller.campaign.script_id, 'seed']
       })

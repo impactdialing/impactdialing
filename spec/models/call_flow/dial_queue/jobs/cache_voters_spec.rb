@@ -20,7 +20,7 @@ describe 'CacheVoters.perform(campaign_id, voter_ids, enabled)' do
     it 'requeues itself on TERM' do
       allow(CallFlow::DialQueue).to receive(:new){ raise Resque::TermException, 'TERM' }
       subject.perform(campaign.id, campaign.all_voters.pluck(:id), '1')
-      expect(resque_jobs(:upload_download)).to include({
+      expect(resque_jobs(:dial_queue)).to include({
         'class' => subject.to_s,
         'args' => [campaign.id, campaign.all_voters.pluck(:id), '1']
       })
@@ -38,7 +38,7 @@ describe 'CacheVoters.perform(campaign_id, voter_ids, enabled)' do
     it 'requeues itself on TERM' do
       allow(CallFlow::DialQueue).to receive(:new){ raise Resque::TermException, 'TERM' }
       subject.perform(campaign.id, campaign.all_voters.pluck(:id), '0')
-      expect(resque_jobs(:upload_download)).to include({
+      expect(resque_jobs(:dial_queue)).to include({
         'class' => subject.to_s,
         'args' => [campaign.id, campaign.all_voters.pluck(:id), '0']
       })

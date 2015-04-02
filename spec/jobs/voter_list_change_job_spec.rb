@@ -56,7 +56,7 @@ describe VoterListChangeJob do
   it 'queues job to cache voters' do
     subject.perform(voter_list.id, enabled)
 
-    actual = Resque.peek :upload_download, 0, 100
+    actual = Resque.peek :dial_queue, 0, 100
 
     expect(actual).to include({
       'class' => 'CallFlow::DialQueue::Jobs::CacheVoters',

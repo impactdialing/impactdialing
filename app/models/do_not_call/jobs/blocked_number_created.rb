@@ -19,7 +19,7 @@ require 'librato_resque'
 class DoNotCall::Jobs::BlockedNumberCreated
   extend LibratoResque
   
-  @queue = :background_worker
+  @queue = :dial_queue
 
   def self.perform(blocked_number_id)
     blocked_number = BlockedNumber.find blocked_number_id

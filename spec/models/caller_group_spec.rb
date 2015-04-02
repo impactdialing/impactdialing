@@ -26,7 +26,7 @@ describe CallerGroup, :type => :model do
 
     it 'queues CallerGroupJob when new campaign saved' do
       expect(caller_group.campaign).to eq(new_campaign)
-      expect(resque_jobs(:background_worker)).to include({
+      expect(resque_jobs(:dial_queue)).to include({
         'class' => 'CallerGroupJob',
         'args' => [caller_group.id]
       })

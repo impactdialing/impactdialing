@@ -83,14 +83,14 @@ describe Campaign, :type => :model do
         campaign.active = false
         campaign.save!
 
-        expect(resque_jobs(:background_worker)).to include(purge_job)
+        expect(resque_jobs(:general)).to include(purge_job)
       end
 
       it 'does not queue purge when campaign is archived and dial queue not present' do
         campaign.active = false
         campaign.save!
 
-        expect(resque_jobs(:background_worker)).to_not include(purge_job)
+        expect(resque_jobs(:general)).to_not include(purge_job)
       end
 
       it 'queues job to populate dial queue when campaign is restored' do
@@ -104,7 +104,7 @@ describe Campaign, :type => :model do
           'class' => 'Archival::Jobs::CampaignRestored',
           'args'  => [campaign.id]
         }
-        expect(resque_jobs(:background_worker)).to include(restore_job)
+        expect(resque_jobs(:dial_queue)).to include(restore_job)
       end
     end
   end
@@ -223,7 +223,7 @@ describe Campaign, :type => :model do
         end
 
         it 'queues job to un-assign callers from campaign' do
-          expect(resque_jobs(:background_worker)).to include(campaign_job)
+          expect(resque_jobs(:general)).to include(campaign_job)
         end
       end
     end

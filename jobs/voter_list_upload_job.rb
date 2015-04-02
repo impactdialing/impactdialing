@@ -23,7 +23,7 @@ class VoterListUploadJob
   extend ImpactPlatform::Heroku::UploadDownloadHooks
   extend LibratoResque
 
-  @queue = :upload_download
+  @queue = :dial_queue
 
   def self.response_template
     {"errors" => [], "success" => []}

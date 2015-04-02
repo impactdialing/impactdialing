@@ -23,7 +23,7 @@ class CachePhonesOnlyScriptQuestions
   include Resque::Plugins::UniqueJob
   extend LibratoResque
   
-  @queue = :persist_jobs
+  @queue = :dial_queue
 
   def self.add_to_queue(script_id, action)
     Resque.enqueue(self, script_id, action)

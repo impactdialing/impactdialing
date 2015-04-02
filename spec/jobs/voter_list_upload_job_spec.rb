@@ -59,7 +59,6 @@ describe 'VoterListUploadJob' do
     }
   end
   before do
-    Resque.redis.del "queue:upload_download"
     allow(amazon_s3).to receive(:read).with(voter_list.s3path){ csv_file }
     allow(AmazonS3).to receive(:new){ amazon_s3 }
     allow(VoterListWebuiStrategy).to receive(:new){ web_response_strategy }
@@ -109,9 +108,8 @@ describe 'VoterListUploadJob' do
 
     it 'queues ResetVoterListCounterCache' do
       VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
-      actual = Resque.peek('upload_download', 0, 10)
-      expected = {'class' => 'ResetVoterListCounterCache', 'args' => [voter_list.id]}
-      expect(actual).to include expected
+      reset_voter_list_counter_cache_job = {'class' => 'ResetVoterListCounterCache', 'args' => [voter_list.id]}
+      expect(resque_jobs(:general)).to include reset_voter_list_counter_cache_job
     end
   end
 
@@ -170,7 +168,7 @@ describe 'VoterListUploadJob' do
         VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
       rescue Resque::TermException
       end
-      actual = Resque.peek('upload_download', 0, 10)
+      actual = Resque.peek('dial_queue', 0, 10)
       expected = {'class' => 'VoterListUploadJob', 'args' => [voter_list.id, admin.email, admin.domain, callback_url, strategy]}
       expect(actual).to include expected
     end

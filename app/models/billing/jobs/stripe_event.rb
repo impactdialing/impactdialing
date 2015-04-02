@@ -25,7 +25,7 @@ require 'librato_resque'
 #
 class Billing::Jobs::StripeEvent
   extend LibratoResque
-  @queue = :background_worker
+  @queue = :billing
 
   def self.perform(stripe_event_id)
     stripe_event  = ::Billing::StripeEvent.pending.where(provider_id: stripe_event_id).first

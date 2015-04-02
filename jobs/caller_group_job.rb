@@ -23,7 +23,7 @@ class CallerGroupJob
   include Resque::Plugins::UniqueJob
   extend LibratoResque
   
-  @queue = :background_worker
+  @queue = :dial_queue
 
   def self.perform(caller_group_id)
     caller_group = CallerGroup.find(caller_group_id)

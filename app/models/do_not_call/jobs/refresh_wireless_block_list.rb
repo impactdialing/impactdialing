@@ -1,7 +1,7 @@
 module DoNotCall::Jobs
   class RefreshWirelessBlockList
     extend LibratoResque
-    @queue = :upload_download
+    @queue = :general
     
     def self.perform(filename)
       filepath = DoNotCall.s3_filepath(filename)

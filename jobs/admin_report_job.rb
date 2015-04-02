@@ -13,7 +13,7 @@ require 'librato_resque'
 # - 1 error
 #
 class AdminReportJob
-  @queue = :upload_download
+  @queue = :reports
   extend ImpactPlatform::Heroku::UploadDownloadHooks
   extend LibratoResque
 

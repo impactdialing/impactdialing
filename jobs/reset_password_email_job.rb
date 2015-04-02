@@ -18,7 +18,7 @@ require 'librato_resque'
 class ResetPasswordEmailJob
   extend LibratoResque
 
-  @queue = :background_worker
+  @queue = :general
   
   def self.perform(user_id)
     user = User.find(user_id)

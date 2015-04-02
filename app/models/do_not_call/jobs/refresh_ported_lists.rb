@@ -1,7 +1,7 @@
 module DoNotCall::Jobs
   class RefreshPortedLists
     extend LibratoResque
-    @queue = :upload_download
+    @queue = :general
     
     def self.perform
       DoNotCall::PortedList.filenames.each do |filename|

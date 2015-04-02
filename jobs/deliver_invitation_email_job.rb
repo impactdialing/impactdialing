@@ -18,7 +18,7 @@ require 'librato_resque'
 class DeliverInvitationEmailJob
   extend LibratoResque
 
-  @queue = :background_worker
+  @queue = :general
 
   def self.perform(new_user_id, current_user_id)
     new_user = User.find(new_user_id)

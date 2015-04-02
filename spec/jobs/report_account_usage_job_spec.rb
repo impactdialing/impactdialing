@@ -97,7 +97,7 @@ describe ReportAccountUsageJob do
     it 'requeues itself on TERM' do
       allow(ReportAccountUsageJob).to receive(:mail_campaigns_usage){ raise Resque::TermException, 'TERM' }
       ReportAccountUsageJob.perform('campaigns', user.id, from_date, to_date, internal_admin)
-      expect(resque_jobs(:upload_download)).to include({
+      expect(resque_jobs(:reports)).to include({
         'class' => 'ReportAccountUsageJob',
         'args' => ['campaigns', user.id, from_date.iso8601(3), to_date.iso8601(3), internal_admin]
       })

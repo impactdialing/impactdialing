@@ -18,7 +18,7 @@ require 'librato_resque'
 class ResetVoterListCounterCache
   extend LibratoResque
 
-  @queue = :upload_download
+  @queue = :general
 
   def self.perform(voter_list_id)
     VoterList.reset_counters(voter_list_id, :voters)

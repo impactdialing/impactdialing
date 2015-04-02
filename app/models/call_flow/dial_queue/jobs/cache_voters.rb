@@ -3,7 +3,7 @@ require 'impact_platform/heroku'
 
 module CallFlow::DialQueue::Jobs
   class CacheVoters
-    @queue = :upload_download
+    @queue = :dial_queue
     extend ImpactPlatform::Heroku::UploadDownloadHooks
     extend LibratoResque
 

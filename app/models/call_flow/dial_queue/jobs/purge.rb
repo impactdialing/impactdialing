@@ -3,7 +3,7 @@ require 'impact_platform'
 
 module CallFlow::DialQueue::Jobs
   class Purge
-    @queue = :background_worker
+    @queue = :general
     extend LibratoResque
 
     def self.add_to_queue(campaign_id)

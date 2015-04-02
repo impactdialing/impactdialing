@@ -9,11 +9,6 @@ describe 'CampaignOutOfNumbersJob.perform(caller_session_id)' do
     redis.zrange('resque:schedule', 0, -1).map{|job| JSON.load(job)}
   end
 
-  def clear_resque_schedule
-    redis          = Redis.new
-    redis.zrem 'resque:schedule', redis.zrange('resque:schedule', 0, -1)
-  end
-
   context 'the caller session is not available (ie the caller is on the line w/ a contact)' do
     before do
       caller_session.update_attributes!(on_call: true, available_for_call: false)
@@ -42,7 +37,6 @@ describe 'CampaignOutOfNumbersJob.perform(caller_session_id)' do
 
   context 'the caller session is not on call (ie the caller has disconnected)' do
     it 'does not re-queue the job' do
-      clear_resque_schedule
       CampaignOutOfNumbersJob.new.perform(caller_session.id)
       expect(resque_scheduled_jobs).to be_empty
     end
