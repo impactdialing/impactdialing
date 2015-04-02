@@ -8,7 +8,7 @@ class CallerGroup < ActiveRecord::Base
   after_save :reassign_callers
 
   def reassign_in_background
-    self.callers.each { |c| c.update_attributes(campaign_id: campaign_id) }
+    self.callers.update_all(campaign_id: campaign_id)
   end
 
   private

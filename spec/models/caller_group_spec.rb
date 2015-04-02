@@ -8,16 +8,35 @@ describe CallerGroup, :type => :model do
     it {is_expected.to belong_to :account}
   end
 
-  it 'updates its callers to its campaign when saved' do
-    original_campaign = create(:preview)
-    caller = create(:caller, campaign_id: original_campaign.id)
-    caller_group = create(:caller_group, campaign_id: original_campaign.id, callers: [caller])
-    new_campaign = create(:predictive, name: "new")
-    expect(Resque).to receive(:enqueue).with(CallerGroupJob, caller_group.id)
-    caller_group.update_attributes(campaign_id: new_campaign.id)
-    expect(caller_group.campaign).to eq(new_campaign)
+  context 'campaign reassignment' do
+    let(:account){ create(:account) }
+    let(:original_campaign){ create(:preview, account: account) }
+    let(:caller_group){ create(:caller_group, campaign: original_campaign) }
+    let(:caller){ create(:caller, campaign: original_campaign, caller_group: caller_group, account: account) }
+    let(:new_campaign){ create(:predictive, account: account) }
 
-    # caller.campaign.should eq new_campaign
+    before do
+      Redis.new.flushall
+      caller_group.update_attributes(campaign_id: new_campaign.id)
+    end
+
+    after do
+      Redis.new.flushall
+    end
+
+    it 'queues CallerGroupJob when new campaign saved' do
+      expect(caller_group.campaign).to eq(new_campaign)
+      expect(resque_jobs(:background_worker)).to include({
+        'class' => 'CallerGroupJob',
+        'args' => [caller_group.id]
+      })
+    end
+
+    it 'updates all associated callers to the new campaign' do
+      expect(caller_group.campaign).to eq new_campaign
+      caller_group.reassign_in_background
+      expect(caller.campaign).to eq new_campaign
+    end
   end
 end
 
