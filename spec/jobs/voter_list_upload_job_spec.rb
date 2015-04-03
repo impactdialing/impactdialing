@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'voter_list_upload_job'
 
 describe 'VoterListUploadJob' do
   let(:amazon_s3) do
@@ -87,6 +88,71 @@ describe 'VoterListUploadJob' do
     it 'returns immediately (without downloading file from S3)' do
       expect(amazon_s3).to_not receive(:read)
       VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+    end
+  end
+
+  shared_examples 'any upload that raises ActiveRecord::StatementInvalid' do
+    it 'destroys any created voters' do
+      list_id = voter_list.id
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      expect(Voter.where(voter_list_id: list_id).count).to be_zero
+    end
+
+    it 'destroys the voter list' do
+      list_id = voter_list.id
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      expect(VoterList.where(id: list_id).count).to be_zero
+    end
+
+    it 'returns immediately' do
+      expect(VoterListUploadJob).to_not receive(:handle_success)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+    end
+  end
+
+  describe 'uploaded file triggers ActiveRecord::StatementInvalid' do
+    context 'because it contains custom field values that are too long' do
+      let(:lengthy_value_voter_list) do
+        File.read(File.join(fixture_path, 'files', 'lengthy_custom_value_voter_list.csv'))
+      end
+
+      let(:custom_csv_to_system_map) do
+        {
+          "Phone" => 'phone',
+          "Custom" => 'Short custom',
+          "Lengthy Custom Text" => 'Long custom'
+        }
+      end
+
+      before do
+        voter_list.update_attributes!(csv_to_system_map: custom_csv_to_system_map)
+        allow(amazon_s3).to receive(:read).with(voter_list.s3path){ lengthy_value_voter_list }
+      end
+
+      it 'tells the VoterList*Strategy instance to respond with the error message(s)' do
+        expect(web_response_strategy).to receive(:response).with({'errors' => [I18n.t('activerecord.errors.models.voter_list.data_too_long')], 'success' => []}, responder_opts)
+        VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      end
+
+      it_behaves_like 'any upload that raises ActiveRecord::StatementInvalid'
+    end
+
+    context 'because of other reasons' do
+      let(:fake_batch_import) do
+        double('FakeBatchImport')
+      end
+
+      before do
+        allow(fake_batch_import).to receive(:import_csv){ raise ActiveRecord::StatementInvalid, 'Mysql2::Error: other reasons caused this' }
+        allow(VoterBatchImport).to receive(:new){ fake_batch_import }
+      end
+      
+      it 'tells the VoterList*Strategy instance to respond with the error message(s)' do
+        expect(web_response_strategy).to receive(:response).with({'errors' => [I18n.t('activerecord.errors.models.voter_list.general_error')], 'success' => []}, responder_opts)
+        VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      end
+
+      it_behaves_like 'any upload that raises ActiveRecord::StatementInvalid'
     end
   end
 

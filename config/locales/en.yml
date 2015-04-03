@@ -29,6 +29,8 @@ en:
           too_short: "Number is too short (min 10 digits)"
           not_a_number: "Number must contain only digits, - (hyphens), () (paranthesis) or + (plus signs)"
           taken: "%{value} is already in the specified Do Not Call list"
+        voter_list:
+          data_too_long: "One or more headers or values selected during upload contain data that is longer than 254 characters. You can trim this data, split it into multiple columns or choose the (Discard this column) option to have it be ignored."
   blocked_number_created: "%{number} successfully added to Do Not Call list for %{level}."
   blocked_number_deleted: "%{number} removed from Do Not Call list for %{level}"
   caller_id_blank: "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign."

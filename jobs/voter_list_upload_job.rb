@@ -102,7 +102,20 @@ class VoterListUploadJob
 
       # import voters
       batch_upload = VoterBatchImport.new(voter_list, csv_mapping, headers, data)
-      result       = batch_upload.import_csv
+      begin
+        result       = batch_upload.import_csv
+      rescue ActiveRecord::StatementInvalid => exception
+        error_msg = if exception.message =~ /\AMysql2::Error: Data too long for column.*/
+                      I18n.t('activerecord.errors.models.voter_list.data_too_long')
+                    else
+                      I18n.t('activerecord.errors.models.voter_list.general_error')
+                    end
+
+        handle_errors(responder, error_msg, domain, email, voter_list)
+        voter_list.voters.destroy_all
+        voter_list.destroy
+        return false
+      end
 
       # build & email import results
       handle_success(responder, result, domain, email, voter_list)
