@@ -18,7 +18,7 @@ class Recording < ActiveRecord::Base
   validates_attachment_content_type(:file, {
     content_type: [
       'audio/wav', 'audio/x-wav', 'audio/vnd.wave',
-      'audio/mpeg3', 'audio/x-mpeg-3', 'audio/mpeg',
+      'audio/mpeg3', 'audio/x-mpeg-3', 'audio/mpeg', 'audio/mp3',
       'audio/aiff', 'audio/x-aiff'
     ],
     message: 'Please upload an audio file encoded with one of WAV, MP3, or AIF.'

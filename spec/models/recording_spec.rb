@@ -5,7 +5,7 @@ describe Recording, :type => :model do
   it { should validate_attachment_presence :file }
   it { should validate_attachment_content_type(:file).
         allowing('audio/wav', 'audio/x-wav', 'audio/vnd.wave',
-          'audio/mpeg3', 'audio/x-mpeg-3', 'audio/mpeg',
+          'audio/mpeg3', 'audio/x-mpeg-3', 'audio/mpeg', 'audio/mp3',
           'audio/aiff', 'audio/x-aiff').
         rejecting('text/html', 'text/xml', 'image/jpg',
           'application/vnd.ms-excel',
