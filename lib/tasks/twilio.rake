@@ -69,4 +69,26 @@ namespace :calls do
     print "Number,Status,Calls,SID,Start time,End time,Duration,Price\n"
     print report.map{|row| row.join(',')}.join("\n") + "\n"
   end
+
+  desc "Pull CallerSession call details for given SIDs"
+  task :list_client, [:sids] => [:environment] do |t,args|
+    sids = args[:sids].split(':')
+
+    print "Fetching data for #{sids.size} sessions.\n"
+
+    header = ['Started', 'Ended', 'Duration']
+    report = []
+
+    sids.each do |sid|
+      call = twilio_client.accounts.get(account_sid).calls.get(sid)
+      report << [
+        call.start_time.in_time_zone('Pacific Time (US & Canada)'),
+        call.end_time.in_time_zone('Pacific Time (US & Canada)'),
+        (call.duration.to_i / 60.0)
+      ]
+    end
+
+    print header.join(',') + "\n"
+    print report.map{|line| line.join(',')}.join("\n") + "\n"
+  end
 end
