@@ -1,4 +1,4 @@
-require 'impact_platform'
+require 'impact_platform/metrics'
 
 module CallFlow::DialQueue::Jobs
   class Monitor

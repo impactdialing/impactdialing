@@ -1,5 +1,4 @@
 require 'resque/errors'
-require 'impact_platform/heroku'
 require 'librato_resque'
 
 ##
@@ -18,7 +17,6 @@ require 'librato_resque'
 # - 1 failure
 #
 class ReportDownloadJob
-  extend ImpactPlatform::Heroku::UploadDownloadHooks
   extend LibratoResque
   
   @queue = :reports

@@ -1,5 +1,4 @@
 require 'librato_resque'
-require 'impact_platform'
 
 module CallFlow::DialQueue::Jobs
   class Recycle

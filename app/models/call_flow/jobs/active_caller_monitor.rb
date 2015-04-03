@@ -1,5 +1,3 @@
-require 'impact_platform'
-
 module CallFlow::Jobs
   class ActiveCallerMonitor
 

@@ -1,5 +1,4 @@
 require 'librato_resque'
-require 'impact_platform/heroku'
 
 class CallFlow::Web::Jobs::CacheContactFields
   @queue = :dial_queue

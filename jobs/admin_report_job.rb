@@ -1,5 +1,4 @@
 require 'reports'
-require 'impact_platform/heroku'
 require 'librato_resque'
 
 ##
@@ -14,7 +13,6 @@ require 'librato_resque'
 #
 class AdminReportJob
   @queue = :reports
-  extend ImpactPlatform::Heroku::UploadDownloadHooks
   extend LibratoResque
 
   def self.perform(from, to, report_type, include_undebited)

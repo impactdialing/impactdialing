@@ -1,5 +1,4 @@
 require 'reports'
-require 'impact_platform/heroku'
 require 'librato_resque'
 
 ##
@@ -20,7 +19,6 @@ require 'librato_resque'
 # - 1 failure
 #
 class ReportAccountUsageJob
-  extend ImpactPlatform::Heroku::UploadDownloadHooks
   extend TimeZoneHelper
   extend LibratoResque
   

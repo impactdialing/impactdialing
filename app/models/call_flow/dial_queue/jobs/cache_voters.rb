@@ -1,10 +1,8 @@
 require 'librato_resque'
-require 'impact_platform/heroku'
 
 module CallFlow::DialQueue::Jobs
   class CacheVoters
     @queue = :dial_queue
-    extend ImpactPlatform::Heroku::UploadDownloadHooks
     extend LibratoResque
 
     def self.perform(campaign_id, voter_ids, enabled)
