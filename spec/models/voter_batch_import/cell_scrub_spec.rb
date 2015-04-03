@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 describe 'VoterBatchImport', data_heavy: true do
-  before(:all) do
+  before do
     filepath            = File.join Rails.root, 'spec', 'fixtures', 'wireless', 'nalennd_block.csv'
     wireless_block_file = File.new(filepath, 'r').read
     DoNotCall::WirelessBlockList.cache(wireless_block_file)
