@@ -3,6 +3,14 @@ class MandrillMailer
   include Rails.application.routes.url_helpers
   include WhiteLabeling
 
+  def protocol
+    if Rails.env.development?
+      'http://'
+    else
+      'https://'
+    end
+  end
+
   def initialize(*args)
     @mandrill = Mandrill::API.new(MANDRILL_API_KEY)
   end

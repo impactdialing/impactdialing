@@ -19,7 +19,7 @@ class UserMailer < MandrillMailer
   end
 
   def deliver_invitation(new_user, current_user)
-    link = reset_password_url(protocol: PROTOCOL, :host => "admin.#{current_user.domain}", :reset_code => new_user.password_reset_code)
+    link = reset_password_url(protocol: protocol, :host => "admin.#{current_user.domain}", :reset_code => new_user.password_reset_code)
     send_email({
         :subject => I18n.t(:admin_invite_subject, :title => white_labeled_title(current_user.domain)),
         :html => I18n.t(:admin_invite_body_html, :title => white_labeled_title(current_user.domain), :link => link),
@@ -33,7 +33,7 @@ class UserMailer < MandrillMailer
   end
 
   def reset_password(user)
-      emailText="Click here to reset your password<br/> #{ reset_password_url(protocol: PROTOCOL, :host => "admin.#{user.domain}", :reset_code => user.password_reset_code) }"
+      emailText="Click here to reset your password<br/> #{ reset_password_url(protocol: protocol, :host => "admin.#{user.domain}", :reset_code => user.password_reset_code) }"
       response = send_email({
             :subject => "#{white_labeled_title(user.domain)} password recovery",
             :html => emailText,

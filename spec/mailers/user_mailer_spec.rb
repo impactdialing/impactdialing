@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe UserMailer, :type => :mailer do
   include ExceptionMethods
+  include Rails.application.routes.url_helpers
 
   let(:white_labeled_email){ 'info@stonesphones.com' }
   let(:white_label){ 'stonesphonesdialer' }
@@ -38,7 +39,13 @@ describe UserMailer, :type => :mailer do
     let :user do
       double({
         domain: 'test.com',
-        email: 'user@test.com'
+        email:  'user@test.com'
+      })
+    end
+    let(:new_user) do
+      double({
+        password_reset_code: 'secret-password-reset-code',
+        email:               'new_user@test.com'
       })
     end
     let :campaign do
@@ -47,13 +54,37 @@ describe UserMailer, :type => :mailer do
       })
     end
     let(:account_id) { 111 }
-    after do
-      VCR.use_cassette('email download fail message') do
-        @mailer.deliver_download_failure(user, campaign)
+
+    describe '#deliver_invitation(new_user, current_user)' do
+      it 'sends an email with a link to set the password for the new user' do
+        set_password_link = reset_password_url({
+          protocol: 'https://',
+          host: "admin.#{user.domain}",
+          reset_code: new_user.password_reset_code
+        })
+        expect(@mailer).to receive(:send_email).with({
+          to:      [{email: new_user.email}],
+          subject: I18n.t(:admin_invite_subject, title: 'Impact Dialing'),
+          html: I18n.t(:admin_invite_body_html, title: 'Impact Dialing', link: set_password_link),
+          text: I18n.t(:admin_invite_body_text, title: 'Impact Dialing', link: set_password_link),
+          from_name: 'Impact Dialing',
+          from_email: 'email@impactdialing.com',
+          track_opens: true,
+          track_clicks: true
+        })
+        VCR.use_cassette('email new user invite message') do
+          @mailer.deliver_invitation(new_user, user)
+        end
       end
     end
 
     describe '#deliver_download_failure(user, campaign)' do
+      after do
+        VCR.use_cassette('email download fail message') do
+          @mailer.deliver_download_failure(user, campaign)
+        end
+      end
+
       it 'has a subject of :report_error_occured_subject' do
         expect(@mailer).to receive(:send_email).with({
           to: anything,
