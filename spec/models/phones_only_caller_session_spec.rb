@@ -318,7 +318,7 @@ describe PhonesOnlyCallerSession, :type => :model do
     describe "skip voter if # selected" do
       it "should render correct twiml if pound selected" do
         voter          = create(:voter, first_name:"first", last_name:"last")
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "#", voter_in_progress: voter)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "#")
         
         RedisCallerSession.set_request_params(caller_session.id, {digit: "#", question_number: 0})
 
@@ -338,7 +338,7 @@ describe PhonesOnlyCallerSession, :type => :model do
 
       it "render correct twiml" do
         question = create(:question, script: @script)
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
         RedisCallerSession.set_request_params(caller_session.id, {digit: "*", question_number: 0})
 
         expect(caller_session).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.household.phone])
@@ -400,7 +400,7 @@ describe PhonesOnlyCallerSession, :type => :model do
 
       it "render correct twiml" do
         question       = create(:question, script: @script)
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
 
         expect(caller_session).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.household.phone])
 
@@ -438,7 +438,7 @@ describe PhonesOnlyCallerSession, :type => :model do
 
       it "should render correct twiml" do
         call_attempt = create(:call_attempt, voter: @voter)
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0, script_id: @script.id)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0, script_id: @script.id)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0})
         expect(caller_session).to receive(:call_answered?).and_return(true)
         expect(RedisQuestion).to receive(:get_question_to_read).with(@script.id, caller_session.question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
@@ -488,7 +488,7 @@ describe PhonesOnlyCallerSession, :type => :model do
     describe "gather_response to read_next_question" do
       it "should render correct twiml" do
         call_attempt = create(:call_attempt, voter: @voter)
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0, script_id: @script.id)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0, script_id: @script.id)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0})
 
         gather_options = {
@@ -518,7 +518,7 @@ describe PhonesOnlyCallerSession, :type => :model do
 
     describe "run out of phone numbers" do
       it "should render hangup twiml" do
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "conference_started_phones_only_predictive", voter_in_progress: nil)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "conference_started_phones_only_predictive")
         @campaign.caller_sessions << caller_session
         @campaign.save!
 
@@ -574,7 +574,7 @@ describe PhonesOnlyCallerSession, :type => :model do
 
       it "render correct twiml" do
         call_attempt   = create(:call_attempt, voter: @voter)
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", question_id: @question.id, attempt_in_progress: call_attempt)
         twiml = [
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
           "<Response><Redirect>",
@@ -631,7 +631,7 @@ describe PhonesOnlyCallerSession, :type => :model do
 
       it "should render correct twiml " do
         call_attempt = create(:call_attempt, voter: @voter)
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
         
         expect(caller_session).to receive(:disconnected?).and_return(false)
@@ -654,7 +654,7 @@ describe PhonesOnlyCallerSession, :type => :model do
 
       it "should move to read_next_question state" do
         call_attempt = create(:call_attempt, voter: @voter, connecttime: Time.now)
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, script_id: @script.id)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", question_id: @question.id, attempt_in_progress: call_attempt, script_id: @script.id)
 
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
         expect(RedisQuestion).to receive(:get_question_to_read).with(@script.id, caller_session.redis_question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
@@ -685,7 +685,7 @@ describe PhonesOnlyCallerSession, :type => :model do
     describe "no_more_questions_to_be_answered" do
       it "should move to read_next_question state" do
         call_attempt = create(:call_attempt, voter: @voter, connecttime: Time.now)
-        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", question_id: @question.id, attempt_in_progress: call_attempt)
         twiml = [
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
           "<Response><Redirect>",
@@ -700,7 +700,25 @@ describe PhonesOnlyCallerSession, :type => :model do
         url = next_call_caller_url(@caller, session_id: caller_session.id)
         expect(caller_session.gather_response(@voter.id)).to redirect(url)
       end
+    end
 
+    describe 'caller hangs up without submitting a response (therefore, /gather_response is last end-point hit and params[:voter_id] is not set)' do
+      it 'uses the voter_id from #attempt_in_progress' do
+        call_attempt = create(:call_attempt, voter: @voter, connecttime: Time.now)
+        caller_session = create(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", question_id: @question.id, attempt_in_progress: call_attempt)
+        allow(caller_session).to receive(:call_answered?){ false }
+
+        Timecop.freeze do
+          caller_session.gather_response(nil)
+          wrapped_up_calls = RedisCallFlow.wrapped_up_call_list.compact.map{|item| JSON.load(item)}
+          expect(wrapped_up_calls).to include({
+            'id' => call_attempt.id,
+            'caller_type' => CallerSession::CallerType::PHONE,
+            'voter_id' => @voter.id,
+            'current_time' => RedisCallFlow.current_time
+          })
+        end
+      end
     end
   end
 

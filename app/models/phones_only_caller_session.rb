@@ -73,7 +73,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
 
   def submit_response(voter_id)
-    voter_id ||= attempt_in_progress.voter_id
+    voter_id ||= attempt_in_progress.voter_id # for predictive
     household_id = attempt_in_progress.household_id
     RedisPhonesOnlyAnswer.push_to_list(voter_id, household_id, self.id, redis_digit, redis_question_id)
     return disconnected_twiml if disconnected?
@@ -102,6 +102,7 @@ class PhonesOnlyCallerSession < CallerSession
   def wrapup_call_attempt(voter_id)
     RedisStatus.set_state_changed_time(campaign_id, "On hold", self.id)
     unless attempt_in_progress.nil?
+      voter_id ||= attempt_in_progress.voter_id # for predictive
       RedisCallFlow.push_to_wrapped_up_call_list(attempt_in_progress.id, CallerSession::CallerType::PHONE, voter_id)
     end
   end
