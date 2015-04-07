@@ -43,6 +43,20 @@ describe PersistCalls do
         end
       end
 
+      context 'voter_id from wrapped_up_call_list is nil' do
+        let!(:bad_voter){ create(:voter, campaign: campaign) }
+        let!(:bad_call_attempt){ create(:call_attempt, household: bad_voter.household, campaign: campaign) }
+
+        before do
+          $redis_call_flow_connection.lpush 'wrapped_up_call_list', {id: bad_call_attempt.id, voter_id: nil, caller_type: CallerSession::CallerType::TWILIO_CLIENT, current_time: time}.to_json
+        end
+
+        it 'uses the first voter from the household associated w/ the call attempt' do
+          PersistCalls.perform
+          expect(bad_call_attempt.reload.voter).to eq bad_voter
+        end
+      end
+
       context "exception" do
         before(:each) do
           allow(Call).to receive(:where) { raise 'exception' }
