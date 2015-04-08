@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150406235857) do
+ActiveRecord::Schema.define(version: 20150408203225) do
 
   create_table "accounts", force: true do |t|
     t.datetime "created_at"
@@ -263,7 +263,6 @@ ActiveRecord::Schema.define(version: 20150406235857) do
   end
 
   create_table "campaigns", force: true do |t|
-    t.string   "campaign_id"
     t.string   "name"
     t.integer  "account_id"
     t.integer  "script_id"

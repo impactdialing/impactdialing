@@ -13,7 +13,6 @@ end
 # Name                                      | Type               | Attributes
 # ----------------------------------------- | ------------------ | ---------------------------
 # **`id`**                                  | `integer`          | `not null, primary key`
-# **`campaign_id`**                         | `string(255)`      |
 # **`name`**                                | `string(255)`      |
 # **`account_id`**                          | `integer`          |
 # **`script_id`**                           | `integer`          |
