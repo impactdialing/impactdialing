@@ -46,7 +46,7 @@ end
 # Name                | Type               | Attributes
 # ------------------- | ------------------ | ---------------------------
 # **`id`**            | `integer`          | `not null, primary key`
-# **`note`**          | `text`             | `default(""), not null`
+# **`note`**          | `text`             | `not null`
 # **`script_id`**     | `integer`          | `not null`
 # **`script_order`**  | `integer`          |
 #

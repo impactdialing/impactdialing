@@ -299,7 +299,7 @@ end
 # **`voter_response_processed`**      | `boolean`          | `default(FALSE)`
 # **`debited`**                       | `boolean`          | `default(FALSE)`
 # **`recording_id`**                  | `integer`          |
-# **`recording_delivered_manually`**  | `boolean`          | `default(FALSE)`
+# **`recording_delivered_manually`**  | `boolean`          |
 # **`household_id`**                  | `integer`          |
 #
 # ### Indexes

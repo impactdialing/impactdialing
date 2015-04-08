@@ -173,8 +173,8 @@ end
 # **`blocked`**       | `integer`          | `default(0), not null`
 # **`status`**        | `string(255)`      | `default("not called"), not null`
 # **`presented_at`**  | `datetime`         |
-# **`created_at`**    | `datetime`         | `not null`
-# **`updated_at`**    | `datetime`         | `not null`
+# **`created_at`**    | `datetime`         |
+# **`updated_at`**    | `datetime`         |
 #
 # ### Indexes
 #

@@ -123,6 +123,10 @@ end
 # * `index_blocked_numbers_account_id_campaign_id`:
 #     * **`account_id`**
 #     * **`campaign_id`**
+# * `index_blocked_numbers_on_account_campaign_number`:
+#     * **`account_id`**
+#     * **`campaign_id`**
+#     * **`number`**
 # * `index_on_blocked_numbers_number`:
 #     * **`number`**
 #

@@ -90,3 +90,29 @@ describe 'Billing::StripeEvent' do
     end
   end
 end
+
+# ## Schema Information
+#
+# Table name: `billing_stripe_events`
+#
+# ### Columns
+#
+# Name                       | Type               | Attributes
+# -------------------------- | ------------------ | ---------------------------
+# **`id`**                   | `integer`          | `not null, primary key`
+# **`provider_id`**          | `string(255)`      | `not null`
+# **`provider_created_at`**  | `date`             |
+# **`name`**                 | `string(255)`      |
+# **`request`**              | `string(255)`      |
+# **`pending_webhooks`**     | `integer`          |
+# **`data`**                 | `text`             |
+# **`processed`**            | `datetime`         |
+# **`livemode`**             | `boolean`          |
+# **`created_at`**           | `datetime`         | `not null`
+# **`updated_at`**           | `datetime`         | `not null`
+#
+# ### Indexes
+#
+# * `index_billing_stripe_events_on_provider_id`:
+#     * **`provider_id`**
+#

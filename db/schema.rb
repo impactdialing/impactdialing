@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141216233717) do
+ActiveRecord::Schema.define(version: 20150406235857) do
 
   create_table "accounts", force: true do |t|
     t.datetime "created_at"
@@ -361,7 +361,6 @@ ActiveRecord::Schema.define(version: 20141216233717) do
     t.integer "script_order"
   end
 
-
   create_table "possible_responses", force: true do |t|
     t.integer "question_id"
     t.integer "keypad"
@@ -431,7 +430,6 @@ ActiveRecord::Schema.define(version: 20141216233717) do
     t.float    "best_wrapup_time"
   end
 
-
   create_table "transfer_attempts", force: true do |t|
     t.integer  "transfer_id"
     t.integer  "caller_session_id"
@@ -490,7 +488,7 @@ ActiveRecord::Schema.define(version: 20141216233717) do
 
   create_table "voter_lists", force: true do |t|
     t.string   "name"
-    t.string   "account_id"
+    t.integer  "account_id"
     t.boolean  "active",             default: true
     t.datetime "created_at"
     t.datetime "updated_at"

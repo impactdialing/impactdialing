@@ -85,7 +85,7 @@ end
 # ------------------------ | ------------------ | ---------------------------
 # **`id`**                 | `integer`          | `not null, primary key`
 # **`script_id`**          | `integer`          | `not null`
-# **`text`**               | `text`             | `default(""), not null`
+# **`text`**               | `text`             | `not null`
 # **`script_order`**       | `integer`          |
 # **`external_id_field`**  | `string(255)`      |
 #
