@@ -133,22 +133,6 @@ Repeat adnauseum: 657-888-9655
 
 ### Trouble
 
-#### Background Jobs
-
-##### Unique jobs fail to run (resque-loner)
-
-There may be a stale redis key still in memory.
-
-Check:
-```
-Resque::Plugins::Loner::Helpers.loner_queued?(:queue_name, {class: 'ClassOfPertinentJob', args: []})
-```
-
-Then remove it with:
-```
-Resque::Plugins::Loner::Helpers.mark_loner_as_unqueued(:queue_name, {class: 'ClassOfPertinentJob', args: []})
-```
-
 ##### Phantom callers
 
 Sometimes caller sessions will remain registered long after the caller has disconnected. There is a job that should clean up these 'Phantom callers' but it currently will fail quietly sporadically.
