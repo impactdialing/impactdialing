@@ -73,7 +73,7 @@ describe Client::PossibleResponsesController, :type => :controller do
 
       post :create, script_id: active_script.id, question_id: question.id, possible_response: data,  :api_key=> account.api_key, :format => "json"
 
-      response_id = JSON.load(response.body)['possible_response']['id']
+      response_id = JSON.parse(response.body)['possible_response']['id']
       expect(response.body).to eq PossibleResponse.find(response_id).to_json
     end
 

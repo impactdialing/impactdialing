@@ -38,6 +38,6 @@ public
 
   def data
     fields = redis.hget(keys[:active], object.id)
-    JSON.load(fields) or []
+    fields.nil? ? [] : JSON.parse(fields)
   end
 end

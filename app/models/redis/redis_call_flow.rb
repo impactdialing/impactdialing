@@ -27,7 +27,7 @@ class RedisCallFlow
 
   def self.get_message_drop_info(call_id)
     info = $redis_call_flow_connection.hget "message_dropped", call_id
-    info.nil? ? {} : JSON.load(info)
+    info.nil? ? {} : JSON.parse(info)
   end
   
   # done

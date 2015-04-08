@@ -75,7 +75,7 @@ describe 'CallFlow::DialQueue::Households' do
       subject.add(phone_with_country_code, updated)
 
       actual = redis.hget *key(phone_with_country_code)
-      actual = JSON.load(actual)
+      actual = JSON.parse(actual)
       expect(actual.first).to eq updated
     end
   end

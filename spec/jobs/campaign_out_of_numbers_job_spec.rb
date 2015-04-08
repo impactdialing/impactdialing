@@ -6,7 +6,7 @@ describe 'CampaignOutOfNumbersJob.perform(caller_session_id)' do
 
   def resque_scheduled_jobs
     redis          = Redis.new
-    redis.zrange('resque:schedule', 0, -1).map{|job| JSON.load(job)}
+    redis.zrange('resque:schedule', 0, -1).map{|job| JSON.parse(job)}
   end
 
   context 'the caller session is not available (ie the caller is on the line w/ a contact)' do

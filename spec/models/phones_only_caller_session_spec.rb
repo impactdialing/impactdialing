@@ -710,7 +710,7 @@ describe PhonesOnlyCallerSession, :type => :model do
 
         Timecop.freeze do
           caller_session.gather_response(nil)
-          wrapped_up_calls = RedisCallFlow.wrapped_up_call_list.compact.map{|item| JSON.load(item)}
+          wrapped_up_calls = RedisCallFlow.wrapped_up_call_list.compact.map{|item| JSON.parse(item)}
           expect(wrapped_up_calls).to include({
             'id' => call_attempt.id,
             'caller_type' => CallerSession::CallerType::PHONE,

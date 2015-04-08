@@ -229,7 +229,7 @@ describe Call, :type => :model do
                 "<Response><Hangup/></Response>"
               ]
               info = RedisCallFlow.abandoned_call_list
-              info = JSON.load(info.first)
+              info = JSON.parse(info.first)
               expect(info['id']).to eq call.id
               expect(Time.parse(info['current_time'])).to be > 1.minute.ago
               expect(@twiml).to eq twiml.join

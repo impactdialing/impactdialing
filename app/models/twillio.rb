@@ -76,7 +76,7 @@ class Twillio
                   ].join(' ')
                 }
                else
-                 JSON.load(http_response)
+                 JSON.parse(http_response)
                end
     if error_response_codes.include?(response["status"])
       handle_failed_call(call_attempt, caller_session, household, response)

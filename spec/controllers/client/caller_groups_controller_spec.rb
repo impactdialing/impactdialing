@@ -32,7 +32,7 @@ describe Client::CallerGroupsController, :type => :controller do
       post :create, api_key: account.api_key,
                     format: 'json',
                     caller_group: {name: 'caller_group', campaign_id: 1}
-      returned = JSON.load(response.body)
+      returned = JSON.parse(response.body)
       expect(CallerGroup.find(returned['caller_group']['id'])).to eq CallerGroup.last
     end
 

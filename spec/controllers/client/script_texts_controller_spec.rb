@@ -58,7 +58,7 @@ describe Client::ScriptTextsController, :type => :controller do
       create(:script_text, content: "def", script_order: 2, script: active_script)
       post :create, script_id: active_script.id, script_text: {content: "Hi", script_order: 1},  :api_key=> account.api_key, :format => "json"
 
-      returned = JSON.load(response.body)
+      returned = JSON.parse(response.body)
       expect(response.body).to eq ScriptText.find(returned['script_text']['id']).to_json
     end
 
