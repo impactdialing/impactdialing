@@ -21,16 +21,17 @@ describe RedisStatus, :type => :model do
   end
   
   describe 'on_hold_times' do
-    def set_on_hold(caller_session_id)
-      RedisStatus.set_state_changed_time(1, 'On hold', caller_session_id)
+    def set_state(caller_session_id, state='On hold')
+      RedisStatus.set_state_changed_time(1, state, caller_session_id)
     end
 
     before do
-      Timecop.travel(30.seconds.ago){ set_on_hold(1) }
-      Timecop.travel(59.seconds.ago){ set_on_hold(2) }
-      Timecop.travel(65.seconds.ago){ set_on_hold(3) }
-      Timecop.travel(119.seconds.ago){ set_on_hold(4) }
-      Timecop.travel(121.seconds.ago){ set_on_hold(5) }
+      Timecop.travel(30.seconds.ago){ set_state(1) }
+      Timecop.travel(59.seconds.ago){ set_state(2) }
+      Timecop.travel(65.seconds.ago){ set_state(3) }
+      Timecop.travel(119.seconds.ago){ set_state(4) }
+      Timecop.travel(121.seconds.ago){ set_state(5) }
+      set_state(6, 'On call')
     end
 
     after do
@@ -40,7 +41,7 @@ describe RedisStatus, :type => :model do
     end
 
     it 'returns a collection of times (rounded down to nearest minute) each caller has been in the "On hold" state' do
-      expect(RedisStatus.on_hold_times(1, *(1..5).to_a)).to(eq([0, 0, 1, 1, 2]))
+      expect(RedisStatus.on_hold_times(1, *(1..6).to_a)).to(eq([0, 0, 1, 1, 2]))
     end
   end
 end
