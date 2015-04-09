@@ -23,14 +23,14 @@ describe 'VoterListUploadJob' do
   let(:valid_csv_to_system_map) do
     {
       "Phone" => 'phone',
-      "FIRSTName" => 'fname',
-      "LAST" => 'lname'
+      "FIRSTName" => 'first_name',
+      "LAST" => 'last_name'
     }
   end
   let(:invalid_csv_to_system_map) do
     {
-      'FIRSTName' => 'fname',
-      'LAST' => 'lname'
+      'FIRSTName' => 'first_name',
+      'LAST' => 'last_name'
     }
   end
   let(:voter_list) do
