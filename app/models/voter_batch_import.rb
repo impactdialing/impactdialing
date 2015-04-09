@@ -81,12 +81,13 @@ class VoterBatchImport
     created_households  = {}
 
     if new_households.any?
-      Household.import new_households.first.keys, new_households.map(&:values)
+      import_from_hashes(Household, new_households)
+
       created_households = load_as_hash(Household.where(campaign_id: campaign.id, phone: new_numbers).select([:phone, :id]))
     end
 
     if existing_households.any?
-      Household.import existing_households.first.keys, existing_households.map(&:values), on_duplicate_key_update: [:blocked]
+      import_from_hashes(Household, existing_households)
     end
 
     households.merge(created_households)
@@ -103,7 +104,7 @@ class VoterBatchImport
 
       households  = create_or_update_households(voter_info_list)
       found_leads = found_voters(voter_info_list) if custom_id_present?
-
+      
       households_count += households.keys.size
 
       voter_info_list.each do |voter_info|
@@ -113,6 +114,12 @@ class VoterBatchImport
         lead = nil
 
         if (not PhoneNumber.valid?(phone_number))
+          result[:failed] += 1
+          next
+        end
+
+        current_household = households[phone_number]
+        if current_household.nil?
           result[:failed] += 1
           next
         end
@@ -244,41 +251,39 @@ protected
 
   def import_from_hashes(klass, hashes)
     return if hashes.empty?
-    new_records = {values: []}
-    existing_records = {values: []}
-    hashes.each do |hash|
-      if hash[:id]
-        existing_records[:columns] ||= hash.keys
-        existing_records[:values] << hash.values
-      else
-        new_records[:columns] ||= hash.keys
-        new_records[:values] << hash.values
-      end
-    end
 
-    if existing_records[:values].any?
-      klass.import(existing_records[:columns], existing_records[:values], {
-        timestamps:              false,
-        on_duplicate_key_update: existing_records[:columns]
-      })
-    end
-    if new_records[:values].any?
-      klass.import(new_records[:columns], new_records[:values])
+    Upsert.batch(klass.connection, klass.table_name) do |upsert|
+      hashes.each do |hash|
+        if hash[:id]
+          selector = {id: hash[:id]}
+          if klass.column_names.include?('updated_at')
+            hash[:updated_at] = Time.now.utc
+          end
+        else
+          if klass.column_names.include?('created_at')
+            hash[:created_at] = hash[:updated_at] = Time.now.utc
+          end
+          selector = hash
+        end
+        if klass.new(hash).valid?
+          upsert.row(selector, hash)
+        end
+      end
     end
   end
 
   def create_custom_attributes
-    result = {}
+    data = {}
     temp_voter = Voter.new
     @csv_headers.each do |csv_column_title|
       system_column = @csv_to_system_map.system_column_for csv_column_title
       if !system_column.blank? && !(temp_voter.has_attribute? system_column)
         custom_attribute = @list.account.custom_voter_fields.find_by_name(system_column)
         custom_attribute ||= CustomVoterField.create(name: system_column, account: @list.account)
-        result[system_column] = custom_attribute.id
+        data[system_column] = custom_attribute.id
       end
     end
-    result
+    data
   end
 
   def custom_id_present?

@@ -50,22 +50,22 @@ describe 'VoterBatchImport' do
       it 'creates 1 Household record per phone number associated w/ appropriate Account & Campaign' do
         phones = []
         CSV.foreach(csv_file_upload, headers: true, return_headers: false) do |row|
-          phone, first_name, last_name, middle_name, suffix, email, id, age, gender = *row
-          expect(Household.where(campaign_id: campaign.id, phone: phone.last.gsub(/[^\d]/,'')).count).to eq 1
+          phone, first_name, last_name, middle_name, suffix, email, id, age, gender = *row.map(&:last).flatten
+          expect(Household.where(campaign_id: campaign.id, phone: phone.gsub(/[^\d]/,'')).count).to eq 1
         end
       end
 
       it 'creates 1 Voter record associated with the appropriate Account, Campaign, VoterList & Household for each valid CSV row' do
         CSV.foreach(csv_file_upload, headers: true, return_headers: false) do |row|
-          phone, first_name, last_name, middle_name, suffix, email, id, age, gender = *row
-          
+          phone, first_name, last_name, middle_name, suffix, email, id, age, gender = *row.map(&:last).flatten
+
           voter = Voter.find_by_email(email)
           
           expect(voter).to_not be_nil
           expect(voter.account_id).to eq campaign.account_id
           expect(voter.campaign_id).to eq campaign.id
           expect(voter.voter_list_id).to eq voter_list.id
-          expect(voter.household_id).to eq Household.where(phone: phone.last.gsub(/[^\d]/,'')).first.id
+          expect(voter.household_id).to eq Household.where(phone: phone.gsub(/[^\d]/,'')).first.id
         end
       end
 
