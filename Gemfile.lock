@@ -404,6 +404,7 @@ GEM
       rack
       raindrops (~> 0.7)
     uniform_notifier (1.6.2)
+    upsert (2.1.0)
     uuid (2.3.7)
       macaddr (~> 1.0)
     vcr (2.9.3)
@@ -507,6 +508,7 @@ DEPENDENCIES
   twilio (~> 3.1.1)
   twilio-ruby (~> 3.10.0)
   unicorn
+  upsert
   uuid (~> 2.3.7)
   vcr
   webmock

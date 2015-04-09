@@ -77,8 +77,8 @@ RSpec.configure do |config|
       config.use_transactional_fixtures = false
       DatabaseCleaner.strategy = :truncation
     else
-      config.use_transactional_fixtures = true
-      DatabaseCleaner.strategy = :transaction
+      config.use_transactional_fixtures = false
+      DatabaseCleaner.strategy = :truncation
     end
     DatabaseCleaner.clean_with :truncation
   end
