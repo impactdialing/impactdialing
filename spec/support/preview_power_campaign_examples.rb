@@ -7,7 +7,9 @@ shared_examples 'Preview/Power#next_in_dial_queue' do
     uncalled_voter = create(:voter, status: Voter::Status::NOTCALLED, campaign: campaign)
     cache_available_voters(campaign)
 
-    expect(campaign.next_in_dial_queue[:voters].first[:id]).to eq(uncalled_voter.id)
+    dial_queue_retry_on_trxn_fail do
+      expect(campaign.next_in_dial_queue[:voters].first[:id]).to eq(uncalled_voter.id)
+    end
   end
 
   it "returns voter with respect to a current voter" do

@@ -69,7 +69,10 @@ describe Predictive do
     context 'numbers_to_dial_count > zero' do
       it "returns set of numbers" do
         voter         = add_voters(campaign, :voter, 1).first
-        phone_numbers = campaign.numbers_to_dial
+        phone_numbers = nil
+        dial_queue_retry_on_trxn_fail do
+          phone_numbers = campaign.numbers_to_dial
+        end
         expect(phone_numbers).to eq([voter.household.phone])
       end
     end

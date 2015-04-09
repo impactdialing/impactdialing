@@ -67,6 +67,7 @@ RSpec.configure do |config|
   config.include Paperclip::Shoulda::Matchers
   config.include WebLoginHelpers
   config.include ResqueHelpers
+  config.include DialQueueHelpers
 
   config.mock_with :rspec
 
@@ -87,12 +88,12 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 
-  config.before(:each) do
+  config.before(:example) do
     Redis.new.flushall
     DatabaseCleaner.start
   end
 
-  config.after(:each) do
+  config.after(:example) do
     Redis.new.flushall
     DatabaseCleaner.clean
   end

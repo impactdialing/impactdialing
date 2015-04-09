@@ -162,19 +162,7 @@ describe 'CalculateDialsJob' do
           })
 
           dial_queue = CallFlow::DialQueue.new(campaign)
-          retries    = 0
-
-          begin # workaround race condition, cause unclear but related to Redis.new.flushall in before/after hooks
-            dial_queue.next(Voter.count)
-          rescue CallFlow::DialQueue::Available::RedisTransactionAborted
-            retries += 1
-            if retries < 4
-              p "zpop retries: #{retries}"
-              retry
-            else
-              raise
-            end
-          end
+          dial_queue_pop_n_reliably(dial_queue, Voter.count)
         end
 
         it_behaves_like 'all calculate dial jobs'

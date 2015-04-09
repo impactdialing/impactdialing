@@ -13,10 +13,6 @@ describe Preview, :type => :model do
     create(:caller)
   end
 
-  before do
-    Redis.new.flushall
-  end
-
   def skip_voters(voters)
     # voters.each_with_index do |v, i|
     #   v.update_attributes!(skipped_time: (25.hours.ago + i.minutes), status: Voter::Status::SKIPPED)
@@ -25,7 +21,10 @@ describe Preview, :type => :model do
 
   def dial_all_one_at_a_time(campaign, &block)
     campaign.all_voters.available_list(campaign).count.times do
-      house = campaign.next_in_dial_queue
+      house = nil
+      dial_queue_retry_on_trxn_fail do
+        house = campaign.next_in_dial_queue
+      end
       yield house
       house
     end
@@ -33,7 +32,10 @@ describe Preview, :type => :model do
 
   def dial_one_at_a_time(campaign, n, &block)
     n.times do 
-      house = campaign.next_in_dial_queue
+      house = nil
+      dial_queue_retry_on_trxn_fail do
+        house = campaign.next_in_dial_queue
+      end
       yield house
       house
     end
@@ -106,11 +108,6 @@ describe Preview, :type => :model do
     end
 
     context 'shared behaviors' do
-      # let(:campaign){ create(:preview) }
-      after do
-        redis = Redis.new
-        redis.flushall
-      end
       it_behaves_like 'Preview/Power#next_in_dial_queue'
     end
 
@@ -119,14 +116,11 @@ describe Preview, :type => :model do
         setup_voters
         @current_voter = @voters[3]
       end
-      after do
-        redis = @dial_queue.available.send :redis
-        redis.flushall
-      end
+
       context 'all voters have been skipped' do
         it 'returns the voter with id > current_voter_id' do
           skip_voters @voters
-          @dial_queue.next(4) # pop first 4 voters (up to @voters[3])
+          dial_queue_pop_n_reliably(@dial_queue, 4)
           expected = @voters[4]
           actual = @campaign.next_in_dial_queue
           expect(actual[:voters].first[:id]).to eq expected.id
@@ -174,9 +168,6 @@ describe Preview, :type => :model do
       expected = @voters[2]
       actual = @campaign.next_in_dial_queue
       expect(actual[:voters].first[:id]).to eq expected.id
-
-      redis = @dial_queue.available.send :redis
-      redis.flushall
     end
 
     it 'never returns the current voter when that voter has been skipped' do
@@ -198,9 +189,6 @@ describe Preview, :type => :model do
       next_voter = campaign.next_in_dial_queue
       expect(next_voter[:voters].first[:id]).not_to eq vtwo.id
       expect(next_voter[:voters].first[:id]).to eq vthr.id
-
-      redis = Redis.new
-      redis.flushall
     end
   end
 end
