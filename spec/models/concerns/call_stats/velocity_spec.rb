@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe CallStats::Velocity do
   # let(:campaign){ create(:power) }
-  before(:all) do
+  before do
     Campaign.destroy_all
     CallerSession.destroy_all
     CallAttempt.destroy_all
@@ -26,12 +26,6 @@ describe CallStats::Velocity do
       caller_session: CallerSession.all.sample,
       tDuration: rand(60*20) + 60 # <= at least 1 minute each session
     })
-  end
-
-  after(:all) do
-    Campaign.destroy_all
-    CallerSession.destroy_all
-    CallAttempt.destroy_all
   end
 
   subject{ CallStats::Velocity.new(@campaign_for_all) }
