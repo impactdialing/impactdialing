@@ -23,10 +23,6 @@ describe 'CalculateDialsJob' do
     create_campaign_with_script(:bare_predictive, admin.account).last
   end
 
-  before do
-    Redis.new.flushall
-  end
-
   describe '.perform(campaign_id)' do
     let(:dial_queue) do
       CallFlow::DialQueue.new(campaign)
@@ -114,13 +110,9 @@ describe 'CalculateDialsJob' do
         phone_numbers = Voter.order('id').limit(campaign.callers.count).map(&:household).map(&:phone)
         CalculateDialsJob.perform(campaign.id)
 
-        actual = Resque.peek :dialer_worker
-        expected = {'class' => 'DialerJob', 'args' => [campaign.id, phone_numbers]}
+        dialer_job = {'class' => 'DialerJob', 'args' => [campaign.id, phone_numbers]}
 
-        expect(actual).to(eq(expected), [
-          "Expected :dialer_worker queue to contain: #{expected}",
-          "Got: #{actual}"
-        ].join("\n"))
+        expect(resque_jobs(:dialer_worker)).to(include(dialer_job))
       end
 
       it_behaves_like 'all calculate dial jobs'
@@ -170,7 +162,19 @@ describe 'CalculateDialsJob' do
           })
 
           dial_queue = CallFlow::DialQueue.new(campaign)
-          dial_queue.next(Voter.count)
+          retries    = 0
+
+          begin # workaround race condition, cause unclear but related to Redis.new.flushall in before/after hooks
+            dial_queue.next(Voter.count)
+          rescue CallFlow::DialQueue::Available::RedisTransactionAborted
+            retries += 1
+            if retries < 4
+              p "zpop retries: #{retries}"
+              retry
+            else
+              raise
+            end
+          end
         end
 
         it_behaves_like 'all calculate dial jobs'
