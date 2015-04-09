@@ -1,4 +1,6 @@
 class Household < ActiveRecord::Base
+  extend ImportProxy
+
   belongs_to :account
   
   belongs_to :campaign, counter_cache: true

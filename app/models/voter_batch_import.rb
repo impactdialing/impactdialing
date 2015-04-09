@@ -250,26 +250,7 @@ protected
   end
 
   def import_from_hashes(klass, hashes)
-    return if hashes.empty?
-
-    Upsert.batch(klass.connection, klass.table_name) do |upsert|
-      hashes.each do |hash|
-        if hash[:id]
-          selector = {id: hash[:id]}
-          if klass.column_names.include?('updated_at')
-            hash[:updated_at] = Time.now.utc
-          end
-        else
-          if klass.column_names.include?('created_at')
-            hash[:created_at] = hash[:updated_at] = Time.now.utc
-          end
-          selector = hash
-        end
-        if klass.new(hash).valid?
-          upsert.row(selector, hash)
-        end
-      end
-    end
+    klass.import_hashes(hashes)
   end
 
   def create_custom_attributes

@@ -9,6 +9,7 @@
 # enabled and may be dialed depending on other settings.
 #
 class Voter < ActiveRecord::Base
+  extend ImportProxy
   include Rails.application.routes.url_helpers
   include CallAttempt::Status
   include ERB::Util

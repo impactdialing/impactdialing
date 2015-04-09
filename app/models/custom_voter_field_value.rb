@@ -1,4 +1,6 @@
 class CustomVoterFieldValue < ActiveRecord::Base
+  extend ImportProxy
+
   belongs_to :custom_voter_field
   belongs_to :voter
   validates_presence_of :voter_id, :custom_voter_field_id
