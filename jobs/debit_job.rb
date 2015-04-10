@@ -38,9 +38,10 @@ class DebitJob
       quota = account.quota
 
       debit = Debit.new(call_time, quota, account)
-      results << debit.process
+      updated_call_time = debit.process
+      results << updated_call_time.attributes
     end
-    import_result = klass.import results, on_duplicate_key_update: [:debited]
+    klass.import_hashes(results)
   end
 
   def self.perform

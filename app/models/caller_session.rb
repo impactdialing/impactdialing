@@ -1,4 +1,5 @@
 class CallerSession < ActiveRecord::Base
+  extend ImportProxy
   ##
   # PHONE: Call in sessions
   # TWILIO_CLIENT: Web based sessions
