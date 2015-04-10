@@ -2,6 +2,10 @@ module ImportProxy
   def import_hashes(hashes, options={})
     return if hashes.empty?
 
+    unless options.keys.include?(:validate)
+      options[:validate] = true
+    end
+
     klass = self
 
     Upsert.batch(klass.connection, klass.table_name) do |upsert|
@@ -15,7 +19,10 @@ module ImportProxy
           end
         else
           if klass.column_names.include?('created_at')
-            hash[:created_at] = hash[:updated_at] = Time.now.utc
+            hash[:created_at] = Time.now.utc
+          end
+          if klass.column_names.include?('updated_at')
+            hash[:updated_at] = Time.now.utc
           end
           selector = hash
         end

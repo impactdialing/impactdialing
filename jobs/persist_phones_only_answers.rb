@@ -66,14 +66,14 @@ class PersistPhonesOnlyAnswers
       }).first
       
       if possible_response.present?
-        answers << Answer.new({
-          question:          question,
-          possible_response: possible_response,
-          campaign:          voter.campaign,
-          caller:            caller_session.caller,
+        answers << {
+          question_id:          question.id,
+          possible_response_id: possible_response.id,
+          campaign_id:          voter.campaign_id,
+          caller_id:            caller_session.caller_id,
           call_attempt_id:   voter.household.last_call_attempt.id,
           voter_id:          voter.id
-        })
+        }
         
         if index
           voter.update_call_back_incrementally(possible_response, false)
@@ -95,8 +95,9 @@ class PersistPhonesOnlyAnswers
     ImpactPlatform::Metrics.sample('persistence.iterations.missing_response', iterations_missing_response, source)
     ImpactPlatform::Metrics.sample('persistence.iterations.partial_data', iterations_partial_data, source)
 
-    Answer.import answers
-    Voter.import updated_voters, on_duplicate_key_update: [:call_back, :status, :updated_at]
+
+    Answer.import_hashes(answers)
+    Voter.import_hashes(updated_voters.map(&:attributes))
 
     trim_pending_list!
   end

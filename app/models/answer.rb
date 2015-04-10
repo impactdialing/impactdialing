@@ -4,6 +4,8 @@
 #
 # See also +Note+ and its cousin Voter#persist_notes.
 class Answer < ActiveRecord::Base
+  extend ImportProxy
+  
   belongs_to :voter
   belongs_to :caller
   belongs_to :question
