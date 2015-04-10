@@ -3,7 +3,6 @@ class TwilioLib
   require 'em-http'
   include Rails.application.routes.url_helpers
 
-
   DEFAULT_SERVER = "api.twilio.com" unless const_defined?('DEFAULT_SERVER')
   DEFAULT_PORT = 443 unless const_defined?('DEFAULT_PORT')
   DEFAULT_ROOT= "/2010-04-01/Accounts/" unless const_defined?('DEFAULT_ROOT')
@@ -106,44 +105,23 @@ class TwilioLib
   end
 
   def call(http_method, service_method, params = {})
-    if service_method=="IncomingPhoneNumbers/Local" && Rails.env =="development"  && !params.has_key?("SmsUrl")
-      http = Net::HTTP.new(@server, "5000")
-      http.use_ssl=false
-    else
-      http = Net::HTTP.new(@server, @port)
-      http.use_ssl=true
-    end
+    http = Net::HTTP.new(@server, @port)
+    http.use_ssl=true
 
-    if service_method=="IncomingPhoneNumbers/Local" && (Rails.env =="development" || Rails.env =="dynamo_dev") && !params.has_key?("SmsUrl")
-      return '<?xml version="1.0" encoding="UTF-8"?>
-      <TwilioResponse>
-        <IncomingPhoneNumber>
-          <Sid>PNe536dfda7c6184afab78d980cb8cdf43</Sid>
-          <AccountSid>AC35542fc30a091bed0c1ed511e1d9935d</AccountSid>
-          <FriendlyName>My Company Line</FriendlyName>
-          <PhoneNumber>' + DEVDID + '</PhoneNumber>
-          <Url>http://mycompany.com/handleNewCall.php</Url>
-          <Method>POST</Method>
-          <DateCreated>Tue, 01 Apr 2008 11:26:32 -0700</DateCreated>
-          <DateUpdated>Tue, 01 Apr 2008 11:26:32 -0700</DateUpdated>
-        </IncomingPhoneNumber>
-      </TwilioResponse>
-      '
+    if http_method=="POST"
+      req = Net::HTTP::Post.new("#{@root}#{service_method}?#{params}")
+    elsif http_method=="DELETE"
+      req = Net::HTTP::Delete.new("#{@root}#{service_method}?#{params}")
     else
-      if http_method=="POST"
-        req = Net::HTTP::Post.new("#{@root}#{service_method}?#{params}")
-      elsif http_method=="DELETE"
-        req = Net::HTTP::Delete.new("#{@root}#{service_method}?#{params}")
-      else
-        if params.nil?
-          req = Net::HTTP::Get.new("#{@root}#{service_method}")
-         else
-           req = Net::HTTP::Get.new("#{@root}#{service_method}?".concat(params.collect { |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join('&')))
-        end
+      if params.nil?
+        req = Net::HTTP::Get.new("#{@root}#{service_method}")
+       else
+         req = Net::HTTP::Get.new("#{@root}#{service_method}?".concat(params.collect { |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join('&')))
       end
-      req.basic_auth @http_user, @http_password
     end
-    Rails.logger.debug "#{DEFAULT_SERVER}#{@root}#{service_method}?#{params}" if Rails.env =="development"
+    req.basic_auth @http_user, @http_password
+
+    Rails.logger.debug "#{DEFAULT_SERVER}#{@root}#{service_method}?#{params}"
 
     req.set_form_data(params)
     request = http.request(req)
@@ -167,36 +145,24 @@ class TwilioLib
   end
 
   def twilio_xml_parse(response, model_instance)
-    begin
-      call_response = Hash.from_xml(response)['TwilioResponse']['Call']
-      model_instance.tCallSegmentSid = call_response['Sid']
-      model_instance.tAccountSid = call_response['AccountSid']
-      model_instance.tCalled = call_response['To']
-      model_instance.tCaller = call_response['From']
-      model_instance.tPhoneNumberSid = call_response['PhoneNumberSid']
-      model_instance.tStatus = call_response['Status']
-      unless call_response['StartTime'].nil?
-        model_instance.tStartTime = Time.parse(call_response['StartTime'])
-      end
-      unless call_response['EndTime'].nil?
-       model_instance.tEndTime = Time.parse(call_response['EndTime'])
-      end
-      model_instance.tDuration = call_response['Duration']
-      model_instance.tPrice = call_response['Price']
-      model_instance.tFlags = call_response['Direction']
-    rescue Exception
-    end
-    model_instance
-  end
+    call_response                  = Hash.from_xml(response)['TwilioResponse']['Call']
+    model_instance.tCallSegmentSid = call_response['Sid']
+    model_instance.tAccountSid     = call_response['AccountSid']
+    model_instance.tCalled         = call_response['To']
+    model_instance.tCaller         = call_response['From']
+    model_instance.tPhoneNumberSid = call_response['PhoneNumberSid']
+    model_instance.tStatus         = call_response['Status']
+    model_instance.tDuration       = call_response['Duration']
+    model_instance.tPrice          = call_response['Price']
+    model_instance.tFlags          = call_response['Direction']
 
-  def twilio_status_lookup(code)
-    case code
-      when 0 then "Not Yet Dialed"
-      when 1 then "In Progress"
-      when 2 then "Complete"
-      when 3 then "Failed - Busy"
-      when 4 then "Failed - Application Error"
-      when 5 then "Failed - No Answer"
+    unless call_response['StartTime'].nil?
+      model_instance.tStartTime = Time.parse(call_response['StartTime'])
     end
+    unless call_response['EndTime'].nil?
+      model_instance.tEndTime = Time.parse(call_response['EndTime'])
+    end
+
+    model_instance
   end
 end
