@@ -102,38 +102,40 @@ class PersistCalls
     [columns, values]
   end
 
-  def self.import_households(households)
-    columns, values = setup_bitmasks(Household, households, ['blocked'])
-
-    # skip validations - uniqueness validation fails; ar import doesn't handle this case
-    # the db has fk constraints as of Dec 2014
-    Household.import columns, values, validate: false, on_duplicate_key_update: [
-      :status,
-      :presented_at,
-      :updated_at
-    ]
+  def self.setup_bitmask_hashes(klass, collection, bitmask_columns)
+    hashes = []
+    columns = klass.column_names
+    collection.each do |object|
+      hash = {}
+      columns.each do |column|
+        hash[column] =  if bitmask_columns.include?(column)
+                          object.send("#{column}_before_type_cast")
+                        else
+                          object.send(column)
+                        end
+      end
+      hashes << hash
+    end
+    hashes
   end
 
-  # def self.cache_last_attempt_status
-  def self.import_voters(voters)
-    update_keys = [:status, :caller_id, :caller_session_id]
-    
-    # workaround bug where Voter has no associated household
-    update_keys += [:household_id]
-    # /workaround
+  def self.import_households(households)
+    hashes = setup_bitmask_hashes(Household, households, ['blocked'])
 
-    columns, values = setup_bitmasks(Voter, voters, ['enabled'])
-    Voter.import columns, values, on_duplicate_key_update: update_keys
+    # skip validations - uniqueness validation fails on phone
+    # ImportProxy doesn't handle this case
+    # the households table has fk constraints as of Dec 2014
+    Household.import_hashes(hashes, validate: false)
+  end
+
+  def self.import_voters(voters)
+    hashes = setup_bitmask_hashes(Voter, voters, ['enabled'])
+    Voter.import_hashes(hashes)
   end
 
   def self.import_call_attempts(call_attempts)
-    CallAttempt.import call_attempts,
-      on_duplicate_key_update: [
-        :status, :call_end, :connecttime, :caller_id,
-        :scheduled_date, :recording_url, :recording_duration,
-        :voter_response_processed, :wrapup_time, :voter_id,
-        :recording_id, :recording_delivered_manually
-    ]
+    hashes = call_attempts.map(&:attributes)
+    CallAttempt.import_hashes(hashes)
   end
 
   def self.call_valid?(call)

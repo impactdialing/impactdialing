@@ -1,5 +1,5 @@
 module ImportProxy
-  def import_hashes(hashes)
+  def import_hashes(hashes, options={})
     return if hashes.empty?
 
     klass = self
@@ -19,7 +19,7 @@ module ImportProxy
           end
           selector = hash
         end
-        if klass.new(hash).valid?
+        if (not options[:validate]) or (options[:validate] and klass.new(hash).valid?)
           upsert.row(selector, hash)
         end
       end
