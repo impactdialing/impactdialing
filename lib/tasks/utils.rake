@@ -222,25 +222,6 @@ task :seed_script_fields => :environment do
   end
 end
 
-desc "Migrate Voter#voicemail_history to CallAttempt#recording_id & #recording_delivered_manually"
-task :migrate_voicemail_history => :environment do
-  voters = Voter.includes(:call_attempts).where('status != "not called"').where('voicemail_history is not null')
-
-  dirty = []
-  voters.each do |voter|
-    call_attempt = voter.call_attempts.first
-    recording_id = voter.voicemail_history.split(',').first
-
-    call_attempt.recording_id = recording_id
-    call_attempt.recording_delivered_manually = false
-    dirty << call_attempt
-  end
-
-  puts CallAttempt.import(dirty, {
-      :on_duplicate_key_update => [:recording_id, :recording_delivered_manually]
-  })
-end
-
 desc "sync Voters#enabled w/ VoterList#enabled"
 task :sync_all_voter_lists_to_voter => :environment do |t, args|
   limit  = 100
