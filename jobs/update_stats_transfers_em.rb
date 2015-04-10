@@ -39,26 +39,12 @@ class UpdateStatsTransfersEm
         http = twillio_lib.update_twilio_stats_by_model_em(attempt)
         http.callback {
           twillio_lib.twilio_xml_parse(http.response, attempt)
-          results << attempt
+          results << attempt.attributes
           iter.return(http)
         }
         http.errback { iter.return(http) }
       end
-      stats << TransferAttempt.import(results, {
-        :on_duplicate_key_update => [
-          :tCallSegmentSid,
-          :tAccountSid,
-          :tCalled,
-          :tCaller,
-          :tPhoneNumberSid,
-          :tStatus,
-          :tStartTime,
-          :tEndTime,
-          :tDuration,
-          :tPrice,
-          :tFlags
-        ]
-      })
+      TransferAttempt.import_hashes(results)
       EventMachine.stop
     end
   end

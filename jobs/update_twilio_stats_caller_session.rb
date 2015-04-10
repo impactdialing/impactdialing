@@ -34,13 +34,12 @@ class UpdateTwilioStatsCallerSession
           session.tEndTime = session.endtime
           session.tStartTime = session.starttime
           session.tPrice = 0.0
-          caller_sessions << session
+          caller_sessions << session.attributes
         else
-          caller_sessions << twillio_lib.update_twilio_stats_by_model(session)
+          caller_sessions << twillio_lib.update_twilio_stats_by_model(session).attributes
         end
     end
-    WebuiCallerSession.import caller_sessions, :on_duplicate_key_update=>[:tCallSegmentSid, :tAccountSid,
-                                        :tCalled, :tCaller, :tPhoneNumberSid, :tStatus, :tStartTime, :tEndTime, :tDuration, :tPrice, :tFlags]
+    WebuiCallerSession.import_hashes caller_sessions
 
     caller_sessions = []
     twillio_lib = TwilioLib.new
@@ -50,13 +49,12 @@ class UpdateTwilioStatsCallerSession
         session.tEndTime = session.endtime
         session.tStartTime = session.starttime
         session.tPrice = 0.0
-        caller_sessions << session
+        caller_sessions << session.attributes
       else
-        caller_sessions << twillio_lib.update_twilio_stats_by_model(session)
+        caller_sessions << twillio_lib.update_twilio_stats_by_model(session).attributes
       end
 
     end
-    PhonesOnlyCallerSession.import caller_sessions, :on_duplicate_key_update=>[:tCallSegmentSid, :tAccountSid,
-                                        :tCalled, :tCaller, :tPhoneNumberSid, :tStatus, :tStartTime, :tEndTime, :tDuration, :tPrice, :tFlags]
+    PhonesOnlyCallerSession.import_hashes caller_sessions
   end
 end
