@@ -39,6 +39,7 @@ class UpdateTwilioStatsCallerSession
           caller_sessions << twillio_lib.update_twilio_stats_by_model(session).attributes
         end
     end
+
     WebuiCallerSession.import_hashes caller_sessions
 
     caller_sessions = []
@@ -53,7 +54,6 @@ class UpdateTwilioStatsCallerSession
       else
         caller_sessions << twillio_lib.update_twilio_stats_by_model(session).attributes
       end
-
     end
     PhonesOnlyCallerSession.import_hashes caller_sessions
   end

@@ -42,8 +42,12 @@ class UpdateStatsTransfersEm
           results << attempt.attributes
           iter.return(http)
         }
-        http.errback { iter.return(http) }
+        http.errback {
+          Rails.logger.error "Error: UpdateStatsTransfersEm: Failed to fetch Twilio stats for TransferAttempt[#{attempt.sid}]"
+          iter.return(http)
+        }
       end
+
       TransferAttempt.import_hashes(results)
       EventMachine.stop
     end
