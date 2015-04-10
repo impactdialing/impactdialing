@@ -70,17 +70,11 @@ RSpec.configure do |config|
   config.include DialQueueHelpers
 
   config.mock_with :rspec
+  config.use_transactional_fixtures = false
 
   config.before(:suite) do
     WebMock.allow_net_connect!
-
-    if ENV['RAILS_ENV'] == 'e2e'
-      config.use_transactional_fixtures = false
-      DatabaseCleaner.strategy = :truncation
-    else
-      config.use_transactional_fixtures = false
-      DatabaseCleaner.strategy = :truncation
-    end
+    DatabaseCleaner.strategy = :truncation
     DatabaseCleaner.clean_with :truncation
   end
 
