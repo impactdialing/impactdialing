@@ -55,6 +55,12 @@ describe 'ImportProxy' do
         Tester.import_hashes(testers)
         expect(Tester.count).to eq new_valid_testers.size
       end
+
+      it 'will import invalid records when options[:validate] is false' do
+        testers = new_valid_testers + [invalid_tester]
+        Tester.import_hashes(testers, validate: false)
+        expect(Tester.count).to eq new_valid_testers.size + 1
+      end
     end
 
     context 'updating existing records (a hash in hashes that does have an :id key is considered existing)' do
@@ -99,6 +105,16 @@ describe 'ImportProxy' do
         tester_not_updated = Tester.find(data[0]['id'])
         expect(tester_not_updated.name).to_not eq invalid_tester[:name]
         expect(tester_not_updated.email).to_not eq invalid_tester[:email]
+      end
+
+
+      it 'will import invalid records when options[:validate] is false' do
+        data = existing_valid_testers
+        data[0] = data[0].merge(invalid_tester)
+        Tester.import_hashes(data, validate: false)
+        tester_not_updated = Tester.find(data[0]['id'])
+        expect(tester_not_updated.name).to eq invalid_tester[:name]
+        expect(tester_not_updated.email).to eq invalid_tester[:email]
       end
     end
   end
