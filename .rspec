@@ -1,5 +1,5 @@
 --color
 --require spec_helper
---require ruby-debug
+--require byebug
 --require rspec/instafail
 --format RSpec::Instafail

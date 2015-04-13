@@ -128,7 +128,7 @@ group :development, :test, :e2e do
   gem 'hirb'
   gem 'rspec-instafail'
   gem 'pry'
-  gem 'pry-debugger'
+  gem 'byebug'
   gem 'compass'
 end
 

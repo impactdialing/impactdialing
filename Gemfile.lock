@@ -62,6 +62,8 @@ GEM
     bullet (4.14.0)
       activesupport (>= 3.0.0)
       uniform_notifier (>= 1.6.0)
+    byebug (4.0.5)
+      columnize (= 0.9.0)
     cancan (1.6.10)
     capybara (2.4.4)
       mime-types (>= 1.16)
@@ -81,7 +83,7 @@ GEM
     cocoon (1.2.6)
     coderay (1.1.0)
     color (1.7)
-    columnize (0.3.6)
+    columnize (0.9.0)
     compass (0.12.2)
       chunky_png (~> 1.2)
       fssm (>= 0.2.7)
@@ -92,12 +94,6 @@ GEM
       safe_yaml (~> 1.0.0)
     database_cleaner (1.3.0)
     debug_inspector (0.0.2)
-    debugger (1.6.6)
-      columnize (>= 0.3.1)
-      debugger-linecache (~> 1.2.0)
-      debugger-ruby_core_source (~> 1.3.2)
-    debugger-linecache (1.2.0)
-    debugger-ruby_core_source (1.3.5)
     deep_cloneable (2.1.1)
       activerecord (>= 3.1.0, < 5.0.0)
     diff-lcs (1.2.5)
@@ -237,9 +233,6 @@ GEM
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
-    pry-debugger (0.2.2)
-      debugger (~> 1.3)
-      pry (~> 0.9.10)
     pusher (0.11.3)
       multi_json (~> 1.0)
       signature (~> 0.1.6)
@@ -431,6 +424,7 @@ DEPENDENCIES
   bitmask_attributes
   bugsnag
   bullet
+  byebug
   cancan (~> 1.6.10)
   capybara
   cocoon (~> 1.2.0)
@@ -470,7 +464,6 @@ DEPENDENCIES
   paperclip
   platform-api
   pry
-  pry-debugger
   pusher (~> 0.11.3)
   rack-queue-metrics!
   rack-timing
