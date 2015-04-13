@@ -210,6 +210,27 @@ class PersistCalls
         call_attempt = call_attempts[wrapped_up_call['id'].to_i]
         voter        = voters[wrapped_up_call['voter_id'].to_i]
 
+        # workaround bug where Voter ID is not saved in redis list
+        voterless_call_list = "voterless_calls"
+
+        if voter.nil? and call_attempt.present?
+          household = call_attempt.household
+          if household.present? and household.voters.count > 0
+            voter = household.voters.first
+          else
+            Rails.logger.error("[PersistCalls:VoterlessCall] Account[#{call_attempt.campaign.account_id}] Campaign[#{call_attempt.campaign_id}] CallAttempt[#{call_attempt.id}] Household[#{call_attempt.try(:household).try(:id)}]")
+          end
+        elsif voter.present? and call_attempt.nil?
+          Rails.logger.error("[PersistCalls:VoterlessCall] Voter is present but CallAttempt is nil. Shunting data to #{voterless_call_list}.")
+          $redis_call_flow_connection.lpush(voterless_call_list, wrapped_up_call.to_json)
+          next
+        elsif voter.nil? and call_attempt.nil?
+          Rails.logger.error("[PersistCalls:VoterlessCall] Both Voter and CallAttempt are nil. Shunting data to #{voterless_call_list}.")
+          $redis_call_flow_connection.lpush(voterless_call_list, wrapped_up_call.to_json)
+          next
+        end
+        # /workaround
+
         # workaround bug where Voter has no associated household
         houseless_voter_workaround_impossible = false
         if voter.household.nil? and call_attempt.household.present?
