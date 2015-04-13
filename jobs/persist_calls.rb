@@ -217,6 +217,7 @@ class PersistCalls
           household = call_attempt.household
           if household.present? and household.voters.count > 0
             voter = household.voters.first
+            Rails.logger.error("[PersistCalls:VoterlessCall] Account[#{call_attempt.campaign.account_id}] Campaign[#{call_attempt.campaign_id}] CallAttempt[#{call_attempt.id}] Household[#{call_attempt.household.id}] Wrapped up call did not have VoterID. Auto-assigning Voter[#{voter.id}] from Household.")
           else
             Rails.logger.error("[PersistCalls:VoterlessCall] Account[#{call_attempt.campaign.account_id}] Campaign[#{call_attempt.campaign_id}] CallAttempt[#{call_attempt.id}] Household[#{call_attempt.try(:household).try(:id)}]")
           end
