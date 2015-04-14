@@ -40,6 +40,10 @@ class RedisCallFlow
   end
   
   def self.push_to_wrapped_up_call_list(call_id, caller_type, voter_id)
+    if voter_id.blank?
+      Rails.logger.error "[PersistCalls:VoterlessCall] RedisCallFlow: Pushing CallID[#{call_id}] CallerType[#{caller_type}] VoterID[#{voter_id}]"
+    end
+
     $redis_call_flow_connection.lpush "wrapped_up_call_list", {id: call_id, caller_type: caller_type, voter_id: voter_id, current_time: current_time}.to_json
   end
   
