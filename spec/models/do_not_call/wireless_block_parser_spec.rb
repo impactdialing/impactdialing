@@ -1,17 +1,13 @@
 require 'rails_helper'
 
 describe 'DoNotCall::WirelessBlockParser' do
-  let(:filepath) do
-    # generated w/ ruby spec/fixtures/wireless/gen_list.rb block
-    File.join(Rails.root, 'spec', 'fixtures', 'wireless', 'block.csv')
-  end
   let(:known_cell_counts_path) do
     # 1 header
     # 69 cell phone blocks
     # 300 total data rows
     File.join(Rails.root, 'spec', 'fixtures', 'wireless', 'block-deterministic.csv')
   end
-  let(:file){ File.new(filepath, 'r') }
+
   let(:known_cell_counts){ File.new(known_cell_counts_path, 'r') }
   let(:batch_size){ 10 }
 
