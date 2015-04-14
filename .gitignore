@@ -21,3 +21,5 @@ dump.rdb
 .test
 spec/fixtures/test_tmp/
 spec/fixtures/vcr_cassettes/
+callveyor/app/scripts/config.js
+callveyor/app/scripts/*-templates.js
