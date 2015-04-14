@@ -14,10 +14,6 @@ gem 'hirefire-resource'
 gem 'sinatra'
 gem 'slim'
 
-# ???
-gem 'json', '~> 1.7.7'
-gem 'nokogiri', '~> 1.6.0'
-
 gem 'unicorn'
 
 gem 'uuid', '~> 2.3.7' # used to generate unique filenames for download reports - overkill much?
