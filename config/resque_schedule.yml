@@ -6,7 +6,7 @@ phantom_callers:
   description: "This job destroys phantom callers. BOOOOOOOM"
 
 debit_money:
-  cron: "* * * * *"
+  cron: "*/3 * * * *"
   class: DebitJob
   queue: billing
   args:
