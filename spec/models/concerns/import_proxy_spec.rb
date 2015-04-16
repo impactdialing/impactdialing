@@ -31,7 +31,7 @@ describe 'ImportProxy' do
     {name: '', email: '@test.com'}
   end
 
-  describe '.import_hashes(hashes)' do
+  describe '.import_hashes(hashes, options={})' do
     before do
       Tester.destroy_all
     end
@@ -74,47 +74,79 @@ describe 'ImportProxy' do
         a = []
         Tester.all.each do |tester|
           hash = tester.attributes
-          hash[:name] = "#{hash[:name]} #{tester.id}"
+          hash['name'] = "#{hash['name']} #{tester.id}"
           a << hash
         end
         a
       end
 
-      it 'updates each record identified by hash[:id]' do
-        data = existing_valid_testers
-        Tester.import_hashes(data)
-        data.each do |hash|
-          tester = Tester.find(hash['id'])
-          expect(tester.name).to eq hash[:name]
-          expect(tester.email).to eq hash['email']
-        end
-      end
-
-      it 'updates rails updated_at' do
-        data = existing_valid_testers
-        Timecop.freeze do
+      context 'when options[:columns_to_update] is not set or empty' do
+        it 'updates each record identified by hash[:id]' do
+          data = existing_valid_testers
           Tester.import_hashes(data)
-          expect(Tester.where(updated_at: Time.now.utc).count).to eq data.size
+          data.each do |hash|
+            tester = Tester.find(hash['id'])
+            expect(tester.name).to eq hash['name']
+            expect(tester.email).to eq hash['email']
+          end
+        end
+
+        it 'updates rails updated_at' do
+          data = existing_valid_testers
+          Timecop.freeze do
+            Tester.import_hashes(data)
+            expect(Tester.where(updated_at: Time.now.utc).count).to eq data.size
+          end
+        end
+
+        it 'does not update with invalid data' do
+          data = existing_valid_testers
+          data[0] = data[0].merge(invalid_tester)
+          Tester.import_hashes(data)
+          tester_not_updated = Tester.find(data[0]['id'])
+          expect(tester_not_updated.name).to_not eq invalid_tester[:name]
+          expect(tester_not_updated.email).to_not eq invalid_tester[:email]
+        end
+
+
+        it 'will import invalid records when options[:validate] is false' do
+          data = existing_valid_testers
+          data[0] = data[0].merge(invalid_tester)
+          Tester.import_hashes(data, validate: false)
+          tester_not_updated = Tester.find(data[0]['id'])
+          expect(tester_not_updated.name).to eq invalid_tester[:name]
+          expect(tester_not_updated.email).to eq invalid_tester[:email]
         end
       end
 
-      it 'does not update with invalid data' do
-        data = existing_valid_testers
-        data[0] = data[0].merge(invalid_tester)
-        Tester.import_hashes(data)
-        tester_not_updated = Tester.find(data[0]['id'])
-        expect(tester_not_updated.name).to_not eq invalid_tester[:name]
-        expect(tester_not_updated.email).to_not eq invalid_tester[:email]
-      end
+      context 'when options[:columns_to_update] is set and not empty' do
+        it 'does not update columns not declared in non-empty options[:columns_to_update]' do
+          data = existing_valid_testers
+          Tester.import_hashes(data, columns_to_update: [:email])
+          data.each do |hash|
+            tester = Tester.find(hash['id'])
+            expect(tester.name).to_not eq hash['name']
+            expect(tester.email).to eq hash['email']
+          end
+        end
 
+        it 'updates columns declared in non-empty options[:columns_to_update]' do
+          data = existing_valid_testers
+          Tester.import_hashes(data, columns_to_update: [:name])
+          data.each do |hash|
+            tester = Tester.find(hash['id'])
+            expect(tester.name).to eq hash['name']
+            expect(tester.email).to eq hash['email']
+          end
+        end
 
-      it 'will import invalid records when options[:validate] is false' do
-        data = existing_valid_testers
-        data[0] = data[0].merge(invalid_tester)
-        Tester.import_hashes(data, validate: false)
-        tester_not_updated = Tester.find(data[0]['id'])
-        expect(tester_not_updated.name).to eq invalid_tester[:name]
-        expect(tester_not_updated.email).to eq invalid_tester[:email]
+        it 'always updates :updated_at' do
+          data = existing_valid_testers
+          Timecop.freeze do
+            Tester.import_hashes(data, columns_to_update: [:email])
+            expect(Tester.where(updated_at: Time.now.utc).count).to eq data.size
+          end
+        end
       end
     end
   end
