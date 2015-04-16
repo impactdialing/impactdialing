@@ -125,17 +125,34 @@ class PersistCalls
     # skip validations - uniqueness validation fails on phone
     # ImportProxy doesn't handle this case
     # the households table has fk constraints as of Dec 2014
-    Household.import_hashes(hashes, validate: false)
+    Household.import_hashes(hashes, {
+      validate: false,
+      columns_to_update: [:status, :presented_at, :updated_at]
+    })
   end
 
   def self.import_voters(voters)
-    hashes = setup_bitmask_hashes(Voter, voters, ['enabled'])
-    Voter.import_hashes(hashes)
+    hashes      = setup_bitmask_hashes(Voter, voters, ['enabled'])
+    update_keys = [:status, :caller_id, :caller_session_id]
+    # workaround bug where Voter has no associated household
+    update_keys += [:household_id]
+    # /workaround
+
+    Voter.import_hashes(hashes, {
+      columns_to_update: update_keys
+    })
   end
 
   def self.import_call_attempts(call_attempts)
     hashes = call_attempts.map(&:attributes)
-    CallAttempt.import_hashes(hashes)
+    CallAttempt.import_hashes(hashes, {
+      columns_to_update: [
+        :status, :call_end, :connecttime, :caller_id,
+        :scheduled_date, :recording_url, :recording_duration,
+        :voter_response_processed, :wrapup_time, :voter_id,
+        :recording_id, :recording_delivered_manually
+      ]
+    })
   end
 
   def self.call_valid?(call)
