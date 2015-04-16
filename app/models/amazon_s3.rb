@@ -1,10 +1,11 @@
 class AmazonS3
-
   def initialize
-    @config ||= YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
-    @s3 = AWS::S3.new(
-    :access_key_id => @config["access_key_id"],
-    :secret_access_key => @config["secret_access_key"])
+    @config = {
+      'access_key_id'     => ENV['S3_ACCESS_KEY'],
+      'secret_access_key' => ENV['S3_SECRET_ACCESS_KEY'],
+      'bucket'            => ENV['S3_BUCKET']
+    }
+    @s3 = AWS::S3.new(@config)
   end
 
   def object(bucket_name, file_name)
