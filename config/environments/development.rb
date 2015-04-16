@@ -30,21 +30,15 @@ ImpactDialing::Application.configure do
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
 
-  #michael
-  TWILIO_APP_SID   = "AP7d39738c833e144064374b12681bf0ba"
-  TWILIO_ACCOUNT   = "AC422d17e57a30598f8120ee67feae29cd"
-  TWILIO_AUTH      = "897298ab9f34357f651895a7011e1631"
-  APP_NUMBER       = "7029797309"
-  HOLD_MUSIC_URL   = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
-  MANDRILL_API_KEY = 'qlYdRXlyROwaN9Tqk1QrhA'
 
-  #monitor
-  MONITOR_TWILIO_APP_SID="APa5ea5d37745f53d3289b4326051743b0"
+  HOLD_MUSIC_URL   = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
+
+  MANDRILL_API_KEY = 'qlYdRXlyROwaN9Tqk1QrhA'
 
   PUSHER_APP_ID          = "6868"
   PUSHER_KEY             = "1e93714ff1e5907aa618"
   PUSHER_SECRET          = "26b438b5e27a3e84d59c"
-  TWILIO_ERROR           = "http://status-impactdialing.heroku.com/twilio/error_development"
+
   STRIPE_PUBLISHABLE_KEY = "pk_test_C7afhsETXQncQqcBQ2Hr2f0M"
   STRIPE_SECRET_KEY      = "sk_test_EHZciy2zvJc6UelOAMdFX6wX"
   # http://rdoc.info/github/jnunemaker/httparty/HTTParty/ClassMethods#ssl_ca_file-instance_method
