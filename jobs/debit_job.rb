@@ -41,7 +41,7 @@ class DebitJob
       updated_call_time = debit.process
       results << updated_call_time.attributes
     end
-    klass.import_hashes(results)
+    klass.import_hashes(results, columns_to_update: [:debited])
   end
 
   def self.perform
