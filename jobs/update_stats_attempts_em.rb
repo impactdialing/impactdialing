@@ -54,7 +54,14 @@ class UpdateStatsAttemptsEm
           iter.return(http)
         }
       end
-      CallAttempt.import_hashes(results)
+      CallAttempt.import_hashes(results, {
+        columns_to_update: [
+          :tCallSegmentSid, :tAccountSid, :tCalled,
+          :tCaller, :tPhoneNumberSid, :tStatus,
+          :tStartTime, :tEndTime, :tDuration,
+          :tPrice, :tFlags
+        ]
+      })
       EventMachine.stop
     end
   end
