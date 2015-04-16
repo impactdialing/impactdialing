@@ -12,7 +12,8 @@ class Recording < ActiveRecord::Base
                     :storage => :s3,
                     :s3_credentials => {
                       :access_key_id     => ENV['S3_ACCESS_KEY'],
-                      :secret_access_key => ENV['S3_SECRET_ACCESS_KEY']
+                      :secret_access_key => ENV['S3_SECRET_ACCESS_KEY'],
+                      :bucket            => ENV['S3_BUCKET']
                     },
                     :s3_protocol => 'https', # force https
                     :path        => "/#{Settings.recording_env}/uploads/:account_id/:id.:extension",
