@@ -5,7 +5,10 @@ namespace :logs do
   task :download, [:date] => [:environment] do |t,args|
     date             = args[:date]
     year, month, day = date.split('-').map(&:to_i)
-    config           = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
+    config           = {
+      'access_key_id'     => ENV['S3_ACCESS_KEY'],
+      'secret_access_key' => ENV['S3_SECRET_ACCESS_KEY']
+    }
     s3               = AWS::S3.new({
       :access_key_id     => config["access_key_id"],
       :secret_access_key => config["secret_access_key"]

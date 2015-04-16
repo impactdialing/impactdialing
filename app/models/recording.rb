@@ -10,9 +10,12 @@ class Recording < ActiveRecord::Base
 
   has_attached_file :file,
                     :storage => :s3,
-                    :s3_credentials => Rails.root.join('config', 'amazon_s3.yml').to_s,
+                    :s3_credentials => {
+                      :access_key_id     => ENV['S3_ACCESS_KEY'],
+                      :secret_access_key => ENV['S3_SECRET_ACCESS_KEY']
+                    },
                     :s3_protocol => 'https', # force https
-                    :path => "/#{Settings.recording_env}/uploads/:account_id/:id.:extension",
+                    :path        => "/#{Settings.recording_env}/uploads/:account_id/:id.:extension",
                     :default_url => '' # avoid generating default urls
 
   validates_attachment_content_type(:file, {

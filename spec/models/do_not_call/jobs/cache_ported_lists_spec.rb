@@ -2,7 +2,13 @@ require 'rails_helper'
 require 'uri'
 
 describe 'DoNotCall::Jobs::CacheProviderFile.perform', data_heavy: true do
-  let(:s3_config){ YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml")) }
+  let(:s3_config) do
+    {
+      'access_key_id'     => ENV['S3_ACCESS_KEY'],
+      'secret_access_key' => ENV['S3_SECRET_ACCESS_KEY'],
+      'bucket'            => ENV['S3_BUCKET']
+    }
+  end
   let(:s3_connection){ AWS::S3.new(access_key_id: s3_config['access_key_id'], secret_access_key: s3_config['secret_access_key']) }
   subject{ DoNotCall::Jobs::CachePortedLists }
 
