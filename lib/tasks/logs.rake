@@ -13,6 +13,10 @@ namespace :logs do
     bucket          = 'heroku-logs.impactdialing'
     papertrail_path = 'papertrail/771873'
 
+    if month < 10
+      month = "0#{month}"
+    end
+
     stop_year, stop_month, stop_day = [Time.now.year, Time.now.month, Time.now.day].map(&:to_i)
 
     loop do
