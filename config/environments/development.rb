@@ -33,8 +33,6 @@ ImpactDialing::Application.configure do
 
   HOLD_MUSIC_URL   = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
 
-  MANDRILL_API_KEY = 'qlYdRXlyROwaN9Tqk1QrhA'
-
   PUSHER_APP_ID          = "6868"
   PUSHER_KEY             = "1e93714ff1e5907aa618"
   PUSHER_SECRET          = "26b438b5e27a3e84d59c"

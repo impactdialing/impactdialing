@@ -1,6 +1,4 @@
 ImpactDialing::Application.configure do
-  MANDRILL_API_KEY       = "6sqVrFQDJNeZJ-qzsNltcw"
-  
   PORT                   = 80
   PUSHER_APP_ID          = "6964"
   PUSHER_KEY             = "6f37f3288a3762e60f94"

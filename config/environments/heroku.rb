@@ -1,7 +1,5 @@
 # original heroku.rb
 ImpactDialing::Application.configure do
-  MANDRILL_API_KEY       = "-5hCVCYoRJuaQy6Q493i2A"
-
   PORT                   = 80
   PUSHER_APP_ID          = "6964"
   PUSHER_KEY             = "6f37f3288a3762e60f94"

@@ -5,8 +5,6 @@ SimpleCov.coverage_dir("#{Rails.env}/coverage")
 HOST = 'localhost'
 PORT = 3000
 
-MANDRILL_API_KEY='qlYdRXlyROwaN9Tqk1QrhA'
-
 require 'capybara/rails'
 
 ImpactDialing::Application.configure do
