@@ -1,20 +1,8 @@
 ## Impact Dialing Server
 
-### Installing
+### Setting up for development
 
-Install MySQL.
 
-Make sure to disable `STRICT_TRANS_TABLES` sql_mode for MySQL. Locate & update `my.cnf` w/ following.
-
-```
-sql_mode=NO_ENGINE_SUBSTITUTION #,STRICT_TRANS_TABLES
-```
-
-Restart MySQL.
-
-Install Redis.
-
-Install rvm and proper ruby version (see /.ruby-version).
 
 ### Running Specs
 
@@ -28,24 +16,9 @@ A `.env` file is used to store local environment variables which are required to
 
 Start web & worker processes: `foreman start`.
 
-### Deployment
-
-Deploy to EC2: `bundle exec cap (aws|aws_staging) deploy`
-
-Deploy to Heroku: `heroku push remote-repo branch`
-
-### Servers & Environments
+## Servers & Environments
 
 #### Staging
-
-##### EC2
-
-ssh user: `root`
-
-deploy user: `impactdialing`
-
-- Haproxy-Impact
-- App1 Stage
 
 ##### Heroku
 
@@ -60,16 +33,6 @@ deploy user: `impactdialing`
       - 1 unicorn
 
 #### Production
-
-##### EC2
-
-ssh user: `ubuntu`
-
-deploy user: `impactdialing`
-
-- Haproxy Prod
-- LTS1
-- LTS2
 
 ##### Heroku
 
@@ -151,7 +114,7 @@ See the README in callveyor/ for all of the gory deets.
 
 Master is mainline development and should always be ready to deploy.
 
-Work on features, bugs, etc should be done on topical branches. When ready push branch up and open a pull request.
+Work on features, bugs, etc should be done on topical branches IN YOUR OWN FORK. When ready push branch up and open a pull request.
 
 Once the pull request is merged, delete the branch and carry on.
 
