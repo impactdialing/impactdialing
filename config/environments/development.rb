@@ -30,15 +30,12 @@ ImpactDialing::Application.configure do
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
 
-
   HOLD_MUSIC_URL   = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
 
   PUSHER_APP_ID          = "6868"
   PUSHER_KEY             = "1e93714ff1e5907aa618"
   PUSHER_SECRET          = "26b438b5e27a3e84d59c"
 
-  STRIPE_PUBLISHABLE_KEY = "pk_test_C7afhsETXQncQqcBQ2Hr2f0M"
-  STRIPE_SECRET_KEY      = "sk_test_EHZciy2zvJc6UelOAMdFX6wX"
   # http://rdoc.info/github/jnunemaker/httparty/HTTParty/ClassMethods#ssl_ca_file-instance_method
   Twilio.default_options[:ssl_ca_file] = ENV['SSL_CERT_FILE']
   

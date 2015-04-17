@@ -50,8 +50,6 @@ ImpactDialing::Application.configure do
 
   HOLD_MUSIC_URL = "hold_music"
 
-  STRIPE_PUBLISHABLE_KEY = "pk_test_C7afhsETXQncQqcBQ2Hr2f0M"
-  STRIPE_SECRET_KEY = "sk_test_EHZciy2zvJc6UelOAMdFX6wX"
   HOST = 'localhost'
   PORT = 3000
 

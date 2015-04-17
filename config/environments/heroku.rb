@@ -6,9 +6,6 @@ ImpactDialing::Application.configure do
   PUSHER_SECRET          = "b9a1cfc2c1ab4b64ad03"
 
   HOLD_MUSIC_URL         = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
-  STRIPE_PUBLISHABLE_KEY = "pk_live_CFCeSNIwCoka8tBfZtXNYOhT"
-  STRIPE_SECRET_KEY      = "sk_live_g4yRv9w48ilmJGBxeoLHBO3E"
-
 
   # Settings specified here will take precedence over those in config/application.rb.
 
