@@ -104,8 +104,6 @@ gem 'wolverine'
 
 group :development do
   gem 'annotate'
-  gem 'guard'
-  gem 'guard-rspec'
   gem 'spring'
   gem 'spring-commands-rspec'
   gem 'rb-fsevent'
