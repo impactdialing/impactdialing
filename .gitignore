@@ -9,7 +9,6 @@ tmp
 lib/*.pid
 coverage_unit/
 coverage_controller/
-bin/
 /typescript
 .bundle
 /config/database.yml
