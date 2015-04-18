@@ -1,9 +1,5 @@
 ImpactDialing::Application.configure do
   PORT                   = 80
-  PUSHER_APP_ID          = "6964"
-  PUSHER_KEY             = "6f37f3288a3762e60f94"
-  PUSHER_SECRET          = "b9a1cfc2c1ab4b64ad03"
-
   HOLD_MUSIC_URL         = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
 
   # Settings specified here will take precedence over those in config/application.rb.

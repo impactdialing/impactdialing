@@ -52,9 +52,5 @@ ImpactDialing::Application.configure do
 
   # SimpleCov.start
 
-  PUSHER_APP_ID="blah"
-  PUSHER_KEY="blahblah"
-  PUSHER_SECRET="blahblahblah"
-
   HOLD_MUSIC_URL = "hold_music"
 end

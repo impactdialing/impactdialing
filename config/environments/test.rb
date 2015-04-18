@@ -44,10 +44,6 @@ ImpactDialing::Application.configure do
   require 'shoulda'
   require 'factory_girl'
 
-  PUSHER_APP_ID="blah"
-  PUSHER_KEY="blahblah"
-  PUSHER_SECRET="blahblahblah"
-
   HOLD_MUSIC_URL = "hold_music"
 
   HOST = 'localhost'
