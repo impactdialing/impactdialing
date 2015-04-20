@@ -16,7 +16,7 @@ coverage_controller/
 dump.rdb
 *.swp
 .pivotalrc
-.env*
+
 .test
 spec/fixtures/test_tmp/
 spec/fixtures/vcr_cassettes/
