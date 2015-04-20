@@ -2,8 +2,6 @@
 
 ### Setting up for development
 
-
-
 ### Running Specs
 
 A `.env` file is used to store local environment variables which are required to configure the app environment. So it is necessary to prepend `foreman run` to any test runs. Otherwise the `.env` file will not be loaded.
