@@ -3,21 +3,21 @@ begin
 
   desc "Run all :admin tagged specs in spec/features directory"
   RSpec::Core::RakeTask.new("spec:e2e:admin") do |t, task_args|
-    ENV['RAILS_ENV'] = 'e2e'
+    ENV['RAILS_ENV'] = 'test'
     t.pattern        = "features/**/*_spec.rb"
     t.rspec_opts     = "--tag admin --tag ~js"
   end
 
   desc "Run all :caller_ui tagged specs in spec/features directory"
   RSpec::Core::RakeTask.new("spec:e2e:caller") do |t, task_args|
-    ENV['RAILS_ENV'] = 'e2e'
+    ENV['RAILS_ENV'] = 'test'
     t.pattern        = "features/**/*_spec.rb"
     t.rspec_opts     = "--tag caller_ui"
   end
 
   desc "Run all :js tagged specs in spec/features directory"
   RSpec::Core::RakeTask.new("spec:e2e:js") do |t, task_args|
-    ENV['RAILS_ENV'] = 'e2e'
+    ENV['RAILS_ENV'] = 'test'
     t.pattern        = "features/**/*_spec.rb"
     t.rspec_opts     = "--tag js"
   end

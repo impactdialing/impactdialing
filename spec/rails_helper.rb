@@ -30,15 +30,10 @@ Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 # If you are not using ActiveRecord, you can remove this line.
 ActiveRecord::Migration.check_pending! if defined?(ActiveRecord::Migration)
 
-
 VCR.configure do |c|
   # c.debug_logger = File.open(Rails.root.join('log', 'vcr-debug.log'), 'w')
-  if ENV['RAILS_ENV'] == 'e2e'
-    c.allow_http_connections_when_no_cassette = true
-  else
-    c.cassette_library_dir = Rails.root.join 'spec/fixtures/vcr_cassettes'
-    c.hook_into :webmock
-  end
+  c.cassette_library_dir = Rails.root.join 'spec/fixtures/vcr_cassettes'
+  c.hook_into :webmock
 end
 
 RSpec.configure do |config|
@@ -82,12 +77,23 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 
-  config.before(:example) do
+  config.before(:example) do |example|
+    if example.metadata[:js] or example.metadata[:type] == :feature
+      VCR.configure do |c|
+        c.allow_http_connections_when_no_cassette = true
+      end
+    end
     Redis.new.flushall
     DatabaseCleaner.start
   end
 
-  config.after(:example) do
+  config.after(:example) do |example|
+    if example.metadata[:js] or example.metadata[:type] == :feature
+      VCR.configure do |c|
+        c.cassette_library_dir = Rails.root.join 'spec/fixtures/vcr_cassettes'
+        c.hook_into :webmock
+      end
+    end
     Redis.new.flushall
     DatabaseCleaner.clean
   end
