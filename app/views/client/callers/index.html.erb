@@ -9,6 +9,12 @@
 <h1>Callers</h1>
 <% if @callers.empty? %>
   <p>No callers entered.</p>
+  <div class="callout alert clearfix">
+    <p>
+      In order to add a new caller, you must first
+      <%= link_to 'add a new campaign', new_client_campaign_path %>.
+    </p>
+  </div>
 <% else %>
 
   <p>
