@@ -21,10 +21,6 @@ var VoterLists = function(){
     return false;
   }
 
-  if($.inArray("custom_id", selected_mapping) == -1){
-    return confirm("Are you sure you want to upload this list without an ID field? You will not be able to update these leads in the future.");
-  }
-
 
   return true
 
@@ -55,13 +51,6 @@ VoterLists.prototype.validate_csv_file = function(evt){
 
       $("#column_headers select").change(function(eventObj) {
         var selectedValue = $(this).val();
-        /**
-          Ask user to confirm ID selection.
-        */
-        if( selectedValue == "custom_id" ) {
-          var id_mapped = confirm("The ID field must be unique for every lead in your campaign. If two leads have the same IDs, the newer one will overwrite the older one. Are you sure you want to map this header to the ID field?");
-          if(!id_mapped){$(this).val("");}
-        }
         /**
           Create a new custom field.
         */
