@@ -42,6 +42,10 @@ private
         status: 'Total',
         number: :total_count,
         hide_percent: true
+      },
+      {
+        status: 'FCC',
+        number: :fcc_abandon_rate
       }
     ]
   end
@@ -56,7 +60,7 @@ private
 
   def dials_perc(dials)
     return '0%' if total.zero?
-    
+
     dials ||= 0
     quo = dials / total.to_f
     "#{(quo * 100).round}%"
