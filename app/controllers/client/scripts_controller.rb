@@ -36,7 +36,6 @@ module Client
       respond_with @script, location: client_scripts_path
     end
 
-
     def edit
       respond_with @script
     end
@@ -101,7 +100,7 @@ module Client
         end
         @script = @script.find(params[:id] || params[:script_id])
       rescue ActiveRecord::RecordNotFound => e
-        render :json=> {"message"=>"Resource not found"}, :status => :not_found
+        render :json => {"message"=>"Resource not found"}, :status => :not_found
         return
       end
       if @script.account != account
@@ -117,14 +116,14 @@ module Client
     def load_voter_fields
       @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
-      if @script.voter_fields!=nil
+      if @script.voter_fields != nil
         begin
           @voter_field_values = JSON.parse(@script.voter_fields)
         rescue
-          @voter_field_values=[]
+          @voter_field_values = []
         end
       else
-        @voter_field_values=[]
+        @voter_field_values = []
       end
     end
 
