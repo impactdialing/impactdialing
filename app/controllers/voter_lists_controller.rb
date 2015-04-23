@@ -54,9 +54,7 @@ public
     respond_with(voter_list, location: edit_client_campaign_path(@campaign.id)) do |format|
       if voter_list.save
         Resque.enqueue(VoterListUploadJob, voter_list.id, current_user.email, current_user.domain ,"")
-        # edit_client_scripts_link = '<a href="' + edit_client_script_path(@campaign.script_id) + '">here</a>'
         edit_client_scripts_link = "<a href=\"#{edit_client_script_path(@campaign.script_id)}\">script</a>"
-        # "<a href=\"#{edit_client_script_path(@campaign.script_id)}\">script</a>"
         flash_message(:notice, I18n.t(:voter_list_upload_scheduled, link: edit_client_scripts_link).html_safe)
         format.json { render :json => voter_list.to_json(:only => ["id", "name", "enabled"])}
       else

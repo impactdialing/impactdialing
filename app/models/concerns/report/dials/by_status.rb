@@ -61,7 +61,6 @@ private
 
   def dials_perc(dials)
     return '0%' if total.zero?
-
     dials ||= 0
     quo = dials / total.to_f
     "#{(quo * 100).round}%"
@@ -95,7 +94,6 @@ public
             row['Percent'] = dials_perc(dials)
           end
         end
-
         feeder << {'Status' => tpl[:status]}
       end
     end
