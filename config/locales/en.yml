@@ -45,7 +45,7 @@ en:
   unactivated_text: "To prevent abuse, new users must call the support phone number at the bottom of your screen to activate your account."
   voter_list_upload_succeded_subject: "Your list %{list_name} upload succeeded."
   voter_list_upload_failed_subject: "Your list %{list_name} upload failed."
-  voter_list_upload_scheduled: "Your list upload is processing. You will receive an email when it is complete. If you've added any custom fields, please update your script %{link}."
+  voter_list_upload_scheduled: "Your list upload is processing. You will receive an email when it is complete. If you've added any custom fields, please update your %{link}."
   campaign_time_period_exceed: "You can only call this campaign between %{start_time} and %{end_time}. Please try back during those hours."
   campaign_has_no_more_voters: "There are no more numbers to call in this campaign."
   caller_instruction_choice: "Press star to begin dialing or pound for instructions."
