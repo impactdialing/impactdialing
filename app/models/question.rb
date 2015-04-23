@@ -4,6 +4,7 @@ class Question < ActiveRecord::Base
   validates :text, presence: true
   validates :script, presence: true
   validates :script_order, presence:true, numericality: true
+  validate :keypad_check
 
   belongs_to :script, :inverse_of => :questions
   has_many :possible_responses, :inverse_of => :question
@@ -14,6 +15,13 @@ class Question < ActiveRecord::Base
   default_scope { order("script_order") }
 
   after_initialize :build_default_possible_response
+
+  def keypad_check
+    key_array = possible_responses.map(&:keypad)
+    if (key_array.uniq.length != key_array.length) && key_array.any?
+      errors.add(:possible_response, "keypad values must be unique")
+    end
+  end
 
   def build_default_possible_response
 

@@ -3,7 +3,7 @@ module Client
     before_filter :load_and_verify_script
     before_filter :load_question, only: [:show, :destroy, :update]
     respond_to :json
-    
+
     def index
       respond_with(@script.questions)
     end
@@ -11,7 +11,7 @@ module Client
     def create
       question = @script.questions.new(question_params)
       question.save
-      respond_with question,  location: client_script_questions_path      
+      respond_with question,  location: client_script_questions_path
     end
 
     def show
@@ -20,9 +20,9 @@ module Client
 
     def update
       @question.update_attributes(question_params)
-      respond_with @question, location: client_script_questions_path do |format|         
+      respond_with @question, location: client_script_questions_path do |format|
         format.json { render :json => {message: "Question updated" }, :status => :ok } if @question.errors.empty?
-      end            
+      end
     end
 
     def destroy

@@ -83,6 +83,7 @@ GEM
     cocoon (1.2.6)
     coderay (1.1.0)
     color (1.7)
+    colorize (0.7.7)
     columnize (0.9.0)
     compass (0.12.2)
       chunky_png (~> 1.2)
@@ -406,6 +407,7 @@ DEPENDENCIES
   cancan (~> 1.6.10)
   capybara
   cocoon (~> 1.2.0)
+  colorize
   compass
   database_cleaner
   deep_cloneable

@@ -75,13 +75,24 @@ describe Script, :type => :model do
     expect(Script.active).to include(active)
   end
 
-  describe "questions and responses" do
-    it "gets all questions and responses" do
-      script = create(:script)
-      question = create(:question, :script => script)
-      response_1 = create(:possible_response, :question => question)
-      another_response = create(:possible_response)
-      expect(script.questions_and_responses).to eq({question.text => [question.possible_responses.first.value, response_1.value]})
+  describe "Possible response uniqueness" do
+
+    it "displays an error message if a more than one of a question's possible phone-only responses use the same key" do
+      possible_responses = {:possible_responses => [
+        build(:possible_response, {:keypad => 1, :question_id => nil}),
+        build(:possible_response, {:keypad => 1, :question_id => nil})]}
+      questions = {:questions => [build(:question, :script_id => nil, :possible_responses => possible_responses[:possible_responses])]}
+      script = build(:script, questions)
+      expect(script.save).to eq(false)
+    end
+
+    it "bypasses uniqueness check on keys if they are all nil" do
+      possible_responses = {:possible_responses => [
+        build(:possible_response, {:keypad => nil, :question_id => nil}),
+        build(:possible_response, {:keypad => nil, :question_id => nil})]}
+      questions = {:questions => [build(:question, :script_id => nil, :possible_responses => possible_responses[:possible_responses])]}
+      script = build(:script, questions)
+      expect(script.save).to eq(true)
     end
   end
 
