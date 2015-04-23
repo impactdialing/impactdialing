@@ -25,16 +25,4 @@ feature 'Dials report' do
       expect(page).to have_content "#{campaign.name} Dials"
     end
   end
-
-  # describe 'When dummy data has been made' do
-  #   before do
-  #     web_login_as(admin)
-  #   end
-  #   it 'checks the page for correct data calculations' do
-  #     visit dials_client_reports_path(campaign_id: campaign.id)
-  #     save_and_open_page
-  #     expect(page).to have_content "Abandoned 0 0%"
-  #   end
-  # end
-
 end

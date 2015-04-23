@@ -40,7 +40,8 @@ private
       },
       {
         status: '» FCC Abandonment Rate',
-        number: :fcc_abandon_rate
+        number: :fcc_abandon_rate,
+        hide_dials: true
       },
       {
         status: 'Total',
@@ -77,8 +78,14 @@ public
   def make
     table = Table(headers) do |feeder|
       rows.each do |tpl|
-        dials                                 = @stats.send(tpl[:number])
-        feeder.transform{|row| row['Dials']   = dials}
+        dials = @stats.send(tpl[:number])
+        feeder.transform do |row|
+          if tpl[:hide_dials]
+            row['Dials'] = ''
+          else
+            row['Dials'] = dials
+          end
+        end
         feeder.transform do |row|
           if tpl[:percent]
             row['Percent'] = @stats.send(tpl[:percent])
