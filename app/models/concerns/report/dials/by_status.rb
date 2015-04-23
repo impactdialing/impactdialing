@@ -39,13 +39,13 @@ private
         number: :abandoned_count
       },
       {
+        status: '» FCC Abandonment Rate',
+        number: :fcc_abandon_rate
+      },
+      {
         status: 'Total',
         number: :total_count,
         hide_percent: true
-      },
-      {
-        status: 'FCC',
-        number: :fcc_abandon_rate
       }
     ]
   end
