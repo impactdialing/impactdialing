@@ -1,4 +1,4 @@
-## 
+##
 # Models a Voter record. These records make-up the dial-pool.
 #
 # Columns:
@@ -161,7 +161,7 @@ public
       custom_fields: {}
     }
     self.attributes.each do |field, value|
-      next unless system_fields.include?(field) 
+      next unless system_fields.include?(field)
       data[:fields][field] = autolink(value)
     end
 
@@ -231,7 +231,7 @@ public
 
       possible_responses << voters_response
     end
-    
+
     update_call_back(possible_responses)
     save
   end

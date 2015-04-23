@@ -72,11 +72,12 @@ class CallStats::ByStatus
   end
 
   def answered_count
+    return @answered_count if defined?(@answered_count)
     n = 0
     CallAttempt::Status.answered_list.each do |status|
       n += with_status_in_range_count(status)
     end
-    n
+    @answered_count = n
   end
 
   def not_answered_count
@@ -101,7 +102,7 @@ class CallStats::ByStatus
   end
 
   def abandoned_count
-    with_status_in_range_count(CallAttempt::Status::ABANDONED)
+    @abandoned_count = with_status_in_range_count(CallAttempt::Status::ABANDONED)
   end
 
   def ringing_count
@@ -109,15 +110,15 @@ class CallStats::ByStatus
   end
 
   def fcc_abandon_rate
-    # abandoned = abandoned_count
-    # answered = answered_count
-    # @fcc_rate = (abandoned/(answered + abandoned))
-    if ((abandoned_count+answered_count) === 0)
+    abandoned = abandoned_count
+    answered = answered_count
+    if ((abandoned+answered) === 0)
+    # if ((@abandoned_count + @answered_count) === 0)
       return 0
     else
-      @fcc_rate = (abandoned_count/(abandoned_count+answered_count))
+      @fcc_rate = (abandoned/(abandoned+answered))
+      # @fcc_rate = (@abandoned_count/(@answered_count + @abandoned_count))
     end
-
     return @fcc_rate
   end
 

@@ -60,6 +60,7 @@ FactoryGirl.define do
     end
 
     factory :busy_call_attempt, traits: [:busy]
+    factory :abandoned_call_attempt, traits: [:abandoned]
     factory :failed_call_attempt, traits: [:failed]
     factory :completed_call_attempt, traits: [:completed]
     factory :machine_answered_call_attempt, traits: [:machine_answered]
