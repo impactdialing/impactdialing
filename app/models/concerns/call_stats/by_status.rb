@@ -113,11 +113,9 @@ class CallStats::ByStatus
     abandoned = abandoned_count
     answered = answered_count
     if ((abandoned+answered) === 0)
-    # if ((@abandoned_count + @answered_count) === 0)
       return 0
     else
-      @fcc_rate = (abandoned/(abandoned+answered))
-      # @fcc_rate = (@abandoned_count/(@answered_count + @abandoned_count))
+      @fcc_rate = (abandoned/(abandoned+answered).to_f)
     end
     return @fcc_rate
   end
