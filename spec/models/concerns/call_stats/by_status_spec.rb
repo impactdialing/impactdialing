@@ -14,10 +14,7 @@ describe CallStats::ByStatus do
       attach_call_attempt(:completed_call_attempt, voter, callers.first)
       attach_call_attempt(:failed_call_attempt, voter, callers.first)
     end
-    options = {scoped_to: :all_voters, from_date: 'from date', to_date: 'to date'}
-    # (selective date range)
-    # selective_date_range_picker
-    # fcc_abandon_rate = subject.new(campaign, options)
+    options = {scoped_to: :call_attempts, from_date: Time.now.beginning_of_day, to_date: Time.now.end_of_day}
     callStats = CallStats::ByStatus.new(campaign, options)
     expect(callStats.fcc_abandon_rate).to eq(0.5)
   end

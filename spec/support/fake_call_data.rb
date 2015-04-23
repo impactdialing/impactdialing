@@ -31,7 +31,7 @@ module FakeCallData
       score     = scored_phone.last
       phone     = scored_phone.first
       household = campaign.households.find_by_phone(phone)
-      
+
       household.update_attributes({
         presented_at: Time.at(score)
       })
@@ -83,7 +83,7 @@ module FakeCallData
     voter    = nil
     unless household_or_voter.is_a? Household
       voter     = household_or_voter
-      household = household_or_voter.household 
+      household = household_or_voter.household
     else
       household = household_or_voter
     end
@@ -98,7 +98,7 @@ module FakeCallData
       call_end: 1.minute.from_now
     })
     call = create(:bare_call, call_attempt: call_attempt)
-    
+
     yield call_attempt if block_given?
 
     # mimicing PersistCalls job
@@ -116,6 +116,9 @@ module FakeCallData
     when /past_recycle_time_machine_answered_call_attempt|machine_answered_call_attempt/
       household.dialed(call_attempt)
       household.save!
+    when /abandoned_call_attempt/
+      household.dialed(call_attempt)
+      household.save!
     else
       puts "Unknown CallAttempt factory type for FakeCallData#attach_call_attempt: #{type}"
     end
@@ -130,7 +133,7 @@ module FakeCallData
     campaign  = call_attempt.campaign
 
     voter.try(:save!)
-    
+
     household.dialed(call_attempt)
     household.save!
   end
