@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Service disruption</title>
+  <style type="text/css">
+    body { background-color: #fff; color: #666; text-align: center; font-family: arial, sans-serif; }
+    div.dialog {
+      width: 55%;
+      padding: 0 4em;
+      margin: 4em auto 0 auto;
+    }
+    h1 { color: #f00;
+      margin-bottom : .5em;
+      font-size : 1.75em; /* 28 / 16 = 1.75 */
+      line-height : 1.3;
+    }
+    p {
+      padding-top: 20px;
+      border-top: 3px solid rgb(192,192,200);
+    }
+    a {
+      background:
+        url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAR4AAAA5CAMAAADXybTeAAAAA3NCSVQICAjb4U/gAAAAb1BMVEUzMzP///9hepQ8W3vDzNZmZmalpaXY2NhycnI9PT1IZYOFma3n6u6ysrJYWFiLi4vb4eeSo7W2wc15jqT09fdKSkrO1t6ZmZm+vr6quMZUcIx+fn7m5uZCQkLy8vJshJyElK2drb3n6+/MzMy2ws6TKOPGAAAACXBIWXMAAAsSAAALEgHS3X78AAAEEXRFWHRYTUw6Y29tLmFkb2JlLnhtcAA8P3hwYWNrZXQgYmVnaW49IiAgICIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/Pgo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA0LjEtYzAzNCA0Ni4yNzI5NzYsIFNhdCBKYW4gMjcgMjAwNyAyMjoxMTo0MSAgICAgICAgIj4KICAgPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6eGFwPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIj4KICAgICAgICAgPHhhcDpDcmVhdG9yVG9vbD5BZG9iZSBGaXJld29ya3MgQ1MzPC94YXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx4YXA6Q3JlYXRlRGF0ZT4yMDExLTA1LTE4VDEzOjQ2OjU0WjwveGFwOkNyZWF0ZURhdGU+CiAgICAgICAgIDx4YXA6TW9kaWZ5RGF0ZT4yMDExLTA2LTI5VDIxOjUyOjA3WjwveGFwOk1vZGlmeURhdGU+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iPgogICAgICAgICA8ZGM6Zm9ybWF0PmltYWdlL3BuZzwvZGM6Zm9ybWF0PgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDXGuZYAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1MzmNZGAwAAABV0RVh0Q3JlYXRpb24gVGltZQAxOC81LzExGrnqawAABe9JREFUaIHtmut24iAQgKFubiqJbY2kDQePpu//jMsQLgOJ1lh1uyfOj54IZGA+YGYgJfQpdHdY7Rcg+9VhF9SQfzSi3yO71XKBZblChOaO5+1zMZTPN1s9bzw7D2e53+8RILOC5oxnuzIw3j82pmjz8W7KVlv4PWM8mxcDZxsUb03xCyCbL56N88hvQfmb226bGePxdBYvuHyL3NFmtnjWnk68ubyHXq7nisczOAzqXl3dfq54vuwC+TpTufiaKx566PObzWilcUyH2foeSiHB2W9PVOro/j7jyAUEVmeqV4uX7Zzx0KN1O29LWEXv4KS3+6XNgj6OdNZ4nCzBy+zUblqDR1riqiceSlUi+EU3GoyKWZ+46olH7bLVh/r75xVO6R+rI6564jkrTzxKdmv1Z7uDKL9+XqbG8gqHz+0SjqYqH3zFVU88lC6CyLXAVU88On/emdWz07mylyceJTuIVkfte45P3zNB/ms8HefiBmrWQd6zxlWEc3aDHn4kgltpOhnVcUL4yRdVZacfOkKS6/s/lzX/SPFE4bwbK1bGeSnTgNAj8Lgz13F45noknhOmBngIKXCjR+D5Ck7swfXhL8HTdr2wtoAVFG+xE+Lw3E1+CR5fLnlxMZ8Z4lGeulR8LtL3D/BkaonbuRPoGYkqzaIiaDmMsSJqeRkeKutTDica0Ek8cmSIMOzJMD2eDvrqSu8cG/1MEtdPQohZ/NDED7PRDoOQmgcs07r3tJW0b1uJRhnjoZl6y6hCBFged+MrnQYwR1ZDFy/6MRat6NtchYe58Epp5SKJ5QN4snqseFBGUUNSNBPx0JaQNCZQoOCfncMjS9sucdPF3NsFuxpPqqZarUA1OFIpUm3TdWnhZ1IZKApSpxnt9MowQ6tIXbGuaypoandYBg6WCSoYYIHMk3FlTaKzv2gbDvFkzvt4Ai3qppZn8JQkgXbaCksHzGSSykaNhl2Lx85+v4j6bBrmgjs8peuxddiEXQwyV0jNY+FN5m5RXeh7qF4q9mVLILMr049oFI9beGBFPxGZs0Z1VkyJRiEeayiQtyP2KVeC5kO3aSNl0lnVYouZNexyPKqr/qUx7wtLOKrEeHI0Qm61pe7t7Go8LpwCKrdva2uz6qX2bwKLOKxVZrwyaIk6m4CnN3w0OOWm53E8butmxjYRJgr8WjwcFXuFCcKDj6+KRRNpY2a8KZ4u3Nlt8NjCUTyIhLGNhaMR1+JhqNhrqBAevFwaOybB+6hUVna8LZrDoLMJeHoFCI+oTKZR5efwINPr/keM+OrAPqqBIzxjVnGCpRtp6bVe7poL17kLkINuvsOTjOOpH4kH6FSQy6qYW94IT+McrDOtggRTdSM7VtWT8QR3Wo9cPQIng1ZH/sPN5b2cJdC5ZId+43uGeDoUzahmfy882Bf3k5Liqen8uMfuIC/F0/nAZwkEcWAiHsiifDoPJ7p74cF6a+2pg42dmh/Z+AguxAMZt2XBx7ZrNREPR1cksr067/keD1oUaZ8WcjytLh4HiZj0aaHPKpFEeCCvdQknwuMWgJzoeygt9VlLKy9Jez88RWFZNCYBY2hjVy7xxmm8KAtnxOg9ToBHtDjxdQRShLadGLn6cwgpEp7UQP5+eOCgCrOYtdZ+mMpWr1yRk9LpgAOPbqkvQMzYVXWukDbDI2l/mdrwPrVBa8wSEKBFd5MlpJiKRzU1R/YivWvk0qfVBB1ZtacgSasOyuqIj25n9GCSErXUK278QgNLgqsdAabV5Xr+p7pmEJnmSZLrzyBhILspHtrVsRFZ4iYG6xD2gsffp8EWAYku8jCeug3ZeQK247qZHLkG3Z3++BEJcbeOEt9T4rtIYe8gTfTIOOdpsD+yFD7hyUgHFSlvOQ9YSMY5i1Mi2VkZXIBC505j3w0q9JXuKjfQkY0o1K5rrHhUpnxEPpEL/weCZ5NdetEPMgs8Ko62FlA69H1nZBZ49E1zWamtqS/kJ/xTwSzw2O8UvWuf8jVnisFV8rgvhrcWydToSZlU8Q3eefkLts2ex7a3KZgAAAAASUVORK5CYII=)
+        no-repeat;
+        /*left center;*/
+      margin-right: auto;
+      margin-left: 4.5%;
+      padding: 29px 150px;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- This file lives in public/heroku_404.html -->
+  <h1>
+    <a href="/"></a>
+  </h1>
+  <div class="dialog">
+    <h1>There is a temporary interruption in service.</h1>
+    <p>Do try again in a bit.</p>
+  </div>
+</body>
+</html>
