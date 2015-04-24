@@ -1,18 +1,4 @@
 <% form ||= nil %>
-<!-- <p data-intro="If answering machine detection is off, any calls answered
-before 15 seconds of ringing will be immediately connected to a caller. After
-15 seconds, the call will be hung up. If answering machine detection is on, the
-call will ring for up to 30 seconds. If it is answered, the detection system
-will listen to the call for about two seconds, and connect it to a caller if it
-is a human. If it is a machine, it will play a message if you have chosen to do
-so, or hang up." data-step="8">
-  <label for="campaign_answering_machine_detect">
-    <%= form.check_box :answering_machine_detect,
-    {name: 'campaign[answering_machine_detect]', id: "campaign_answering_machine_detect"} %>
-    Automatically detect answering machines
-  </label>
-</p> -->
-
 <fieldset>
   <legend>Recorded Message Settings</legend>
   <ul>
@@ -64,10 +50,9 @@ so, or hang up." data-step="8">
             </label>
             <%= form.collection_select(:recording_id, @account.recordings.active,
                 :id, :name, {:prompt => false}, {:class=>"field",
-                :onchange=>"updatePreview();",name: 'campaign[recording_id]',
+                name: 'campaign[recording_id]',
                 id: "campaign_recording_id"}) %>
           </p>
-          <div id="sndPreview" style="vertical-align: middle;"></div>
           <%= render partial: 'javascript' %>
         </div>
       </li>
