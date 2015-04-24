@@ -76,7 +76,6 @@ describe Script, :type => :model do
   end
 
   describe "Possible response uniqueness" do
-
     it "displays an error message if a more than one of a question's possible phone-only responses use the same key" do
       possible_responses = {:possible_responses => [
         build(:possible_response, {:keypad => 1, :question_id => nil}),

@@ -123,7 +123,6 @@ group :development, :test, :e2e do
   gem 'pry'
   gem 'byebug'
   gem 'compass'
-  gem 'colorize'
 end
 
 group :test, :e2e do
@@ -135,7 +134,6 @@ group :test, :e2e do
   gem 'launchy'
   gem 'timecop'
   gem 'webmock'
-  gem 'pry'
   gem 'vcr'
   gem 'selenium-webdriver'
 end

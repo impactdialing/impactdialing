@@ -29,7 +29,7 @@ module Client
       @question.destroy
       render :json => { message: 'Question Deleted', status: :ok}
     end
-    
+
   private
     def load_question
       begin
