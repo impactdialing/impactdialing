@@ -1,8 +1,12 @@
 <% content_for :callers_data do %>
   data-intro="After you create a campaign, set up your callers." data-step="5"
 <% end %>
+<!-- abstracting the object out (campaigns), i can create a method to share the conditional logic between this and callers -->
 
 <h1>Campaigns</h1>
+<!--  -->
+<%# missing_data_text(@campaigns, @account.scripts.active) do  %>
+<!--  -->
 <% if @campaigns.empty? %>
   <p>No campaigns entered.</p>
   <% if @account.scripts.active.empty? %>
