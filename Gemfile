@@ -5,6 +5,8 @@ ruby '2.0.0'
 gem 'rails', '~> 4.0.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
+gem 'puma'
+gem 'rack-timeout'
 
 # heroku
 gem 'rails_12factor', group: :production
@@ -14,7 +16,6 @@ gem 'hirefire-resource'
 gem 'sinatra'
 gem 'slim'
 
-gem 'unicorn'
 
 gem 'uuid', '~> 2.3.7' # used to generate unique filenames for download reports - overkill much?
 
