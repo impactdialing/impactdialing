@@ -4,20 +4,8 @@
 <!-- abstracting the object out (campaigns), i can create a method to share the conditional logic between this and callers -->
 
 <h1>Campaigns</h1>
-<!--  -->
-<%# missing_data_text(@campaigns, @account.scripts.active) do  %>
-<!--  -->
-<% if @campaigns.empty? %>
-  <p>No campaigns entered.</p>
-  <% if @account.scripts.active.empty? %>
-    <div class="callout alert clearfix">
-      <p>
-        In order to add a new campaign, you must first
-        <%= link_to 'add a new script', new_client_script_path %>.
-      </p>
-  </div>
-  <% end %>
-<% else %>
+
+<%= missing_data_text(@campaigns, @account.scripts.active, { collection_type: 'campaign', dependency_type: 'script'}) do %>
   <table data-intro="This is a list of all the campaigns you have created." data-step="2">
     <tr>
       <th>Name</th>

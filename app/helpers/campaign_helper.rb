@@ -32,17 +32,21 @@ module CampaignHelper
   def numbers_count_for(list)
     list.households_count
   end
+# "<a href=\"#{edit_client_script_path(@campaign.script_id)}\">script</a>"
 
+# i just want to call the string name of the object instead of the actual AR object.
+  def missing_data_text(collection, collection_dependency, options, &block)
+    add_dependency_msg = "In order to add a new " + options[:collection_type] + ", you must first "
+    link = link_to("add a new " + options[:dependency_type], send("new_client_" + options[:dependency_type] + "_path"))
+    link_path = "new_client_" + options[:dependency_type] + "_path"
+    # link = "<a href=\"#{link_path}\">add a #{options[:dependency_type]}</a>"
+    no_collection_msg = "No " + options[:collection_type] + " entered."
 
-  def missing_data_text(collection, collection_dependency, &block)
-    add_dependency_msg = "In order to add a new #{collection}, you must first "
-    link = link_to("add a new #{collection_dependency}", "new_client_#{collection_dependency}_path")
-    no_collection_msg = "No #{collection}s entered."
     if collection.empty?
-      rendered_message = no_collection_msg
+      rendered_message = (content_tag(:p, no_collection_msg))
       if collection_dependency.empty?
         rendered_message = content_tag(:div, class: ["callout", "alert", "clearfix"]) do
-          (content_tag(:p, add_dependency_msg + link))
+          (content_tag(:p, (add_dependency_msg + link).html_safe))
         end
       end
       return rendered_message
@@ -50,41 +54,19 @@ module CampaignHelper
       yield
     end
   end
-  #
-  # <% if @campaigns.empty? %>
-  #   <p>No campaigns entered.</p>
-  #   <% if @account.scripts.active.empty? %>
-  #     <div class="callout alert clearfix">
-  #       <p>
-  #         In order to add a new campaign, you must first
-  #         <%= link_to 'add a new script', new_client_script_path %>.
-  #       </p>
-  #   </div>
-  #   <% end %>
-  # <% else %>
-
-  # def playground(collection_one, collection_two)
-  #   if collection_one.empty?
-  #     # return collection_two.join
-  #     if false
-  #     else
-  #       'other' +
-  #       'not other'
-  #     end
-  #   else
-  #     yield
-  #   end
-  # end
 end
 
   #
   # #########
   #       content_tag(:p, "Hello world!")
   #  # => <p>Hello world!</p>
+
   # content_tag(:div, content_tag(:p, "Hello world!"), class: "strong")
   #  # => <div class="strong"><p>Hello world!</p></div>
+
   # content_tag(:div, "Hello world!", class: ["strong", "highlight"])
   #  # => <div class="strong highlight">Hello world!</div>
+
   # content_tag("select", options, multiple: true)
   #  # => <select multiple="multiple">...options...</select>
   #

@@ -3,7 +3,7 @@ require 'rails_helper'
 describe CampaignHelper do
   describe '#missing_data_text' do
     context 'when the collection is empty' do
-      context 'when the collection dependency is empty' do
+      context 'and when the collection dependency is empty' do
         let(:collection) { [] }
         let(:dependency) { [] }
 
