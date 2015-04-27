@@ -5,7 +5,7 @@
 
 <h1>Campaigns</h1>
 
-<%= missing_data_text(@campaigns, @account.scripts.active, { collection_type: 'campaign', dependency_type: 'script'}) do %>
+<%= missing_data_text(@campaigns.count, @account.scripts.active.count, { collection_type: 'campaign', dependency_type: 'script'}) do %>
   <table data-intro="This is a list of all the campaigns you have created." data-step="2">
     <tr>
       <th>Name</th>
