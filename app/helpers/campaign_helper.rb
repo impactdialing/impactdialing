@@ -42,7 +42,7 @@ module CampaignHelper
       rendered_message = (content_tag(:p, no_collection_msg))
       if collection_dependency.zero?
         rendered_message = content_tag(:div, class: ["callout", "alert", "clearfix"]) do
-          (content_tag(:p, (add_dependency_msg + link).html_safe))
+          (content_tag(:p, (add_dependency_msg + link + ".").html_safe))
         end
       end
       return rendered_message

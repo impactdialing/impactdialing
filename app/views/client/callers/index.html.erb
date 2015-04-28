@@ -7,15 +7,8 @@
 <% end %>
 
 <h1>Callers</h1>
-<% if @callers.empty? %>
-  <p>No callers entered.</p>
-  <div class="callout alert clearfix">
-    <p>
-      In order to add a new caller, you must first
-      <%= link_to 'add a new campaign', new_client_campaign_path %>.
-    </p>
-  </div>
-<% else %>
+<%= missing_data_text(@callers.count, @account.campaigns.active.count, { collection_type: 'caller', dependency_type: 'campaign'}) do %>
+
 
   <p>
     Callers can
