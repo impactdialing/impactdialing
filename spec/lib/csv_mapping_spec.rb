@@ -41,6 +41,5 @@ describe CsvMapping do
              "Xyz"      => "Phone",
              "FIRSTName" => "FirstName"
          })
-
   end
 end

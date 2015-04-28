@@ -70,18 +70,9 @@ public
     csv = upload.read
     separator = VoterList.separator_from_file_extension(upload.original_filename)
     csv_file = CSV.new(csv, :col_sep => separator)
-
-    headers = csv_file.shift
-    unless headers.present?
-      @csv_error = I18n.t(:csv_has_no_header_data)
-    else
-      @csv_column_headers = headers.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
-      @first_data_row = csv_file.shift
-      unless @first_data_row.present?
-        @csv_error = I18n.t(:csv_has_no_row_data)
-      end
-    end
-
+    @csv_column_headers = CsvValidator.header(csv_file)
+    @first_row = CsvValidator.first_row(csv_file)
+    @csv_validator = CsvValidator.validate(csv_file)
     render layout: false
   end
 
