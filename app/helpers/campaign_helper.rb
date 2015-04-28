@@ -32,22 +32,4 @@ module CampaignHelper
   def numbers_count_for(list)
     list.households_count
   end
-
-  def missing_data_text(collection, collection_dependency, options, &block)
-    add_dependency_msg = "In order to add a new " + options[:collection_type] + ", you must first "
-    link = link_to("add a new " + options[:dependency_type], send("new_client_" + options[:dependency_type] + "_path"))
-    no_collection_msg = "No " + options[:collection_type] + " entered."
-
-    if collection.zero?
-      rendered_message = (content_tag(:p, no_collection_msg))
-      if collection_dependency.zero?
-        rendered_message = content_tag(:div, class: ["callout", "alert", "clearfix"]) do
-          (content_tag(:p, (add_dependency_msg + link + ".").html_safe))
-        end
-      end
-      return rendered_message
-    else
-      yield
-    end
-  end
 end
