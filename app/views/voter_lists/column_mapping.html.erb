@@ -1,6 +1,8 @@
-<% if @csv_validator.errors.present? %>
+<% if @csv_validator.errors != [] %>
 <div class="callout alert clearfix">
-  <p><strong><%= @csv_error %></strong></p>
+  <% @csv_validator.errors.each do |error| %>
+  <p><strong><%= error %></strong></p>
+  <% end %>
 </div>
 <% else %>
   <p>Please map your headers to the appropriate fields below.</p>
@@ -10,12 +12,12 @@
       <th>Field in the dialer</th>
       <th>Example data</th>
     </tr>
-    <% @csv_column_headers.each_with_index do |csv_header, index| %>
+    <% @csv_validator.csv_column_headers.each_with_index do |csv_header, index| %>
       <% selected = selected_system_or_custom_header_for(csv_header, @campaign.account) %>
       <tr>
         <td><%= csv_header %></td>
         <td><%= select_tag "voter_list[csv_to_system_map[#{csv_header}]]", options_for_select(system_column_headers(csv_header, @campaign.account), selected), class: "select-column-mapping" %></td>
-        <td><%= @first_row.try(:[], index) %></td>
+        <td><%= @csv_validator.first_row.try(:[], index) %></td>
       </tr>
     <% end %>
   </table>
