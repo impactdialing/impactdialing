@@ -5,42 +5,37 @@ class CsvValidator
     @headers = csv_file.shift
     @first_row = csv_file.shift
     @csv_column_headers = @headers.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
+    @errors = []
   end
 
-  # what is headers_present supposed to do?
-  # return one error or all errors?
-
   def validate
-    errors = ''
     if headers_present
-      errors = headers_present
     else
-      if first_row_present
-        errors = first_row_present
-      end
-      if duplicate_headers
-        errors += duplicate_headers
-      end
+      first_row_present
+      duplicate_headers
     end
-    return errors
+    return @errors
   end
 
   def headers_present
     unless headers.present?
-      return I18n.t(:csv_has_no_header_data)
+      @errors << I18n.t(:csv_has_no_header_data)
+      # return I18n.t(:csv_has_no_header_data)
     end
   end
 
   def first_row_present
     unless first_row.present?
-      return I18n.t(:csv_has_no_row_data)
+      @errors << I18n.t(:csv_has_no_row_data)
+      # return I18n.t(:csv_has_no_row_data)
     end
   end
 
   def duplicate_headers
     if ((headers.length - headers.uniq.length) != 0)
       duplicate_headers = headers.select{|header| headers.count(header) > 1}.uniq
-      return I18n.t(:csv_duplicate_headers, :duplicate_headers => duplicate_headers.join(', '))
+      @errors << I18n.t(:csv_duplicate_headers, :duplicate_headers => duplicate_headers.join(', '))
+      # return I18n.t(:csv_duplicate_headers, :duplicate_headers => duplicate_headers.join(', '))
     end
   end
 
