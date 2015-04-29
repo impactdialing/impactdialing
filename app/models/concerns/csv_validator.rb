@@ -11,6 +11,7 @@ class CsvValidator
   # return one error or all errors?
 
   def validate
+    errors = ''
     if headers_present
       errors = headers_present
     else
@@ -19,7 +20,6 @@ class CsvValidator
       end
       if duplicate_headers
         errors += duplicate_headers
-        # Doesn't work if first_row present doesn't return an error message.
       end
     end
     return errors
