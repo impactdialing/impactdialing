@@ -70,9 +70,7 @@ public
     csv = upload.read
     separator = VoterList.separator_from_file_extension(upload.original_filename)
     csv_file = CSV.new(csv, :col_sep => separator)
-    @csv_column_headers = CsvValidator.header(csv_file)
-    @first_row = CsvValidator.first_row(csv_file)
-    @csv_validator = CsvValidator.validate(csv_file)
+    @csv_validator = CsvValidator.new(csv_file)
     render layout: false
   end
 
