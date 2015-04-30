@@ -265,14 +265,18 @@ ImpactDialing::Application.routes.draw do
       end
     end
     get :update_report_real
-    resources :users, :only => [:create, :update, :destroy]
+    resources :users, :only => [:create, :update, :destroy] do
+      member do
+        post :change_role
+      end
+    end
+    
     resources :tos, :only => [:index, :create] do
       collection {get :policies}
     end
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
     post 'caller_password', :to => 'users#caller_password', :as => 'caller_password'
     post 'generate_api_key', :to => 'users#generate_api_key', :as => 'generate_api_key'
-    post 'change_role', :to => 'users#change_role', :as => 'change_role'
   end
 
   get 'client', :to => 'client#index', :as => 'client_root'
