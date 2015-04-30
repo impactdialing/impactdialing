@@ -1,110 +1,93 @@
 require 'rails_helper'
 
 describe CsvValidator do
-  describe "duplicate_headers" do
+  def file_path(filename)
+    File.join Rails.root, "spec/fixtures/files/#{filename}.csv"
+  end
+
+  def file(csv_file_path)
+    CSV.new(File.read csv_file_path)
+  end
+
+  describe "intialize values are properly set when file is valid" do
     let(:csv_file_path) do
-      File.join Rails.root,'spec/fixtures/files/valid_voters_duplicate_phone_headers.csv'
+      file_path 'valid_voters_list'
+    end
+    let(:csv_headers) do
+      file(csv_file_path).shift
+    end
+    let(:csv_first_row) do
+      a = file(csv_file_path)
+      a.shift
+      a.shift
+    end
+    it "should have header content when valid file is loaded" do
+      csv_validator = CsvValidator.new(file(csv_file_path))
+      expect(csv_validator.headers).to eq(csv_headers)
+    end
+    it "should have data after the header when valid file is loaded" do
+      csv_validator = CsvValidator.new(file(csv_file_path))
+      expect(csv_validator.first_row).to eq(csv_first_row)
+    end
+    it "should have header columns when valid file is loaded" do
+      csv_validator = CsvValidator.new(file(csv_file_path))
+      expect(csv_validator.csv_column_headers).to eq(csv_validator.headers)
+    end
+    it "should have no errors when valid file is loaded" do
+      csv_validator = CsvValidator.new(file(csv_file_path))
+      expect(csv_validator.errors).to eq([])
+    end
+  end
+
+  describe "headers are repeated" do
+    let(:csv_file_path) do
+      file_path 'valid_voters_duplicate_phone_headers'
     end
     let(:csv_file) do
       CSV.read(csv_file_path)
     end
-    it "should generate an error when headers are duplicated" do
-      duplicate_header_test = CsvValidator.new(csv_file)
-      expect(duplicate_header_test.duplicate_headers).to eq I18n.t(:csv_duplicate_headers, :duplicate_headers => "PHONENUMBER")
+    it "should set headers repeated error message" do
+      csv_validator = CsvValidator.new(csv_file)
+      expect(csv_validator.errors).to eql ([I18n.t(:csv_duplicate_headers, :duplicate_headers => "PHONENUMBER")])
     end
   end
 
-  describe "first_row_present" do
+  describe "no rows are present" do
     let(:csv_file_path) do
-      File.join Rails.root,'spec/fixtures/files/voter_list_only_headers.csv'
+      file_path 'voter_list_only_headers'
     end
     let(:csv_file) do
       CSV.read(csv_file_path)
     end
-    it "should generate an error when csv has no row data" do
-      first_row_test = CsvValidator.new(csv_file)
-      expect(first_row_test.first_row_present).to eq I18n.t(:csv_has_no_row_data)
+    it "should set no rows present error message" do
+      csv_validator = CsvValidator.new(csv_file)
+      expect(csv_validator.errors).to eq ([I18n.t(:csv_has_no_row_data)])
     end
   end
 
-  describe "headers_present" do
+  describe "headers are not present" do
     let(:csv_file_path) do
-      File.join Rails.root,'spec/fixtures/files/voters_with_no_header_info.csv'
+      file_path 'voters_with_no_header_info'
     end
     let(:csv_file) do
       CSV.read(csv_file_path)
     end
-    it "should generate an error when csv has no headers" do
-      headers_present_test = CsvValidator.new(csv_file)
-      expect(headers_present_test.headers_present).to eq I18n.t(:csv_has_no_header_data)
+    it "should set a headers not present error message" do
+      csv_validator = CsvValidator.new(csv_file)
+      expect(csv_validator.errors).to eq ([I18n.t(:csv_has_no_header_data)])
     end
   end
 
-  describe "validate duplicate_headers" do
+  describe "duplicate headers and no row data" do
     let(:csv_file_path) do
-      File.join Rails.root,'spec/fixtures/files/valid_voters_duplicate_phone_headers.csv'
+      file_path 'voter_list_only_headers_with_duplicates'
     end
     let(:csv_file) do
       CSV.read(csv_file_path)
     end
-    it "should generate an error when headers are duplicated" do
-      validate_test = CsvValidator.new(csv_file)
-      expect(validate_test.validate).to eq I18n.t(:csv_duplicate_headers, :duplicate_headers => "PHONENUMBER")
+    it "should set both duplicate headers and no row data messages" do
+      csv_validator = CsvValidator.new(csv_file)
+      expect(csv_validator.errors).to eql ([(I18n.t(:csv_has_no_row_data)), (I18n.t(:csv_duplicate_headers, :duplicate_headers => "PHONENUMBER"))])
     end
   end
-
-  describe "validate first_row_present" do
-    let(:csv_file_path) do
-      File.join Rails.root,'spec/fixtures/files/voter_list_only_headers_with_duplicates.csv'
-    end
-    let(:csv_file) do
-      CSV.read(csv_file_path)
-    end
-    it "should generate an error stating csv has duplicate headers and no row data" do
-      validate_test = CsvValidator.new(csv_file)
-      expect(validate_test.validate).to eq (I18n.t(:csv_has_no_row_data) + I18n.t(:csv_duplicate_headers, :duplicate_headers => "PHONENUMBER"))
-    end
-  end
-
 end
-  # it "should not use the same system column as mapping for more than one csv column" do
-  #   mapping = CsvMapping.new({
-  #            "Phone"     => "Phone",
-  #            "LAST"      => "LastName",
-  #            "FIRSTName" => "LastName"
-  #        })
-  #   mapping.validate
-  #   expect(mapping.errors).to include CsvMapping::ErrorMessages::MULTIPLE_MAPPING
-  # end
-  #
-  # it "should not consider an unmapped column as a multiple mapping" do
-  #   mapping = CsvMapping.new({
-  #            "Phone"     => "Phone",
-  #            "foo" => "",
-  #            "bar" => "",
-  #        })
-  #   mapping.validate
-  #   expect(mapping.errors).not_to include CsvMapping::ErrorMessages::MULTIPLE_MAPPING
-  # end
-  #
-  # it "should mandatorily have a system mapping for Phone" do
-  #   mapping = CsvMapping.new({
-  #            "LAST"      => "LastName",
-  #            "FIRSTName" => "FirstName"
-  #        })
-  #   mapping.validate
-  #   expect(mapping.errors).to include CsvMapping::ErrorMessages::NO_PHONE
-  # end
-  # it "should give the csv column mapped to the given system column" do
-  #   mapping = CsvMapping.new({
-  #            "Xyz"      => "Phone",
-  #            "FIRSTName" => "FirstName"
-  #        })
-  #   expect(mapping.csv_index_for("Phone")).to eq("Xyz")
-  # end
-  # it "should reassign the system mapping for a given csv column" do
-  #   mapping = CsvMapping.new({
-  #            "Xyz"      => "Phone",
-  #            "FIRSTName" => "FirstName"
-  #        })
-  # end
