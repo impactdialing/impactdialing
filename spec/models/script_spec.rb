@@ -76,42 +76,43 @@ describe Script, :type => :model do
   end
 
   describe "Possible response uniqueness" do
-    it "displays an error message if a more than one of a question's possible phone-only responses use the same key" do
-      possible_responses = {:possible_responses => [
+    let(:possible_responses) do
+      [
         build(:possible_response, {:keypad => 1, :question_id => nil}),
-        build(:possible_response, {:keypad => 1, :question_id => nil})]}
-      questions = {:questions => [build(:question, :script_id => nil, :possible_responses => possible_responses[:possible_responses])]}
-      script = build(:script, questions)
+        build(:possible_response, {:keypad => 1, :question_id => nil})
+      ]
+    end
+    let(:question) do
+      build(:question, :script_id => nil, :possible_responses => possible_responses)
+    end
+    let(:script) do
+      build(:script, {:questions => [question]})
+    end
+
+    it "displays an error message if a more than one of a question's possible phone-only responses use the same key" do
       expect(script.save).to eq(false)
     end
 
     it "bypasses uniqueness check on keys if they are all nil" do
-      possible_responses = {:possible_responses => [
-        build(:possible_response, {:keypad => nil, :question_id => nil}),
-        build(:possible_response, {:keypad => nil, :question_id => nil})]}
-      questions = {:questions => [build(:question, :script_id => nil, :possible_responses => possible_responses[:possible_responses])]}
-      script = build(:script, questions)
+      possible_responses.each { |pr| pr.keypad=nil }
       expect(script.save).to eq(true)
     end
 
     it "checks uniqueness of keypad responses on script update" do
-      script = create(:script)
-      question = create(:question, {:script_id => script.id})
-      possible_response1 = create(:possible_response, {:keypad => 1, :question_id => question.id})
-      possible_response2 = create(:possible_response, {:keypad => 2, :question_id => question.id})
+      possible_responses.last.keypad = 2
+      script.save
       script.update_attributes({
         questions_attributes: [
           question.attributes.merge({
             possible_responses_attributes: [
-              possible_response1.attributes.merge({
+              possible_responses.first.attributes.merge({
                 :keypad => 2
               }),
-              possible_response2.attributes
+              possible_responses.last.attributes
             ]
           })
         ]
       })
-      script.save
       expect(script.errors.full_messages.join).to eq("Questions \"#{question.text}\" has duplicate keypad values")
     end
   end
