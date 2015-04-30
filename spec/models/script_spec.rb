@@ -93,6 +93,27 @@ describe Script, :type => :model do
       script = build(:script, questions)
       expect(script.save).to eq(true)
     end
+
+    it "checks uniqueness of keypad responses on script update" do
+      script = create(:script)
+      question = create(:question, {:script_id => script.id})
+      possible_response1 = create(:possible_response, {:keypad => 1, :question_id => question.id})
+      possible_response2 = create(:possible_response, {:keypad => 2, :question_id => question.id})
+      script.update_attributes({
+        questions_attributes: [
+          question.attributes.merge({
+            possible_responses_attributes: [
+              possible_response1.attributes.merge({
+                :keypad => 2
+              }),
+              possible_response2.attributes
+            ]
+          })
+        ]
+      })
+      script.save
+      expect(script.errors.full_messages.join).to eq("Questions \"#{question.text}\" has duplicate keypad values")
+    end
   end
 
   describe "deletion" do
