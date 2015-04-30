@@ -12,7 +12,11 @@ class ApplicationController < ActionController::Base
   # Scrub sensitive parameters from your log
   rescue_from InvalidDateException, :with=> :return_invalid_date
   rescue_from CanCan::AccessDenied do |exception|
-    redirect_to root_url, :alert => exception.message
+    redirect_to root_url, :error => exception.message
+  end
+  rescue_from Pundit::NotAuthorizedError do
+    flash_message(:error, I18n.t(:admin_access))
+    redirect_to root_url
   end
 
   def current_ability

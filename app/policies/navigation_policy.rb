@@ -4,6 +4,7 @@ class NavigationPolicy < Struct.new(:user, :navigation)
     @user = user
     @navigation = navigation
   end
+
   def show?
     if @user.administrator?
       true

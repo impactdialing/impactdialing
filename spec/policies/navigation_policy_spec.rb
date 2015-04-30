@@ -1,23 +1,57 @@
 require 'rails_helper'
-require '../policies/navigation_policy'
+require 'navigation_policy'
 
-describe NavigationPolicy do
-
+feature 'the headless NavigationPolicy' do
+  let(:supervisor) { create(:user, {role: 'supervisor'}) }
   let(:admin) { create(:user) }
-  let(:supervisor) { create(:user) }
+  subject { NavigationPolicy }
 
-  describe 'allow access to administrator' do
-    web_login_as(admin)
-    visit client_scripts_path
-    expect(page).to have_content 'View archived scripts'
-  end
-  describe 'disallow access to supervisor' do
-    web_login_as(supervisor)
-    visit client_scripts_path
-    expect(page).to have_content 'View archived scripts'
+  describe 'the authorization policy' do
+    it 'disallows access to supervisor' do
+      web_login_as(supervisor)
+      visit client_scripts_path
+      expect(page).to have_content 'Only an administrator can access this page.'
+    end
+
+    it 'allows access to administrator' do
+      web_login_as(admin)
+      visit client_scripts_path
+      expect(page).to have_content 'View archived scripts'
+    end
   end
 end
+
+
+# require 'spec_helper'
 #
+# describe ArticlePolicy do
+#   subject { ArticlePolicy.new(user, article) }
+#
+#   let(:article) { FactoryGirl.create(:article) }
+#
+#   context "for a visitor" do
+#     let(:user) { nil }
+#
+#     it { should     permit(:show)    }
+#
+#     it { should_not permit(:create)  }
+#     it { should_not permit(:new)     }
+#     it { should_not permit(:update)  }
+#     it { should_not permit(:edit)    }
+#     it { should_not permit(:destroy) }
+#   end
+#
+#   context "for a user" do
+#     let(:user) { FactoryGirl.create(:user) }
+#
+#     it { should permit(:show)    }
+#     it { should permit(:create)  }
+#     it { should permit(:new)     }
+#     it { should permit(:update)  }
+#     it { should permit(:edit)    }
+#     it { should permit(:destroy) }
+#   end
+# end
 # require 'rails_helper'
 #
 # feature 'include an "add a new campaign" link' do
