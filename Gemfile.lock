@@ -159,7 +159,6 @@ GEM
     json (1.7.7)
     jwt (0.1.8)
       multi_json (>= 1.5)
-    kgio (2.8.0)
     launchy (2.4.2)
       addressable (~> 2.3)
     librato-metrics (1.5.0)
@@ -215,6 +214,8 @@ GEM
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
+    puma (2.11.2)
+      rack (>= 1.1, < 2.0)
     pusher (0.11.3)
       multi_json (~> 1.0)
       signature (~> 0.1.6)
@@ -368,10 +369,6 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.6)
-    unicorn (4.6.3)
-      kgio (~> 2.6)
-      rack
-      raindrops (~> 0.7)
     uniform_notifier (1.6.2)
     upsert (2.1.0)
     uuid (2.3.7)
@@ -437,6 +434,7 @@ DEPENDENCIES
   paperclip
   platform-api
   pry
+  puma
   pusher (~> 0.11.3)
   rack-queue-metrics!
   rack-timing
@@ -470,7 +468,6 @@ DEPENDENCIES
   timecop
   twilio (~> 3.1.1)
   twilio-ruby (~> 3.10.0)
-  unicorn
   upsert
   uuid (~> 2.3.7)
   vcr
