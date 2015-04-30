@@ -3,8 +3,6 @@ require 'rails_helper'
 feature 'Dials report' do
   include FakeCallData
 
-  create_campaign_with_script
-
   before do
     @admin    = create(:user)
     @account  = @admin.account
