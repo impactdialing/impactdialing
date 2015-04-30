@@ -1,4 +1,4 @@
-<% if @csv_validator.errors != [] %>
+<% if @csv_validator.errors.any? %>
 <div class="callout alert clearfix">
   <% @csv_validator.errors.each do |error| %>
   <p><strong><%= error %></strong></p>

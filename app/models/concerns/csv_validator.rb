@@ -17,7 +17,7 @@ class CsvValidator
   end
 
   def verify_headers
-    if (headers === [])
+    if (headers.empty?)
       @errors << I18n.t(:csv_has_no_header_data)
       return false
     end
@@ -25,7 +25,7 @@ class CsvValidator
   end
 
   def verify_first_row
-    if (first_row === nil)
+    if (first_row.nil?)
       @errors << I18n.t(:csv_has_no_row_data)
       return false
     end
