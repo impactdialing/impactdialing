@@ -2,10 +2,12 @@ module Client
   class ScriptsController < ClientController
     before_filter :load_and_verify_script, :except => [:index, :new, :create, :archived]
     before_filter :load_voter_fields, :only => [ :show, :edit]
-
+    # after_action :verify_policy_scoped, :only => :index
+    # after_action :verify_authorized, :except => :index
     respond_to :html, :json
 
     def index
+      authorize :navigation, :show?
       @scripts = account.scripts.active.paginate(:page => params[:page])
       respond_with @scripts
     end
