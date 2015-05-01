@@ -6,10 +6,7 @@ class NavigationPolicy < Struct.new(:user, :navigation)
   end
 
   def show?
-    if @user.administrator?
-      true
-    else @user.supervisor?
-      false
-    end
+    # @user.administrator?
+    false
   end
 end
