@@ -10,7 +10,8 @@
 
       <input id="item_{{item.id}}" class="form-control"
              data-ng-if="item.type == 'note'"
-             data-ng-model="survey.responses.notes[item.id]">
+             data-ng-model="survey.responses.notes[item.id]"
+             maxlength="254">
 
       <select id="item_{{item.id}}" class="form-control"
               data-ng-if="item.type == 'question'"
