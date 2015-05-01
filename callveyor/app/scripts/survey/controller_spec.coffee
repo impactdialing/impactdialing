@@ -14,7 +14,7 @@ describe 'survey controller', ->
 
   beforeEach(module('survey'))
 
-  beforeEach(inject((_$rootScope_, _$controller_, _$httpBackend_, _$cacheFactory_, _usSpinnerService_, _SurveyFormFieldsFactory_, _idFlashFactory_, _ErrorCache_, _CallCache_) ->
+  beforeEach(inject((_$rootScope_, _$controller_, _$httpBackend_, _$cacheFactory_, _usSpinnerService_, _SurveyFormFieldsFactory_, _idFlashFactory_, _ErrorCache_, _CallCache_, _HouseholdCache_) ->
     $rootScope              = _$rootScope_
     $controller             = _$controller_
     $scope                  = $rootScope
@@ -22,12 +22,13 @@ describe 'survey controller', ->
     $cacheFactory           = _$cacheFactory_
     idFlashFactory          = _idFlashFactory_
     CallCache               = _CallCache_
+    HouseholdCache          = _HouseholdCache_
     ErrorCache              = _ErrorCache_
     usSpinnerService        = _usSpinnerService_
     SurveyFormFieldsFactory = _SurveyFormFieldsFactory_
 
     CallCache.put('id', call.id)
-    CallCache.put('voter_id', voter.id)
+    HouseholdCache.put('selected', {id: voter.id})
     $httpBackend.whenGET('/call_center/api/survey_fields.json').respond({})
     $controller('SurveyFormCtrl', {$scope})
   ))
