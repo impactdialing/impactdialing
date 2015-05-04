@@ -59,7 +59,7 @@ module Client::Billing::SubscriptionHelper
   end
 
   def subscription_date(time_stamp)
-    return Time.at(time_stamp).strftime("%m/%d/%y")
+    return Time.at(time_stamp).strftime("%b %e %Y")
   end
 
 
