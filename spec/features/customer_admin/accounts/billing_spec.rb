@@ -37,7 +37,7 @@ describe 'Account profile', type: :feature, admin: true do
   shared_examples 'all business plans' do
     it 'displays billing period info' do
       visit client_billing_subscription_path
-      expect(page).to have_content "Start period: #{Time.at(subscription.provider_start_period).strftime('%m/%d/%y')}"
+      expect(page).to have_content "Billing period:"
     end
   end
 
