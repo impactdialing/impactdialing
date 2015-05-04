@@ -14,7 +14,7 @@ module Client
     respond_to :html, :json
 
     def index
-      authorize :navigation, :show?
+      authorize :navigation, :user_administrator?
       @callers = account.callers.includes(:campaign).active.paginate(:page => params[:page])
       respond_with @callers
     end

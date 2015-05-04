@@ -5,8 +5,9 @@ class NavigationPolicy < Struct.new(:user, :navigation)
     @navigation = navigation
   end
 
-  def show?
-    # @user.administrator?
-    false
+  def user_administrator?
+    @user.administrator?
   end
+
+  #methods for scripts,campaigns, and callers
 end

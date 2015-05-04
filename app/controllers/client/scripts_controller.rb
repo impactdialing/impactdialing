@@ -10,26 +10,24 @@ module Client
     respond_to :html, :json
 
     def index
-      # authorize :navigation, :show?
+      authorize :navigation, :user_administrator?
       @scripts = account.scripts.active.paginate(:page => params[:page])
       respond_with @scripts
     end
 
     def show
-
       respond_with @script do |format|
         format.html {redirect_to edit_client_script_path(@script)}
       end
     end
 
     def edit
-      authorize :navigation, :show?
+      authorize :navigation, :user_administrator?
       respond_with @script
     end
 
     def new
-      authorize :navigation, :show?
-
+      authorize :navigation, :user_administrator?
       new_script
       load_voter_fields
       @script.script_texts.new(script_order: 1)
@@ -45,9 +43,6 @@ module Client
       respond_with @script, location: client_scripts_path
     end
 
-    # def edit
-    #   respond_with @script
-    # end
 
     def update
       if params[:save_as]

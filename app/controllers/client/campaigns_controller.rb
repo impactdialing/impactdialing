@@ -9,7 +9,7 @@ module Client
     respond_to :html, :json
 
     def index
-      authorize :navigation, :show?
+      authorize :navigation, :user_administrator?
       @campaigns     = account.campaigns.active.paginate :page => params[:page]
       @caller_counts = account.callers.active.where(campaign_id: @campaigns.pluck(:id)).group(:campaign_id).count
       respond_with @campaigns
