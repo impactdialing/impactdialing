@@ -59,9 +59,8 @@ module Client::Billing::SubscriptionHelper
   end
 
   def subscription_date(time_stamp)
-    return Time.at(time_stamp).strftime("%b %e %Y")
+    return Time.at(time_stamp).in_time_zone('Pacific Time (US & Canada)').strftime("%b %e %Y")
   end
-
 
 private
 
