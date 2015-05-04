@@ -1,9 +1,7 @@
 module Client
   class CampaignsController < ClientController
     before_filter :load_and_verify_campaign, :except => [:index, :new, :create, :archived]
-
     ### pundit authorization methods
-    # after_action :verify_authorized, :except => :index
     after_action :verify_authorized, :only => :index
 
     respond_to :html, :json

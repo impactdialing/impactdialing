@@ -2,10 +2,8 @@ module Client
   class ScriptsController < ClientController
     before_filter :load_and_verify_script, :except => [:index, :new, :create, :archived]
     before_filter :load_voter_fields, :only => [ :show, :edit]
-
     ### pundit authorization methods
-    after_action :verify_authorized, :except => :index
-    # after_action :verify_authorized, :only => :index
+    after_action :verify_authorized, :only => :index
 
     respond_to :html, :json
 
@@ -22,12 +20,10 @@ module Client
     end
 
     def edit
-      authorize :navigation, :user_administrator?
       respond_with @script
     end
 
     def new
-      authorize :navigation, :user_administrator?
       new_script
       load_voter_fields
       @script.script_texts.new(script_order: 1)
