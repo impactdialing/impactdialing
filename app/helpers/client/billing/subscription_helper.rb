@@ -58,6 +58,11 @@ module Client::Billing::SubscriptionHelper
     return buttons
   end
 
+  def subscription_date(time_stamp)
+    return Time.at(time_stamp).strftime("%m/%d/%y")
+  end
+
+
 private
 
   def button_html_opts

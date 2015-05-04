@@ -16,6 +16,14 @@
     Minutes left:  <b><%= @quota.minutes_available %> of <%= @quota.minutes_allowed %></b>
   </p>
 
+  <p>
+    Start period: <b><%= subscription_date(@subscription.provider_start_period) %></b>
+  </p>
+
+  <p>
+    End period: <b><%= subscription_date(@subscription.provider_end_period) %></b>
+  </p>
+
   <% if @subscription.plan != 'enterprise' && @subscription.plan != 'per_minute' %>
     <p>
       Caller seats: <b><%= @quota.callers_allowed %></b>
