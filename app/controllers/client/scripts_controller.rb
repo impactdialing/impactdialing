@@ -2,7 +2,7 @@ module Client
   class ScriptsController < ClientController
     before_filter :load_and_verify_script, :except => [:index, :new, :create, :archived]
     before_filter :load_voter_fields, :only => [ :show, :edit]
-    ### pundit authorization methods
+    # pundit authorization methods
     after_action :verify_authorized, :only => :index
 
     respond_to :html, :json
