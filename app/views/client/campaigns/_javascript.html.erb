@@ -1,29 +1,25 @@
 <% if !@campaign.account.recordings.blank? %>
+  <div id="sndPreview" style="vertical-align: middle;"></div>
   <%= content_for :javascripts do %>
     <script type="text/javascript">
       function updatePreview() {
-        console.log('updatePreview called');
-        path = '';
-        recording_id = $("#campaign_recording_id").val();
+        var path = '';
+        var recording_id = $("#campaign_recording_id").val();
         <% @account.recordings.each do |recording| %>
           if( recording_id == <%= recording.id %> ) {
             path = '<%= recording.file.url %>';
             name = '<%= escape_javascript recording.name %>';
           }
         <% end %>
-    
-        var o = '<p>Previewing <b>' + name + '</b></p>';
-    
-        if( path.indexOf('mp3') > -1 ) {
-          o = o + '<object type="application/x-shockwave-flash" width="200" height="14"   data="/xspf_player_slim.swf?player_title=' + name + '&song_title=' + name + '  &song_url=' +   escape(path) + '"><param name="movie" value="/xspf_player_slim.  swf?player_title=' +   name + '&song_title=' + name + '&song_url=' + escape(path)   + '" /></object>';
-        } else {
-          o = o + '<embed height="74" pluginspace="http://www.apple.com/quicktime/" src="' +   path   + '"></embed>';
-        }
-        $('#sndPreview').html(o);
+
+        var audioPreview = '<p>Previewing <b>' + name + '</b></p>' +
+         '<audio controls>' + '<source src="' + path + '">' + '</audio>';
+        $('#sndPreview').html(audioPreview);
       }
 
       $(function() {
         updatePreview();
+        $("#campaign_recording_id").change(updatePreview);
       });
     </script>
   <% end %>

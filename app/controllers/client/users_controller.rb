@@ -15,7 +15,7 @@ module Client
       @user.attributes = user_params
       @user.account    = Account.new(:domain_name => request.domain)
       @user.role       = User::Role::ADMINISTRATOR
-      
+
       if @user.save
         if ["aws", "heroku"].include?(ENV['RAILS_ENV'])
           user_mailer = UserMailer.new
@@ -79,7 +79,7 @@ module Client
     end
 
     def change_role
-      user_to_change = User.find(user_params[:id])
+      user_to_change = User.find(params[:id])
       if @user == user_to_change
         flash_message(:error, I18n.t(:failure_change_role))
       else

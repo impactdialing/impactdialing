@@ -36683,7 +36683,7 @@ angular.module('survey').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('/callveyor/survey/survey.tpl.html',
-    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"transitionInProgress\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><div data-ng-if=\"item.type == 'scriptText'\" data-ng-bind-html=\"item.content\"></div><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\" data-ng-options=\"response as response.value for response in item.possibleResponses\"></select></div></form></div>"
+    "<div class=\"col-xs-12\"><div class=\"veil\" ng-show=\"transitionInProgress\"></div><form role=\"form\"><div class=\"well\" data-ng-repeat=\"item in survey.form\"><div data-ng-if=\"item.type == 'scriptText'\" data-ng-bind-html=\"item.content\"></div><label data-ng-if=\"item.type != 'scriptText'\" for=\"item_{{item.id}}\">{{item.content}}</label><input id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'note'\" data-ng-model=\"survey.responses.notes[item.id]\" maxlength=\"254\"><select id=\"item_{{item.id}}\" class=\"form-control\" data-ng-if=\"item.type == 'question'\" data-ng-model=\"survey.responses.question[item.id]\" data-ng-options=\"response as response.value for response in item.possibleResponses\"></select></div></form></div>"
   );
 
 }]);
