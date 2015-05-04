@@ -3,7 +3,7 @@ require 'librato_resque'
 
 ##
 # Upload a new +VoterList+, importing +Voter+ records.
-# 
+#
 # Files uploaded to S3 are kept there until cleaned by +VoterListS3Scrub+ (see resque schedule).
 #
 # ### Metrics
@@ -63,9 +63,10 @@ class VoterListUploadJob
   end
 
   def self.submit_response!(responder, response, domain, email, voter_list)
+    Rails.logger.debug "#{self}: submit_response! #{response}"
     responder.response(response, {domain: domain, email: email, voter_list_name: voter_list.name})
   end
-  
+
   def self.parse_csv(responder, domain, email, voter_list)
     begin
       csv_file = CSV.new(VoterList.read_from_s3(voter_list.s3path), :col_sep => voter_list.separator)
@@ -73,7 +74,7 @@ class VoterListUploadJob
       headers  = csv_file.shift
       data     = csv_file.readlines
     rescue CSV::MalformedCSVError => err
-      Rails.logger.error "Caught CSV::MalformedCSVError #{err.message}. Destroying VoterList[#{voter_list.name}] for Account[#{voter_list.account_id}] on Campaign[#{voter_list.campaign_id}] at S3path[#{voter_list.s3path}]"        
+      Rails.logger.error "Caught CSV::MalformedCSVError #{err.message}. Destroying VoterList[#{voter_list.name}] for Account[#{voter_list.account_id}] on Campaign[#{voter_list.campaign_id}] at S3path[#{voter_list.s3path}]"
       errors = [I18n.t(:csv_is_invalid)]
       handle_errors(responder, errors, domain, email, voter_list)
       return []
@@ -97,7 +98,7 @@ class VoterListUploadJob
       headers, data = parse_csv(responder, domain, email, voter_list)
       if headers.nil? or data.nil?
         handle_errors(responder, "No data found in uploaded file.", domain, email, voter_list)
-        return false 
+        return false
       end
 
       # import voters
@@ -133,13 +134,13 @@ end
 
 class VoterListApiStrategy
   require 'net/http'
-  
+
   def initialize(account_id, campaign_id, callback_url)
     @account_id = account_id
     @campaign_id = campaign_id
     @callback_url = callback_url
   end
-  
+
   def response(response, params)
     uri = URI.parse(@callback_url)
     http = Net::HTTP.new(uri.host, uri.port)
@@ -147,14 +148,14 @@ class VoterListApiStrategy
     request = Net::HTTP::Post.new(uri.request_uri)
     request.set_form_data({message: response, account_id: @account_id, campaign_id: @campaign_id, list_name: params[:voter_list_name]})
     http.start{http.request(request)}
-  end  
+  end
 end
 
-class VoterListWebuiStrategy
+ class VoterListWebuiStrategy
   def initialize
     @user_mailer = UserMailer.new
   end
-  
+
   def response(response, params)
     @user_mailer.voter_list_upload(response, params[:domain], params[:email],params[:voter_list_name])
   end
