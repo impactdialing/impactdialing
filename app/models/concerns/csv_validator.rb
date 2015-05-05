@@ -2,8 +2,8 @@ class CsvValidator
   attr_reader :headers, :first_row, :csv_column_headers, :errors
 
   def initialize(csv_file)
-    @headers = csv_file.shift
-    @first_row = csv_file.shift
+    @headers = csv_file.shift || []
+    @first_row = csv_file.shift || []
     @csv_column_headers = @headers.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @errors = []
     validate
@@ -25,7 +25,7 @@ class CsvValidator
   end
 
   def verify_first_row
-    if (first_row.nil?)
+    if (first_row.empty?)
       @errors << I18n.t(:csv_has_no_row_data)
       return false
     end
