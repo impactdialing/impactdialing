@@ -4,6 +4,7 @@ class Question < ActiveRecord::Base
   validates :text, presence: true
   validates :script, presence: true
   validates :script_order, presence:true, numericality: true
+  validate :keypad_uniqueness
 
   belongs_to :script, :inverse_of => :questions
   has_many :possible_responses, :inverse_of => :question
@@ -16,7 +17,6 @@ class Question < ActiveRecord::Base
   after_initialize :build_default_possible_response
 
   def build_default_possible_response
-
     if new_record? && possible_responses.empty?
       self.possible_responses << PossibleResponse.new(value: "[No response]", possible_response_order: 1, keypad: 0)
     end
@@ -61,6 +61,16 @@ class Question < ActiveRecord::Base
     {id: id, text: text, script_order: script_order, external_id_field: external_id_field, script_id: script_id,
       possible_responses: possible_responses.as_json({root: false})}
   end
+
+  private
+
+  def keypad_uniqueness
+    key_array = possible_responses.map(&:keypad)
+    if (key_array.uniq.length != key_array.length) && key_array.any?
+      errors.add('"' + self.text + '"', "has duplicate keypad values")
+    end
+  end
+
 end
 
 # ## Schema Information
