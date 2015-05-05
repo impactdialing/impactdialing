@@ -21,12 +21,18 @@ module Client
     end
 
     def new
-      new_script
-      load_voter_fields
-      @script.script_texts.new(script_order: 1)
-      @question = @script.questions.new(script_order: 2)
-      # @question.possible_responses.new(value: "[No response]", possible_response_order: 1, keypad: 1)
-      respond_with @script
+      if params[:script_id]
+        load_and_verify_script
+        @script = @script.deep_clone include: [:transfers, :notes, :script_texts, questions: :possible_responses], except: :name
+        load_voter_fields
+      else
+        new_script
+        load_voter_fields
+        @script.script_texts.new(script_order: 1)
+        @question = @script.questions.new(script_order: 2)
+        # @question.possible_responses.new(value: "[No response]", possible_response_order: 1, keypad: 1)
+        respond_with @script
+      end
     end
 
     def create
@@ -96,7 +102,7 @@ module Client
     def load_and_verify_script
       begin
         @script = Script
-        if params[:action] =~ /(update|edit)/
+        if params[:action] =~ /(update|edit|new)/
           @script = @script.includes(:notes, :script_texts, questions: :possible_responses)
         end
         @script = @script.find(params[:id] || params[:script_id])
