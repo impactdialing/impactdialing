@@ -75,13 +75,45 @@ describe Script, :type => :model do
     expect(Script.active).to include(active)
   end
 
-  describe "questions and responses" do
-    it "gets all questions and responses" do
-      script = create(:script)
-      question = create(:question, :script => script)
-      response_1 = create(:possible_response, :question => question)
-      another_response = create(:possible_response)
-      expect(script.questions_and_responses).to eq({question.text => [question.possible_responses.first.value, response_1.value]})
+  describe "Possible response uniqueness" do
+    let(:possible_responses) do
+      [
+        build(:possible_response, {:keypad => 1, :question_id => nil}),
+        build(:possible_response, {:keypad => 1, :question_id => nil})
+      ]
+    end
+    let(:question) do
+      build(:question, :script_id => nil, :possible_responses => possible_responses)
+    end
+    let(:script) do
+      build(:script, {:questions => [question]})
+    end
+
+    it "displays an error message if a more than one of a question's possible phone-only responses use the same key" do
+      expect(script.save).to eq(false)
+    end
+
+    it "bypasses uniqueness check on keys if they are all nil" do
+      possible_responses.each { |pr| pr.keypad=nil }
+      expect(script.save).to eq(true)
+    end
+
+    it "checks uniqueness of keypad responses on script update" do
+      possible_responses.last.keypad = 2
+      script.save
+      script.update_attributes({
+        questions_attributes: [
+          question.attributes.merge({
+            possible_responses_attributes: [
+              possible_responses.first.attributes.merge({
+                :keypad => 2
+              }),
+              possible_responses.last.attributes
+            ]
+          })
+        ]
+      })
+      expect(script.errors.full_messages.join).to eq("Questions \"#{question.text}\" has duplicate keypad values")
     end
   end
 
