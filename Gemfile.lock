@@ -215,6 +215,8 @@ GEM
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
+    pundit (1.0.0)
+      activesupport (>= 3.0.0)
     pusher (0.11.3)
       multi_json (~> 1.0)
       signature (~> 0.1.6)
@@ -437,6 +439,7 @@ DEPENDENCIES
   paperclip
   platform-api
   pry
+  pundit
   pusher (~> 0.11.3)
   rack-queue-metrics!
   rack-timing

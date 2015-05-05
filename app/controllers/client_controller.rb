@@ -158,7 +158,7 @@ class ClientController < ApplicationController
       @recording = @account.recordings.new
     end
   end
-  def policies
+  def policies2
     render 'client/tos/policies'
   end
 

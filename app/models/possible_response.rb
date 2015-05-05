@@ -1,7 +1,6 @@
 class PossibleResponse < ActiveRecord::Base
   belongs_to :question, inverse_of: :possible_responses
   has_many :answers
-
   # validates :question, presence: true
   validates :value, presence: true
   validates :possible_response_order, presence: true, numericality: true
@@ -37,7 +36,6 @@ class PossibleResponse < ActiveRecord::Base
       answered_data.has_key?(question_id) ? (possible_responses[answered_data[question_id]] || "") : ""
     end
   end
-
 end
 
 # ## Schema Information

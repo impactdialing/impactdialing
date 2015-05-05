@@ -1,0 +1,2 @@
+class CallerPolicy < ApplicationPolicy
+end

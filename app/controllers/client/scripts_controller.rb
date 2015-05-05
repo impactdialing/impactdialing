@@ -2,25 +2,31 @@ module Client
   class ScriptsController < ClientController
     before_filter :load_and_verify_script, :except => [:index, :new, :create, :archived]
     before_filter :load_voter_fields, :only => [ :show, :edit]
+    # pundit authorization methods
+    after_action :verify_authorized
 
     respond_to :html, :json
 
     def index
+      authorize :script, :index?
       @scripts = account.scripts.active.paginate(:page => params[:page])
       respond_with @scripts
     end
 
     def show
+      authorize :script, :show?
       respond_with @script do |format|
         format.html {redirect_to edit_client_script_path(@script)}
       end
     end
 
     def edit
+      authorize :script, :edit?
       respond_with @script
     end
 
     def new
+      authorize :script, :new?
       new_script
       load_voter_fields
       @script.script_texts.new(script_order: 1)
@@ -30,6 +36,7 @@ module Client
     end
 
     def create
+      authorize :campaign, :create?
       new_script
       save_script
       load_voter_fields
@@ -37,11 +44,8 @@ module Client
     end
 
 
-    def edit
-      respond_with @script
-    end
-
     def update
+      authorize :script, :update?
       if params[:save_as]
         @script = @script.deep_clone include: [:transfers, :notes, :script_texts, questions: :possible_responses], except: :name
         load_voter_fields
@@ -56,6 +60,7 @@ module Client
     end
 
     def destroy
+      authorize :script, :destroy?
       @script.active = false
       @script.save ?  flash_message(:notice, "Script archived") : flash_message(:error, @script.errors.full_messages.join)
       respond_with @script,  location: client_scripts_path do |format|
@@ -101,7 +106,7 @@ module Client
         end
         @script = @script.find(params[:id] || params[:script_id])
       rescue ActiveRecord::RecordNotFound => e
-        render :json=> {"message"=>"Resource not found"}, :status => :not_found
+        render :json => {"message"=>"Resource not found"}, :status => :not_found
         return
       end
       if @script.account != account
@@ -117,14 +122,14 @@ module Client
     def load_voter_fields
       @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
-      if @script.voter_fields!=nil
+      if @script.voter_fields != nil
         begin
           @voter_field_values = JSON.parse(@script.voter_fields)
         rescue
-          @voter_field_values=[]
+          @voter_field_values = []
         end
       else
-        @voter_field_values=[]
+        @voter_field_values = []
       end
     end
 

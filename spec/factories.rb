@@ -40,7 +40,7 @@ FactoryGirl.define do
     new_password 'password'
     role "admin"
   end
-
+  
   factory :script do
     name 'a script'
     created_at Time.now

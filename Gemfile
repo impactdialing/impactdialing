@@ -31,6 +31,7 @@ gem 'deep_cloneable'
 
 # Auth/z
 gem 'cancan', '~>1.6.10'
+gem 'pundit'
 
 # Background
 gem 'resque', '~> 1.24.1'

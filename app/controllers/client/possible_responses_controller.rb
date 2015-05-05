@@ -11,7 +11,7 @@ module Client
     def create
       possible_response = @question.possible_responses.new(possible_response_params)
       possible_response.save
-      respond_with possible_response,  location: client_script_question_possible_responses_path
+      respond_with possible_response, location: client_script_question_possible_responses_path
     end
 
     def show
@@ -39,7 +39,6 @@ module Client
         return
       end
     end
-
 
     def load_and_verify_script_and_question
       begin
