@@ -19,7 +19,7 @@
         <td><%= select_tag "voter_list[csv_to_system_map[#{csv_header}]]",
         options_for_select(system_column_headers(csv_header, @campaign.account), selected),
         class: "select-column-mapping" %></td>
-        <td><%= @csv_validator.first_row %></td>
+        <td><%= @csv_validator.first_row[index] %></td>
       </tr>
     <% end %>
   </table>
