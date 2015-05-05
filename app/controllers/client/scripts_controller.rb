@@ -8,7 +8,7 @@ module Client
     respond_to :html, :json
 
     def index
-      authorize :navigation, :user_administrator?
+      authorize :script, :index?
       @scripts = account.scripts.active.paginate(:page => params[:page])
       respond_with @scripts
     end
@@ -33,6 +33,7 @@ module Client
     end
 
     def create
+      authorize :campaign, :create?
       new_script
       save_script
       load_voter_fields
