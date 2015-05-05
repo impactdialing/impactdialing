@@ -6,9 +6,9 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
     Capybara.javascript_driver = :selenium # force selenium to start before first test
   end
 
-  def upload_recording(path)
+  def upload_recording(file)
     fill_in 'Name', with: 'Ner Wecording'
-    attach_file 'recording_file', Rails.root.join(path)
+    attach_file 'recording_file', Rails.root.join('spec/fixtures/files/' + file)
     click_on 'Upload'
   end
 
@@ -18,7 +18,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
     create(:predictive, {
       account: account,
       use_recordings: true,           # force Message select to appear
-      answering_machine_detect: true  # 
+      answering_machine_detect: true  #
     })
   end
 
@@ -34,13 +34,13 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
     end
 
     it 'the new recording can be selected from the campaign form' do
-      select 'Ner Wecording', from: 'Message'
+      select 'New Recording', from: 'Message'
     end
   end
 
   context 'mp3 success' do
     before do
-      upload_recording('spec/fixtures/files/recording.mp3')
+      upload_recording('recording.mp3')
     end
 
     it_behaves_like 'all successful recording uploads'
@@ -48,7 +48,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
 
   context 'wav success' do
     before do
-      upload_recording('spec/fixtures/files/recording.wav')
+      upload_recording('recording.wav')
     end
 
     it_behaves_like 'all successful recording uploads'
@@ -56,7 +56,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
 
   context 'aiff success' do
     before do
-      upload_recording('spec/fixtures/files/recording.aiff')
+      upload_recording('recording.aiff')
     end
 
     it_behaves_like 'all successful recording uploads'
@@ -65,7 +65,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
 
   context 'no file selected' do
     before do
-      fill_in 'Name', with: 'Ner Wecording'
+      fill_in 'Name', with: 'New Recording'
       click_on 'Upload'
     end
     it 'displays error' do
@@ -75,7 +75,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
 
   context 'must be wav, mp3/4, aif or aiff' do
     before do
-      upload_recording('spec/fixtures/files/valid_voters_list.xlsx')
+      upload_recording('valid_voters_list.xlsx')
     end
 
     it 'displays error' do
