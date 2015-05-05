@@ -30,7 +30,7 @@ public
   end
 
   def update?
-    false
+    admin?
   end
 
   def edit?
@@ -38,7 +38,7 @@ public
   end
 
   def destroy?
-    false
+    admin?
   end
 
   def scope

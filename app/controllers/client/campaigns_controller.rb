@@ -2,7 +2,7 @@ module Client
   class CampaignsController < ClientController
     before_filter :load_and_verify_campaign, :except => [:index, :new, :create, :archived]
     ### pundit authorization methods
-    after_action :verify_authorized, :only => :index
+    after_action :verify_authorized
 
     respond_to :html, :json
 
@@ -14,6 +14,7 @@ module Client
     end
 
     def new
+      authorize :campaign, :new?
       @campaign = account.campaigns.new(type: Campaign::Type::POWER,
                                         time_zone: "Pacific Time (US & Canada)",
                                         start_time: Time.parse("9am"),
@@ -33,6 +34,7 @@ module Client
     end
 
     def edit
+      authorize :campaign, :edit?
       load_scripts
       new_list
       respond_with @campaign
@@ -47,6 +49,7 @@ module Client
 
 
     def update
+      authorize :campaign, :update?
       save_campaign
       respond_with @campaign,  location: client_campaigns_url do |format|
         format.json { render :json => {message: "Campaign updated" }, :status => :ok } if @campaign.errors.empty?
@@ -54,6 +57,7 @@ module Client
     end
 
     def destroy
+      authorize :campaign, :destroy?
       @campaign.active = false
       @campaign.save ?  flash_message(:notice, "Campaign archived") : flash_message(:error, @campaign.errors.full_messages.join)
       respond_with @campaign,  location: client_campaigns_url do |format|

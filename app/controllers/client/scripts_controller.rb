@@ -3,7 +3,7 @@ module Client
     before_filter :load_and_verify_script, :except => [:index, :new, :create, :archived]
     before_filter :load_voter_fields, :only => [ :show, :edit]
     # pundit authorization methods
-    after_action :verify_authorized, :only => :index
+    after_action :verify_authorized
 
     respond_to :html, :json
 
@@ -14,16 +14,19 @@ module Client
     end
 
     def show
+      authorize :script, :show?
       respond_with @script do |format|
         format.html {redirect_to edit_client_script_path(@script)}
       end
     end
 
     def edit
+      authorize :script, :edit?
       respond_with @script
     end
 
     def new
+      authorize :script, :new?
       new_script
       load_voter_fields
       @script.script_texts.new(script_order: 1)
@@ -42,6 +45,7 @@ module Client
 
 
     def update
+      authorize :script, :update?
       if params[:save_as]
         @script = @script.deep_clone include: [:transfers, :notes, :script_texts, questions: :possible_responses], except: :name
         load_voter_fields
@@ -56,6 +60,7 @@ module Client
     end
 
     def destroy
+      authorize :script, :destroy?
       @script.active = false
       @script.save ?  flash_message(:notice, "Script archived") : flash_message(:error, @script.errors.full_messages.join)
       respond_with @script,  location: client_scripts_path do |format|
