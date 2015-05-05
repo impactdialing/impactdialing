@@ -1,0 +1,2 @@
+class ScriptPolicy < ApplicationPolicy
+end

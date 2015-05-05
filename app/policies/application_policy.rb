@@ -1,21 +1,28 @@
 class ApplicationPolicy
   attr_reader :user, :record
 
+private
+  def admin?
+    user.administrator?
+  end
+
+public
+
   def initialize(user, record)
     @user = user
     @record = record
   end
 
   def index?
-    false
+    admin?
   end
 
   def show?
-    scope.where(:id => record.id).exists?
+    admin?
   end
 
   def create?
-    false
+    admin?
   end
 
   def new?
@@ -47,7 +54,7 @@ class ApplicationPolicy
     end
 
     def resolve
-      scope
+      scope.where(account_id: user.account_id)
     end
   end
 end

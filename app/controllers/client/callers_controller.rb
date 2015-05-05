@@ -7,12 +7,13 @@ module Client
     before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
     before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
     # pundit authorization methods
-    after_action :verify_authorized, :only => :index
+    after_action :verify_authorized, :except => :show
+    after_action :verify_policy_scoped, :only => :show
 
     respond_to :html, :json
 
     def index
-      authorize :navigation, :user_administrator?
+      authorize :caller, :index?
       @callers = account.callers.includes(:campaign).active.paginate(:page => params[:page])
       respond_with @callers
     end
@@ -43,6 +44,7 @@ module Client
     end
 
     def create
+      authorize :caller, :create?
       @caller = account.callers.new
       save_caller
       respond_with @caller, location: client_callers_path

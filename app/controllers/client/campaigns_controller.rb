@@ -7,7 +7,7 @@ module Client
     respond_to :html, :json
 
     def index
-      authorize :navigation, :user_administrator?
+      authorize :campaign, :index?
       @campaigns     = account.campaigns.active.paginate :page => params[:page]
       @caller_counts = account.callers.active.where(campaign_id: @campaigns.pluck(:id)).group(:campaign_id).count
       respond_with @campaigns
@@ -26,6 +26,7 @@ module Client
 
 
     def show
+      authorize :campaign, :show?
       respond_with @campaign do |format|
         format.html {redirect_to edit_client_campaign_path(@campaign)}
       end
@@ -38,6 +39,7 @@ module Client
     end
 
     def create
+      authorize :campaign, :create?
       @campaign = account.campaigns.new
       save_campaign
       respond_with @campaign, location: client_campaigns_path
