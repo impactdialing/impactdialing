@@ -7,8 +7,7 @@ module Client
     before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
     before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
     # pundit authorization methods
-    after_action :verify_authorized, :except => :show
-    after_action :verify_policy_scoped, :only => :show
+    after_action :verify_authorized
 
     respond_to :html, :json
 
@@ -19,6 +18,7 @@ module Client
     end
 
     def new
+      authorize :caller, :new?
       @caller                = account.callers.new
       @caller.is_phones_only = params[:is_phones_only]
       load_caller_groups
@@ -26,17 +26,20 @@ module Client
     end
 
     def show
+      authorize :caller, :show?
       respond_with @caller do |format|
         format.html {redirect_to edit_client_caller_path(@caller)}
       end
     end
 
     def edit
+      authorize :caller, :edit?
       load_caller_groups
       respond_with @caller
     end
 
     def update
+      authorize :caller, :update?
       save_caller
       respond_with @caller, location: client_callers_path do |format|
         format.json {render :json => {message: 'Caller updated'}, status: :ok} if @caller.errors.empty?
@@ -51,6 +54,7 @@ module Client
     end
 
     def destroy
+      authorize :caller, :destroy?
       @caller.active = false
       @caller.save ? flash_message(:notice, "Caller archived") : flash_message(:error, @caller.errors.full_messages.join)
       respond_with @caller, location: client_callers_path do |format|
