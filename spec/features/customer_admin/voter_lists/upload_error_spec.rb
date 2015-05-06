@@ -1,8 +1,8 @@
 require 'rails_helper'
 
-describe 'Upload a list', js: true, type: :feature do
-  def upload_list(path)
-    attach_file 'upload_datafile', Rails.root.join(path)
+describe 'Upload', js: true, type: :feature do
+  def upload_list(file)
+    attach_file 'upload_datafile', Rails.root.join('spec/fixtures/files/' + file)
   end
 
   let(:user){ create(:user) }
@@ -20,7 +20,7 @@ describe 'Upload a list', js: true, type: :feature do
 
   context 'malformed csv file' do
     it 'generates proper error message' do
-      upload_list('spec/fixtures/files/malformed.csv')
+      upload_list('malformed.csv')
       expect(page).to have_content(I18n.t(:csv_malformed))
     end
   end
@@ -28,35 +28,35 @@ describe 'Upload a list', js: true, type: :feature do
 
     context 'no content' do
       it 'generates proper error message' do
-        upload_list('spec/fixtures/files/voter_list_empty.csv')
+        upload_list('voter_list_empty.csv')
         expect(page).to have_content(I18n.t(:csv_has_no_header_data))
       end
     end
 
     context 'only headers' do
       it 'generates proper error message' do
-        upload_list('spec/fixtures/files/voter_list_only_headers.csv')
+        upload_list('voter_list_only_headers.csv')
         expect(page).to have_content(I18n.t(:csv_has_no_row_data))
       end
     end
 
     context 'no headers' do
       it 'generates proper error message' do
-        upload_list('spec/fixtures/files/voters_with_no_header_info.csv')
+        upload_list('voters_with_no_header_info.csv')
         expect(page).to have_content(I18n.t(:csv_has_no_header_data))
       end
     end
 
     context 'duplicate header names' do
       it 'generates proper error message' do
-        upload_list('spec/fixtures/files/valid_voters_duplicate_phone_headers.csv')
+        upload_list('valid_voters_duplicate_phone_headers.csv')
         expect(page).to have_content(I18n.t(:csv_duplicate_headers))
       end
     end
 
     context 'only headers and duplicate header names' do
       it 'generates proper error message' do
-        upload_list('spec/fixtures/files/valid_voters_duplicate_phone_headers.csv')
+        upload_list('valid_voters_duplicate_phone_headers.csv')
         expect(page).to have_content(I18n.t(:csv_has_no_row_data), I18n.t(:csv_duplicate_headers))
       end
     end
