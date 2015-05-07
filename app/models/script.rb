@@ -26,6 +26,11 @@ class Script < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
+  #Pundit Policy below
+  def self.policy_class
+    ScriptPolicy
+  end
+
   def publish_save_notification
     ActiveSupport::Notifications.instrument('scripts.saved', script: self)
   end

@@ -59,10 +59,6 @@ class User < ActiveRecord::Base
     update_attributes(:password_reset_code => nil)
   end
 
-  def admin?
-    admin
-  end
-
   def administrator?
     role == "admin"
   end

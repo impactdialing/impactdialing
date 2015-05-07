@@ -1,7 +1,6 @@
 require 'rails_helper'
 require 'application_policy'
 
-
 shared_examples 'admin and supervisor authorizations' do
   context 'user is admin' do
     let(:admin) { build(:user) }
@@ -34,7 +33,7 @@ shared_examples 'admin and supervisor authorizations' do
       expect(policy_admin.destroy?).to eq true
     end
   end
-  
+
   context 'user is supervisor' do
     let(:supervisor) { build(:user, {role: 'supervisor'}) }
 
@@ -73,9 +72,6 @@ describe ApplicationPolicy do
     let(:script) { build(:script) }
     let(:policy_admin) { ScriptPolicy.new(admin, script) }
     let(:policy_supervisor) { ScriptPolicy.new(supervisor, script) }
-
-    # questions_answered,
-    # possible_responses_answered, archived, restore
 
     it_behaves_like 'admin and supervisor authorizations'
   end

@@ -9,14 +9,21 @@ class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
 
+  respond_to :html, :json
+
   # Scrub sensitive parameters from your log
   rescue_from InvalidDateException, :with=> :return_invalid_date
   rescue_from CanCan::AccessDenied do |exception|
     redirect_to root_url, :error => exception.message
   end
   rescue_from Pundit::NotAuthorizedError do
-    flash_message(:error, I18n.t(:admin_access))
-    redirect_to root_url
+    respond_to do |format|
+      format.json{ render json: {message: I18n.t(:admin_access)} }
+      format.html{
+        flash_message(:error, I18n.t(:admin_access));
+        redirect_to root_path
+      }
+    end
   end
 
   def current_ability
