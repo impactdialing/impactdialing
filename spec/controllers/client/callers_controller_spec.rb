@@ -27,18 +27,16 @@ describe Client::CallersController, :type => :controller do
     end
 
     it "should create a phones only caller" do
-      name     = "preethi_is_not_evil"
+      name     = "name"
       campaign = create(:campaign, account: account)
-
       post :create, :caller => {:name => name, :is_phones_only => true, :campaign_id => campaign.id}
-      
       caller = Caller.find_by_name(name)
       expect(caller).not_to be_nil
       expect(caller.is_phones_only).to be_truthy
     end
 
     it "should create a phones only caller" do
-      username = "preethi@evil.com"
+      username = "username"
       post :create, :caller => {:username => username, :is_phones_only => false, :campaign_id => create(:campaign, account: account).id}
       caller = Caller.find_by_username(username)
       expect(caller).not_to be_nil
