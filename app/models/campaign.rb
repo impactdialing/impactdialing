@@ -145,6 +145,10 @@ public
     POWER = "Power"
   end
 
+  def self.policy_class
+    CampaignPolicy
+  end
+
   def metric_source
     source = []
     source << "ac-#{self.account_id}"
@@ -188,7 +192,7 @@ public
       inflight_stats.dec('ringing')
     end
   end
-  
+
   def number_presented(n)
     raise "NotImplemented"
   end

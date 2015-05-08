@@ -1,9 +1,9 @@
 require 'rails_helper'
 
 describe Client::CampaignsController, type: :controller do
-  let(:question) { build(:question) }
+  let(:question) { create(:question) }
   let(:script) { create(:script) }
-  let(:campaign) { build(:campaign) }
+  let(:campaign) { create(:campaign) }
 
   let(:json_params) do
     {
@@ -60,7 +60,8 @@ describe Client::CampaignsController, type: :controller do
     describe 'the #archived' do
       it 'disallows supervisor access' do
         get(:archived, html_params)
-        expect(response.body).to include I18n.t(:admin_access)
+        # expect(response.body).to include I18n.t(:admin_access)
+        expect(response).to redirect_to root_url
       end
     end
 

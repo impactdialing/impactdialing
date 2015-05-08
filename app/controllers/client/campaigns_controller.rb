@@ -76,7 +76,7 @@ module Client
     end
 
     def restore
-      authorize Campaign, :restore?
+      authorize @campaign, :restore?
       @campaign.active = true
       if @campaign.save
         flash_message(:notice, 'Campaign restored')
@@ -90,7 +90,7 @@ module Client
     end
 
     def can_change_script
-      authorize Campaign, :can_change_script?
+      authorize @campaign, :can_change_script?
       if (@campaign.script_id.to_s == params[:script_id] || params[:script_id].nil?)
           render :json => {message: true, script_id: @campaign.script_id}
       else
