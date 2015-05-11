@@ -53,7 +53,6 @@ describe 'Edit Caller Group', type: :feature, rack: true do
     web_login_as(admin)
     visit edit_client_caller_group_path(caller_group)
     fill_in 'Name', with: 'different name'
-save_and_open_page
     click_on 'Save'
     expect(page).to have_content "Caller Group saved"
   end
