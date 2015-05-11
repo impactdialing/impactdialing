@@ -58,6 +58,10 @@ module Client::Billing::SubscriptionHelper
     return buttons
   end
 
+  def subscription_date(time_stamp)
+    return Time.at(time_stamp).in_time_zone('Pacific Time (US & Canada)').strftime("%b %e %Y")
+  end
+
 private
 
   def button_html_opts
