@@ -61,7 +61,7 @@ describe CsvValidator do
     end
     it "should set no rows present error message" do
       csv_validator = CsvValidator.new(csv_file)
-      expect(csv_validator.errors).to eq ([I18n.t(:csv_has_no_row_data)])
+      expect(csv_validator.errors).to eq ([I18n.t(:csv_missing_header_or_rows)])
     end
   end
 
@@ -74,7 +74,7 @@ describe CsvValidator do
     end
     it "should set a headers not present error message" do
       csv_validator = CsvValidator.new(csv_file)
-      expect(csv_validator.errors).to eq ([I18n.t(:csv_has_no_header_data)])
+      expect(csv_validator.errors).to eq ([I18n.t(:csv_missing_header_or_rows)])
     end
   end
 
@@ -87,7 +87,7 @@ describe CsvValidator do
     end
     it "should set both duplicate headers and no row data messages" do
       csv_validator = CsvValidator.new(csv_file)
-      expect(csv_validator.errors).to eql ([(I18n.t(:csv_has_no_row_data)), (I18n.t(:csv_duplicate_headers, :duplicate_headers => "PHONENUMBER"))])
+      expect(csv_validator.errors).to eql ([(I18n.t(:csv_missing_header_or_rows)), (I18n.t(:csv_duplicate_headers, :duplicate_headers => "PHONENUMBER"))])
     end
   end
 end
