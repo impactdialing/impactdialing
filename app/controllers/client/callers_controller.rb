@@ -37,9 +37,7 @@ module Client
       unless save_result
         load_campaigns
         load_caller_groups
-        respond_with @caller, location: client_callers_path do |format|
-          format.json {render :json => {message: 'Caller updated'}, status: :ok} if @caller.errors.empty?
-        end
+        update_respond_with
       else
         if @caller.previous_changes.keys.include?('campaign_id')
           flash_message(:notice, "Caller has been reassigned to a different campaign.
@@ -47,9 +45,13 @@ module Client
         else
           flash_message(:notice, "Changes saved")
         end
-        respond_with @caller, location: client_callers_path do |format|
-          format.json {render :json => {message: 'Caller updated'}, status: :ok} if @caller.errors.empty?
-        end
+        update_respond_with
+      end
+    end
+
+    def update_respond_with
+      respond_with @caller, location: client_callers_path do |format|
+        format.json {render :json => {message: 'Caller updated'}, status: :ok} if @caller.errors.empty?
       end
     end
 
