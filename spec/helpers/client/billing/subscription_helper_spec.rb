@@ -182,4 +182,11 @@ describe Client::Billing::SubscriptionHelper, :type => :helper do
       end
     end
   end
+
+  describe '#subscription_date' do
+    it 'formats time stamp into human readable date' do
+      time_stamp = 1430697600
+      expect(subscription_date(time_stamp)).to eq("May  3 2015")
+    end
+  end
 end
