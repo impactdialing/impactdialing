@@ -16,9 +16,16 @@ module Client
     end
 
     def create
-      new_caller_group
-      save_caller_group
+      @caller_group = account.caller_groups.new(caller_group_params)
+      if @caller_group.save
+        flash_message(:notice, "Caller Group saved")
+      else
+        load_campaigns
+      end
       respond_with @caller_group, location: client_caller_groups_path
+      # new_caller_group
+      # save_caller_group
+      # respond_with @caller_group, location: client_caller_groups_path
     end
 
     def show
@@ -33,9 +40,22 @@ module Client
     end
 
     def update
-      save_caller_group
-      respond_with @caller_group, location: client_caller_groups_path do |format|
-        format.json {render :json => {message: 'Caller Group updated'}, :status => :ok} if @caller_group.errors.empty?
+      save_result = @caller_group.update_attributes(caller_group_params)
+      unless save_result
+        load_campaigns
+        respond_with @caller_group, location: client_caller_groups_path do |format|
+         format.json {render :json => {message: 'Caller Group updated'}, :status => :ok} if @caller_group.errors.empty?
+        end
+      else
+        if @caller_group.previous_changes.keys.include?('campaign_id')
+          flash_message(:notice, "Caller has been reassigned to a different campaign.
+          The change has been submitted and it might take a few minutes to update.")
+        else
+          flash_message(:notice, "Caller Group saved")
+        end
+        respond_with @caller_group, location: client_caller_groups_path do |format|
+         format.json {render :json => {message: 'Caller Group updated'}, :status => :ok} if @caller_group.errors.empty?
+        end
       end
     end
 
@@ -67,11 +87,6 @@ module Client
 
     def load_campaigns
       @campaigns = account.campaigns.active
-    end
-
-    def save_caller_group
-      load_campaigns
-      flash_message(:notice, "Caller Group saved") if @caller_group.update_attributes(caller_group_params)
     end
 
     def caller_group_params
