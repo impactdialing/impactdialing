@@ -58,6 +58,6 @@ describe 'edit caller', :type => :feature do
     visit edit_client_caller_path(caller)
     fill_in 'Password', with: 'super_secret'
     click_on 'Save'
-    expect(page).to have_content "Changes saved."
+    expect(page).to have_content 'Changes saved.'
   end
 end
