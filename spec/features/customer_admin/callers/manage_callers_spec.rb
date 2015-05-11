@@ -60,4 +60,13 @@ describe 'edit caller', :type => :feature do
     click_on 'Save'
     expect(page).to have_content 'Changes saved'
   end
+
+  it 'throws proper error message when nothing is entered for caller name.' do
+    expect(account.campaigns).to include(campaign)
+    web_login_as(admin)
+    visit edit_client_caller_path(caller)
+    fill_in 'Username (no spaces)', with: ''
+    click_on 'Save'
+    expect(page).to have_content "Username can't be blank"
+  end
 end
