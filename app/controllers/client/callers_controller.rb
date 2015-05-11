@@ -1,6 +1,5 @@
 module Client
   class CallersController < ClientController
-    #is this performing any validation check anywhere? validates on edit but nocreate.
     include TimeZoneHelper
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
     skip_before_filter :check_tos_accepted, :only => [:reassign_to_campaign]
@@ -38,12 +37,15 @@ module Client
       unless save_result
         load_campaigns
         load_caller_groups
+        respond_with @caller, location: client_callers_path do |format|
+          format.json {render :json => {message: 'Caller updated'}, status: :ok} if @caller.errors.empty?
+        end
       else
         if @caller.previous_changes.keys.include?('campaign_id')
           flash_message(:notice, "Caller has been reassigned to a different campaign.
           The change has been submitted and it might take a few minutes to update.")
         else
-          flash_message(:notice, "Changes saved.")
+          flash_message(:notice, "Changes saved")
         end
         respond_with @caller, location: client_callers_path do |format|
           format.json {render :json => {message: 'Caller updated'}, status: :ok} if @caller.errors.empty?

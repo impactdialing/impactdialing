@@ -53,6 +53,7 @@ describe 'Edit Caller Group', type: :feature, rack: true do
     web_login_as(admin)
     visit edit_client_caller_group_path(caller_group)
     fill_in 'Name', with: 'different name'
+save_and_open_page
     click_on 'Save'
     expect(page).to have_content "Caller Group saved"
   end
@@ -66,26 +67,3 @@ describe 'Edit Caller Group', type: :feature, rack: true do
     expect(page).to have_content "Name can't be blank"
   end
 end
-# describe 'edit caller', :type => :feature do
-#   include_context 'setup campaign'
-#   let!(:caller){ create(:caller, campaign: campaign, account: account)}
-#
-#   it 'gives proper notification when campaign is changed' do
-#     expect(account.campaigns).to include(campaign)
-#     web_login_as(admin)
-#     visit edit_client_caller_path(caller)
-#     select '[None]', from: 'Campaign'
-#     click_on 'Save'
-#     expect(page).to have_content "Caller has been reassigned to a different campaign.
-#     The change has been submitted and it might take a few minutes to update."
-#   end
-#
-#   it 'gives noticed when saved.' do
-#     expect(account.campaigns).to include(campaign)
-#     web_login_as(admin)
-#     visit edit_client_caller_path(caller)
-#     fill_in 'Password', with: 'super_secret'
-#     click_on 'Save'
-#     expect(page).to have_content 'Changes saved.'
-#   end
-# end
