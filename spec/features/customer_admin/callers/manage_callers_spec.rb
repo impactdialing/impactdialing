@@ -1,9 +1,13 @@
 require 'rails_helper'
 
-describe 'add caller', :type => :feature do
+shared_context 'setup campaign' do
   let(:admin){ create(:user) }
   let(:account){ admin.account }
-  let(:campaign){ create(:power, account: account, active: true) }
+  let(:campaign){ create(:power, account: account, active: true)}
+end
+
+describe 'add caller', :type => :feature do
+  include_context 'setup campaign'
 
   before do
     account.billing_subscription.update_attributes!(plan: 'basic')
@@ -35,11 +39,25 @@ describe 'add caller', :type => :feature do
 end
 
 describe 'edit caller', :type => :feature do
-  let(:admin){ create(:user) }
-  let(:account){ admin.account }
-  let(:campaign){ create(:power, account: account, active: true) }
-  let(:caller){ create(:caller, campaign: campaign, account: account) }
+  include_context 'setup campaign'
+  let!(:caller){ create(:caller, campaign: campaign, account: account)}
 
-  before do
-    account.billing_subscription.update_attributes!(plan: 'basic')
+  it 'gives proper notification when campaign is changed' do
+    expect(account.campaigns).to include(campaign)
+    web_login_as(admin)
+    visit edit_client_caller_path(caller)
+    select '[None]', from: 'Campaign'
+    click_on 'Save'
+    expect(page).to have_content "Caller has been reassigned to a different campaign.
+    The change has been submitted and it might take a few minutes to update."
   end
+
+  it 'gives noticed when saved.' do
+    expect(account.campaigns).to include(campaign)
+    web_login_as(admin)
+    visit edit_client_caller_path(caller)
+    fill_in 'Password', with: 'super_secret'
+    click_on 'Save'
+    expect(page).to have_content "Changes saved."
+  end
+end
