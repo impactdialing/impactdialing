@@ -38,7 +38,6 @@ module Client
       unless save_result
         load_campaigns
         load_caller_groups
-        render :edit
       else
         if @caller.previous_changes.keys.include?('campaign_id')
           flash_message(:notice, "Caller has been reassigned to a different campaign.
@@ -56,10 +55,11 @@ module Client
       @caller = account.callers.new(caller_params)
       if @caller.save
         flash_message(:notice, "Caller saved")
-        respond_with @caller, location: client_callers_path
       else
-        flash_message(:error, "There was error.")
+        load_campaigns
+        load_caller_groups
       end
+      respond_with @caller, location: client_callers_path
     end
 
     def destroy
