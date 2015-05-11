@@ -81,8 +81,6 @@ describe ApplicationPolicy do
     let(:policy_admin) { CampaignPolicy.new(admin, campaign) }
     let(:policy_supervisor) { CampaignPolicy.new(supervisor, campaign) }
 
-    # archived, restore, can_change_script
-
     it_behaves_like 'admin and supervisor authorizations'
   end
 
@@ -90,9 +88,6 @@ describe ApplicationPolicy do
     let(:caller) { build(:caller) }
     let(:policy_admin) { CallerPolicy.new(admin, caller) }
     let(:policy_supervisor) { CallerPolicy.new(supervisor, caller) }
-
-    # @@reassign_to_campaign, @@usage, @@call_details,
-    # archived, restore, type_name
 
     it_behaves_like 'admin and supervisor authorizations'
   end

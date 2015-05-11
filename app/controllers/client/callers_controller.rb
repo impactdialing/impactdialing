@@ -3,7 +3,6 @@ module Client
     include TimeZoneHelper
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
     skip_before_filter :check_tos_accepted, :only => [:reassign_to_campaign]
-    before_filter :full_access, :except => [:reassign_to_campaign, :usage, :call_details]
     before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
     before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
     # pundit authorization methods
@@ -63,13 +62,15 @@ module Client
     end
 
     def reassign_to_campaign
+      authorize :caller, :reassign_to_campaign?
       caller = Caller.find_by_id(params[:id])
       caller.update_attributes(:campaign_id => params[:campaign_id])
       render :nothing => true
     end
 
     def usage
-      authorize! :view_reports, @account
+      authorize :caller, :usage?
+      # authorize! :view_reports, @account
       Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
         @caller = Caller.find(params[:id])
         campaigns = account.campaigns.for_caller(@caller)
@@ -81,7 +82,8 @@ module Client
     end
 
     def call_details
-      authorize! :view_reports, @account
+      # authorize! :view_reports, @account
+      authorize :caller, :call_details?
       @caller = Caller.find(params[:id])
       campaigns = account.campaigns.for_caller(@caller)
       @campaigns_data = Account.connection.execute(campaigns.select([:name, 'campaigns.id']).uniq.to_sql).to_a
@@ -92,6 +94,7 @@ module Client
     end
 
     def archived
+      authorize :caller, :archived?
       @callers = Caller.archived.for_account(account).paginate(:page => params[:page], :order => 'id desc')
       respond_with @callers do |format|
         format.html{ render 'client/callers/archived' }
@@ -100,6 +103,7 @@ module Client
     end
 
     def restore
+      authorize @caller, :restore?
       @caller.active = true
       if @caller.save
         flash_message(:notice, 'Caller restored')
@@ -119,7 +123,9 @@ module Client
       end
     end
 
+    #This method may need to be deleted
     def type_name
+      logger.error("CallersController#type_name was called")
       'caller'
     end
 

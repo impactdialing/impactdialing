@@ -49,14 +49,6 @@ private
     Digest::SHA1.hexdigest(args.flatten.join('--'))
   end
 
-  def full_access
-    if @user.supervisor?
-      flash_message(:error, I18n.t(:admin_access))
-      redirect_to '/client'
-      return
-    end
-  end
-
   def sanitize_dials(dial_count)
     dial_count.nil? ? 0 : dial_count
   end

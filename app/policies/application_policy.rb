@@ -6,6 +6,10 @@ private
     user.administrator?
   end
 
+  def current_user?
+    user.administrator? || user.supervisor?
+  end
+
 public
 
   def initialize(user, record)

@@ -60,7 +60,6 @@ describe Client::CampaignsController, type: :controller do
     describe 'the #archived' do
       it 'disallows supervisor access' do
         get(:archived, html_params)
-        # expect(response.body).to include I18n.t(:admin_access)
         expect(response).to redirect_to root_url
       end
     end

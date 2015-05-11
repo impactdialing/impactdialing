@@ -80,7 +80,6 @@ describe Client::ScriptsController, type: :controller do
       it 'disallows supervisor access' do
         patch(:archived, html_params)
         expect(response).to redirect_to root_url
-        # expect(response.body).to_not include script.to_s
       end
     end
 
