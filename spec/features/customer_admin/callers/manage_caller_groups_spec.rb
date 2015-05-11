@@ -42,11 +42,28 @@ describe 'Edit Caller Group', type: :feature, rack: true do
     expect(account.campaigns).to include(original_campaign)
     web_login_as(admin)
     visit edit_client_caller_group_path(caller_group)
-save_and_open_page
     select new_campaign.name, from: 'Campaign'
     click_on 'Save'
-    expect(page).to have_content "Caller has been reassigned to a different campaign.
-    The change has been submitted and it might take a few minutes to update."
+    expect(page).to have_content 'Caller has been reassigned to a different campaign.
+    The change has been submitted and it might take a few minutes to update.'
+  end
+
+  it 'gives a different notification when name in caller group is changed or no changes are made' do
+    expect(account.campaigns).to include(original_campaign)
+    web_login_as(admin)
+    visit edit_client_caller_group_path(caller_group)
+    fill_in 'Name', with: 'different name'
+    click_on 'Save'
+    expect(page).to have_content "Caller Group saved"
+  end
+
+  it 'throws an error when edited campaign message is blank' do
+    expect(account.campaigns).to include(original_campaign)
+    web_login_as(admin)
+    visit edit_client_caller_group_path(caller_group)
+    fill_in 'Name', with: ''
+    click_on 'Save'
+    expect(page).to have_content "Name can't be blank"
   end
 end
 # describe 'edit caller', :type => :feature do
