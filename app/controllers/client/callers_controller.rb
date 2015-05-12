@@ -5,7 +5,6 @@ module Client
     skip_before_filter :check_tos_accepted, :only => [:reassign_to_campaign]
     before_filter :full_access, :except => [:reassign_to_campaign, :usage, :call_details]
     before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
-    before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
 
     respond_to :html, :json
 
@@ -15,6 +14,7 @@ module Client
     end
 
     def new
+      @campaigns = account.campaigns.active
       @caller                = account.callers.new
       @caller.is_phones_only = params[:is_phones_only]
       @caller_groups = account.caller_groups
@@ -22,12 +22,14 @@ module Client
     end
 
     def show
+      @campaigns = account.campaigns.active
       respond_with @caller do |format|
         format.html {redirect_to edit_client_caller_path(@caller)}
       end
     end
 
     def edit
+      @campaigns = account.campaigns.active
       @caller_groups = account.caller_groups
       respond_with @caller
     end
