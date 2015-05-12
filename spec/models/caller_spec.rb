@@ -36,7 +36,7 @@ describe Caller, :type => :model do
     expect(caller.errors.messages[:username]).to eq(["can't be blank"])
   end
 
-  it "should validate username cant contain spces for web callers" do
+  it "should validate username does not contain spaces for web callers" do
     caller_group = create(:caller_group)
     caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "john doe", account: account)
     expect(caller.save).to be_falsey
@@ -47,11 +47,6 @@ describe Caller, :type => :model do
     let(:campaign){ create(:campaign) }
     let(:caller){ build(:caller, campaign: campaign) }
 
-    it 'validates campaign presence' do
-      caller.campaign_id = Campaign.all.last.id + 1
-      caller.valid?
-      expect(caller.errors[:campaign]).to eq ['invalid campaign']
-    end
     it 'validates username uniqueness' do
       caller.save!
       caller_2 = build(:caller, campaign: campaign, username: caller.username)

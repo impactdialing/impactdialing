@@ -21,7 +21,7 @@ class Caller < ActiveRecord::Base
 
   before_create :create_uniq_pin
   before_validation :assign_to_caller_group_campaign
-  before_validation { |caller| caller.username = username.downcase  unless username.nil?}
+  before_validation { |caller| caller.username = username.downcase unless username.nil?}
   before_save :reassign_caller_campaign
 
   validate :check_subscription_for_caller_groups
@@ -38,16 +38,30 @@ class Caller < ActiveRecord::Base
 
 private
   def campaign_and_caller_on_same_account
-    return true if campaign_id.nil? or campaign.nil? # presence validation will catch nil campaigns
+    return true if campaign_id.nil? or campaign.nil? # campaigns may be auto-archived
+                                                     # in which case callers become orphaned
+                                                     # until reassigned to another campaign
 
     unless self.account_id == campaign.account_id
       errors.add(:campaign, 'invalid campaign')
     end
   end
 
+  def assign_to_caller_group_campaign
+    if caller_group_id_changed? && !caller_group_id.nil?
+      self.campaign_id = CallerGroup.find(caller_group_id).campaign_id
+    end
+  end
+
+  def restored_caller_has_campaign
+    if active_change == [false, true] && !campaign.active
+      errors.add(:base, 'The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.')
+    end
+  end
+
 public
   def identity_name
-    is_phones_only?  ? name : username
+    is_phones_only? ? name : username
   end
 
   def ability
@@ -152,20 +166,6 @@ public
 
   def create_caller_identity(session_key)
     caller_identities.create(session_key: session_key, pin: CallerIdentity.create_uniq_pin)
-  end
-
-  private
-
-  def assign_to_caller_group_campaign
-    if caller_group_id_changed? && !caller_group_id.nil?
-      self.campaign_id = CallerGroup.find(caller_group_id).campaign_id
-    end
-  end
-
-  def restored_caller_has_campaign
-    if active_change == [false, true] && !campaign.active
-      errors.add(:base, 'The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.')
-    end
   end
 end
 
