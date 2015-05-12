@@ -17,7 +17,7 @@ module Client
     def new
       @caller                = account.callers.new
       @caller.is_phones_only = params[:is_phones_only]
-      load_caller_groups
+      @caller_groups = account.caller_groups
       respond_with @caller
     end
 
@@ -28,15 +28,15 @@ module Client
     end
 
     def edit
-      load_caller_groups
+      @caller_groups = account.caller_groups
       respond_with @caller
     end
 
     def update
       save_result = @caller.update_attributes(caller_params)
       unless save_result
-        load_campaigns
-        load_caller_groups
+        @campaigns = account.campaigns.active
+        @caller_groups = account.caller_groups
       else
         if @caller.previous_changes.keys.include?('campaign_id')
           flash_message(:notice, "Caller has been reassigned to a different campaign.
@@ -55,8 +55,8 @@ module Client
       if @caller.save
         flash_message(:notice, "Caller saved")
       else
-        load_campaigns
-        load_caller_groups
+        @campaigns = account.campaigns.active
+        @caller_groups = account.caller_groups
       end
       respond_with @caller, location: client_callers_path
     end
@@ -131,26 +131,21 @@ module Client
     end
 
     private
-
-    def load_and_verify_caller
-      begin
-        @caller = Caller.find(params[:id] || params[:caller_id])
-      rescue ActiveRecord::RecordNotFound => e
-        render :json=> {"message"=>"Resource not found"}, :status => :not_found
-        return
+      def load_and_verify_caller
+        begin
+          @caller = Caller.find(params[:id] || params[:caller_id])
+        rescue ActiveRecord::RecordNotFound => e
+          render :json=> {"message"=>"Resource not found"}, :status => :not_found
+          return
+        end
+        if @caller.account != account
+          render :json => {message: 'Cannot access caller'}, :status => :unauthorized
+          return
+        end
       end
-      if @caller.account != account
-        render :json => {message: 'Cannot access caller'}, :status => :unauthorized
-        return
-      end
-    end
 
     def load_campaigns
       @campaigns = account.campaigns.active
-    end
-
-    def load_caller_groups
-      @caller_groups = account.caller_groups
     end
 
     def caller_params
