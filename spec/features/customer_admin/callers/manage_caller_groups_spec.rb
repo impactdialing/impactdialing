@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Caller Group Management', type: :feature, rack: true do
+describe 'add caller group', type: :feature, rack: true do
   let(:customer) do
     create(:user)
   end
@@ -28,9 +28,15 @@ describe 'Caller Group Management', type: :feature, rack: true do
 
     select "#{group.name}", from: 'Caller group'
   end
+
+  it 'throws an error when an added caller group name is blank' do
+    visit new_client_caller_group_path
+    click_on 'Save'
+    expect(page).to have_content "Name can't be blank"
+  end
 end
 
-describe 'Edit Caller Group', type: :feature, rack: true do
+describe 'edit caller group', type: :feature, rack: true do
   let(:admin){ create(:user)}
   let(:account){ admin.account }
   let(:original_campaign){ create(:preview, account: account) }
@@ -57,7 +63,7 @@ describe 'Edit Caller Group', type: :feature, rack: true do
     expect(page).to have_content "Caller Group saved"
   end
 
-  it 'throws an error when edited campaign message is blank' do
+  it 'throws an error when an edited caller group name is blank' do
     expect(account.campaigns).to include(original_campaign)
     web_login_as(admin)
     visit edit_client_caller_group_path(caller_group)

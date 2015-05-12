@@ -42,7 +42,7 @@ describe 'edit caller', :type => :feature do
   include_context 'setup campaign'
   let!(:caller){ create(:caller, campaign: campaign, account: account)}
 
-  it 'gives proper notification when campaign is changed' do
+  it 'gives notice a when caller is assigned to a different campaign' do
     expect(account.campaigns).to include(campaign)
     web_login_as(admin)
     visit edit_client_caller_path(caller)
@@ -52,7 +52,7 @@ describe 'edit caller', :type => :feature do
     The change has been submitted and it might take a few minutes to update."
   end
 
-  it 'gives noticed when saved.' do
+  it 'gives a different notice when a caller is saved and the campaign has not been changed' do
     expect(account.campaigns).to include(campaign)
     web_login_as(admin)
     visit edit_client_caller_path(caller)
