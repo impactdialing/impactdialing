@@ -31,8 +31,8 @@ module Client
         @script.script_texts.new(script_order: 1)
         @question = @script.questions.new(script_order: 2)
         # @question.possible_responses.new(value: "[No response]", possible_response_order: 1, keypad: 1)
-        respond_with @script
       end
+      respond_with @script
     end
 
     def create
