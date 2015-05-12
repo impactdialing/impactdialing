@@ -28,6 +28,17 @@ en:
     multiple_mapping: "Two columns in the uploaded file were mapped to the same destination. Make sure to only map one column to each field."
     missing_phone: "You did not map any column in the uploaded file to the Phone field."
   activerecord:
+    successes:
+        models:
+          caller:
+            reassigned: "Caller has been reassigned to a different campaign. The change has been submitted and it might take a few minutes to update."
+            saved: "Caller saved."
+            archived: "Caller archived."
+            restored: "Caller restored."
+          caller_group:
+            reassigned: "Caller Group has been reassigned to a different campaign. The change has been submitted and it might take a few minutes to update."
+            saved: "Caller Group saved."
+            deleted: "Caller Group deleted."
     attributes:
       campaign:
         recycle_rate: 'Time (in hours) between call attempts'
@@ -90,6 +101,9 @@ en:
       account_has_no_funds: "There are no funds available in the account. Please contact your account administrator for assistance."
       time_period_exceeded: "You can only call this campaign between %{start_time} and %{end_time}."
       subscription_limit: "The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account."
+  csv_missing_header_or_rows: "Please verify the file contains at least 1 header row and 1 data row."
+  csv_duplicate_headers: "The uploaded file contained the following duplicate headers: %{duplicate_headers}. Please verify all header names are unique."
+  csv_is_invalid: "Invalid CSV file. Could not import."
   dialer:
     access:
       denied: "Calling is disabled. Please contact your admin."
