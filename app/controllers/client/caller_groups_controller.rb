@@ -10,8 +10,8 @@ module Client
     end
 
     def new
-      new_caller_group
-      load_campaigns
+      @caller_group = account.caller_groups.new
+      @campaigns = account.campaigns.active
       respond_with @caller_group
     end
 
@@ -20,7 +20,7 @@ module Client
       if @caller_group.save
         flash_message(:notice, "Caller Group saved")
       else
-        load_campaigns
+        @campaigns = account.campaigns.active
       end
       respond_with @caller_group, location: client_caller_groups_path
     end
@@ -32,14 +32,14 @@ module Client
     end
 
     def edit
-      load_campaigns
+      @campaigns = account.campaigns.active
       respond_with @caller_group
     end
 
     def update
       save_result = @caller_group.update_attributes(caller_group_params)
       unless save_result
-        load_campaigns
+        @campaigns = account.campaigns.active
       else
         if @caller_group.previous_changes.keys.include?('campaign_id')
           flash_message(:notice, "Caller has been reassigned to a different campaign.
@@ -62,10 +62,6 @@ module Client
     end
 
   private
-    def new_caller_group
-      @caller_group = account.caller_groups.new
-    end
-
     def load_and_verify_caller_group
       begin
         @caller_group = CallerGroup.find(params[:id])
@@ -77,10 +73,6 @@ module Client
         render :json => {message: 'Cannot access caller group'}, :status => :unauthorized
         return
       end
-    end
-
-    def load_campaigns
-      @campaigns = account.campaigns.active
     end
 
     def caller_group_params
