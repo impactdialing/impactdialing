@@ -41,10 +41,9 @@ module Client
         @caller_groups = account.caller_groups
       else
         if @caller.previous_changes.keys.include?('campaign_id')
-          flash_message(:notice, "Caller has been reassigned to a different campaign.
-          The change has been submitted and it might take a few minutes to update.")
+          flash_message(:notice, I18n.t('activerecord.successes.models.caller.reassigned'))
         else
-          flash_message(:notice, "Changes saved")
+          flash_message(:notice, I18n.t('activerecord.successes.models.caller.saved'))
         end
       end
       respond_with @caller, location: client_callers_path do |format|
@@ -55,7 +54,7 @@ module Client
     def create
       @caller = account.callers.new(caller_params)
       if @caller.save
-        flash_message(:notice, "Caller saved")
+        flash_message(:notice, I18n.t('activerecord.successes.models.caller.saved'))
       else
         @campaigns = account.campaigns.active
         @caller_groups = account.caller_groups
@@ -65,7 +64,7 @@ module Client
 
     def destroy
       @caller.active = false
-      @caller.save ? flash_message(:notice, "Caller archived") : flash_message(:error, @caller.errors.full_messages.join)
+      @caller.save ? flash_message(:notice, I18n.t('activerecord.successes.models.caller.archived')) : flash_message(:error, @caller.errors.full_messages.join)
       respond_with @caller, location: client_callers_path do |format|
         format.json {render :json => {message: 'Caller archived'}, :status => :ok} if @caller.errors.empty?
       end
@@ -111,7 +110,7 @@ module Client
     def restore
       @caller.active = true
       if @caller.save
-        flash_message(:notice, 'Caller restored')
+        flash_message(:notice, I18n.t('activerecord.successes.models.caller.restored'))
       else
         flash_message(:error, @caller.errors.full_messages.join('; '))
       end

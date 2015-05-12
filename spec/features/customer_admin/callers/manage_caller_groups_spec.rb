@@ -44,7 +44,7 @@ describe 'Edit Caller Group', type: :feature, rack: true do
     visit edit_client_caller_group_path(caller_group)
     select new_campaign.name, from: 'Campaign'
     click_on 'Save'
-    expect(page).to have_content 'Caller has been reassigned to a different campaign.
+    expect(page).to have_content 'Caller Group has been reassigned to a different campaign.
     The change has been submitted and it might take a few minutes to update.'
   end
 

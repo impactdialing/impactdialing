@@ -18,7 +18,7 @@ module Client
     def create
       @caller_group = account.caller_groups.new(caller_group_params)
       if @caller_group.save
-        flash_message(:notice, "Caller Group saved")
+        flash_message(:notice, I18n.t('activerecord.successes.models.caller_group.saved'))
       else
         @campaigns = account.campaigns.active
       end
@@ -42,10 +42,9 @@ module Client
         @campaigns = account.campaigns.active
       else
         if @caller_group.previous_changes.keys.include?('campaign_id')
-          flash_message(:notice, "Caller has been reassigned to a different campaign.
-          The change has been submitted and it might take a few minutes to update.")
+          flash_message(:notice, I18n.t('activerecord.successes.models.caller_group.reassigned'))
         else
-          flash_message(:notice, "Caller Group saved")
+          flash_message(:notice, I18n.t('activerecord.successes.models.caller_group.saved'))
         end
       end
       respond_with @caller_group, location: client_caller_groups_path do |format|
@@ -55,7 +54,7 @@ module Client
 
     def destroy
       @caller_group.destroy
-      flash_message(:notice, "Caller Group deleted")
+      flash_message(:notice, I18n.t('activerecord.successes.models.caller_group.deleted'))
       respond_with @caller_group, location: client_caller_groups_path do |format|
         format.json {render json: {message: 'Caller Group deleted'}, status: :ok} if @caller_group.errors.empty?
       end

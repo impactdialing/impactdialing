@@ -58,7 +58,7 @@ describe 'edit caller', :type => :feature do
     visit edit_client_caller_path(caller)
     fill_in 'Password', with: 'super_secret'
     click_on 'Save'
-    expect(page).to have_content 'Changes saved'
+    expect(page).to have_content 'Caller saved.'
   end
 
   it 'throws proper error message when nothing is entered for caller name.' do
