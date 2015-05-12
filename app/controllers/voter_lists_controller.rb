@@ -7,11 +7,6 @@ class VoterListsController < ClientController
   respond_to :html
   respond_to :json, :only => [:index, :create, :show, :update, :destroy]
 
-  # rescue_from CSV::MalformedCSVError do |exception|
-  #   flash_message(:error, I18n.t(:csv_malformed))
-  #   # redirect_to :back
-  # end
-
 public
   def index
     respond_with(@campaign.voter_lists, :only => [:id, :name, :enabled])
@@ -78,7 +73,7 @@ public
     begin
       @csv_validator = CsvValidator.new(csv_file)
     rescue CSV::MalformedCSVError
-      @csv_error = I18n.t(:csv_malformed)
+      @csv_error = I18n.t(:error, ('activerecord.errors.models.csv.malformed'))
     end
     render layout: false
   end

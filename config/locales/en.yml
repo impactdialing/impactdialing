@@ -29,6 +29,11 @@ en:
           too_short: "Number is too short (min 10 digits)"
           not_a_number: "Number must contain only digits, - (hyphens), () (paranthesis) or + (plus signs)"
           taken: "%{value} is already in the specified Do Not Call list"
+        csv:
+          missing_header_or_rows: "Please verify the file contains at least 1 header row and 1 data row."
+          duplicate_headers: "The uploaded file contained the following duplicate headers: %{duplicate_headers}. Please verify all header names are unique."
+          is_invalid: "Invalid CSV file. Could not import."
+          malformed: "The uploaded file is improperly formated. Please verify the organization of the file's contents."
         voter_list:
           data_too_long: "One or more headers or values selected during upload contain data that is too long (they can be one to three sentences long at most). You can trim this data, split it into multiple columns or choose the (Discard this column) option to have it be ignored."
   blocked_number_created: "%{number} successfully added to Do Not Call list for %{level}."
@@ -73,10 +78,6 @@ en:
   campaign_out_of_phone_numbers: "This campaign has run out of phone numbers."
   update_billing_info: "Urgent: Update your billing information"
   enjoy_the_trial: "Enjoy your trial of Impact Dialing! You have 50 minutes of calling for free. Make sure to %{billing_link} before your minutes run out."
-  csv_missing_header_or_rows: "Please verify the file contains at least 1 header row and 1 data row."
-  csv_duplicate_headers: "The uploaded file contained the following duplicate headers: %{duplicate_headers}. Please verify all header names are unique."
-  csv_is_invalid: "Invalid CSV file. Could not import."
-  csv_malformed: "The uploaded file is improperly formated. Please verify the organization of the file's contents."
   dialer:
     access:
       denied: "Calling is disabled. Please contact your admin."

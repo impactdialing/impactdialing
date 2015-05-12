@@ -18,7 +18,7 @@ class CsvValidator
 
   def verify_headers
     if (headers.empty?)
-      @errors << I18n.t(:csv_missing_header_or_rows)
+      @errors << I18n.t('activerecord.errors.models.csv.missing_header_or_rows')
       return false
     end
     true
@@ -26,7 +26,7 @@ class CsvValidator
 
   def verify_first_row
     if (first_row.empty?)
-      @errors << I18n.t(:csv_missing_header_or_rows)
+      @errors << I18n.t('activerecord.errors.models.csv.missing_header_or_rows')
       return false
     end
     true
@@ -35,7 +35,7 @@ class CsvValidator
   def duplicate_headers
     if ((headers.length - headers.uniq.length) != 0)
       duplicate_headers = headers.select{|header| headers.count(header) > 1}.uniq
-      @errors << I18n.t(:csv_duplicate_headers, :duplicate_headers => duplicate_headers.join(', '))
+      @errors << I18n.t('activerecord.errors.models.csv.duplicate_headers', :duplicate_headers => duplicate_headers.join(', '))
       return false
     end
     true
