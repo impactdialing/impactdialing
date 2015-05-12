@@ -183,10 +183,6 @@ public
     campaign.time_period_exceeded?
   end
 
-  def is_on_call?
-    caller.is_on_call?
-  end
-
   def hold
     Twilio::Verb.new { |v| v.play "#{DataCentre.call_back_host(data_centre)}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end

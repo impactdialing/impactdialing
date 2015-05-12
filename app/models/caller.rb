@@ -86,10 +86,6 @@ public
     self.pin = CallerIdentity.create_uniq_pin
   end
 
-  def is_on_call?
-    !caller_sessions.blank? && caller_sessions.on_call.size > 1
-  end
-
   class << self
     include Rails.application.routes.url_helpers
 
