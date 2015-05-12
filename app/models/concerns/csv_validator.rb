@@ -3,8 +3,12 @@ class CsvValidator
 
   def initialize(csv_file)
     @headers = csv_file.shift || []
+    # begin
     @first_row = csv_file.shift || []
     @csv_column_headers = @headers.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
+    # rescue CSV::MalformedCSVError
+    #   @errors << I18n.t('activerecord.errors.models.csv.malformed')
+    # end
     @errors = []
     validate
   end

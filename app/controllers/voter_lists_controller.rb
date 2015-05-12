@@ -74,7 +74,7 @@ public
     begin
       @csv_validator = CsvValidator.new(csv_file)
     rescue CSV::MalformedCSVError
-      @csv_error = I18n.t(:error, ('activerecord.errors.models.csv.malformed'))
+      @csv_error = I18n.t('activerecord.errors.models.csv.malformed')
     end
     render layout: false
   end
