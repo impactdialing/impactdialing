@@ -7,6 +7,11 @@ class VoterListsController < ClientController
   respond_to :html
   respond_to :json, :only => [:index, :create, :show, :update, :destroy]
 
+  # rescue_from CSV::MalformedCSVError do |exception|
+  #   flash_message(:error, I18n.t(:csv_malformed))
+  #   # redirect_to :back
+  # end
+
 public
   def index
     respond_with(@campaign.voter_lists, :only => [:id, :name, :enabled])
@@ -70,7 +75,11 @@ public
     csv = upload.read
     separator = VoterList.separator_from_file_extension(upload.original_filename)
     csv_file = CSV.new(csv, :col_sep => separator)
-    @csv_validator = CsvValidator.new(csv_file)
+    begin
+      @csv_validator = CsvValidator.new(csv_file)
+    rescue CSV::MalformedCSVError
+      @csv_error = I18n.t(:csv_malformed)
+    end
     render layout: false
   end
 
