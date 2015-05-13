@@ -69,8 +69,7 @@ public
     upload = params[:upload].try(:[], "datafile")
     csv = upload.read
     separator = VoterList.separator_from_file_extension(upload.original_filename)
-    csv_file = CSV.new(csv, :col_sep => separator)
-    @csv_validator = CsvValidator.new(csv_file)
+    @csv_validator = CsvValidator.new(csv, separator)
     render layout: false
   end
 
