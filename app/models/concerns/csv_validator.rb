@@ -1,7 +1,7 @@
 class CsvValidator
   attr_reader :headers, :first_row, :csv_column_headers, :errors
 
-  def initialize(csv, separator)
+  def initialize(csv, separator = ',')
     @errors = []
     csv_file = CSV.new(csv, :col_sep => separator)
     begin
