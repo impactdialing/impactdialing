@@ -15,7 +15,8 @@ describe 'Phone-only caller dials TwiML app number' do
   context 'Incorrect PIN entered' do
     it 'asks for PIN again' do
       post identify_caller_path, {Digits: '1234', attempt: 1}
-      expect(response.body).to include 'Incorrect pin. Please enter your pin and then press star.'
+      expect(response.body).to include 'Incorrect pin.'
+      expect(response.body).to include 'Please enter your pin and then press star.'
     end
 
     it 'hangs-up after 3 incorrect PIN messages' do

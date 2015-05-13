@@ -2,9 +2,38 @@ class CallinController < TwimlController
   include SidekiqEvents
 
   skip_before_filter :verify_authenticity_token
+private
+  def ask_for_pin_twiml
+    attempt = params[:attempt].to_i
+    xml     = Twilio::Verb.new do |twiml|
+      if attempt > 0
+        twiml.say 'Incorrect pin.'
+      end
 
+      if attempt > 2
+        twiml.hangup
+      else
+        twiml.gather({
+          finishOnKey: '*',
+          timeout:     10,
+          method:      'POST',
+          action:      identify_caller_url({
+            host:     Settings.twilio_callback_host,
+            port:     Settings.twilio_callback_port,
+            protocol: 'http://',
+            attempt:  attempt + 1
+          })
+        }) do
+          twiml.say 'Please enter your pin and then press star.'
+        end
+      end
+    end
+    xml.response
+  end
+
+public
   def create
-    render :xml => Caller.ask_for_pin(params[:provider])
+    render :xml => ask_for_pin_twiml
   end
 
   def identify
@@ -30,7 +59,7 @@ class CallinController < TwimlController
         render xml: xml and return
       end
     else
-      render xml:  Caller.ask_for_pin(params[:attempt].to_i, params[:provider]) and return
+      render xml: ask_for_pin_twiml and return
     end
   end
 end

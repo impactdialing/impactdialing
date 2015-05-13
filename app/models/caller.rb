@@ -86,28 +86,6 @@ public
     self.pin = CallerIdentity.create_uniq_pin
   end
 
-  class << self
-    include Rails.application.routes.url_helpers
-
-    def ask_for_pin(attempt = 0, provider)
-      xml = if attempt > 2
-              Twilio::Verb.new do |v|
-                v.say "Incorrect pin."
-                v.hangup
-              end
-            else
-              Twilio::Verb.new do |v|
-                3.times do
-                  v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => DataCentre.call_back_host_from_provider(provider), :port => Settings.twilio_callback_port, :protocol => "http://", :attempt => attempt + 1), :method => "POST") do
-                    v.say attempt == 0 ? "Please enter your pin and then press star." : "Incorrect pin. Please enter your pin and then press star."
-                  end
-                end
-              end
-            end
-      xml.response
-    end
-  end
-
   def phone
     #required for the form field.
   end

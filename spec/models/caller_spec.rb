@@ -97,28 +97,6 @@ describe Caller, :type => :model do
     expect(Caller.active).to include(active_caller)
   end
 
-  it "asks for pin" do
-    expect(Caller.ask_for_pin(0, nil)).to eq(
-        Twilio::Verb.new do |v|
-          3.times do
-            v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => 'http://', :attempt => 1), :method => "POST") do
-              v.say "Please enter your pin and then press star."
-            end
-          end
-        end.response
-    )
-  end
-
-  it "asks for pin again" do
-    expect(Caller.ask_for_pin(1,nil)).to eq(Twilio::Verb.new do |v|
-      3.times do
-        v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => 'http://', :attempt => 2), :method => "POST") do
-          v.say "Incorrect pin. Please enter your pin and then press star."
-        end
-      end
-    end.response)
-  end
-
   it "returns name for phone-only-caller, email for web-caller " do
     phones_only_caller = create(:caller, :is_phones_only => true, :name => "name", :username => "email1@gmail.com")
     web_caller = create(:caller, :is_phones_only => false, :name => "name", :username => "email2@gmail.com")

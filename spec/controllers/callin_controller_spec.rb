@@ -7,14 +7,23 @@ describe CallinController, :type => :controller do
 
     it "prompts for PIN for a caller " do
       post :create
-      resp = Twilio::Verb.new do |v|
-        3.times do
-          v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://",  :attempt => 1), :method => "POST") do
-            v.say "Please enter your pin and then press star."
-          end
-        end
-      end.response
-      expect(response.body).to eq(resp)
+      ask_for_pin_twiml = Twilio::Verb.new do |v|
+                            v.gather({
+                              :finishOnKey => '*',
+                              :timeout => 10,
+                              :method => "POST",
+                              :action => identify_caller_url({
+                                :host => Settings.twilio_callback_host,
+                                :port => Settings.twilio_callback_port,
+                                :protocol => "http://",
+                                :attempt => 1
+                              })
+                            }) do
+                              v.say "Please enter your pin and then press star."
+                            end
+                          end.response
+
+      expect(response.body).to eq(ask_for_pin_twiml)
     end
 
     it "verifies the logged in caller by session pin" do
@@ -36,13 +45,24 @@ describe CallinController, :type => :controller do
       pin = rand.to_s[2..6]
       allow(CallerIdentity).to receive(:find_by_pin).and_return(nil)
       post :identify, :Digits => pin, :attempt => "1"
-      expect(response.body).to eq(Twilio::Verb.new do |v|
-        3.times do
-          v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :attempt => 2), :method => "POST") do
-            v.say "Incorrect pin. Please enter your pin and then press star."
-          end
-        end
-      end.response)
+      ask_for_pin_again_twiml = Twilio::Verb.new do |v|
+                                  v.say 'Incorrect pin.'
+                                  v.gather({
+                                    :finishOnKey => '*',
+                                    :timeout => 10,
+                                    :method => "POST",
+                                    :action => identify_caller_url({
+                                      :host => Settings.twilio_callback_host,
+                                      :port => Settings.twilio_callback_port,
+                                      :protocol => "http://",
+                                      :attempt => 2
+                                    })
+                                  }) do
+                                    v.say "Please enter your pin and then press star."
+                                  end
+                                end.response
+
+      expect(response.body).to eq(ask_for_pin_again_twiml)
     end
 
     it "Hangs up on incorrect pin after the third attempt" do
