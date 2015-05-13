@@ -21,17 +21,27 @@ describe Client::ScriptsController, type: :controller do
   end
 
   context 'when user is admin' do
+    let(:admin){ create(:user, {account: script.account}) }
     before do
-      allow(controller).to receive(:current_user) { create(:user) }
+      allow(controller).to receive(:current_user) do
+        admin
+      end
     end
 
-    after do
-      expect(response.status).to eq 200
-    end
+    # after do
+    #   expect(response).to render_template current_template
+    # end
 
+
+# still causes infinite loop?
     describe 'the #questions_answered' do
+      let(:current_template) do
+         { data: {} }.to_json
+       end
+
       it 'allows admin access' do
         get(:questions_answered, json_params)
+        expect(response.body).to eq current_template
       end
     end
 

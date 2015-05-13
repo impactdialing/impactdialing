@@ -7,19 +7,19 @@ module Client
     respond_to :html, :json
 
     def index
-      authorize :campaign, :index?
+      authorize Campaign, :index?
       @campaigns     = account.campaigns.active.paginate :page => params[:page]
       @caller_counts = account.callers.active.where(campaign_id: @campaigns.pluck(:id)).group(:campaign_id).count
       respond_with @campaigns
     end
 
     def new
-      authorize :campaign, :new?
       @campaign = account.campaigns.new(type: Campaign::Type::POWER,
                                         time_zone: "Pacific Time (US & Canada)",
                                         start_time: Time.parse("9am"),
                                         end_time: Time.parse("9pm"),
                                         acceptable_abandon_rate: 0.03)
+      authorize @campaign, :new?
       load_scripts
       # new_list
       respond_with @campaign
@@ -27,29 +27,29 @@ module Client
 
 
     def show
-      authorize :campaign, :show?
+      authorize @campaign, :show?
       respond_with @campaign do |format|
         format.html {redirect_to edit_client_campaign_path(@campaign)}
       end
     end
 
     def edit
-      authorize :campaign, :edit?
+      authorize @campaign, :edit?
       load_scripts
       new_list
       respond_with @campaign
     end
 
     def create
-      authorize :campaign, :create?
       @campaign = account.campaigns.new
+      authorize @campaign, :create?
       save_campaign
       respond_with @campaign, location: client_campaigns_path
     end
 
 
     def update
-      authorize :campaign, :update?
+      authorize @campaign, :update?
       save_campaign
       respond_with @campaign,  location: client_campaigns_url do |format|
         format.json { render :json => {message: "Campaign updated" }, :status => :ok } if @campaign.errors.empty?
@@ -57,7 +57,7 @@ module Client
     end
 
     def destroy
-      authorize :campaign, :destroy?
+      authorize @campaign, :destroy?
       @campaign.active = false
       @campaign.save ?  flash_message(:notice, "Campaign archived") : flash_message(:error, @campaign.errors.full_messages.join)
       respond_with @campaign,  location: client_campaigns_url do |format|

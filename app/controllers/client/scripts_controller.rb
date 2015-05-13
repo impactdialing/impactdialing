@@ -9,7 +9,7 @@ module Client
     respond_to :html, :json
 
     def index
-      authorize @script, :index?
+      authorize Script, :index?
       @scripts = account.scripts.active.paginate(:page => params[:page])
       respond_with @scripts
     end
@@ -27,8 +27,8 @@ module Client
     end
 
     def new
-      authorize @script, :new?
       new_script
+      authorize @script, :new?
       load_voter_fields
       @script.script_texts.new(script_order: 1)
       @question = @script.questions.new(script_order: 2)
@@ -37,8 +37,8 @@ module Client
     end
 
     def create
-      authorize @script, :create?
       new_script
+      authorize @script, :create?
       save_script
       load_voter_fields
       respond_with @script, location: client_scripts_path
@@ -54,7 +54,7 @@ module Client
       else
         save_script
         load_voter_fields
-        respond_with @script,  location: client_scripts_path do |format|
+        respond_with @script, location: client_scripts_path do |format|
           format.json { render :json => {message: "Script updated" }, :status => :ok } if @script.errors.empty?
         end
       end
@@ -63,7 +63,7 @@ module Client
     def destroy
       authorize @script, :destroy?
       @script.active = false
-      @script.save ?  flash_message(:notice, "Script archived") : flash_message(:error, @script.errors.full_messages.join)
+      @script.save ? flash_message(:notice, "Script archived") : flash_message(:error, @script.errors.full_messages.join)
       respond_with @script,  location: client_scripts_path do |format|
         format.json { render :json => {message: "Script archived" }, :status => :ok } if @script.errors.empty?
       end
@@ -71,7 +71,6 @@ module Client
 
     def questions_answered
       authorize @script, :questions_answered?
-      # Pundit.policy!(current_user, @script)
       render :json => { :data => Question.question_count_script(@script.id) }
     end
 
@@ -128,7 +127,7 @@ module Client
 
     def load_voter_fields
       @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
-      @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
+      @voter_fields.concat(account.custom_voter_fields.collect{ |field| field.name})
       if @script.voter_fields != nil
         begin
           @voter_field_values = JSON.parse(@script.voter_fields)
@@ -142,7 +141,7 @@ module Client
 
     def save_script
       unless params[:script].nil?
-        params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
+        params[:script][:voter_fields] = params[:voter_field] ? params[:voter_field].to_json : nil
       end
       flash_message(:notice, "Script saved") if @script.update_attributes(script_params)
     end

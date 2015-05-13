@@ -4,14 +4,11 @@ describe Client::CallersController, :type => :controller do
   let(:account) {create(:account, api_key: 'abc123')}
   before(:each) { @user = create(:user, account: account) }
 
-  context 'users' do
-    before(:each) do
-      login_as @user
-    end
-
-    def type_name
-      'caller'
-    end
+# change to match 'html/json' format as in other ctrl specs
+  # context 'users' do
+  #   before(:each) do
+  #     login_as @user
+  #   end
 
     it "lists callers" do
       get :index
@@ -31,7 +28,7 @@ describe Client::CallersController, :type => :controller do
       campaign = create(:campaign, account: account)
 
       post :create, :caller => {:name => name, :is_phones_only => true, :campaign_id => campaign.id}
-      
+
       caller = Caller.find_by_name(name)
       expect(caller).not_to be_nil
       expect(caller.is_phones_only).to be_truthy
@@ -45,6 +42,7 @@ describe Client::CallersController, :type => :controller do
       expect(caller.is_phones_only).to be_falsey
     end
 
+# keep this one, most likely
     it 'should not create a caller whose campaign.account_id is different from the callers' do
       campaign_2 = create(:campaign)
       post :create, :caller => {:username => 'bob', :campaign_id => campaign_2.id}

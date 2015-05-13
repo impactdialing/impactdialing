@@ -11,34 +11,34 @@ module Client
     respond_to :html, :json
 
     def index
-      authorize :caller, :index?
+      authorize Caller, :index?
       @callers = account.callers.includes(:campaign).active.paginate(:page => params[:page])
       respond_with @callers
     end
 
     def new
-      authorize :caller, :new?
       @caller                = account.callers.new
       @caller.is_phones_only = params[:is_phones_only]
+      authorize @caller, :new?
       load_caller_groups
       respond_with @caller
     end
 
     def show
-      authorize :caller, :show?
+      authorize @caller, :show?
       respond_with @caller do |format|
         format.html {redirect_to edit_client_caller_path(@caller)}
       end
     end
 
     def edit
-      authorize :caller, :edit?
+      authorize @caller, :edit?
       load_caller_groups
       respond_with @caller
     end
 
     def update
-      authorize :caller, :update?
+      authorize @caller, :update?
       save_caller
       respond_with @caller, location: client_callers_path do |format|
         format.json {render :json => {message: 'Caller updated'}, status: :ok} if @caller.errors.empty?
@@ -46,14 +46,14 @@ module Client
     end
 
     def create
-      authorize :caller, :create?
       @caller = account.callers.new
+      authorize @caller, :create?
       save_caller
       respond_with @caller, location: client_callers_path
     end
 
     def destroy
-      authorize :caller, :destroy?
+      authorize @caller, :destroy?
       @caller.active = false
       @caller.save ? flash_message(:notice, "Caller archived") : flash_message(:error, @caller.errors.full_messages.join)
       respond_with @caller, location: client_callers_path do |format|
@@ -62,17 +62,17 @@ module Client
     end
 
     def reassign_to_campaign
-      authorize :caller, :reassign_to_campaign?
       caller = Caller.find_by_id(params[:id])
+      authorize caller, :reassign_to_campaign?
       caller.update_attributes(:campaign_id => params[:campaign_id])
       render :nothing => true
     end
 
     def usage
-      authorize :caller, :usage?
-      # authorize! :view_reports, @account
+      authorize! :view_reports, @account
       Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
         @caller = Caller.find(params[:id])
+        authorize @caller, :usage?
         campaigns = account.campaigns.for_caller(@caller)
         @campaigns_data = Account.connection.execute(campaigns.select([:name, 'campaigns.id']).uniq.to_sql).to_a
         @campaign = campaigns.find_by_id(params[:campaign_id])
@@ -82,8 +82,8 @@ module Client
     end
 
     def call_details
-      # authorize! :view_reports, @account
-      authorize :caller, :call_details?
+      authorize! :view_reports, @account
+      authorize @caller, :call_details?
       @caller = Caller.find(params[:id])
       campaigns = account.campaigns.for_caller(@caller)
       @campaigns_data = Account.connection.execute(campaigns.select([:name, 'campaigns.id']).uniq.to_sql).to_a
@@ -94,7 +94,7 @@ module Client
     end
 
     def archived
-      authorize :caller, :archived?
+      authorize Caller, :archived?
       @callers = Caller.archived.for_account(account).paginate(:page => params[:page], :order => 'id desc')
       respond_with @callers do |format|
         format.html{ render 'client/callers/archived' }

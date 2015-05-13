@@ -6,53 +6,53 @@ describe Client::CampaignsController, :type => :controller do
   let(:user) { create(:user, :account => account) }
 
   describe "html format" do
-    before(:each) do
-      login_as user
-    end
+    # before(:each) do
+    #   login_as user
+    # end
 
-    it "lists active campaigns" do
-      active_campaign = create(:preview, :account => account, :active => true)
-      inactive_campaign = create(:power, :account => account, :active => false)
-      get :index
-      expect(assigns(:campaigns)).to eq([active_campaign])
-    end
+    # it "lists active campaigns" do
+    #   active_campaign = create(:preview, :account => account, :active => true)
+    #   inactive_campaign = create(:power, :account => account, :active => false)
+    #   get :index
+    #   expect(assigns(:campaigns)).to eq([active_campaign])
+    # end
+    #
+    # describe 'show' do
+    #   let(:campaign) {create(:preview, :account => account)}
+    #
+    #   after(:each) do
+    #     expect(response).to be_ok
+    #   end
+    # end
 
-    describe 'show' do
-      let(:campaign) {create(:preview, :account => account)}
-
-      after(:each) do
-        expect(response).to be_ok
-      end
-    end
-
-    it "deletes campaigns" do
-      request.env['HTTP_REFERER'] = 'http://referer'
-      campaign = create(:preview, :account => account, :active => true)
-      delete :destroy, :id => campaign.id
-      expect(campaign.reload).not_to be_active
-      expect(response).to redirect_to 'http://test.host/client/campaigns'
-    end
-
-    it "restore campaigns" do
-      request.env['HTTP_REFERER'] = 'http://referer'
-      campaign = create(:preview, :account => account, :active => true)
-      put :restore, :id => campaign.id
-      expect(campaign.reload).to be_active
-      expect(response).to redirect_to 'http://test.host/client/campaigns'
-    end
-
-    it "creates a new campaign" do
-      script = create(:script, :account => account)
-      callers = 3.times.map{create(:caller, :account => account)}
-      expect {
-        post :create , :campaign => {name: "abc", caller_id:"1234567890", script_id: script.id,
-          type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}
-      }.to change {account.reload.campaigns.size} .by(1)
-      campaign = account.campaigns.last
-      expect(campaign.type).to eq('Preview')
-      expect(campaign.script).to eq(script)
-      expect(campaign.account.callers).to eq(callers)
-    end
+    # it "deletes campaigns" do
+    #   request.env['HTTP_REFERER'] = 'http://referer'
+    #   campaign = create(:preview, :account => account, :active => true)
+    #   delete :destroy, :id => campaign.id
+    #   expect(campaign.reload).not_to be_active
+    #   expect(response).to redirect_to 'http://test.host/client/campaigns'
+    # end
+    #
+    # it "restore campaigns" do
+    #   request.env['HTTP_REFERER'] = 'http://referer'
+    #   campaign = create(:preview, :account => account, :active => true)
+    #   put :restore, :id => campaign.id
+    #   expect(campaign.reload).to be_active
+    #   expect(response).to redirect_to 'http://test.host/client/campaigns'
+    # end
+    #
+    # it "creates a new campaign" do
+    #   script = create(:script, :account => account)
+    #   callers = 3.times.map{create(:caller, :account => account)}
+    #   expect {
+    #     post :create , :campaign => {name: "abc", caller_id:"1234567890", script_id: script.id,
+    #       type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}
+    #   }.to change {account.reload.campaigns.size} .by(1)
+    #   campaign = account.campaigns.last
+    #   expect(campaign.type).to eq('Preview')
+    #   expect(campaign.script).to eq(script)
+    #   expect(campaign.account.callers).to eq(callers)
+    # end
   end
 
   describe "api" do

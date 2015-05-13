@@ -1,31 +1,198 @@
 require 'rails_helper'
 
 describe Client::ScriptsController, :type => :controller do
-  let(:account) { create(:account) }
-  let(:user) { create(:user, :account => account) }
+  describe "html/json formats" do
 
-  describe "html" do
-    before(:each) do
-      login_as(user)
-      request.env['HTTP_REFERER'] = 'http://referer'
+    let(:question) { build(:question) }
+    let(:script) { create(:script) }
+    let(:json_params) { {:id => script.id, :format => :json} }
+    let(:html_params) { json_params.merge({:format => :html}) }
+    let(:current_template) { { data: {} }.to_json }
+
+    before do
+      allow(controller).to receive(:check_login) { true }
+      allow(controller).to receive(:check_tos_accepted) { true }
     end
 
-    it "lists voter fields to select" do
-      post :create, script: {name: "script1"}, voter_field: ["phone", "custom_id", "last_name", "first_name", "middle_name", "suffix", "email", "address", "city", "state", "zip_code", "country"]
-      expect(response).to redirect_to(client_scripts_url)
-      expect(Script.find_by_name("script1").voter_fields).to eq(Voter::UPLOAD_FIELDS.to_json)
+    context 'when user role is admin' do
+      let(:admin) { create(:user, {account: script.account}) }
+
+      before do
+        allow(controller).to receive(:current_user) { admin }
+      end
+
+      describe '#index' do
+        it 'allows admin access' do
+          get(:index, html_params)
+          expect(response).to render_template 'index'
+        end
+      end
+
+      describe '#show' do
+        it 'allows admin access' do
+          get(:show, html_params)
+          expect(response).to redirect_to edit_client_script_path
+        end
+      end
+
+      describe '#edit' do
+        it 'allows admin access' do
+          get(:edit, html_params)
+          expect(response).to render_template 'edit'
+        end
+      end
+
+      describe '#new' do
+        it 'allows admin access' do
+          get(:new, html_params)
+          expect(response).to render_template 'new'
+        end
+      end
+
+      describe '#create' do
+        let(:selected_voter_fields) { ["phone", "custom_id", "last_name", "first_name"] }
+        it 'shows the list of selected voter fields' do
+          post(:create, script: {name: "script1"}, voter_field: selected_voter_fields)
+          expect(Script.find_by_name("script1").voter_fields).to eq(selected_voter_fields.to_json)
+        end
+        it 'redirects to client scripts' do
+          post(:create, script: {name: "script1"}, voter_field: selected_voter_fields)
+          expect(response).to redirect_to client_scripts_path
+        end
+      end
+
+      describe '#update' do
+        it 'allows admin access' do
+          patch(:update, html_params.merge(script: {name: "script2"}))
+          expect(response).to redirect_to client_scripts_path
+        end
+        it 'updates the script' do
+          patch(:update, html_params.merge(script: {name: "script2"}))
+          expect(script.reload.name).to eq "script2"
+        end
+      end
+
+      describe '#destroy' do
+        it 'allows admin access' do
+          delete(:destroy, html_params)
+          expect(response).to redirect_to client_scripts_path
+        end
+      end
+
+      describe '#questions_answered' do
+        it 'allows admin access' do
+          get(:questions_answered, json_params)
+          expect(response.body).to eq current_template
+        end
+      end
+
+      describe '#possible_responses_answered' do
+        it 'allows admin access' do
+          get(:possible_responses_answered, json_params)
+          expect(response.body).to eq current_template
+        end
+      end
+
+      describe '#archived' do
+        it 'allows admin access' do
+          get(:archived, html_params)
+          expect(response).to render_template "archived"
+        end
+      end
+
+      describe '#restore' do
+        it 'allows admin access' do
+          patch(:restore, html_params)
+          expect(response.body).to redirect_to client_scripts_path
+        end
+      end
     end
 
-    it "shows the list of voter fields which were selected" do
-      script = create(:script, :account => account, :active => true)
-      selected_voter_fields = ["phone", "custom_id", "last_name", "first_name"]
-      post :create, script: {name: "script1"}, voter_field: selected_voter_fields
-      expect(response).to redirect_to(client_scripts_url)
-      expect(Script.find_by_name("script1").voter_fields).to eq(selected_voter_fields.to_json)
+    context 'when user role is supervisor' do
+      let(:supervisor){ create(:user, {role: 'supervisor', account: script.account}) }
+
+      before do
+        allow(controller).to receive(:current_user) { supervisor }
+      end
+
+      describe 'html params' do
+        after do
+          expect(response).to redirect_to root_url
+        end
+
+        describe '#index' do
+          it 'disallows supervisor access' do
+            get(:index, html_params)
+          end
+        end
+
+        describe '#show' do
+          it 'disallows supervisor access' do
+            get(:show, html_params)
+          end
+        end
+
+        describe '#edit' do
+          it 'disallows supervisor access' do
+            get(:edit, html_params)
+            expect(response).to redirect_to root_url
+          end
+        end
+
+        describe '#new' do
+          it 'disallows supervisor access' do
+            get(:new, html_params)
+            expect(response).to redirect_to root_url
+          end
+        end
+
+        describe '#create' do
+          let(:selected_voter_fields) { ["phone", "custom_id", "last_name", "first_name"] }
+          it 'disallows supervisor access' do
+            post(:create, script: {name: "script1"}, voter_field: selected_voter_fields)
+            expect(response).to redirect_to root_url
+          end
+        end
+
+        describe '#archived' do
+          it 'disallows supervisor access' do
+            patch(:archived, html_params)
+            expect(response).to redirect_to root_url
+          end
+        end
+
+        describe '#restore' do
+          it 'disallows supervisor access' do
+            patch(:restore, html_params)
+            expect(response).to redirect_to root_url
+          end
+        end
+      end
+
+      describe 'json params' do
+        after do
+          expect(response.body).to include I18n.t(:admin_access)
+        end
+        describe '#questions_answered' do
+          it 'disallows supervisor access' do
+            get(:questions_answered, json_params)
+          end
+        end
+
+        describe '#possible_responses_answered' do
+          it 'disallows supervisor access' do
+            get(:possible_responses_answered, json_params)
+          end
+        end
+      end
     end
   end
 
+
   describe "api" do
+    let(:account) { create(:account) }
+    let(:user) { create(:user, :account => account) }
+
     before(:each) do
       @user = create(:user, account_id: account.id)
     end
