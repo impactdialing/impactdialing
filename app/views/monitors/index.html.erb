@@ -4,7 +4,7 @@
 
 <% content_for :javascripts do %>
   <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js"></script>
-  <%= javascript_include_tag 'flash_detect_min.js' , 'browser_detect.js', "underscore-min", "mustache", 'backbone', 'impactdialing', "models/monitor_campaign.js", "models/monitor_caller.js", "collections/monitor_callers.js", "views/monitor_callers_index.js", "collections/monitor_campaigns.js","routers/monitors.js", "views/monitor_campaigns_index.js" %>
+  <%= javascript_include_tag "flash_detect_min.js", "browser_detect.js", "underscore-min", "mustache", "backbone", "impactdialing", "models/monitor_campaign.js", "models/monitor_caller.js", "collections/monitor_callers.js", "views/monitor_callers_index.js", "collections/monitor_campaigns.js","routers/monitors.js", "views/monitor_campaigns_index.js" %>
 
   <script type="text/javascript">
     $(function() {
@@ -21,14 +21,13 @@
         $(this).hide();
         return false;
       });
-
-  });
+    });
   </script>
 <% end %>
-<input id= "monitor_session_id" type="hidden" value="">
+
+<input id="monitor_session_id" type="hidden" value="">
 <h1>Dashboard</h1>
-<div data-intro="If any callers are making calls, the active campaigns will be listed here."
-     data-step="1">
+<div data-intro="If any callers are making calls, the active campaigns will be listed here." data-step="1">
   <h2>Active campaigns</h2>
   <table id="campaigns-monitor">
     <thead>
@@ -45,20 +44,17 @@
   </table>
 
   <script type="javascript/template" id="campaign-monitor-template">
-        <td style="width:150px">{{name}}</td>
-        <td>{{callers_logged_in}}</td>
-        <td>{{on_call}}</td>
-        <td>{{wrap_up}}</td>
-        <td>{{on_hold}}</td>
-        <td>{{ringing_lines}}</td>
-        <td>{{available}}</td>
+    <td style="width:150px">{{name}}</td>
+    <td>{{callers_logged_in}}</td>
+    <td>{{on_call}}</td>
+    <td>{{wrap_up}}</td>
+    <td>{{on_hold}}</td>
+    <td>{{ringing_lines}}</td>
+    <td>{{available}}</td>
   </script>
-
 </div>
 
-<div id="caller_table"
-     data-intro="If any callers are making calls, they will be listed here."
-     data-step="2">
+<div id="caller_table" data-intro="If any callers are making calls, they will be listed here." data-step="2">
   <h2>Active callers</h2>
   <table id="callers-monitor">
     <thead>
@@ -67,45 +63,37 @@
         <th>Campaign</th>
         <th>Status</th>
         <th>Time in status</th>
-        <th></th>
-        <th></th>
-        <th></th>
       </tr>
     </thead>
   </table>
 
-
   <script type="javascript/template" id="caller-monitor-template">
-        <td>{{name}}</td>
-        <td>
-          <select class="reassign-campaign" id="reassign_caller_{{id}}">
-           {{#reassignable_campaigns}}
-             <option value="{{id}}">{{name}}</option>
-           {{/reassignable_campaigns}}
-          </select>
-        </td>
-        <td>{{status}}</td>
-        <td>{{time_in_status}}</td>
-        <td>
-          <a class ="action secondary eaves_drop" href="#" data-action="eavesdrop">
-            Eavesdrop
-          </a>
-        </td>
-        <td>
-          <a class ="action secondary break_in" href="#" data-action="breakin">
-            Break in
-          </a>
-        </td>
-        <td>
-          <a class ="action secondary kick_off" href="#">
-            Kick off
-          </a>
-        </td>
-
+    <td>{{name}}</td>
+    <td>
+      <select class="reassign-campaign" id="reassign_caller_{{id}}">
+       {{#reassignable_campaigns}}
+         <option value="{{id}}">{{name}}</option>
+       {{/reassignable_campaigns}}
+      </select>
+    </td>
+    <td>{{status}}</td>
+    <td>{{time_in_status}}</td>
+    <td>
+      <a class ="action secondary eaves_drop" href="#" data-action="eavesdrop">
+        Eavesdrop
+      </a>
+    </td>
+    <td>
+      <a class ="action secondary break_in" href="#" data-action="breakin">
+        Break in
+      </a>
+    </td>
+    <td>
+      <a class ="action secondary kick_off" href="#">
+        Kick off
+      </a>
+    </td>
   </script>
-
-
-
 </div>
 
 <div id="status" style="float:right"></div>
@@ -114,14 +102,12 @@
   <p>
     Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.
   </p>
-  <p class="actions"
-     data-intro="You can choose whether to record calls here."
-     data-step="3">
+  <p class="actions" data-intro="You can choose whether to record calls here." data-step="3">
     <%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {
       :action => "toggle_call_recording",
-      :controller => "monitors"
-      },
-    {:class => 'action secondary'} %>
+      :controller => "monitors" },
+      {:class => 'action secondary'}
+    %>
   </p>
 <% end %>
 <p class="actions">

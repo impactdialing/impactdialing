@@ -44,36 +44,34 @@ describe PossibleResponse, :type => :model do
   end
 
   it "should return possible_response_text for all persisted questions in correct order" do
-     campaign = create(:campaign)
-     question1 = create(:question, :script => create(:script))
-     possible_response1 = create(:possible_response, question_id: question1.id, value: "Hey")
-     question2 = create(:question, :script => create(:script))
-     possible_response2 = create(:possible_response, question_id: question2.id, value: "Bye")
-     answer1 = create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response1, :question => question1)
-     answer2 = create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2)
-     possible_responses_data = {
-       possible_response1.id => "Hey",
-       possible_response2.id => "Bye"
-     }
-     expect(PossibleResponse.possible_response_text([question2.id, question1.id], [answer1, answer2], possible_responses_data)).to eq(["Bye", "Hey"])
-   end
+    campaign = create(:campaign)
+    question1 = create(:question, :script => create(:script))
+    possible_response1 = create(:possible_response, question_id: question1.id, value: "Hey")
+    question2 = create(:question, :script => create(:script))
+    possible_response2 = create(:possible_response, question_id: question2.id, value: "Bye")
+    answer1 = create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response1, :question => question1)
+    answer2 = create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2)
+    possible_responses_data = {
+     possible_response1.id => "Hey",
+     possible_response2.id => "Bye"
+    }
+    expect(PossibleResponse.possible_response_text([question2.id, question1.id], [answer1, answer2], possible_responses_data)).to eq(["Bye", "Hey"])
+  end
 
-   it "should return possible_response_text as blank for deleted responses" do
-       campaign = create(:campaign)
-       question1 = create(:question, :script => create(:script))
-       possible_response1 = create(:possible_response, question_id: question1.id, value: "Hey")
-       question2 = create(:question, :script => create(:script))
-       possible_response2 = create(:possible_response, question_id: question2.id, value: "Bye")
-       answer1 = create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response1, :question => question1)
-       answer2 = create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2)
-       possible_responses_data = {
-         possible_response1.id => "Hey",
-         possible_response2.id => "Bye"
-       }
-       expect(PossibleResponse.possible_response_text([question2.id, 3454 ,question1.id], [answer1, answer2], possible_responses_data)).to eq(["Bye", "", "Hey"])
-     end
-
-
+  it "should return possible_response_text as blank for deleted responses" do
+    campaign = create(:campaign)
+    question1 = create(:question, :script => create(:script))
+    possible_response1 = create(:possible_response, question_id: question1.id, value: "Hey")
+    question2 = create(:question, :script => create(:script))
+    possible_response2 = create(:possible_response, question_id: question2.id, value: "Bye")
+    answer1 = create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response1, :question => question1)
+    answer2 = create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2)
+    possible_responses_data = {
+     possible_response1.id => "Hey",
+     possible_response2.id => "Bye"
+    }
+    expect(PossibleResponse.possible_response_text([question2.id, 3454 ,question1.id], [answer1, answer2], possible_responses_data)).to eq(["Bye", "", "Hey"])
+  end
 end
 
 # ## Schema Information
