@@ -74,7 +74,7 @@ module ApplicationHelper
       end
       return rendered_message
     else
-      yield
+      yield.html_safe
     end
   end
 end
