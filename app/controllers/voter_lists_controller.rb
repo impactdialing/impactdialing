@@ -69,12 +69,7 @@ public
     upload = params[:upload].try(:[], "datafile")
     csv = upload.read
     separator = VoterList.separator_from_file_extension(upload.original_filename)
-    csv_file = CSV.new(csv, :col_sep => separator)
-    begin
-      @csv_validator = CsvValidator.new(csv_file)
-    rescue CSV::MalformedCSVError
-      @csv_error = I18n.t('activerecord.errors.models.csv.malformed')
-    end
+    @csv_validator = CsvValidator.new(csv, separator)
     render layout: false
   end
 
