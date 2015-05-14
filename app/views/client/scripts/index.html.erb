@@ -10,12 +10,16 @@
     <tr>
       <th>Name</th>
       <th>Date added</th>
+      <th width="90"></th>
       <th width="55"></th>
     </tr>
     <% @scripts.each do |s| %>
       <tr>
         <td><strong><%= link_to s.name, edit_client_script_path(s) %></strong></td>
         <td><%= s.created_at.strftime("%m/%d/%Y") %></td>
+
+        <td><%= link_to "Duplicate", new_client_script_path(script_id: s.id) %></td>
+
         <td><%= link_to '',
                 client_script_path(s),
                 :data => {

@@ -32,9 +32,9 @@ RSpec::Matchers.define :have_note do |note|
 end
 
 describe 'Save a copy of an existing Script under a new name', type: :feature, js: true do
-  def save_as(script)
-    visit edit_client_script_path(script)
-    click_on 'Save as'
+  def save_duplicate
+    visit client_scripts_path
+    click_on 'Duplicate'
   end
 
   let(:user){ create(:user) }
@@ -59,7 +59,7 @@ describe 'Save a copy of an existing Script under a new name', type: :feature, j
       script.update_attributes!({
         voter_fields: (system_fields + custom_fields.map(&:name)).to_json
       })
-      save_as(script)
+      save_duplicate
     end
 
     it 'preserves selected voter fields' do
@@ -76,7 +76,7 @@ describe 'Save a copy of an existing Script under a new name', type: :feature, j
     let!(:script_text){ create(:bare_script_text, script: script) }
 
     it 'copies ScriptText content' do
-      save_as(script)
+      save_duplicate
 
       expect(page).to have_script_text script_text
     end
@@ -86,7 +86,7 @@ describe 'Save a copy of an existing Script under a new name', type: :feature, j
     let!(:note){ create(:bare_note, script: script) }
 
     it 'copies Note fields' do
-      save_as(script)
+      save_duplicate
 
       expect(page).to have_note(note)
     end
@@ -97,7 +97,7 @@ describe 'Save a copy of an existing Script under a new name', type: :feature, j
     let!(:cold){ create(:bare_transfer, :cold, script: script) }
 
     it 'copies Transfers (warm & cold)' do
-      save_as(script)
+      save_duplicate
 
       within('fieldset.transfers_fields') do
         expect(page.find("input[type=\"text\"][name=\"script[transfers_attributes][0][label]\"]").value).to eq(warm.label)
@@ -113,7 +113,7 @@ describe 'Save a copy of an existing Script under a new name', type: :feature, j
     let!(:possible_response){ create(:bare_possible_response, question: question) }
 
     before do
-      save_as(script)
+      save_duplicate
     end
 
     it 'copies Questions' do
@@ -138,7 +138,7 @@ describe 'Save a copy of an existing Script under a new name', type: :feature, j
     let!(:possible_response_4){ create(:bare_possible_response, question: question_2, possible_response_order: 2) }
 
     before do
-      save_as(script)
+      save_duplicate
     end
 
     it 'is preserved for ScripTexts, Notes, Questions & PossibleResponses' do
