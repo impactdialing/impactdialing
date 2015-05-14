@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'benchmark'
+
 class VoterBatchImport
   attr_reader :list, :csv_to_system_map, :csv_headers, :voters_list, :result, :csv_phone_column_location,
               :csv_custom_id_column_location, :custom_attributes, :blocked_numbers, :campaign
