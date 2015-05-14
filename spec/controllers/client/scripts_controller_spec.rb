@@ -147,9 +147,8 @@ describe Client::ScriptsController, :type => :controller do
         end
 
         describe '#create' do
-          let(:selected_voter_fields) { ["phone", "custom_id", "last_name", "first_name"] }
           it 'disallows supervisor access' do
-            post(:create, script: {name: "script1"}, voter_field: selected_voter_fields)
+            post(:create, script: {name: "script1"})
             expect(response).to redirect_to root_url
           end
         end
@@ -173,6 +172,7 @@ describe Client::ScriptsController, :type => :controller do
         after do
           expect(response.body).to include I18n.t(:admin_access)
         end
+
         describe '#questions_answered' do
           it 'disallows supervisor access' do
             get(:questions_answered, json_params)
@@ -187,7 +187,6 @@ describe Client::ScriptsController, :type => :controller do
       end
     end
   end
-
 
   describe "api" do
     let(:account) { create(:account) }
@@ -218,7 +217,6 @@ describe Client::ScriptsController, :type => :controller do
         active_script = create(:script, :account => account, :active => true)
         script_text = create(:script_text, script_order: 1, script: active_script)
         get :show, id: active_script.id, :api_key=> account.api_key, :format => "json"
-
         expect(response.body).to eq(active_script.reload.to_json)
       end
     end
@@ -242,7 +240,6 @@ describe Client::ScriptsController, :type => :controller do
       it "should not delete a script from another account" do
         another_account = create(:account, :activated => true, api_key: "123abc")
         another_user = create(:user, account_id: another_account.id)
-
         active_script = create(:script, :account => account, :active => true)
         delete :destroy, :id=> active_script.id, :api_key=> another_account.api_key, :format => "json"
         expect(response.body).to eq("{\"message\":\"Cannot access script.\"}")
