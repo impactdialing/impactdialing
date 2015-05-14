@@ -71,29 +71,59 @@ class VoterBatchImport
   end
 
   def create_or_update_households(rows)
-    phones              = rows.map{ |row| PhoneNumber.new(row[csv_phone_column_location]) }
-    numbers             = phones.map(&:to_s)
-    household_query     = Household.where(campaign_id: campaign.id, phone: numbers).select([:phone, :id])
-    households          = load_as_hash(household_query)
-    new_numbers         = numbers - households.keys
-    new_households      = new_numbers.map{|n| build_household(n)}.compact
-    existing_households = households.map{|phone, id| update_household(id, phone, campaign) }
+    source = 'voter_batch_import.create_or_update_households'
+    benchmark = ImpactPlatform::Metrics::Benchmark.new(source)
+
+    phones = nil
+    numbers = nil
+    benchmark.time('prepare_phone_numbers') do
+      phones              = rows.map{ |row| PhoneNumber.new(row[csv_phone_column_location]) }
+      numbers             = phones.map(&:to_s)
+    end
+
+    households = nil
+    benchmark.time('load_households.initial') do
+      household_query     = Household.where(campaign_id: campaign.id, phone: numbers).select([:phone, :id])
+      households          = load_as_hash(household_query)
+    end
+
+    new_households = nil
+    new_numbers = nil
+    benchmark.time('build_households') do
+      new_numbers         = numbers - households.keys
+      new_households      = new_numbers.map{|n| build_household(n)}.compact
+    end
+
+    existing_households = nil
+    benchmark.time('update_households') do    
+      existing_households = households.map{|phone, id| update_household(id, phone, campaign) }
+    end
+
     created_households  = {}
 
     if new_households.any?
-      import_from_hashes(Household, new_households)
+      benchmark.time('import_households.new') do
+        import_from_hashes(Household, new_households)
+      end
 
-      created_households = load_as_hash(Household.where(campaign_id: campaign.id, phone: new_numbers).select([:phone, :id]))
+      benchmark.time('load_households.created') do
+        created_households = load_as_hash(Household.where(campaign_id: campaign.id, phone: new_numbers).select([:phone, :id]))
+      end
     end
 
     if existing_households.any?
-      import_from_hashes(Household, existing_households)
+      benchmark.time('import_households.existing') do
+        import_from_hashes(Household, existing_households)
+      end
     end
 
     households.merge(created_households)
   end
 
   def import_csv
+    source = 'voter_batch_import.import_csv'
+    benchmark = ImpactPlatform::Metrics::Benchmark.new(source)
+
     households_count = 0
     household_ids    = []
     @voters_list.each_slice((ENV['VOTER_BATCH_SIZE'] || 1000).to_i).each do |voter_info_list|
@@ -107,6 +137,7 @@ class VoterBatchImport
       
       households_count += households.keys.size
 
+    benchmark.time('prepare_voters') do
       voter_info_list.each do |voter_info|
         raw_phone_number = voter_info[@csv_phone_column_location]
         phone_number     = PhoneNumber.sanitize(raw_phone_number)
@@ -164,10 +195,14 @@ class VoterBatchImport
         leads << lead
         successful_voters << voter_info
       end
+    end
 
+    created_voter_ids = nil
+    benchmark.time('import_voters') do
       created_voter_ids = created_ids(@list.voters.reorder(:id)) do
         import_from_hashes(Voter, leads)
       end
+    end
 
       household_ids += households.values.sort
       household_ids.uniq!
@@ -175,7 +210,9 @@ class VoterBatchImport
       voter_ids_for_cache = created_voter_ids.dup
 
       # persist custom field data
+    benchmark.time('import_voter_fields') do
       save_field_values(successful_voters, created_voter_ids, updated_leads)
+    end
 
       Resque.enqueue(CallFlow::DialQueue::Jobs::CacheVoters, campaign.id, voter_ids_for_cache, 1)
       if (existing_voter_ids = leads.map{|l| l[:id]}.compact).any?
