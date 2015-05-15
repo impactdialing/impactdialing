@@ -96,7 +96,7 @@ class VoterBatchImport
   def import_csv
     households_count = 0
     household_ids    = []
-    @voters_list.each_slice(1000).each do |voter_info_list|
+    @voters_list.each_slice((ENV['VOTER_BATCH_SIZE'] || 1000).to_i).each do |voter_info_list|
       custom_fields     = []
       leads             = []
       updated_leads     = {}
