@@ -30,4 +30,10 @@ module AdminHelper
     end
     link_to text, "/admin/toggle_access/#{account.id}", method: :put
   end
+
+  def admin_toggle_abandonment_link(account)
+    text = 'Set Abandonment to '
+    text += account.variable_abandonment? ? 'Fixed' : 'Variable'
+    link_to text, "/admin/abandonment/#{account.id}", method: :put
+  end
 end

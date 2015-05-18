@@ -70,7 +70,7 @@ public
 
   def abandonment
     account = Account.find(params[:id])
-    if account.abandonment == "variable"
+    if account.variable_abandonment?
       account.update_attributes(abandonment: "fixed")
     else
       account.update_attributes(abandonment: "variable")

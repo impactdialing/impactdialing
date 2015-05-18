@@ -203,6 +203,44 @@ describe 'Internal Admin pages', type: :feature, admin: true do
       end
     end
 
+    describe 'Toggle Abandonment between Fixed & Variable for an account' do
+      let(:set_variable_text){ 'Set Abandonment to Variable' }
+      let(:set_fixed_text){ 'Set Abandonment to Fixed' }
+      let(:account){ User.last.account }
+
+      it 'click "Set Abandonment to Variable"' do
+        within(main_table_css) do
+          within(last_row) do
+            click_on set_variable_text
+          end
+        end
+
+        within(main_table_css) do
+          within(last_row) do
+            expect(page).to have_content 'Set Abandonment to Fixed'
+          end
+        end
+      end
+
+      it 'click "Set Abandonment to Fixed' do
+        account.update_attributes!({abandonment: 'variable'})
+
+        visit '/admin/users'
+
+        within(main_table_css) do
+          within(last_row) do
+            click_on set_fixed_text
+          end
+        end
+
+        within(main_table_css) do
+          within(last_row) do
+            expect(page).to have_content 'Set Abandonment to Variable'
+          end
+        end
+      end
+    end
+
     describe 'admin/state' do
       let(:main_table_css){ 'table tr td:first-of-type table' }
       before do

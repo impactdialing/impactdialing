@@ -370,9 +370,9 @@ ImpactDialing::Application.routes.draw do
   get 'admin/users', :to => 'admin#users'
   get 'admin/status', :to => 'admin#state'
   get 'admin/state', :to => 'admin#state'
-  get 'admin/abandonment', :to => 'admin#abandonment'
   get 'admin/caller_sessions/:id', :to => 'admin#caller_sessions', :as => :admin_caller_sessions
   post 'admin/twilio_limit', :to => 'admin#twilio_limit'
+  put 'admin/abandonment/:id', :to => 'admin#abandonment'
   put 'admin/toggle_enterprise_trial/:id', :to => 'admin#toggle_enterprise_trial'
   put 'admin/toggle_calling/:id', :to => 'admin#toggle_calling'
   put 'admin/toggle_access/:id', :to => 'admin#toggle_access'
