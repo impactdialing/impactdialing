@@ -216,6 +216,16 @@ public
   def persist_answers(questions, call_attempt)
     return if questions.nil?
 
+    if campaign.nil?
+      self.campaign = call_attempt.campaign
+      Rails.logger.error("AR-IMPORT RECOVERY: Voter[#{id}] Campaign[#{campaign.id}]")
+    end
+
+    if account.nil?
+      self.account = campaign.account
+      Rails.logger.error("AR-IMPORT RECOVERY: Voter[#{id}] Account[#{account.id}]")
+    end
+
     question_answers   = JSON.parse(questions)
     possible_responses = []
     question_answers.try(:each_pair) do |question_id, answer_id|
@@ -248,6 +258,17 @@ public
 
   def persist_notes(notes_json, call_attempt)
     return if notes_json.nil?
+
+    if campaign.nil?
+      self.campaign = call_attempt.campaign
+      Rails.logger.error("AR-IMPORT RECOVERY: Voter[#{id}] Campaign[#{campaign.id}]")
+    end
+
+    if account.nil?
+      self.account = campaign.account
+      Rails.logger.error("AR-IMPORT RECOVERY: Voter[#{id}] Account[#{account.id}]")
+    end
+
     notes = JSON.parse(notes_json)
     notes.try(:each_pair) do |note_id, note_res|
       note = Note.find(note_id)
