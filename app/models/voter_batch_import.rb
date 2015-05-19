@@ -163,6 +163,8 @@ class VoterBatchImport
               id: lead_id,
               voter_list_id: @list.id,
               household_id: households[phone_number],
+              account_id: @list.account_id,
+              campaign_id: @list.campaign_id,
               enabled: Voter.bitmask_for_enabled(:list)
             }
             updated_leads[custom_id] = lead
