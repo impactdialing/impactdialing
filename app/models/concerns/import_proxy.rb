@@ -36,6 +36,32 @@ private
 
 public
   def import_hashes(hashes, options={})
+    if ENV['UPSERT_GEM_ON'].to_i > 0
+      import_hashes_upsert(hashes, options)
+    else
+      import_hashes_activerecord_import(hashes, options)
+    end
+  end
+
+  def import_hashes_activerecord_import(hashes, options={})
+    return if hashes.empty?
+
+    unless options.keys.include?(:validate)
+      options[:validate] = true
+    end
+
+    unless options.keys.include?(:columns_to_update)
+      options[:columns_to_update] = hashes.first.keys.map(&:to_sym) - [:id]
+    else
+      options[:columns_to_update] = [*options[:columns_to_update]]
+    end
+
+    options[:on_duplicate_key_update] = options.delete(:columns_to_update)
+
+    self.import hashes.map{|h| self.new(h)}, options
+  end
+
+  def import_hashes_upsert(hashes, options={})
     return if hashes.empty?
 
     unless options.keys.include?(:validate)

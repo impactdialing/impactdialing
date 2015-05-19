@@ -130,7 +130,7 @@ describe 'VoterListUploadJob' do
       end
 
       it 'tells the VoterList*Strategy instance to respond with the error message(s)' do
-        expect(web_response_strategy).to receive(:response).with({'errors' => [I18n.t('activerecord.errors.models.voter_list.data_too_long')], 'success' => []}, responder_opts)
+        expect(web_response_strategy).to receive(:response).with({'errors' => [I18n.t('activerecord.errors.models.voter_list.general_error')], 'success' => []}, responder_opts)
         VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
       end
 

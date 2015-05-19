@@ -24,6 +24,7 @@ gem 'bugsnag'
 
 # ActiveRecord extensions
 gem 'upsert'
+gem 'activerecord-import'
 gem 'ar-octopus'
 gem 'bitmask_attributes'
 gem 'will_paginate'

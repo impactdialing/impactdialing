@@ -108,11 +108,12 @@ class VoterListUploadJob
       rescue ActiveRecord::StatementInvalid, Mysql2::Error => exception
         Rails.logger.error "VoterListUploadJob Failed. Destroying Voters & VoterList. Campaign[#{voter_list.campaign_id}] Error: #{exception.message}"
 
-        error_msg = if exception.class == Mysql2::Error and exception.message =~ /\AData too long for column.*/
-                      I18n.t('activerecord.errors.models.voter_list.data_too_long')
-                    else
-                      I18n.t('activerecord.errors.models.voter_list.general_error')
-                    end
+        # error_msg = if exception.class == Mysql2::Error and exception.message =~ /\AData too long for column.*/
+        #               I18n.t('activerecord.errors.models.voter_list.data_too_long')
+        #             else
+        #               I18n.t('activerecord.errors.models.voter_list.general_error')
+        #             end
+        error_msg = I18n.t('activerecord.errors.models.voter_list.general_error')
 
         handle_errors(responder, error_msg, domain, email, voter_list)
         voter_list.voters.destroy_all
