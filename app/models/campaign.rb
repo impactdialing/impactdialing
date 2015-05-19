@@ -273,7 +273,7 @@ public
   def set_caller_id_error_msg
     if errors[:caller_id].any?
       errors[:caller_id].clear
-      errors.add(:base, 'Caller ID must be a 10-digit North American phone number or begin with "+" and the country code')
+      errors.add(:base, I18n.t('activerecord.errors.models.campaign.caller_id_format'))
     end
   end
 

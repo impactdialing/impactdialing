@@ -25,7 +25,6 @@ module Client
       respond_with @campaign
     end
 
-
     def show
       authorize @campaign, :show?
       respond_with @campaign do |format|
@@ -47,7 +46,6 @@ module Client
       respond_with @campaign, location: client_campaigns_path
     end
 
-
     def update
       authorize @campaign, :update?
       save_campaign
@@ -67,7 +65,7 @@ module Client
 
     def archived
       authorize Campaign, :archived?
-      @campaigns = Campaign.deleted.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc')
+      @campaigns = Campaign.deleted.for_account(account).paginate(:page => params[:page], :order => 'id desc')
       @download_report_count = DownloadedReport.accounts_active_report_count(@campaigns.collect{|c| c.id}, session[:internal_admin])
       respond_with @campaigns do |format|
         format.html { render :archived }
@@ -98,7 +96,6 @@ module Client
       end
     end
 
-
     private
 
     def load_and_verify_campaign
@@ -113,7 +110,6 @@ module Client
         return
       end
     end
-
 
     def load_scripts
       @scripts = account.scripts.active
