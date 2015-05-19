@@ -135,6 +135,16 @@ public
   end
 
   def dispositioned(call_attempt)
+    if campaign.nil?
+      self.campaign = call_attempt.campaign
+      Rails.logger.error("AR-IMPORT RECOVERY: Voter[#{id}] Campaign[#{campaign.id}]")
+    end
+
+    if account.nil?
+      self.account = campaign.account
+      Rails.logger.error("AR-IMPORT RECOVERY: Voter[#{id}] Account[#{account.id}]")
+    end
+
     dial_queue             = CallFlow::DialQueue.new(campaign)
     self.status            = CallAttempt::Status::SUCCESS
     self.caller_id         = call_attempt.caller_id || caller_session.try(:caller).try(:id)
