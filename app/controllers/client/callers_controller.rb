@@ -66,8 +66,10 @@ module Client
         campaigns = account.campaigns.for_caller(@caller)
         @campaigns_data = Account.connection.execute(campaigns.select([:name, 'campaigns.id']).uniq.to_sql).to_a
         @campaign = campaigns.find_by_id(params[:campaign_id])
-        @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
-        @caller_usage = CallerUsage.new(@caller, @campaign, @from_date, @to_date)
+        from_date_pool = build_date_pool(:from_date, [@caller])
+        to_date_pool = build_date_pool(:to_date)
+        @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.try(:time_zone))
+        @caller_usage = CallerUsage.new(@caller, @campaign, @date_range.from, @date_range.to)
       end
     end
 

@@ -1,0 +1,21 @@
+<p>The billable table shows how much time you are being billed for. Each call is rounded to the nearest minute. If your callers dial in, instead of using a microphone on their computer, that time is billed.</p>
+
+<table id="billable_time">
+  <tr>
+    <th>Billable time</th>
+    <th>Minutes</th>
+  </tr>
+  <tr>
+    <td>Caller</td>
+    <td><%= usage.caller_time %></td>
+  </tr>
+  <tr>
+    <td>Leads</td>
+    <td><%= usage.lead_time %></td>
+  </tr>
+  <tr>
+    <td>Total</td>
+    <td><%= usage.total_time %></td>
+  </tr>
+
+</table>

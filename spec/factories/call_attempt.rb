@@ -32,8 +32,10 @@ FactoryGirl.define do
     trait :completed do
       status 'Call completed with success.'
       tStatus 'completed'
-      tDuration { Forgery(:basic).number(at_least: 30, at_most: 180) }
+      tDuration { 30 }
+      tEndTime { Time.now }
       call_end { Time.now }
+      wrapup_time { 2.minutes.from_now }
     end
 
     trait :voicemail_delivered do

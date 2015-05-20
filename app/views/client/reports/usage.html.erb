@@ -4,9 +4,9 @@
 
   <%= render :partial => 'shared/utilization', :locals => {:report => @campaign, :usage=> @campaign_usage} %>
 
-  <%= render :partial => 'billable', :locals => {:usage=> @campaign_usage} %>
+  <%= render :partial => 'shared/billable', :locals => {:usage=> @campaign_usage} %>
 
-  <%= render('selective_date_range_picker', {
+  <%= render('shared/selective_date_range_picker', {
     datepicker_path: usage_client_reports_path,
     campaign_id: @campaign.try(:id),
     campaign: @campaign,

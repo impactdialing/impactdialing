@@ -27,7 +27,23 @@ class ApplicationController < ActionController::Base
     redirect_to :back
   end
 
+  rescue_from Report::SelectiveDateRange::InvalidDateFormat, with: :rescue_invalid_date
+
 private
+  def rescue_invalid_date(exception)
+    flash[:error] = [exception.message]
+    redirect_to :back
+  end
+
+  def build_date_pool(param_name, record_pool=[])
+    date_pool = []
+    date_pool << params[param_name]
+    record_pool.each do |record|
+      next if record.nil?
+      date_pool << record.created_at
+    end
+    date_pool
+  end
 
   def generate_session_key
     secure_digest(Time.now, (1..10).map{ rand.to_s })
