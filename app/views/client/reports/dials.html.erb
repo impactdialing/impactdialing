@@ -14,7 +14,7 @@
 
   <%= @report.html_safe %>
 
-  <%= render('selective_date_range_picker', {
+  <%= render('shared/selective_date_range_picker', {
     datepicker_path: dials_client_reports_path,
     campaign_id: @campaign.try(:id),
     hidden: [['dials_view', params[:dials_view]]],

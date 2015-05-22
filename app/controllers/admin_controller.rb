@@ -9,24 +9,6 @@ class AdminController < ApplicationController
     redirect_to :back
   end
 
-  rescue_from Report::SelectiveDateRange::InvalidDateFormat, with: :rescue_invalid_date
-
-private
-  def rescue_invalid_date(exception)
-    flash[:error] = [exception.message]
-    redirect_to :back
-  end
-
-  def build_date_pool(param_name, record_pool=[])
-    date_pool = []
-    date_pool << params[param_name]
-    record_pool.each do |record|
-      next if record.nil?
-      date_pool << record
-    end
-    date_pool
-  end
-
 public
 
   def state

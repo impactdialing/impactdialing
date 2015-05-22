@@ -9,14 +9,7 @@ module Client
     around_filter :select_shard
     respond_to :html, :json
 
-    rescue_from Report::SelectiveDateRange::InvalidDateFormat, with: :rescue_invalid_date
-
   private
-    def rescue_invalid_date(exception)
-      flash[:error] = [exception.message]
-      redirect_to :back
-    end
-
     def report_response_strategy
       unless session[:internal_admin]
         return params[:strategy]
@@ -37,16 +30,6 @@ module Client
         notice << missing.to_sentence
         redirect_to client_root_path, notice: [notice]
       end
-    end
-
-    def build_date_pool(param_name, record_pool=[])
-      date_pool = []
-      date_pool << params[param_name]
-      record_pool.each do |record|
-        next if record.nil?
-        date_pool << record.created_at
-      end
-      date_pool
     end
 
   public
@@ -136,7 +119,7 @@ module Client
     def answer
       authorize! :view_reports, @account
       load_campaign
-      
+
       from_date_pool = build_date_pool(:from_date, [@campaign])
       to_date_pool   = build_date_pool(:to_date)
       @date_range    = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
