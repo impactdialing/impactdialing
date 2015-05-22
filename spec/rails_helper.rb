@@ -29,7 +29,6 @@ Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |f| require f }
 # Checks for pending migrations before tests are run.
 # If you are not using ActiveRecord, you can remove this line.
 ActiveRecord::Migration.check_pending! if defined?(ActiveRecord::Migration)
-Spring.watch 'spec/factories.rb','spec/factories/*.rb'
 
 VCR.configure do |c|
   # c.debug_logger = File.open(Rails.root.join('log', 'vcr-debug.log'), 'w')
