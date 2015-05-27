@@ -39,6 +39,11 @@ private
         number: :abandoned_count
       },
       {
+        status: '» FCC Abandonment Rate',
+        number: :fcc_abandon_rate,
+        hide_dials: true
+      },
+      {
         status: 'Total',
         number: :total_count,
         hide_percent: true
@@ -56,7 +61,6 @@ private
 
   def dials_perc(dials)
     return '0%' if total.zero?
-    
     dials ||= 0
     quo = dials / total.to_f
     "#{(quo * 100).round}%"
@@ -73,8 +77,14 @@ public
   def make
     table = Table(headers) do |feeder|
       rows.each do |tpl|
-        dials                                 = @stats.send(tpl[:number])
-        feeder.transform{|row| row['Dials']   = dials}
+        dials = @stats.send(tpl[:number])
+        feeder.transform do |row|
+          if tpl[:hide_dials]
+            row['Dials'] = ''
+          else
+            row['Dials'] = dials
+          end
+        end
         feeder.transform do |row|
           if tpl[:percent]
             row['Percent'] = @stats.send(tpl[:percent])
@@ -84,7 +94,6 @@ public
             row['Percent'] = dials_perc(dials)
           end
         end
-
         feeder << {'Status' => tpl[:status]}
       end
     end

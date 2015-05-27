@@ -108,6 +108,17 @@ class CallStats::ByStatus
     with_status_in_range_count(CallAttempt::Status::RINGING)
   end
 
+  def fcc_abandon_rate
+    abandoned = abandoned_count
+    answered = answered_count
+    if ((abandoned+answered) === 0)
+      return 0
+    else
+      fcc_rate = (abandoned/(abandoned+answered).to_f)
+    end
+    return fcc_rate
+  end
+
   def total_count(&block)
     return @total_count if defined?(@total_count)
 

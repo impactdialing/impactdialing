@@ -3,7 +3,7 @@ require 'rails_helper'
 feature 'Dials report' do
   include FakeCallData
 
-  before(:all) do
+  before do
     @admin    = create(:user)
     @account  = @admin.account
     @campaign = create_campaign_with_script(:bare_preview, @account).last
@@ -14,7 +14,7 @@ feature 'Dials report' do
   let(:account){ @account }
   let(:campaign){ @campaign }
 
-  scenario 'When no dials have been made' do
+  describe 'When no dials have been made' do
     before do
       web_login_as(admin)
     end
