@@ -40,7 +40,7 @@ private
       },
       {
         status: '» FCC Abandonment Rate',
-        number: :fcc_abandon_rate,
+        percent: :fcc_abandon_rate,
         hide_dials: true
       },
       {

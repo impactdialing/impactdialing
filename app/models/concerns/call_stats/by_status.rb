@@ -109,7 +109,7 @@ class CallStats::ByStatus
   end
 
   def fcc_abandon_rate
-    FccCompliance.abandon_rate(answered_count, abandoned_count)
+    FccCompliance.abandon_rate_percent(answered_count, abandoned_count)
   end
 
   def total_count(&block)
