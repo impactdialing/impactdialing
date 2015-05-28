@@ -164,7 +164,6 @@ describe Predictive do
 
         campaign.number_presented(3)
         2.times{ campaign.number_ringing }
-
         # 3 available callers * 3 best dials - 2 ringing lines - 1 presented line
         expect(campaign.numbers_to_dial_count).to eq((3 * 3) - 2 - 1)
       end
