@@ -66,6 +66,29 @@ private
     "#{(quo * 100).round}%"
   end
 
+  def display_result_or_blank(method_name)
+    if method_name.present?
+      @stats.send(method_name)
+    else
+      ''
+    end
+  end
+
+  def display_percent_or_blank(n)
+    if n.present?
+      dials_perc(n)
+    else
+      ''
+    end
+  end
+
+  def display_result_or_percent_or_blank(method_name, n)
+    [
+      display_result_or_blank(method_name),
+      display_percent_or_blank(n)
+    ].reject(&:blank?).first
+  end
+
 public
   def initialize(options={})
     @campaign  = options[:campaign]
@@ -77,22 +100,15 @@ public
   def make
     table = Table(headers) do |feeder|
       rows.each do |tpl|
-        dials = @stats.send(tpl[:number])
+        dials   = display_result_or_blank(tpl[:number])
+        percent = display_result_or_percent_or_blank(tpl[:percent], dials)
+
         feeder.transform do |row|
-          if tpl[:hide_dials]
-            row['Dials'] = ''
-          else
-            row['Dials'] = dials
-          end
+          row['Dials'] = dials
         end
+
         feeder.transform do |row|
-          if tpl[:percent]
-            row['Percent'] = @stats.send(tpl[:percent])
-          elsif tpl[:hide_percent]
-            row['Percent'] = ''
-          else
-            row['Percent'] = dials_perc(dials)
-          end
+          row['Percent'] = percent
         end
         feeder << {'Status' => tpl[:status]}
       end
