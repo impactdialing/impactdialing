@@ -1,5 +1,12 @@
 require Rails.root.join("lib/twilio_lib")
 
+##
+# attributes:
+# - connecttime: record the time that the dialed party line was first served TwiML; call could be abandoned or success
+# - call_end: record the time that the /call_end endpoint was requested by Twilio; this is an asynchronous request made after the dialed party disconnects
+# - wrapup_time: record the time that the caller submitted disposition results
+# - 
+#
 class CallAttempt < ActiveRecord::Base
   extend ImportProxy
   include Rails.application.routes.url_helpers
