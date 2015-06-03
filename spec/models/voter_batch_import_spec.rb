@@ -86,10 +86,13 @@ describe 'VoterBatchImport' do
         expect(voter_list.reload.households_count).to eq Household.count
       end
       it 'queues CallFlow::DialQueue::Jobs::CacheVoters with created voter ids' do
-        expect(Resque.peek(:dial_queue, 0, 100)).to include({
-          'class' => 'CallFlow::DialQueue::Jobs::CacheVoters',
-          'args' => [campaign.id, Voter.all.map(&:id), 1]
-        })
+        batch_size = ENV['VOTER_BATCH_SIZE'].present? ? ENV['VOTER_BATCH_SIZE'].to_i : 1000
+        Voter.all.map(&:id).each_slice(batch_size).each do |ids|
+          expect(Resque.peek(:dial_queue, 0, 100)).to include({
+            'class' => 'CallFlow::DialQueue::Jobs::CacheVoters',
+            'args' => [campaign.id, ids.map(&:to_i), 1]
+          })
+        end
       end
       it 'queues CallFlow::Jobs::PruneHouseholds 100 households at a time' do
         campaign.household_ids.each_slice(100) do |ids|

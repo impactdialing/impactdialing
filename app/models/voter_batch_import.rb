@@ -124,7 +124,6 @@ class VoterBatchImport
     source = 'voter_batch_import.import_csv'
     benchmark = ImpactPlatform::Metrics::Benchmark.new(source)
 
-    households_count = 0
     household_ids    = []
     @voters_list.each_slice((ENV['VOTER_BATCH_SIZE'] || 1000).to_i).each do |voter_info_list|
       custom_fields     = []
@@ -134,8 +133,6 @@ class VoterBatchImport
 
       households  = create_or_update_households(voter_info_list)
       found_leads = found_voters(voter_info_list) if custom_id_present?
-      
-      households_count += households.keys.size
 
     benchmark.time('prepare_voters') do
       voter_info_list.each do |voter_info|
@@ -226,7 +223,7 @@ class VoterBatchImport
       Resque.enqueue(CallFlow::Jobs::PruneHouseholds, @list.campaign_id, *ids)
     end
 
-    @list.update_column(:households_count, households_count)
+    @list.update_column(:households_count, @list.voters.select('DISTINCT household_id').count)
 
     @result
   end
