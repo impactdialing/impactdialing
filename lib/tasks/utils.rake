@@ -13,54 +13,8 @@
 # end
 # print out
 
-desc "Create Households w/ relevant Voter data & update relevant Voter#household_id & CallAttempt#household_id"
-task :migrate_householding => :environment do
-  priority_account_ids = [
-    1277, 1165, 1153, 1278, 781, 978, 1159, 1297, 850,
-    1286, 1173, 399, 298, 1294, 121, 224, 244, 268, 487,
-    525, 558, 598, 875, 1283, 94, 159, 1264, 899, 34
-  ]
-
-  VoterList.where('account_id NOT IN (?)', priority_account_ids).order('created_at desc').includes(:campaign).find_in_batches(batch_size: 100) do |voter_lists|
-    print 'b'
-    voter_lists.each do |voter_list|
-      voter_list.voters.where('household_id IS NULL AND phone IS NOT NULL').find_in_batches(batch_size: 1000) do |voters|
-        lower_voter_id = voters.first.id
-        upper_voter_id = voters.last.id
-        Resque.enqueue(Householding::Migrate, voter_list.account_id, voter_list.campaign_id, lower_voter_id, upper_voter_id)
-        print 'q'
-      end
-    end
-    print "\n"
-  end
-end
-
-desc "Migrate priority accounts to Householding"
-task :migrate_householding_priority => :environment do
-  account_ids = [
-    1277, 1165, 1153, 1278, 781, 978, 1159, 1297, 850,
-    1286, 1173, 399, 298, 1294, 121, 224, 244, 268, 487,
-    525, 558, 598, 875, 1283, 94, 159, 1264, 899, 34
-  ]
-
-  account_ids.each do |account_id|
-    VoterList.where(account_id: account_id).includes(:campaign).find_in_batches(batch_size: 100) do |voter_lists|
-      print 'b'
-      voter_lists.each do |voter_list|
-        voter_list.voters.where('household_id IS NULL AND phone IS NOT NULL').find_in_batches(batch_size: 1000) do |voters|
-          lower_voter_id = voters.first.id
-          upper_voter_id = voters.last.id
-          Resque.enqueue(Householding::Migrate, voter_list.account_id, voter_list.campaign_id, lower_voter_id, upper_voter_id)
-          print 'q'
-        end
-      end
-      print "\n"
-    end
-  end
-end
-
-desc "Update Householding related counter caches"
-task :update_householding_counter_cache => :environment do
+desc "Update VoterList Household Counter Caches [not the default rails-way]"
+task :update_list_household_counts => :environment do
   quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
   subscription_account_ids = Billing::Subscription.where(
     'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
@@ -68,18 +22,37 @@ task :update_householding_counter_cache => :environment do
     ['basic', 'pro', 'business'],
     'active'
   ).pluck(:account_id)
+
   account_ids = (quota_account_ids + subscription_account_ids).uniq
-  Campaign.where(account_id: account_ids).where('created_at > ?', 6.months.ago.beginning_of_month).find_in_batches(batch_size: 100) do |campaigns|
-    campaigns.each do |campaign|
-      p "Resetting Campaign[#{campaign.id}].households_count"
-      Resque.enqueue(Householding::ResetCounterCache, 'campaign', campaign.id)
-      campaign.households.find_in_batches(batch_size: 500) do |households|
-        print '.'
-        Resque.enqueue(Householding::ResetCounterCache, 'households', campaign.id, households.first.id, households.last.id)
+  failed      = []
+  updated     = 0
+  skipped     = 0
+  VoterList.where(account_id: account_ids).find_in_batches(batch_size: 100) do |lists|
+    lists.each do |list|
+      current_count         = list.households_count
+      households_count      = list.voters.select('DISTINCT household_id').count
+      list.households_count = households_count
+
+      if current_count != households_count
+        if list.save
+          print '.'
+          updated += 1
+        else
+          print "x"
+          failed << list.id
+        end
+      else
+        print '-'
+        skipped += 1
       end
-      p "--"
     end
   end
+  print "\nDone!\n"
+
+  p "Skipped: #{skipped}"
+  p "Updated: #{updated}"
+  p "Failed: #{failed.size}"
+  p "Failed List IDs: #{failed.join(',')}"
 end
 
 desc "Patch all campaigns with corrupted caches"
