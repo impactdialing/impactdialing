@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150408203225) do
+ActiveRecord::Schema.define(version: 20150605023140) do
 
   create_table "accounts", force: true do |t|
     t.datetime "created_at"
@@ -303,7 +303,7 @@ ActiveRecord::Schema.define(version: 20150408203225) do
     t.string   "link"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "campaign_id"
+    t.integer  "campaign_id"
   end
 
   create_table "households", force: true do |t|
