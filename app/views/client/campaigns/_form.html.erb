@@ -25,7 +25,7 @@
     </p>
     <div id="abandon_rate_edit" style="display: none">
       <p>
-        <%= f.label :abandonment_rate %>
+        <label for="campaign_acceptable_abandon_rate">Compliance abandonment rate</label>
         <select class="field" id="campaign_acceptable_abandon_rate" name="campaign[acceptable_abandon_rate]">
           <% if @campaign.account.variable_abandonment? %>
             <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03], ["4%", 0.04], ["5%", 0.05],

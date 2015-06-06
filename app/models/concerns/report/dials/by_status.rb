@@ -39,7 +39,7 @@ private
         number: :abandoned_count
       },
       {
-        status: '» FCC Abandonment Rate',
+        status: '» Compliance abandonment rate',
         percent: :fcc_abandon_rate,
         hide_dials: true
       },
