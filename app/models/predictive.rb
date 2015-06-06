@@ -49,10 +49,7 @@ class Predictive < Campaign
   end
 
   def abandon_rate
-    divisor = answered_count
-    divisor = divisor <= 0 ? 1 : divisor
-
-    abandoned_count.to_f / divisor
+    FccCompliance.abandon_rate(answered_count, abandoned_count)
   end
 
   def abandon_rate_acceptable?
