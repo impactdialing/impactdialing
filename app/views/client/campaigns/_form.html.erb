@@ -78,14 +78,14 @@
 
       <p>
         <b>Total households: <%= @campaign.households_count %></b>
-        - a household is a group of contacts/voters that have the same phone number.
+        - a household is a group of leads that have the same phone number.
       </p>
 
       <table>
         <tr>
           <th>Name</th>
           <th>Total households</th>
-          <th>Total contacts</th>
+          <th>Total leads</th>
         </tr>
         <% i = 0 %>
         <% @campaign.voter_lists.each do |list| %>
