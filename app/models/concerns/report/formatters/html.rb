@@ -3,12 +3,20 @@ class Report::Formatters::Html < Ruport::Formatter::HTML
 
   renders :html, :for => [
     Report::Dials::SummaryController, Report::Dials::ByStatusController,
-    Report::Performance::VelocityController
+    Report::Performance::VelocityController, Ruport::Controller::Table
   ]
 
 private
   def markdown
     @markdown ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML)
+  end
+
+  def build_row(data)
+    style = "font-weight: bold;"
+    style = "padding-left: 10px;" if data.first =~ /»/
+    output << "\t\t<tr>\n\t\t\t<td style=\"#{style}\">" +
+              data.to_a.join("</td>\n\t\t\t<td>") +
+              "</td>\n\t\t</tr>\n"
   end
 
 public

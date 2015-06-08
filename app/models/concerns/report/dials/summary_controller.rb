@@ -3,9 +3,9 @@ class Report::Dials::SummaryController < Ruport::Controller
   # hack
   Report::Formatters::Html # ? formatters aren't loading => aren't declaring themselves to controllers
 
-  stage :heading, :description, :table
+  stage :table
 
-  required_option :campaign, :heading, :description
+  required_option :campaign
 
 public
   def setup

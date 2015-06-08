@@ -8,22 +8,12 @@ class CallStats::Summary
     @campaign = campaign
   end
 
-  def total_voters
-    @total_voters ||= campaign.all_voters.
-                      joins("LEFT JOIN `households` ON voters.household_id = households.id").
-                      where('households.blocked = 0').
-                      where('voters.status = ?', Voter::Status::NOTCALLED).
-                      with_enabled(:list).
-                      count(:id) + 
-                      campaign.all_voters.where('status <> ?', Voter::Status::NOTCALLED).count
-  end
-
   def total_households
-    @total_households ||= campaign.households.where('blocked = 0 OR status <> ?', Voter::Status::NOTCALLED).count(:id)
+    @total_households ||= campaign.households.count(:id)
   end
 
-  def dialed_and_complete_count
-    @dialed_and_complete_count ||= all_voters.completed(campaign).count
+  def total_active_households
+    @total_active_households ||= campaign.households.active.count(:id)
   end
 
   def dialed_count
@@ -50,10 +40,12 @@ class CallStats::Summary
                                    end
   end
 
-  def voters_not_reached
-    @voters_not_reached ||= all_voters.with_enabled(:list).where(status: Voter::Status::NOTCALLED).
-                            joins("LEFT JOIN `households` ON voters.household_id = households.id").
-                            where("households.blocked = 0").count
+  def households_completely_dispositioned
+    return @households_completely_dispositioned if defined?(@households_completely_dispositioned)
+    # count all households where all associated voters have a status of completed
+    every                                = all_voters.group(:household_id).count
+    completed                            = all_voters.completed(campaign).group(:household_id).count
+    @households_completely_dispositioned = every.reject{|id,cnt| completed[id].to_i < cnt}.size + households.failed.count
   end
 
   def dialed_and_available_for_retry_count
@@ -62,5 +54,33 @@ class CallStats::Summary
 
   def dialed_and_not_available_for_retry_count
     @dialed_and_not_available_for_retry_count ||= households.dialed.not_available(campaign).count
+  end
+
+  def dialed_and_pending_retry
+    @dialed_and_pending_retry ||= households.dialed.recently_dialed(campaign).
+                                  select('DISTINCT households.id').joins(:voters).where([
+                                    '(voters.call_back = ? OR voters.status = ?) AND households.status = ?',
+                                    true,
+                                    Voter::Status::NOTCALLED,
+                                    CallAttempt::Status::SUCCESS
+                                  ]).count
+  end
+
+  def households_blocked_by_dnc
+    @households_blocked_by_dnc ||= households.with_blocked(:dnc).count
+  end
+
+  def households_blocked_by_cell
+    @households_blocked_by_cell ||= households.with_blocked(:cell).count
+  end
+
+  def total_households_to_dial
+    households_not_dialed_count + dialed_and_available_for_retry_count
+  end
+
+  def total_households_not_to_dial
+    households_blocked_by_dnc +
+    households_blocked_by_cell +
+    households_completely_dispositioned
   end
 end

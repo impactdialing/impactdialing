@@ -31,6 +31,9 @@ class Household < ActiveRecord::Base
   scope :presentable, -> (campaign) {
     where('households.presented_at IS NULL OR households.presented_at < ?', campaign.recycle_rate.hours.ago)
   }
+  scope :recently_dialed, -> (campaign) {
+    where('households.presented_at >= ?', campaign.recycle_rate.hours.ago)
+  }
   scope :available, -> (campaign) {
     active.
     presentable(campaign).

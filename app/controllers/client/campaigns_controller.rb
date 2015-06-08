@@ -31,6 +31,13 @@ module Client
     def edit
       load_scripts
       new_list
+
+      @overview = Report::Dials::SummaryController.render(:html, {
+        campaign: @campaign,
+        heading: 'Overview',
+        description: 'The data in the overview table gives the current state of the campaign.'
+      })
+
       respond_with @campaign
     end
 

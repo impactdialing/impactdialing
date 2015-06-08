@@ -7,61 +7,70 @@ describe CallStats::Summary do
     Redis.new.flushall
   end
 
-  describe "overview" do
+  # * Available to dial
+  #   * Not dialed: count of phone numbers not dialed
+  #   * Retrying: count of numbers dialed that have voters w/ call_back=true or status='not called'
+  # * Not available to dial
+  #   * Completed: count of phones where all voters have status!='not called' and call_back=false
+  #   * Pending retry: count of phones presented recently and have voters w/ call_back=true or status='not called'
+  #   * Phones blocked by Do Not Call list
+  #   * Cell phones scrubbed
+  # * Total
 
-    describe "dialed_and_complete_count" do
+  describe "dials summary" do
+    describe "Completed vs Retry" do
+      let(:campaign){ create(:predictive) }
+      let(:dial_report){ CallStats::Summary.new(campaign) }
+      before do
+        create_list(:voter, 10, {campaign: campaign})
 
-      it "returns count indicating number of voters that were successfully dispositioned" do
-        @campaign     = create(:predictive)
-        voter1        = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now)
-        voter2        = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now)
-        voter3        = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
-        voter4        = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
-        call_attempt1 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now, voter: voter1, household: voter1.household)
-        call_attempt2 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now, voter: voter2, household: voter2.household)
-        call_attempt3 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now, voter: voter3, household: voter3.household)
-        call_attempt4 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now, voter: voter4, household: voter4.household)
-
-        dial_report = CallStats::Summary.new(@campaign)
-
-        expect(dial_report.dialed_and_complete_count).to eq(2)
+        voters = Voter.all
+        # 1 of 2 voters dispositioned, this household is not completed
+        voters[1].update_attributes!({
+          household_id: voters[0].household_id,
+          status:       CallAttempt::Status::SUCCESS
+        })
+        voters[0].household.update_attributes!({
+          status:       CallAttempt::Status::SUCCESS,
+          presented_at: 5.minutes.ago
+        })
+        # 2 of 2 voters dispositioned, this household is completed
+        voters[3].update_attributes!({
+          household_id: voters[2].household_id,
+          status:       CallAttempt::Status::SUCCESS
+        })
+        voters[2].update_attributes!({
+          status: CallAttempt::Status::SUCCESS
+        })
+        voters[2].household.update_attributes!({
+          status:       CallAttempt::Status::SUCCESS,
+          presented_at: 1.minute.ago
+        })
+        # dial failed, this household is completed
+        voters[4].household.update_attributes!({
+          status: CallAttempt::Status::FAILED
+        })
       end
 
-      it "should include all failed call attempts" do
-        @campaign     = create(:predictive)
-        voter1        = create(:voter, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now)
-        voter2        = create(:voter, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now)
-        voter3        = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
-        voter4        = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
-        call_attempt1 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now, voter: voter1)
-        call_attempt2 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now, voter: voter2)
-        call_attempt3 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now, voter: voter3)
-        call_attempt4 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now, voter: voter4)
-
-        dial_report = CallStats::Summary.new(@campaign)
-
-        expect(dial_report.dialed_and_complete_count).to eq(2)
+      it "count of phones that will not be dialed again: all associated voters have status of CallAttempt::Status::SUCCESS and call_back is false OR the last dial to the household failed" do
+        expect(dial_report.households_completely_dispositioned).to eq(2)
       end
 
-      it "should include all successful failed call attempts" do
-        @campaign = create(:predictive)
-        voter1 = create(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now)
-        voter2 = create(:voter, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now)
-        voter3 = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
-        voter4 = create(:voter, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now)
-        call_attempt1 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::SUCCESS, created_at: Time.now, voter: voter1)
-        call_attempt2 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::FAILED, created_at: Time.now, voter: voter2)
-        call_attempt3 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now, voter: voter3)
-        call_attempt4 = create(:call_attempt, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now, voter: voter4)
-
-        dial_report = CallStats::Summary.new(@campaign)
-
-        expect(dial_report.dialed_and_complete_count).to eq(2)
+      it 'count of phones that have been dialed and have at least one lead that has not been called or needs called back' do
+        voters = Voter.all
+        voters[5].update_attributes!({
+          call_back: true,
+          status: CallAttempt::Status::SUCCESS
+        })
+        voters[5].household.update_attributes!({
+          presented_at: 30.seconds.ago,
+          status: CallAttempt::Status::SUCCESS
+        })
+        expect(dial_report.dialed_and_pending_retry).to eq(2)
       end
     end
 
     describe "dialed_and_available_for_retry_count" do
-
       it "should consider available and abandoned calls" do
         @campaign = create(:predictive, recycle_rate: 1)
 
@@ -77,7 +86,6 @@ describe CallStats::Summary do
     end
 
     describe "dialed_and_not_available_for_retry_count" do
-
       before do
         @campaign = create(:predictive, recycle_rate: 3)
 
@@ -104,7 +112,6 @@ describe CallStats::Summary do
     end
 
     describe "households_not_dialed_count" do
-
       it "counts Households w/ blank last_call_attempt_time and w/ statuses not in 'ringing', 'ready' or 'in-progress'" do
         @campaign = create(:predictive, recycle_rate: 3)
         attrs = {campaign: @campaign}
@@ -117,7 +124,6 @@ describe CallStats::Summary do
 
         expect(dial_report.households_not_dialed_count).to eq(1)
       end
-
     end
 
     describe 'total' do
@@ -144,8 +150,9 @@ describe CallStats::Summary do
 
         create_list(:household, 5, :cell, attrs)
         create_list(:household, 5, :dnc, attrs)
+        @not_dialed_and_blocked_total = 10
 
-        @total_households = @dialed_and_blocked_total + @not_dialed_and_not_blocked_total
+        @total_households = @dialed_and_blocked_total + @not_dialed_and_not_blocked_total + @not_dialed_and_blocked_total
       end
 
       describe 'households' do
@@ -159,40 +166,6 @@ describe CallStats::Summary do
 
         it 'does not count blocked and not dialed households' do
           expect(summary(@campaign).total_households).to eq @total_households
-        end
-      end
-
-      describe 'total voters' do
-        before do
-          all_attrs = {campaign: @campaign, account: account}
-
-          create_list(:voter, 5, :disabled, all_attrs)
-
-          @campaign.households.dialed.limit(5).each do |household|
-            create(:voter, :disabled, all_attrs.merge(household: household, status: household.status))
-          end
-
-          @campaign.households.where('blocked <> 0').limit(5).each do |household|
-            create(:voter, all_attrs.merge(household: household, status: CallAttempt::Status::BUSY))
-          end
-
-          @campaign.households.where('blocked <> 0').limit(5).each do |household|
-            create(:voter, all_attrs.merge(household: household))
-          end
-
-          @total_voters = 10
-        end
-        it 'counts dialed voters from disabled lists' do
-          expect(summary(@campaign).total_voters).to eq @total_voters
-        end
-        it 'counts dialed voters from blocked households' do
-          expect(summary(@campaign).total_voters).to eq @total_voters
-        end
-        it 'does not count not dialed voters from disabled lists' do
-          expect(summary(@campaign).total_voters).to eq @total_voters
-        end
-        it 'does not count not dialed voters from blocked households' do
-          expect(summary(@campaign).total_voters).to eq @total_voters
         end
       end
     end
@@ -266,12 +239,6 @@ describe CallStats::Summary do
         expect( actual ).to eq expected
       end
 
-      it 'voters not reached' do
-        summary = CallStats::Summary.new(@campaign)
-        actual  = summary.voters_not_reached
-        expect( actual ).to eq @campaign.all_voters.where(status: Voter::Status::NOTCALLED).with_enabled(:list).joins(:household).where('households.blocked = 0').count
-      end
-
       it 'available' do
         summary = CallStats::Summary.new(@campaign)
         expect(summary.dialed_and_available_for_retry_count).to eq(@available.count)
@@ -284,7 +251,8 @@ describe CallStats::Summary do
 
       it 'completed' do
         summary = CallStats::Summary.new(@campaign)
-        expect(summary.dialed_and_complete_count).to eq(@completed.count + @blocked_and_completed.count)
+        expect(summary.households_completely_dispositioned).to eq(40)
+        # 20 success/fails, 15 voicemails, 5 success+blocked
       end
     end
   end

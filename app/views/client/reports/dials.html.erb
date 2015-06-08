@@ -1,6 +1,5 @@
 <div role="main">
   <p>
-    <%= link_to 'Summary', dials_summary_client_reports_path(campaign_id: params[:campaign_id]) %><br>
     <%= link_to @report_link_text, dials_client_reports_path({
           campaign_id: params[:campaign_id],
           dials_view: @report_link_view,
