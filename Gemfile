@@ -93,8 +93,6 @@ gem 'mandrill-api', '~>1.0.37'
 
 # Monitoring
 gem 'librato-rails'
-gem 'newrelic_rpm'
-gem 'newrelic-redis'
 group :production, :heroku, :heroku_staging do
   gem 'rack-timing'
   gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
