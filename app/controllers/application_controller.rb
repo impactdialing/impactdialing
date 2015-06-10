@@ -1,8 +1,6 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
-require 'new_relic/agent/method_tracer'
 class ApplicationController < ActionController::Base
-  include NewRelic::Agent::MethodTracer
   include WhiteLabeling
   include ApplicationHelper
   helper :all # include all helpers, all the time
