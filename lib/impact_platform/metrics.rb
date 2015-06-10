@@ -1,5 +1,11 @@
 module ImpactPlatform
   module Metrics
+    def self.active?
+      (not Rails.env.test?)
+    end
+    def self.print(str)
+      STDOUT.puts(str) if self.active?
+    end
     def self.count(metric_name, number, source=nil)
       strs = [
         "count##{metric_name}=#{number}"
@@ -7,7 +13,7 @@ module ImpactPlatform
       if source.present?
         strs.unshift "source=#{source}"
       end
-      STDOUT.puts(strs.join(' '))
+      print(strs.join(' '))
     end
 
     def self.measure(measure_name, sec, source=nil)
@@ -17,7 +23,7 @@ module ImpactPlatform
       if source.present?
         strs.unshift "source=#{source}"
       end
-      STDOUT.puts(strs.join(' '))
+      print(strs.join(' '))
     end
 
     def self.sample(sample_name, value, source=nil)
@@ -27,7 +33,7 @@ module ImpactPlatform
       if source.present?
         strs.unshift "source=#{source}"
       end
-      STDOUT.puts(strs.join(' '))
+      print(strs.join(' '))
     end
 
     class Benchmark
@@ -43,7 +49,7 @@ module ImpactPlatform
         stop   = Time.now.to_i
         diff   = ((stop - start) * 1000).to_i
 
-        STDOUT.puts("measure##{metric_prefix}.#{name}=#{diff}ms")
+        ImpactPlatform::Metrics.print("measure##{metric_prefix}.#{name}=#{diff}ms")
 
         result
       end

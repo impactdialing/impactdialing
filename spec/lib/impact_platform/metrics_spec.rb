@@ -2,6 +2,12 @@ require 'rails_helper'
 require 'impact_platform/metrics'
 
 describe ImpactPlatform::Metrics do
+  before do
+    allow(ImpactPlatform::Metrics).to receive(:active?){ true }
+  end
+  after do
+    allow(ImpactPlatform::Metrics).to receive(:active?).and_call_original
+  end
   describe '.count(metric_name, number)' do
     it 'prints Librato count metrics' do
       metric_name = 'blah.diggity'
@@ -15,6 +21,12 @@ describe ImpactPlatform::Metrics do
 end
 
 describe ImpactPlatform::Metrics::Autoscale do
+  before do
+    allow(ImpactPlatform::Metrics).to receive(:active?){ true }
+  end
+  after do
+    allow(ImpactPlatform::Metrics).to receive(:active?).and_call_original
+  end
   prefix = 'autoscale'
   let(:process){ 'my_process' }
   let(:number){ 1 }
@@ -50,6 +62,12 @@ describe ImpactPlatform::Metrics::Autoscale do
 end
 
 describe ImpactPlatform::Metrics::JobStatus do
+  before do
+    allow(ImpactPlatform::Metrics).to receive(:active?){ true }
+  end
+  after do
+    allow(ImpactPlatform::Metrics).to receive(:active?).and_call_original
+  end
   let(:process){ 'my_job_class' }
   subject{ ImpactPlatform::Metrics::JobStatus }
 
