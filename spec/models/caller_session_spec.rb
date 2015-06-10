@@ -219,7 +219,6 @@ describe CallerSession, :type => :model do
       caller_session = create(:caller_session, caller: caller)
       expect(caller_session).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, 'publish_caller_disconnected'])
       expect(caller_session).to receive(:enqueue_call_flow).with(EndRunningCallJob, [caller_session.sid])
-      expect(caller_session).to receive(:enqueue_call_flow).with(EndCallerSessionJob, [caller_session.id])
       caller_session.end_running_call
       expect(caller_session.endtime).not_to be_nil
     end
