@@ -4,7 +4,7 @@ class Account < ActiveRecord::Base
   TRIAL_NUMBER_OF_CALLERS = 5
 
   has_many :users
-  has_many :campaigns, :conditions => {:active => true}
+  has_many :campaigns, -> { where active: true }
   has_many :all_campaigns, :class_name => 'Campaign'
   has_many :recordings
   has_many :custom_voter_fields

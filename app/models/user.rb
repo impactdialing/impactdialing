@@ -8,7 +8,7 @@ class User < ActiveRecord::Base
 
   belongs_to :account
 
-  has_many :campaigns, :conditions => {:active => true}, :through => :account
+  has_many :campaigns, -> { where active: true }, :through => :account
   has_many :recordings, :through => :account
   has_many :custom_voter_fields, :through => :account
   has_many :scripts, :through => :account

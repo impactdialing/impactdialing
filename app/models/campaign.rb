@@ -30,8 +30,8 @@ class Campaign < ActiveRecord::Base
   belongs_to :account
   belongs_to :recording
   has_many :caller_sessions
-  has_many :caller_sessions_on_call, conditions: {on_call: true}, class_name: 'CallerSession'
-  has_many :voter_lists, :conditions => {:active => true}
+  has_many :caller_sessions_on_call, -> { where on_call: true }, class_name: 'CallerSession'
+  has_many :voter_lists, -> { where active: true }
   has_many :all_voters, :class_name => 'Voter'
   has_many :call_attempts
   has_many :transfer_attempts

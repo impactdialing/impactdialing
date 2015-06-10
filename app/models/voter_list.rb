@@ -4,7 +4,7 @@ class VoterList < ActiveRecord::Base
   
   belongs_to :campaign
   belongs_to :account
-  has_many :voters, :conditions => {:active => true}
+  has_many :voters, -> { where active: true}
   has_many :households
   
   validates_presence_of :name, :s3path, :csv_to_system_map, :uploaded_file_name
