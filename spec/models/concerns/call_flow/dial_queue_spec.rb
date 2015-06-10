@@ -9,7 +9,7 @@ describe 'CallFlow::DialQueue' do
   before do
     Redis.new.flushall
     @campaign = create_campaign_with_script(:bare_preview, account).last
-    create_list(:voter, 100, {campaign: @campaign, account: account})
+    create_list(:voter, 20, {campaign: @campaign, account: account})
     @dial_queue = CallFlow::DialQueue.new(@campaign)
     @dial_queue.cache_all(@campaign.all_voters)
   end
@@ -60,8 +60,8 @@ describe 'CallFlow::DialQueue' do
       before do
         Redis.new.flushall
         # last 90 were busy
-        Household.order('id DESC').limit(90).update_all(status: CallAttempt::Status::BUSY, presented_at: 5.minutes.ago)
-        li = Household.order('id DESC').limit(90).last.id
+        Household.order('id DESC').limit(10).update_all(status: CallAttempt::Status::BUSY, presented_at: 5.minutes.ago)
+        li = Household.order('id DESC').limit(10).last.id
         # 5 before that completed and are done
         households = Household.order('id DESC').where('id < ?', li).limit(5)
         households.update_all(status: CallAttempt::Status::SUCCESS, presented_at: 2.minutes.ago)
@@ -98,11 +98,11 @@ describe 'CallFlow::DialQueue' do
         })
 
         voters = @campaign.reload.all_voters
-        @dial_queue.cache_all(voters) # 5 available, 90 recycled
+        @dial_queue.cache_all(voters) # 5 available, 30 recycled
       end
 
       it 'pushes phone numbers that cannot be dialed right away to the recycle bin set' do
-        expect(@dial_queue.size(:recycle_bin)).to eq 92 # @(other_)household_with_2_members will be recycled
+        expect(@dial_queue.size(:recycle_bin)).to eq 12 # @(other_)household_with_2_members will be recycled
       end
 
       it 'pushes phone numbers that can be dialed right away to the available set' do
