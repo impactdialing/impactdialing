@@ -7,13 +7,38 @@
         var recording_id = $("#campaign_recording_id").val();
         <% @account.recordings.each do |recording| %>
           if( recording_id == <%= recording.id %> ) {
-            path = '<%= recording.file.url %>';
-            name = '<%= escape_javascript recording.name %>';
+            path        = '<%= recording.file.url %>';
+            name        = '<%= escape_javascript recording.name %>';
+            contentType = '<%= recording.file.content_type %>';
           }
         <% end %>
 
+        var fallbackMessage = '<p>Your browser does not support audio previews. ' +
+                              'You can <a href="' + path + '">download ' + name + '</a> ' +
+                              'to verify it was uploaded correctly.</p>';
         var audioPreview = '<p>Previewing <b>' + name + '</b></p>' +
-         '<audio controls>' + '<source src="' + path + '">' + '</audio>';
+                           '<audio controls>' +
+                           '<source src="' + path + '">' +
+                           fallbackMessage + 
+                           '</audio>';
+        try {
+          var audioTag = document.createElement('audio');
+
+
+          if (!(!!(audioTag) && !!(audioTag.canPlayType) && ("no" != audioTag.canPlayType(contentType)) && ("maybe" != audioTag.canPlayType(contentType)) && ("" != audioTag.canPlayType(contentType)))) {
+            console.log('updating audioPreview');
+            audioPreview = '<p>Your browser does not support audio previews. ' +
+                           'You can <a href="' + path + '">download ' + name + '</a> ' +
+                           'to verify it was uploaded correctly.</p>';
+          } else {
+            console.log('audioPreview failed: ', contentType, audioTag.canPlayType, audioTag.canPlayType(contentType), audioTag.canPlayType(contentType));
+          }
+
+        } catch (e) {
+          console.log('Caught audio js error', e);
+          audioPreview = fallbackMessage;
+        }
+
         $('#sndPreview').html(audioPreview);
       }
 
