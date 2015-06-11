@@ -71,10 +71,8 @@
         </p>
 
         <p data-intro="The time between call attempts sets the minimum amount of time before calling somebody back." data-step="7">
-          <label for="">Time (in hours) between call attempts</label>
-          <select id="campaign[recycle_rate]" name="campaign[recycle_rate]">
-            <%= options_for_select [1,2,3,4,6,10,12,16,24,48,72], @campaign.recycle_rate %>
-          </select>
+          <label for="campaign_recycle_rate">Time (in hours) between call attempts</label>
+          <input id="campaign_recycle_rate" type="text" name="campaign[recycle_rate]" value="<%= @campaign.recycle_rate %>">
         </p>
       </fieldset>
 

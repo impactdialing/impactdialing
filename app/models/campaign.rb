@@ -75,7 +75,13 @@ class Campaign < ActiveRecord::Base
   validates :acceptable_abandon_rate,
             :numericality => {:greater_than_or_equal_to => 0.01, :less_than_or_equal_to => 0.10},
             :allow_blank => true
-  validates :recycle_rate, :presence => true, :numericality => true
+  validates :recycle_rate, {
+    :numericality => {
+      :greater_than_or_equal_to => 1,
+      :less_than_or_equal_to => 72,
+      :message => 'must be a number between 1 & 72'
+    }
+  }
   validates :time_zone, :presence => true, :inclusion => {:in => ActiveSupport::TimeZone.zones_map.map {|z| z.first}}
   validates :start_time, :presence => true
   validates :end_time, :presence => true

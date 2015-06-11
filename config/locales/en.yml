@@ -22,6 +22,8 @@
 en:
   activerecord:
     attributes:
+      campaign:
+        recycle_rate: 'Time (in hours) between call attempts'
     errors:
       models:
         blocked_number:
