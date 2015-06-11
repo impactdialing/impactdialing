@@ -25,14 +25,10 @@
         // so use try/catch to allow fallback msg display
         try {
           var audioTag = document.createElement('audio');
-
-          if (!(!!(audioTag) && !!(audioTag.canPlayType) && ("no" != audioTag.canPlayType(contentType)) && ("maybe" != audioTag.canPlayType(contentType)) && ("" != audioTag.canPlayType(contentType)))) {
-            console.log('audioPreview failed: ', contentType, audioTag.canPlayType, audioTag.canPlayType(contentType), audioTag.canPlayType(contentType));
+          if (!(!!(audioTag) && !!(audioTag.canPlayType) && ("no" != audioTag.canPlayType(contentType)) && ("" != audioTag.canPlayType(contentType)))) {
+            console.log('audioPreview failed: ', contentType, audioTag.canPlayType(contentType));
             audioPreview = fallbackMessage;
-          } else {
-            console.log('updating audioPreview');
           }
-
         } catch (e) {
           console.log('Caught audio js error', e);
           audioPreview = fallbackMessage;
