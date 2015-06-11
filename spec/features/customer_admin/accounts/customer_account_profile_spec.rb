@@ -408,7 +408,7 @@ describe 'Account profile', type: :feature, admin: true do
         click_on 'Upgrade'
         expect(page).to have_content "Minutes left: 2500"
         go_to_billing
-        accept_alert do
+        accept_confirm do
           click_on 'Cancel subscription'
         end
         # page.driver.browser.switch_to.alert.accept # handle alert for selenium
