@@ -114,7 +114,12 @@
       </fieldset>
       <fieldset class="module">
         <legend>Info</legend>
-        <%= @overview.html_safe %>
+        <% if dials_summary.present? %>
+          <%= dials_summary %>
+        <% else %>
+          <p>This will display once the campaign is updated successfully.</p>
+        <% end %>
+
       </fieldset>
     </div>
   </div>

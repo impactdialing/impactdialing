@@ -32,4 +32,14 @@ module CampaignHelper
   def numbers_count_for(list)
     list.households_count
   end
+
+  def dials_summary
+    return '' unless @campaign.errors.empty?
+
+    @dials_summary ||= Report::Dials::SummaryController.render(:html, {
+      campaign: @campaign,
+      heading: 'Overview',
+      description: 'The data in the overview table gives the current state of the campaign.'
+    }).html_safe
+  end
 end
