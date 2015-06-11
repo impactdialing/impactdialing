@@ -14,10 +14,14 @@ describe 'CallFlow::DialQueue::Available' do
     let(:n){ 10 }
 
     before do
-      Redis.new.flushall
       @available = CallFlow::DialQueue::Available.new(campaign)
       @available.insert scored_members
-      @retrieved = @available.next(n)
+      retries = -1
+      begin
+        @retrieved = @available.next(n)
+      rescue CallFlow::DialQueue::Available::RedisTransactionAborted
+        (retries += 1) < 5 ? retry : raise
+      end
     end
 
     it 'returns the first "n" phone numbers from the "active" set' do
@@ -30,8 +34,8 @@ describe 'CallFlow::DialQueue::Available' do
 
     context 'when the active list changes during retrieval' do
       it 'raises CallFlow::DialQueue::Available::RedisTransactionAborted' do
-        key = @available.send(:keys)[:active]
-        Thread.new(key) do |key|
+        key    = @available.send(:keys)[:active]
+        thread = Thread.new(key) do |key|
           client = Redis.new
           25.times do |i|
             client.zadd key, ["#{i}.0", phone_numbers.first]
@@ -42,6 +46,8 @@ describe 'CallFlow::DialQueue::Available' do
         }.to raise_error{
           CallFlow::DialQueue::Available::RedisTransactionAborted
         }
+        # wait for thread to finish before moving on
+        sleep(0.01) until thread.join
       end
     end
   end

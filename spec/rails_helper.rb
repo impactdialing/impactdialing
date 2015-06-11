@@ -83,7 +83,6 @@ RSpec.configure do |config|
         c.allow_http_connections_when_no_cassette = true
       end
     end
-    Redis.new.flushall
     DatabaseCleaner.start
   end
 
