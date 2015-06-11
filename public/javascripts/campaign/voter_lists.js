@@ -1,6 +1,5 @@
 var VoterLists = function(){
-  document.getElementById('upload_datafile').addEventListener('change', this.validate_csv_file, false);
-
+  $('#upload_datafile').change(this.validate_csv_file);
 
   $("#file_upload_submit").click(function(){
   if ($("#voter_list_name").val().trim() == ""){
@@ -20,7 +19,6 @@ var VoterLists = function(){
     alert("Please choose map a column to the Phone field before uploading.");
     return false;
   }
-
 
   return true
 

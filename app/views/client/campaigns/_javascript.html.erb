@@ -21,15 +21,15 @@
                            '<source src="' + path + '">' +
                            fallbackMessage + 
                            '</audio>';
+        // try/catch here is to allow fallback for IE9
+        // IE8 fallback display requires changing selected recording to trigger updatePreview
+        // which fails to run on page load to to error in voters_lists.js
         try {
           var audioTag = document.createElement('audio');
 
-
           if (!(!!(audioTag) && !!(audioTag.canPlayType) && ("no" != audioTag.canPlayType(contentType)) && ("maybe" != audioTag.canPlayType(contentType)) && ("" != audioTag.canPlayType(contentType)))) {
             console.log('updating audioPreview');
-            audioPreview = '<p>Your browser does not support audio previews. ' +
-                           'You can <a href="' + path + '">download ' + name + '</a> ' +
-                           'to verify it was uploaded correctly.</p>';
+            audioPreview = fallbackMessage;
           } else {
             console.log('audioPreview failed: ', contentType, audioTag.canPlayType, audioTag.canPlayType(contentType), audioTag.canPlayType(contentType));
           }
