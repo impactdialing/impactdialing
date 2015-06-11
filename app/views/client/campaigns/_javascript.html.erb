@@ -21,9 +21,8 @@
                            '<source src="' + path + '">' +
                            fallbackMessage + 
                            '</audio>';
-        // try/catch here is to allow fallback for IE9
-        // IE8 fallback display requires changing selected recording to trigger updatePreview
-        // which fails to run on page load to to error in voters_lists.js
+        // IE9 breaks trying to create audio element
+        // so use try/catch to allow fallback msg display
         try {
           var audioTag = document.createElement('audio');
 
