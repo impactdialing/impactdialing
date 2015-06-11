@@ -27,10 +27,10 @@
           var audioTag = document.createElement('audio');
 
           if (!(!!(audioTag) && !!(audioTag.canPlayType) && ("no" != audioTag.canPlayType(contentType)) && ("maybe" != audioTag.canPlayType(contentType)) && ("" != audioTag.canPlayType(contentType)))) {
-            console.log('updating audioPreview');
+            console.log('audioPreview failed: ', contentType, audioTag.canPlayType, audioTag.canPlayType(contentType), audioTag.canPlayType(contentType));
             audioPreview = fallbackMessage;
           } else {
-            console.log('audioPreview failed: ', contentType, audioTag.canPlayType, audioTag.canPlayType(contentType), audioTag.canPlayType(contentType));
+            console.log('updating audioPreview');
           }
 
         } catch (e) {
