@@ -136,8 +136,7 @@ describe Campaign, :type => :model do
       expect(campaign).to have(0).errors_on(:type)
 
     }
-    it {expect(campaign).to validate_presence_of :recycle_rate}
-    it {expect(campaign).to validate_numericality_of :recycle_rate}
+
     it {expect(campaign).to validate_presence_of :time_zone}
     it {expect(campaign).to ensure_inclusion_of(:time_zone).in_array(ActiveSupport::TimeZone.zones_map.map {|z| z.first})}
     it {expect(campaign).to validate_presence_of :start_time}
@@ -145,14 +144,20 @@ describe Campaign, :type => :model do
     it {expect(campaign).to validate_numericality_of :acceptable_abandon_rate}
     it {expect(campaign).to have_many :caller_groups}
 
+    it 'requires recycle_rate must be present' do
+      expect(campaign).to invalidate_recycle_rate nil
+    end
+
+    it 'requires recycle_rate is a number' do
+      expect(campaign).to invalidate_recycle_rate 'abc'
+    end
+
     it 'requires recycle_rate be at least 1' do
-      campaign.recycle_rate = 0
-      expect(campaign).to have(1).error_on :recycle_rate
+      expect(campaign).to invalidate_recycle_rate 0
     end
 
     it 'requires recycle_rate be less than 72' do
-      campaign.recycle_rate = 73
-      expect(campaign).to have(1).error_on :recycle_rate
+      expect(campaign).to invalidate_recycle_rate 73
     end
 
     it 'return validation error, if caller id is either blank, not a number or not a valid length' do
