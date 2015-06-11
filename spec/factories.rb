@@ -72,8 +72,8 @@ FactoryGirl.define do
     caller_id '1234567890'
     account
     recycle_rate 1
-    start_time (Time.now - 6.hours)
-    end_time (Time.now - 7.hours)
+    start_time (Time.now)
+    end_time (Time.now)
     time_zone "Pacific Time (US & Canada)"
     script
     type 'Preview'
@@ -86,8 +86,8 @@ FactoryGirl.define do
     caller_id '1234567890'
     account
     recycle_rate 1
-    start_time (Time.now - 6.hours)
-    end_time (Time.now - 7.hours)
+    start_time (Time.now)
+    end_time (Time.now)
     time_zone "Pacific Time (US & Canada)"
     script
     created_at Time.now
@@ -99,8 +99,8 @@ FactoryGirl.define do
     caller_id '1234567890'
     account
     recycle_rate 1
-    start_time (Time.now - 6.hours)
-    end_time (Time.now - 7.hours)
+    start_time (Time.now)
+    end_time (Time.now)
     time_zone "Pacific Time (US & Canada)"
     script
     created_at Time.now
@@ -112,8 +112,8 @@ FactoryGirl.define do
     caller_id '1234567890'
     account
     recycle_rate 1
-    start_time (Time.now - 6.hours)
-    end_time (Time.now - 7.hours)
+    start_time (Time.now)
+    end_time (Time.now)
     time_zone "Pacific Time (US & Canada)"
     script
     created_at Time.now

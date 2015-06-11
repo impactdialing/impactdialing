@@ -36,8 +36,8 @@ describe CallerController, :type => :controller do
   describe "Preview dialer" do
     let(:campaign) do
       create(:preview, {
-        start_time: Time.now - 6.hours,
-        end_time: Time.now - 6.hours,
+        start_time: Time.now,
+        end_time: Time.now,
         account: account
       })
     end
@@ -108,9 +108,9 @@ describe CallerController, :type => :controller do
 
       context 'when not fit to dial' do
         before do
-          now = Time.now
+          now = Time.now.utc
           anchor = now.hour % 12 == 0 ? 10 : now.hour
-          campaign.update_attributes!(start_time: Time.new(2015, 1, 1, anchor - 2), end_time: Time.new(2015, 1, 1, anchor - 1))
+          campaign.update_attributes!(start_time: Time.new(2015, 1, 1, anchor), end_time: Time.new(2015, 1, 1, anchor + 1))
         end
 
         it 'queues RedirectCallerJob, relying on calculated redirect url to return :dialing_prohibited' do
