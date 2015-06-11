@@ -306,7 +306,7 @@ describe 'Account profile', type: :feature, admin: true do
       end
     end
 
-    describe 'Change from PerMinute (100 minutes available) to Pro w/ 1 caller', selenium: true do
+    describe 'Change from PerMinute (100 minutes available) to Pro w/ 1 caller' do
       let(:amount){ 9 }
       let(:cost){ 0.09 }
       let(:available_per_minute){ (amount / cost).to_i }
@@ -398,7 +398,7 @@ describe 'Account profile', type: :feature, admin: true do
       end
     end
 
-    describe 'cancelling a recurring subscription', webkit: true do
+    describe 'cancelling a recurring subscription' do
       let(:account){ user.account }
       before do
         add_valid_payment_info
@@ -408,8 +408,10 @@ describe 'Account profile', type: :feature, admin: true do
         click_on 'Upgrade'
         expect(page).to have_content "Minutes left: 2500"
         go_to_billing
-        click_on 'Cancel subscription'
-        page.driver.browser.switch_to.alert.accept # handle alert for selenium
+        accept_alert do
+          click_on 'Cancel subscription'
+        end
+        # page.driver.browser.switch_to.alert.accept # handle alert for selenium
       end
       it 'displays flash notice when successful' do
         expect(page).to have_content I18n.t('subscriptions.cancelled')

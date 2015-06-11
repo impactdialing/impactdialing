@@ -28,7 +28,7 @@
 <link rel="stylesheet" media="only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-device-pixel-ratio: 1.5)" href="/css/2x.css?v=1">
 
 
-<%= render :partial => "layouts/errorception" %>
+<%= render :partial => "layouts/errorception" unless Rails.env.test? %>
 <% if logged_in_as_client? and not Rails.env.test? and not Rails.env.development? and not Rails.env.e2e? %>
   <%= render :partial => "layouts/olark" %>
 <% end %>

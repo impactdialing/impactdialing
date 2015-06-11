@@ -64,7 +64,7 @@
 
     </footer>
     
-    <% if logged_in_as_client? %>
+    <% if logged_in_as_client? and (not Rails.env.test?) %>
     <script type="text/javascript">
       var _usersnapconfig = {
         apiKey: '00d43adb-86c0-47cb-a279-9e90d8695996',

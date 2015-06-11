@@ -14,7 +14,10 @@ require 'spec_helper'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
 require 'webmock/rspec'
+require 'capybara/rails'
+
 require 'impact_platform'
+
 require 'paperclip/matchers'
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -31,10 +34,14 @@ Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |f| require f }
 ActiveRecord::Migration.check_pending! if defined?(ActiveRecord::Migration)
 
 VCR.configure do |c|
-  # c.debug_logger = File.open(Rails.root.join('log', 'vcr-debug.log'), 'w')
+  # c.debug_logger       = File.open(Rails.root.join('log', 'vcr-debug.log'), 'w')
   c.cassette_library_dir = Rails.root.join 'spec/fixtures/vcr_cassettes'
+  c.ignore_localhost     = true
   c.hook_into :webmock
 end
+
+
+Capybara.javascript_driver = :webkit
 
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
@@ -78,6 +85,22 @@ RSpec.configure do |config|
   end
 
   config.before(:example) do |example|
+    if example.metadata[:js]
+      if example.metadata[:file_uploads]
+        Capybara.javascript_driver = :selenium
+      else
+        Capybara.javascript_driver = :webkit
+        # page.driver.allow_unknown_urls
+        page.driver.allow_url("js.stripe.com")
+        page.driver.allow_url("static.twilio.com")
+        page.driver.allow_url("api.stripe.com")
+        page.driver.allow_url("api.usersnap.com")
+        page.driver.allow_url("d3mvnvhjmkxpjz.cloudfront.net")
+        page.driver.allow_url("d3dy5gmtp8yhk7.cloudfront.net")
+        page.driver.allow_url("beacon.errorception.com")
+      end
+    end
+
     if example.metadata[:js] or example.metadata[:type] == :feature
       VCR.configure do |c|
         c.allow_http_connections_when_no_cassette = true

@@ -2,6 +2,9 @@ require 'simplecov'
 SimpleCov.start 'rails'
 SimpleCov.coverage_dir("#{Rails.env}/coverage")
 
+require 'shoulda'
+require 'factory_girl'
+
 ImpactDialing::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -15,6 +18,7 @@ ImpactDialing::Application.configure do
   # just for the purpose of running a single test. If you are using a tool that
   # preloads Rails for running tests, you may have to set it to true.
   config.eager_load = true
+  config.allow_concurrency = false
 
   # Configure static asset server for tests with Cache-Control for performance.
   config.serve_static_assets  = true
@@ -40,9 +44,6 @@ ImpactDialing::Application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
-
-  require 'shoulda'
-  require 'factory_girl'
 
   HOLD_MUSIC_URL = "hold_music"
 

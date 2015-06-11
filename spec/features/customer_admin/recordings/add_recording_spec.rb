@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Upload a recording', js: true, type: :feature do
+describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
   def upload_recording(path)
     fill_in 'Name', with: 'Ner Wecording'
     attach_file 'recording_file', Rails.root.join(path)
