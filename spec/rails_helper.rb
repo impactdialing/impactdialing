@@ -40,10 +40,22 @@ VCR.configure do |c|
   c.hook_into :webmock
 end
 
-
-Capybara.javascript_driver = :webkit
-
 RSpec.configure do |config|
+  def capybara_switch_to_webkit
+    Capybara.javascript_driver = :webkit
+    if Capybara.page.driver.respond_to? :allow_url
+      Capybara.page.driver.allow_url("js.stripe.com")
+      Capybara.page.driver.allow_url("static.twilio.com")
+      Capybara.page.driver.allow_url("api.stripe.com")
+      Capybara.page.driver.allow_url("api.usersnap.com")
+      Capybara.page.driver.allow_url("d3mvnvhjmkxpjz.cloudfront.net")
+      Capybara.page.driver.allow_url("d3dy5gmtp8yhk7.cloudfront.net")
+      Capybara.page.driver.allow_url("beacon.errorception.com")
+      Capybara.page.driver.allow_url("stats.pusher.com")
+    end
+  end
+  capybara_switch_to_webkit
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
@@ -89,15 +101,7 @@ RSpec.configure do |config|
       if example.metadata[:file_uploads]
         Capybara.javascript_driver = :selenium
       else
-        Capybara.javascript_driver = :webkit
-        # page.driver.allow_unknown_urls
-        page.driver.allow_url("js.stripe.com")
-        page.driver.allow_url("static.twilio.com")
-        page.driver.allow_url("api.stripe.com")
-        page.driver.allow_url("api.usersnap.com")
-        page.driver.allow_url("d3mvnvhjmkxpjz.cloudfront.net")
-        page.driver.allow_url("d3dy5gmtp8yhk7.cloudfront.net")
-        page.driver.allow_url("beacon.errorception.com")
+        capybara_switch_to_webkit
       end
     end
 
