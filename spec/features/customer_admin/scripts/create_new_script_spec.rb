@@ -1,6 +1,19 @@
 require 'rails_helper'
 
 describe 'Create a new Script', type: :feature, js: true do
+  before(:all) do
+    Capybara.javascript_driver = :webkit
+    if page.driver.respond_to? :allow_url
+      page.driver.allow_url("js.stripe.com")
+      page.driver.allow_url("static.twilio.com")
+      page.driver.allow_url("api.stripe.com")
+      page.driver.allow_url("api.usersnap.com")
+      page.driver.allow_url("d3mvnvhjmkxpjz.cloudfront.net")
+      page.driver.allow_url("d3dy5gmtp8yhk7.cloudfront.net")
+      page.driver.allow_url("beacon.errorception.com")
+    end
+  end
+
   let(:user){ create(:user) }
   let(:account){ user.account }
 
