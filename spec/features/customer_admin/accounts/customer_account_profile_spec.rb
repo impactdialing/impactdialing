@@ -2,6 +2,20 @@ require 'rails_helper'
 include JSHelpers
 
 describe 'Account profile', type: :feature, admin: true do
+  before(:all) do
+    capybara_switch_to_webkit
+  end
+
+  def retry_assertion(times=1, &block)
+    retries = 0
+    begin
+      yield(block)
+    rescue
+      sleep(1)
+      retry if (retries += 1) <= times
+    end
+  end
+
   def select_plan(type='Basic')
     select type, from: 'Select plan:'
   end
@@ -31,7 +45,9 @@ describe 'Account profile', type: :feature, admin: true do
     fill_in 'CVC', with: 123
     fill_in_expiration
     click_on 'Update payment information'
-    expect(page).to have_content I18n.t('subscriptions.update_billing.success')
+    retry_assertion do
+      expect(page).to have_content I18n.t('subscriptions.update_billing.success')
+    end
   end
 
   def add_not_chargeable_payment_info
@@ -44,8 +60,7 @@ describe 'Account profile', type: :feature, admin: true do
   end
 
   def go_to_billing
-    click_on 'Account'
-    click_on 'Billing'
+    visit "/client/billing"
   end
 
   def go_to_upgrade
@@ -151,7 +166,9 @@ describe 'Account profile', type: :feature, admin: true do
         fill_in 'Zipcode', with: 12345
         fill_in_expiration
         click_on 'Update payment information'
-        expect(page).to have_content "Your card's security code is incorrect."
+        retry_assertion do
+          expect(page).to have_content "Your card's security code is incorrect."
+        end
       end
 
       it 'rejects expired cards' do
@@ -195,6 +212,7 @@ describe 'Account profile', type: :feature, admin: true do
         user.email = 'nada.nowhere@test.com'
         user.save!
         create(:user, {account: user.account})
+        web_login_as(user) if page.current_path =~ /\A\/session/
       end
 
       it 'allows for new invoice recipient to be selected' do
@@ -408,8 +426,10 @@ describe 'Account profile', type: :feature, admin: true do
         click_on 'Upgrade'
         expect(page).to have_content "Minutes left: 2500"
         go_to_billing
-        accept_confirm do
-          click_on 'Cancel subscription'
+        retry_assertion(2) do
+          accept_confirm do
+            click_on 'Cancel subscription'
+          end
         end
         # page.driver.browser.switch_to.alert.accept # handle alert for selenium
       end
