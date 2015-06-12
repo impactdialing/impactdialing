@@ -49,6 +49,14 @@ class Household < ActiveRecord::Base
       campaign.recycle_rate.hours.ago
     )
   }
+  scope :with_voters_pending_retry_or_not_called, -> {
+    select('DISTINCT households.id').joins(:voters).where([
+      '(voters.call_back = ? OR voters.status = ?) AND households.status = ?',
+      true,
+      Voter::Status::NOTCALLED,
+      CallAttempt::Status::SUCCESS
+    ])
+  }
 
 private
   def sanitize_phone

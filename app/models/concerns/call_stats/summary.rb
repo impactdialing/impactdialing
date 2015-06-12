@@ -49,21 +49,14 @@ class CallStats::Summary
   end
 
   def dialed_and_available_for_retry_count
-    @dialed_and_available_for_retry_count ||= households.active.dialed.available(campaign).count
-  end
+    return @dialed_and_available_for_retry_count if defined?(@dialed_and_available_for_retry_count)
 
-  def dialed_and_not_available_for_retry_count
-    @dialed_and_not_available_for_retry_count ||= households.dialed.not_available(campaign).count
+    root_query                            = households.active.dialed
+    @dialed_and_available_for_retry_count = root_query.available(campaign).count + root_query.presentable(campaign).with_voters_pending_retry_or_not_called.count
   end
 
   def dialed_and_pending_retry
-    @dialed_and_pending_retry ||= households.dialed.recently_dialed(campaign).
-                                  select('DISTINCT households.id').joins(:voters).where([
-                                    '(voters.call_back = ? OR voters.status = ?) AND households.status = ?',
-                                    true,
-                                    Voter::Status::NOTCALLED,
-                                    CallAttempt::Status::SUCCESS
-                                  ]).count
+    @dialed_and_pending_retry ||= households.dialed.recently_dialed(campaign).with_voters_pending_retry_or_not_called.count
   end
 
   def households_blocked_by_dnc

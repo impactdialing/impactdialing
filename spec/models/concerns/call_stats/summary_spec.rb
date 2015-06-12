@@ -102,10 +102,6 @@ describe CallStats::Summary do
         @dial_report = CallStats::Summary.new(@campaign)
       end
 
-      it "returns count of voters who may be retried but are not currently available (dialed & not available)" do
-        expect(@dial_report.dialed_and_not_available_for_retry_count).to eq 4
-      end
-
       it 'considers the remaining as available for retry' do
         expect(@dial_report.dialed_and_available_for_retry_count).to eq 1
       end
@@ -204,6 +200,10 @@ describe CallStats::Summary do
         @completed.each{|v| v.household.update_attributes!(status: v.status)}
 
         attrs.merge!(presented_at: (@campaign.recycle_rate + 1).hours.ago)
+        @partially_completed = [create(:household, attrs.merge(status: CallAttempt::Status::SUCCESS))]
+        completed_voter      = create(:voter, all_attrs.merge(household_id: @partially_completed.first.id, status: CallAttempt::Status::SUCCESS))
+        not_called_voter = create(:voter, all_attrs.merge(household_id: @partially_completed.first.id))
+
         @available =  create_list(:household, 5, :busy, attrs)
         @available += create_list(:household, 5, :abandoned, attrs)
         @available += create_list(:household, 5, :no_answer, attrs)
@@ -245,7 +245,7 @@ describe CallStats::Summary do
 
       it 'dialed' do
         summary = CallStats::Summary.new(@campaign)
-        expect(summary.dialed_count).to eq (@dialed.count + @blocked_and_completed.count + @blocked_and_busy.count)
+        expect(summary.dialed_count).to eq (@dialed.count + @blocked_and_completed.count + @blocked_and_busy.count + @partially_completed.size)
       end
 
       it 'not dialed + dialed = all voters' do
@@ -257,12 +257,7 @@ describe CallStats::Summary do
 
       it 'available' do
         summary = CallStats::Summary.new(@campaign)
-        expect(summary.dialed_and_available_for_retry_count).to eq(@available.count)
-      end
-
-      it 'not available' do
-        summary = CallStats::Summary.new(@campaign)
-        expect(summary.dialed_and_not_available_for_retry_count).to eq(@not_available.count + @completed.count - 5 + @blocked_and_busy.count + @blocked_and_completed.count) # 5 voicemail
+        expect(summary.dialed_and_available_for_retry_count).to eq(@available.count + @partially_completed.size)
       end
 
       it 'completed' do
