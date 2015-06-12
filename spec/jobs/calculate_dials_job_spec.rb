@@ -47,55 +47,36 @@ describe 'CalculateDialsJob' do
       end
     end
 
-    shared_examples 'campaign is not fit to dial' do
+    context 'campaign is not fit to dial' do
       it 'does not calculate how many dials should be attempted' do
         expect(campaign).to_not receive(:numbers_to_dial)
         expect(Campaign).to receive(:find).with(campaign.id){ campaign }
         CalculateDialsJob.perform(campaign.id)
       end
 
-      context 'campaign is not fit to dial' do
-        context 'aborting available callers' do
-          before do
-            expect(campaign).to receive(:abort_available_callers_with).with(:dialing_prohibited)
-          end
-          it 'account not funded' do
-            campaign.account.quota.update_attributes!(minutes_allowed: 0)
-            expect(CalculateDialsJob.fit_to_dial?(campaign)).to be_falsey
-          end
-
-          it 'outside calling hours' do
-            campaign.update_attributes!(start_time: 3.hours.ago, end_time: 2.hours.ago)
-            expect(CalculateDialsJob.fit_to_dial?(campaign)).to be_falsey
-          end
-
-          it 'calling disabled' do
-            campaign.account.quota.update_attributes!(disable_calling: true)
-            expect(CalculateDialsJob.fit_to_dial?(campaign)).to be_falsey
-          end
-        end
-      end
-    end
-
-    context 'predictive campaign not fit to dial' do
-      context 'account funds not available' do
+      context 'abort available callers' do
         before do
-          admin.account.quota.update_attributes(minutes_allowed: 0)
+          expect(campaign).to receive(:abort_available_callers_with).with(:dialing_prohibited)
+        end
+        it 'account not funded' do
+          campaign.account.quota.update_attributes!(minutes_allowed: 0)
+          expect(CalculateDialsJob.fit_to_dial?(campaign)).to be_falsey
         end
 
-        it_behaves_like 'campaign is not fit to dial'
-      end
-
-      context 'outside calling hours' do
-        before do
-          now = Time.now
+        it 'outside calling hours' do
+          now    = Time.now
           anchor = now.hour % 12 == 0 ? 10 : now.hour
           campaign.update_attributes(start_time: Time.new(2015, 1, 1, anchor - 2), end_time: Time.new(2015, 1, 1, anchor - 1))
+          expect(CalculateDialsJob.fit_to_dial?(campaign)).to be_falsey
         end
 
-        it_behaves_like 'campaign is not fit to dial'
+        it 'calling disabled' do
+          campaign.account.quota.update_attributes!(disable_calling: true)
+          expect(CalculateDialsJob.fit_to_dial?(campaign)).to be_falsey
+        end
       end
     end
+
 
     context 'one or more dials will be made' do
       before do
