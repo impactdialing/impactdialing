@@ -84,7 +84,7 @@
         <legend>Lists</legend>
         <% if @campaign.new_record? %>
           <p>After saving this campaign, you can edit it again to add lists.</p>
-        <% elsif @campaign.voter_lists.length == 1 %>
+        <% elsif @campaign.voter_lists.count.zero? %>
           <p>You haven't uploaded any lists yet.</p>
         <% else %>
           <table>
