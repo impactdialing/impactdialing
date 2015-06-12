@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
+  Capybara.javascript_driver = :selenium # force selenium to start before first test
+
   def upload_recording(path)
     fill_in 'Name', with: 'Ner Wecording'
     attach_file 'recording_file', Rails.root.join(path)
