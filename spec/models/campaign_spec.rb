@@ -156,8 +156,8 @@ describe Campaign, :type => :model do
       expect(campaign).to invalidate_recycle_rate 0
     end
 
-    it 'requires recycle_rate be less than 72' do
-      expect(campaign).to invalidate_recycle_rate 73
+    it 'recycle_rate can be as large as folks want' do
+      expect(campaign).to validate_recycle_rate 24*7
     end
 
     it 'return validation error, if caller id is either blank, not a number or not a valid length' do
