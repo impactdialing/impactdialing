@@ -78,7 +78,7 @@ class Campaign < ActiveRecord::Base
   validates :recycle_rate, {
     :numericality => {
       :greater_than_or_equal_to => 1,
-      :message => 'must be a number & at least 1'
+      :message => 'must be a number and at least 1'
     }
   }
   validates :time_zone, :presence => true, :inclusion => {:in => ActiveSupport::TimeZone.zones_map.map {|z| z.first}}
