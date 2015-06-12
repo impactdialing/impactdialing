@@ -126,6 +126,22 @@ describe CallStats::Summary do
       end
     end
 
+    describe 'total numbers not currently available to dial' do
+      let(:campaign){ create(:predictive) }
+      let(:dial_report){ CallStats::Summary.new(campaign) }
+
+      before do
+        allow(dial_report).to receive(:households_blocked_by_dnc){ 2 }
+        allow(dial_report).to receive(:households_blocked_by_cell){ 1 }
+        allow(dial_report).to receive(:households_completely_dispositioned){ 7 }
+        allow(dial_report).to receive(:dialed_and_pending_retry){ 5 }
+      end
+
+      it 'counts households blocked by dnc/cell, completed households & recently dialed households awaiting recycle rate expiry' do
+        expect(dial_report.total_households_not_to_dial).to eq 15
+      end
+    end
+
     describe 'total' do
       include FakeCallData
 

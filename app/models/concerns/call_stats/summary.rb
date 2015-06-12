@@ -81,6 +81,7 @@ class CallStats::Summary
   def total_households_not_to_dial
     households_blocked_by_dnc +
     households_blocked_by_cell +
-    households_completely_dispositioned
+    households_completely_dispositioned + 
+    dialed_and_pending_retry
   end
 end
