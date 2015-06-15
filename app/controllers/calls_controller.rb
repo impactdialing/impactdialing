@@ -5,7 +5,6 @@ class CallsController < ApplicationController
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
   before_filter :find_call, :only => [:hangup, :call_ended, :drop_message, :play_message]
 
-
   # TwiML
   def incoming
     live_call = CallFlow::Call.new(params)
@@ -20,8 +19,13 @@ class CallsController < ApplicationController
   end
 
   # TwiML
-  def call_ended
-    render xml:  @call.call_ended(params['campaign_type'], params)
+  def play_message
+    xml = @call.play_message_twiml
+
+    @call.enqueue_call_flow(Providers::Phone::Jobs::DropMessageRecorder, [@call.id, 1])
+    @call.enqueue_call_flow(CallerPusherJob, [@call.caller_session.id, 'publish_message_drop_success'])
+
+    render xml: xml
   end
 
   # TwiML
@@ -36,13 +40,8 @@ class CallsController < ApplicationController
   end
 
   # TwiML
-  def play_message
-    xml = @call.play_message_twiml
-
-    @call.enqueue_call_flow(Providers::Phone::Jobs::DropMessageRecorder, [@call.id, 1])
-    @call.enqueue_call_flow(CallerPusherJob, [@call.caller_session.id, 'publish_message_drop_success'])
-
-    render xml: xml
+  def call_ended
+    render xml:  @call.call_ended(params['campaign_type'], params)
   end
 
   # Browser
