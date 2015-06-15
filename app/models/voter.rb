@@ -107,6 +107,8 @@ public
   end
 
   def do_not_call_back?
+    return false if call_back_regardless_of_status?
+
     (not not_called?) and (not call_back?) and (not retry?)
   end
 
@@ -118,7 +120,14 @@ public
     status == Voter::Status::RETRY
   end
 
+  def call_back_regardless_of_status?
+    household.call_back_regardless_of_status?
+  end
+
   def complete?
+    # handle cases where caller drops message after which voter will be recorded as dispositioned
+    return false if call_back_regardless_of_status?
+
     [
       CallAttempt::Status::SUCCESS,
       CallAttempt::Status::FAILED

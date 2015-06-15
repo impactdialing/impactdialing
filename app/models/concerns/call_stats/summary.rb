@@ -12,51 +12,26 @@ class CallStats::Summary
     @total_households ||= campaign.households.count(:id)
   end
 
-  def total_active_households
-    @total_active_households ||= campaign.households.active.count(:id)
+  def not_dialed
+    @not_dialed ||= campaign.dial_queue.available.count(:active, '-inf', '2.0')
   end
 
-  def dialed_count
-    @dialed_count ||= (households.dialed.count + ringing_count)
+  def completed
+    # health check:
+    #   if this returns positive number and households.dialed.count.zero?
+    #     then alert/fix because some data was not cached...
+    @completed ||= households.active.count -
+                   campaign.dial_queue.available.size(:active) -
+                   campaign.dial_queue.available.size(:presented) -
+                   campaign.dial_queue.recycle_bin.size
   end
 
-  def ringing_count
-    Twillio::InflightStats.new(campaign).get('ringing')
+  def retrying
+    @retrying ||= campaign.dial_queue.available.count(:active, '2.0', '+inf')
   end
 
-  def failed_count
-    @failed_count ||= households.failed.count
-  end
-
-  def households_not_dialed_count
-    return @households_not_dialed_count if defined?(@households_not_dialed_count)
-    
-    actual_count                 = households.active.not_dialed.count
-    adjusted_count               = actual_count - ringing_count
-    @households_not_dialed_count = if adjusted_count < 0
-                                     actual_count
-                                   else
-                                     adjusted_count
-                                   end
-  end
-
-  def households_completely_dispositioned
-    return @households_completely_dispositioned if defined?(@households_completely_dispositioned)
-    # count all households where all associated voters have a status of completed
-    every                                = all_voters.group(:household_id).count
-    completed                            = all_voters.completed(campaign).group(:household_id).count
-    @households_completely_dispositioned = every.reject{|id,cnt| completed[id].to_i < cnt}.size + households.failed.count
-  end
-
-  def dialed_and_available_for_retry_count
-    return @dialed_and_available_for_retry_count if defined?(@dialed_and_available_for_retry_count)
-
-    root_query                            = households.active.dialed
-    @dialed_and_available_for_retry_count = root_query.available(campaign).count + root_query.presentable(campaign).with_voters_pending_retry_or_not_called.count
-  end
-
-  def dialed_and_pending_retry
-    @dialed_and_pending_retry ||= households.dialed.recently_dialed(campaign).with_voters_pending_retry_or_not_called.count
+  def pending_retry
+    @pending_retry ||= campaign.dial_queue.recycle_bin.size
   end
 
   def households_blocked_by_dnc
@@ -68,13 +43,13 @@ class CallStats::Summary
   end
 
   def total_households_to_dial
-    households_not_dialed_count + dialed_and_available_for_retry_count
+    not_dialed + retrying
   end
 
   def total_households_not_to_dial
     households_blocked_by_dnc +
     households_blocked_by_cell +
-    households_completely_dispositioned + 
-    dialed_and_pending_retry
+    completed + 
+    pending_retry
   end
 end

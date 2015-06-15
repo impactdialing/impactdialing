@@ -62,6 +62,24 @@ describe Voter, :type => :model do
     end
   end
 
+  describe '#complete?' do
+    let(:voter){ build(:voter) }
+    it 'returns true if voter status == CallAttempt::Status::SUCCESS' do
+      voter.status = CallAttempt::Status::SUCCESS
+      expect(voter.complete?).to be_truthy
+    end
+
+    it 'returns true if voter status == CallAttempt::Status::FAILED' do
+      voter.status = CallAttempt::Status::FAILED
+      expect(voter.complete?).to be_truthy
+    end
+
+    it 'returns false when voicemail was delivered to house & campaign set to call back after voicemail delivery' do
+      allow(voter).to receive(:call_back_regardless_of_status?){ true }
+      expect(voter.complete?).to be_falsey
+    end
+  end
+
   describe '#do_not_call_back?' do
     let(:voter){ build(:voter) }
     it 'returns false when status == NOTCALLED' do
@@ -77,6 +95,11 @@ describe Voter, :type => :model do
 
     it 'returns false when status == RETRY' do
       voter.status = Voter::Status::RETRY
+      expect(voter.do_not_call_back?).to be_falsey
+    end
+
+    it 'returns false when voicemail delivered to house & campaign set to call back after voicemail delivery' do
+      allow(voter).to receive(:call_back_regardless_of_status?){ true }
       expect(voter.do_not_call_back?).to be_falsey
     end
 

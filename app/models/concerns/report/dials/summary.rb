@@ -21,12 +21,12 @@ private
       },
       {
         status: '» Not dialed',
-        number: :households_not_dialed_count,
+        number: :not_dialed,
         perc:   :available_household_perc
       },
       {
         status: '» Retrying',
-        number: :dialed_and_available_for_retry_count,
+        number: :retrying,
         perc:   :available_household_perc
       },
       {
@@ -36,12 +36,12 @@ private
       },
       {
         status: '» Completed',
-        number: :households_completely_dispositioned,
+        number: :completed,
         perc:   :not_available_household_perc
       },
       {
         status: '» Pending retry',
-        number: :dialed_and_pending_retry,
+        number: :pending_retry,
         perc:   :not_available_household_perc
       },
       {

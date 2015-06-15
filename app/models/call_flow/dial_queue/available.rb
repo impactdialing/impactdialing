@@ -77,8 +77,12 @@ public
     redis.exists(keys[:active]) or redis.exists(keys[:presented])
   end
 
-  def size
-    redis.zcard keys[:active]
+  def size(list=:active)
+    redis.zcard keys[list]
+  end
+
+  def count(list=:active, min, max)
+    redis.zcount(keys[list], min, max)
   end
 
   def range_by_score(key, min, max, opts={})

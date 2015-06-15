@@ -15,10 +15,14 @@ RSpec.describe Household, :type => :model do
   end
 
   describe 'scopes' do
-    let(:campaign){ create(:power) }
+    let(:account){ create(:account) }
+    let(:campaign){ create(:power, account: account) }
     
     before do
-      create_list(:household, 10, campaign: campaign)
+      households = create_list(:household, 10, campaign: campaign)
+      households.each do |h|
+        create(:voter, campaign: campaign, household: h)
+      end
     end
 
     describe 'presentable(campaign)' do
@@ -153,6 +157,44 @@ RSpec.describe Household, :type => :model do
     it 'returns false when household is complete' do
       allow(subject).to receive(:complete?){ true }
       expect(subject.cache?).to be_falsey
+    end
+  end
+
+  describe '#call_back_regardless_of_status?' do
+    let(:voter){ create(:voter) }
+    let(:household){ voter.household }
+
+    context 'campaign is set to call back after voicemail delivery' do
+      before do
+        household.campaign.update_attributes!({
+          use_recordings:                     true,
+          caller_can_drop_message_manually:   true,
+          call_back_after_voicemail_delivery: true
+        })
+      end
+      it 'returns true when voicemail was delivered' do
+        household.update_attributes!(status: voter.status)
+        create(:bare_call_attempt, :voicemail_delivered, campaign: household.campaign, household: household, voter: voter)
+        expect(household.call_back_regardless_of_status?).to be_truthy
+      end
+
+      it 'returns false when no voicemail was delivered' do
+        household.update_attributes!(status: voter.status)
+        expect(household.call_back_regardless_of_status?).to be_falsey
+      end
+    end
+
+    context 'campaign is set to not call back after voicemail delivery' do
+      it 'returns false when voicemail was delivered to house' do
+        household.update_attributes!(status: voter.status)
+        create(:bare_call_attempt, :voicemail_delivered, campaign: household.campaign, household: household, voter: voter)
+        expect(household.call_back_regardless_of_status?).to be_falsey
+      end
+
+      it 'returns false when no voicemail delivered to house' do
+        household.update_attributes!(status: voter.status)
+        expect(household.call_back_regardless_of_status?).to be_falsey
+      end
     end
   end
 end

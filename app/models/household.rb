@@ -49,14 +49,6 @@ class Household < ActiveRecord::Base
       campaign.recycle_rate.hours.ago
     )
   }
-  scope :with_voters_pending_retry_or_not_called, -> {
-    select('DISTINCT households.id').joins(:voters).where([
-      '(voters.call_back = ? OR voters.status = ?) AND households.status = ?',
-      true,
-      Voter::Status::NOTCALLED,
-      CallAttempt::Status::SUCCESS
-    ])
-  }
 
 private
   def sanitize_phone
@@ -109,29 +101,37 @@ public
     not blocked?
   end
 
-  def update_dial_queue(status, presented_at)
-    self.status       = status
-    self.presented_at = presented_at
-
+  def update_dial_queue
     dial_queue.dialed(self)
   end
 
   # Handle a failed call
   def failed!
-    update_dial_queue(CallAttempt::Status::FAILED, Time.now.utc)
+    self.status       = CallAttempt::Status::FAILED
+    self.presented_at = Time.now.utc
+    update_dial_queue
     save
   end
 
   # Handle a successful call
   def dialed(call_attempt)
-    update_dial_queue(call_attempt.status, call_attempt.call_end)
+    self.presented_at = call_attempt.call_end
+    self.status       = call_attempt.recording_id ? CallAttempt::Status::VOICEMAIL : call_attempt.status
+    update_dial_queue
   end
 
   def presented_recently?
     presented_at.to_i > campaign.recycle_rate.hours.ago.to_i
   end
 
+  # handle cases where caller drops message after which voter will be recorded as dispositioned
+  def call_back_regardless_of_status?
+    call_back_after_voicemail_delivery? and voicemail_delivered?
+  end
+
   def no_presentable_voters?
+    return false if call_back_regardless_of_status?
+
     voters.with_enabled(:list).count == voters.with_enabled(:list).not_presentable(campaign).count
   end
 end

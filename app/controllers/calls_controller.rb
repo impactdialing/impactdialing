@@ -27,7 +27,7 @@ class CallsController < ApplicationController
   # TwiML
   def disconnected
     unless @call.cached_caller_session.nil?
-      RedisCallFlow.push_to_disconnected_call_list(@call.id, RedisCall.recording_duration(@call.id), RedisCall.recording_url(@call.id), @call.cached_caller_session.caller_id);
+      RedisCallFlow.push_to_disconnected_call_list(@call.id, RedisCall.recording_duration(@call.id), RedisCall.recording_url(@call.id), @call.cached_caller_session.caller_id)
       @call.enqueue_call_flow(CallerPusherJob, [@call.cached_caller_session.id, "publish_voter_disconnected"])
       RedisStatus.set_state_changed_time(@call.call_attempt.campaign_id, "Wrap up", @call.cached_caller_session.id)
     end

@@ -38,6 +38,7 @@ FactoryGirl.define do
 
     trait :voicemail do
       status CallAttempt::Status::VOICEMAIL
+      presented_at { Time.now.utc }
     end
 
     trait :hangup do
