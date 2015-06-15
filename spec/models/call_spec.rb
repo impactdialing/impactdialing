@@ -300,25 +300,6 @@ describe Call, :type => :model do
         call.hungup
       end
     end
-
-    describe "disconnect"  do
-      before(:each) do
-        @script = create(:script)
-        @caller = create(:caller)
-        @campaign =  create(:bare_power, script: @script, account: @caller.account)
-        @caller_session = create(:caller_session, caller: @caller)
-        @voter = create(:voter, campaign: @campaign, caller_session: @caller_session)
-        @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
-      end
-
-      it "should hangup twiml" do
-        call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-        RedisCall.set_request_params(call.id, call.attributes)
-        expect(RedisCallFlow).to receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
-        expect(@call_attempt).to receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])
-        expect(call.disconnected).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
-      end
-    end
   end
 
   describe "hungup" do

@@ -91,6 +91,31 @@ describe CallsController, :type => :controller do
         expect(response.body).to match(/#{recording.file.url}/)
       end
     end
+
+
+    describe "#disconnected"  do
+      before(:each) do
+        @script         = create(:script)
+        @caller         = create(:caller)
+        @campaign       = create(:bare_power, script: @script, account: @caller.account)
+        @caller_session = create(:caller_session, caller: @caller)
+        @voter          = create(:voter, campaign: @campaign, caller_session: @caller_session)
+        @call_attempt   = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
+      end
+
+      it "should hangup twiml" do
+        call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
+        allow(call).to receive(:call_attempt){ @call_attempt }
+        allow(Call).to receive(:find).with("#{call.id}"){ call }
+
+        expect(RedisCallFlow).to receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
+        expect(@call_attempt).to receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])
+
+        post :disconnected, call.attributes
+        
+        expect(response.body).to eq(Twilio::TwiML::Response.new { |r| r.Hangup }.text)
+      end
+    end
   end
 
   describe 'Browser endpoints' do
