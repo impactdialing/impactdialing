@@ -44,6 +44,12 @@ class AnsweredJob
         call_attempt.update_attributes(voter_response_processed: true)
         call_attempt.voter.update_attribute(:result_date, Time.now)
 
+        # workaround timing issue between AnsweredJob & PersistCalls
+        # PersistCalls calls Household#dialed, which interrogates Household & Voter whether to keep in redis dial queue
+        # if PersistCalls runs before AnsweredJob & the voter responses were marked for retry, then the voter will be
+        # removed before the answers are persisted and the rdb knows the correct answer on whether to keep in redis
+        call_attempt.campaign.dial_queue.cache(call_attempt.voter) if call_attempt.voter.cache?
+
         RedisCall.delete(call.id)
       else
         if call_attempt.created_at < 10.minutes.ago
