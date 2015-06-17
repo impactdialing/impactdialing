@@ -34,7 +34,7 @@ module CampaignHelper
   end
 
   def dials_summary
-    return '' unless @campaign.errors.empty?
+    return '' unless @campaign.errors.empty? and !@campaign.new_record?
 
     @dials_summary ||= Report::Dials::SummaryController.render(:html, {
       campaign: @campaign,
