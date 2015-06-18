@@ -85,6 +85,8 @@ module CallFlow
         # phone number was not added to recycle bin
         # so will not be dialed again without admin action
         households.remove_house(household.phone)
+      else
+        log :info, "Not rejected by recycle bin. Keeping Household[#{household.id}]"
       end
       available.dialed(household.phone)
     end

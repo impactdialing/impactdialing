@@ -48,7 +48,10 @@ class AnsweredJob
         # PersistCalls calls Household#dialed, which interrogates Household & Voter whether to keep in redis dial queue
         # if PersistCalls runs before AnsweredJob & the voter responses were marked for retry, then the voter will be
         # removed before the answers are persisted and the rdb knows the correct answer on whether to keep in redis
-        call_attempt.campaign.dial_queue.cache(call_attempt.voter) if call_attempt.voter.cache?
+        if call_attempt.voter.cache?
+          p "AnsweredJob: Household[#{call_attempt.voter.household_id}] caching voter: #{call_attempt.voter.inspect}"
+          call_attempt.campaign.dial_queue.cache(call_attempt.voter)
+        end
 
         RedisCall.delete(call.id)
       else
