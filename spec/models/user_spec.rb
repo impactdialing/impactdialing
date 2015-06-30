@@ -6,6 +6,14 @@ describe User, :type => :model do
     user
   end
 
+  describe 'new accounts' do
+    it 'require unique email address (case insensitive)' do
+      usr       = build(:user)
+      usr.email = user.email.capitalize
+      expect(usr).to have(1).error_on(:email)
+    end
+  end
+
   it "should not allow spambots" do
     u = User.new(:captcha =>"something")
     u.save
