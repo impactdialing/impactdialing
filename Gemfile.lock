@@ -478,6 +478,3 @@ DEPENDENCIES
   webmock
   will_paginate
   wolverine
-
-BUNDLED WITH
-   1.10.3
