@@ -3,13 +3,41 @@ require 'rails_helper'
 describe Callers::StationController do
   include FakeCallData
 
+  before do
+    admin       = create(:user)
+    other_admin = create(:user)
+    @account    = admin.account
+    @campaign   = create_campaign_with_script(:bare_power, @account).last
+    @caller     = create(:caller, {campaign: @campaign, account: @account})
+  end
+
+  describe '#login' do
+    context 'Caller#campaign_id is blank' do
+      before do
+        @caller.update_attributes!(campaign_id: nil)
+        post :login, username: @caller.username, password: @caller.password
+      end
+
+      it 're-renders login form' do
+        expect(response).to render_template 'callers/station/login'
+      end
+    end
+    context 'Caller#campaign is archived' do
+      before do
+        campaign = @caller.campaign
+        campaign.active = false
+        campaign.save!
+        post :login, username: @caller.username, password: @caller.password
+      end
+
+      it 're-renders login form' do
+        expect(response).to render_template 'callers/station/login'
+      end
+    end
+  end
+
   describe '#logout' do
     before do
-      admin                = create(:user)
-      other_admin          = create(:user)
-      @account             = admin.account
-      @campaign            = create_campaign_with_script(:bare_power, @account).last
-      @caller              = create(:caller, {campaign: @campaign, account: @account})
       post :login, username: @caller.username, password: @caller.password
       expect(response.headers['Location']).to match /#{callveyor_path}/
     end
@@ -36,28 +64,43 @@ describe Callers::StationController do
       @other_campaign      = create_campaign_with_script(:bare_power, @other_account).last
       @caller              = create(:caller, {campaign: @campaign, account: @account})
     end
-    context 'Caller#campaign_id is blank' do
+
+    context 'Caller#campaign_id is nil (possible if caller session still active after campaign archive)' do
       before do
+        login_as(@caller)
         @caller.update_attributes!(campaign_id: nil)
-        post :login, username: @caller.username, password: @caller.password
       end
 
-      it 're-renders login form' do
-        expect(response).to render_template 'callers/station/login'
-      end
-    end
-    context 'Caller#campaign is archived' do
-      before do
-        campaign = @caller.campaign
-        campaign.active = false
-        campaign.save!
-        post :login, username: @caller.username, password: @caller.password
+      shared_examples 'whenever Caller#campaign_id is nil' do
+        it 'clears session[:caller]' do
+          self.send(verb, action)
+          expect(session[:caller]).to be_nil
+        end
+        it 'redirects to login page' do
+          self.send(verb, action)
+          expect(response).to redirect_to callveyor_login_path
+        end
       end
 
-      it 're-renders login form' do
-        expect(response).to render_template 'callers/station/login'
+      context '#show' do
+        let(:verb){ :get }
+        let(:action){ :show }
+        it_behaves_like 'whenever Caller#campaign_id is nil'
+      end
+
+      context '#script' do
+        let(:verb){ :get }
+        let(:action){ :script }
+        it_behaves_like 'whenever Caller#campaign_id is nil'
+      end
+
+      context '#create' do
+        let(:verb){ :post }
+        let(:action){ :create }
+        it_behaves_like 'whenever Caller#campaign_id is nil'
       end
     end
+    
     context 'campaign_id is present in params' do
       before do
         login_as(@caller)

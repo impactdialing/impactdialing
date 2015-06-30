@@ -12,7 +12,16 @@ module Callers
 
     before_filter :disable_header_cache, only: [:show]
 
+    before_filter :logout_if_floating_caller, except: [:logout, :login]
+
 private
+    def logout_if_floating_caller
+      check_login
+      unless @caller.present? and @caller.campaign.present?
+        logout and return
+      end
+    end
+
     def disable_header_cache
       expires_now
     end
