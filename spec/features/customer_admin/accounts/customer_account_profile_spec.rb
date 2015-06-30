@@ -56,7 +56,9 @@ describe 'Account profile', type: :feature, admin: true do
     fill_in 'CVC', with: 123
     fill_in_expiration
     click_on 'Update payment information'
-    expect(page).to have_content I18n.t('subscriptions.update_billing.success')
+    retry_assertion do
+      expect(page).to have_content I18n.t('subscriptions.update_billing.success')
+    end
   end
 
   def go_to_billing
@@ -70,7 +72,9 @@ describe 'Account profile', type: :feature, admin: true do
 
   def go_to_update_billing
     go_to_billing
-    click_on 'Update card'
+    retry_assertion do
+      click_on 'Update card'
+    end
   end
 
   def expect_monthly_cost_eq(expected_cost)
@@ -177,7 +181,9 @@ describe 'Account profile', type: :feature, admin: true do
         fill_in 'Zipcode', with: 12345
         fill_in_expiration
         click_on 'Update payment information'
-        expect(page).to have_content 'Your card has expired.'
+        retry_assertion do
+          expect(page).to have_content 'Your card has expired.'
+        end
       end
     end
 
@@ -217,12 +223,24 @@ describe 'Account profile', type: :feature, admin: true do
 
       it 'allows for new invoice recipient to be selected' do
         go_to_update_billing
-        fill_in 'Card number', with: StripeFakes.valid_cards[:visa].first
-        fill_in 'CVC', with: 123
-        fill_in_expiration
-        select user.email, from: 'Who should we send invoices to?'
-        click_on 'Update payment information'
-        expect(page).to have_content I18n.t('subscriptions.update_billing.success')
+        retry_assertion do
+          fill_in 'Card number', with: StripeFakes.valid_cards[:visa].first
+        end
+        retry_assertion do
+          fill_in 'CVC', with: 123
+        end
+        retry_assertion do
+          fill_in_expiration
+        end
+        retry_assertion do
+          select user.email, from: 'Who should we send invoices to?'
+        end
+        retry_assertion do
+          click_on 'Update payment information'
+        end
+        retry_assertion do
+          expect(page).to have_content I18n.t('subscriptions.update_billing.success')
+        end
       end
     end
 
@@ -259,7 +277,9 @@ describe 'Account profile', type: :feature, admin: true do
         expect_monthly_cost_eq "#{cost * callers}"
 
         click_on  'Upgrade'
-        expect(page).to have_content I18n.t('subscriptions.upgrade.success')
+        retry_assertion do
+          expect(page).to have_content I18n.t('subscriptions.upgrade.success')
+        end
       end
     end
 
@@ -434,8 +454,12 @@ describe 'Account profile', type: :feature, admin: true do
         # page.driver.browser.switch_to.alert.accept # handle alert for selenium
       end
       it 'displays flash notice when successful' do
-        expect(page).to have_content I18n.t('subscriptions.cancelled')
-        expect(page).to have_content "You have cancelled your subscription."
+        retry_assertion do
+          expect(page).to have_content I18n.t('subscriptions.cancelled')
+        end
+        retry_assertion do
+          expect(page).to have_content "You have cancelled your subscription."
+        end
       end
     end
   end
