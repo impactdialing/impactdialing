@@ -10,14 +10,18 @@ module Client
     end
 
     def new
-      new_caller_group
-      load_campaigns
+      @caller_group = account.caller_groups.new
+      @campaigns = account.campaigns.active
       respond_with @caller_group
     end
 
     def create
-      new_caller_group
-      save_caller_group
+      @caller_group = account.caller_groups.new(caller_group_params)
+      if @caller_group.save
+        flash_message(:notice, I18n.t('activerecord.successes.models.caller_group.saved'))
+      else
+        @campaigns = account.campaigns.active
+      end
       respond_with @caller_group, location: client_caller_groups_path
     end
 
@@ -28,30 +32,35 @@ module Client
     end
 
     def edit
-      load_campaigns
+      @campaigns = account.campaigns.active
       respond_with @caller_group
     end
 
     def update
-      save_caller_group
+      save_result = @caller_group.update_attributes(caller_group_params)
+      unless save_result
+        @campaigns = account.campaigns.active
+      else
+        if @caller_group.previous_changes.keys.include?('campaign_id')
+          flash_message(:notice, I18n.t('activerecord.successes.models.caller_group.reassigned'))
+        else
+          flash_message(:notice, I18n.t('activerecord.successes.models.caller_group.saved'))
+        end
+      end
       respond_with @caller_group, location: client_caller_groups_path do |format|
-        format.json {render :json => {message: 'Caller Group updated'}, :status => :ok} if @caller_group.errors.empty?
+       format.json {render :json => {message: 'Caller Group updated'}, :status => :ok} if @caller_group.errors.empty?
       end
     end
 
     def destroy
       @caller_group.destroy
-      flash_message(:notice, "Caller Group deleted")
+      flash_message(:notice, I18n.t('activerecord.successes.models.caller_group.deleted'))
       respond_with @caller_group, location: client_caller_groups_path do |format|
         format.json {render json: {message: 'Caller Group deleted'}, status: :ok} if @caller_group.errors.empty?
       end
     end
 
   private
-    def new_caller_group
-      @caller_group = account.caller_groups.new
-    end
-
     def load_and_verify_caller_group
       begin
         @caller_group = CallerGroup.find(params[:id])
@@ -63,15 +72,6 @@ module Client
         render :json => {message: 'Cannot access caller group'}, :status => :unauthorized
         return
       end
-    end
-
-    def load_campaigns
-      @campaigns = account.campaigns.active
-    end
-
-    def save_caller_group
-      load_campaigns
-      flash_message(:notice, "Caller Group saved") if @caller_group.update_attributes(caller_group_params)
     end
 
     def caller_group_params

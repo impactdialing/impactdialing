@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Caller Group Management', type: :feature, rack: true do
+describe 'add caller group', type: :feature, rack: true do
   let(:customer) do
     create(:user)
   end
@@ -27,5 +27,48 @@ describe 'Caller Group Management', type: :feature, rack: true do
     visit "/client/callers/#{caller.id}/edit"
 
     select "#{group.name}", from: 'Caller group'
+  end
+
+  it 'throws an error when an added caller group name is blank' do
+    visit new_client_caller_group_path
+    click_on 'Save'
+    expect(page).to have_content "Name can't be blank"
+  end
+end
+
+describe 'edit caller group', type: :feature, rack: true do
+  let(:admin){ create(:user)}
+  let(:account){ admin.account }
+  let(:original_campaign){ create(:preview, account: account) }
+  let!(:caller_group){ create(:caller_group, campaign: original_campaign, account: account) }
+  let(:caller){ create(:caller, campaign: original_campaign, caller_group: caller_group, account: account) }
+  let!(:new_campaign){ create(:predictive, account: account) }
+
+  it 'gives proper notification when campaign is changed' do
+    expect(account.campaigns).to include(original_campaign)
+    web_login_as(admin)
+    visit edit_client_caller_group_path(caller_group)
+    select new_campaign.name, from: 'Campaign'
+    click_on 'Save'
+    expect(page).to have_content 'Caller Group has been reassigned to a different campaign.
+    The change has been submitted and it might take a few minutes to update.'
+  end
+
+  it 'gives a different notification when name in caller group is changed or no changes are made' do
+    expect(account.campaigns).to include(original_campaign)
+    web_login_as(admin)
+    visit edit_client_caller_group_path(caller_group)
+    fill_in 'Name', with: 'different name'
+    click_on 'Save'
+    expect(page).to have_content "Caller Group saved"
+  end
+
+  it 'throws an error when an edited caller group name is blank' do
+    expect(account.campaigns).to include(original_campaign)
+    web_login_as(admin)
+    visit edit_client_caller_group_path(caller_group)
+    fill_in 'Name', with: ''
+    click_on 'Save'
+    expect(page).to have_content "Name can't be blank"
   end
 end

@@ -5,7 +5,6 @@ module Client
     skip_before_filter :check_tos_accepted, :only => [:reassign_to_campaign]
     before_filter :full_access, :except => [:reassign_to_campaign, :usage, :call_details]
     before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
-    before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
 
     respond_to :html, :json
 
@@ -15,39 +14,57 @@ module Client
     end
 
     def new
+      @campaigns = account.campaigns.active
       @caller                = account.callers.new
       @caller.is_phones_only = params[:is_phones_only]
-      load_caller_groups
+      @caller_groups = account.caller_groups
       respond_with @caller
     end
 
     def show
+      @campaigns = account.campaigns.active
       respond_with @caller do |format|
         format.html {redirect_to edit_client_caller_path(@caller)}
       end
     end
 
     def edit
-      load_caller_groups
+      @campaigns = account.campaigns.active
+      @caller_groups = account.caller_groups
       respond_with @caller
     end
 
     def update
-      save_caller
+      save_result = @caller.update_attributes(caller_params)
+      unless save_result
+        @campaigns = account.campaigns.active
+        @caller_groups = account.caller_groups
+      else
+        if @caller.previous_changes.keys.include?('campaign_id')
+          flash_message(:notice, I18n.t('activerecord.successes.models.caller.reassigned'))
+        else
+          flash_message(:notice, I18n.t('activerecord.successes.models.caller.saved'))
+        end
+      end
       respond_with @caller, location: client_callers_path do |format|
         format.json {render :json => {message: 'Caller updated'}, status: :ok} if @caller.errors.empty?
       end
     end
 
     def create
-      @caller = account.callers.new
-      save_caller
+      @caller = account.callers.new(caller_params)
+      if @caller.save
+        flash_message(:notice, I18n.t('activerecord.successes.models.caller.saved'))
+      else
+        @campaigns = account.campaigns.active
+        @caller_groups = account.caller_groups
+      end
       respond_with @caller, location: client_callers_path
     end
 
     def destroy
       @caller.active = false
-      @caller.save ? flash_message(:notice, "Caller archived") : flash_message(:error, @caller.errors.full_messages.join)
+      @caller.save ? flash_message(:notice, I18n.t('activerecord.successes.models.caller.archived')) : flash_message(:error, @caller.errors.full_messages.join)
       respond_with @caller, location: client_callers_path do |format|
         format.json {render :json => {message: 'Caller archived'}, :status => :ok} if @caller.errors.empty?
       end
@@ -93,7 +110,7 @@ module Client
     def restore
       @caller.active = true
       if @caller.save
-        flash_message(:notice, 'Caller restored')
+        flash_message(:notice, I18n.t('activerecord.successes.models.caller.restored'))
       else
         flash_message(:error, @caller.errors.full_messages.join('; '))
       end
@@ -115,32 +132,21 @@ module Client
     end
 
     private
-
-    def load_and_verify_caller
-      begin
-        @caller = Caller.find(params[:id] || params[:caller_id])
-      rescue ActiveRecord::RecordNotFound => e
-        render :json=> {"message"=>"Resource not found"}, :status => :not_found
-        return
+      def load_and_verify_caller
+        begin
+          @caller = Caller.find(params[:id] || params[:caller_id])
+        rescue ActiveRecord::RecordNotFound => e
+          render :json=> {"message"=>"Resource not found"}, :status => :not_found
+          return
+        end
+        if @caller.account != account
+          render :json => {message: 'Cannot access caller'}, :status => :unauthorized
+          return
+        end
       end
-      if @caller.account != account
-        render :json => {message: 'Cannot access caller'}, :status => :unauthorized
-        return
-      end
-    end
 
     def load_campaigns
       @campaigns = account.campaigns.active
-    end
-
-    def load_caller_groups
-      @caller_groups = account.caller_groups
-    end
-
-    def save_caller
-      load_campaigns
-      load_caller_groups
-      flash_message(:notice, "Caller saved") if @caller.update_attributes(caller_params)
     end
 
     def caller_params
