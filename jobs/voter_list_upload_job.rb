@@ -27,17 +27,6 @@ class VoterListUploadJob
     {"errors" => [], "success" => []}
   end
 
-  def self.new_response_strategy(strategy, voter_list, callback_url)
-    case strategy
-    when 'webui'
-      VoterListWebuiStrategy.new
-    when 'api'
-      VoterListApiStrategy.new(voter_list.account_id, voter_list.campaign_id, callback_url)
-    else
-      raise "Unknown Strategy for VoterListUploadJob (#{strategy})"
-    end
-  end
-
   def self.handle_errors(responder, errors, domain, email, voter_list)
     tpl = response_template.dup
     tpl["errors"].concat([*errors])
@@ -82,12 +71,12 @@ class VoterListUploadJob
     return [headers, data]
   end
 
-  def self.perform(voter_list_id, email, domain, callback_url, strategy="webui")
+  def self.perform(voter_list_id, email, domain)
     ActiveRecord::Base.clear_active_connections!
 
     begin
       voter_list  = VoterList.find(voter_list_id)
-      responder   = new_response_strategy(strategy, voter_list, callback_url)
+      responder   = VoterListWebuiStrategy.new
       csv_mapping = CsvMapping.new(voter_list.csv_to_system_map)
 
       unless csv_mapping.valid?
@@ -124,32 +113,13 @@ class VoterListUploadJob
       # we are re-queueing so make sure to not duplicate voters
       Rails.logger.info "Caught Resque::TermException. Destroying #{voter_list.voters.count} Voter records and re-queueing."
       voter_list.voters.destroy_all
-      Resque.enqueue(self, voter_list_id, email, domain, callback_url, strategy)
+      Resque.enqueue(self, voter_list_id, email, domain)
       raise
     end
   end
 end
 
-class VoterListApiStrategy
-  require 'net/http'
-
-  def initialize(account_id, campaign_id, callback_url)
-    @account_id = account_id
-    @campaign_id = campaign_id
-    @callback_url = callback_url
-  end
-
-  def response(response, params)
-    uri = URI.parse(@callback_url)
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl=true
-    request = Net::HTTP::Post.new(uri.request_uri)
-    request.set_form_data({message: response, account_id: @account_id, campaign_id: @campaign_id, list_name: params[:voter_list_name]})
-    http.start{http.request(request)}
-  end
-end
-
- class VoterListWebuiStrategy
+class VoterListWebuiStrategy
   def initialize
     @user_mailer = UserMailer.new
   end

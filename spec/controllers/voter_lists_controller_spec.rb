@@ -154,7 +154,7 @@ describe VoterListsController, :type => :controller do
               post :create, params.merge(upload: csv_upload)
               expect(Resque.peek(:dial_queue, 0, 100)).to include({
                 'class' => 'VoterListUploadJob',
-                'args' => [anything, anything, anything, anything]
+                'args' => [anything, anything, anything]
               })
             end
           end

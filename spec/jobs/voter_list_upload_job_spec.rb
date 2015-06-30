@@ -44,13 +44,8 @@ describe 'VoterListUploadJob' do
   end
   let(:domain){ admin.domain }
   let(:email){ admin.email }
-  let(:callback_url){ '' }
-  let(:strategy){ 'webui' }
   let(:web_response_strategy) do
     instance_double('VoterListWebuiStrategy', {response: nil})
-  end
-  let(:api_response_strategy) do
-    instance_double('VoterListApiStrategy', {response: nil})
   end
   let(:responder_opts) do
     {
@@ -63,12 +58,11 @@ describe 'VoterListUploadJob' do
     allow(amazon_s3).to receive(:read).with(voter_list.s3path){ csv_file }
     allow(AmazonS3).to receive(:new){ amazon_s3 }
     allow(VoterListWebuiStrategy).to receive(:new){ web_response_strategy }
-    allow(VoterListApiStrategy).to receive(:new){ api_response_strategy }
   end
 
   it 'downloads VoterList CSV from S3' do
     expect(amazon_s3).to receive(:read).with(voter_list.s3path)
-    VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+    VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
   end
 
   context 'CSV to system map is NOT valid' do
@@ -76,37 +70,37 @@ describe 'VoterListUploadJob' do
       voter_list.update_attributes! csv_to_system_map: invalid_csv_to_system_map
     end
 
-    it 'tells the VoterList*Strategy instance to respond with the error message(s)' do
+    it 'tells the VoterListWebUiStrategy instance to respond with the error message(s)' do
       csv_mapping = CsvMapping.new(invalid_csv_to_system_map)
       csv_mapping.valid?
       expect(csv_mapping.errors).to_not be_empty
       expect(web_response_strategy).to receive(:response).with({'errors' => csv_mapping.errors, 'success' => []}, responder_opts)
 
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
     end
 
     it 'returns immediately (without downloading file from S3)' do
       expect(amazon_s3).to_not receive(:read)
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
     end
   end
 
   shared_examples 'any upload that raises ActiveRecord::StatementInvalid' do
     it 'destroys any created voters' do
       list_id = voter_list.id
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
       expect(Voter.where(voter_list_id: list_id).count).to be_zero
     end
 
     it 'destroys the voter list' do
       list_id = voter_list.id
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
       expect(VoterList.where(id: list_id).count).to be_zero
     end
 
     it 'returns immediately' do
       expect(VoterListUploadJob).to_not receive(:handle_success)
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
     end
   end
 
@@ -129,9 +123,9 @@ describe 'VoterListUploadJob' do
         allow(amazon_s3).to receive(:read).with(voter_list.s3path){ lengthy_value_voter_list }
       end
 
-      it 'tells the VoterList*Strategy instance to respond with the error message(s)' do
+      it 'tells the VoterListWebUiStrategy instance to respond with the error message(s)' do
         expect(web_response_strategy).to receive(:response).with({'errors' => [I18n.t('activerecord.errors.models.voter_list.general_error')], 'success' => []}, responder_opts)
-        VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+        VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
       end
 
       it_behaves_like 'any upload that raises ActiveRecord::StatementInvalid'
@@ -147,9 +141,9 @@ describe 'VoterListUploadJob' do
         allow(VoterBatchImport).to receive(:new){ fake_batch_import }
       end
       
-      it 'tells the VoterList*Strategy instance to respond with the error message(s)' do
+      it 'tells the VoterListWebUiStrategy instance to respond with the error message(s)' do
         expect(web_response_strategy).to receive(:response).with({'errors' => [I18n.t('activerecord.errors.models.voter_list.general_error')], 'success' => []}, responder_opts)
-        VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+        VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
       end
 
       it_behaves_like 'any upload that raises ActiveRecord::StatementInvalid'
@@ -158,22 +152,22 @@ describe 'VoterListUploadJob' do
 
   shared_examples 'valid list file' do
     it 'creates 1 Voter record for each row of data' do
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
       expect(Voter.count).to(eq(success_count))
     end
 
-    it 'tells the VoterList*Strategy instance to respond with the success message(s)' do
+    it 'tells the VoterListWebUiStrategy instance to respond with the success message(s)' do
       msg      = "Upload complete. #{success_count} out of #{total_count} records imported successfully. "
       msg     += "0 out of #{success_count} records contained phone numbers in your Do Not Call list."
       msg     += " 0 records were skipped because they are assigned to cellular devices."
       response = {'errors' => [], 'success' => [msg]}
 
       expect(web_response_strategy).to receive(:response).with(response, responder_opts)
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
     end
 
     it 'queues ResetVoterListCounterCache' do
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
       reset_voter_list_counter_cache_job = {'class' => 'ResetVoterListCounterCache', 'args' => [voter_list.id]}
       expect(resque_jobs(:general)).to include reset_voter_list_counter_cache_job
     end
@@ -201,18 +195,19 @@ describe 'VoterListUploadJob' do
   context 'CSV file is malformed in some way' do
     before do
       allow(amazon_s3).to receive(:read).with(voter_list.s3path){ invalid_csv_file }
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
     end
 
     it 'tells the VoterList*Strategy instance to respond with the error message(s)' do
       response = {'errors' => [I18n.t('csv_validator.malformed')], 'success' => []}
+    it 'tells the VoterListWebUiStrategy instance to respond with the error message(s)' do
       expect(web_response_strategy).to receive(:response).with(response, responder_opts)
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
     end
 
     it 'returns immediately, before VoterBatchImport is instantiated' do
       expect(VoterBatchImport).to_not receive(:new)
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
     end
   end
 
@@ -223,7 +218,7 @@ describe 'VoterListUploadJob' do
     end
     it 'destroys any voters already created from this list' do
       begin
-        VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+        VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
       rescue Resque::TermException
       end
 
@@ -231,11 +226,11 @@ describe 'VoterListUploadJob' do
     end
     it 're-queues itself with same args' do
       begin
-        VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
+        VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
       rescue Resque::TermException
       end
       actual = Resque.peek('dial_queue', 0, 10)
-      expected = {'class' => 'VoterListUploadJob', 'args' => [voter_list.id, admin.email, admin.domain, callback_url, strategy]}
+      expected = {'class' => 'VoterListUploadJob', 'args' => [voter_list.id, admin.email, admin.domain]}
       expect(actual).to include expected
     end
   end
