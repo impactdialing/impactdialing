@@ -75,7 +75,7 @@ class VoterListUploadJob
       data     = csv_file.readlines
     rescue CSV::MalformedCSVError => err
       Rails.logger.error "Caught CSV::MalformedCSVError #{err.message}. Destroying VoterList[#{voter_list.name}] for Account[#{voter_list.account_id}] on Campaign[#{voter_list.campaign_id}] at S3path[#{voter_list.s3path}]"
-      errors = [I18n.t(:csv_is_invalid)]
+      errors = [I18n.t('csv_validator.invalid')]
       handle_errors(responder, errors, domain, email, voter_list)
       return []
     end
