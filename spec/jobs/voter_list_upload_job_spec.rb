@@ -205,7 +205,7 @@ describe 'VoterListUploadJob' do
     end
 
     it 'tells the VoterList*Strategy instance to respond with the error message(s)' do
-      response = {'errors' => [I18n.t('csv_validator.invalid')], 'success' => []}
+      response = {'errors' => [I18n.t('csv_validator.malformed')], 'success' => []}
       expect(web_response_strategy).to receive(:response).with(response, responder_opts)
       VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain, callback_url, strategy)
     end

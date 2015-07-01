@@ -1,11 +1,6 @@
 class CsvMapping
   attr_reader :errors
 
-  module ErrorMessages
-    MULTIPLE_MAPPING = "Could not import. Two columns in the uploaded file were mapped to the same destination."
-    NO_PHONE = "Could not import. You did not map any column in the uploaded file to Phone"
-  end
-
   def initialize(mapping)
     @mapping = mapping
     @errors = []
@@ -31,8 +26,8 @@ class CsvMapping
 
   def validate
     @errors = []
-    @errors << ErrorMessages::NO_PHONE unless csv_index_for("phone")
-    @errors << ErrorMessages::MULTIPLE_MAPPING if invalid_repetition_of_system_column?
+    @errors << I18n.t('csv_mapping.missing_phone') unless csv_index_for("phone")
+    @errors << I18n.t('csv_mapping.multiple_mapping') if invalid_repetition_of_system_column?
   end
 
   def remap_system_column!(source_field, hash)

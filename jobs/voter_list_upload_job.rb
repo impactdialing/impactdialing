@@ -75,7 +75,7 @@ class VoterListUploadJob
       data     = csv_file.readlines
     rescue CSV::MalformedCSVError => err
       Rails.logger.error "Caught CSV::MalformedCSVError #{err.message}. Destroying VoterList[#{voter_list.name}] for Account[#{voter_list.account_id}] on Campaign[#{voter_list.campaign_id}] at S3path[#{voter_list.s3path}]"
-      errors = [I18n.t('csv_validator.invalid')]
+      errors = [I18n.t('csv_validator.malformed')]
       handle_errors(responder, errors, domain, email, voter_list)
       return []
     end
@@ -108,11 +108,6 @@ class VoterListUploadJob
       rescue ActiveRecord::StatementInvalid, Mysql2::Error => exception
         Rails.logger.error "VoterListUploadJob Failed. Destroying Voters & VoterList. Campaign[#{voter_list.campaign_id}] Error: #{exception.message}"
 
-        # error_msg = if exception.class == Mysql2::Error and exception.message =~ /\AData too long for column.*/
-        #               I18n.t('activerecord.errors.models.voter_list.data_too_long')
-        #             else
-        #               I18n.t('activerecord.errors.models.voter_list.general_error')
-        #             end
         error_msg = I18n.t('activerecord.errors.models.voter_list.general_error')
 
         handle_errors(responder, error_msg, domain, email, voter_list)
