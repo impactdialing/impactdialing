@@ -31,7 +31,7 @@
     <td <% if index == 0 %>
           data-step="6" data-intro="The number of exported CSV files available for download."
         <% end %>
-        ><%= link_to "[#{@download_report_count[c.id.to_s] || 0 }]", downloaded_reports_client_campaign_reports_path(c) %></td>
+        ><%= link_to "[#{@download_report_count[c.id] || 0 }]", downloaded_reports_client_campaign_reports_path(c) %></td>
   </tr>
   <% end %>
 
