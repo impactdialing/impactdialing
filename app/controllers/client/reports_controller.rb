@@ -71,7 +71,7 @@ module Client
         load_caller
         @record = @caller
         from_date_pool = build_date_pool(:from_date, [@record.caller_sessions.first, @record])
-        time_zone = @record.campaign.time_zone
+        time_zone = @record.campaign.try(:time_zone)
       end
 
       to_date_pool = build_date_pool(:to_date)
