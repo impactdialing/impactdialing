@@ -27,13 +27,13 @@ class VoterListUploadJob
     {"errors" => [], "success" => []}
   end
 
-  def self.handle_errors(responder, errors, domain, email, voter_list)
+  def self.handle_errors(errors, domain, email, voter_list)
     tpl = response_template.dup
     tpl["errors"].concat([*errors])
-    submit_response!(responder, tpl, domain, email, voter_list)
+    submit_response!(tpl, domain, email, voter_list)
   end
 
-  def self.handle_success(responder, result, domain, email, voter_list)
+  def self.handle_success(result, domain, email, voter_list)
     tpl           = response_template.dup
     dnc_count     = result[:dnc]
     success_count = result[:success]
@@ -48,15 +48,16 @@ class VoterListUploadJob
       " #{dnc_count} out of #{success_count} records contained phone numbers",
       " in your Do Not Call list. #{cell_count} records were skipped because they are assigned to cellular devices."
     ].join
-    submit_response!(responder, tpl, domain, email, voter_list)
+    submit_response!(tpl, domain, email, voter_list)
   end
 
-  def self.submit_response!(responder, response, domain, email, voter_list)
+  def self.submit_response!(response, domain, email, voter_list)
     Rails.logger.debug "#{self}: submit_response! #{response}"
+    responder = VoterListWebuiStrategy.new
     responder.response(response, {domain: domain, email: email, voter_list_name: voter_list.name})
   end
 
-  def self.parse_csv(responder, domain, email, voter_list)
+  def self.parse_csv(domain, email, voter_list)
     begin
       csv_file = CSV.new(VoterList.read_from_s3(voter_list.s3path), :col_sep => voter_list.separator)
       # parse now to surface any CSV issues early
@@ -66,6 +67,7 @@ class VoterListUploadJob
       Rails.logger.error "Caught CSV::MalformedCSVError #{err.message}. Destroying VoterList[#{voter_list.name}] for Account[#{voter_list.account_id}] on Campaign[#{voter_list.campaign_id}] at S3path[#{voter_list.s3path}]"
       errors = [I18n.t('csv_validator.malformed')]
       handle_errors(responder, errors, domain, email, voter_list)
+
       return []
     end
     return [headers, data]
@@ -76,17 +78,16 @@ class VoterListUploadJob
 
     begin
       voter_list  = VoterList.find(voter_list_id)
-      responder   = VoterListWebuiStrategy.new
       csv_mapping = CsvMapping.new(voter_list.csv_to_system_map)
 
       unless csv_mapping.valid?
-        handle_errors(responder, csv_mapping.errors, domain, email, voter_list)
+        handle_errors(csv_mapping.errors, domain, email, voter_list)
         return false
       end
 
-      headers, data = parse_csv(responder, domain, email, voter_list)
+      headers, data = parse_csv(domain, email, voter_list)
       if headers.nil? or data.nil?
-        handle_errors(responder, "No data found in uploaded file.", domain, email, voter_list)
+        handle_errors("No data found in uploaded file.", domain, email, voter_list)
         return false
       end
 
@@ -99,14 +100,14 @@ class VoterListUploadJob
 
         error_msg = I18n.t('activerecord.errors.models.voter_list.general_error')
 
-        handle_errors(responder, error_msg, domain, email, voter_list)
+        handle_errors(error_msg, domain, email, voter_list)
         voter_list.voters.destroy_all
         voter_list.destroy
         return false
       end
 
       # build & email import results
-      handle_success(responder, result, domain, email, voter_list)
+      handle_success(result, domain, email, voter_list)
 
       Resque.enqueue(ResetVoterListCounterCache, voter_list_id)
     rescue Resque::TermException
