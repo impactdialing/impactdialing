@@ -34,7 +34,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
     end
 
     it 'the new recording can be selected from the campaign form' do
-      select 'New Recording', from: 'Message'
+      select 'Ner Wecording', from: 'Message'
     end
   end
 
@@ -65,7 +65,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
 
   context 'no file selected' do
     before do
-      fill_in 'Name', with: 'New Recording'
+      fill_in 'Name', with: 'Ner Wecording'
       click_on 'Upload'
     end
     it 'displays error' do
