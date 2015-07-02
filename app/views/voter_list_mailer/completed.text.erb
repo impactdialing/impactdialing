@@ -1,0 +1,17 @@
+<%= @results[:saved_numbers] %> of <%= @results[:total_numbers] %> numbers imported successfully.
+
+<%= @results[:saved_leads] %> of <%= @results[:total_leads] %> leads imported successfully.
+
+Of <%= @results[:saved_numbers] %> numbers:
+
+- <%= @results[:new_numbers] %> are new numbers
+- <%= @results[:pre_existing_numbers] %> numbers had leads added or updated
+- <%= @results[:dnc_numbers] %> matched numbers in the DNC
+- <%= @results[:cell_numbers] %> were cell phone numbers
+
+Of <%= @results[:saved_leads] %> leads:
+
+- <%= @results[:new_leads] %> are new leads
+<% if @results[:use_custom_id] -%>
+- <%= @results[:updated_leads] %> leads were updated
+<% end %>
