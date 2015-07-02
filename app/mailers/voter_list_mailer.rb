@@ -1,3 +1,5 @@
+require 'base64'
+
 class VoterListMailer < MandrillMailer
   attr_reader :email, :campaign, :voter_list
 
@@ -5,6 +7,14 @@ private
   def format_date(datetime)
     t = DateTime.parse(datetime)
     t.in_time_zone(campaign.time_zone).strftime("%b%e %Y")
+  end
+
+  def build_attachment(invalid_rows)
+    [{
+      type:    'text/plain',
+      name:    "InvalidRows #{voter_list.name}.csv",
+      content: Base64.encode64(invalid_rows.join)
+    }]
   end
 
 public
@@ -17,13 +27,18 @@ public
   end
 
   def completed(upload_stats)
-    renderer = VoterListRender.new
-    html     = renderer.completed(:html, upload_stats)
-    text     = renderer.completed(:text, upload_stats)
-    subject  = "Upload complete: #{voter_list.name}"
-    to       = [{email: email}]
+    renderer   = VoterListRender.new
+    html       = renderer.completed(:html, upload_stats)
+    text       = renderer.completed(:text, upload_stats)
+    subject    = "Upload complete: #{voter_list.name}"
+    to         = [{email: email}]
+    attachment = []
+    
+    if upload_stats[:invalid_numbers] > 0
+      attachment = build_attachment(upload_stats[:invalid_rows])
+    end
 
-    send_voter_list_email(to, subject, text, html)
+    send_voter_list_email(to, subject, text, html, attachment)
   end
 
   def failed(errors)
@@ -36,7 +51,7 @@ public
     send_voter_list_email(to, subject, text, html)
   end
 
-  def send_voter_list_email(to, subject, text, html)
+  def send_voter_list_email(to, subject, text, html, attachments=[])
     if Rails.env.development?
       print "Sending account usage report: To[#{to}] Subject[#{subject}]\n"
       print "Body text:\n"
@@ -54,6 +69,7 @@ public
       :from_name    => 'Impact Dialing',
       :from_email   => FROM_EMAIL,
       :to           => to,
+      :attachments  => attachments,
       :track_opens  => true,
       :track_clicks => true
     })
