@@ -26,8 +26,8 @@ describe 'VoterBatchImport' do
   subject{ VoterBatchImport.new(voter_list, mapping, csv_file.shift, csv_file.readlines) }
 
   describe 'returns a Hash with' do
-    it 'dnc => int' do
-      expect(@counts[:dnc]).to eq 1
+    it 'cell_numbers => int' do
+      expect(@counts[:dnc_numbers]).to eq 1
     end
   end
   context 'Marking Voters with phone numbers in the DNC list' do

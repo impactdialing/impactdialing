@@ -44,8 +44,8 @@ describe 'VoterListUploadJob' do
   end
   let(:domain){ admin.domain }
   let(:email){ admin.email }
-  let(:web_response_strategy) do
-    instance_double('VoterListWebuiStrategy', {response: nil})
+  let(:voter_list_mailer) do
+    instance_double('VoterListMailer', {completed: nil, failed: nil})
   end
   let(:responder_opts) do
     {
@@ -57,7 +57,7 @@ describe 'VoterListUploadJob' do
   before do
     allow(amazon_s3).to receive(:read).with(voter_list.s3path){ csv_file }
     allow(AmazonS3).to receive(:new){ amazon_s3 }
-    allow(VoterListWebuiStrategy).to receive(:new){ web_response_strategy }
+    allow(VoterListMailer).to receive(:new){ voter_list_mailer }
   end
 
   it 'downloads VoterList CSV from S3' do
@@ -70,11 +70,11 @@ describe 'VoterListUploadJob' do
       voter_list.update_attributes! csv_to_system_map: invalid_csv_to_system_map
     end
 
-    it 'tells the VoterListWebUiStrategy instance to respond with the error message(s)' do
+    it 'tells the VoterListMailer instance to respond with the error message(s)' do
       csv_mapping = CsvMapping.new(invalid_csv_to_system_map)
       csv_mapping.valid?
       expect(csv_mapping.errors).to_not be_empty
-      expect(web_response_strategy).to receive(:response).with({'errors' => csv_mapping.errors, 'success' => []}, responder_opts)
+      expect(voter_list_mailer).to receive(:failed).with(csv_mapping.errors)
 
       VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
     end
@@ -123,8 +123,8 @@ describe 'VoterListUploadJob' do
         allow(amazon_s3).to receive(:read).with(voter_list.s3path){ lengthy_value_voter_list }
       end
 
-      it 'tells the VoterListWebUiStrategy instance to respond with the error message(s)' do
-        expect(web_response_strategy).to receive(:response).with({'errors' => [I18n.t('activerecord.errors.models.voter_list.general_error')], 'success' => []}, responder_opts)
+      it 'tells the VoterListMailer instance to respond with the error message(s)' do
+        expect(voter_list_mailer).to receive(:failed).with([I18n.t('activerecord.errors.models.voter_list.general_error')])
         VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
       end
 
@@ -141,8 +141,8 @@ describe 'VoterListUploadJob' do
         allow(VoterBatchImport).to receive(:new){ fake_batch_import }
       end
       
-      it 'tells the VoterListWebUiStrategy instance to respond with the error message(s)' do
-        expect(web_response_strategy).to receive(:response).with({'errors' => [I18n.t('activerecord.errors.models.voter_list.general_error')], 'success' => []}, responder_opts)
+      it 'tells the VoterListMailer instance to respond with the error message(s)' do
+        expect(voter_list_mailer).to receive(:failed).with([I18n.t('activerecord.errors.models.voter_list.general_error')])
         VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
       end
 
@@ -156,13 +156,8 @@ describe 'VoterListUploadJob' do
       expect(Voter.count).to(eq(success_count))
     end
 
-    it 'tells the VoterListWebUiStrategy instance to respond with the success message(s)' do
-      msg      = "Upload complete. #{success_count} out of #{total_count} records imported successfully. "
-      msg     += "0 out of #{success_count} records contained phone numbers in your Do Not Call list."
-      msg     += " 0 records were skipped because they are assigned to cellular devices."
-      response = {'errors' => [], 'success' => [msg]}
-
-      expect(web_response_strategy).to receive(:response).with(response, responder_opts)
+    it 'tells the VoterListMailer instance to respond with the success message(s)' do
+      expect(voter_list_mailer).to receive(:completed).with(anything)
       VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
     end
 
@@ -190,25 +185,6 @@ describe 'VoterListUploadJob' do
     end
 
     it_behaves_like 'valid list file'
-  end
-
-  context 'CSV file is malformed in some way' do
-    before do
-      allow(amazon_s3).to receive(:read).with(voter_list.s3path){ invalid_csv_file }
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
-    end
-
-    it 'tells the VoterList*Strategy instance to respond with the error message(s)' do
-      response = {'errors' => [I18n.t('csv_validator.malformed')], 'success' => []}
-    it 'tells the VoterListWebUiStrategy instance to respond with the error message(s)' do
-      expect(web_response_strategy).to receive(:response).with(response, responder_opts)
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
-    end
-
-    it 'returns immediately, before VoterBatchImport is instantiated' do
-      expect(VoterBatchImport).to_not receive(:new)
-      VoterListUploadJob.perform(voter_list.id, admin.email, admin.domain)
-    end
   end
 
   describe 'handling Resque::TermException' do

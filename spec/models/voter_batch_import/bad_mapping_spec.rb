@@ -45,12 +45,18 @@ describe 'VoterBatchImport' do
         @counts = subject.import_csv
       end
 
-      it 'failed => 3' do
-        expect(@counts[:failed]).to eq 3
+      it 'invalid_numbers => ["row1","row2","row3"' do
+        i            = 0
+        invalid_rows = []
+        IO.foreach(csv_file_upload) do |line|
+          next if i .zero? && i += 1
+          invalid_rows << line.gsub('"', '')
+        end
+        expect(@counts[:invalid_rows]).to eq invalid_rows
       end
 
-      it 'success => 0' do
-        expect(@counts[:success]).to eq 0
+      it 'saved_numbers => 0' do
+        expect(@counts[:saved_numbers]).to eq 0
       end
     end
 
@@ -81,19 +87,20 @@ describe 'VoterBatchImport' do
         allow(VoterList).to receive(:read_from_s3).and_return(File.open("#{csv_file_upload_with_duplicate_custom_id}").read)
         batch_import = VoterBatchImport.new(other_voter_list, valid_voters_map_with_custom_id_and_custom_fields, dup_csv_file.shift, dup_csv_file.readlines)
         result = batch_import.import_csv
-        expect(result[:success]).to eq 2
-        expect(result[:failed]).to eq 0
+        expect(result[:saved_leads]).to eq 2
+        expect(result[:saved_numbers]).to eq 1
+        expect(result[:invalid_numbers]).to eq 0
 
         allow(VoterList).to receive(:read_from_s3).and_return(file.read)
         @counts = subject.import_csv
       end
 
-      it 'failed => 3' do
-        expect(@counts[:failed]).to eq 3
+      it 'invalid_numbers => 1 (only 1 unique number in list)' do
+        expect(@counts[:invalid_numbers]).to eq 1
       end
 
-      it 'success => 0' do
-        expect(@counts[:success]).to eq 0
+      it 'saved_numbers => 0' do
+        expect(@counts[:saved_numbers]).to eq 0
       end
     end
   end
@@ -110,12 +117,12 @@ describe 'VoterBatchImport' do
     subject{ VoterBatchImport.new(voter_list, mapping, csv_file.shift, csv_file.readlines) }
 
     describe 'returns a Hash with' do
-      it 'failed => 3' do
-        expect(@counts[:failed]).to eq 3
+      it 'invalid_numbers => 1 (only 1 unique number in list)' do
+        expect(@counts[:invalid_numbers]).to eq 1
       end
 
-      it 'success => 0' do
-        expect(@counts[:success]).to eq 0
+      it 'saved_numbers => 0' do
+        expect(@counts[:saved_numbers]).to eq 0
       end
     end
   end

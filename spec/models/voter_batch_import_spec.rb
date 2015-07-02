@@ -103,11 +103,55 @@ describe 'VoterBatchImport' do
         end
       end
       describe 'returns a Hash with' do
-        it 'success => int' do
-          expect(@counts[:success]).to eq (Voter.count - @counts[:dnc])
+        # {
+        #   saved_numbers: 0,
+        #   total_numbers: 0,
+        #   saved_leads: 0,
+        #   total_leads: 0,
+        #   new_numbers: 0,
+        #   pre_existing_numbers: 0,
+        #   dnc_numbers: 0,
+        #   cell_numbers: 0,
+        #   new_leads: 0,
+        #   updated_leads: 0,
+        #   invalid_numbers: [],
+        #   use_custom_id: false
+        # }
+        it 'saved_numbers => int' do
+          expect(@counts[:saved_numbers]).to eq Household.count
         end
-        it 'failed => int' do
-          expect(@counts[:failed]).to eq 0
+        it 'total_numbers => int' do
+          expect(@counts[:total_numbers]).to eq Household.count
+        end
+        it 'saved_leads => int' do
+          expect(@counts[:saved_leads]).to eq Voter.count
+        end
+        it 'total_leads => int' do
+          expect(@counts[:total_leads]).to eq(`wc -l #{csv_file_upload}`.to_i - 1)
+        end
+        it 'new_numbers => int' do
+          expect(@counts[:new_numbers]).to eq Household.count
+        end
+        it 'pre_existing_numbers => int' do
+          expect(@counts[:pre_existing_numbers]).to be_kind_of Integer
+        end
+        it 'dnc_numbers => int' do
+          expect(@counts[:dnc_numbers]).to be_zero
+        end
+        it 'cell_numbers => int' do
+          expect(@counts[:cell_numbers]).to be_zero
+        end
+        it 'new_leads => int' do
+          expect(@counts[:new_leads]).to eq Voter.count
+        end
+        it 'updated_leads => int' do
+          expect(@counts[:updated_leads]).to be_zero
+        end
+        it 'invalid_numbers => array of csv strings' do
+          expect(@counts[:invalid_numbers]).to be_zero
+        end
+        it 'use_custom_id => boolean' do
+          expect(@counts[:use_custom_id]).to_not be_nil
         end
       end
     end
@@ -151,8 +195,13 @@ describe 'VoterBatchImport' do
             allow(VoterList).to receive(:read_from_s3).and_return(File.open("#{csv_file_upload_with_duplicate_custom_id}").read)
             batch_import = VoterBatchImport.new(other_voter_list, valid_voters_map_with_custom_id_and_custom_fields, dup_csv_file.shift, dup_csv_file.readlines)
             result = batch_import.import_csv
-            expect(result[:success]).to eq 2
-            expect(result[:failed]).to eq 0
+            expect(result[:updated_leads]).to eq 1
+            expect(result[:new_leads]).to eq 1
+            expect(result[:pre_existing_numbers]).to eq 1
+            expect(result[:new_numbers]).to eq 0
+            expect(result[:saved_numbers]).to eq 1
+            expect(result[:saved_leads]).to eq 2
+            expect(result[:invalid_numbers]).to be_zero
           end
 
           it "does not create a new Voter record" do
@@ -229,8 +278,9 @@ describe 'VoterBatchImport' do
         csv = CSV.new( Windozer.to_unix(File.open(windoze_csv_file_upload).read) )
         batch_upload = VoterBatchImport.new(voter_list, windoze_mappings, csv.shift, csv.readlines)
         actual = batch_upload.import_csv
-        expect(actual[:success]).to eq(29)
-        expect(actual[:failed]).to eq(0)
+        expect(actual[:saved_numbers]).to eq(1)
+        expect(actual[:saved_leads]).to eq(29)
+        expect(actual[:invalid_numbers]).to eq(0)
       end
 
       it "ignores columns with blank headers" do
@@ -239,8 +289,8 @@ describe 'VoterBatchImport' do
         allow(VoterList).to receive(:read_from_s3).and_return(missing_field_file)
         batch_upload = VoterBatchImport.new(voter_list, valid_voters_not_available_map_without_custom_id, missing_field_csv.shift, missing_field_csv.readlines)
         result = batch_upload.import_csv
-        expect(result[:success]).to eq 2
-        expect(result[:failed]).to eq 0
+        expect(result[:saved_numbers]).to eq 2
+        expect(result[:invalid_numbers]).to eq 0
         expect(Voter.all.count).to eq(2)
         expect(Voter.all.map(&:attributes).map(&:values).flatten).to_not include 'ignored'
       end

@@ -1,8 +1,9 @@
 # encoding: UTF-8
+require 'set'
 
 class VoterBatchImport
   attr_reader :list, :csv_to_system_map, :csv_headers, :voters_list, :result, :csv_phone_column_location,
-              :csv_custom_id_column_location, :custom_attributes, :blocked_numbers, :campaign
+              :csv_custom_id_column_location, :custom_attributes, :blocked_numbers, :campaign, :result
 
   def initialize(list, csv_to_system_map, csv_headers, csv_data)
     @list              = list
@@ -11,12 +12,30 @@ class VoterBatchImport
     @csv_to_system_map = csv_to_system_map
     @csv_headers       = csv_headers.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @voters_list       = csv_data
-    @result            = {:success => 0, :failed => 0, :dnc => 0, :cell => 0}
+    @result            = {
+      saved_numbers:        0,
+      total_numbers:        0,
+      saved_leads:          0,
+      total_leads:          0,
+      new_numbers:          Set.new,
+      pre_existing_numbers: Set.new,
+      dnc_numbers:          Set.new,
+      cell_numbers:         Set.new,
+      new_leads:            0,
+      updated_leads:        0,
+      invalid_numbers:      Set.new,
+      invalid_rows:         [],
+      use_custom_id:        false
+    }
     @csv_to_system_map.remap_system_column! "ID", :to => "custom_id"
     
     @csv_phone_column_location     = @csv_headers.index(@csv_to_system_map.csv_index_for "phone")
     @csv_custom_id_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "custom_id")
     @custom_attributes             = create_custom_attributes
+
+    if custom_id_present?
+      @result[:use_custom_id] = true
+    end
   end
 
   # return true when desirable to not import numbers for cell devices
@@ -33,9 +52,11 @@ class VoterBatchImport
     blocked = []
     if skip_wireless? && dnc_wireless.prohibits?(phone)
       blocked << :cell
+      result[:cell_numbers] << phone
     end
     if blocked_numbers.include?(phone)
       blocked << :dnc
+      result[:dnc_numbers] << phone
     end
     blocked
   end
@@ -54,6 +75,8 @@ class VoterBatchImport
 
     household[:blocked] = Household.bitmask_for_blocked( *calculate_blocked(phone) )
 
+    result[:new_numbers] << phone
+
     return household
   end
 
@@ -66,6 +89,8 @@ class VoterBatchImport
       phone:       phone,
       blocked:     Household.bitmask_for_blocked( *calculate_blocked(phone) )
     }
+
+    result[:pre_existing_numbers] << phone
 
     return household
   end
@@ -90,13 +115,13 @@ class VoterBatchImport
     new_households = nil
     new_numbers = nil
     benchmark.time('build_households') do
-      new_numbers         = numbers - households.keys
-      new_households      = new_numbers.map{|n| build_household(n)}.compact
+      new_numbers           = numbers - households.keys
+      new_households        = new_numbers.map{|n| build_household(n)}.compact
     end
 
     existing_households = nil
     benchmark.time('update_households') do    
-      existing_households = households.map{|phone, id| update_household(id, phone, campaign) }
+      existing_households            = households.map{|phone, id| update_household(id, phone, campaign) }
     end
 
     created_households  = {}
@@ -120,11 +145,23 @@ class VoterBatchImport
     households.merge(created_households)
   end
 
+  def invalid!(phone, csv_row)
+    result[:invalid_numbers] << phone
+    result[:invalid_rows] << CSV.generate_line(csv_row.to_a)
+  end
+
+  def stats_sets
+    [:new_numbers, :pre_existing_numbers, :dnc_numbers, :cell_numbers, :invalid_numbers]
+  end
+
   def import_csv
     source = 'voter_batch_import.import_csv'
     benchmark = ImpactPlatform::Metrics::Benchmark.new(source)
 
-    household_ids    = []
+    household_ids        = []
+    result[:total_leads] = @voters_list.size
+    phone_numbers        = Set.new
+
     @voters_list.each_slice((ENV['VOTER_BATCH_SIZE'] || 1000).to_i).each do |voter_info_list|
       custom_fields     = []
       leads             = []
@@ -141,14 +178,16 @@ class VoterBatchImport
 
         lead = nil
 
+        phone_numbers << phone_number
+
         if (not PhoneNumber.valid?(phone_number))
-          result[:failed] += 1
+          invalid!(phone_number, voter_info)
           next
         end
 
         current_household = households[phone_number]
         if current_household.nil?
-          result[:failed] += 1
+          invalid!(phone_number, voter_info)
           next
         end
 
@@ -165,16 +204,20 @@ class VoterBatchImport
               enabled: Voter.bitmask_for_enabled(:list)
             }
             updated_leads[custom_id] = lead
+            result[:updated_leads]  += 1
           end
         end
 
-        lead ||= {
-          :voter_list_id => @list.id,
-          :household_id  => households[phone_number],
-          :account_id    => @list.account_id,
-          :campaign_id   => @list.campaign_id,
-          :enabled       => Voter.bitmask_for_enabled(:list)
-        }
+        unless lead.present?
+          lead = {
+            :voter_list_id => @list.id,
+            :household_id  => households[phone_number],
+            :account_id    => @list.account_id,
+            :campaign_id   => @list.campaign_id,
+            :enabled       => Voter.bitmask_for_enabled(:list)
+          }
+          result[:new_leads] += 1
+        end
 
         # persist app-defined field data (address, city, etc)
         @csv_headers.each_with_index do |csv_column_title, column_location|
@@ -188,8 +231,7 @@ class VoterBatchImport
         end
 
         blocked = calculate_blocked(phone_number)
-        blocked.each{|type| result[type] += 1}
-        result[:success] += 1
+        result[:saved_leads] += 1
 
         leads << lead
         successful_voters << voter_info
@@ -223,9 +265,17 @@ class VoterBatchImport
       Resque.enqueue(CallFlow::Jobs::PruneHouseholds, @list.campaign_id, *ids)
     end
 
+    result[:pre_existing_numbers] = result[:pre_existing_numbers] - result[:new_numbers]
+    stats_sets.each do |key|
+      result[key] = result[key].size
+    end
+
+    result[:total_numbers] = phone_numbers.size
+    result[:saved_numbers] = result[:total_numbers] - result[:invalid_numbers]
+
     @list.update_column(:households_count, @list.voters.select('DISTINCT household_id').count)
 
-    @result
+    result
   end
 
 protected
