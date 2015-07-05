@@ -2,9 +2,9 @@ class ReportApiStrategy
   require 'net/http'
 
   def initialize(result, account_id, campaign_id, callback_url)
-    @result = result
-    @account_id = account_id
-    @campaign_id = campaign_id
+    @result       = result
+    @account_id   = account_id
+    @campaign_id  = campaign_id
     @callback_url = callback_url
   end
 
@@ -14,12 +14,15 @@ class ReportApiStrategy
     else
       link = ""
     end
-    uri = URI.parse(@callback_url)
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl=true
-    request = Net::HTTP::Post.new(uri.request_uri)
+    uri          = URI.parse(@callback_url)
+    http         = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    request      = Net::HTTP::Post.new(uri.request_uri)
     request.set_form_data({message: @result, download_link: link, account_id: @account_id, campaign_id: @campaign_id})
-    http.start{http.request(request)}
+    http.start do
+      response = http.request(request)
+      p "ReportApiStrategy CallbackResponseBody: #{@callback_url}: #{response.try(:body)}"
+      Rails.logger.error("ReportApiStrategy CallbackResponseBody: #{@callback_url}: #{response.try(:body)}")
+    end
   end
-
 end
