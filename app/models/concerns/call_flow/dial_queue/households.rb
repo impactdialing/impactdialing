@@ -1,12 +1,12 @@
 ##
 # Maintains a set of hashes where the redis-key & hash-key are components of 
-# a phone number and the values are JSON strings of an array of ids.
+# a phone number and the values are JSON strings of an array of leads.
 #
 # For example, given a phone number 5554443321, member id of 42
 # and a campaign id of 4323, the corresponding redis key will be
-# `dial_queue:42:households:55544` which accesses a redis hash.
-# The corresponding hash key will be `43321` which will return
-# a JSON string of an array of ids.
+# `dial_queue:42:households:5554443` which accesses a redis hash.
+# The corresponding hash key will be `321` which will return
+# a JSON string of an array of leads.
 #
 # The key partitioning scheme uses the first 5 digits of the number
 # as a component to the redis key and the remaining digits of the number
@@ -31,11 +31,11 @@ private
   end
 
   def key(phone)
-    "#{keys[type]}:#{phone[0..4]}"
+    "#{keys[type]}:#{phone[0..phone_key_index_stop]}"
   end
 
   def hkey(phone)
-    [ key(phone), phone[5..-1] ]
+    [ key(phone), phone[phone_hkey_index_start..-1] ]
   end
 
   def match?(member_one, member_two)
@@ -51,6 +51,14 @@ public
 
     @campaign    = campaign
     @type        = type
+  end
+
+  def phone_key_index_stop
+    (n = ENV['REDIS_PHONE_KEY_INDEX_STOP']).nil? ? -4 : n.to_i
+  end
+
+  def phone_hkey_index_start
+    phone_key_index_stop + 1
   end
 
   def exists?
@@ -85,6 +93,7 @@ public
   def find(phone)
     result = redis.hget *hkey(phone)
     if result.blank?
+      # todo: raise or log exception here since this should never be the case
       result = []
     else
       result = JSON.parse(result).map{|r| HashWithIndifferentAccess.new(r)}

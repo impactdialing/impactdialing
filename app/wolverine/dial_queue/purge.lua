@@ -12,7 +12,7 @@ end
 for _,set in pairs(sets) do
   for _,phone in pairs(set) do
     -- delete hashes
-    local key = ARGV[1] .. ":" .. string.sub(phone, 1, 5)
+    local key = ARGV[1] .. ":" .. string.sub(phone, 1, tonumber(ARGV[2]))
     redis.call("DEL", key)
     purged_count = purged_count + 1
   end

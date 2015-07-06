@@ -5,6 +5,8 @@ module CallFlow
   class DialQueue
     attr_reader :campaign
     delegate :next, to: :available
+    delegate :phone_key_index_stop, to: :households
+    
   private
     def self.validate_campaign!(campaign)
       if campaign.nil? or campaign.id.nil? or campaign.account_id.nil? or (not campaign.respond_to?(:recycle_rate))
@@ -126,7 +128,7 @@ module CallFlow
       purged_count     = 0
 
       campaign.timing("dial_queue.purge.time") do
-        purged_count = Wolverine.dial_queue.purge(keys: set_keys, argv: [household_prefix])
+        purged_count = Wolverine.dial_queue.purge(keys: set_keys, argv: [household_prefix, phone_key_index_stop])
       end
 
       ImpactPlatform::Metrics.sample("dial_queue.purge.count", purged_count, campaign.metric_source.join('.'))
