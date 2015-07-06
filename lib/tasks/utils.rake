@@ -13,6 +13,52 @@
 # end
 # print out
 
+desc "Migrate DialQueue::Households schema for memory optimization"
+task :migrate_dial_queue_households => [:environment] do
+  # migrate redis households
+  #
+  time_threshold                = 30.days.ago.beginning_of_day
+  recently_called_campaign_ids  = CallAttempt.where('created_at > ?', time_threshold).select('DISTINCT(campaign_id)').pluck(:campaign_id).uniq
+  recently_created_campaign_ids = Campaign.where('created_at > ?', time_threshold).where(active: true).pluck(:id).uniq
+  campaign_ids                  = recently_called_campaign_ids + recently_created_campaign_ids
+  campaigns                     = Campaign.where(id: campaign_ids.uniq)
+  redis                         = Redis.new
+
+  p "Updating redis config"
+  redis.config(:set, 'hash-max-ziplist-entries', 1024)
+  redis.config(:set, 'hash-max-ziplist-value', 512)
+
+  p "Loaded: #{campaigns.count} campaigns"
+
+  campaigns.each do |campaign|
+    next unless campaign.active? or campaign.dial_queue.exists?
+
+    p "Migrating: #{campaign.name}"
+    p "- #{campaign.households.count} households"
+    base_key = "dial_queue:#{campaign.id}:households:active"
+    phones   = campaign.households.pluck(:phone)
+
+    phones.each do |phone|
+      p "- #{phone}"
+      current_key  = "#{base_key}:#{phone[0..4]}"
+      current_hkey = "#{phone[5..-1]}"
+      new_key      = "#{base_key}:#{phone[0..-4]}"
+      new_hkey     = "#{phone[-3..-1]}"
+
+      redis.watch(current_key) do
+        household_json = redis.hget current_key, current_hkey
+
+        next if household_json.nil?
+
+        redis.multi do
+          redis.hset new_key, new_hkey, household_json
+          redis.hdel current_key, current_hkey
+        end
+      end
+    end
+  end
+end
+
 desc "Update VoterList Household Counter Caches [not the default rails-way]"
 task :update_list_household_counts => :environment do
   quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
