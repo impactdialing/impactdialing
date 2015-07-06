@@ -22,7 +22,7 @@ describe 'VoterListRender', type: :mailer do
   it 'renders the text template to a string: views/voter_list_mailer/completed' do
     t = template.to_s
 
-    expect(t).to match(/#{stats[:saved_numbers]} of #{stats[:total_numbers]} numbers imported successfully./)
+    expect(t).to match(/#{stats[:saved_numbers]} of #{stats[:total_numbers]} unique phone numbers imported successfully./)
     expect(t).to match(/#{stats[:saved_leads]} of #{stats[:total_leads]} leads imported successfully./)
     expect(t).to match(/Of #{stats[:saved_numbers]} numbers:/)
     expect(t).to match(/- #{stats[:new_numbers]} are new numbers/)

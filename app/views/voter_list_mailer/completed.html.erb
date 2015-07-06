@@ -1,4 +1,4 @@
-<p><%= @results[:saved_numbers] %> of <%= @results[:total_numbers] %> numbers imported successfully.
+<p><%= @results[:saved_numbers] %> of <%= @results[:total_numbers] %> unique phone numbers imported successfully.
 
 <p><%= @results[:saved_leads] %> of <%= @results[:total_leads] %> leads imported successfully.
 
@@ -23,3 +23,7 @@
     <% end %>
   </ul>
 </p>
+
+<% if @results[:invalid_numbers].to_i > 0 -%>
+<p>Any rows from your upload that could not be imported are attached.</p>
+<% end -%>

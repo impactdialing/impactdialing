@@ -1,4 +1,4 @@
-<%= @results[:saved_numbers] %> of <%= @results[:total_numbers] %> numbers imported successfully.
+<%= @results[:saved_numbers] %> of <%= @results[:total_numbers] %> unique phone numbers imported successfully.
 
 <%= @results[:saved_leads] %> of <%= @results[:total_leads] %> leads imported successfully.
 
@@ -15,4 +15,8 @@ Of <%= @results[:saved_leads] %> leads:
 - <%= @results[:new_leads] %> are new leads
 <% if @results[:use_custom_id] -%>
 - <%= @results[:updated_leads] %> leads were updated
+<% end -%>
+
+<% if @results[:invalid_numbers].to_i > 0 -%>
+Any rows from your upload that could not be imported are attached.
 <% end %>
