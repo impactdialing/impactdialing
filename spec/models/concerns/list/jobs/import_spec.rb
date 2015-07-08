@@ -23,8 +23,10 @@ describe 'List::Jobs::Import' do
     end
     let(:imports) do
       double('List::Imports', {
-        parse: nil,
-        save:  [6, results]
+        parse:   nil,
+        save:    nil,
+        cursor:  6,
+        results: results
       })
     end
     let(:voter_list){ create(:voter_list) }
@@ -72,16 +74,15 @@ describe 'List::Jobs::Import' do
       describe 'arguments when requeued' do
         before do
           allow(subject).to receive(:batch_size){ 1 }
-          allow(imports).to receive(:save).and_return([1, results])
           allow(subject).to receive(:mailer).and_raise(*raise_args)
         end
         after do
-          expect([:resque, :import]).to have_queued(subject).with(voter_list.id, email, 1, results.to_json)
+          expect([:resque, :import]).to have_queued(subject).with(voter_list.id, email, imports.cursor, imports.results.to_json)
         end
-        it 'includes `cursor` which points to the row following the last one processed' do
+        it 'include `cursor` which points to the row following the last one processed' do
           subject.perform(voter_list.id, email)
         end
-        it 'includes `results` which is a json encoded string of the results as of the last row processed' do
+        it 'include `results` which is a json encoded string of the results as of the last row processed' do
           subject.perform(voter_list.id, email)
         end
       end

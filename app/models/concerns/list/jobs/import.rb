@@ -27,7 +27,9 @@ class List::Jobs::Import
       imports     = List::Imports.new(voter_list, cursor, results)
 
       imports.parse do |redis_keys, households|
-        cursor, results = imports.save(redis_keys, households)
+        imports.save(redis_keys, households)
+        cursor  = imports.cursor
+        results = imports.results
       end
 
       mailer(email, voter_list).completed(results)

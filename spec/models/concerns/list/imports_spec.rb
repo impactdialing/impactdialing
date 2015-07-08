@@ -21,6 +21,7 @@ describe 'List::Imports' do
   let(:file) do
     File.open(csv_file_upload)
   end
+  let(:key_prefix){ "dial_queue:#{voter_list.campaign_id}:households:active" }
 
   before do
     allow(s3).to receive(:stream).and_yield(file.read)
@@ -34,14 +35,8 @@ describe 'List::Imports' do
   describe 'initialize' do
     subject{ List::Imports.new(voter_list) }
 
-    it 'exposes batch_size int[ENV["VOTER_BATCH_SIZE"]|100]' do
-      expect(subject.batch_size).to eq ENV['VOTER_BATCH_SIZE'].to_i
-    end
     it 'exposes voter_list instance' do
       expect(subject.voter_list).to eq voter_list
-    end
-    it 'exposes csv_mapping instance' do
-      expect(subject.csv_mapping).to be_kind_of CsvMapping
     end
     it 'exposes cursor int' do
       expect(subject.cursor).to eq 0
@@ -123,21 +118,47 @@ describe 'List::Imports' do
   end
 
   describe 'parse' do
-    it 'yields array of redis keys as first arg'
-    it 'yields parsed households (hash of leads grouped by phone) as second arg'
+    subject{ List::Imports.new(voter_list) }
+
+    it 'yields array of redis keys as first arg and hash of households as second arg' do
+      expect{|b| subject.parse(&b)}.to yield_with_args(Array, Hash)
+    end
+
+    it 'updates @cursor' do
+      subject.parse{|keys, households| nil}
+      expect(subject.cursor).to be > 0
+    end
+
+    it 'updates @results' do
+      subject.parse{|keys, households| nil}
+      expect(subject.results).to_not eq subject.send(:default_results)
+    end
   end
 
   describe 'save' do
     subject{ List::Imports.new(voter_list) }
 
     it 'saves households & leads at given redis keys' do
-      subject.parse do |redis_keys, households|
-        subject.save(redis_keys, households)
-      end
-      # byebug
-      expect(voter_list.campaign.dial_queue.households.exists?).to be_truthy
-    end
+      redis_keys = ['key:1', 'key:2', 'key:3']
+      households = {
+        '1234567890' => {
+          'leads' => [{'first_name' => 'john'}],
+          'uuid' => 'hh-uuid'
+        }
+      }
 
-    it 'returns an array [cursor(int), results(hash)]'
+      subject.save(redis_keys, households)
+
+      redis            = Redis.new
+      stop_index       = ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i
+      phone            = households.keys.first
+      key              = "key:#{phone[0..stop_index]}"
+      hkey             = phone[stop_index+1..-1]
+      saved_households = redis.hgetall(key)
+      household        = JSON.parse(saved_households[hkey])
+
+      expect(household['leads']).to eq households[phone]['leads']
+      expect(household['uuid']).to eq households[phone]['uuid']
+    end
   end
 end

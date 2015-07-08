@@ -34,9 +34,10 @@ Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |f| require f }
 ActiveRecord::Migration.check_pending! if defined?(ActiveRecord::Migration)
 
 VCR.configure do |c|
-  # c.debug_logger       = File.open(Rails.root.join('log', 'vcr-debug.log'), 'w')
-  c.cassette_library_dir = Rails.root.join 'spec/fixtures/vcr_cassettes'
-  c.ignore_localhost     = true
+  c.debug_logger                            = File.open(Rails.root.join('log', 'vcr-debug.log'), 'w')
+  c.cassette_library_dir                    = Rails.root.join 'spec/fixtures/vcr_cassettes'
+  c.ignore_localhost                        = true
+  c.allow_http_connections_when_no_cassette = true
   c.hook_into :webmock
 end
 
