@@ -1,9 +1,9 @@
 class CsvMapping
-  attr_reader :errors
+  attr_reader :errors, :mapping
 
   def initialize(mapping)
     @mapping = mapping
-    @errors = []
+    @errors  = []
   end
 
   def csv_index_for(system_column_title)
@@ -16,6 +16,7 @@ class CsvMapping
 
   def invalid_repetition_of_system_column?
     mapped = @mapping.reject { |column, mapped_to| mapped_to.blank? }
+    
     not (mapped.values.uniq.count == mapped.values.count)
   end
 
@@ -25,7 +26,6 @@ class CsvMapping
   end
 
   def validate
-    @errors = []
     @errors << I18n.t('csv_mapping.missing_phone') unless csv_index_for("phone")
     @errors << I18n.t('csv_mapping.multiple_mapping') if invalid_repetition_of_system_column?
   end

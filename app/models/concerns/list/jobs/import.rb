@@ -26,7 +26,7 @@ class List::Jobs::Import
       voter_list  = VoterList.find(voter_list_id)
       imports     = List::Imports.new(voter_list, cursor, results)
 
-      imports.parse(cursor, batch_size) do |redis_keys, households|
+      imports.parse do |redis_keys, households|
         cursor, results = imports.save(redis_keys, households)
       end
 
@@ -34,10 +34,6 @@ class List::Jobs::Import
     rescue Resque::TermException
       Resque.enqueue(self, voter_list_id, email, cursor, results.try(:to_json))
     end
-  end
-
-  def self.batch_size
-    (ENV['VOTER_BATCH_SIZE'] || 100).to_i
   end
   
   def self.mailer(email, voter_list)

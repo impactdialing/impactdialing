@@ -16,6 +16,12 @@ class AmazonS3
     @s3.buckets[@config['bucket']].objects[file_name].read
   end
 
+  def stream(file_name, &block)
+    @s3.buckets[@config['bucket']].objects[file_name].read do |chunk|
+      yield chunk
+    end
+  end
+
   def delete(file_name)
     @s3.buckets[@config['bucket']].objects[file_name].delete
   end

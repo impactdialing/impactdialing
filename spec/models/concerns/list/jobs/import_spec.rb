@@ -44,7 +44,7 @@ describe 'List::Jobs::Import' do
     end
 
     it 'calls List::Imports#parse to begin batch processing' do
-      expect(imports).to receive(:parse).with(cursor, subject.batch_size)
+      expect(imports).to receive(:parse)
       subject.perform(voter_list.id, email)
     end
 

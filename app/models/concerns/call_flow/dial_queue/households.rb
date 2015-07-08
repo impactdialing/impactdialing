@@ -31,10 +31,6 @@ private
     }
   end
 
-  def key(phone)
-    "#{keys[type]}:#{phone[0..phone_key_index_stop]}"
-  end
-
   def hkey(phone)
     [ key(phone), phone[phone_hkey_index_start..-1] ]
   end
@@ -52,6 +48,10 @@ public
 
     @campaign    = campaign
     @type        = type
+  end
+
+  def key(phone)
+    "#{keys[type]}:#{phone[0..phone_key_index_stop]}"
   end
 
   def phone_key_index_stop
