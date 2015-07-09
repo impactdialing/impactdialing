@@ -67,57 +67,6 @@ class VoterList < ActiveRecord::Base
       errors.add(:base, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
     end
   end
-
-  # going away very soon (next release)
-  # def self.disable_all
-  #   deprecated_method_warning(:disable_all)
-  #   self.all.each do |voter_list|
-  #     voter_list.update_attribute(:enabled, false)
-  #     voter_list.voters.update_all(enabled: false)
-  #   end
-  # end
-  # def self.enable_all
-  #   deprecated_method_warning(:enable_all)
-  #   self.all.each do |voter_list|
-  #     voter_list.update_attribute(:enabled, true)
-  #     voter_list.voters.update_all(enabled: true)
-  #   end
-  # end
-  # def self.active_voter_list_ids(campaign_id)
-  #   deprecated_method_warning(:active_voter_list_ids)
-  #   VoterList.where(campaign_id: campaign_id, active: 1, enabled: 1).pluck(:id)
-  # end
-  # def voters_remaining
-  #   voters.to_be_dialed.size
-  # end
-  # deprecate :voters_remaining
-  # def destroy_with_voters
-  #   voter_ids.each_slice(1000) do |ids|
-  #     CustomVoterFieldValue.where(voter_id: ids).delete_all
-  #     Voter.where(id: ids).delete_all
-  #   end
-  #   self.destroy
-  # end
-  # deprecate :destroy_with_voters
-  # def self.create_csv_to_system_map(csv_headers,account)
-  #   ActiveSupport::Deprecation.warn('VoterList.create_csv_to_system_map is now a no-op.')
-  #   return
-
-  #   csv_to_system_map = {}
-  #   csv_headers.each do |header_field|
-  #     if Voter.new.has_attribute?(header_field)
-  #       system_field = header_field
-  #     end
-  #     system_field ||=  account.custom_voter_fields.find_by_name(header_field).try(:name)
-  #     if system_field.nil?
-  #       csv_to_system_map[header_field] = "#{header_field}"
-  #     else
-  #       csv_to_system_map[header_field] = system_field
-  #     end
-  #   end
-  #   return csv_to_system_map
-  # end
-  #/ going away very soon (next release)
 end
 
 # ## Schema Information
