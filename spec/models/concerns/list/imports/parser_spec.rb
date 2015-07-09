@@ -41,7 +41,12 @@ describe 'List::Imports::Parser' do
 
   let(:cursor){ 0 }
   let(:results) do
-    {saved_leads: 0, saved_numbers: 0}
+    {
+      saved_leads: 0,
+      saved_numbers: 0,
+      cell_numbers: Set.new,
+      dnc_numbers: Set.new
+    }
   end
   let(:batch_size){ ENV['VOTER_BATCH_SIZE'].to_i }
 
@@ -110,24 +115,22 @@ describe 'List::Imports::Parser' do
   end
 
   describe 'parse_lines' do
-    describe 'returns a 2-element array where' do      
-      it 'an array of redis keys is the first element' do
-        redis_keys = subject.parse_lines(data_lines.join).first
 
-        expect(redis_keys).to eq(expected_redis_keys)
+    describe 'returns a 2-element array where' do
+      context 'the first element' do
+        it 'is an array of redis keys' do
+          redis_keys = subject.parse_lines(data_lines.join).first
+
+          expect(redis_keys).to eq(expected_redis_keys)
+        end
       end
 
-      it 'a hash of parsed households is the second element' do
-        parsed_households = subject.parse_lines(data_lines.join).last
+      context 'the second element' do
+        it 'is a hash of parsed households' do
+          parsed_households = subject.parse_lines(data_lines.join).last
 
-        first_lead = parsed_households['1234567895']['leads'].first
-        expect(first_lead['first_name']).to eq "Foo"
-        expect(first_lead['last_name']).to eq "Bar"
-        expect(first_lead['middle_name']).to eq "FuBur"
-        expect(first_lead['email']).to eq "foo@bar.com"
-        expect(first_lead['custom_id']).to eq "987"
-        expect(first_lead['Age']).to eq "23"
-        expect(first_lead['Gender']).to eq "Male"
+          expect(parsed_households.keys).to eq ['1234567895', '4567123895']
+        end
       end
     end
   end
@@ -144,6 +147,112 @@ describe 'List::Imports::Parser' do
     it 'yields keys, households, cursor, results' do
       expected_cursor = cursor + 1 + data_lines.size # 1 => header line
       expect{|b| subject.parse_file(&b) }.to yield_with_args(expected_redis_keys, Hash, expected_cursor, Hash)
+    end
+  end
+
+  describe 'building business objects' do
+    let(:uuid) do
+      double('UUID', {
+        generate: nil
+      })
+    end
+    let(:household_uuid){ 'hh-uuid-123' }
+    let(:lead_uuid){ 'ld-uuid-456' }
+    let(:parsed_households) do
+      subject.parse_lines(data_lines.join).last
+    end
+    let(:phone) do
+      '1234567895'
+    end
+
+    before do
+      expect(uuid).to receive(:generate).and_return(household_uuid).ordered
+      expect(uuid).to receive(:generate).and_return(lead_uuid).ordered
+      allow(UUID).to receive(:new){ uuid }
+    end
+
+    describe 'build_household' do
+      it 'returns a hash w/ values for: leads, uuid, account_id, campaign_id, phone & blocked' do
+        expected_household = {
+          'uuid'        => household_uuid,
+          'account_id'  => voter_list.account_id,
+          'campaign_id' => voter_list.campaign_id,
+          'phone'       => phone,
+          'blocked'     => 0
+        }
+
+        expected_household.each do |k,v|
+          expect(parsed_households[phone][k]).to eq v
+        end
+      end
+
+      context 'voter_list.skip_wireless? => true && phone is a cellular device' do
+        let(:dnc_wireless_list) do
+          double('DoNotCall::WirelessList', {
+            prohibits?: true
+          })
+        end
+
+        before do
+          allow(voter_list).to receive(:skip_wireless?){ true }
+          allow(DoNotCall::WirelessList).to receive(:new){ dnc_wireless_list }
+        end
+
+        it 'sets "blocked" value to 1' do
+          expect(parsed_households[phone]['blocked']).to eq 1
+        end
+
+        context 'phone is in customer DNC' do
+          before do
+            allow(voter_list.campaign).to receive(:blocked_numbers){ [phone] }
+          end
+          it 'sets "blocked" value to 3' do
+            expect(parsed_households[phone]['blocked']).to eq 3
+          end
+        end
+      end
+
+      context 'phone is in customer DNC but not a cellular device' do
+        before do
+          allow(voter_list.campaign).to receive(:blocked_numbers){ [phone] }
+        end
+        it 'sets "blocked" value to 2' do
+          expect(parsed_households[phone]['blocked']).to eq 2
+        end
+      end
+    end
+
+    describe 'build_lead' do
+      after do
+        @expected_first_lead.each do |k,v|
+          expect(@first_lead[k]).to eq v
+        end
+      end
+
+      it 'returns a hash that includes values for every non-nil, mapped value from the csv' do
+        @first_lead          = parsed_households[phone]['leads'].first
+        @expected_first_lead = {
+          'first_name'    => 'Foo',
+          'last_name'     => 'Bar',
+          'middle_name'   => 'FuBur',
+          'email'         => 'foo@bar.com',
+          'custom_id'     => '987',
+          'Age'           => '23',
+          'Gender'        => 'Male'
+        }
+      end
+
+      it 'returns a hash that includes values for: uuid, voter_list_id, account_id, campaign_id, phone & enabled' do
+        @first_lead = parsed_households[phone]['leads'].first
+        @expected_first_lead = { 
+          'account_id'    => voter_list.account_id,
+          'campaign_id'   => voter_list.campaign_id,
+          'voter_list_id' => voter_list.id,
+          'enabled'       => Voter.bitmask_for_enabled(:list),
+          'uuid'          => lead_uuid,
+          'phone'         => '1234567895',
+        }
+      end
     end
   end
 end

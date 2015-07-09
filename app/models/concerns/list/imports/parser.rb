@@ -27,11 +27,11 @@ private
   def calculate_blocked(phone)
     blocked = []
     if skip_wireless? && dnc_wireless.prohibits?(phone)
-      blocked << :cell
+      blocked                << :cell
       results[:cell_numbers] << phone
     end
     if blocked_numbers.include?(phone)
-      blocked << :dnc
+      blocked               << :dnc
       results[:dnc_numbers] << phone
     end
     blocked
@@ -102,50 +102,64 @@ public
     end
   end
 
+  def build_household(uuid, phone)
+    {
+      'leads'       => [],
+      # note: imports.lua takes care to not overwrite uuid for existing households
+      # so generating uuid here is safe even if phone number appears in multiple batches
+      'uuid'        => uuid.generate,
+      'account_id'  => voter_list.account_id,
+      'campaign_id' => voter_list.campaign_id,
+      'phone'       => phone,
+      'blocked'     => Household.bitmask_for_blocked( *calculate_blocked(phone) )
+    }
+  end
+
+  def build_lead(uuid, phone, row)
+    lead = {}
+    # populate lead w/ mapped csv data
+    csv_mapping.mapping.each do |header,attr|
+      value = row[ @header_index_map[header] ]
+      next if value.blank?
+      lead[attr] = value
+    end
+
+    # now build lead w/ system data
+    # this needs to happen after csv values are set
+    # in case csv values define things they shouldn't, eg account_id, etc
+    #
+    # note: imports.lua takes care to not overwrite uuid for existing leads
+    # so generating here is safe even if lead w/ same custom id appears in multiple batches
+    lead['uuid']          = uuid.generate
+    lead['voter_list_id'] = voter_list.id
+    lead['account_id']    = voter_list.account_id
+    lead['campaign_id']   = voter_list.campaign_id
+    lead['enabled']       = Voter.bitmask_for_enabled(:list)
+    lead['phone']         = phone
+
+    lead
+  end
+
   def parse_lines(lines)
     keys       = []
     households = {}
     uuid       = UUID.new
     rows       = CSV.new(lines, csv_options)
-    rows.each_with_index do |row, i|
+    rows.each do |row|
       raw_phone             = row[@phone_index]
       phone                 = PhoneNumber.sanitize(raw_phone)
 
       next unless phone_valid?(phone, row)
 
-      key       = redis_key(phone)
-      lead      = {}
-      household = {}
-
-      # populate lead w/ mapped csv data
-      csv_mapping.mapping.each do |header,attr|
-        lead[attr] = row[ @header_index_map[header] ] unless @header_index_map[header] == @phone_index
-      end
-
-      # build household if this phone hasn't been seen yet
-      households[phone] ||= {
-        'leads'       => [],
-        # imports.lua takes care to not overwrite uuid for existing households
-        # so generating uuid here is safe even if phone number appears in multiple batches
-        'uuid'        => uuid.generate,
-        'account_id'  => voter_list.account_id,
-        'campaign_id' => voter_list.campaign_id,
-        'phone'       => phone,
-        'blocked'     => Household.bitmask_for_blocked( *calculate_blocked(phone) )
-      }
-
-      # build lead w/ system data here to prevent csv files defining these values
-      lead['uuid']           = uuid.generate
-      lead['voter_list_id']  = voter_list.id
-      lead['account_id']     = voter_list.account_id
-      lead['campaign_id']    = voter_list.campaign_id
-      lead['enabled']        = Voter.bitmask_for_enabled(:list)
-      lead['phone']          = phone
-
-      results[:saved_leads] += 1
+      # aggregate leads by phone w/in each set of lines
+      # note: 
+      households[phone] ||= build_household(uuid, phone)
+      lead              = build_lead(uuid, phone, row)
 
       households[phone]['leads'] << lead
-      keys                       << key
+      keys                       << redis_key(phone)
+
+      results[:saved_leads] += 1
     end
 
     [keys.uniq, households]
