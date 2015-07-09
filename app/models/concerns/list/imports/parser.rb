@@ -37,13 +37,27 @@ private
     blocked
   end
 
-  def phone_valid?(phone, csv_row)
-    return true if PhoneNumber.valid?(phone)
+  def invalid_row!(csv_row)
+    results[:invalid_rows] << CSV.generate_line(csv_row.to_a)
+  end
 
+  def invalid_custom_id!(csv_row)
+    results[:invalid_custom_ids] += 1
+    invalid_row!(csv_row)
+  end
+
+  def invalid_phone!(phone, csv_row)
     results[:invalid_numbers] << phone
-    results[:invalid_rows]    << CSV.generate_line(csv_row.to_a)
+    invalid_row!(csv_row)
+  end
 
-    return false
+  def phone_valid?(phone, csv_row)
+    unless PhoneNumber.valid?(phone)
+      invalid_phone!(phone, csv_row)
+      return false
+    end
+
+    true
   end
 
   def read_file(&block)
@@ -66,11 +80,12 @@ private
 
 public
   def initialize(voter_list, cursor, results, batch_size)
-    @voter_list  = voter_list
-    @csv_mapping = CsvMapping.new(voter_list.csv_to_system_map)
-    @batch_size  = batch_size
-    @cursor      = cursor
-    @results     = results
+    @voter_list              = voter_list
+    @csv_mapping             = CsvMapping.new(voter_list.csv_to_system_map)
+    @batch_size              = batch_size
+    @cursor                  = cursor
+    @results                 = results
+    @results[:use_custom_id] = @csv_mapping.use_custom_id?
 
     # set from parse_headers
     @header_index_map = {}
@@ -120,7 +135,17 @@ public
     # populate lead w/ mapped csv data
     csv_mapping.mapping.each do |header,attr|
       value = row[ @header_index_map[header] ]
-      next if value.blank?
+
+      if value.blank?
+        if attr == 'custom_id'
+          # custom_id is a blank value => invalid
+          invalid_custom_id!(row)
+        end
+
+        # skip blank values
+        next
+      end
+      
       lead[attr] = value
     end
 

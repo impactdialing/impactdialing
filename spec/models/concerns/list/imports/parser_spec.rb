@@ -3,7 +3,7 @@ require 'rails_helper'
 describe 'List::Imports::Parser' do
 
   include_context 'voter csv import' do
-    let(:csv_file_upload){ cp_tmp('valid_voters_list.csv') }
+    let(:csv_file_upload){ cp_tmp('valid_voters_list_redis.csv') }
     let(:windoze_csv_file_upload){ cp_tmp('windoze_voters_list.csv') }
   end
 
@@ -42,10 +42,13 @@ describe 'List::Imports::Parser' do
   let(:cursor){ 0 }
   let(:results) do
     {
-      saved_leads: 0,
-      saved_numbers: 0,
-      cell_numbers: Set.new,
-      dnc_numbers: Set.new
+      saved_leads:        0,
+      saved_numbers:      0,
+      invalid_custom_ids: 0,
+      cell_numbers:       Set.new,
+      dnc_numbers:        Set.new,
+      invalid_numbers:    Set.new,
+      invalid_rows:       []
     }
   end
   let(:batch_size){ ENV['VOTER_BATCH_SIZE'].to_i }
@@ -115,7 +118,6 @@ describe 'List::Imports::Parser' do
   end
 
   describe 'parse_lines' do
-
     describe 'returns a 2-element array where' do
       context 'the first element' do
         it 'is an array of redis keys' do
@@ -131,6 +133,51 @@ describe 'List::Imports::Parser' do
 
           expect(parsed_households.keys).to eq ['1234567895', '4567123895']
         end
+      end
+    end
+
+    context 'when a phone number is invalid' do
+      let(:invalid_phone) do
+        "98723"
+      end
+      let(:invalid_row) do
+        %Q{#{invalid_phone},Sam,Iam,8th Old Man named Henry,,henry@test.com,193,42,Male}
+      end
+      before do
+        d = data_lines.last
+        d = d + "\n"
+        data_lines[-1] = d
+        lines_with_invalid = data_lines + [invalid_row]
+        subject.parse_lines(lines_with_invalid.join)
+      end
+
+      it 'adds the invalid phone to results[:invalid_numbers]' do
+        expect(subject.results[:invalid_numbers].to_a).to eq [invalid_phone]
+      end
+
+      it 'adds the invalid row to results[:invalid_rows]' do
+        expect(subject.results[:invalid_rows]).to eq [invalid_row + "\n"]
+      end
+    end
+
+    context 'when a custom id is invalid (eg blank)' do
+      let(:invalid_row) do
+        %Q{3927485021,Sam,Iam,8th Old Man named Henry,,henry@test.com,,42,Male}
+      end
+      before do
+        d = data_lines.last
+        d = d + "\n"
+        data_lines[-1] = d
+        lines_with_invalid = data_lines + [invalid_row]
+        subject.parse_lines(lines_with_invalid.join)
+      end
+
+      it 'increments results[:invalid_custom_ids]' do
+        expect(subject.results[:invalid_custom_ids]).to eq 1
+      end
+
+      it 'adds the invalid row to results[:invalid_rows]' do
+        expect(subject.results[:invalid_rows]).to eq [invalid_row + "\n"]
       end
     end
   end

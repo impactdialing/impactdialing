@@ -20,6 +20,7 @@ private
       dnc_numbers:          Set.new,
       cell_numbers:         Set.new,
       invalid_numbers:      Set.new,
+      invalid_custom_ids:   0,
       invalid_rows:         []
     }
   end
