@@ -8,6 +8,7 @@ class List::Imports
 private
   def default_results
     {
+      use_custom_id:        false,
       saved_numbers:        0,
       total_numbers:        0,
       saved_leads:          0,
@@ -19,8 +20,7 @@ private
       dnc_numbers:          Set.new,
       cell_numbers:         Set.new,
       invalid_numbers:      Set.new,
-      invalid_rows:         [],
-      use_custom_id:        false
+      invalid_rows:         []
     }
   end
 
@@ -38,7 +38,7 @@ private
   end
 
   def redis_stats_key
-    "dial_queue:#{voter_list.campaign_id}:stats"
+    "lists:#{voter_list.id}:upload_stats"
   end
   
 public
@@ -63,7 +63,11 @@ public
   end
 
   def save(redis_keys, households)
-    key_base = redis_keys.first.split(':')[0..-2].join(':')
-    Wolverine.dial_queue.imports(keys: [redis_stats_key] + redis_keys, argv: [key_base, households.to_json])
+    key_base    = redis_keys.first.split(':')[0..-2].join(':')
+    
+    Wolverine.dial_queue.imports({
+      keys: [redis_stats_key] + redis_keys,
+      argv: [key_base, households.to_json]
+    })
   end
 end

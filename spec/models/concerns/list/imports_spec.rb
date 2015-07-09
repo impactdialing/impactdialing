@@ -3,7 +3,13 @@ require 'rails_helper'
 describe 'List::Imports' do
   let(:voter_list){ create(:voter_list) }
 
-  let(:redis_keys){ ['key:1', 'key:2', 'key:3'] }
+  let(:redis_keys) do
+    [
+      "key:#{voter_list.campaign_id}:1",
+      "key:#{voter_list.campaign_id}:2",
+      "key:#{voter_list.campaign_id}:3"
+    ]
+  end
   let(:parsed_households) do
     {
       '1234567890' => {
@@ -137,19 +143,141 @@ describe 'List::Imports' do
   describe 'save' do
     subject{ List::Imports.new(voter_list) }
 
-    it 'saves households & leads at given redis keys' do
-      subject.save(redis_keys, parsed_households)
+    let(:phone){ parsed_households.keys.first }
 
+    def fetch_saved_household(phone)
       redis            = Redis.new
       stop_index       = ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i
-      phone            = parsed_households.keys.first
-      key              = "key:#{phone[0..stop_index]}"
+      key              = "key:#{voter_list.campaign_id}:#{phone[0..stop_index]}"
       hkey             = phone[stop_index+1..-1]
       saved_households = redis.hgetall(key)
-      household        = JSON.parse(saved_households[hkey])
+      JSON.parse(saved_households[hkey])
+    end
+
+    it 'saves households & leads at given redis keys' do
+      subject.save(redis_keys, parsed_households)
+      household = fetch_saved_household(phone)
 
       expect(household['leads']).to eq parsed_households[phone]['leads']
       expect(household['uuid']).to eq parsed_households[phone]['uuid']
+    end
+
+    context 'households/leads have already been saved' do
+      before do
+        subject.save(redis_keys, parsed_households)
+      end
+
+      it 'preserves the UUID for any existing household' do
+        existing_household_uuid = fetch_saved_household(phone)['uuid']
+
+        subject.save(redis_keys, parsed_households)
+        updated_household_uuid = fetch_saved_household(phone)['uuid']
+
+        expect(updated_household_uuid).to eq existing_household_uuid
+      end
+
+      context 'custom_id (ID) is in use' do
+        it 'preserves the UUID for any existing leads' do
+          existing_lead_uuid = fetch_saved_household(phone)['leads'].first['uuid']
+
+          subject.save(redis_keys, parsed_households)
+          updated_lead_uuid = fetch_saved_household(phone)['leads'].first['uuid']
+
+          expect(updated_lead_uuid).to eq existing_lead_uuid
+        end
+      end
+    end
+
+    describe 'updates a redis hash counter' do
+      let(:stats_key){ subject.send(:redis_stats_key) }
+
+      def redis
+        @redis ||= Redis.new
+      end
+
+      context 'not using custom id' do
+        before do
+          subject.save(redis_keys, parsed_households)
+        end
+
+        it 'redis hash.new_leads = 1' do
+          expect(redis.hget(stats_key, 'new_leads')).to eq '1'
+        end
+        it 'redis hash.updated_leads = 0' do
+          expect(redis.hget(stats_key, 'updated_leads')).to eq '0'
+        end
+        it 'redis hash.new_numbers = 1' do
+          expect(redis.hget(stats_key, 'new_numbers')).to eq '1'
+        end
+        it 'redis hash.pre_existing_numbers = 0' do
+          expect(redis.hget(stats_key, 'pre_existing_numbers')).to eq '0'
+        end
+      end
+
+      context 'using custom id' do
+        let(:parsed_households) do
+          {
+            '1234567890' => {
+              'leads' => [
+                {'custom_id' => 123, 'first_name' => 'john'},
+                {'custom_id' => 234, 'first_name' => 'lucy'}
+              ],
+              'uuid'  => 'hh-uuid-123'
+            },
+            '4567890123' => {
+              'leads' => [
+                {'custom_id' => 345, 'first_name' => 'sala'},
+                {'custom_id' => 456, 'first_name' => 'nathan'}
+              ],
+              'uuid'  => 'hh-uuid-234'
+            }
+          }
+        end
+
+        let(:second_voter_list) do
+          create(:voter_list, campaign: voter_list.campaign, account: voter_list.account)
+        end
+        let(:second_subject){ List::Imports.new(second_voter_list) }
+        let(:second_stats_key){ second_subject.send(:redis_stats_key) }
+
+        before do
+          # save first list
+          subject.save(redis_keys, parsed_households)
+
+          # save second list
+          second_subject.save(redis_keys, parsed_households)
+        end
+
+        context 'first list' do
+          it 'redis hash.new_leads = 4' do
+            expect(redis.hget(stats_key, 'new_leads')).to eq '4'
+          end
+          it 'redis hash.updated_leads = 0' do
+            expect(redis.hget(stats_key, 'updated_leads')).to eq '0'
+          end
+          it 'redis hash.new_numbers = 2' do
+            expect(redis.hget(stats_key, 'new_numbers')).to eq '2'
+          end
+          it 'redis hash.pre_existing_numbers = 0' do
+            expect(redis.hget(stats_key, 'pre_existing_numbers')).to eq '0'
+          end
+        end
+
+        context 'second list' do
+          it 'redis hash.new_leads = 0' do
+            expect(redis.hget(second_stats_key, 'new_leads')).to eq '0'
+          end
+          it 'redis hash.updated_leads = 4' do
+            expect(redis.hget(second_stats_key, 'updated_leads')).to eq '4'
+          end
+          it 'redis hash.new_numbers = 0' do
+            expect(redis.hget(second_stats_key, 'new_numbers')).to eq '0'
+          end
+          it 'redis hash.pre_existing_numbers = 2' do
+            expect(redis.hget(second_stats_key, 'pre_existing_numbers')).to eq '2'
+          end
+        end
+      end
     end
   end
 end

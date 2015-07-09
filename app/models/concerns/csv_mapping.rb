@@ -20,6 +20,10 @@ class CsvMapping
     not (mapped.values.uniq.count == mapped.values.count)
   end
 
+  def use_custom_id?
+    csv_index_for('custom_id')
+  end
+
   def valid?
     validate
     @errors.blank?
