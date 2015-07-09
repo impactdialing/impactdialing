@@ -1,31 +1,16 @@
 require 'rails_helper'
 
-describe 'List::Imports' do  
-  include_context 'voter csv import' do
-    let(:csv_file_upload){ cp_tmp('valid_voters_list.csv') }
-    let(:windoze_csv_file_upload){ cp_tmp('windoze_voters_list.csv') }
-  end
-
+describe 'List::Imports' do
   let(:voter_list){ create(:voter_list) }
-  let(:s3) do
-    double('AmazonS3', {
-      stream: nil
-    })
-  end
-  let(:csv_file_name) do
-    csv_file_upload
-  end
-  let(:csv_file) do
-    CSV.new(File.open(csv_file_upload).read)
-  end
-  let(:file) do
-    File.open(csv_file_upload)
-  end
-  let(:key_prefix){ "dial_queue:#{voter_list.campaign_id}:households:active" }
 
-  before do
-    allow(s3).to receive(:stream).and_yield(file.read)
-    allow(AmazonS3).to receive(:new){ s3 }
+  let(:redis_keys){ ['key:1', 'key:2', 'key:3'] }
+  let(:parsed_households) do
+    {
+      '1234567890' => {
+        'leads' => [{'first_name' => 'john'}],
+        'uuid' => 'hh-uuid'
+      }
+    }
   end
 
   after do
@@ -119,6 +104,20 @@ describe 'List::Imports' do
 
   describe 'parse' do
     subject{ List::Imports.new(voter_list) }
+    let(:parser) do
+      double('List::Imports::Parser', {
+        parse_file: nil
+      })
+    end
+    let(:cursor){ 0 }
+    let(:results) do
+      {saved_leads: 3, saved_numbers: 2}
+    end
+
+    before do
+      allow(parser).to receive(:parse_file).and_yield(redis_keys, parsed_households, cursor+3, results)
+      allow(List::Imports::Parser).to receive(:new){ parser }
+    end
 
     it 'yields array of redis keys as first arg and hash of households as second arg' do
       expect{|b| subject.parse(&b)}.to yield_with_args(Array, Hash)
@@ -139,26 +138,18 @@ describe 'List::Imports' do
     subject{ List::Imports.new(voter_list) }
 
     it 'saves households & leads at given redis keys' do
-      redis_keys = ['key:1', 'key:2', 'key:3']
-      households = {
-        '1234567890' => {
-          'leads' => [{'first_name' => 'john'}],
-          'uuid' => 'hh-uuid'
-        }
-      }
-
-      subject.save(redis_keys, households)
+      subject.save(redis_keys, parsed_households)
 
       redis            = Redis.new
       stop_index       = ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i
-      phone            = households.keys.first
+      phone            = parsed_households.keys.first
       key              = "key:#{phone[0..stop_index]}"
       hkey             = phone[stop_index+1..-1]
       saved_households = redis.hgetall(key)
       household        = JSON.parse(saved_households[hkey])
 
-      expect(household['leads']).to eq households[phone]['leads']
-      expect(household['uuid']).to eq households[phone]['uuid']
+      expect(household['leads']).to eq parsed_households[phone]['leads']
+      expect(household['uuid']).to eq parsed_households[phone]['uuid']
     end
   end
 end
