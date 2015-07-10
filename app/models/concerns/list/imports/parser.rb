@@ -176,15 +176,12 @@ public
 
       next unless phone_valid?(phone, row)
 
-      # aggregate leads by phone w/in each set of lines
-      # note: 
+      # aggregate leads by phone
       households[phone] ||= build_household(uuid, phone)
       lead              = build_lead(uuid, phone, row)
 
       households[phone]['leads'] << lead
       keys                       << redis_key(phone)
-
-      results[:saved_leads] += 1
     end
 
     [keys.uniq, households]
