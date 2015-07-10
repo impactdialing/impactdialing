@@ -136,7 +136,7 @@ public
     csv_mapping.mapping.each do |header,attr|
       value = row[ @header_index_map[header] ]
 
-      if value.blank?
+      if value.blank? or attr.blank?
         if attr == 'custom_id'
           # custom_id is a blank value => invalid
           invalid_custom_id!(row)
