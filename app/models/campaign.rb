@@ -218,6 +218,10 @@ public
     @dial_queue ||= CallFlow::DialQueue.new(self)
   end
 
+  def imports_stats_key
+    "imports:campaign:#{self.id}:stats"
+  end
+
   def cached?
     dial_queue.exists?
   end

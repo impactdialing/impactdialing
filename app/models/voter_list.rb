@@ -48,6 +48,10 @@ class VoterList < ActiveRecord::Base
     AmazonS3.new.delete(file_name)
   end
 
+  def imports_stats_key
+    "imports:list:#{self.id}:stats"
+  end
+
   def read_from_s3
     self.class.read_from_s3(s3path)
   end
