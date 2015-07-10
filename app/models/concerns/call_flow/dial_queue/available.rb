@@ -22,14 +22,7 @@
 #
 # 
 #
-class CallFlow::DialQueue::Available
-  attr_reader :campaign
-
-  delegate :recycle_rate, to: :campaign
-
-  include CallFlow::DialQueue::Util
-  include CallFlow::DialQueue::SortedSetScore
-
+class CallFlow::DialQueue::Available < CallFlow::DialQueue::PhoneNumberSet
   class RedisTransactionAborted < RuntimeError; end
 
 private
@@ -60,37 +53,11 @@ private
   end
 
 public
-
-  def initialize(campaign)
-    CallFlow::DialQueue.validate_campaign!(campaign)
-    @campaign = campaign
-  end
-
   def keys
     {
       active: "dial_queue:#{campaign.id}:active",
       presented: "dial_queue:#{campaign.id}:presented"
     }
-  end
-
-  def exists?
-    redis.exists(keys[:active]) or redis.exists(keys[:presented])
-  end
-
-  def size(list=:active)
-    redis.zcard keys[list]
-  end
-
-  def count(list=:active, min, max)
-    redis.zcount(keys[list], min, max)
-  end
-
-  def range_by_score(key, min, max, opts={})
-    redis.zrangebyscore(keys[key], min, max, opts)
-  end
-
-  def all(list=:active, options={})
-    redis.zrange keys[list], 0, -1, options
   end
 
   def presented_and_stale
@@ -109,10 +76,6 @@ public
     phones
   end
 
-  def missing?(phone)
-    redis.zscore(keys[:active], phone).nil? and redis.zscore(keys[:presented], phone).nil?
-  end
-
   def insert(scored_members)
     return if scored_members.empty?
     redis.zadd(keys[:active], scored_members)
@@ -122,12 +85,6 @@ public
     return false if household.presented_recently?
 
     redis.zadd keys[:active], *memberize(household)
-  end
-
-  def remove(phones)
-    keys.each do |label, key|
-      redis.zrem key, [*phones]
-    end
   end
 
   def dialed(phones)
