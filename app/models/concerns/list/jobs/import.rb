@@ -23,7 +23,7 @@ class List::Jobs::Import
 
   def self.perform(voter_list_id, email, cursor=0, results=nil)
     begin
-      voter_list  = VoterList.find(voter_list_id)
+      voter_list  = VoterList.includes(:campaign).find(voter_list_id)
       imports     = List::Imports.new(voter_list, cursor, results)
 
       imports.parse do |redis_keys, households|
@@ -32,7 +32,16 @@ class List::Jobs::Import
         results = imports.results
       end
 
-      mailer(email, voter_list).completed(results)
+      # list/import.lua adds available numbers to pending during processing
+      # this ensures that a household is not presented
+      # until all related leads from same list have been collected
+      imports.move_pending_to_available
+
+      final_results = imports.final_results
+
+      mailer(email, voter_list).completed(final_results)
+
+    # todo: requeue on timeouts etc
     rescue Resque::TermException
       Resque.enqueue(self, voter_list_id, email, cursor, results.try(:to_json))
     end

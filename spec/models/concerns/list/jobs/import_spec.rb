@@ -23,10 +23,12 @@ describe 'List::Jobs::Import' do
     end
     let(:imports) do
       double('List::Imports', {
-        parse:   nil,
-        save:    nil,
-        cursor:  6,
-        results: results
+        parse:                     nil,
+        save:                      nil,
+        cursor:                    6,
+        results:                   results,
+        final_results:             results,
+        move_pending_to_available: nil
       })
     end
     let(:voter_list){ create(:voter_list) }

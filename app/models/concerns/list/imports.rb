@@ -126,9 +126,9 @@ public
     return final_results
   end
 
-  def send_numbers_to_dial_queue
+  def move_pending_to_available
     # populate available zset as needed
     # Wolverine.dial_queue.import()
-    # redis.
+    Redis.new.zunionstore common_redis_keys[3], [common_redis_keys[0], common_redis_keys[3]]
   end
 end
