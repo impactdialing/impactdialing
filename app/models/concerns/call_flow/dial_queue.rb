@@ -53,6 +53,14 @@ module CallFlow
       @households ||= CallFlow::DialQueue::Households.new(campaign)
     end
 
+    def completed
+      @completed ||= CallFlow::DialQueue::Completed.new(campaign)
+    end
+
+    def blocked
+      @blocked ||= CallFlow::DialQueue::Blocked.new(campaign)
+    end
+
     def exists?
       available.exists? or recycle_bin.exists? or households.exists?
     end
