@@ -44,6 +44,29 @@ public
   end
 
   def create
+    p "VOTER LIST UPLOAD: #{create_mode}"
+    
+    if create_mode == 'redis'
+      new_create
+    else
+      legacy_create
+    end
+  end
+
+  def column_mapping
+    upload = params[:upload].try(:[], "datafile")
+    csv = upload.read
+    separator = VoterList.separator_from_file_extension(upload.original_filename)
+    @csv_validator = CsvValidator.new(csv, separator)
+    render layout: false
+  end
+
+private
+  def create_mode
+    ENV['VOTER_LIST_UPLOAD_MODE'] || 'legacy'
+  end
+
+  def legacy_create
     upload = params[:upload].try(:[], "datafile")
     s3path = VoterList.upload_file_to_s3(upload.try('read'), VoterList.csv_file_name(params[:voter_list][:name]))
     params[:voter_list][:s3path] = s3path
@@ -66,15 +89,30 @@ public
     end
   end
 
-  def column_mapping
+  def new_create
     upload = params[:upload].try(:[], "datafile")
-    csv = upload.read
-    separator = VoterList.separator_from_file_extension(upload.original_filename)
-    @csv_validator = CsvValidator.new(csv, separator)
-    render layout: false
+    s3path = VoterList.upload_clean_file_to_s3(upload.try('read'), VoterList.csv_file_name(params[:voter_list][:name]))
+    params[:voter_list][:s3path] = s3path
+    params[:voter_list][:uploaded_file_name] = upload.try('original_filename')
+    params[:voter_list].merge!({account_id: account.id})
+    voter_list = @campaign.voter_lists.new(voter_list_params)
+
+    respond_with(voter_list, location: edit_client_campaign_path(@campaign.id)) do |format|
+      if voter_list.save
+        Resque.enqueue(List::Jobs::Import, voter_list.id, current_user.email)
+
+        url = edit_client_script_path(@campaign.script_id)
+        flash_message(:notice, I18n.t(:voter_list_upload_scheduled, url: url).html_safe)
+        format.json { render :json => voter_list.to_json(:only => ["id", "name", "enabled"])}
+      else
+        format.html {
+          flash_message(:error, voter_list.errors.full_messages.join)
+          redirect_to edit_client_campaign_path(@campaign.id)
+        }
+      end
+    end
   end
 
-private
   def voter_list_params
     params.require(:voter_list).
       permit(

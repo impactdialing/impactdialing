@@ -1,4 +1,6 @@
 require 'ostruct'
+require 'windozer'
+
 class VoterList < ActiveRecord::Base
   include List::Stats
   
@@ -28,6 +30,14 @@ class VoterList < ActiveRecord::Base
     s3path
   end
 
+  def self.upload_clean_file_to_s3(file, file_name)
+    s3path="#{Rails.env}/uploads/voter_list/#{file_name}"
+    return s3path if file.nil?
+    clean_file = Windozer.to_unix( file )
+    AmazonS3.new.write(s3path, clean_file)
+    s3path
+  end
+
   def self.csv_file_name(list_name)
     "#{list_name}_#{Time.now.to_i}_#{rand(999)}"
   end
@@ -42,7 +52,6 @@ class VoterList < ActiveRecord::Base
   end
 
   def self.read_from_s3(file_name)
-    require 'windozer'
     Windozer.to_unix( AmazonS3.new.read(file_name) )
   end
 
