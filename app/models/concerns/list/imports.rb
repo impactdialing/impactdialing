@@ -58,8 +58,8 @@ private
   def common_redis_keys
     [
       "imports:#{voter_list.id}:pending",
-      voter_list.imports_stats_key,
-      voter_list.campaign.imports_stats_key,
+      voter_list.list_stats_key,
+      voter_list.campaign.list_stats_key,
       dial_queue.available.keys[:active],
       dial_queue.recycle_bin.keys[:bin],
       dial_queue.blocked.keys[:blocked],

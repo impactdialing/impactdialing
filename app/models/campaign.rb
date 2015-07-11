@@ -23,6 +23,7 @@ require 'impact_platform/metrics'
 #
 class Campaign < ActiveRecord::Base
   include Deletable
+  include List::Stats
 
   acts_as_reportable
 
@@ -216,10 +217,6 @@ public
 
   def dial_queue
     @dial_queue ||= CallFlow::DialQueue.new(self)
-  end
-
-  def imports_stats_key
-    "imports:campaign:#{self.id}:stats"
   end
 
   def cached?

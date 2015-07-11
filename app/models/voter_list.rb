@@ -1,5 +1,7 @@
 require 'ostruct'
 class VoterList < ActiveRecord::Base
+  include List::Stats
+  
   serialize :csv_to_system_map, JSON
   
   belongs_to :campaign
@@ -46,10 +48,6 @@ class VoterList < ActiveRecord::Base
 
   def self.delete_from_s3(file_name)
     AmazonS3.new.delete(file_name)
-  end
-
-  def imports_stats_key
-    "imports:list:#{self.id}:stats"
   end
 
   def read_from_s3

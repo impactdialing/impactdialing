@@ -3,43 +3,49 @@ class CallStats::Summary
 
   delegate :all_voters, to: :campaign
   delegate :households, to: :campaign
+  delegate :dial_queue, to: :campaign
 
+private
+  def bitmasks
+    {
+      dnc:          Household.bitmask_for_blocked(:dnc),
+      cell:         Household.bitmask_for_blocked(:cell),
+      cell_and_dnc: Household.bitmask_for_blocked(:dnc, :cell)
+    }
+  end
+
+public
   def initialize(campaign)
     @campaign = campaign
   end
 
   def total_households
-    @total_households ||= campaign.households.count(:id)
+    @total_households ||= campaign.list_stats[:total_numbers].to_i
   end
 
   def not_dialed
-    @not_dialed ||= campaign.dial_queue.available.count(:active, '-inf', '2.0')
+    @not_dialed ||= dial_queue.available.count(:active, '-inf', '2.0')
   end
 
   def completed
-    # health check:
-    #   if this returns positive number and households.dialed.count.zero?
-    #     then alert/fix because some data was not cached...
-    @completed ||= households.active.count -
-                   campaign.dial_queue.available.size(:active) -
-                   campaign.dial_queue.available.size(:presented) -
-                   campaign.dial_queue.recycle_bin.size
+    @completed ||= dial_queue.completed.count(:completed, '-inf', '+inf')
   end
 
   def retrying
-    @retrying ||= campaign.dial_queue.available.count(:active, '2.0', '+inf')
+    @retrying ||= dial_queue.available.count(:active, '2.0', '+inf')
   end
 
   def pending_retry
-    @pending_retry ||= campaign.dial_queue.recycle_bin.size
+    @pending_retry ||= dial_queue.recycle_bin.count(:bin, '-inf', '+inf')
   end
 
   def households_blocked_by_dnc
-    @households_blocked_by_dnc ||= households.with_blocked(:dnc).count
+    @households_blocked_by_dnc ||= dial_queue.blocked.count(:blocked, bitmasks[:dnc], bitmasks[:cell_and_dnc])
   end
 
   def households_blocked_by_cell
-    @households_blocked_by_cell ||= households.with_blocked(:cell).count
+    @households_blocked_by_cell ||= dial_queue.blocked.count(:blocked, bitmasks[:cell], bitmasks[:cell]) +
+                                    dial_queue.blocked.count(:blocked, bitmasks[:cell_and_dnc], bitmasks[:cell_and_dnc])
   end
 
   def total_households_to_dial
@@ -47,9 +53,7 @@ class CallStats::Summary
   end
 
   def total_households_not_to_dial
-    households_blocked_by_dnc +
-    households_blocked_by_cell +
-    completed + 
-    pending_retry
+    dial_queue.blocked.count(:blocked, '-inf', '+inf') +
+    completed + pending_retry
   end
 end

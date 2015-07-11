@@ -27,7 +27,7 @@ describe CallStats::Summary do
       let(:pending_retry){ 42 }
 
       it 'considers the remaining as available for retry' do
-        allow(dial_queue.recycle_bin).to receive(:size){ pending_retry }
+        allow(dial_queue.recycle_bin).to receive(:count){ pending_retry }
 
         dial_report = CallStats::Summary.new(campaign)
         expect(dial_report.pending_retry).to eq pending_retry
@@ -52,8 +52,7 @@ describe CallStats::Summary do
       let(:dial_report){ CallStats::Summary.new(campaign) }
 
       it 'counts households blocked by dnc/cell, completed households & recently dialed households awaiting recycle rate expiry' do
-        allow(dial_report).to receive(:households_blocked_by_dnc){ 2 }
-        allow(dial_report).to receive(:households_blocked_by_cell){ 1 }
+        allow(campaign.dial_queue.blocked).to receive(:count){ 3 }
         allow(dial_report).to receive(:completed){ 7 }
         allow(dial_report).to receive(:pending_retry){ 5 }
 
@@ -66,41 +65,19 @@ describe CallStats::Summary do
 
       let(:admin){ create(:user) }
       let(:account){ admin.account }
+      let(:campaign){ create(:campaign, account: account) }
 
       def summary(campaign)
         CallStats::Summary.new(campaign)
       end
 
-      before do
-        @campaign = create_campaign_with_script(:bare_predictive, account).last
-        all_attrs = {campaign: @campaign, account: account}
-        attrs     = all_attrs.merge(presented_at: 5.minutes.ago)
-
-        create_list(:household, 5, :busy, :cell, attrs)
-        create_list(:household, 5, :success, :dnc, attrs)
-        @dialed_and_blocked_total = 10
-
-        create_list(:household, 5, attrs)
-        @not_dialed_and_not_blocked_total = 5
-
-        create_list(:household, 5, :cell, attrs)
-        create_list(:household, 5, :dnc, attrs)
-        @not_dialed_and_blocked_total = 10
-
-        @total_households = @dialed_and_blocked_total + @not_dialed_and_not_blocked_total + @not_dialed_and_blocked_total
-      end
-
       describe 'households' do
-        it 'counts dialed households that have been blocked' do
-          expect(summary(@campaign).total_households).to eq @total_households
+        let(:total_households){ 42 }
+        before do
+          expect(campaign).to receive(:list_stats){ {total_numbers: total_households} }
         end
-
-        it 'counts all households that are not currently blocked' do
-          expect(summary(@campaign).total_households).to eq @total_households
-        end
-
-        it 'does not count blocked and not dialed households' do
-          expect(summary(@campaign).total_households).to eq @total_households
+        it 'are loaded from redis (Campaign#list_stats[:total_numbers]' do
+          expect(summary(campaign).total_households).to eq total_households
         end
       end
     end
@@ -116,8 +93,8 @@ describe CallStats::Summary do
       let(:retrying){ 3 }
       let(:available){ not_dialed + retrying }
       let(:pending_retry){ 2 }
-      let!(:completed_households) do
-        create_list(:voter, 3, campaign: campaign, account: account).map(&:household)
+      let(:completed) do
+        3
       end
       let!(:other_households) do
         create_list(:voter, available + pending_retry, campaign: campaign, account: account).map(&:household)
@@ -126,6 +103,7 @@ describe CallStats::Summary do
       before do
         allow(dial_queue.available).to receive(:count).with(:active, '-inf', '2.0'){ not_dialed }
         allow(dial_queue.available).to receive(:count).with(:active, '2.0', '+inf'){ retrying }
+        allow(dial_queue.completed).to receive(:count).with(:completed, '-inf', '+inf'){ completed }
         allow(dial_queue.available).to receive(:size).with(:active){ available }
         allow(dial_queue.available).to receive(:size).with(:presented){ 0 }
         allow(dial_queue.recycle_bin).to receive(:size){ pending_retry }
@@ -142,9 +120,8 @@ describe CallStats::Summary do
       end
 
       it 'completed' do
-        # byebug
         summary = CallStats::Summary.new(campaign)
-        expect(summary.completed).to eq(completed_households.size)
+        expect(summary.completed).to eq(completed)
       end
     end
   end
