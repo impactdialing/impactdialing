@@ -195,6 +195,36 @@ describe 'List::Imports::Parser' do
       expected_cursor = cursor + 1 + data_lines.size # 1 => header line
       expect{|b| subject.parse_file(&b) }.to yield_with_args(expected_redis_keys, Hash, expected_cursor, Hash)
     end
+
+    context 'cursor > 0' do
+      let(:cursor){ 2 }
+      subject{ List::Imports::Parser.new(voter_list, cursor, results, batch_size) }
+
+      it 'parses headers from the first line' do
+        expect(subject).to receive(:parse_headers).with(header_line).and_call_original
+        subject.parse_file{ nil }
+      end
+
+      context 'only last line needs processing' do
+        let(:cursor){ 3 } # valid_voters_list_redis has 1 header & 3 data rows
+        subject{ List::Imports::Parser.new(voter_list, cursor, results, 1) }
+
+        it 'parses the last line only' do
+          expect(subject).to receive(:parse_lines).with(data_lines[-1..-1].join)
+          subject.parse_file{ nil }
+        end
+      end
+
+      context 'only first line has been processed' do
+        let(:cursor){ 2 }
+        subject{ List::Imports::Parser.new(voter_list, cursor, results, 1) }
+
+        it 'parses all but the first line' do
+          expect(subject).to receive(:parse_lines).with(data_lines[1..-1].join) # 0=header,1=first row
+          subject.parse_file{ nil }
+        end
+      end
+    end 
   end
 
   describe 'building business objects' do

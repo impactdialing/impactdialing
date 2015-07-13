@@ -1,5 +1,5 @@
 class List::Imports::Parser
-  attr_reader :voter_list, :csv_mapping, :results, :batch_size
+  attr_reader :voter_list, :csv_mapping, :results, :batch_size, :cursor
 
 private
   def csv_options
@@ -94,11 +94,29 @@ public
 
   def parse_file(&block)
     i = 0
+    start_at = nil
+
+    if cursor > 0
+      # continue from previous position
+      start_at = cursor
+    end
+
     read_file do |lines|
       if i.zero?
         parse_headers(lines.shift)
         i     += 1
         cursor = i
+      end
+
+      unless start_at.nil?
+        cursor += lines.size
+
+        if start_at <= cursor
+          lines = lines[start_at-cursor..-1]
+          start_at = nil
+        else
+          next
+        end
       end
 
       keys, households = parse_lines(lines.join)
