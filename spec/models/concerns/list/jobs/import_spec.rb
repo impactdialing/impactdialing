@@ -64,9 +64,7 @@ describe 'List::Jobs::Import' do
       end
     end
 
-    describe 'Termination' do
-      let(:raise_args){ [Resque::TermException, "TERM"] }
-
+    shared_examples_for 'all retriable errors' do
       it 're-queues itself' do
         allow(imports).to receive(:parse).and_raise(*raise_args)
 
@@ -87,6 +85,33 @@ describe 'List::Jobs::Import' do
         it 'include `results` which is a json encoded string of the results as of the last row processed' do
           subject.perform(voter_list.id, email)
         end
+      end
+    end
+
+    describe 'Termination' do
+      let(:raise_args){ [Resque::TermException, "TERM"] }
+      it_behaves_like 'all retriable errors'
+    end
+
+    describe 'general redis-rb connection errors' do
+      context 'CannotConnectError' do
+        let(:raise_args){ [Redis::CannotConnectError, ''] }
+        it_behaves_like 'all retriable errors'
+      end
+
+      context 'ConnectionError' do
+        let(:raise_args){ [Redis::ConnectionError, ''] }
+        it_behaves_like 'all retriable errors'
+      end
+
+      context 'TimeoutError' do
+        let(:raise_args){ [Redis::TimeoutError, ''] }
+        it_behaves_like 'all retriable errors'
+      end
+
+      context 'InheritedError' do
+        let(:raise_args){ [Redis::InheritedError, ''] }
+        it_behaves_like 'all retriable errors'
       end
     end
   end

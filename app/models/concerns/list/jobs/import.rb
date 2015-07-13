@@ -42,7 +42,7 @@ class List::Jobs::Import
       mailer(email, voter_list).completed(final_results)
 
     # todo: requeue on timeouts etc
-    rescue Resque::TermException
+    rescue Resque::TermException, Redis::BaseConnectionError
       Resque.enqueue(self, voter_list_id, email, cursor, results.try(:to_json))
     end
   end
