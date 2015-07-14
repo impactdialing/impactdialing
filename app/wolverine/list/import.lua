@@ -6,16 +6,16 @@
 -- dial_queue.blocked.keys[:blocked],
 -- dial_queue.completed.keys[:completed]
 
-local pending_set_key     = KEYS[1]
-local list_stats_key      = KEYS[2]
-local campaign_stats_key  = KEYS[3]
-local available_set_key   = KEYS[4]
-local recycle_bin_set_key = KEYS[5]
-local blocked_set_key     = KEYS[6]
-local completed_set_key   = KEYS[7]
-local household_key_base  = ARGV[1] -- dial_queue:{campaign_id}:households:active
-local households          = cjson.decode(ARGV[2])
-
+local pending_set_key           = KEYS[1]
+local list_stats_key            = KEYS[2]
+local campaign_stats_key        = KEYS[3]
+local available_set_key         = KEYS[4]
+local recycle_bin_set_key       = KEYS[5]
+local blocked_set_key           = KEYS[6]
+local completed_set_key         = KEYS[7]
+local household_key_base        = ARGV[1] -- dial_queue:{campaign_id}:households:active
+local households                = cjson.decode(ARGV[2])
+local update_statistics         = 1
 local _updated_hh               = {}
 local new_number_count          = 0
 local pre_existing_number_count = 0
@@ -44,7 +44,7 @@ local add_to_set = function(leads_added, blocked, sequence, phone)
           -- preserve score from completed set to prevent recycle rate violations
           redis.call('ZADD', pending_set_key, completed_score, phone)
           redis.call('ZREM', completed_set_key, phone)
-          redis.call('LPUSH', 'debug', 'leads_added: ' .. tostring(leads_added) .. '; completed score: ' .. tostring(completed_score))
+          --redis.call('LPUSH', 'debug', 'leads_added: ' .. tostring(leads_added) .. '; completed score: ' .. tostring(completed_score))
         else
           redis.call('ZADD', pending_set_key, zscore(sequence), phone)
         end
@@ -80,6 +80,7 @@ for phone,household in pairs(households) do
   local phone_key     = string.sub(phone, -3, -1)
   local new_leads     = household['leads']
   local uuid          = household['uuid']
+  local sequence      = nil
   local updated_leads = {}
   local current_hh    = {}
   local updated_hh    = household
@@ -92,7 +93,8 @@ for phone,household in pairs(households) do
     current_hh = cjson.decode(_current_hh)
 
     -- hh attributes
-    uuid = current_hh['uuid']
+    uuid     = current_hh['uuid']
+    sequence = current_hh['sequence']
 
     -- leads
     local current_leads = current_hh['leads']
@@ -127,21 +129,25 @@ for phone,household in pairs(households) do
     end
 
     pre_existing_number_count = pre_existing_number_count + 1
-
-    updated_hh['sequence'] = redis.call('HGET', campaign_stats_key, 'number_sequence')
   else
     -- brand new household
+    -- note: when enabling a list, households get a new sequence
+    -- note: the sequence is used solely for scoring zset members (phone numbers)
+    -- note: which isn't great since enabling a list changes the order leads will be dialed
+    -- note: but is acceptable for now because enable/disable is likely going away for good
+    -- todo: remove these notes when enable/disable voter list feature is removed
     for _,lead in pairs(new_leads) do
       new_lead_count = new_lead_count + 1
       table.insert(updated_leads, lead)
     end
     new_number_count = new_number_count + 1
 
-    updated_hh['sequence'] = redis.call('HINCRBY', campaign_stats_key, 'number_sequence', 1)
+    sequence = redis.call('HINCRBY', campaign_stats_key, 'number_sequence', 1)
   end
 
-  updated_hh['leads'] = updated_leads
-  updated_hh['uuid']  = uuid
+  updated_hh['leads']    = updated_leads
+  updated_hh['uuid']     = uuid
+  updated_hh['sequence'] = sequence
 
   add_to_set(leads_added, updated_hh['blocked'], updated_hh['sequence'], phone)
 
@@ -163,3 +169,4 @@ redis.call('HINCRBY', list_stats_key, 'total_leads', total_lead_count)
 redis.call('HINCRBY', list_stats_key, 'total_numbers', total_number_count)
 redis.call('HINCRBY', campaign_stats_key, 'total_leads', new_lead_count)
 redis.call('HINCRBY', campaign_stats_key, 'total_numbers', new_number_count)
+
