@@ -27,7 +27,8 @@ private
   def keys
     {
       active: "dial_queue:#{campaign.id}:households:active",
-      presented: "dial_queue:#{campaign.id}:households:presented"
+      presented: "dial_queue:#{campaign.id}:households:presented",
+      inactive: "dial_queue:#{campaign.id}:households:inactive"
     }
   end
 
