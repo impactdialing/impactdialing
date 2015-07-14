@@ -14,7 +14,7 @@ describe 'List::Jobs::Import' do
     allow(VoterListMailer).to receive(:new){ voter_list_mailer }
   end
 
-  describe '.perform(voter_list_id, email, cursor[0], results[nil])' do
+  describe '.perform(voter_list_id, email[nil], cursor[0], results[nil])' do
     let(:results) do
       {
         numbers_tally: 0,
@@ -116,3 +116,4 @@ describe 'List::Jobs::Import' do
     end
   end
 end
+

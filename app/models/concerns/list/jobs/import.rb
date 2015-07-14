@@ -21,7 +21,7 @@ class List::Jobs::Import
 
   @queue = :import
 
-  def self.perform(voter_list_id, email, cursor=0, results=nil)
+  def self.perform(voter_list_id, email=nil, cursor=0, results=nil)
     begin
       voter_list  = VoterList.includes(:campaign).find(voter_list_id)
       imports     = List::Imports.new(voter_list, cursor, results)
@@ -39,15 +39,19 @@ class List::Jobs::Import
 
       final_results = imports.final_results
 
-      mailer(email, voter_list).completed(final_results)
+      mailer(voter_list, email).try(:completed, final_results)
 
-    # todo: requeue on timeouts etc
     rescue Resque::TermException, Redis::BaseConnectionError
       Resque.enqueue(self, voter_list_id, email, cursor, results.try(:to_json))
     end
   end
   
-  def self.mailer(email, voter_list)
-    VoterListMailer.new(email, voter_list)
+  # email can be nil when job is queued after initial import
+  # which can happen eg when a user enables a disabled list
+  def self.mailer(voter_list, final_results, email=nil)
+    unless email.nil?
+      VoterListMailer.new(email, voter_list)
+    end
   end
 end
+
