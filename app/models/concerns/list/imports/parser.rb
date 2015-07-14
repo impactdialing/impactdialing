@@ -148,7 +148,7 @@ public
     }
   end
 
-  def build_lead(uuid, phone, row)
+  def build_lead(uuid, phone, row, batch_index, batch_count)
     lead = {}
     # populate lead w/ mapped csv data
     csv_mapping.mapping.each do |header,attr|
@@ -175,6 +175,7 @@ public
     # so generating here is safe even if lead w/ same custom id appears in multiple batches
     lead['uuid']          = uuid.generate
     lead['voter_list_id'] = voter_list.id
+    lead['line_number']   = (cursor - batch_count) + batch_index + 1
     lead['account_id']    = voter_list.account_id
     lead['campaign_id']   = voter_list.campaign_id
     lead['enabled']       = Voter.bitmask_for_enabled(:list)
@@ -186,9 +187,10 @@ public
   def parse_lines(lines)
     keys       = []
     households = {}
+    line_count = lines.size
     uuid       = UUID.new
     rows       = CSV.new(lines, csv_options)
-    rows.each do |row|
+    rows.each_with_index do |row, i|
       raw_phone             = row[@phone_index]
       phone                 = PhoneNumber.sanitize(raw_phone)
 
@@ -196,7 +198,7 @@ public
 
       # aggregate leads by phone
       households[phone] ||= build_household(uuid, phone)
-      lead              = build_lead(uuid, phone, row)
+      lead                = build_lead(uuid, phone, row, i, line_count)
 
       households[phone]['leads'] << lead
       keys                       << redis_key(phone)
