@@ -64,8 +64,7 @@ class VoterList < ActiveRecord::Base
   end
 
   def enable_disable_members
-    #Resque.enqueue(VoterListChangeJob, self.id, self.enabled)
-    Resque.enqueue(List::Jobs::ToggleActive, self.id, self.enabled)
+    Resque.enqueue(List::Jobs::ToggleActive, self.id)
   end
 
   def validates_file_type
