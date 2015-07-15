@@ -9,13 +9,13 @@ class List::Jobs::ToggleActive
 
   @queue = :import
 
-  def self.perform(voter_list_id, enabled)
+  def self.perform(voter_list_id)
     voter_list = VoterList.find voter_list_id
     trimmer    = List::DisabledTrimmer.new(voter_list)
     if voter_list.enabled
-      trimmer.add_enabled_leads
+      trimmer.enable_leads
     else
-      trimmer.remove_disabled_leads
+      trimmer.disable_leads
     end
   end
 end
