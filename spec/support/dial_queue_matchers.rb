@@ -25,3 +25,13 @@ RSpec::Matchers.define :be_in_redis_households do |campaign_id, namespace|
     "expected to not find #{expected_leads} in households:#{campaign_id}:#{namespace}\nfound only these #{leads_in_redis}" 
   end
 end
+
+RSpec::Matchers.define :be_in_dial_queue_zset do |campaign_id, namespace|
+  redis = Redis.new
+  key   = "dial_queue:#{campaign_id}:#{namespace}"
+
+  match do |phone|
+    redis.zscore(key, phone).present?
+  end
+end
+

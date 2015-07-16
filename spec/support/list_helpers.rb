@@ -1,6 +1,14 @@
+class Forgery::Address < Forgery
+  def self.clean_phone
+    formats[:clean_phone].random.to_numbers
+  end
+end
+
 module ListHelpers
   def import_list(list, households)
-    List::Imports.new(list).save([active_redis_key], households)
+    imports = List::Imports.new(list)
+    imports.save([active_redis_key], households)
+    imports.move_pending_to_available
   end
 
   def disable_list(list)
@@ -15,4 +23,44 @@ module ListHelpers
     allow(parser_double).to receive(:parse_file).and_yield([redis_key], household, 0, {})
     allow(List::Imports::Parser).to receive(:new){ parser_double }
   end
+
+  def build_household_hashes(n, list, with_custom_id=false)
+    h = {}
+    n.times do
+      h.merge!(build_household_hash(list, with_custom_id))
+    end
+    h
+  end
+
+  def build_household_hash(list, with_custom_id=false)
+    phone = Forgery(:address).clean_phone
+    {
+      phone => {
+        leads: build_leads_array( (1..5).to_a.sample, list, phone, with_custom_id )
+      }
+    }
+  end
+
+  def build_leads_array(n, list, phone, with_custom_id=false)
+    a = []
+    n.times do
+      a << build_lead_hash(list, phone, with_custom_id)
+    end
+    a
+  end
+
+  def build_lead_hash(list, phone, with_custom_id=false)
+    h = {
+      voter_list_id: list.id,
+      phone: phone,
+      first_name: Forgery(:name).first_name,
+      last_name: Forgery(:name).last_name
+    }
+    if with_custom_id
+      custom_id = with_custom_id.kind_of?(Integer) ? with_custom_id : Forgery(:basic).number
+      h.merge!(custom_id: custom_id)
+    end
+    h
+  end
 end
+

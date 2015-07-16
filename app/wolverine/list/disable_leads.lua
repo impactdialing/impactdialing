@@ -84,11 +84,11 @@ for phone,_ in pairs(households) do
       -- household has no active leads from other lists
       -- record the score to use when enabling
       score = redis.call('ZSCORE', available_set_key, phone)
-      if score ~= nil then
+      if score then
         redis.call('ZREM', available_set_key, phone)
       else
         score = redis.call('ZSCORE', recycle_bin_set_key, phone)
-        if score ~= nil then
+        if score then
           redis.call('ZREM', recycle_bin_set_key, phone)
         end
       end
@@ -99,7 +99,7 @@ for phone,_ in pairs(households) do
     end
     if #new_inactive_leads ~= 0 then
       inactive_household.leads = new_inactive_leads
-      if score ~= nil then
+      if score then
         inactive_household.score = score
       end
       redis.call('HSET', inactive_key, hkey, cjson.encode(inactive_household))

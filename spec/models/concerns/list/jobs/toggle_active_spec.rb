@@ -19,24 +19,10 @@ describe 'List::Imports::Jobs::ToggleActive' do
     create(:voter_list, campaign: campaign)
   end
   let(:households_one) do
-    {
-      '1234567890' => {
-        leads: [{voter_list_id: list_one.id, first_name: 'John', last_name: 'Doe'}]
-      },
-      '4567890123' => {
-        leads: [{voter_list_id: list_one.id, first_name: 'Sally', last_name: 'Dugget'}]
-      }
-    }
+    build_household_hashes(1, list_one, false)
   end
   let(:households_two) do
-    {
-      '1234567890' => {
-        leads: [{voter_list_id: list_two.id, first_name: 'George', last_name: 'Jungle'}]
-      },
-      '0456789123' => {
-        leads: [{voter_list_id: list_two.id, first_name: 'Kristin', last_name: 'Hops'}]
-      }
-    }
+    build_household_hashes(1, list_two, false)
   end
   let(:active_redis_key){ 'dial_queue:1:households:active:111' }
   let(:inactive_redis_key){ 'dial_queue:1:households:inactive:111' }
