@@ -197,7 +197,8 @@ describe 'List::Imports' do
             '1234567890' => {
               'leads' => [
                 {'custom_id' => 123, 'first_name' => 'john'},
-                {'custom_id' => 234, 'first_name' => 'lucy'}
+                {'custom_id' => 234, 'first_name' => 'lucy'},
+                {'custom_id' => 123, 'first_name' => 'jack'}
               ],
               'uuid'  => 'hh-uuid-123'
             },

@@ -22,6 +22,13 @@ local pre_existing_number_count = 0
 local new_lead_count            = 0
 local updated_lead_count        = 0
 
+local log = function (message)
+  redis.call('RPUSH', 'debug.log', message)
+end
+local capture = function (k,data)
+  redis.call('RPUSH', 'debug.' .. k, cjson.encode(data))
+end
+
 -- calculates score for new members
 -- existing scores must be preserved w/ aggregate max on unionstore
 local zscore = function (sequence)
@@ -58,34 +65,78 @@ local add_to_set = function(leads_added, blocked, sequence, phone)
   end
 end
 
-local merge_leads = function (lead, lead_id_set)
-  local merged = false
-  if lead_id_set[lead.custom_id] ~= nil then
-    merged = true
-
-    for k,v in pairs(lead) do
-      if k ~= 'uuid' and k ~= 'custom_id' then
-        lead_id_set[lead.custom_id][k] = v
+local build_custom_id_set = function(leads)
+  local lead_id_set = {}
+  if leads[1] and leads[1].custom_id ~= nil then
+    -- handle updates, merge leads
+    for _,lead in pairs(leads) do
+      local custom_id = tostring(lead.custom_id)
+      if custom_id ~= nil then
+        lead_id_set[custom_id] = lead
+      else
       end
     end
-  else
-    lead_id_set[lead.custom_id] = lead
   end
 
-  return merged
+  return lead_id_set
 end
 
+local update_lead = function (lead_to_update, lead_with_updates)
+  for k,v in pairs(lead_with_updates) do
+    if k ~= 'uuid' and k ~= 'custom_id' then
+      lead_to_update[k] = lead_with_updates[k]
+    end
+  end
+end
+
+local merge_leads = function(current_leads, new_leads)
+  local merged_leads  = {}
+  local results       = {}
+  local updated_leads = 0
+  local added_leads   = 0
+
+  for custom_id,new_lead in pairs(new_leads) do
+    local current_lead = current_leads[custom_id]
+    if current_lead then
+      merged_leads[custom_id] = update_lead(current_lead, new_lead)
+      updated_leads           = updated_leads + 1
+    else
+      if merged_leads[custom_id] == nil then
+        added_leads = added_leads + 1
+      end
+      merged_leads[custom_id] = new_lead
+    end
+  end
+  -- convert to basic array instead of dict to avoid encoding as json object instead of array
+  local _merged_leads = {}
+  for _,lead in pairs(merged_leads) do
+    table.insert(_merged_leads, lead)
+  end
+
+  table.insert(results, added_leads)
+  table.insert(results, updated_leads)
+  table.insert(results, _merged_leads)
+  return results
+end
+
+local next = next
+
 for phone,household in pairs(households) do
-  local household_key = household_key_base .. ':' .. string.sub(phone, 0, -4)
-  local phone_key     = string.sub(phone, -3, -1)
-  local new_leads     = household['leads']
-  local uuid          = household['uuid']
-  local sequence      = nil
-  local updated_leads = {}
-  local current_hh    = {}
-  local updated_hh    = household
-  local leads_added   = false
-  local _current_hh   = redis.call('HGET', household_key, phone_key)
+  local household_key   = household_key_base .. ':' .. string.sub(phone, 0, -4)
+  local phone_key       = string.sub(phone, -3, -1)
+  local new_leads       = household['leads']
+  local uuid            = household['uuid']
+  local sequence        = nil
+  local updated_leads   = {}
+  local current_hh      = {}
+  local updated_hh      = household
+  local leads_added     = false
+  local _current_hh     = redis.call('HGET', household_key, phone_key)
+  local new_lead_id_set = build_custom_id_set(new_leads)
+
+  if next(new_lead_id_set) ~= nil then
+    new_leads = new_lead_id_set
+  end
 
   if _current_hh then
     -- this household has been saved so merge
@@ -97,24 +148,18 @@ for phone,household in pairs(households) do
     sequence = current_hh['sequence']
 
     -- leads
-    local current_leads = current_hh['leads']
+    local current_leads       = current_hh['leads']
+    local current_lead_id_set = build_custom_id_set(current_leads)
     
-    if current_leads[1] and current_leads[1].custom_id ~= nil then
-      -- handle updates, merge leads
-      local lead_id_set   = {}
-      for _,lead in pairs(current_leads) do
-        lead_id_set[lead.custom_id] = lead
-      end
+    -- if existing & new don't have custom ids then go to append mode
+    if next(current_lead_id_set) ~= nil and next(new_lead_id_set) ~= nil then
+      local merge_results = merge_leads(current_lead_id_set, new_lead_id_set)
+      new_lead_count      = new_lead_count + merge_results[1]
+      updated_lead_count  = updated_lead_count + merge_results[2]
+      updated_leads       = merge_results[3]
 
-      for _,lead in pairs(new_leads) do
-        if merge_leads(lead, lead_id_set) then
-          updated_lead_count = updated_lead_count + 1
-        else
-          leads_added    = true
-          new_lead_count = new_lead_count + 1
-        end
-
-        table.insert(updated_leads, lead_id_set[lead.custom_id])
+      if new_lead_count > 0 then
+        leads_added = true
       end
     else
       -- not using custom ids, append all leads
@@ -131,11 +176,6 @@ for phone,household in pairs(households) do
     pre_existing_number_count = pre_existing_number_count + 1
   else
     -- brand new household
-    -- note: when enabling a list, households get a new sequence
-    -- note: the sequence is used solely for scoring zset members (phone numbers)
-    -- note: which isn't great since enabling a list changes the order leads will be dialed
-    -- note: but is acceptable for now because enable/disable is likely going away for good
-    -- todo: remove these notes when enable/disable voter list feature is removed
     for _,lead in pairs(new_leads) do
       new_lead_count = new_lead_count + 1
       table.insert(updated_leads, lead)
@@ -151,8 +191,8 @@ for phone,household in pairs(households) do
 
   add_to_set(leads_added, updated_hh['blocked'], updated_hh['sequence'], phone)
 
-  -- local _updated_hh = cmsgpack.pack(updated_hh)
   local _updated_hh = cjson.encode(updated_hh)
+
 
   redis.call('HSET', household_key, phone_key, _updated_hh)
 end

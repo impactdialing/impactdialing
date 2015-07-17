@@ -6,6 +6,7 @@ end
 
 module ListHelpers
   def import_list(list, households)
+    p "import_list: #{list.id}, #{households}"
     imports = List::Imports.new(list)
     imports.save([active_redis_key], households)
     imports.move_pending_to_available
@@ -34,17 +35,31 @@ module ListHelpers
 
   def build_household_hash(list, with_custom_id=false)
     phone = Forgery(:address).clean_phone
+    leads = build_leads_array( (1..5).to_a.sample, list, phone, with_custom_id )
+    if with_custom_id
+      # de-dup
+      ids = []
+      leads.map! do |lead|
+        if ids.include? lead[:custom_id]
+          nil
+        else
+          ids << lead[:custom_id]
+          lead
+        end
+      end.compact!
+    end
     {
       phone => {
-        leads: build_leads_array( (1..5).to_a.sample, list, phone, with_custom_id )
+        leads: leads
       }
     }
   end
 
   def build_leads_array(n, list, phone, with_custom_id=false)
     a = []
-    n.times do
-      a << build_lead_hash(list, phone, with_custom_id)
+    n.times do |i|
+      id = with_custom_id ? i : false
+      a << build_lead_hash(list, phone, id)
     end
     a
   end
