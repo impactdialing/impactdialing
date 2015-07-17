@@ -215,6 +215,11 @@ public
     inflight_stats.get('ringing')
   end
 
+  def using_custom_ids?
+    return true if voter_lists.count.zero?
+    voter_lists.first.maps_custom_id?
+  end
+
   def dial_queue
     @dial_queue ||= CallFlow::DialQueue.new(self)
   end

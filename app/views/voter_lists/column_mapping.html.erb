@@ -13,12 +13,18 @@
       <th>Example data</th>
     </tr>
     <% @csv_validator.csv_column_headers.each_with_index do |csv_header, index| %>
-      <% selected = selected_system_or_custom_header_for(csv_header, @campaign.account) %>
+      <% selected = selected_system_or_custom_header_for(csv_header, @campaign.account, @use_custom_ids) %>
       <tr>
-        <td><%= csv_header %></td>
-        <td><%= select_tag "voter_list[csv_to_system_map[#{csv_header}]]",
-        options_for_select(system_column_headers(csv_header, @campaign.account), selected),
-        class: "select-column-mapping" %></td>
+        <td>
+          <label for="csv_to_system_map_<%= csv_header.underscore %>">
+            <%= csv_header %>
+          </label>
+        </td>
+        <td>
+          <%= select_tag "voter_list[csv_to_system_map[#{csv_header.underscore}]]",
+        options_for_select(system_column_headers(csv_header, @campaign.account, @use_custom_ids), selected),
+          class: "select-column-mapping", id: "csv_to_system_map_#{csv_header.underscore}" %>
+        </td>
         <td><%= @csv_validator.first_row[index] %></td>
       </tr>
     <% end %>

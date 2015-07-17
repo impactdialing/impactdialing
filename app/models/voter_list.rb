@@ -59,6 +59,10 @@ class VoterList < ActiveRecord::Base
     AmazonS3.new.delete(file_name)
   end
 
+  def maps_custom_id?
+    csv_to_system_map.keys.include? 'custom_id'
+  end
+
   def read_from_s3
     self.class.read_from_s3(s3path)
   end

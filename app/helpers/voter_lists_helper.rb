@@ -8,9 +8,9 @@ module VoterListsHelper
     match || csv_header
   end
 
-  def selected_system_or_custom_header_for(csv_header, account)
+  def selected_system_or_custom_header_for(csv_header, account, use_custom_ids=true)
     normalized_header = csv_header.underscore.strip
-    select_options    = system_column_headers(csv_header, account)
+    select_options    = system_column_headers(csv_header, account, use_custom_ids)
     selected = select_options.find do |select_option|
       select_option.include?(normalized_header) or
       select_option.include?(csv_header.strip)
@@ -18,10 +18,13 @@ module VoterListsHelper
     selected.try(:last)
   end
 
-  def system_column_headers(csv_header, account)
+  def system_column_headers(csv_header, account, use_custom_ids=true)
     basic_header = [["(Discard this column)", nil]]
     basic_header.concat(VoterList::VOTER_DATA_COLUMNS.values.zip(VoterList::VOTER_DATA_COLUMNS.keys))
     basic_header.concat(account.custom_voter_fields.map(&:name).map{|field| [field, field]})
+    unless use_custom_ids
+      basic_header.reject!{|tuples| tuples.include?('custom_id')}
+    end
     basic_header << ["Add custom field...", "custom"]
   end
 end

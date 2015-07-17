@@ -4,7 +4,7 @@ describe VoterListsHelper, :type => :helper do
   describe 'system column headers' do
     before(:each) do
       @original_columns = VoterList::VOTER_DATA_COLUMNS
-      silence_warnings { VoterList::VOTER_DATA_COLUMNS = {"foo"=>"foo", "barbaz"=>"Barbaz"} }
+      silence_warnings { VoterList::VOTER_DATA_COLUMNS = {"foo"=>"foo", "barbaz"=>"Barbaz", "custom_id" => "ID"} }
       @account = create(:account)
     end
 
@@ -13,13 +13,18 @@ describe VoterListsHelper, :type => :helper do
     end
 
     it "returns a list of all available voter attributes as well as not available" do
-      expect(helper.system_column_headers("foo",@account)).to eq([["(Discard this column)", nil], ["foo", "foo"], ["Barbaz", "barbaz"], ["Add custom field...", "custom"]])
+      expect(helper.system_column_headers("foo",@account)).to eq([["(Discard this column)", nil], ["foo", "foo"], ["Barbaz", "barbaz"], ["ID", "custom_id"], ["Add custom field...", "custom"]])
     end
 
     it "returns a list of all custom fields along with the others" do
       custom_field = "baz"
       create(:custom_voter_field, name: "baz", account: @account)
-      expect(helper.system_column_headers("foo",@account)).to eq([["(Discard this column)", nil], ["foo", "foo"],["Barbaz", "barbaz"], ["#{custom_field}", custom_field], ["Add custom field...", "custom"]])
+      expect(helper.system_column_headers("foo",@account)).to eq([["(Discard this column)", nil], ["foo", "foo"],["Barbaz", "barbaz"], ["ID", "custom_id"], ["#{custom_field}", custom_field], ["Add custom field...", "custom"]])
+    end
+
+    it "excludes custom_id when use_custom_id is false" do
+      expect(helper.system_column_headers("foo", @account, false)).to eq([["(Discard this column)", nil], ["foo", "foo"], ["Barbaz", "barbaz"], ["Add custom field...", "custom"]])
+
     end
   end
 
