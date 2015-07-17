@@ -15,6 +15,7 @@ class VoterList < ActiveRecord::Base
   validates_length_of :name, :minimum => 3
   validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
   validate :validates_file_type, :on => :create
+  validate :custom_id_usage, :before => :validation
   
   after_update :enable_disable_members
 
@@ -22,6 +23,17 @@ class VoterList < ActiveRecord::Base
                         "middle_name"=>"MiddleName", "suffix"=>"Suffix", "email"=>"Email", "address"=>"Address", "city"=>"City",
                         "state"=>"State/Province", "zip_code"=>"Zip/Postal Code", "country"=>"Country"}
   BLANK_HEADER = '<Blank header>'
+
+private
+  def custom_id_usage
+    if campaign.using_custom_ids?
+      return true
+    elsif self.maps_custom_id?
+      errors.add(:csv_to_system_map, I18n.t('activerecord.errors.models.voter_list.custom_id_map_prohibited'))
+    end
+  end
+
+public
 
   def self.upload_file_to_s3(file, file_name)
     s3path="#{Rails.env}/uploads/voter_list/#{file_name}"

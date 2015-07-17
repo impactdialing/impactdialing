@@ -5,13 +5,67 @@ describe VoterList, :type => :model do
     {
       name: 'blah',
       s3path: '/somewhere/on/s3/blah.csv',
-      csv_to_system_map: {'First name' => 'first_name', 'Phone' => 'phone'},
+      csv_to_system_map: {'first_name' => 'First Name', 'phone' => 'Phone'},
       uploaded_file_name: 'blah.csv'
     }
   end
   it 'serializes #csv_to_system_map as JSON' do
-    list = VoterList.create!(valid_attrs)
+    list = VoterList.create!(valid_attrs.merge(campaign: create(:preview)))
     expect(list.reload.csv_to_system_map).to eq valid_attrs[:csv_to_system_map]
+  end
+
+  describe 'csv_to_system_map restrictions' do
+    let(:campaign){ create(:power) }
+    let(:custom_id_mapping) do
+      {
+        'phone' => 'Phone',
+        'custom_id' => 'ID'
+      }
+    end
+    let(:voter_list) do
+      build(:voter_list, {
+        campaign: campaign,
+        csv_to_system_map: custom_id_mapping
+      })
+    end
+
+    context 'when this is the first list for the campaign' do
+      it 'can map custom_id' do
+        expect(voter_list).to be_valid
+      end
+    end
+    context 'when first list for campaign did map custom id' do
+      let(:second_voter_list) do
+        build(:voter_list, {
+          campaign: campaign,
+          csv_to_system_map: custom_id_mapping
+        })
+      end
+      before do
+        voter_list.save!
+      end
+      it 'can map custom_id' do
+        expect(second_voter_list).to be_valid
+      end
+    end
+    context 'when first list for campaign did not map custom id' do
+      let(:second_voter_list) do
+        build(:voter_list, {
+          campaign: campaign,
+          csv_to_system_map: custom_id_mapping
+        })
+      end
+      before do
+        voter_list.csv_to_system_map = {
+          'phone' => 'Phone'
+        }
+        voter_list.save!
+      end
+      it 'cannot map custom_id' do
+        second_voter_list.valid?
+        expect(second_voter_list.errors[:csv_to_system_map]).to include I18n.t('activerecord.errors.models.voter_list.custom_id_map_prohibited')
+      end
+    end
   end
 
   it "validates the uniqueness of name in a case insensitive manner" do
@@ -57,8 +111,8 @@ describe VoterList, :type => :model do
       voter          = create(:voter, :disabled, voter_list: voter_list)
       voter_list.enabled = true
       voter_list.save
-      voter_list_change_job = {'class' => 'VoterListChangeJob', 'args' => [voter_list.id, true]}
-      expect(resque_jobs(:dial_queue)).to include voter_list_change_job
+      voter_list_change_job = {'class' => 'List::Jobs::ToggleActive', 'args' => [voter_list.id]}
+      expect(resque_jobs(:import)).to include voter_list_change_job
     end
 
     it "should queue job to disable all members when list disabled" do
@@ -66,8 +120,8 @@ describe VoterList, :type => :model do
       voter              = create(:voter, :disabled, voter_list: voter_list)
       voter_list.enabled = false
       voter_list.save
-      voter_list_change_job = {'class' => 'VoterListChangeJob', 'args' => [voter_list.id, false]}
-      expect(resque_jobs(:dial_queue)).to include voter_list_change_job
+      voter_list_change_job = {'class' => 'List::Jobs::ToggleActive', 'args' => [voter_list.id]}
+      expect(resque_jobs(:import)).to include voter_list_change_job
     end
   end
 end
