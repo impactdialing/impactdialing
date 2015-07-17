@@ -78,7 +78,7 @@ local build_custom_id_set = function(leads)
     -- handle updates, merge leads
     for _,lead in pairs(leads) do
       local custom_id = tostring(lead.custom_id)
-      if custom_id ~= nil then
+      if custom_id ~= "nil" then
         lead_id_set[custom_id] = lead
       else
       end
