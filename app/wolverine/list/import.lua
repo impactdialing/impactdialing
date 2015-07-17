@@ -13,6 +13,7 @@ local available_set_key         = KEYS[4]
 local recycle_bin_set_key       = KEYS[5]
 local blocked_set_key           = KEYS[6]
 local completed_set_key         = KEYS[7]
+local custom_id_set_key         = KEYS[8]
 local household_key_base        = ARGV[1] -- dial_queue:{campaign_id}:households:active
 local households                = cjson.decode(ARGV[2])
 local update_statistics         = 1
@@ -72,6 +73,47 @@ local add_to_set = function(leads_added, blocked, sequence, phone)
   end
 end
 
+local remove_lead_from_current_household = function(custom_id, phone)
+  -- current_registration is zscore where left of decimal is phone and right of decimal is 0
+  local key_parts     = household_key_parts(phone)
+  local household_key = key_parts[1]
+  local phone_key     = key_parts[2]
+  local _household    = redis.call('HGET', household_key, phone_key)
+  if _household then
+    local household    = cjson.decode(_household)
+    local new_leads    = {}
+    new_lead_count     = new_lead_count - 1
+    updated_lead_count = updated_lead_count + 1
+
+    for _,lead in pairs(household.leads) do
+      if tostring(lead.custom_id) ~= custom_id then
+        table.insert(new_leads, lead)
+      end
+    end
+    if #new_leads > 0 then
+      household.leads = new_leads
+      redis.call('HSET', household_key, phone_key, cjson.encode(household))
+    else
+      redis.call('HDEL', household_key, phone_key)
+    end
+  end
+end
+
+local register_custom_id = function(custom_id, phone)
+  local current_registration = redis.call('ZSCORE', custom_id_set_key, custom_id)
+
+  if current_registration then
+    local current_phone = tostring(math.modf(current_registration))
+    if current_phone ~= phone then
+      log('current_registration: '..current_phone..' for: '..custom_id..' and '..phone)
+      -- custom id already registered & possibly stored in household hash
+      remove_lead_from_current_household(custom_id, current_phone)
+
+    end
+  end
+  redis.call('ZADD', custom_id_set_key, phone, custom_id)
+end
+
 local build_custom_id_set = function(leads)
   local lead_id_set       = {}
 
@@ -81,7 +123,7 @@ local build_custom_id_set = function(leads)
       local custom_id = tostring(lead.custom_id)
       if custom_id ~= "nil" then
         lead_id_set[custom_id] = lead
-      else
+        register_custom_id(custom_id, lead.phone)
       end
     end
   end
@@ -127,6 +169,7 @@ end
 local next = next
 
 for phone,household in pairs(households) do
+  log('processing phone: '..phone)
   local key_parts       = household_key_parts(phone)
   local household_key   = key_parts[1]
   local phone_key       = key_parts[2]
@@ -195,8 +238,6 @@ for phone,household in pairs(households) do
   add_to_set(leads_added, updated_hh['blocked'], updated_hh['sequence'], phone)
 
   local _updated_hh = cjson.encode(updated_hh)
-
-
   redis.call('HSET', household_key, phone_key, _updated_hh)
 end
 

@@ -167,6 +167,7 @@ describe 'List::Imports' do
 
     describe 'updating voter list stats' do
       let(:stats_key){ common_keys[1] }
+      let(:custom_id_set_key){ common_keys[7] }
 
       def redis
         @redis ||= Redis.new
@@ -196,16 +197,19 @@ describe 'List::Imports' do
           {
             '1234567890' => {
               'leads' => [
-                {'custom_id' => 123, 'first_name' => 'john'},
-                {'custom_id' => 234, 'first_name' => 'lucy'},
-                {'custom_id' => 123, 'first_name' => 'jack'}
+                {'custom_id' => 123, 'first_name' => 'john', 'phone' => '1234567890'},
+                {'custom_id' => 234, 'first_name' => 'lucy', 'phone' => '1234567890'},
+                {'custom_id' => 123, 'first_name' => 'jack', 'phone' => '1234567890'},
+                {'first_name' => 'aria', 'phone' => '1234567890'} # will not be saved due to missing custom id
               ],
               'uuid'  => 'hh-uuid-123'
             },
             '4567890123' => {
               'leads' => [
-                {'custom_id' => 345, 'first_name' => 'sala'},
-                {'custom_id' => 456, 'first_name' => 'nathan'}
+                {'custom_id' => 123, 'first_name' => 'john', 'phone' => '4567890123'},
+                {'custom_id' => 345, 'first_name' => 'sala', 'phone' => '4567890123'},
+                {'custom_id' => 456, 'first_name' => 'nathan', 'phone' => '4567890123'},
+                {'first_name' => 'sensa', 'phone' => '4567890123'} # will not be saved due to missing custom id
               ],
               'uuid'  => 'hh-uuid-234'
             }
@@ -220,9 +224,11 @@ describe 'List::Imports' do
 
         before do
           # save first list
+          redis.rpush('debug.log', 'saving first subject')
           subject.save(redis_keys, parsed_households)
 
           # save second list
+          redis.rpush('debug.log', 'saving second subject')
           second_subject.save(redis_keys, parsed_households)
         end
 
@@ -230,8 +236,9 @@ describe 'List::Imports' do
           it 'redis hash.new_leads = 4' do
             expect(redis.hget(stats_key, 'new_leads')).to eq '4'
           end
-          it 'redis hash.updated_leads = 0' do
-            expect(redis.hget(stats_key, 'updated_leads')).to eq '0'
+          it 'redis hash.updated_leads = 1' do
+            # leads w/ same custom id in two households
+            expect(redis.hget(stats_key, 'updated_leads')).to eq '1'
           end
           it 'redis hash.new_numbers = 2' do
             expect(redis.hget(stats_key, 'new_numbers')).to eq '2'
@@ -239,14 +246,23 @@ describe 'List::Imports' do
           it 'redis hash.pre_existing_numbers = 0' do
             expect(redis.hget(stats_key, 'pre_existing_numbers')).to eq '0'
           end
+          it 'redis custom id set contains custom ids of all leads in campaign w/ phone as score' do
+            phone_one = "#{parsed_households.keys.first}.0".to_f
+            phone_two = "#{parsed_households.keys.last}.0".to_f
+            expect(redis.zscore(custom_id_set_key, 123)).to eq phone_one
+            expect(redis.zscore(custom_id_set_key, 234)).to eq phone_one
+            expect(redis.zscore(custom_id_set_key, 345)).to eq phone_two
+            expect(redis.zscore(custom_id_set_key, 456)).to eq phone_two
+          end
         end
 
         context 'second list' do
           it 'redis hash.new_leads = 0' do
             expect(redis.hget(second_stats_key, 'new_leads')).to eq '0'
           end
-          it 'redis hash.updated_leads = 4' do
-            expect(redis.hget(second_stats_key, 'updated_leads')).to eq '4'
+          it 'redis hash.updated_leads = 5' do
+            # leads w/ same custom id in two households
+            expect(redis.hget(second_stats_key, 'updated_leads')).to eq '5'
           end
           it 'redis hash.new_numbers = 0' do
             expect(redis.hget(second_stats_key, 'new_numbers')).to eq '0'

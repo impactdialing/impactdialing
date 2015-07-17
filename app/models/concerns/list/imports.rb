@@ -63,7 +63,8 @@ private
       dial_queue.available.keys[:active],
       dial_queue.recycle_bin.keys[:bin],
       dial_queue.blocked.keys[:blocked],
-      dial_queue.completed.keys[:completed]
+      dial_queue.completed.keys[:completed],
+      voter_list.campaign.custom_id_set_key
     ]
   end
 
