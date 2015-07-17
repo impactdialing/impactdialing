@@ -29,6 +29,13 @@ local capture = function (k,data)
   redis.call('RPUSH', 'debug.' .. k, cjson.encode(data))
 end
 
+-- build household key parts
+local household_key_parts = function(phone)
+  local household_key   = household_key_base .. ':' .. string.sub(phone, 0, -4)
+  local phone_key       = string.sub(phone, -3, -1)
+  return {household_key, phone_key}
+end
+
 -- calculates score for new members
 -- existing scores must be preserved w/ aggregate max on unionstore
 local zscore = function (sequence)
@@ -122,8 +129,9 @@ end
 local next = next
 
 for phone,household in pairs(households) do
-  local household_key   = household_key_base .. ':' .. string.sub(phone, 0, -4)
-  local phone_key       = string.sub(phone, -3, -1)
+  local key_parts       = household_key_parts(phone)
+  local household_key   = key_parts[1]
+  local phone_key       = key_parts[2]
   local new_leads       = household['leads']
   local uuid            = household['uuid']
   local sequence        = nil
