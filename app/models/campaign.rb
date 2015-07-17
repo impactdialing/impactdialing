@@ -215,8 +215,19 @@ public
     inflight_stats.get('ringing')
   end
 
+  def requires_custom_ids?
+    (not voter_lists.count.zero?) and using_custom_ids?
+  end
+
+  def can_use_custom_ids?
+    voter_lists.count.zero? or using_custom_ids?
+  end
+
+  def cannot_use_custom_ids?
+    (not voter_lists.count.zero?) and (not using_custom_ids?)
+  end
+
   def using_custom_ids?
-    return true if voter_lists.count.zero?
     voter_lists.first.maps_custom_id?
   end
 

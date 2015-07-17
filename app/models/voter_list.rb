@@ -26,9 +26,11 @@ class VoterList < ActiveRecord::Base
 
 private
   def custom_id_usage
-    if campaign.using_custom_ids?
-      return true
-    elsif self.maps_custom_id?
+    if campaign.can_use_custom_ids?
+      if campaign.requires_custom_ids? and (not self.maps_custom_id?)
+        errors.add(:csv_to_system_map, I18n.t('activerecord.errors.models.voter_list.custom_id_map_required'))
+      end
+    elsif campaign.cannot_use_custom_ids? and self.maps_custom_id?
       errors.add(:csv_to_system_map, I18n.t('activerecord.errors.models.voter_list.custom_id_map_prohibited'))
     end
   end
@@ -72,7 +74,7 @@ public
   end
 
   def maps_custom_id?
-    csv_to_system_map.keys.include? 'custom_id'
+    csv_to_system_map.values.include? 'custom_id'
   end
 
   def read_from_s3

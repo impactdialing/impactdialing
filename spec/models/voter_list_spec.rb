@@ -5,7 +5,7 @@ describe VoterList, :type => :model do
     {
       name: 'blah',
       s3path: '/somewhere/on/s3/blah.csv',
-      csv_to_system_map: {'first_name' => 'First Name', 'phone' => 'Phone'},
+      csv_to_system_map: {'First Name' => 'first_name', 'Phone' => 'phone'},
       uploaded_file_name: 'blah.csv'
     }
   end
@@ -18,8 +18,8 @@ describe VoterList, :type => :model do
     let(:campaign){ create(:power) }
     let(:custom_id_mapping) do
       {
-        'phone' => 'Phone',
-        'custom_id' => 'ID'
+        'Phone' => 'phone',
+        'ID' => 'custom_id'
       }
     end
     let(:voter_list) do
@@ -41,11 +41,24 @@ describe VoterList, :type => :model do
           csv_to_system_map: custom_id_mapping
         })
       end
+      let(:third_voter_list) do
+        build(:voter_list, {
+          campaign: campaign,
+          csv_to_system_map: {
+            'Phone' => 'phone'
+          }
+        })
+      end
       before do
         voter_list.save!
       end
       it 'can map custom_id' do
         expect(second_voter_list).to be_valid
+      end
+      it 'is invalid if no custom id is mapped' do
+        second_voter_list.save!
+        third_voter_list.valid?
+        expect(third_voter_list.errors[:csv_to_system_map]).to include I18n.t('activerecord.errors.models.voter_list.custom_id_map_required')
       end
     end
     context 'when first list for campaign did not map custom id' do
@@ -57,7 +70,7 @@ describe VoterList, :type => :model do
       end
       before do
         voter_list.csv_to_system_map = {
-          'phone' => 'Phone'
+          'Phone' => 'phone'
         }
         voter_list.save!
       end
