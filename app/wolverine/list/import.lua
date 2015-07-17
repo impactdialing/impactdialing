@@ -73,7 +73,8 @@ local add_to_set = function(leads_added, blocked, sequence, phone)
 end
 
 local build_custom_id_set = function(leads)
-  local lead_id_set = {}
+  local lead_id_set       = {}
+
   if leads[1] and leads[1].custom_id ~= nil then
     -- handle updates, merge leads
     for _,lead in pairs(leads) do
@@ -106,10 +107,10 @@ local merge_leads = function(current_leads, new_leads)
     local current_lead = current_leads[custom_id]
     if current_lead then
       merged_leads[custom_id] = update_lead(current_lead, new_lead)
-      updated_leads           = updated_leads + 1
+      updated_lead_count = updated_lead_count + 1
     else
       if merged_leads[custom_id] == nil then
-        added_leads = added_leads + 1
+        new_lead_count = new_lead_count + 1
       end
       merged_leads[custom_id] = new_lead
     end
@@ -120,10 +121,7 @@ local merge_leads = function(current_leads, new_leads)
     table.insert(_merged_leads, lead)
   end
 
-  table.insert(results, added_leads)
-  table.insert(results, updated_leads)
-  table.insert(results, _merged_leads)
-  return results
+  return _merged_leads
 end
 
 local next = next
@@ -161,10 +159,7 @@ for phone,household in pairs(households) do
     
     -- if existing & new don't have custom ids then go to append mode
     if next(current_lead_id_set) ~= nil and next(new_lead_id_set) ~= nil then
-      local merge_results = merge_leads(current_lead_id_set, new_lead_id_set)
-      new_lead_count      = new_lead_count + merge_results[1]
-      updated_lead_count  = updated_lead_count + merge_results[2]
-      updated_leads       = merge_results[3]
+      updated_leads = merge_leads(current_lead_id_set, new_lead_id_set)
 
       if new_lead_count > 0 then
         leads_added = true
