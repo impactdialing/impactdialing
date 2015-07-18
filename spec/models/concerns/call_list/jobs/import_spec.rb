@@ -1,7 +1,7 @@
 require 'rails_helper'
 
-describe 'List::Jobs::Import' do
-  subject{ List::Jobs::Import }
+describe 'CallList::Jobs::Import' do
+  subject{ CallList::Jobs::Import }
 
   let(:voter_list_mailer) do
     double('VoterListMailer', {
@@ -22,7 +22,7 @@ describe 'List::Jobs::Import' do
       }
     end
     let(:imports) do
-      double('List::Imports', {
+      double('CallList::Imports', {
         parse:                     nil,
         save:                      nil,
         cursor:                    6,
@@ -44,10 +44,10 @@ describe 'List::Jobs::Import' do
 
     before do
       allow(imports).to receive(:parse).and_yield(redis_keys, parsed_households)
-      allow(List::Imports).to(receive(:new).with(voter_list, 0, nil)){ imports }
+      allow(CallList::Imports).to(receive(:new).with(voter_list, 0, nil)){ imports }
     end
 
-    it 'calls List::Imports#parse to begin batch processing' do
+    it 'calls CallList::Imports#parse to begin batch processing' do
       expect(imports).to receive(:parse)
       subject.perform(voter_list.id, email)
     end
@@ -58,7 +58,7 @@ describe 'List::Jobs::Import' do
     end
 
     context 'each batch' do
-      it 'calls List::Import#save(redis_keys, households)' do
+      it 'calls CallList::Import#save(redis_keys, households)' do
         expect(imports).to receive(:save).with(redis_keys, parsed_households)
         subject.perform(voter_list.id, email)
       end

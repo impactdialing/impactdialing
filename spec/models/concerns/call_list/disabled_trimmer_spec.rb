@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'List::DisabledTrimmer' do
+describe 'CallList::DisabledTrimmer' do
   include ListHelpers
 
   let(:campaign) do
@@ -20,7 +20,7 @@ describe 'List::DisabledTrimmer' do
     build_household_hashes(1, list_two, with_custom_id)
   end
   let(:parser) do
-    double('List::Imports::Parser', {
+    double('CallList::Imports::Parser', {
       parse_file: nil
     })
   end
@@ -33,7 +33,7 @@ describe 'List::DisabledTrimmer' do
   let(:redis){ Redis.new }
 
   describe 'disabling leads' do
-    subject{ List::DisabledTrimmer.new(list_one) }
+    subject{ CallList::DisabledTrimmer.new(list_one) }
 
     let(:phone){ households_one.keys.first }
     let(:score){ redis.zscore available_key, phone }
@@ -148,7 +148,7 @@ describe 'List::DisabledTrimmer' do
         let(:lead_from_same_list){ build_lead_hash(list_one, phone, 100) }
         let(:households_one){ build_household_hashes(1, list_one, true) }
         let(:households_two){ build_household_hashes(1, list_two, true) }
-        let(:subject_two){ List::DisabledTrimmer.new(list_two) }
+        let(:subject_two){ CallList::DisabledTrimmer.new(list_two) }
 
         before do
           # import then disable first list, storing lead_from_same_list in inactive
@@ -190,7 +190,7 @@ describe 'List::DisabledTrimmer' do
         let(:lead_from_same_list){ build_lead_hash(list_one, phone) }
         let(:households_one){ build_household_hashes(1, list_one) }
         let(:households_two){ build_household_hashes(1, list_two) }
-        let(:subject_two){ List::DisabledTrimmer.new(list_two) }
+        let(:subject_two){ CallList::DisabledTrimmer.new(list_two) }
 
         before do
           # import then disable first list, storing lead_from_same_list in inactive

@@ -1,7 +1,7 @@
 # todo: refactor:
 #       - batch streaming -> AmazonS3
 # todo: fillout stats tracking
-class List::Imports
+class CallList::Imports
   attr_reader :voter_list, :cursor, :results
 
 private
@@ -64,7 +64,7 @@ private
       dial_queue.recycle_bin.keys[:bin],
       dial_queue.blocked.keys[:blocked],
       dial_queue.completed.keys[:completed],
-      voter_list.campaign.custom_id_set_key
+      voter_list.campaign.custom_id_register_key
     ]
   end
 
@@ -88,7 +88,7 @@ public
   end
 
   def parse(&block)
-    parser = List::Imports::Parser.new(voter_list, cursor, results, batch_size)
+    parser = CallList::Imports::Parser.new(voter_list, cursor, results, batch_size)
     parser.parse_file do |keys, households, _cursor, _results|
       yield keys, households
 

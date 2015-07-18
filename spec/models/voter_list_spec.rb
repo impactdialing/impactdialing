@@ -124,7 +124,7 @@ describe VoterList, :type => :model do
       voter          = create(:voter, :disabled, voter_list: voter_list)
       voter_list.enabled = true
       voter_list.save
-      voter_list_change_job = {'class' => 'List::Jobs::ToggleActive', 'args' => [voter_list.id]}
+      voter_list_change_job = {'class' => 'CallList::Jobs::ToggleActive', 'args' => [voter_list.id]}
       expect(resque_jobs(:import)).to include voter_list_change_job
     end
 
@@ -133,7 +133,7 @@ describe VoterList, :type => :model do
       voter              = create(:voter, :disabled, voter_list: voter_list)
       voter_list.enabled = false
       voter_list.save
-      voter_list_change_job = {'class' => 'List::Jobs::ToggleActive', 'args' => [voter_list.id]}
+      voter_list_change_job = {'class' => 'CallList::Jobs::ToggleActive', 'args' => [voter_list.id]}
       expect(resque_jobs(:import)).to include voter_list_change_job
     end
   end

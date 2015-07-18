@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'List::Imports::Parser' do
+describe 'CallList::Imports::Parser' do
 
   include_context 'voter csv import' do
     let(:csv_file_upload){ cp_tmp('valid_voters_list_redis.csv') }
@@ -78,7 +78,7 @@ describe 'List::Imports::Parser' do
     allow(AmazonS3).to receive(:new){ s3 }
   end
 
-  subject{ List::Imports::Parser.new(voter_list, cursor, results, batch_size) }
+  subject{ CallList::Imports::Parser.new(voter_list, cursor, results, batch_size) }
 
   describe 'initialize' do
     it 'exposes csv_mapping instance' do
@@ -198,7 +198,7 @@ describe 'List::Imports::Parser' do
 
     context 'cursor > 0' do
       let(:cursor){ 2 }
-      subject{ List::Imports::Parser.new(voter_list, cursor, results, batch_size) }
+      subject{ CallList::Imports::Parser.new(voter_list, cursor, results, batch_size) }
 
       it 'parses headers from the first line' do
         expect(subject).to receive(:parse_headers).with(header_line).and_call_original
@@ -207,7 +207,7 @@ describe 'List::Imports::Parser' do
 
       context 'only last line needs processing' do
         let(:cursor){ 3 } # valid_voters_list_redis has 1 header & 3 data rows
-        subject{ List::Imports::Parser.new(voter_list, cursor, results, 1) }
+        subject{ CallList::Imports::Parser.new(voter_list, cursor, results, 1) }
 
         it 'parses the last line only' do
           expect(subject).to receive(:parse_lines).with(data_lines[-1..-1].join)
@@ -217,7 +217,7 @@ describe 'List::Imports::Parser' do
 
       context 'only first line has been processed' do
         let(:cursor){ 2 }
-        subject{ List::Imports::Parser.new(voter_list, cursor, results, 1) }
+        subject{ CallList::Imports::Parser.new(voter_list, cursor, results, 1) }
 
         it 'parses all but the first line' do
           expect(subject).to receive(:parse_lines).with(data_lines[1..-1].join) # 0=header,1=first row

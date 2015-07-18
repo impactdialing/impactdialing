@@ -1,4 +1,4 @@
-class List::Imports::Parser
+class CallList::Imports::Parser
   attr_reader :voter_list, :csv_mapping, :results, :batch_size, :cursor
 
 private

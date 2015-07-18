@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'List::Imports' do
+describe 'CallList::Imports' do
   let(:voter_list){ create(:voter_list) }
 
   let(:redis_keys) do
@@ -27,7 +27,7 @@ describe 'List::Imports' do
   end
 
   describe 'initialize' do
-    subject{ List::Imports.new(voter_list) }
+    subject{ CallList::Imports.new(voter_list) }
 
     it 'exposes voter_list instance' do
       expect(subject.voter_list).to eq voter_list
@@ -40,7 +40,7 @@ describe 'List::Imports' do
     end
 
     context 'default @results hash' do
-      subject{ List::Imports.new(voter_list) }
+      subject{ CallList::Imports.new(voter_list) }
 
       it 'saved_numbers => 0' do
         expect(subject.results[:saved_numbers]).to be_zero
@@ -103,7 +103,7 @@ describe 'List::Imports' do
       end
       let(:results_json){ expected_recovered_results.to_json }
 
-      subject{ List::Imports.new(voter_list, 5, results_json) }
+      subject{ CallList::Imports.new(voter_list, 5, results_json) }
 
       it 'loads previous results instead of defaults' do
         expect(subject.results).to eq expected_recovered_results.stringify_keys
@@ -112,9 +112,9 @@ describe 'List::Imports' do
   end
 
   describe 'parse' do
-    subject{ List::Imports.new(voter_list) }
+    subject{ CallList::Imports.new(voter_list) }
     let(:parser) do
-      double('List::Imports::Parser', {
+      double('CallList::Imports::Parser', {
         parse_file: nil
       })
     end
@@ -125,7 +125,7 @@ describe 'List::Imports' do
 
     before do
       allow(parser).to receive(:parse_file).and_yield(redis_keys, parsed_households, cursor+3, results)
-      allow(List::Imports::Parser).to receive(:new){ parser }
+      allow(CallList::Imports::Parser).to receive(:new){ parser }
     end
 
     it 'yields array of redis keys as first arg and hash of households as second arg' do
@@ -144,7 +144,7 @@ describe 'List::Imports' do
   end
 
   describe 'save' do
-    subject{ List::Imports.new(voter_list) }
+    subject{ CallList::Imports.new(voter_list) }
 
     let(:phone){ parsed_households.keys.first }
 
@@ -219,7 +219,7 @@ describe 'List::Imports' do
         let(:second_voter_list) do
           create(:voter_list, campaign: voter_list.campaign, account: voter_list.account)
         end
-        let(:second_subject){ List::Imports.new(second_voter_list) }
+        let(:second_subject){ CallList::Imports.new(second_voter_list) }
         let(:second_stats_key){ second_subject.send(:common_redis_keys)[1] }
 
         before do
@@ -246,7 +246,7 @@ describe 'List::Imports' do
           it 'redis hash.pre_existing_numbers = 0' do
             expect(redis.hget(stats_key, 'pre_existing_numbers')).to eq '0'
           end
-          it 'redis custom id set contains custom ids of all leads in campaign w/ phone as score' do
+          it 'redis hash.{campaign_id}.custom_ids contains custom ids of all leads in campaign w/ phone as score' do
             phone_one = "#{parsed_households.keys.first}.0".to_f
             phone_two = "#{parsed_households.keys.last}.0".to_f
             expect(redis.zscore(custom_id_set_key, 123)).to eq phone_one

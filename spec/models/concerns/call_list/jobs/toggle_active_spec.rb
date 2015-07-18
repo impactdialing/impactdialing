@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-describe 'List::Imports::Jobs::ToggleActive' do
+describe 'CallList::Imports::Jobs::ToggleActive' do
   include ListHelpers
 
-  subject{ List::Jobs::ToggleActive }
+  subject{ CallList::Jobs::ToggleActive }
 
   after do
     Redis.new.flushall
@@ -27,7 +27,7 @@ describe 'List::Imports::Jobs::ToggleActive' do
   let(:active_redis_key){ 'dial_queue:1:households:active:111' }
   let(:inactive_redis_key){ 'dial_queue:1:households:inactive:111' }
   let(:parser) do
-    double('List::Imports::Parser', {
+    double('CallList::Imports::Parser', {
       parse_file: nil
     })
   end

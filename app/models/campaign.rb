@@ -23,7 +23,7 @@ require 'impact_platform/metrics'
 #
 class Campaign < ActiveRecord::Base
   include Deletable
-  include List::Stats
+  include CallList::Stats
 
   acts_as_reportable
 

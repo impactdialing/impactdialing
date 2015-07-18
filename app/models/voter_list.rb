@@ -2,7 +2,7 @@ require 'ostruct'
 require 'windozer'
 
 class VoterList < ActiveRecord::Base
-  include List::Stats
+  include CallList::Stats
   
   serialize :csv_to_system_map, JSON
   
@@ -82,7 +82,7 @@ public
   end
 
   def enable_disable_members
-    Resque.enqueue(List::Jobs::ToggleActive, self.id)
+    Resque.enqueue(CallList::Jobs::ToggleActive, self.id)
   end
 
   def validates_file_type

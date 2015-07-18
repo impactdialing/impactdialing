@@ -7,7 +7,7 @@ end
 module ListHelpers
   def import_list(list, households)
     p "import_list: #{list.id}, #{households}"
-    imports = List::Imports.new(list)
+    imports = CallList::Imports.new(list)
     imports.save([active_redis_key], households)
     imports.move_pending_to_available
   end
@@ -22,7 +22,7 @@ module ListHelpers
 
   def stub_list_parser(parser_double, redis_key, household)
     allow(parser_double).to receive(:parse_file).and_yield([redis_key], household, 0, {})
-    allow(List::Imports::Parser).to receive(:new){ parser_double }
+    allow(CallList::Imports::Parser).to receive(:new){ parser_double }
   end
 
   def build_household_hashes(n, list, with_custom_id=false)

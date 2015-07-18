@@ -16,7 +16,7 @@ require 'librato_resque'
 #
 # - 1 failure
 #
-class List::Jobs::Import
+class CallList::Jobs::Import
   extend LibratoResque
 
   @queue = :import
@@ -24,7 +24,7 @@ class List::Jobs::Import
   def self.perform(voter_list_id, email=nil, cursor=0, results=nil)
     begin
       voter_list  = VoterList.includes(:campaign).find(voter_list_id)
-      imports     = List::Imports.new(voter_list, cursor, results)
+      imports     = CallList::Imports.new(voter_list, cursor, results)
 
       imports.parse do |redis_keys, households|
         imports.save(redis_keys, households)
