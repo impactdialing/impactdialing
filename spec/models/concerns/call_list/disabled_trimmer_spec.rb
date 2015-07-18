@@ -155,7 +155,6 @@ describe 'CallList::DisabledTrimmer' do
           households_one[phone][:leads] << lead_from_same_list
           stub_list_parser(list_one, active_redis_key, households_one)
           import_list(list_one, households_one)
-          byebug
           expect(households_one).to be_in_redis_households(campaign.id, 'active')
           subject.disable_leads # disables list one
           expect(households_one).to be_in_redis_households(campaign.id, 'inactive')

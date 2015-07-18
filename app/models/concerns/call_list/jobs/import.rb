@@ -48,7 +48,7 @@ class CallList::Jobs::Import
   
   # email can be nil when job is queued after initial import
   # which can happen eg when a user enables a disabled list
-  def self.mailer(voter_list, final_results, email=nil)
+  def self.mailer(voter_list, email=nil)
     unless email.nil?
       VoterListMailer.new(email, voter_list)
     end
