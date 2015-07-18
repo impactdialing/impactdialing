@@ -10,6 +10,10 @@ private
     voter_list.campaign.dial_queue.households.key(phone)
   end
 
+  def redis_custom_id_register_key(custom_id)
+    voter_list.campaign.call_list.custom_id_register_key(custom_id)
+  end
+
   # return true when desirable to not import numbers for cell devices
   # return false when desirable to import numbers for both cell & landline devices
   def skip_wireless?
@@ -201,7 +205,13 @@ public
       lead                = build_lead(uuid, phone, row, i, line_count)
 
       households[phone]['leads'] << lead
+      # build keys here to maintain cluster support
       keys                       << redis_key(phone)
+
+      if voter_list.maps_custom_id? and lead['custom_id'].present?
+        # key order doesn't matter, lua script should re-assemble keys as needed
+        keys << redis_custom_id_register_key(lead['custom_id']) 
+      end
     end
 
     [keys.uniq, households]

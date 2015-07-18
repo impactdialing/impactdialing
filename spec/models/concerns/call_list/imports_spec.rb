@@ -167,7 +167,7 @@ describe 'CallList::Imports' do
 
     describe 'updating voter list stats' do
       let(:stats_key){ common_keys[1] }
-      let(:custom_id_set_key){ common_keys[7] }
+      let(:custom_id_register_key){ common_keys[7] }
 
       def redis
         @redis ||= Redis.new
@@ -247,12 +247,13 @@ describe 'CallList::Imports' do
             expect(redis.hget(stats_key, 'pre_existing_numbers')).to eq '0'
           end
           it 'redis hash.{campaign_id}.custom_ids contains custom ids of all leads in campaign w/ phone as score' do
-            phone_one = "#{parsed_households.keys.first}.0".to_f
-            phone_two = "#{parsed_households.keys.last}.0".to_f
-            expect(redis.zscore(custom_id_set_key, 123)).to eq phone_one
-            expect(redis.zscore(custom_id_set_key, 234)).to eq phone_one
-            expect(redis.zscore(custom_id_set_key, 345)).to eq phone_two
-            expect(redis.zscore(custom_id_set_key, 456)).to eq phone_two
+            phone_one = parsed_households.keys.first
+            phone_two = parsed_households.keys.last
+            custom_ids = redis.hgetall(custom_id_register_key)
+            expect(custom_ids['123']).to eq phone_one
+            expect(custom_ids['234']).to eq phone_one
+            expect(custom_ids['345']).to eq phone_two
+            expect(custom_ids['456']).to eq phone_two
           end
         end
 

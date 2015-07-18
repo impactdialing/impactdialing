@@ -68,6 +68,7 @@ describe 'CallList::Imports::Parser' do
   let(:expected_redis_keys) do
     [
       "dial_queue:#{voter_list.campaign_id}:households:active:1234567",
+      "list:#{voter_list.campaign_id}:custom_ids",
       "dial_queue:#{voter_list.campaign_id}:households:active:4567123"
     ]
   end

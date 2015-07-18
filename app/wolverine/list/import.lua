@@ -6,22 +6,22 @@
 -- dial_queue.blocked.keys[:blocked],
 -- dial_queue.completed.keys[:completed]
 
-local pending_set_key           = KEYS[1]
-local list_stats_key            = KEYS[2]
-local campaign_stats_key        = KEYS[3]
-local available_set_key         = KEYS[4]
-local recycle_bin_set_key       = KEYS[5]
-local blocked_set_key           = KEYS[6]
-local completed_set_key         = KEYS[7]
-local custom_id_set_key         = KEYS[8]
-local household_key_base        = ARGV[1] -- dial_queue:{campaign_id}:households:active
-local households                = cjson.decode(ARGV[2])
-local update_statistics         = 1
-local _updated_hh               = {}
-local new_number_count          = 0
-local pre_existing_number_count = 0
-local new_lead_count            = 0
-local updated_lead_count        = 0
+local pending_set_key             = KEYS[1]
+local list_stats_key              = KEYS[2]
+local campaign_stats_key          = KEYS[3]
+local available_set_key           = KEYS[4]
+local recycle_bin_set_key         = KEYS[5]
+local blocked_set_key             = KEYS[6]
+local completed_set_key           = KEYS[7]
+local custom_id_register_key_base = KEYS[8]
+local household_key_base          = ARGV[1] -- dial_queue:{campaign_id}P:households:active
+local households                  = cjson.decode(ARGV[2])
+local update_statistics           = 1
+local _updated_hh                 = {}
+local new_number_count            = 0
+local pre_existing_number_count   = 0
+local new_lead_count              = 0
+local updated_lead_count          = 0
 
 local log = function (message)
   redis.call('RPUSH', 'debug.log', message)
@@ -32,9 +32,27 @@ end
 
 -- build household key parts
 local household_key_parts = function(phone)
-  local household_key   = household_key_base .. ':' .. string.sub(phone, 0, -4)
-  local phone_key       = string.sub(phone, -3, -1)
-  return {household_key, phone_key}
+  local rkey = household_key_base .. ':' .. string.sub(phone, 0, -4)
+  local hkey = string.sub(phone, -3, -1)
+  return {rkey, hkey}
+end
+
+-- build custom id key parts
+local custom_id_register_key_parts = function(custom_id)
+  local hkey   = nil
+  local rkey   = custom_id_register_key_base
+  local id_len = string.len(custom_id)
+
+  if id_len > 3 then
+    local rkey_stop = id_len - 3
+    rkey = rkey..':'..string.sub(custom_id, 0, rkey_stop)
+    hkey = string.sub(custom_id, -3, -1)
+  else
+    hkey = custom_id
+    -- rkey is base key for ids w/ < 3 characters
+  end
+
+  return {rkey, hkey}
 end
 
 -- calculates score for new members
@@ -100,18 +118,16 @@ local remove_lead_from_current_household = function(custom_id, phone)
 end
 
 local register_custom_id = function(custom_id, phone)
-  local current_registration = redis.call('ZSCORE', custom_id_set_key, custom_id)
+  local register_keys = custom_id_register_key_parts(custom_id)
+  local current_phone = redis.call('HGET', register_keys[1], register_keys[2])
 
-  if current_registration then
-    local current_phone = tostring(math.modf(current_registration))
-    if current_phone ~= phone then
-      log('current_registration: '..current_phone..' for: '..custom_id..' and '..phone)
-      -- custom id already registered & possibly stored in household hash
-      remove_lead_from_current_household(custom_id, current_phone)
-
-    end
+  if current_phone and current_phone ~= phone then
+    log('current_registration: '..current_phone..' for: '..custom_id..' and '..phone)
+    -- custom id already registered & possibly stored in household hash
+    remove_lead_from_current_household(custom_id, current_phone)
   end
-  redis.call('ZADD', custom_id_set_key, phone, custom_id)
+
+  redis.call('HSET', register_keys[1], register_keys[2], phone)
 end
 
 local build_custom_id_set = function(leads)

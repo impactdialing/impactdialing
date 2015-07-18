@@ -215,6 +215,14 @@ public
     inflight_stats.get('ringing')
   end
 
+  def custom_id_register_key_base
+    call_list.custom_id_register_key_base
+  end
+
+  def call_list
+    @call_list ||= CallList.new(self)
+  end
+
   def requires_custom_ids?
     (not voter_lists.count.zero?) and using_custom_ids?
   end

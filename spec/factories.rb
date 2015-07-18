@@ -143,7 +143,7 @@ FactoryGirl.define do
     separator ","
     s3path "abc"
     uploaded_file_name "abc.csv"
-    csv_to_system_map Hash["Phone" => "phone"]
+    csv_to_system_map Hash["Phone" => "phone", "ID" => "custom_id"]
     created_at Time.now
     updated_at Time.now
   end

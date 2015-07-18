@@ -58,7 +58,7 @@ public
     csv             = upload.read
     separator       = VoterList.separator_from_file_extension(upload.original_filename)
     @csv_validator  = CsvValidator.new(csv, separator)
-    @use_custom_ids = @campaign.using_custom_ids?
+    @use_custom_ids = @campaign.can_use_custom_ids?
     render layout: false
   end
 
