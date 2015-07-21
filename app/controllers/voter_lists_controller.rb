@@ -104,7 +104,7 @@ private
 
         url = edit_client_script_path(@campaign.script_id)
         flash_message(:notice, I18n.t(:voter_list_upload_scheduled, url: url).html_safe)
-        format.json { render :json => voter_list.to_json(:only => ["id", "name", "enabled"])}
+        format.json { render :json => voter_list.to_json(:only => ["id", "name", "enabled", "skip_wireless", "campaign_id"]) }
       else
         format.html {
           flash_message(:error, voter_list.errors.full_messages.join)
