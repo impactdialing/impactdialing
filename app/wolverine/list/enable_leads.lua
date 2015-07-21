@@ -16,41 +16,35 @@ local capture = function (k,data)
   redis.call('RPUSH', 'debug.' .. k, cjson.encode(data))
 end
 
-local merge_leads = function (lead, lead_id_set)
-  local merged = false
-  if lead_id_set[lead.custom_id] ~= nil then
-    merged = true
-
-    for k,v in pairs(lead) do
-      if k ~= 'uuid' and k ~= 'custom_id' then
-        lead_id_set[lead.custom_id][k] = v
-      end
-    end
-  else
-    lead_id_set[lead.custom_id] = lead
-  end
-
-  return merged
-end
+log('START enable_leads.lua')
 
 local add_to_set = function(leads_added, blocked, score, phone)
+  log('add_to_set: START: '..tostring(leads_added)..', '..tostring(blocked)..', '..tostring(score)..', '..tostring(phone))
   if tonumber(blocked) == 0 or blocked == nil then
+    log('add_to_set: not blocked '..phone)
+    local available_score = redis.call('ZSCORE', available_set_key, phone)
     local completed_score = redis.call('ZSCORE', completed_set_key, phone)
+    local recycled_score = redis.call('ZSCORE', recycle_bin_set_key, phone)
 
-    if leads_added or (not completed_score) then
-      -- leads were added or the household is not complete
-      local recycled_score = redis.call('ZSCORE', recycle_bin_set_key, phone)
+    if leads_added then
+      log('add_to_set: leads added '..phone)
+      -- leads were added 
 
-      if (not recycled_score) then
-        if leads_added and completed_score then
+      if (not available_score) then
+        log('add_to_set: not in available '..phone)
+        if completed_score then
+          score = completed_score
           -- household is no longer considered complete if leads were added
           -- preserve score from completed set to prevent recycle rate violations
-          redis.call('ZADD', pending_set_key, completed_score, phone)
           redis.call('ZREM', completed_set_key, phone)
-        else
-          redis.call('ZADD', pending_set_key, score, phone)
+        elseif recycled_score then
+          score = recycled_score
         end
+        -- update recycle bin score or add phone to recycle bin
+        redis.call('ZADD', recycle_bin_set_key, score, phone)
       end
+    else
+      log('add_to_set: no leads added, noop')
     end
   else
     -- add to blocked set
@@ -81,7 +75,6 @@ for phone,_ in pairs(households) do
     active_household     = cjson.decode(_active_household)
 
     log('parsed active household')
-    capture('active_household', active_household)
 
     current_active_leads = active_household.leads
     if current_active_leads[1] and current_active_leads[1].custom_id ~= nil then
@@ -97,7 +90,6 @@ for phone,_ in pairs(households) do
     inactive_household     = cjson.decode(_inactive_household)
 
     log('parsed inactive household')
-    capture('inactive_household', inactive_household)
 
     current_inactive_leads = inactive_household.leads
 
@@ -106,19 +98,22 @@ for phone,_ in pairs(households) do
         -- lead belongs to target list, so move to active
         log('lead.voter_list_id('..lead.voter_list_id..') == list_id('..list_id..')')
         if #lead_id_set ~= 0 then
-          if merge_leads(lead, lead_id_set) == false then
+          if lead_id_set[lead.custom_id] == nil then
+            lead_id_set[lead.custom_id] = lead
             leads_added = true
+            -- ignore inactive leads w/ matching custom id of active lead: active lead data wins
+            -- and if all is well, then there should not be matching custom id between active/inactive
           end
-          lead = lead_id_set[lead.custom_id]
+        else
+          leads_added = true
         end
-        capture('new_active_leads', lead)
+        log('new active leads '..cjson.encode(lead))
         count = count + 1
         redis.call('HINCRBY', campaign_stats_key, 'total_leads', 1)
         table.insert(new_active_leads, lead)
       else
         log('lead.voter_list_id('..lead.voter_list_id..') ~= list_id('..list_id..')')
         -- lead does not belong to target list, so leave in inactive
-        capture('new_inactive_leads', lead)
         table.insert(new_inactive_leads, lead)
       end
     end
@@ -138,8 +133,9 @@ for phone,_ in pairs(households) do
 
       if #active_household == 0 then
         for k,v in pairs(inactive_household) do
-          if k ~= 'leads' then
-            active_household[k] = inactive_household[k]
+          if k ~= 'leads' and v ~= nil and v ~= "" then
+            log('updating active household '..k..' with '..v)
+            active_household[k] = v
           end
         end
       end
@@ -152,6 +148,8 @@ for phone,_ in pairs(households) do
     end
   end
 end
+
+log('END enable_leads.lua')
 
 return count 
 

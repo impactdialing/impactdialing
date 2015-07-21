@@ -14,7 +14,6 @@ class CallList::DisabledTrimmer < CallList::Imports
         argv: [base_key, voter_list.id, households.to_json]
       })
     end
-    move_pending_to_available
   end
 
   def disable_leads

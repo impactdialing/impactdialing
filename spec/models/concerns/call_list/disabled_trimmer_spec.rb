@@ -24,6 +24,7 @@ describe 'CallList::DisabledTrimmer' do
       parse_file: nil
     })
   end
+  let(:phone){ households_one.keys.first }
   let(:active_redis_key){ "dial_queue:#{campaign.id}:households:active:111" }
   let(:inactive_redis_key){ "dial_queue:#{campaign.id}:households:inactive:111" }
   let(:recycle_bin_key){ "dial_queue:#{campaign.id}:bin" }
@@ -35,7 +36,6 @@ describe 'CallList::DisabledTrimmer' do
   describe 'disabling leads' do
     subject{ CallList::DisabledTrimmer.new(list_one) }
 
-    let(:phone){ households_one.keys.first }
     let(:score){ redis.zscore available_key, phone }
 
     context 'first time disabling given phone/household' do
@@ -145,35 +145,30 @@ describe 'CallList::DisabledTrimmer' do
     context 'inactive household already exists at same namespace (ie leads in household from other lists already disabled)' do
       context 'leads have custom ids' do
         let(:lead_from_another_list){ build_lead_hash(list_two, phone, 100) }
-        let(:lead_from_same_list){ build_lead_hash(list_one, phone, 100) }
+        let(:lead_from_same_list){ build_lead_hash(list_one, phone, 101) }
         let(:households_one){ build_household_hashes(1, list_one, true) }
-        let(:households_two){ build_household_hashes(1, list_two, true) }
         let(:subject_two){ CallList::DisabledTrimmer.new(list_two) }
 
         before do
-          # import then disable first list, storing lead_from_same_list in inactive
+          # import 
           households_one[phone][:leads] << lead_from_same_list
-          stub_list_parser(list_one, active_redis_key, households_one)
+          households_one[phone][:leads] << lead_from_another_list
           import_list(list_one, households_one)
           expect(households_one).to be_in_redis_households(campaign.id, 'active')
-          subject.disable_leads # disables list one
-          expect(households_one).to be_in_redis_households(campaign.id, 'inactive')
 
-          # import then disable second list (still households_one + lead_from_another_list)
-          hh_one                = households_one
-          hh_one[phone][:leads] = [lead_from_another_list]
-          stub_list_parser(list_one, active_redis_key, hh_one)
-          import_list(list_two, hh_one)
-          expect(hh_one).to be_in_redis_households(campaign.id, 'active')
-          stub_list_parser(parser, active_redis_key, hh_one)
+          # disable
+          stub_list_parser(parser, active_redis_key, households_one)
+
+          subject.disable_leads # disables list one
+          expect(households_one).to have_leads_from(list_one).in_redis_households(campaign.id, 'inactive')
           subject_two.disable_leads
         end
 
-        it 'updates matching inactive leads w/ data from active lead' do
-          hh_one = households_one
-          hh_one[phone][:leads] = [lead_from_another_list]
-          expect(hh_one).to be_in_redis_households(campaign.id, 'inactive')
+        it 'preserves existing inactive leads under same household' do
+          expect(households_one).to have_leads_from(list_one).in_redis_households(campaign.id, 'inactive')
+          expect(households_one).to have_leads_from(list_two).in_redis_households(campaign.id, 'inactive')
         end
+
         it 'does not duplicate leads w/ matching custom id' do
           inactive_households = redis.hgetall "#{inactive_redis_key.split(':')[0..-2].join(':')}:#{phone[0..-4]}"
           inactive_leads = []
@@ -192,63 +187,84 @@ describe 'CallList::DisabledTrimmer' do
         let(:subject_two){ CallList::DisabledTrimmer.new(list_two) }
 
         before do
-          # import then disable first list, storing lead_from_same_list in inactive
+          # import 
           households_one[phone][:leads] << lead_from_same_list
-          stub_list_parser(list_one, active_redis_key, households_one)
+          households_one[phone][:leads] << lead_from_another_list
           import_list(list_one, households_one)
           expect(households_one).to be_in_redis_households(campaign.id, 'active')
-          subject.disable_leads # disables list one
-          expect(households_one).to be_in_redis_households(campaign.id, 'inactive')
 
-          # import then disable second list (households_one + lead_from_another_list)
-          hh_one                = households_one
-          hh_one[phone][:leads] = [lead_from_another_list]
-          stub_list_parser(list_one, active_redis_key, hh_one)
-          import_list(list_two, hh_one)
-          expect(hh_one).to be_in_redis_households(campaign.id, 'active')
-          stub_list_parser(parser, active_redis_key, hh_one)
+          # disable
+          stub_list_parser(parser, active_redis_key, households_one)
+
+          subject.disable_leads # disables list one
+          expect(households_one).to have_leads_from(list_one).in_redis_households(campaign.id, 'inactive')
           subject_two.disable_leads
         end
 
         it 'adds leads to inactive household' do
-          inactive_households = redis.hgetall "#{inactive_redis_key.split(':')[0..-2].join(':')}:#{phone[0..-4]}"
-          inactive_leads = []
-          inactive_households.each{|ph,h| inactive_leads << h['leads']}
-          total_inactive_leads = inactive_leads.size
-          expect(total_inactive_leads).to eq households_one[phone][:leads].size
+          expect(households_one).to have_leads_from(list_one).in_redis_households(campaign.id, 'inactive')
+          expect(households_one).to have_leads_from(list_two).in_redis_households(campaign.id, 'inactive')
         end
       end
     end
   end
 
   describe 'enabling leads' do
-    it 'adds leads associated w/ enabled list'
-
-    context 'phone number has leads active from other lists' do
-      it 'is not moved from available set'
-      it 'is not moved from recycle bin set'
-      it 'is not moved from blocked set'
+    subject{ CallList::DisabledTrimmer.new(list_one) }
+    before do
+      import_list(list_one, households_one)
+      expect(households_one).to be_in_redis_households(campaign.id, 'active')
+      stub_list_parser(parser, active_redis_key, households_one)
+      subject.disable_leads
+      expect(households_one).to be_in_redis_households(campaign.id, 'inactive')
     end
 
-    context 'phone number has no leads active from other lists' do
-      context 'phone number is in completed set' do
-        it 'is removed from completed set'
-        
-        context 'completed zscore indicates phone can be dialed right away' do
-          it 'is added to availble set'
-          it 'keeps the completed zscore'
-        end
-        context 'completed zscore indicates phone cannot be dialed right away' do
-          it 'is added to recycle bin set'
-          it 'keeps the completed zscore'
-        end
+    it 'adds leads associated w/ enabled list' do
+      subject.enable_leads
+      expect(households_one).to be_in_redis_households(campaign.id, 'active')
+    end
+
+    context 'phone number is not completed (ie leads active from other lists when enabling target list)' do
+      it 'is not moved from available set' do
+        redis.zadd available_key, 1.1, phone
+        subject.enable_leads
+        expect(phone).to be_in_dial_queue_zset(campaign.id, 'active')
       end
+      it 'is not moved from recycle bin set' do
+        redis.zadd recycle_bin_key, 1.1, phone
+        redis.zrem available_key, phone
+        subject.enable_leads
+        expect(phone).to be_in_dial_queue_zset(campaign.id, 'bin')
+      end
+      it 'is not moved from blocked set' do
+        redis.zadd blocked_key, 1.0, phone
+        redis.zrem available_key, phone
+        subject.enable_leads
+        expect(phone).to be_in_dial_queue_zset(campaign.id, 'blocked')
+      end
+    end
 
-      context 'phone number was not completed before all leads were disabled' do
-        context 'phone number zscore (saved to "inactive" namespace) indicates phone can be dialed right away' do
+    context 'phone number is currently completed (ie has no leads active from other lists when enabling target list)' do
+      context 'phone number is in completed set' do
+        let(:score){ "#{(list_one.campaign.recycle_rate + 1).hours.ago.to_i}.0005" }
+        before do
+          redis.zrem available_key, phone
+          redis.zadd completed_key, score, phone
         end
 
-        context 'phone number zscore indicates phone cannot be dialed right away' do
+        it 'is removed from completed set' do
+          subject.enable_leads
+          expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'completed')
+        end
+        
+        it 'is added to recycle bin set' do
+          subject.enable_leads
+          expect(phone).to be_in_dial_queue_zset(campaign.id, 'bin')
+        end
+
+        it 'keeps the completed zscore' do
+          subject.enable_leads
+          expect(phone).to have_zscore(score).in_dial_queue_zset(campaign.id, 'bin') 
         end
       end
     end

@@ -6,10 +6,22 @@ end
 
 module ListHelpers
   def import_list(list, households)
-    p "import_list: #{list.id}, #{households}"
-    imports = CallList::Imports.new(list)
-    imports.save([active_redis_key], households)
-    imports.move_pending_to_available
+    redis = Redis.new
+    base_key = "dial_queue:#{list.campaign_id}:households:active"
+    sequence = 1
+    households.each do |phone, household|
+      household['sequence'] = sequence
+      key = "#{base_key}:#{phone[0..ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i]}"
+      hkey = phone[ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i + 1..-1]
+      redis.hset key, hkey, household.to_json
+      redis.zadd "dial_queue:#{list.campaign_id}:active", zscore(sequence), phone 
+      sequence += 1
+    end
+  end
+
+  def zscore(sequence)
+    y = (sequence / 100000.0).to_s.split('.').last
+    "1.#{y}"
   end
 
   def disable_list(list)
