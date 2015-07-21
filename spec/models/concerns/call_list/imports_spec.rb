@@ -148,7 +148,7 @@ describe 'CallList::Imports' do
 
     let(:phone){ parsed_households.keys.first }
 
-    def fetch_saved_household(phone)
+    def fetch_saved_household(voter_list, phone)
       redis            = Redis.new
       stop_index       = ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i
       key              = "key:#{voter_list.campaign_id}:#{phone[0..stop_index]}"
@@ -159,7 +159,7 @@ describe 'CallList::Imports' do
 
     it 'saves households & leads at given redis keys' do
       subject.save(redis_keys, parsed_households)
-      household = fetch_saved_household(phone)
+      household = fetch_saved_household(voter_list, phone)
 
       expect(household['leads']).to eq parsed_households[phone]['leads']
       expect(household['uuid']).to eq parsed_households[phone]['uuid']
@@ -215,6 +215,26 @@ describe 'CallList::Imports' do
             }
           }
         end
+        let(:parsed_households_update) do
+          {
+            '1234567890' => {
+              'leads' => [
+                {'custom_id' => 123, 'first_name' => 'styx', 'phone' => '1234567890'},
+                {'custom_id' => 234, 'first_name' => 'cirrus', 'phone' => '1234567890'},
+                {'first_name' => 'aria', 'phone' => '1234567890'} # will not be saved due to missing custom id
+              ],
+              'uuid'  => 'hh-uuid-123'
+            },
+            '4567890123' => {
+              'leads' => [
+                {'custom_id' => 345, 'first_name' => 'raka', 'phone' => '4567890123'},
+                {'custom_id' => 456, 'first_name' => 'dani', 'phone' => '4567890123'},
+                {'first_name' => 'sensa', 'phone' => '4567890123'} # will not be saved due to missing custom id
+              ],
+              'uuid'  => 'hh-uuid-234'
+            }
+          }
+        end
 
         let(:second_voter_list) do
           create(:voter_list, campaign: voter_list.campaign, account: voter_list.account)
@@ -229,7 +249,7 @@ describe 'CallList::Imports' do
 
           # save second list
           redis.rpush('debug.log', 'saving second subject')
-          second_subject.save(redis_keys, parsed_households)
+          second_subject.save(redis_keys, parsed_households_update)
         end
 
         context 'first list' do
@@ -261,15 +281,24 @@ describe 'CallList::Imports' do
           it 'redis hash.new_leads = 0' do
             expect(redis.hget(second_stats_key, 'new_leads')).to eq '0'
           end
-          it 'redis hash.updated_leads = 5' do
+          it 'redis hash.updated_leads = 4' do
             # leads w/ same custom id in two households
-            expect(redis.hget(second_stats_key, 'updated_leads')).to eq '5'
+            expect(redis.hget(second_stats_key, 'updated_leads')).to eq '4'
           end
           it 'redis hash.new_numbers = 0' do
             expect(redis.hget(second_stats_key, 'new_numbers')).to eq '0'
           end
           it 'redis hash.pre_existing_numbers = 2' do
             expect(redis.hget(second_stats_key, 'pre_existing_numbers')).to eq '2'
+          end
+          it 'updates lead attributes' do
+            parsed_households_update.each do |phone, expected_household|
+              expected_household['leads'].reject!{|lead| lead['custom_id'].blank?}
+              household = fetch_saved_household second_voter_list, phone
+              expected_household['leads'].each do |lead|
+                expect(household['leads']).to include lead
+              end
+            end
           end
         end
       end
@@ -281,20 +310,20 @@ describe 'CallList::Imports' do
       end
 
       it 'preserves the UUID for any existing household' do
-        existing_household_uuid = fetch_saved_household(phone)['uuid']
+        existing_household_uuid = fetch_saved_household(voter_list, phone)['uuid']
 
         subject.save(redis_keys, parsed_households)
-        updated_household_uuid = fetch_saved_household(phone)['uuid']
+        updated_household_uuid = fetch_saved_household(voter_list, phone)['uuid']
 
         expect(updated_household_uuid).to eq existing_household_uuid
       end
 
       context 'custom_id (ID) is in use' do
         it 'preserves the UUID for any existing leads' do
-          existing_lead_uuid = fetch_saved_household(phone)['leads'].first['uuid']
+          existing_lead_uuid = fetch_saved_household(voter_list, phone)['leads'].first['uuid']
 
           subject.save(redis_keys, parsed_households)
-          updated_lead_uuid = fetch_saved_household(phone)['leads'].first['uuid']
+          updated_lead_uuid = fetch_saved_household(voter_list, phone)['leads'].first['uuid']
 
           expect(updated_lead_uuid).to eq existing_lead_uuid
         end

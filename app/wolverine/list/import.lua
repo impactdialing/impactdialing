@@ -164,7 +164,8 @@ local merge_leads = function(current_leads, new_leads)
   for custom_id,new_lead in pairs(new_leads) do
     local current_lead = current_leads[custom_id]
     if current_lead then
-      merged_leads[custom_id] = update_lead(current_lead, new_lead)
+      update_lead(current_lead, new_lead)
+      merged_leads[custom_id] = current_lead
       updated_lead_count = updated_lead_count + 1
     else
       if merged_leads[custom_id] == nil then
@@ -217,6 +218,7 @@ for phone,household in pairs(households) do
     local current_lead_id_set = build_custom_id_set(current_leads)
     
     -- if existing & new don't have custom ids then go to append mode
+    -- campaign contract says each list will either use or not custom ids as of July 2015
     if next(current_lead_id_set) ~= nil and next(new_lead_id_set) ~= nil then
       updated_leads = merge_leads(current_lead_id_set, new_lead_id_set)
 
