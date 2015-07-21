@@ -100,7 +100,7 @@ private
 
     respond_with(voter_list, location: edit_client_campaign_path(@campaign.id)) do |format|
       if voter_list.save
-        Resque.enqueue(List::Jobs::Import, voter_list.id, current_user.email)
+        Resque.enqueue(CallList::Jobs::Import, voter_list.id, current_user.email)
 
         url = edit_client_script_path(@campaign.script_id)
         flash_message(:notice, I18n.t(:voter_list_upload_scheduled, url: url).html_safe)
