@@ -1,6 +1,6 @@
-require 'simplecov'
-SimpleCov.start 'rails'
-SimpleCov.coverage_dir("#{Rails.env}/coverage")
+#require 'simplecov'
+#SimpleCov.start 'rails'
+#SimpleCov.coverage_dir("#{Rails.env}/coverage")
 
 HOST = 'localhost'
 PORT = 3000
