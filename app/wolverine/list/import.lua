@@ -201,10 +201,14 @@ for phone,household in pairs(households) do
   local new_lead_id_set = build_custom_id_set(new_leads)
 
   if next(new_lead_id_set) ~= nil then
+    log('new lead id set has members, setting new_leads'..cjson.encode(new_lead_id_set))
     new_leads = new_lead_id_set
+  else
+    log('new lead id set has no members yet, new leads is not set')
   end
 
   if _current_hh then
+    log('current hh, updating stuff')
     -- this household has been saved so merge
     -- current_hh = cmsgpack.unpack(_current_hh)
     current_hh = cjson.decode(_current_hh)
@@ -220,12 +224,16 @@ for phone,household in pairs(households) do
     -- if existing & new don't have custom ids then go to append mode
     -- campaign contract says each list will either use or not custom ids as of July 2015
     if next(current_lead_id_set) ~= nil and next(new_lead_id_set) ~= nil then
+      log('using custom ids, both id sets have members')
+      log('current set: '..cjson.encode(current_lead_id_set))
+      log('new set: '..cjson.encode(new_lead_id_set))
       updated_leads = merge_leads(current_lead_id_set, new_lead_id_set)
 
       if new_lead_count > 0 then
         leads_added = true
       end
     else
+      log('not using custom ids, at least one id set had no members')
       -- not using custom ids, append all leads
       updated_leads = current_leads
 
@@ -239,6 +247,7 @@ for phone,household in pairs(households) do
 
     pre_existing_number_count = pre_existing_number_count + 1
   else
+    log('no current hh, adding new stuff')
     -- brand new household
     for _,lead in pairs(new_leads) do
       new_lead_count = new_lead_count + 1
@@ -256,6 +265,7 @@ for phone,household in pairs(households) do
   add_to_set(leads_added, updated_hh['blocked'], updated_hh['sequence'], phone)
 
   local _updated_hh = cjson.encode(updated_hh)
+  log('HSET '..household_key..' => '..phone_key..' = '.._updated_hh)
   redis.call('HSET', household_key, phone_key, _updated_hh)
 end
 

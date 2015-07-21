@@ -125,7 +125,9 @@ public
 
       keys, households = parse_lines(lines.join)
 
-      cursor += lines.size
+      p "@cursor = #{@cursor}"
+      p "cursor = #{cursor}"
+      @cursor += lines.size
 
       yield keys, households, cursor, results
     end
