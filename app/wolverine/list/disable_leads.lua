@@ -22,6 +22,15 @@ local merge_leads = function (lead, lead_id_set)
   lead_id_set[lead.custom_id] = lead
 end
 
+local copy_household_primitives = function(source_hh, dest_hh)
+  for k,v in pairs(source_hh) do
+    if k ~= 'leads' and v ~= nil and v ~= "" then
+      log('updating active household '..k..' with '..v)
+      dest_hh[k] = v
+    end
+  end
+end
+
 for phone,_ in pairs(households) do
   local phone_prefix           = string.sub(phone, 0, -4)
   local hkey                   = string.sub(phone, -3, -1)
@@ -109,6 +118,9 @@ for phone,_ in pairs(households) do
     end
     if #new_inactive_leads ~= 0 then
       log('saving inactive leads w/ score: '.. tostring(score))
+      if #inactive_household == 0 then
+        copy_household_primitives(active_household, inactive_household)
+      end
       inactive_household.leads = new_inactive_leads
       if score then
         inactive_household.score = score

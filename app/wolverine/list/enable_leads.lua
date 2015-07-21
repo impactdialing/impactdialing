@@ -18,6 +18,15 @@ end
 
 log('START enable_leads.lua')
 
+local copy_household_primitives = function(source_hh, dest_hh)
+  for k,v in pairs(source_hh) do
+    if k ~= 'leads' and v ~= nil and v ~= "" then
+      log('updating active household '..k..' with '..v)
+      dest_hh[k] = v
+    end
+  end
+end
+
 local add_to_set = function(leads_added, blocked, score, phone)
   log('add_to_set: START: '..tostring(leads_added)..', '..tostring(blocked)..', '..tostring(score)..', '..tostring(phone))
   if tonumber(blocked) == 0 or blocked == nil then
@@ -132,12 +141,7 @@ for phone,_ in pairs(households) do
       log('storing active leads')
 
       if #active_household == 0 then
-        for k,v in pairs(inactive_household) do
-          if k ~= 'leads' and v ~= nil and v ~= "" then
-            log('updating active household '..k..' with '..v)
-            active_household[k] = v
-          end
-        end
+        copy_household_primitives(inactive_household, active_household)
       end
       active_household.leads = new_active_leads
       add_to_set(leads_added, active_household.blocked, inactive_household.score, phone)

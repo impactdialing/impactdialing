@@ -29,9 +29,14 @@ RSpec::Matchers.define :have_leads_from do |voter_list|
 end
 
 RSpec::Matchers.define :be_in_redis_households do |campaign_id, namespace|
-  redis               = Redis.new
-  expected_leads      = []
-  leads_in_redis      = []
+  redis                    = Redis.new
+  expected_leads           = []
+  leads_in_redis           = []
+  attrs_in_redis           = {}
+  expected_attrs           = {}
+  expected_household_attrs = %w(blocked uuid)
+  attrs_match              = false
+  leads_match              = false
 
   match do |households|
     households.each do |phone, household|
@@ -42,17 +47,40 @@ RSpec::Matchers.define :be_in_redis_households do |campaign_id, namespace|
         next
       end
       _household = JSON.parse(json)
+
+      attrs_in_redis[phone] ||= {}
+      expected_attrs[phone] ||= {}
+      expected_household_attrs.each do |attr|
+        expected_attrs[phone][attr] = household[attr.to_sym]
+        attrs_in_redis[phone][attr] = _household[attr]
+      end
+
       leads_in_redis += _household['leads']
     end
-    expected_leads.all? do |expected_lead|
+
+    attrs_match = (attrs_in_redis == expected_attrs)
+
+    leads_match = expected_leads.all? do |expected_lead|
       leads_in_redis.include?(expected_lead)
     end
+
+    attrs_match and leads_match
   end
   failure_message do |households|
-    "expected to find #{expected_leads} in #{campaign_id}:households:#{namespace}\nfound only these #{leads_in_redis}" 
+    if !leads_match
+      "expected to find #{expected_leads} in #{campaign_id}:households:#{namespace}\nfound only these #{leads_in_redis}" 
+    end
+    if !attrs_match
+      "expected household to have attributes matching: #{expected_attrs}\ngot: #{attrs_in_redis}"
+    end
   end
   failure_message_when_negated do |households|
-    "expected to not find #{expected_leads} in #{campaign_id}:households:#{namespace}\nfound only these #{leads_in_redis}" 
+    if !leads_match
+      "expected to not find #{expected_leads} in #{campaign_id}:households:#{namespace}\nfound only these #{leads_in_redis}" 
+    end
+    if !attrs_match
+      "expected household to not have attributes matching: #{expected_attrs}\ngot: #{attrs_in_redis}"
+    end
   end
 end
 
