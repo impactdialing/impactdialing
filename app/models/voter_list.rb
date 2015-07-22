@@ -18,6 +18,7 @@ class VoterList < ActiveRecord::Base
   validate :custom_id_usage, :before => :validation
   
   after_update :enable_disable_members
+  after_create :save_custom_fields
 
   VOTER_DATA_COLUMNS = {"phone"=> "Phone", "custom_id" => "ID", "last_name"=>"LastName", "first_name"=>"FirstName",
                         "middle_name"=>"MiddleName", "suffix"=>"Suffix", "email"=>"Email", "address"=>"Address", "city"=>"City",
@@ -32,6 +33,17 @@ private
       end
     elsif campaign.cannot_use_custom_ids? and self.maps_custom_id?
       errors.add(:csv_to_system_map, I18n.t('activerecord.errors.models.voter_list.custom_id_map_prohibited'))
+    end
+  end
+
+  def save_custom_fields
+    new_fields = []
+    csv_to_system_map.each do |key,value|
+      next if VOTER_DATA_COLUMNS.keys.include?(value)
+      new_fields << value
+    end
+    unless new_fields.empty?
+      contact_fields_options.save(new_fields)
     end
   end
 
@@ -71,6 +83,10 @@ public
 
   def self.delete_from_s3(file_name)
     AmazonS3.new.delete(file_name)
+  end
+
+  def contact_fields_options
+    @contact_fields ||= CallFlow::Web::ContactFields::Options.new(self.account)
   end
 
   def maps_custom_id?

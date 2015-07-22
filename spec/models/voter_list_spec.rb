@@ -137,6 +137,35 @@ describe VoterList, :type => :model do
       expect(resque_jobs(:import)).to include voter_list_change_job
     end
   end
+
+  describe 'save custom fields after create callback' do
+    let(:account){ create(:account) }
+    let(:valid_attrs) do
+      {
+        campaign: create(:campaign, account: account),
+        account: account,
+        name: 'lotofleads.csv',
+        s3path: 'impactdialing.test/lotofleads.csv',
+        uploaded_file_name: 'lotofleads.csv',
+        csv_to_system_map: {
+          'Phone' => 'phone',
+          'FirstName' => 'first_name',
+          'LastName' => 'last_name',
+          'STATE' => 'state',
+          'POLLINGADDRESS' => 'Polling Address',
+          'PARTY' => 'Party'
+        }
+      }
+    end
+    let(:contact_fields_options) do
+      subject.contact_fields_options.all
+    end
+    subject{ VoterList.create(valid_attrs) }
+
+    it 'saves all fields from #csv_to_system_map that are not Voter columns' do
+      expect(contact_fields_options).to match_array ['Polling Address', 'Party']
+    end
+  end
 end
 
 # ## Schema Information
