@@ -3,7 +3,7 @@ require 'rails_helper'
 describe 'CallFlow::Web::ContactFields::Selected' do
   let(:redis){ Redis.new }
   let(:instance){ create(:script) }
-  let(:invalid_instance){ double('InvalidInstance', {name: 'Blah'}) }
+  let(:invalid_instance){ build(:script) }
   let(:fields){ ['name', 'email', 'address'] }
 
   subject{ CallFlow::Web::ContactFields::Selected.new(instance) }
@@ -13,14 +13,8 @@ describe 'CallFlow::Web::ContactFields::Selected' do
   end
 
   describe 'instantiating' do
-    it 'requires some object that responds to #id' do
+    it 'requires a saved Script instance' do
       expect{ 
-        CallFlow::Web::ContactFields::Selected.new(invalid_instance)
-      }.to raise_error(ArgumentError)
-    end
-
-    it 'requires some object that returns a non-nil value for #id' do
-      expect{
         CallFlow::Web::ContactFields::Selected.new(invalid_instance)
       }.to raise_error(ArgumentError)
     end
