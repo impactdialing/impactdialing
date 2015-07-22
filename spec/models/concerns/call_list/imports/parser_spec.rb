@@ -145,9 +145,6 @@ describe 'CallList::Imports::Parser' do
         %Q{#{invalid_phone},Sam,Iam,8th Old Man named Henry,,henry@test.com,193,42,Male}
       end
       before do
-        d = data_lines.last
-        d = d + "\n"
-        data_lines[-1] = d
         lines_with_invalid = data_lines + [invalid_row]
         subject.parse_lines(lines_with_invalid.join)
       end
@@ -166,9 +163,6 @@ describe 'CallList::Imports::Parser' do
         %Q{3927485021,Sam,Iam,8th Old Man named Henry,,henry@test.com,,42,Male}
       end
       before do
-        d = data_lines.last
-        d = d + "\n"
-        data_lines[-1] = d
         lines_with_invalid = data_lines + [invalid_row]
         subject.parse_lines(lines_with_invalid.join)
       end
