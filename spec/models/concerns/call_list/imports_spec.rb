@@ -73,7 +73,7 @@ describe 'CallList::Imports' do
         expect(subject.results[:updated_leads]).to be_zero
       end
       it 'invalid_numbers => Set.new' do
-        expect(subject.results[:invalid_numbers]).to eq Set.new
+        expect(subject.results[:invalid_numbers]).to eq []
       end
       it 'invalid_rows => []' do
         expect(subject.results[:invalid_rows]).to eq []
@@ -241,6 +241,7 @@ describe 'CallList::Imports' do
         end
         let(:second_subject){ CallList::Imports.new(second_voter_list) }
         let(:second_stats_key){ second_subject.send(:common_redis_keys)[1] }
+        let(:campaign_stats_key){ voter_list.campaign.list_stats_key }
 
         before do
           # save first list
@@ -265,6 +266,9 @@ describe 'CallList::Imports' do
           end
           it 'redis hash.pre_existing_numbers = 0' do
             expect(redis.hget(stats_key, 'pre_existing_numbers')).to eq '0'
+          end
+          it 'increments redis campaign hash.number_sequence' do
+            expect(redis.hget(campaign_stats_key, 'number_sequence')).to eq '2'
           end
           it 'redis hash.{campaign_id}.custom_ids contains custom ids of all leads in campaign w/ phone as score' do
             phone_one = parsed_households.keys.first
