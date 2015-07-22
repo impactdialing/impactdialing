@@ -31,7 +31,7 @@ private
   end
 
   def contact_fields
-    @contact_fields ||= CallFlow::Web::ContactFields.new(script)
+    @contact_fields ||= CallFlow::Web::ContactFields::Selected.new(script)
   end
 
   def whitelist

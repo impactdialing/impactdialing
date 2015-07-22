@@ -1,8 +1,10 @@
 ##
-# Class to handle caching of lists of +Voter+ fields (custom & system).
+# Class to handle caching selected Voter fields for display to callers.
+#
+# The :active key is used to cache Script#voter_fields (fields hselected for display when editing a Script).
 # 
 class CallFlow::Web::ContactFields
-  attr_reader :object
+  attr_reader :script, :account
 
 private
   def keys
@@ -23,21 +25,18 @@ private
 
 public
 
-  def initialize(object)
-    @object = object
-    validate_object_id!
+  def initialize(objects)
+    if objects[:script]
+      @script = objects[:script] 
+      @account = @script.account
+    end
   end
 
-  def cache(fields)
-    redis.hset keys[:active], object.id, fields.to_json
+  def selected
+    @selected ||= CallFlow::Web::ContactFields::Selected.new(script)
   end
 
-  def cache_raw(fields_json)
-    redis.hset keys[:active], object.id, fields_json
-  end
-
-  def data
-    fields = redis.hget(keys[:active], object.id)
-    fields.blank? ? [] : JSON.parse(fields)
-  end
+  #def options
+  #  @options ||= CallFlow::Web::ContactFields::Options.new(account)
+  #end
 end

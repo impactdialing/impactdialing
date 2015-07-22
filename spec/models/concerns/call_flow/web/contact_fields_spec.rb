@@ -2,52 +2,39 @@ require 'rails_helper'
 
 describe 'CallFlow::Web::ContactFields' do
   let(:redis){ Redis.new }
-  let(:instance){ double('InstanceWithID', {id: 42}) }
-  let(:invalid_instance){ double('InvalidInstance', {name: 'Blah'}) }
   let(:fields){ ['name', 'email', 'address'] }
-
-  subject{ CallFlow::Web::ContactFields.new(instance) }
+  let(:account){ create(:account) }
+  let(:script){ create(:script, account: account) }
+  let(:valid_arg) do
+    {
+      script: script,
+      account: account
+    }
+  end
 
   before do
     redis.flushall
   end
 
   describe 'instantiating' do
-    it 'requires some object that responds to #id' do
-      expect{ 
-        CallFlow::Web::ContactFields.new(invalid_instance)
-      }.to raise_error(ArgumentError)
+    subject{ CallFlow::Web::ContactFields }
+    it 'accepts a hash of objects: {script, account}' do
+      expect(subject.new(valid_arg)).to be_kind_of subject
     end
-
-    it 'requires some object that returns a non-nil value for #id' do
-      expect{
-        CallFlow::Web::ContactFields.new(invalid_instance)
-      }.to raise_error(ArgumentError)
+    it 'exposes script' do
+      instance = subject.new(valid_arg)
+      expect(instance.script).to eq script
     end
-  end
-
-  describe 'adding selected fields' do
-    it '#cache(arr) stores given Array as JSON string' do
-      subject.cache(fields)
-      stored_fields = redis.hget "contact_fields", instance.id
-      expect(stored_fields).to eq fields.to_json
-    end
-
-    it '#cache_raw(str) stores given String (assumes already JSON)' do
-      subject.cache_raw(fields.to_json)
-      stored_fields = redis.hget 'contact_fields', instance.id
-      expect(stored_fields).to eq fields.to_json
+    it 'exposes account' do
+      instance = subject.new(valid_arg)
+      expect(instance.account).to eq account
     end
   end
 
-  describe 'fetching fields for given object' do
-    it 'returns the fields as an Array' do
-      subject.cache(fields)
-      expect(subject.data).to eq fields
-    end
-
-    it 'returns an empty Array when no fields are cached for the given object' do
-      expect(subject.data).to eq []
+  describe '#selected' do
+    subject{ CallFlow::Web::ContactFields.new(valid_arg) }
+    it 'returns an instance of CallFlow::Web::ContactFields::Selected' do
+      expect(subject.selected).to be_kind_of CallFlow::Web::ContactFields::Selected
     end
   end
 end

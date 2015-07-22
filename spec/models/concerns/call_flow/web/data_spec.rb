@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 describe 'CallFlow::Web::Data' do
-  let(:script){ double('Script', {id: 42}) }
+  let(:script){ create(:script) }
   let(:house) do
     {
       phone: Forgery(:address).phone,
