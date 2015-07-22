@@ -25,7 +25,11 @@ public
   end
 
   def save(new_fields)
-    redis.sadd key, clean(new_fields)
+    clean_fields = clean(new_fields)
+    
+    unless clean_fields.empty?
+      redis.sadd key, clean_fields
+    end
   end
 
   def all
