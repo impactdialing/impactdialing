@@ -29,6 +29,12 @@ describe 'CallFlow::Web::ContactFields::Options' do
       saved_fields = redis.smembers key
       expect(saved_fields).to match_array new_fields
     end
+
+    it 'does not save blank elements' do
+      subject.save([' ', '', 'one'])
+      saved_fields = redis.smembers key
+      expect(saved_fields).to match_array ['one']
+    end
   end
 
   describe 'retrieving saved custom field options' do

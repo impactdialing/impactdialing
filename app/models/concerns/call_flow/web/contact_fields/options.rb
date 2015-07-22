@@ -14,6 +14,10 @@ private
     end
   end
 
+  def clean(fields)
+    fields.reject{|field| field.blank?}
+  end
+
 public
   def initialize(object)
     @object = object
@@ -21,7 +25,7 @@ public
   end
 
   def save(new_fields)
-    redis.sadd key, new_fields
+    redis.sadd key, clean(new_fields)
   end
 
   def all
