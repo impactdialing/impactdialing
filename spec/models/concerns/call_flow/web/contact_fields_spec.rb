@@ -11,6 +11,7 @@ describe 'CallFlow::Web::ContactFields' do
       account: account
     }
   end
+  subject{ CallFlow::Web::ContactFields.new(valid_arg) }
 
   before do
     redis.flushall
@@ -32,9 +33,14 @@ describe 'CallFlow::Web::ContactFields' do
   end
 
   describe '#selected' do
-    subject{ CallFlow::Web::ContactFields.new(valid_arg) }
     it 'returns an instance of CallFlow::Web::ContactFields::Selected' do
       expect(subject.selected).to be_kind_of CallFlow::Web::ContactFields::Selected
+    end
+  end
+
+  describe '#options' do
+    it 'returns an instance of CallFlow::Web::ContactFields::Options' do
+      expect(subject.options).to be_kind_of CallFlow::Web::ContactFields::Options
     end
   end
 end

@@ -36,7 +36,8 @@ public
     @selected ||= CallFlow::Web::ContactFields::Selected.new(script)
   end
 
-  #def options
-  #  @options ||= CallFlow::Web::ContactFields::Options.new(account)
-  #end
+  def options
+    @options ||= CallFlow::Web::ContactFields::Options.new(account)
+  end
 end
+
