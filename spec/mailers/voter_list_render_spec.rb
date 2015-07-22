@@ -2,13 +2,17 @@ require 'spec_helper'
 
 RSpec::Matchers.define :render_completed_email_content do |gather_options|
   match do |actual|
-    actual =~ /#{stats[:saved_numbers]} of #{stats[:total_numbers]} unique phone numbers imported successfully./ &&
-    actual =~ /#{stats[:saved_leads]} of #{stats[:total_leads]} leads imported successfully./ &&
-    actual =~ /Of #{stats[:total_numbers]} numbers:/ &&
+    actual =~ /^Your list contained:/ &&
+    actual =~ /#{stats[:total_rows]} rows of data/ &&
+    actual =~ /#{stats[:saved_numbers]} valid unique phone numbers/ &&
+    actual =~ /#{stats[:saved_leads]} valid leads/ &&
+    actual =~ /#{stats[:saved_numbers] - stats[:dnc_numbers] - stats[:cell_numbers]} of #{stats[:saved_numbers]} unique phone numbers are available for dials./ &&
+    actual =~ /Of #{stats[:saved_numbers]} valid unique phone numbers:/ &&
     actual =~ /#{stats[:new_numbers]} are new numbers/ &&
     actual =~ /#{stats[:pre_existing_numbers]} numbers had leads added or updated/ &&
     actual =~ /#{stats[:dnc_numbers]} matched numbers in the DNC/ &&
     actual =~ /#{stats[:cell_numbers]} were cell phone numbers/ &&
+    actual =~ /#{stats[:saved_leads]} of #{stats[:total_rows]} leads imported successfully./ &&
     actual =~ /Of #{stats[:saved_leads]} leads:/ &&
     actual =~ /#{stats[:new_leads]} are new leads/ &&
     actual =~ /#{stats[:updated_leads]} leads were updated/
@@ -32,6 +36,7 @@ describe 'VoterListRender (views/voter_list_mailer/completed)', type: :mailer do
       cell_numbers: 1,
       new_leads: 3,
       updated_leads: 0,
+      invalid_rows: [],
       use_custom_id: true
     }
   end
