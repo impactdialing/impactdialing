@@ -12,14 +12,38 @@ describe VoterListsHelper, :type => :helper do
       silence_warnings { VoterList::VOTER_DATA_COLUMNS = @original_columns }
     end
 
+    let(:expected_options) do
+      [
+        ["(Discard this column)", nil],
+        ["foo", "foo"],
+        ["Barbaz", "barbaz"],
+        ["ID", "custom_id"],
+        ["Add custom field...", "custom"]
+      ]
+    end
+
+    let(:custom_field_one){ 'baz' }
+    let(:custom_field_two){ 'francis' }
+
     it "returns a list of all available voter attributes as well as not available" do
-      expect(helper.system_column_headers("foo",@account)).to eq([["(Discard this column)", nil], ["foo", "foo"], ["Barbaz", "barbaz"], ["ID", "custom_id"], ["Add custom field...", "custom"]])
+      expect(helper.system_column_headers("foo",@account)).to eq(expected_options)
     end
 
     it "returns a list of all custom fields along with the others" do
-      custom_field = "baz"
-      create(:custom_voter_field, name: "baz", account: @account)
-      expect(helper.system_column_headers("foo",@account)).to eq([["(Discard this column)", nil], ["foo", "foo"],["Barbaz", "barbaz"], ["ID", "custom_id"], ["#{custom_field}", custom_field], ["Add custom field...", "custom"]])
+      create(:custom_voter_field, name: custom_field_one, account: @account)
+      custom_option = [custom_field_one, custom_field_one]
+      expected_options.insert -2, custom_option
+      expect(helper.system_column_headers("foo",@account)).to eq(expected_options)
+    end
+
+    it 'includes both CustomVoterField#names & CallFlow::Web::ContactFields::Options values' do
+      create(:custom_voter_field, name: custom_field_one, account: @account)
+      CallFlow::Web::ContactFields::Options.new(@account).save([custom_field_one, custom_field_two])
+      custom_option_one = [custom_field_one, custom_field_one]
+      custom_option_two = [custom_field_two, custom_field_two]
+      expected_options.insert -2, custom_option_one
+      expected_options.insert -3, custom_option_two
+      expect(helper.system_column_headers("foo", @account)).to eq(expected_options)
     end
 
     it "excludes custom_id when use_custom_id is false" do
