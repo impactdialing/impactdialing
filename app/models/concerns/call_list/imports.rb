@@ -8,6 +8,7 @@ private
   def default_results
     HashWithIndifferentAccess.new({
       use_custom_id:        false,
+      total_rows:           0,
       saved_numbers:        0,
       total_numbers:        0,
       saved_leads:          0,
@@ -18,7 +19,7 @@ private
       pre_existing_numbers: 0,
       dnc_numbers:          Set.new,
       cell_numbers:         Set.new,
-      invalid_numbers:      Set.new,
+      invalid_numbers:      [],
       invalid_custom_ids:   0,
       invalid_rows:         []
     })
@@ -45,8 +46,7 @@ private
     @results = _results
 
     lua_results.each do |key,count|
-      @results[key] ||= 0
-      @results[key] += count.to_i
+      @results[key] = count.to_i
     end
   end
 
@@ -78,9 +78,10 @@ public
   end
 
   def initialize(voter_list, cursor=0, results=nil)
-    @voter_list = voter_list
-    @cursor     = cursor
-    @results    = setup_or_recover_results(results)
+    @voter_list                  = voter_list
+    @cursor                      = cursor
+    @results                     = setup_or_recover_results(results)
+    @starting_household_sequence = voter_list.campaign.household_sequence
   end
 
   def batch_size
@@ -101,7 +102,7 @@ public
     
     Wolverine.list.import({
       keys: common_redis_keys + redis_keys,
-      argv: [key_base, households.to_json]
+      argv: [key_base, @starting_household_sequence, households.to_json]
     })
   end
 
@@ -109,20 +110,14 @@ public
     final_results = results.dup
     [
       :dnc_numbers, :cell_numbers, :invalid_numbers
-    ].each do |set_name|
-      final_results[set_name] = final_results[set_name].size
+    ].each do |collection_name|
+      final_results[collection_name] = final_results[collection_name].size
     end
+    list_results = lua_results
 
-    final_results[:saved_numbers] = final_results[:pre_existing_numbers] +
-                                    final_results[:new_numbers] +
-                                    final_results[:cell_numbers] +
-                                    final_results[:dnc_numbers]
-    final_results[:total_numbers] = final_results[:saved_numbers] +
-                                    final_results[:invalid_numbers]
-    final_results[:saved_leads] = final_results[:updated_leads] +
-                                  final_results[:new_leads]
-    final_results[:total_leads] = final_results[:saved_leads] +
-                                  final_results[:invalid_custom_ids]
+    final_results[:total_rows]    = @cursor - 1 # don't count header
+    final_results[:saved_numbers] = list_results['total_numbers'].to_i
+    final_results[:saved_leads]   = list_results['total_leads'].to_i
 
     return final_results
   end

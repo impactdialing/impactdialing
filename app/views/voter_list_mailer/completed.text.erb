@@ -1,14 +1,18 @@
-<%= @results[:saved_numbers] %> of <%= @results[:total_numbers] %> unique phone numbers imported successfully.
+Your list contained:
+- <%= @results[:total_rows] %> rows of data
+- <%= @results[:saved_numbers] %> valid unique phone numbers
+- <%= @results[:saved_leads] %> valid leads
 
-<%= @results[:saved_leads] %> of <%= @results[:total_leads] %> leads imported successfully.
+<%= @results[:saved_numbers] - @results[:dnc_numbers] - @results[:cell_numbers] %> of <%= @results[:saved_numbers] %> unique phone numbers are available for dials.
 
-Of <%= @results[:total_numbers] %> numbers:
+Of <%= @results[:saved_numbers] %> valid unique phone numbers:
 
 - <%= @results[:new_numbers] %> are new numbers
 - <%= @results[:pre_existing_numbers] %> numbers had leads added or updated
 - <%= @results[:dnc_numbers] %> matched numbers in the DNC
 - <%= @results[:cell_numbers] %> were cell phone numbers
-- <%= @results[:invalid_numbers] %> were invalid phone numbers
+
+<%= @results[:saved_leads] %> of <%= @results[:total_rows] %> leads imported successfully.
 
 Of <%= @results[:saved_leads] %> leads:
 
@@ -17,6 +21,12 @@ Of <%= @results[:saved_leads] %> leads:
 - <%= @results[:updated_leads] %> leads were updated
 <% end -%>
 
-<% if @results[:invalid_numbers].to_i > 0 -%>
-Any rows from your upload that could not be imported are attached.
+<% if @results[:invalid_rows].size > 0 -%>
+Of <%= @results[:total_rows] %> data rows, <%= @results[:invalid_rows].size %> contained invalid data.
+Any rows from your upload that could not be imported are attached. Things to look for:
+- incomplete or blank phone number fields
+- very long rows (indicates an editing error prior to upload where multiple rows were combined into 1)
+<% if @results[:use_custom_id] -%>
+- leads with blank custom id
+<% end -%>
 <% end %>

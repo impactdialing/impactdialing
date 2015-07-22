@@ -215,6 +215,10 @@ public
     inflight_stats.get('ringing')
   end
 
+  def household_sequence
+    list_stats['number_sequence'].to_i
+  end
+
   def custom_id_register_key_base
     call_list.custom_id_register_key_base
   end

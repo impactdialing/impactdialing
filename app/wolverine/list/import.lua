@@ -15,7 +15,8 @@ local blocked_set_key             = KEYS[6]
 local completed_set_key           = KEYS[7]
 local custom_id_register_key_base = KEYS[8]
 local household_key_base          = ARGV[1] -- dial_queue:{campaign_id}P:households:active
-local households                  = cjson.decode(ARGV[2])
+local starting_household_sequence = ARGV[2]
+local households                  = cjson.decode(ARGV[3])
 local update_statistics           = 1
 local _updated_hh                 = {}
 local new_number_count            = 0
@@ -245,7 +246,9 @@ for phone,household in pairs(households) do
       leads_added = true
     end
 
-    pre_existing_number_count = pre_existing_number_count + 1
+    if tonumber(sequence) <= tonumber(starting_household_sequence) then
+      pre_existing_number_count = pre_existing_number_count + 1
+    end
   else
     log('no current hh, adding new stuff')
     -- brand new household
@@ -270,15 +273,13 @@ for phone,household in pairs(households) do
 end
 
 -- these stats will be used by the new voter list display so do not expire
-local total_lead_count   = new_lead_count + updated_lead_count
-local total_number_count = new_number_count + pre_existing_number_count
 
 redis.call('HINCRBY', list_stats_key, 'new_leads', new_lead_count)
 redis.call('HINCRBY', list_stats_key, 'updated_leads', updated_lead_count)
 redis.call('HINCRBY', list_stats_key, 'new_numbers', new_number_count)
 redis.call('HINCRBY', list_stats_key, 'pre_existing_numbers', pre_existing_number_count)
-redis.call('HINCRBY', list_stats_key, 'total_leads', total_lead_count)
-redis.call('HINCRBY', list_stats_key, 'total_numbers', total_number_count)
+redis.call('HINCRBY', list_stats_key, 'total_leads', new_lead_count)
+redis.call('HINCRBY', list_stats_key, 'total_numbers', new_number_count)
 redis.call('HINCRBY', campaign_stats_key, 'total_leads', new_lead_count)
 redis.call('HINCRBY', campaign_stats_key, 'total_numbers', new_number_count)
 
