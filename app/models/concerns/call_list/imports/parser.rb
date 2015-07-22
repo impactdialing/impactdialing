@@ -65,13 +65,27 @@ private
   end
 
   def read_file(&block)
-    s3    = AmazonS3.new
-    lines = []
+    s3           = AmazonS3.new
+    lines        = []
+    partial_line = nil
 
     # todo: handle stream disruption (timeouts => retry, ghosts => you know who to call)
     # todo: handle stream pickup & process continuation
     s3.stream(voter_list.s3path) do |chunk|
       chunk.each_line{|line| lines << line}
+
+      unless partial_line.nil?
+        # first line of this chunk is last part of current partial_line
+        last_part = lines.shift
+        whole_part = "#{partial_line}#{last_part}"
+        lines.unshift whole_part
+        partial_line = nil
+      end
+
+      if lines.last !~ /#{$/}\Z/
+        # last line doesn't have newline character
+        partial_line = lines.pop
+      end
 
       if lines.size >= batch_size
         yield lines
@@ -100,23 +114,23 @@ public
     i = 0
     start_at = nil
 
-    if cursor > 0
+    if @cursor > 0
       # continue from previous position
-      start_at = cursor
+      start_at = @cursor
     end
 
     read_file do |lines|
       if i.zero?
         parse_headers(lines.shift)
         i     += 1
-        cursor = i
+        @cursor = i
       end
 
       unless start_at.nil?
-        cursor += lines.size
+        @cursor += lines.size
 
         if start_at <= cursor
-          lines = lines[start_at-cursor..-1]
+          lines = lines[start_at-@cursor..-1]
           start_at = nil
         else
           next
@@ -129,7 +143,7 @@ public
       p "cursor = #{cursor}"
       @cursor += lines.size
 
-      yield keys, households, cursor, results
+      yield keys, households, @cursor, results
     end
   end
 
