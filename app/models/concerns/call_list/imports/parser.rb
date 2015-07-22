@@ -72,14 +72,18 @@ private
     # todo: handle stream disruption (timeouts => retry, ghosts => you know who to call)
     # todo: handle stream pickup & process continuation
     s3.stream(voter_list.s3path) do |chunk|
-      chunk.each_line{|line| lines << line}
+      i = 0
+      chunk.each_line do |line|
+        unless partial_line.nil? and i.zero?
+          Rails.logger.debug "Parser partial_line not nil: #{partial_line}"
+          # first line of this chunk is last part of current partial_line
+          last_part    = line
+          line         = "#{partial_line}#{last_part}"
+          partial_line = nil
+        end
 
-      unless partial_line.nil?
-        # first line of this chunk is last part of current partial_line
-        last_part = lines.shift
-        whole_part = "#{partial_line}#{last_part}"
-        lines.unshift whole_part
-        partial_line = nil
+        lines << line
+        i += 1
       end
 
       if lines.last !~ /#{$/}\Z/
