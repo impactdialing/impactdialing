@@ -8,21 +8,25 @@ describe Twillio do
   before do
     Redis.new.flushall
 
-    TWILIO_ACCOUNT                = 'AC211da899fe0c76480ff2fc4ad2bbdc79'
-    TWILIO_AUTH                   = '09e459bfca8da9baeead9f9537735bbf'
-    ENV['TWILIO_CALLBACK_HOST']   = 'api.twilio.com'
-    ENV['CALL_END_CALLBACK_HOST'] = 'api.twilio.com'
-    ENV['INCOMING_CALLBACK_HOST'] = 'api.twilio.com'
-    ENV['VOIP_API_URL']           = 'api.twilio.com'
+    silence_warnings{
+      TWILIO_ACCOUNT                = 'AC211da899fe0c76480ff2fc4ad2bbdc79'
+      TWILIO_AUTH                   = '09e459bfca8da9baeead9f9537735bbf'
+      ENV['TWILIO_CALLBACK_HOST']   = 'api.twilio.com'
+      ENV['CALL_END_CALLBACK_HOST'] = 'api.twilio.com'
+      ENV['INCOMING_CALLBACK_HOST'] = 'api.twilio.com'
+      ENV['VOIP_API_URL']           = 'api.twilio.com'
+    }
   end
 
   after do
-    TWILIO_ACCOUNT                = "blahblahblah"
-    TWILIO_AUTH                   = "blahblahblah"
-    ENV['TWILIO_CALLBACK_HOST']   = 'test.com'
-    ENV['CALL_END_CALLBACK_HOST'] = 'test.com'
-    ENV['INCOMING_CALLBACK_HOST'] = 'test.com'
-    ENV['VOIP_API_URL']           = 'test.com'
+    silence_warnings{
+      TWILIO_ACCOUNT                = "blahblahblah"
+      TWILIO_AUTH                   = "blahblahblah"
+      ENV['TWILIO_CALLBACK_HOST']   = 'test.com'
+      ENV['CALL_END_CALLBACK_HOST'] = 'test.com'
+      ENV['INCOMING_CALLBACK_HOST'] = 'test.com'
+      ENV['VOIP_API_URL']           = 'test.com'
+    }
   end
 
   shared_examples 'all Twillio.dials' do
