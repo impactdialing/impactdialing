@@ -40,7 +40,7 @@ describe 'CallFlow::CallerSession' do
     end
 
     it 'returns an instance of CallFlow::Lead after dialed_call_sid is set' do
-      expect(subject.dialed_call).to be_kind_of CallFlow::Lead
+      expect(subject.dialed_call).to be_kind_of CallFlow::Call::Dialed
     end
   end
 

@@ -9,12 +9,12 @@ module CallFlow
 
     attr_reader :account_sid, :sid
 
-  private
-    def twiml_params(raw_params)
+  protected
+    def self.twiml_params(raw_params)
       CallFlow::TwilioCallParams.load(raw_params)
     end
 
-    def save_param_for(read_param)
+    def self.save_param_for(read_param)
       write_param = read_param.underscore
       if ['call_status', 'sid'].include?(write_param)
         write_param.gsub!('call_', '')
@@ -22,7 +22,7 @@ module CallFlow
       write_param
     end
 
-    def params_for_create(raw_params)
+    def self.params_for_create(raw_params)
       save_params = {}
       twiml_params(raw_params).each do |key,value|
         save_params[ save_param_for(key) ] = value
@@ -44,9 +44,10 @@ module CallFlow
     end
 
     def self.create(raw_params)
+      p ".create called w/ #{raw_params}"
       account_sid = (raw_params['AccountSid'] || raw_params['account_sid'])
       sid         = (raw_params['CallSid'] || raw_params['sid'])
-      storage     = CallFlow::Call::Storage.new(account_sid, sid)
+      storage     = CallFlow::Call::Storage.new(account_sid, sid, namespace)
 
       storage.save(params_for_create(raw_params))
       self.new(account_sid, sid)
@@ -60,16 +61,16 @@ module CallFlow
       @state ||= CallFlow::Call::State.new(storage.key)
     end
 
-    def update_history(state)
-      state.visited(state)
+    def update_history(_state)
+      state.visited(_state)
     end
 
-    def state_visited?(state)
-      state.visited?(state)
+    def state_visited?(_state)
+      state.visited?(_state)
     end
 
-    def state_missed?(state)
-      state.not_visited?(state)
+    def state_missed?(_state)
+      state.not_visited?(_state)
     end
   end
 end

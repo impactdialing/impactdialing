@@ -10,8 +10,16 @@
 # Impetus is to encapsulate & better define behaviors of CallerSession#attempt_in_progress.
 #
 class CallFlow::CallerSession < CallFlow::Call
+  def self.namespace
+    'caller_sessions'
+  end
+
+  def namespace
+    self.class.namespace
+  end
+
   def storage
-    @storage ||= CallFlow::Call::Storage.new(account_sid, sid, 'caller_sessions')
+    @storage ||= CallFlow::Call::Storage.new(account_sid, sid, namespace)
   end
 
   def dialed_call_sid=(value)
@@ -27,7 +35,7 @@ class CallFlow::CallerSession < CallFlow::Call
 
   def dialed_call
     if @dialed_call_sid.present?
-      @dialed_call ||= CallFlow::Lead.new(account_sid, @dialed_call_sid)
+      @dialed_call ||= CallFlow::Call::Dialed.new(account_sid, @dialed_call_sid)
     end
   end
 end

@@ -19,13 +19,17 @@ public
     validate!
   end
 
-  def key
-    @key ||= [
+  def self.key(account_sid, call_sid, namespace=nil)
+    [
       'calls',
       account_sid,
       call_sid,
       namespace
     ].compact.join(':')
+  end
+
+  def key
+    @key ||= self.class.key(account_sid, call_sid, namespace)
   end
 
   def [](property)
@@ -37,6 +41,7 @@ public
   end
 
   def save(hash)
+    p "key: #{key} saving: #{hash}"
     redis.mapped_hmset(key, hash)
   end
 
