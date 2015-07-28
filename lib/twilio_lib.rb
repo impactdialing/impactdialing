@@ -42,14 +42,14 @@ class TwilioLib
     end
   end
 
-  def make_call_params(campaign, household, call_attempt)
+  def make_call_params(campaign, phone)
     {
       'From'           => campaign.caller_id,
-      'To'             => household.phone,
-      'Url'            => incoming_call_url(call_attempt.call, shared_callback_url_params(campaign).merge(event: "incoming_call")),
-      'StatusCallback' => call_ended_call_url(call_attempt.call, shared_callback_url_params(campaign).merge(event: "call_ended")),
+      'To'             => phone,
+      #'Url'            => incoming_call_url(call.call_sid, shared_callback_url_params(campaign).merge(event: "incoming_call")),
+      #'StatusCallback' => call_ended_call_url(call.call_sid, shared_callback_url_params(campaign).merge(event: "call_ended")),
       'Timeout'        => "15",
-      'FallbackUrl'    => incoming_call_url(call_attempt.call, shared_failover_url_params(campaign).merge(event: "incoming_call"))
+      #'FallbackUrl'    => incoming_call_url(call.call_sid, shared_failover_url_params(campaign).merge(event: "incoming_call"))
     }.merge!(amd_params(campaign))
   end
 
@@ -62,8 +62,8 @@ class TwilioLib
     create_http_request("#{@root}Calls/#{call_id}", {'Status'=>"completed"}, Settings.voip_api_url)
   end
 
-  def make_call(campaign, household, call_attempt)
-    params   = make_call_params(campaign, household, call_attempt)
+  def make_call(campaign, phone)
+    params   = make_call_params(campaign, phone)
     response = create_http_request(twilio_calls_url, params, Settings.voip_api_url)
     response.body
   end

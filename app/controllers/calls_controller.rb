@@ -7,7 +7,7 @@ class CallsController < ApplicationController
 
   # TwiML
   def incoming
-    live_call = CallFlow::Call.new(params)
+    live_call = CallFlow::Call::Dialed.new(params[:AccountSid], params[:CallSid])
     live_call.update_history(:incoming)
 
     unless params['ErrorCode'] and params['ErrorUrl']

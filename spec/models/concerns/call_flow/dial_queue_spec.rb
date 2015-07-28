@@ -48,6 +48,62 @@ describe 'CallFlow::DialQueue' do
     end
   end
 
+  describe 'failed!(phone)' do
+    let(:redis){ Redis.new }
+
+    shared_context 'a dialed number' do
+      subject{ CallFlow::DialQueue.new(campaign) }
+      let(:phone){ Forgery('address').clean_phone }
+      before do
+        redis.zadd subject.available.keys[:presented], 1.000001, phone
+        expect(phone).to be_in_dial_queue_zset(campaign.id, 'presented')
+      end
+    end
+
+    shared_examples_for 'any failed dial' do
+      it 'removes the phone from the available (presented or active) zset' do
+        subject.failed!(phone)
+        expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'presented')
+      end
+
+      it 'adds the phone to the failed zset' do
+        subject.failed!(phone)
+        expect(phone).to be_in_dial_queue_zset(campaign.id, 'failed')
+      end
+    end
+
+    context 'when Preview or Power campaigns' do
+      let(:campaign){ create(:preview) }
+
+      include_context 'a dialed number'
+
+      it 'does not decrement presented count' do
+        subject.failed!(phone)
+        expect(campaign.presented_count).to be_zero
+      end
+      
+      it_behaves_like 'any failed dial'
+    end
+
+    context 'when Predictive campaign' do
+      let(:campaign){ create(:predictive) }
+
+      include_context 'a dialed number'
+
+      before do
+        Twillio::InflightStats.new(campaign).incby 'presented', 1
+        expect(campaign.presented_count).to eq 1
+      end
+
+      it 'decrements presented count' do
+        subject.failed!(phone)
+        expect(campaign.presented_count).to be_zero
+      end
+
+      it_behaves_like 'any failed dial'
+    end
+  end
+
   describe 'caching voters available to be dialed' do
     it 'preserves ordering of voters' do
       expected = @campaign.households.map(&:phone)
@@ -311,173 +367,4 @@ describe 'CallFlow::DialQueue' do
       expect(@result).to eq @expected_purge_count
     end
   end
-
-#   describe 'quick benchmark' do
-#     let(:redis){ Redis.new }
-
-#     def seed_redis
-#       members = []
-#       3.times do
-#         members << {id: Forgery(:basic).number, first_name: Forgery(:name).first_name, last_name: Forgery(:name).last_name, other_stuff: Forgery(:basic).text}
-#       end
-#       json = members.to_json
-#       200_000.times do |i|
-#         phone = Forgery(:address).phone.gsub(/[^\d]/, '')
-#         redis.zadd "test:available", i, phone
-#         redis.hset "test:households:#{phone[0..4]}", phone[5..-1], json
-#       end
-#     end
-
-#     let(:lua_scan) do
-#       # redis.call("DEL", KEYS[1]) # available
-#       # redis.call()
-#     end
-
-#     let(:lua_iter) do
-# <<-SCRIPT
-# local phones = redis.call("ZRANGE", KEYS[1], "0", "-1")
-# for _,phone in pairs(phones) do
-#   redis.call("DEL", ARGV[1] .. ":" .. string.sub(phone, 1, 5))
-# end
-# redis.call("DEL", KEYS[1])
-# SCRIPT
-#     end
-
-#     it 'takes time' do
-#       require 'benchmark'
-#       seed_time = Time.now
-
-#       Benchmark.bm(18) do |x|
-#         seed_redis
-#         p "seeded 1: #{Time.now.to_i - seed_time.to_i}"
-#         expect(redis.zcard("test:available") > 195_000).to be_truthy
-#         expect(redis.keys("test:households:*").size > 1_000).to be_truthy
-#         x.report("ruby: del + scan"){
-#           redis.del "test:available"
-
-#           matcher               = "test:households:*"
-#           cursor, existing_keys = redis.scan(0, match: matcher)
-#           existing_keys.each{ |key| redis.del(key) }
-
-#           until cursor.to_i.zero?
-#             cursor, existing_keys = redis.scan(cursor, match: matcher)
-#             existing_keys.each{ |key| redis.del(key) }
-#           end
-#         }
-#         expect(redis.zcard("test:available")).to eq 0
-#         expect(redis.keys("test:households:*")).to be_empty
-
-#         seed_time = Time.now
-#         seed_redis
-#         expect(redis.zcard("test:available") > 195_000).to be_truthy
-#         expect(redis.keys("test:households:*").size > 1_000).to be_truthy
-#         p "seeded 2: #{Time.now.to_i - seed_time.to_i}"
-#         x.report("ruby: set iter"){
-#           redis.zrange("test:available", 0, -1).each do |phone|
-#             redis.del("test:households:#{phone[0..4]}")
-#           end
-#           redis.del("test:available")
-#         }
-#         expect(redis.zcard("test:available")).to eq 0
-#         expect(redis.keys("test:households:*")).to be_empty
-
-#         seed_time = Time.now
-#         seed_redis
-#         expect(redis.zcard("test:available") > 195_000).to be_truthy
-#         expect(redis.keys("test:households:*").size > 1_000).to be_truthy
-#         p "seeded 2: #{Time.now.to_i - seed_time.to_i}"
-#         x.report("lua: set iter"){
-#           redis.eval(lua_iter, keys: ["test:available"], argv: ["test:households"])
-#         }
-#         expect(redis.zcard("test:available")).to eq 0
-#         expect(redis.keys("test:households:*")).to be_empty
-
-#         seed_time = Time.now
-#         seed_redis
-#         expect(redis.zcard("test:available") > 195_000).to be_truthy
-#         expect(redis.keys("test:households:*").size > 1_000).to be_truthy
-#         x.report("lua: set iter v2"){
-#           Wolverine.dial_queue.purge(keys: ["test:available"], argv: ["test:households"])
-#         }
-#         expect(redis.zcard("test:available")).to eq 0
-#         expect(redis.keys("test:households:*")).to be_empty
-#       end
-#     end
-#   end
-
-  # describe 'when a call ends' do
-  #   let(:phone_number){ @dial_queue.next(1).first }
-  #   let(:twilio_params) do
-  #     {
-  #       'AccountSid' => 'AC123',
-  #       'CallSid' => 'CA321',
-  #       'To' => phone_number,
-  #       'From' => '5554443322'
-  #     }
-  #   end
-  #   # let(:voter){ Household.where(phone: phone_numbers).voters.first }
-  #   # let(:other_voter){ create(:voter, campaign: voter.campaign, household: voter.household) }
-
-  #   context 'call was not answered' do
-  #     context 'CallStatus is failed' do
-  #       let(:params) do
-  #         twilio_params.merge({'CallStatus' => 'failed'})
-  #       end
-  #       before do
-  #         @dial_queue.dialed(params)
-  #       end
-  #       it 'removes phone number from :presented set' do
-  #         expect(@dial_queue.available.all(:presented)).to_not include(phone_number)
-  #       end
-  #       it 'does not add phone number to recycle bin' do
-  #         expect(@dial_queue.recycle_bin.missing?(phone_number)).to be_truthy
-  #       end
-  #     end
-
-  #     context 'CallStatus is busy or no-answer' do
-  #       it 'removes phone number from :presented set'
-  #       it 'adds phone number to recycle bin'
-  #     end
-  #   end
-
-  #   context 'call was answered' do
-  #     context 'by human' do
-  #       context 'and connected' do
-  #         it 'removes phone number from :presented set'
-
-  #         context 'disposition results indicate the voter should be called again' do
-  #           it 'adds phone number to recycle bin'
-  #         end
-  #         context 'disposition results indicate the voter should not be called again' do
-  #           context 'this is the last voter of the household to be contacted' do
-  #             it 'does not add the phone number to recycle bin'
-  #           end
-  #           context 'other voters of the household should be contacted' do
-  #             it 'adds the phone number to recycle bin'
-  #           end
-  #         end
-  #       end
-
-  #       context 'and abandoned' do
-  #         it 'removes phone number from :presented set'
-  #         it 'adds the phone number to recycle bin'
-  #       end
-  #     end
-
-  #     context 'by machine' do
-  #       it 'removes phone number from :presented set'
-  #       context 'campaign is configured to hangup' do
-  #         it 'adds phone number to recycle bin'
-  #       end
-  #       context 'campaign is configured to drop message' do
-  #         context 'and call back after message drop' do
-  #           it 'adds phone number to recycle bin'
-  #         end
-  #         context 'and not call back after message drop' do
-  #           it 'does not add phone number to recycle bin'
-  #         end
-  #       end
-  #     end
-  #   end
-  # end
 end

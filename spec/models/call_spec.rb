@@ -178,10 +178,12 @@ describe Call, :type => :model do
         create_campaign_with_script(:bare_predictive, account).last
       end
       let(:params) do
-        {
-          'answered_by' => 'human',
-          'call_status' => 'in-progress'
-        }
+        HashWithIndifferentAccess.new({
+          'AnsweredBy' => 'human',
+          'CallStatus' => 'in-progress',
+          'AccountSid' => 'AC123',
+          'CallSid' => 'CA321'
+        })
       end
 
       before do

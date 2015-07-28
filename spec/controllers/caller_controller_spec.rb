@@ -147,7 +147,7 @@ describe CallerController, :type => :controller do
       expect(Caller).to receive(:find).and_return(caller)
       expect(caller).to receive(:create_caller_session).and_return(caller_session)
       expect(RedisPredictiveCampaign).to receive(:add).with(caller.campaign_id, caller.campaign.type)
-      post :start_calling, caller_id: caller.id, session_key: caller_identity.session_key, CallSid: "abc"
+      post :start_calling, caller_id: caller.id, session_key: caller_identity.session_key, CallSid: "abc", AccountSid: "cba"
       twiml = [
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
         "<Response>",

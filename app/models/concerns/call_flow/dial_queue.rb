@@ -112,6 +112,14 @@ module CallFlow
       available.dialed(household.phone)
     end
 
+    def failed!(phone)
+      update_presented_count = campaign.predictive? ? 1 : 0
+      Wolverine.dial_queue.dial_failed({
+        keys: [available.keys[:presented], completed.keys[:failed], Twillio::InflightStats.key(campaign)],
+        argv: [phone, update_presented_count]
+      })
+    end
+
     def remove_household(phone)
       available.remove(phone)
       recycle_bin.remove(phone)

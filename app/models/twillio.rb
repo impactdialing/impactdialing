@@ -63,47 +63,43 @@ class Twillio
     ImpactPlatform::Metrics.count('dialer.dial.error', '1', count_source(campaign, caller_session))
   end
   
-  def self.handle_response(http_response, household, call_attempt, caller_session=nil)
+  def self.handle_response(http_response, campaign, phone, caller_session=nil)
     response = if http_response.blank?
                  {
                   'status' => 666,
                   'RestException' => [
                     'Invalid JSON response returned from REST request',
                     'to Twilio for new call.',
-                    "Phone[#{household.phone}]",
-                    "Household[#{household.id}]",
-                    "Campaign[#{household.campaign.id}]"
+                    "Campaign[#{campaign.id}]",
+                    "Phone[#{phone}]"
                   ].join(' ')
                 }
                else
                  JSON.parse(http_response)
                end
     if error_response_codes.include?(response["status"])
-      handle_failed_call(call_attempt, caller_session, household, response)
+      handle_failed_call(phone, campaign, caller_session, response)
     else
-      handle_succeeded_call(call_attempt, caller_session, response)
+      handle_succeeded_call(phone, campaign, caller_session, response)
     end
   end
 
-  def self.dial(household, caller_session)
-    campaign      = household.campaign
-    call_attempt  = create_call_attempt(household)
+  def self.dial(phone, caller_session)
+    campaign      = caller_session.campaign
     twilio_lib    = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    http_response = twilio_lib.make_call(campaign, household, call_attempt)
-    handle_response(http_response, household, call_attempt, caller_session)
+    http_response = twilio_lib.make_call(campaign, phone)
+    handle_response(http_response, campaign, phone, caller_session)
   end
 
-  def self.dial_predictive_em(iter, household)
-    campaign     = household.campaign
-    call_attempt = create_call_attempt(household)
+  def self.dial_predictive_em(iter, campaign, phone)
     twilio_lib   = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    http         = twilio_lib.make_call_em(campaign, household, call_attempt)
+    http         = twilio_lib.make_call_em(campaign, phone)
     http.callback {
-      handle_response(http.response, household, call_attempt)
+      handle_response(http.response, campaign, phone)
       iter.return(http)
     }
     http.errback {
-      handle_response(http.response, household, call_attempt)
+      handle_response(http.response, campaign, phone)
       iter.return(http)
     }
   end
@@ -116,49 +112,58 @@ class Twillio
       call_start: Time.now
     })
 
-    unless call_attempt.present? and call_attempt.id > 0
-      Rails.logger.error "[DEBUG] DQ Numbers failed to create CallAttempt record #{campaign.type}[#{campaign.id}] Phone[#{household.phone}]"
-    end
 
     call = Call.create(call_attempt: call_attempt, state: "initial")
 
-    unless call.present? and call.id > 0
-      Rails.logger.error "[DEBUG] DQ Numbers failed to create Call record #{campaign.type}[#{campaign.id}] Phone[#{household.phone}]"
-    end
 
     call_attempt
   end
 
-  def self.set_attempt_in_progress(caller_session, call_attempt)
+  def self.mark_caller_unavailable(caller_session)
     return if caller_session.nil? # the case when call first made in predictive mode
                                   # if predictive call is picked up, then this is called
                                   # again w/ caller_session present from /incoming end-point
 
     caller_session.update_attributes({
       on_call: true,
-      available_for_call: false,
-      attempt_in_progress: call_attempt
+      available_for_call: false
     })
   end
 
-  def self.handle_succeeded_call(call_attempt, caller_session, response)
-    count_dial_success(call_attempt.campaign, caller_session)
-    call_attempt.campaign.number_ringing
-
-    set_attempt_in_progress(caller_session, call_attempt)
-    call_attempt.update_attributes(:sid => response["sid"])
+  def self.predictive_dial_answered(caller_session, params)
+    mark_caller_unavailable(caller_session)
+    p "got params: #{params}"
+    dialed_call                    = CallFlow::Call::Dialed.new(params[:AccountSid], params[:CallSid])
+    dialed_call.caller_session_sid = caller_session.sid
   end
 
-  def self.handle_failed_call(call_attempt, caller_session, household, response)
-    TwilioLogger.error(response['TwilioResponse'] || response)
-    count_dial_error(call_attempt.campaign, caller_session)
-    call_attempt.campaign.number_failed
+  def self.create_dialed_call(campaign, response, caller_session=nil)
+    optional_properties = {}
+    if caller_session.present?
+      optional_properties[:caller_session_sid] = caller_session.sid
+    end
 
-    call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-    household.failed!
-    
+    CallFlow::Call::Dialed.create(campaign, response, optional_properties)
+  end
+
+  def self.handle_succeeded_call(phone, campaign, caller_session, response)
+    count_dial_success(campaign, caller_session)
+    create_dialed_call(campaign, response, caller_session)
+    mark_caller_unavailable(caller_session)
+
+    response
+  end
+
+  def self.handle_failed_call(phone, campaign, caller_session, response)
+    TwilioLogger.error(response['TwilioResponse'] || response)
+    count_dial_error(campaign, caller_session)
+
+    campaign.dial_queue.failed!(phone)
+
     unless caller_session.nil?
       Providers::Phone::Call.redirect_for(caller_session)
     end
+    response
   end
 end
+

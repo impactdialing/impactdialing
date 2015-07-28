@@ -102,6 +102,9 @@ public
     load_caller_session = CallerSession.find_by_id_cached(session.id)
 
     render_abort_twiml_unless_fit_to(:start_calling, load_caller_session) do
+      # cache twiml params to redis to provide central point of ref for caller state
+      CallFlow::CallerSession.create(params)
+
       caller.started_calling(load_caller_session)
       RedisDataCentre.set_datacentres_used(load_caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
       render xml: load_caller_session.start_conf

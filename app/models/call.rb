@@ -29,7 +29,7 @@ public
       begin
         RescueRetryNotify.on ActiveRecord::StaleObjectError, 3 do
           loaded_caller_session = CallerSession.find_by_id_cached(caller_session_id)
-          Twillio.set_attempt_in_progress(loaded_caller_session, call_attempt)
+          Twillio.predictive_dial_answered(loaded_caller_session, params)
         end
       rescue ActiveRecord::StaleObjectError
         if caller_session_id
@@ -121,7 +121,7 @@ public
   end
 
   def call_ended(campaign_type, params={})
-    live_call = CallFlow::Call.new(params)
+    live_call = CallFlow::Call::Dialed.new(params[:AccountSid], params[:CallSid])
 
     unless caller_session.nil? # can be the case for transfers
       caller_session.publish_call_ended(params)

@@ -32,7 +32,7 @@ describe CallsController, :type => :controller do
 
         post :incoming, incoming_params
 
-        live_call = CallFlow::Call.new(incoming_params)
+        live_call = CallFlow::Call::Dialed.new('AC432', 'CA123')
         expect(live_call.state_visited?(:incoming)).to be_truthy
       end
     end

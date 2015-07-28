@@ -10,15 +10,14 @@ require "em-synchrony/em-http"
 class Dial
   def self.perform(campaign_id, phone_numbers)
     campaign   = Campaign.find(campaign_id)     
-    households = campaign.households.where(phone: phone_numbers)
-    em_dial(households)
+    em_dial(campaign, phone_numbers)
   end
   
-  def self.em_dial(households)
+  def self.em_dial(campaign, phone_numbers)
     EM.synchrony do
       concurrency = 10        
-      EM::Synchrony::Iterator.new(households, concurrency).map do |household, iter|
-        Twillio.dial_predictive_em(iter, household)
+      EM::Synchrony::Iterator.new(phone_numbers, concurrency).map do |phone, iter|
+        Twillio.dial_predictive_em(iter, campaign, phone)
       end        
       EventMachine.stop
     end

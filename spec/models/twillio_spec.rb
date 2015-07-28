@@ -91,53 +91,67 @@ describe Twillio do
     let(:caller_session) do
       create(:bare_caller_session, :webui, :available, campaign: campaign, caller: caller)
     end
-    let(:household) do
-      create(:household, phone: '15418703001', campaign: campaign, account: campaign.account)
-    end
+    let(:phone){ '15418703001' }
   end
 
   describe 'Twillio.dial (Preview/Power)' do
     let(:campaign) do
       create_campaign_with_script(:bare_preview, account).last
     end
+    let(:account_sid){ @twilio_response['account_sid'] }
+    let(:call_sid){ @twilio_response['sid'] }
+    let(:dialed_call) do
+      CallFlow::Call::Dialed.new(account_sid, call_sid)
+    end
 
     include_context 'Twillio setup'
 
     context 'success' do
       before do
+        caller_session.update_attributes!({sid: 'CS123'})
         VCR.use_cassette('Twillio.dial success') do
-          Twillio.dial(household, caller_session)
+          @twilio_response = Twillio.dial(phone, caller_session)
         end
       end
 
-      it_behaves_like 'all Twillio.dials'
-      it_behaves_like 'all success Twillio.dials'
+      #it_behaves_like 'all Twillio.dials' => creates CallAttempt & Call w/ proper associations
+      #it_behaves_like 'all success Twillio.dials' => updates CallAttempt SID & increments ringing_count
+
+      it 'creates a CallFlow::Call::Dialed (redis) record' do
+        expect(dialed_call.sid).to eq call_sid
+        expect(dialed_call.account_sid).to eq account_sid
+        expect(dialed_call.storage['status']).to eq @twilio_response['status']
+      end
 
       it 'updates CallerSession w/ attempt in progress & available for call flags' do
         expect(caller_session.on_call).to be_truthy
         expect(caller_session.available_for_call).to be_falsey
-        expect(caller_session.attempt_in_progress).to be_present
-        expect(caller_session.attempt_in_progress).to eq CallAttempt.last
+        expect(dialed_call.storage['caller_session_sid']).to eq caller_session.sid
       end
     end
 
     context 'fail' do
+      let(:fake_dial_queue) do
+        double('CallFlow::DialQueue', {
+          failed!: nil
+        })
+      end
       before do
-        # todo: move this from before block to it
-        expect(Providers::Phone::Call).to receive(:redirect_for).with(caller_session)
+        allow(CallFlow::DialQueue).to receive(:new).with(campaign){ fake_dial_queue }
+      end
 
-        household.update_attributes!(phone: twilio_invalid_to)
-
+      after do
         VCR.use_cassette('Twillio.dial fail-invalid to') do
-          Twillio.dial(household, caller_session)
+          Twillio.dial(twilio_invalid_to, caller_session)
         end
       end
 
-      it_behaves_like 'all Twillio.dials'
-      it_behaves_like 'all failed Twillio.dials'
+      it 'calls campaign.dial_queue.failed!' do
+        expect(fake_dial_queue).to receive(:failed!).with(twilio_invalid_to)
+      end
 
       it 'redirects caller' do
-        # todo: move expectation in before block to here
+        expect(Providers::Phone::Call).to receive(:redirect_for).with(caller_session)
       end
     end
   end
