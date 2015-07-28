@@ -1,16 +1,24 @@
-class CallFlow::Lead < CallFlow::Call
+class CallFlow::Call::Lead < CallFlow::Call
   attr_reader :caller_session_sid
 
+  def self.namespace
+    raise "Not implemented"
+  end
+
+  def namespace
+    self.class.namespace
+  end
+
   def storage
-    @storage ||= CallFlow::Call::Storage.new(account_sid, sid, 'leads')
+    @storage ||= CallFlow::Call::Storage.new(account_sid, sid, namespace)
   end
 
   def caller_session_sid=(value)
     if value.present?
       @caller_session_sid = value
       storage.multi do
-        storage[:caller_session_sid] = value
-        caller_session.dialed_call   = sid
+        storage[:caller_session_sid]   = value
+        caller_session.dialed_call_sid = sid
       end
     end
   end

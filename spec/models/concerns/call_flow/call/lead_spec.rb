@@ -1,10 +1,10 @@
 require 'rails_helper'
 
-describe 'CallFlow::Lead' do
+describe 'CallFlow::Call::Lead' do
   let(:account_sid){ 'AC-123' }
   let(:call_sid){ 'CA-321' }
   let(:caller_session_sid){ 'CA-214' }
-  subject{ CallFlow::Lead.new(account_sid, call_sid) }
+  subject{ CallFlow::Call::Lead.new(account_sid, call_sid) }
 
   describe '#caller_session_sid=' do
     before do
