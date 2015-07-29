@@ -52,13 +52,22 @@ end
 
 RSpec::Matchers.define :dial_conference do |dial_options, conference_options|
   match do |actual|
-    twiml = Twilio::TwiML::Response.new do |r|
+    @twiml = Twilio::TwiML::Response.new do |r|
       r.Dial(dial_options) do
-        r.Conference(conference_options)
+        if conference_options.keys.include?(:name)
+          name = conference_options.delete(:name)
+          r.Conference(name, conference_options)
+        else
+          r.Conference(conference_options)
+        end
       end
     end.text
 
-    actual == twiml
+    actual == @twiml
+  end
+
+  failure_message do |actual|
+    "expected TwiML: #{@twiml}\n rendered TwiML: #{actual}"
   end
 end
 

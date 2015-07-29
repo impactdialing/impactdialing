@@ -84,6 +84,12 @@ en:
   campaign_out_of_phone_numbers: "This campaign has run out of phone numbers."
   update_billing_info: "Urgent: Update your billing information"
   enjoy_the_trial: "Enjoy your trial of Impact Dialing! You have 50 minutes of calling for free. Make sure to %{billing_link} before your minutes run out."
+  twiml:
+    dialing_prohibited:
+      calling_is_disabled: "Calling has been disabled for this account. Please contact your account administrator for assistance."
+      account_has_no_funds: "There are no funds available in the account. Please contact your account administrator for assistance."
+      time_period_exceeded: "You can only call this campaign between %{start_time} and %{end_time}."
+      subscription_limit: "The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account."
   dialer:
     access:
       denied: "Calling is disabled. Please contact your admin."

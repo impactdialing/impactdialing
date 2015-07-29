@@ -23,7 +23,7 @@ describe Twiml::CallerSessionsController do
       expected_endtime = nil
 
       Timecop.freeze do
-        post :dialing_prohibited, caller_session_id: caller_session.id
+        post :dialing_prohibited, caller_session_id: caller_session.id, format: :xml
 
         expected_endtime = Time.now
 
@@ -32,24 +32,20 @@ describe Twiml::CallerSessionsController do
         expect(caller_session.endtime).to be_within(1.second).of(expected_endtime)
         expect(caller_session.on_call).to be_falsy
         expect(caller_session.available_for_call).to be_falsy
-        expect(RedisStatus.state_time(campaign.id, caller_session.id))
+        expect(RedisStatus.state_time(campaign.id, caller_session.id)).to be_nil
       end
     end
 
-    context 'account not funded' do
-      it 'speaks account not funded message'
+    it 'sets @reason to caller_session.abort_dial_reason' do
+      expect(caller_session).to receive(:abort_dial_reason){ :blah }
+      allow(CallerSession).to receive(:find){ caller_session }
+      post :dialing_prohibited, caller_session_id: caller_session.id, format: :xml
+      expect(assigns[:reason]).to eq :blah
     end
 
-    context 'dialer access denied by internal admin' do
-      it 'speaks account not funded message (thinking is: keep this message generic to avoid embarassing customers if we deny access accidentally or decide customer is not abusing us - no point letting any volunteers know of our suspicions)'
-    end
-
-    context 'outside calling hours' do
-      it 'speaks outside calling hours message'
-    end
-
-    context 'seats not available' do
-      it 'speaks seats not available message'
+    it 'renders twiml/caller_sessions/dialing_prohibited.xml' do
+      post :dialing_prohibited, caller_session_id: caller_session.id, format: :xml
+      expect(response).to render_template 'twiml/caller_sessions/dialing_prohibited'
     end
   end
 end
