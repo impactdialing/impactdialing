@@ -63,11 +63,11 @@ RSpec::Matchers.define :dial_conference do |dial_options, conference_options|
       end
     end.text
 
-    actual == @twiml
+    actual.chomp == @twiml.chomp
   end
 
   failure_message do |actual|
-    "expected TwiML: #{@twiml}\n rendered TwiML: #{actual}"
+    "expected TwiML: #{@twiml}\nrendered TwiML: #{actual}"
   end
 end
 

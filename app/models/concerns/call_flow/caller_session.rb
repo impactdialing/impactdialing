@@ -10,6 +10,18 @@
 # Impetus is to encapsulate & better define behaviors of CallerSession#attempt_in_progress.
 #
 class CallFlow::CallerSession < CallFlow::Call
+protected
+  def self.twiml_params(raw_params)
+    parsed_params = super
+    [:caller_id, :session_key].each do |param|
+      if raw_params[param].present?
+        parsed_params.merge!({param => raw_params[param]})
+      end
+    end
+    parsed_params
+  end
+
+public
   def self.namespace
     'caller_sessions'
   end

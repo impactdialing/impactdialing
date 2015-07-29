@@ -106,7 +106,7 @@ ImpactDialing::Application.routes.draw do
   end
 
   namespace 'twiml' do
-    resources :caller_sessions, only: [] do
+    resources :caller_sessions, only: [:create] do
       post :dialing_prohibited
     end
   end
