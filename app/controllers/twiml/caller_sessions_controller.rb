@@ -12,12 +12,13 @@ class Twiml::CallerSessionsController < TwimlController
     identity       = CallerIdentity.find_by_session_key(params[:session_key])
     @caller_session = @caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
 
-    CallFlow::CallerSession.create(params)
-    RedisPredictiveCampaign.add(campaign.id, campaign.type)
-    RedisStatus.set_state_changed_time(campaign.id, "On hold", @caller_session.id)
+    render_abort_twiml_unless_fit_to(:start_calling, @caller_session) do
+      CallFlow::CallerSession.create(params)
+      RedisPredictiveCampaign.add(campaign.id, campaign.type)
+      RedisStatus.set_state_changed_time(campaign.id, "On hold", @caller_session.id)
 
-    # from CallerSession#start_conference
-    @caller_session.start_conf
+      @caller_session.start_conf
+    end
   end
 end
 

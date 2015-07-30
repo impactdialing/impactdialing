@@ -9,7 +9,7 @@ private
       yield
     else
       caller_session.end_caller_session
-      render xml: caller_session.send("abort_#{point_in_call_flow}_twiml")
+      render xml: caller_session.send("abort_#{point_in_call_flow}_twiml") and return
     end
   end
 end
