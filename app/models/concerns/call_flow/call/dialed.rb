@@ -1,4 +1,6 @@
 class CallFlow::Call::Dialed < CallFlow::Call::Lead
+  attr_reader :twiml_flag, :recording_url, :record_calls
+
 private
   def self.storage_key(rest_response)
     CallFlow::Call::Storage.key(rest_response['account_sid'], rest_response['sid'], 'dialed')
@@ -39,6 +41,68 @@ public
 
   def namespace
     self.class.namespace
+  end
+
+  def answered(campaign, caller_session, params)
+    update_history(:answered)
+    unless params['ErrorCode'] and params['ErrorUrl']
+      handle_successful_dial(campaign, caller_session, params)
+    else
+      handle_failed_dial(campaign, params)
+    end
+  end
+  def handle_failed_dial(campaign, params)
+    source      = [
+      "ac-#{campaign.account_id}",
+      "ca-#{campaign.id}",
+      "sid-#{params[:CallSid]}",
+      "code-#{params['ErrorCode']}"
+    ]
+    metric_name = "twiml.http_error"
+    ImpactPlatform::Metrics.count(metric_name, 1, source.join('.'))
+    @twiml_flag = :hangup
+  end
+  def handle_successful_dial(campaign, caller_session, params)
+    if campaign.predictive? and answered_by_human?(params)
+      Twillio.predictive_dial_answered(caller_session, params)
+    end
+
+    if answered_by_human?(params) and call_in_progress?(params)
+      attempt_connection(campaign, caller_session, params)
+    else
+      call_answered_by_machine(campaign, caller_session, params)
+    end
+  end
+  def attempt_connection(campaign, caller_session, params)
+    if caller_session.on_call? and (not caller_session.available_for_call?)
+      RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session.id)
+      VoterConnectedPusherJob.add_to_queue(caller_session.id, params[:CallSid])
+      @twiml_flag   = :connect
+      @record_calls = campaign.account.record_calls.to_s
+    else
+      @twiml_flag = :hangup
+    end
+  end
+  def call_answered_by_machine(campaign, caller_session, params)
+    RedirectCallerJob.add_to_queue(caller_session.id)
+    answering_machine_agent = AnsweringMachineAgent.new(campaign, storage[:phone])
+
+    if answering_machine_agent.leave_message?
+      @twiml_flag    = :leave_message
+      @recording_url = campaign.recording.file.url
+      answering_machine_agent.record_message_drop
+    else
+      @twiml_flag = :hangup
+    end
+  end
+  def answered_by_machine?(params)
+    params[:AnsweredBy] == 'machine'
+  end
+  def answered_by_human?(params)
+    not answered_by_machine?(params)
+  end
+  def call_in_progress?(params)
+    params[:CallStatus] == 'in-progress'
   end
 end
 

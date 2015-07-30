@@ -2,6 +2,10 @@ module ResqueHelpers
   def resque_jobs(queue)
     Resque.peek(queue, 0, 100)
   end
+
+  def sidekiq_jobs(queue_name)
+    Sidekiq::Queue.new(queue_name).map(&:item)
+  end
 end
 
 RSpec::Matchers.define :have_queued do |job_class|
@@ -12,10 +16,13 @@ RSpec::Matchers.define :have_queued do |job_class|
       'class' => job_class.to_s,
       'args'  => [*@job_args]
     }
-    jobs.include?(expected)
+    jobs.include?(expected) or expected.keys.all? do |key|
+      jobs.first[key] == expected[key]
+    end
   end
 
   chain :with do |*args|
-    @job_args = args
+    @job_args = [*args]
   end
 end
+

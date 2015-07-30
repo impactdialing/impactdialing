@@ -16,6 +16,7 @@
 #
 class RedirectCallerJob
   include Sidekiq::Worker
+  extend SidekiqSelfQueue
   # Retries should occur in lower-level dependencies.
   # Sidekiq should not be used to retry it will almost certainly retry after
   # the call has ended.
