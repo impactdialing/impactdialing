@@ -33,8 +33,19 @@ describe 'CallFlow::DialQueue::Households' do
     end
 
     describe 'record when a message has been dropped' do
-      it 'sets bit to 1 for given household sequence' do
-        expect(redis.getbit(redis_key, sequence_one)).to eq 1
+      context 'for a given sequence' do
+        it 'sets bit to 1 for given household sequence' do
+          expect(redis.getbit(redis_key, sequence_one)).to eq 1
+        end
+      end
+      context 'for a given phone number' do
+        let(:phone_two){ households.keys.first }
+        let(:sequence_two){ households[phone_two]['sequence'] }
+
+        it 'sets bit to 1 for household sequence of given phone number' do
+          subject.record_message_drop_by_phone(phone_two)
+          expect(redis.getbit(redis_key, sequence_two)).to eq 1
+        end
       end
     end
 

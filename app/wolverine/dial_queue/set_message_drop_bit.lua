@@ -3,7 +3,8 @@ local inactive_key     = KEYS[2]
 local message_drop_key = KEYS[3]
 local phone            = ARGV[1]
 local hkey             = ARGV[2]
-local bit              = 0
+local bit              = 1
+local household        = {}
 
 local _household = redis.call('HGET', active_key, hkey)
 if _household == nil then
@@ -12,7 +13,7 @@ end
 
 if _household ~= nil then
   local household = cjson.decode(_household)
-  bit = redis.call('GETBIT', message_drop_key, household.sequence)
+  bit = redis.call('SETBIT', message_drop_key, household.sequence, 1)
 end
 
-return bit
+return household.sequence

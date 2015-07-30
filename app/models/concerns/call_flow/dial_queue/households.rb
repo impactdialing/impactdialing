@@ -123,12 +123,23 @@ public
     redis.getbit(keys[:message_drops], sequence) > 0
   end
 
+  def record_message_drop_by_phone(phone)
+    Wolverine.dial_queue.set_message_drop_bit({
+      keys: keys_for_lua(phone) + [keys[:message_drops]],
+      argv: [phone, hkey(phone).last]
+    })
+  end
+
   def message_dropped?(phone)
     result = Wolverine.dial_queue.get_message_drop_bit({
       keys: keys_for_lua(phone) + [keys[:message_drops]],
       argv: [phone, hkey(phone).last]
     })
     result.to_i > 0
+  end
+
+  def no_message_dropped?(phone)
+    not message_dropped?(phone)
   end
 end
 
