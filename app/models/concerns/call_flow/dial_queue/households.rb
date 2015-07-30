@@ -33,6 +33,13 @@ private
     }
   end
 
+  def keys_for_lua(phone)
+    [
+      key(phone, :active),
+      key(phone, :inactive)
+    ]
+  end
+
   def hkey(phone)
     [ key(phone), phone[phone_hkey_index_start..-1] ]
   end
@@ -46,7 +53,8 @@ public
     @type        = type
   end
 
-  def key(phone)
+  def key(phone, _type=nil)
+    _type ||= self.type
     "#{keys[type]}:#{phone[0..phone_key_index_stop]}"
   end
 
@@ -111,7 +119,16 @@ public
     redis.setbit(keys[:message_drops], sequence, 1)
   end
 
-  def message_dropped?(sequence)
+  def message_dropped_recorded?(sequence)
     redis.getbit(keys[:message_drops], sequence) > 0
   end
+
+  def message_dropped?(phone)
+    result = Wolverine.dial_queue.get_message_drop_bit({
+      keys: keys_for_lua(phone) + [keys[:message_drops]],
+      argv: [phone, hkey(phone).last]
+    })
+    result.to_i > 0
+  end
 end
+

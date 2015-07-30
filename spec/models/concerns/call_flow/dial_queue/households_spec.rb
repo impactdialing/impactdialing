@@ -39,13 +39,26 @@ describe 'CallFlow::DialQueue::Households' do
     end
 
     describe 'detect if a message has been dropped' do
-      let(:sequence_two){ households[households.keys.first]['sequence'] }
+      context 'for a given sequence' do
+        let(:sequence_two){ households[households.keys.first]['sequence'] }
 
-      it 'returns true when bit for household sequence is 1' do
-        expect(subject.message_dropped?(sequence_two)).to be_falsey
+        it 'returns true when bit for household sequence is 1' do
+          expect(subject.message_dropped_recorded?(sequence_two)).to be_falsey
+        end
+        it 'returns false when bit for household sequence is 0' do
+          expect(subject.message_dropped_recorded?(sequence_one)).to be_truthy
+        end
       end
-      it 'returns false when bit for household sequence is 0' do
-        expect(subject.message_dropped?(sequence_one)).to be_truthy
+
+      context 'for a given phone number' do
+        let(:phone_two){ households.keys.first }
+
+        it 'returns true when bit for household sequence is 1' do
+          expect(subject.message_dropped?(phone_one)).to be_truthy
+        end
+        it 'returns false when bit for household sequence is 0' do
+          expect(subject.message_dropped?(phone_two)).to be_falsey
+        end
       end
     end
   end
@@ -98,3 +111,4 @@ describe 'CallFlow::DialQueue::Households' do
     end
   end
 end
+
