@@ -9,7 +9,7 @@
       }),
       record: @dialed_call.record_calls
     }) do
-      twiml.Conference(@caller_session.session_key, {
+      twiml.Conference(@dialed_call.caller_session.session_key, {
         waitUrl: HOLD_MUSIC_URL,
         waitMethod: 'GET',
         beep: false,

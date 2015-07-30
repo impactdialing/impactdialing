@@ -5,30 +5,54 @@ describe Twiml::LeadController do
     Redis.new.flushall
   end
 
-  describe '#answered' do
-    let(:twilio_params) do
-      HashWithIndifferentAccess.new({
-        'CallStatus'    => 'in-progress',
-        'CallSid'       => 'CA123',
-        'AccountSid'    => 'AC432',
-        'campaign_id'   => campaign.id,
-        'campaign_type' => campaign.type,
-        'format'        => 'xml'
-      })
+  let(:twilio_params) do
+    HashWithIndifferentAccess.new({
+      'CallStatus'    => 'in-progress',
+      'CallSid'       => 'CA123',
+      'AccountSid'    => 'AC432',
+      'campaign_id'   => campaign.id,
+      'campaign_type' => campaign.type,
+      'format'        => 'xml'
+    })
+  end
+  let(:caller_session) do
+    create(:webui_caller_session, {
+      campaign: campaign,
+      sid: 'CA-caller-session-sid',
+      on_call: true,
+      available_for_call: false
+    })
+  end
+
+  describe '#completed' do
+  end
+
+  describe '#disconnected' do
+    let(:campaign){ create(:predictive) }
+    let(:disconnected_params) do
+      twilio_params.merge(HashWithIndifferentAccess.new({
+        'From' => '5551235839',
+        'To' => '+13829583828'
+      }))
     end
+
+    it 'tells @dialed_call :disconnected' do
+      dialed_call = double('CallFlow::Call::Dialed', {disconnected: nil})
+      expect(dialed_call).to receive(:disconnected).with(disconnected_params.merge({
+        'action' => 'disconnected',
+        'controller' => 'twiml/lead'
+      }))
+      allow(CallFlow::Call::Dialed).to receive(:new){ dialed_call }
+      post :disconnected, disconnected_params
+    end
+  end
+
+  describe '#answered' do
     let(:rest_response) do
       HashWithIndifferentAccess.new({
         'status'      => 'in-progress',
         'sid'         => 'CA123',
         'account_sid' => 'AC432'
-      })
-    end
-    let(:caller_session) do
-      create(:webui_caller_session, {
-        campaign: campaign,
-        sid: 'CA-caller-session-sid',
-        on_call: true,
-        available_for_call: false
       })
     end
     let(:twilio_callback_params) do
@@ -50,20 +74,15 @@ describe Twiml::LeadController do
         expect(assigns[:campaign]).to eq campaign
       end
 
-      it 'loads @caller_session' do
-        post :answered, twilio_params
-        expect(assigns[:caller_session]).to eq caller_session
-      end
-
       it 'tells @campaign :number_not_ringing' do
         expect(campaign).to receive(:number_not_ringing)
         allow(Campaign).to receive(:find){ campaign }
         post :answered, twilio_params
       end
 
-      it 'tells @dialed_call :answered, passing campaign, caller_session & params' do
-        dialed_call = double('CallFlow::Call::Dialed', {caller_session_sid: caller_session.sid})
-        expect(dialed_call).to receive(:answered).with(campaign, caller_session, twilio_params.merge(action: 'answered', controller: 'twiml/lead'))
+      it 'tells @dialed_call :answered, passing campaign & params' do
+        dialed_call = double('CallFlow::Call::Dialed', {caller_session: caller_session})
+        expect(dialed_call).to receive(:answered).with(campaign, twilio_params.merge(action: 'answered', controller: 'twiml/lead'))
         allow(CallFlow::Call::Dialed).to receive(:new).with(twilio_params[:AccountSid], twilio_params[:CallSid]){ dialed_call }
         post :answered, twilio_params
       end

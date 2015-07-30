@@ -11,6 +11,7 @@ describe 'twiml/lead/answered.xml.erb' do
   end
   let(:dialed_call) do
     double('CallFlow::Call::Dialed', {
+      caller_session: caller_session,
       twiml_flag: :connect,
       record_calls: 'false'
     })
@@ -18,7 +19,6 @@ describe 'twiml/lead/answered.xml.erb' do
 
   before do
     assign(:dialed_call, dialed_call)
-    assign(:caller_session, caller_session)
   end
 
   context '@twiml_flag = :connect' do

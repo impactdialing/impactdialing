@@ -1,37 +1,33 @@
 require 'rails_helper'
 
 describe 'CallFlow::Call::Dialed' do
-
-  describe '#disconnected(caller_session)' do
-    it 'queues CallerPusherJob for voter_disconnected'
-
-    it 'updates storage with twilio params'
+  let(:caller_session) do
+    create(:webui_caller_session, {
+      campaign: campaign,
+      sid: 'CA-caller-session-sid',
+      on_call: true,
+      available_for_call: false
+    })
+  end
+  let(:twilio_params) do
+    HashWithIndifferentAccess.new({
+      'CallStatus'    => 'in-progress',
+      'CallSid'       => 'CA123',
+      'AccountSid'    => 'AC432',
+      'campaign_id'   => campaign.id,
+      'campaign_type' => campaign.type
+    })
   end
 
-  describe '#answered(campaign, caller_session, twilio_params)' do
-    let(:twilio_params) do
-      HashWithIndifferentAccess.new({
-        'CallStatus'    => 'in-progress',
-        'CallSid'       => 'CA123',
-        'AccountSid'    => 'AC432',
-        'campaign_id'   => campaign.id,
-        'campaign_type' => campaign.type,
-        format: :xml
       })
     end
+
+  describe '#answered(campaign, twilio_params)' do
     let(:rest_response) do
       HashWithIndifferentAccess.new({
         'status'      => 'queued',
         'sid'         => 'CA123',
         'account_sid' => 'AC432'
-      })
-    end
-    let(:caller_session) do
-      create(:webui_caller_session, {
-        campaign: campaign,
-        sid: 'CA-caller-session-sid',
-        on_call: true,
-        available_for_call: false
       })
     end
     let(:twilio_callback_params) do
@@ -51,18 +47,18 @@ describe 'CallFlow::Call::Dialed' do
         recording = create(:recording)
         campaign.update_attributes!(recording_id: recording.id)
         expect(campaign.reload.recording).to eq recording
-        subject.answered(campaign, caller_session, machine_twilio_params)
+        subject.answered(campaign, machine_twilio_params)
       end
     end
 
     shared_examples_for 'answered call of any dialing mode' do
       it 'updates state history to record that :answered was visited' do
-        subject.answered(campaign, caller_session, twilio_params)
+        subject.answered(campaign, twilio_params)
         expect(subject.state_visited?(:answered)).to be_truthy
       end
 
       it 'updates storage with twilio params' do
-        subject.answered(campaign, caller_session, twilio_params)
+        subject.answered(campaign, twilio_params)
 
         expect(subject.storage['campaign_id'].to_i).to eq campaign.id
         expect(subject.storage['campaign_type']).to eq campaign.type
@@ -73,7 +69,7 @@ describe 'CallFlow::Call::Dialed' do
         context 'when caller is still connected' do
           before do
             campaign.account.update_attributes(record_calls: true)
-            subject.answered(campaign, caller_session, twilio_params)
+            subject.answered(campaign, twilio_params)
           end
 
           it 'updates RedisStatus for caller session to On call' do
@@ -95,7 +91,7 @@ describe 'CallFlow::Call::Dialed' do
             caller_session.update_attributes!({on_call: false, available_for_call: false})
           end
           it 'sets @twiml_flag = :hangup' do
-            subject.answered(campaign, caller_session, twilio_params)
+            subject.answered(campaign, twilio_params)
             expect(subject.twiml_flag).to eq :hangup
           end
         end
@@ -113,10 +109,10 @@ describe 'CallFlow::Call::Dialed' do
           context 'and this is first message drop' do
             it 'records that a message was left for this phone' do
               expect(answering_machine_agent).to receive(:record_message_drop)
-              subject.answered(campaign, caller_session, machine_twilio_params)
+              subject.answered(campaign, machine_twilio_params)
             end
             it 'sets @twiml_flag = :leave_message' do
-              subject.answered(campaign, caller_session, machine_twilio_params)
+              subject.answered(campaign, machine_twilio_params)
               expect(subject.twiml_flag).to eq :leave_message
             end
           end
@@ -125,7 +121,7 @@ describe 'CallFlow::Call::Dialed' do
               allow(answering_machine_agent).to receive(:leave_message?){ false }
             end
             it 'sets @twiml_flag = :hangup' do
-              subject.answered(campaign, caller_session, machine_twilio_params)
+              subject.answered(campaign, machine_twilio_params)
               expect(subject.twiml_flag).to eq :hangup
             end
           end

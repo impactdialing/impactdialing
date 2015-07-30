@@ -105,9 +105,22 @@ public
     self.class.namespace
   end
 
-  def answered(campaign, caller_session, params)
+  def caller_session_from_sid
+    @caller_session ||= CallerSession.where(sid: self.caller_session_sid).first
+  end
+
+  def caller_session_from_id(campaign, params)
+    @caller_session ||= if campaign.predictive? and answered_by_human?(params)
+                          caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign.id)
+                          CallerSession.find(caller_session_id)
+                        end
+  end
+
+  def answered(campaign, params)
     update_history(:answered)
     storage.save(params_for_update(params))
+
+    caller_session = caller_session_from_id(campaign, params) || caller_session_from_sid
 
     unless params['ErrorCode'] and params['ErrorUrl']
       handle_successful_dial(campaign, caller_session, params)
