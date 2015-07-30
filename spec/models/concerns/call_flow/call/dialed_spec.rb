@@ -19,8 +19,32 @@ describe 'CallFlow::Call::Dialed' do
     })
   end
 
+  describe '#disconnected(caller_session, params)' do
+    let(:campaign){ create(:predictive) }
+    let(:disconnected_params) do
+      twilio_params.merge({
+        RecordingUrl: 'http://recordings.twilio.com/yep.mp3',
+        RecordingSid: 'RE-321'
       })
     end
+    subject{ CallFlow::Call::Dialed.new(twilio_params[:AccountSid], twilio_params[:CallSid]) }
+
+    before do
+      subject.caller_session_sid = caller_session.sid
+      subject.disconnected(disconnected_params)
+    end
+
+    it 'queues CallerPusherJob for voter_disconnected' do
+      expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'publish_voter_disconnected')
+    end
+
+    it 'updates storage with twilio params' do
+      disconnected_params.each do |key,value|
+        key = key.underscore.gsub('call_','')
+        expect(subject.storage[key]).to eq value.to_s
+      end
+    end
+  end
 
   describe '#answered(campaign, twilio_params)' do
     let(:rest_response) do

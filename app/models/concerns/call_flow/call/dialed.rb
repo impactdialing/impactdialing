@@ -27,7 +27,7 @@ private
   def params_for_update(params)
     whitelist = self.class.params_for_create(params)
     [:campaign_id, :campaign_type].each do |key|
-      whitelist.merge!(key => params[key])
+      whitelist.merge!(key => params[key]) if params[key].present?
     end
     whitelist
   end
@@ -129,10 +129,12 @@ public
     end
   end
 
-  def disconnected
-    unless @call.cached_caller_session.nil?
-      RedisCallFlow.push_to_disconnected_call_list(@call.id, RedisCall.recording_duration(@call.id), RedisCall.recording_url(@call.id), @call.cached_caller_session.caller_id)
-      @call.enqueue_call_flow(CallerPusherJob, [@call.cached_caller_session.id, "publish_voter_disconnected"])
+  def disconnected(params)
+    storage.save(params_for_update(params))
+
+    caller_session = caller_session_from_sid
+    unless caller_session.nil?
+      CallerPusherJob.add_to_queue(caller_session.id, 'publish_voter_disconnected')
     end
   end
 
