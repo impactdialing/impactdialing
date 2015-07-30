@@ -2,6 +2,12 @@ require 'rails_helper'
 
 describe 'CallFlow::Call::Dialed' do
 
+  describe '#disconnected(caller_session)' do
+    it 'queues CallerPusherJob for voter_disconnected'
+
+    it 'updates storage with twilio params'
+  end
+
   describe '#answered(campaign, caller_session, twilio_params)' do
     let(:twilio_params) do
       HashWithIndifferentAccess.new({
@@ -50,9 +56,17 @@ describe 'CallFlow::Call::Dialed' do
     end
 
     shared_examples_for 'answered call of any dialing mode' do
-      it 'updates history of CallFlow::Call::Dialed to record that :answered was visited' do
+      it 'updates state history to record that :answered was visited' do
         subject.answered(campaign, caller_session, twilio_params)
         expect(subject.state_visited?(:answered)).to be_truthy
+      end
+
+      it 'updates storage with twilio params' do
+        subject.answered(campaign, caller_session, twilio_params)
+
+        expect(subject.storage['campaign_id'].to_i).to eq campaign.id
+        expect(subject.storage['campaign_type']).to eq campaign.type
+        expect(subject.storage['status']).to eq twilio_params['CallStatus']
       end
 
       context 'when call is answered by human and CallStatus == "in-progress"' do

@@ -23,6 +23,15 @@ private
       ]
     }
   end
+
+  def params_for_update(params)
+    whitelist = self.class.params_for_create(params)
+    [:campaign_id, :campaign_type].each do |key|
+      whitelist.merge!(key => params[key])
+    end
+    whitelist
+  end
+
   def handle_failed_dial(campaign, params)
     source      = [
       "ac-#{campaign.account_id}",
@@ -98,6 +107,8 @@ public
 
   def answered(campaign, caller_session, params)
     update_history(:answered)
+    storage.save(params_for_update(params))
+
     unless params['ErrorCode'] and params['ErrorUrl']
       handle_successful_dial(campaign, caller_session, params)
     else
@@ -112,7 +123,7 @@ public
     end
   end
 
-  def finish
+  def completed
     @call.call_ended(params['campaign_type'], params)
   end
 end
