@@ -6,15 +6,15 @@ describe AnsweringMachineAgent do
       answering_machine_detect: true
     })
   end
-  let(:voters) do
-    create_list(:voter, 10, {
-      campaign: campaign
-    })
+  let(:households) do
+    double('DialQueue::Households', no_message_dropped?: true)
   end
-  let(:household) do
-    voters.first.household
+  let(:phone){ Forgery('address').clean_phone }
+  let(:subject){ AnsweringMachineAgent.new(campaign, phone) }
+
+  before do
+    allow(campaign).to receive_message_chain(:dial_queue, :households){ households }
   end
-  let(:subject){ AnsweringMachineAgent.new(household) }
 
   describe '#leave_message?' do
     context 'campaign is not set to leave messages' do
@@ -42,18 +42,11 @@ describe AnsweringMachineAgent do
 
         context 'a message has been left for this contact' do
           before do
-            household.call_attempts << create(:bare_call_attempt, :voicemail_delivered)
-            household.call_attempts << create(:bare_call_attempt, :machine_hangup)
+            allow(households).to receive(:no_message_dropped?){ false }
           end
           it 'returns false' do
             expect(subject.leave_message?).to be_falsey
           end
-        end
-      end
-
-      context 'campaign is not set to call back after leaving a message' do
-        it 'returns true' do
-          expect(subject.leave_message?).to be_truthy
         end
       end
     end

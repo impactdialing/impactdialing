@@ -2,31 +2,16 @@
 # todo: document
 #
 class AnsweringMachineAgent
-  attr_reader :household, :voter # tmp back compat
+  attr_reader :campaign, :households, :phone
 
-private
-  def campaign
-    @campaign ||= household.campaign
-  end
-
-public
-  def initialize(household)
-    @household = household
-    @voter = household # tmp back compat
+  def initialize(campaign, phone)
+    @campaign   = campaign
+    @households = campaign.dial_queue.households
+    @phone      = phone
   end
 
   def leave_message?
-    return campaign.use_recordings? && household.no_voicemail_delivered?
-
-    # yes = false
-    # if campaign.use_recordings?
-    #   if (campaign.call_back_after_voicemail_delivery? &&
-    #            household.no_voicemail_delivered?) ||
-    #      !campaign.call_back_after_voicemail_delivery?
-    #     yes = true
-    #   end
-    # end
-    # yes
+    return campaign.use_recordings? && households.no_message_dropped?(phone)
   end
 
   def call_back?
@@ -36,5 +21,9 @@ public
   def call_status
     # std path
     leave_message? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP
+  end
+
+  def record_message_drop
+    households.record_message_drop_by_phone(phone)
   end
 end
