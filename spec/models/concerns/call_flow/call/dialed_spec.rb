@@ -1,20 +1,172 @@
 require 'rails_helper'
 
 describe 'CallFlow::Call::Dialed' do
-  subject{ CallFlow::Call::Dialed }
 
-  let(:rest_response) do
-    {
-      'account_sid' => 'AC-123',
-      'sid' => 'CA-3212',
-      'status' => 'queued',
-      'to' => '1234568890',
-      'from' => '8890654321'
-    }
+  describe '#answered(campaign, caller_session, twilio_params)' do
+    let(:twilio_params) do
+      HashWithIndifferentAccess.new({
+        'CallStatus'    => 'in-progress',
+        'CallSid'       => 'CA123',
+        'AccountSid'    => 'AC432',
+        'campaign_id'   => campaign.id,
+        'campaign_type' => campaign.type,
+        format: :xml
+      })
+    end
+    let(:rest_response) do
+      HashWithIndifferentAccess.new({
+        'status'      => 'queued',
+        'sid'         => 'CA123',
+        'account_sid' => 'AC432'
+      })
+    end
+    let(:caller_session) do
+      create(:webui_caller_session, {
+        campaign: campaign,
+        sid: 'CA-caller-session-sid',
+        on_call: true,
+        available_for_call: false
+      })
+    end
+    let(:twilio_callback_params) do
+      {
+        host: Settings.twilio_callback_host,
+        port: Settings.twilio_callback_port,
+        protocol: 'http://'
+      }
+    end
+
+    subject{ CallFlow::Call::Dialed.create(campaign, rest_response, {caller_session_sid: caller_session.sid}) }
+
+    shared_context 'answering machine setup' do
+      let(:machine_twilio_params){ twilio_params.merge('AnsweredBy' => 'machine') }
+
+      before do
+        recording = create(:recording)
+        campaign.update_attributes!(recording_id: recording.id)
+        expect(campaign.reload.recording).to eq recording
+        subject.answered(campaign, caller_session, machine_twilio_params)
+      end
+    end
+
+    shared_examples_for 'answered call of any dialing mode' do
+      it 'updates history of CallFlow::Call::Dialed to record that :answered was visited' do
+        subject.answered(campaign, caller_session, twilio_params)
+        expect(subject.state_visited?(:answered)).to be_truthy
+      end
+
+      context 'when call is answered by human and CallStatus == "in-progress"' do
+        context 'when caller is still connected' do
+          before do
+            campaign.account.update_attributes(record_calls: true)
+            subject.answered(campaign, caller_session, twilio_params)
+          end
+
+          it 'updates RedisStatus for caller session to On call' do
+            status, time = RedisStatus.state_time(campaign.id, caller_session.id)
+            expect(status).to eq 'On call'
+          end
+          it 'queues VoterConnectedPusherJob' do
+            expect([:sidekiq, :call_flow]).to have_queued(VoterConnectedPusherJob).with(caller_session.id, twilio_params['CallSid'])
+          end
+          it 'sets @record_calls = campaign.account.record_calls' do
+            expect(subject.record_calls).to eq 'true'
+          end
+          it 'sets @twiml_flag = :connect' do
+            expect(subject.twiml_flag).to eq :connect
+          end
+        end
+        context 'caller has disconnected' do
+          before do
+            caller_session.update_attributes!({on_call: false, available_for_call: false})
+          end
+          it 'sets @twiml_flag = :hangup' do
+            subject.answered(campaign, caller_session, twilio_params)
+            expect(subject.twiml_flag).to eq :hangup
+          end
+        end
+      end
+
+      context 'when call is answered by machine' do
+        include_context 'answering machine setup'
+        context 'when campaign drops message on machine' do
+          let(:answering_machine_agent){ double('AnsweringMachineAgent', {leave_message?: true, record_message_drop: nil}) }
+
+          before do
+            allow(AnsweringMachineAgent).to receive(:new){ answering_machine_agent }
+          end
+
+          context 'and this is first message drop' do
+            it 'records that a message was left for this phone' do
+              expect(answering_machine_agent).to receive(:record_message_drop)
+              subject.answered(campaign, caller_session, machine_twilio_params)
+            end
+            it 'sets @twiml_flag = :leave_message' do
+              subject.answered(campaign, caller_session, machine_twilio_params)
+              expect(subject.twiml_flag).to eq :leave_message
+            end
+          end
+          context 'and this is not first dial for phone' do
+            before do
+              allow(answering_machine_agent).to receive(:leave_message?){ false }
+            end
+            it 'sets @twiml_flag = :hangup' do
+              subject.answered(campaign, caller_session, machine_twilio_params)
+              expect(subject.twiml_flag).to eq :hangup
+            end
+          end
+        end
+      end
+    end
+
+    shared_examples_for 'Preview or Power dial modes' do
+      context 'when answered by machine' do
+        include_context 'answering machine setup'
+        it 'redirects the caller, moving them on to next dial' do
+          expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session.id)
+        end
+      end
+    end
+
+    context 'Preview dial mode' do
+      let(:campaign){ create(:preview) }
+
+      it_behaves_like 'answered call of any dialing mode'
+      it_behaves_like 'Preview or Power dial modes'
+    end
+
+    context 'Power dial mode' do
+      let(:campaign){ create(:power) }
+      
+      it_behaves_like 'answered call of any dialing mode'
+      it_behaves_like 'Preview or Power dial modes'
+    end
+
+    context 'Predictive dial mode' do
+      let(:campaign){ create(:predictive) }
+
+      before do
+        RedisOnHoldCaller.add(campaign.id, caller_session.id)
+      end
+
+      it_behaves_like 'answered call of any dialing mode'
+    end
   end
-  let(:dialed_call){ subject.new(rest_response['account_sid'], rest_response['sid']) }
 
   describe '.create(campaign, rest_response)' do
+    subject{ CallFlow::Call::Dialed }
+
+    let(:rest_response) do
+      {
+        'account_sid' => 'AC-123',
+        'sid' => 'CA-3212',
+        'status' => 'queued',
+        'to' => '1234568890',
+        'from' => '8890654321'
+      }
+    end
+    let(:dialed_call){ subject.new(rest_response['account_sid'], rest_response['sid']) }
+
     context 'campaign is new or is not Preview, Power or Predictive' do
       let(:not_campaign) do
         Campaign.new

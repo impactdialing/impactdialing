@@ -23,34 +23,6 @@ private
       ]
     }
   end
-
-public
-  def self.create(campaign, rest_response, optional_properties={})
-    opts = lua_options(campaign, rest_response, optional_properties)
-    Wolverine.call_flow.dialed(opts)
-    if campaign.class.to_s !~ /(Preview|Power|Predictive)/ or campaign.new_record?
-      raise ArgumentError, "CallFlow::Call::Dialed received new or unknown campaign: #{campaign.class}"
-    end
-
-    self.new(rest_response['account_sid'], rest_response['sid'])
-  end
-
-  def self.namespace
-    'dialed'
-  end
-
-  def namespace
-    self.class.namespace
-  end
-
-  def answered(campaign, caller_session, params)
-    update_history(:answered)
-    unless params['ErrorCode'] and params['ErrorUrl']
-      handle_successful_dial(campaign, caller_session, params)
-    else
-      handle_failed_dial(campaign, params)
-    end
-  end
   def handle_failed_dial(campaign, params)
     source      = [
       "ac-#{campaign.account_id}",
@@ -103,6 +75,45 @@ public
   end
   def call_in_progress?(params)
     params[:CallStatus] == 'in-progress'
+  end
+
+public
+  def self.create(campaign, rest_response, optional_properties={})
+    opts = lua_options(campaign, rest_response, optional_properties)
+    Wolverine.call_flow.dialed(opts)
+    if campaign.class.to_s !~ /(Preview|Power|Predictive)/ or campaign.new_record?
+      raise ArgumentError, "CallFlow::Call::Dialed received new or unknown campaign: #{campaign.class}"
+    end
+
+    self.new(rest_response['account_sid'], rest_response['sid'])
+  end
+
+  def self.namespace
+    'dialed'
+  end
+
+  def namespace
+    self.class.namespace
+  end
+
+  def answered(campaign, caller_session, params)
+    update_history(:answered)
+    unless params['ErrorCode'] and params['ErrorUrl']
+      handle_successful_dial(campaign, caller_session, params)
+    else
+      handle_failed_dial(campaign, params)
+    end
+  end
+
+  def disconnected
+    unless @call.cached_caller_session.nil?
+      RedisCallFlow.push_to_disconnected_call_list(@call.id, RedisCall.recording_duration(@call.id), RedisCall.recording_url(@call.id), @call.cached_caller_session.caller_id)
+      @call.enqueue_call_flow(CallerPusherJob, [@call.cached_caller_session.id, "publish_voter_disconnected"])
+    end
+  end
+
+  def finish
+    @call.call_ended(params['campaign_type'], params)
   end
 end
 
