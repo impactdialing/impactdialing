@@ -25,6 +25,30 @@ describe Twiml::LeadController do
   end
 
   describe '#completed' do
+    let(:campaign){ create(:predictive) }
+    let(:status_callback_params) do
+      twilio_params.merge(HashWithIndifferentAccess.new({
+        'CallDuration'      => 120,
+        'RecordingUrl'      => 'http://recordings.twilio.com/yep.mp3',
+        'RecordingSid'      => 'RE-341',
+        'RecordingDuration' => 119
+      }))
+    end
+
+    it 'tells @dialed_call :completed' do
+      dialed_call = double('CallFlow::Call::Dialed', {completed: nil})
+      allow(CallFlow::Call::Dialed).to receive(:new).with(status_callback_params[:AccountSid], status_callback_params[:CallSid]){ dialed_call }
+      expect(dialed_call).to receive(:completed).with(status_callback_params.merge({
+        'action' => 'completed',
+        'controller' => 'twiml/lead'
+      }))
+      post :completed, status_callback_params
+    end
+
+    it 'renders nothing (Twilio makes this request after the call has ended)' do
+      post :completed, status_callback_params
+      expect(response).to render_template nil
+    end
   end
 
   describe '#disconnected' do

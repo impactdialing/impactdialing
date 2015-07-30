@@ -19,6 +19,68 @@ describe 'CallFlow::Call::Dialed' do
     })
   end
 
+  describe '#completed' do
+    let(:campaign){ create(:predictive) }
+    let(:status_callback_params) do
+      twilio_params.merge(HashWithIndifferentAccess.new({
+        'CallDuration'      => 120,
+        'RecordingUrl'      => 'http://recordings.twilio.com/yep.mp3',
+        'RecordingSid'      => 'RE-341',
+        'RecordingDuration' => 119
+      }))
+    end
+
+    subject{ CallFlow::Call::Dialed.new(status_callback_params[:AccountSid], status_callback_params[:CallSid]) }
+
+    before do
+      subject.caller_session_sid = caller_session.sid
+      status_callback_params['CallStatus'] = 'completed'
+    end
+
+    it 'queues CallerPusherJob for call_ended' do
+      subject.completed(campaign, status_callback_params)
+      expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'call_ended')
+    end
+
+    it 'updates storage with twilio params' do
+      subject.completed(campaign, status_callback_params)
+      status_callback_params.each do |key,value|
+        key = key.underscore.gsub('call_','')
+        expect(subject.storage[key]).to eq value.to_s
+      end
+    end
+
+    context '#answered never processed this call' do
+      it 'tells campaign :number_not_ringing' do
+        expect(campaign).to receive(:number_not_ringing)
+        subject.completed(campaign, status_callback_params)
+      end
+
+      context 'dial mode is Preview' do
+        let(:campaign){ create(:preview) }
+        it 'redirects the caller to the next call' do
+          subject.completed(campaign, status_callback_params)
+          expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session.id)
+        end
+      end
+
+      context 'dial mode is Power' do
+        let(:campaign){ create(:power) }
+        it 'redirects the caller to the next call' do
+          subject.completed(campaign, status_callback_params)
+          expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session.id)
+        end
+      end
+
+      context 'dial mode is Predictive' do
+        it 'does not redirect the caller' do
+          subject.completed(campaign, status_callback_params)
+          expect([:sidekiq, :call_flow]).to_not have_queued(RedirectCallerJob)
+        end
+      end
+    end
+  end
+
   describe '#disconnected(caller_session, params)' do
     let(:campaign){ create(:predictive) }
     let(:disconnected_params) do

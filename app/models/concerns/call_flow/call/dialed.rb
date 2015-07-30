@@ -139,8 +139,19 @@ public
     end
   end
 
-  def completed
-    @call.call_ended(params['campaign_type'], params)
+  def completed(campaign, params)
+    storage.save(params_for_update(params))
+
+    caller_session = caller_session_from_sid
+    CallerPusherJob.add_to_queue(caller_session.id, 'call_ended')
+
+    if state_missed?(:answered)
+      campaign.number_not_ringing
+
+      unless campaign.predictive?
+        RedirectCallerJob.add_to_queue(caller_session.id)
+      end
+    end
   end
 end
 

@@ -26,6 +26,8 @@ public
   end
 
   def completed
+    dialed_call.completed(params)
+    render nothing: true
   end
 
   ##
