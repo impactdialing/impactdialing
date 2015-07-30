@@ -74,12 +74,6 @@ describe Twiml::LeadController do
         expect(assigns[:campaign]).to eq campaign
       end
 
-      it 'tells @campaign :number_not_ringing' do
-        expect(campaign).to receive(:number_not_ringing)
-        allow(Campaign).to receive(:find){ campaign }
-        post :answered, twilio_params
-      end
-
       it 'tells @dialed_call :answered, passing campaign & params' do
         dialed_call = double('CallFlow::Call::Dialed', {caller_session: caller_session})
         expect(dialed_call).to receive(:answered).with(campaign, twilio_params.merge(action: 'answered', controller: 'twiml/lead'))

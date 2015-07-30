@@ -118,6 +118,7 @@ public
 
   def answered(campaign, params)
     update_history(:answered)
+    campaign.number_not_ringing
     storage.save(params_for_update(params))
 
     caller_session = caller_session_from_id(campaign, params) || caller_session_from_sid

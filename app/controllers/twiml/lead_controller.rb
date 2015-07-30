@@ -15,7 +15,6 @@ public
   # See twiml/lead/answered.xml.erb for possible responses.
   #
   def answered
-    campaign.number_not_ringing
     dialed_call.answered(campaign, params)
   end
 

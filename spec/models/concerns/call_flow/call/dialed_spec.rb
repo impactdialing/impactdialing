@@ -81,6 +81,11 @@ describe 'CallFlow::Call::Dialed' do
         expect(subject.state_visited?(:answered)).to be_truthy
       end
 
+      it 'tells campaign :number_not_ringing' do
+        expect(campaign).to receive(:number_not_ringing)
+        subject.answered(campaign, twilio_params)
+      end
+
       it 'updates storage with twilio params' do
         subject.answered(campaign, twilio_params)
 
