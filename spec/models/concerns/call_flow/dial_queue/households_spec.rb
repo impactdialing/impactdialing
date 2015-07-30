@@ -1,14 +1,13 @@
 require 'rails_helper'
 
 describe 'CallFlow::DialQueue::Households' do
-  include DialQueueHelpers
+  include ListHelpers
 
   let(:campaign){ create(:power) }
-  let(:phone_with_country_code){ '15554326847' }
-  let(:phone_without_country_code){ '5554323829' }
-  let(:member_with_country_code){ {'id' => 42} }
-  let(:member_without_country_code){ {'id' => 43} }
-  let(:member_of_country_code){ {'id' => 44} }
+  let(:voter_list){ create(:voter_list, campaign: campaign) }
+  let(:households) do
+    build_household_hashes(10, voter_list)
+  end
 
   subject{ CallFlow::DialQueue::Households.new(campaign) }
 
@@ -16,124 +15,86 @@ describe 'CallFlow::DialQueue::Households' do
     subject.send(:hkey, phone)
   end
 
+  before do
+    import_list(voter_list, households)
+  end
+
   after do
     redis.flushall
   end
 
-  describe 'adding a new member from the collection' do
-    it 'add the member to the collection' do
-      subject.add(phone_with_country_code, member_with_country_code)
+  describe 'automatic message drops' do
+    let(:redis_key){ "dial_queue:#{campaign.id}:households:message_drops" }
+    let(:phone_one){ households.keys.last }
+    let(:sequence_one){ households[phone_one]['sequence'] }
 
-      actual = redis.hget *key(phone_with_country_code)
-      expect(actual).to eq [member_with_country_code].to_json
+    before do
+      subject.record_message_drop(sequence_one)
     end
 
-    it 'stores a collection in same order as added' do
-      subject.add(phone_with_country_code, member_of_country_code)
-      subject.add(phone_with_country_code, member_with_country_code)
-
-      actual = redis.hget *key(phone_with_country_code)
-      expect(actual).to eq [member_of_country_code, member_with_country_code].to_json
+    describe 'record when a message has been dropped' do
+      it 'sets bit to 1 for given household sequence' do
+        expect(redis.getbit(redis_key, sequence_one)).to eq 1
+      end
     end
 
-    context 'when adding a new member and the members collection changes before new member can be committed' do
-      it 'raises CallFlow::DialQueue::Available::RedisTransactionAborted' # do
-      #   key = @available.send(:keys)[:active]
-      #   Thread.new(key) do |key|
-      #     client = Redis.new
-      #     25.times do |i|
-      #       client.zadd key, ["#{i}.0", phone_numbers.first]
-      #     end
-      #   end
-      #   expect{
-      #     10.times{ @available.next(1) }
-      #   }.to raise_error{
-      #     CallFlow::DialQueue::Available::RedisTransactionAborted
-      #   }
-      # end
+    describe 'detect if a message has been dropped' do
+      let(:sequence_two){ households[households.keys.first]['sequence'] }
+
+      it 'returns true when bit for household sequence is 1' do
+        expect(subject.message_dropped?(sequence_two)).to be_falsey
+      end
+      it 'returns false when bit for household sequence is 0' do
+        expect(subject.message_dropped?(sequence_one)).to be_truthy
+      end
     end
   end
 
   describe 'existence' do
     it 'returns true when any households exist' do
-      subject.add(phone_with_country_code, member_with_country_code)
       expect(subject.exists?).to be_truthy
     end
 
     it 'returns false otherwise' do
+      Redis.new.flushall
       expect(subject.exists?).to be_falsey
     end
   end
 
-  describe 're-adding an existing member to the collection' do
-    it 'updates the existing member in-place' do
-      name = 'George of the Jungle'
+  describe 'finding data for given phone number(s)' do
+    let(:phone_one){ households.keys.first }
+    let(:phone_two){ households.keys.last }
+    let(:household_one){ HashWithIndifferentAccess.new(households[phone_one]) }
+    let(:household_two){ HashWithIndifferentAccess.new(households[phone_two]) }
 
-      subject.add(phone_with_country_code, member_with_country_code)
-      subject.add(phone_with_country_code, member_of_country_code)
-      updated = member_with_country_code.merge('name' => name)
-      subject.add(phone_with_country_code, updated)
+    describe 'finding a collection of members ids for a given phone number' do
+      context 'the redis-key & hash-key of the phone number exist' do
+        it 'return an array of members' do
+          leads_one = subject.find(phone_one)[:leads]
+          leads_two = subject.find(phone_two)[:leads]
+          expect(leads_one).to eq household_one[:leads]
+          expect(leads_two).to eq household_two[:leads]
+        end
+      end
 
-      actual = redis.hget *key(phone_with_country_code)
-      actual = JSON.parse(actual)
-      expect(actual.first).to eq updated
-    end
-  end
+      context 'the redis-key & hash-key of the phone number do not exist' do
+        it 'return []' do
+          actual = subject.find('1234567890')
 
-  describe 'removing a member from the collection' do
-    before do
-      subject.add(phone_with_country_code, member_with_country_code)
-      subject.add(phone_with_country_code, member_of_country_code)
-    end
-    it 'remove the member from the collection' do
-      subject.remove_member(phone_with_country_code, member_with_country_code)
-
-      actual = redis.hget *key(phone_with_country_code)
-      expect(actual).to eq [member_of_country_code].to_json
-    end
-
-    it 'returns the remaining members of the collection' do
-      actual = subject.remove_member(phone_with_country_code, member_with_country_code)
-      expect(actual).to eq [member_of_country_code]
-    end
-  end
-
-  describe 'finding a collection of members ids for a given phone number' do
-    context 'the redis-key & hash-key of the phone number exist' do
-      it 'return an array of member ids' do
-        subject.add(phone_with_country_code, member_with_country_code)
-        subject.add(phone_with_country_code, member_of_country_code)
-        subject.add(phone_without_country_code, member_without_country_code)
-
-        with_country_code    = subject.find(phone_with_country_code)
-        without_country_code = subject.find(phone_without_country_code)
-
-        expect(with_country_code).to eq [member_with_country_code, member_of_country_code]
-        expect(without_country_code).to eq [member_without_country_code]
+          expect(actual).to eq []
+        end
       end
     end
 
-    context 'the redis-key & hash-key of the phone number do not exist' do
-      it 'return []' do
-        actual = subject.find(phone_with_country_code)
-
-        expect(actual).to eq []
+    describe 'finding one or more collections of member ids for one or more given phone numbers' do
+      it 'return a hash where phone numbers are keys with each value a collection of member ids eg {"5554442211" => ["35","42"]}' do
+        actual = subject.find_all([phone_one, phone_two])
+        expected = {
+          phone_one => household_one,
+          phone_two => household_two
+        }
+        expect(actual).to eq expected
       end
-    end
-  end
-
-  describe 'finding one or more collections of member ids for one or more given phone numbers' do
-    it 'return a hash where phone numbers are keys with each value a collection of member ids eg {"5554442211" => ["35","42"]}' do
-      subject.add(phone_with_country_code, member_with_country_code)
-      subject.add(phone_with_country_code, member_of_country_code)
-      subject.add(phone_without_country_code, member_without_country_code)
-
-      actual = subject.find_all([phone_with_country_code, phone_without_country_code])
-      expected = {
-        phone_with_country_code => [member_with_country_code, member_of_country_code],
-        phone_without_country_code => [member_without_country_code]
-      }
-      expect(actual).to eq expected
     end
   end
 end

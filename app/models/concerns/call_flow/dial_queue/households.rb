@@ -28,18 +28,13 @@ private
     {
       active: "dial_queue:#{campaign.id}:households:active",
       presented: "dial_queue:#{campaign.id}:households:presented",
-      inactive: "dial_queue:#{campaign.id}:households:inactive"
+      inactive: "dial_queue:#{campaign.id}:households:inactive",
+      message_drops: "dial_queue:#{campaign.id}:households:message_drops"
     }
   end
 
   def hkey(phone)
     [ key(phone), phone[phone_hkey_index_start..-1] ]
-  end
-
-  def match?(member_one, member_two)
-    id_one = member_one[:id].present? ? member_one[:id] : member_one['id']
-    id_two = member_two[:id].present? ? member_two[:id] : member_two['id']
-    id_one == id_two
   end
 
 public
@@ -68,37 +63,13 @@ public
     results.any?
   end
 
-  def add(phone, member)
-    members = find(phone)
-    if (index = members.index{|membr| match?(membr, member)})
-      members[index] = member
-    else
-      members << member
-    end
-    save(phone, members)
-    members
-  end
-
-  def remove_member(phone, member)
-    members = find(phone)
-    if members.detect{|membr| match?(membr, member)}
-      members.reject!{|membr| match?(membr, member)}
-      save(phone, members)
-    end
-    members
-  end
-
-  def save(phone, members)
-    redis.hset *hkey(phone), members.to_json
-  end
-
   def find(phone)
     result = redis.hget *hkey(phone)
     if result.blank?
       # todo: raise or log exception here since this should never be the case
       result = []
     else
-      result = JSON.parse(result).map{|r| HashWithIndifferentAccess.new(r)}
+      result = HashWithIndifferentAccess.new(JSON.parse(result))
     end
     result
   end
@@ -134,5 +105,13 @@ public
 
   def missing?(phone)
     not redis.hexists(*hkey(phone))
+  end
+
+  def record_message_drop(sequence)
+    redis.setbit(keys[:message_drops], sequence, 1)
+  end
+
+  def message_dropped?(sequence)
+    redis.getbit(keys[:message_drops], sequence) > 0
   end
 end
