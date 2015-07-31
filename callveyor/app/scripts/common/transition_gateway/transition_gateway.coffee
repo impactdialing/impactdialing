@@ -14,8 +14,8 @@ mod.constant('validTransitions', {
   'dialer.ready': ['abort', 'dialer.hold'],
   'dialer.hold': ['abort', 'dialer.active', 'dialer.stop'],
   'dialer.active': ['abort', 'dialer.wrap', 'dialer.stop', 'dialer.active.transfer.selected', 'dialer.active.transfer.reselected', 'dialer.active.transfer.conference'],
-  'dialer.active.transfer.selected': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference'],
-  'dialer.active.transfer.reselected': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference'],
+  'dialer.active.transfer.selected': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference', 'dialer.active.transfer.reselect'],
+  'dialer.active.transfer.reselect': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference', 'dialer.active.transfer.selected'],
   'dialer.active.transfer.conference': ['abort', 'dialer.active', 'dialer.wrap'],
   'dialer.wrap': ['abort', 'dialer.hold', 'dialer.stop', 'dialer.ready'],
   'dialer.stop': ['abort', 'dialer.ready']
