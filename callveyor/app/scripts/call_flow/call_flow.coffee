@@ -79,25 +79,6 @@ mod.factory('idCallFlow', [
             idJanitor.confirmUnload(true)
             beforeunloadBeenBound = true
 
-          #   submitAndStop = (ev) ->
-          #     $rootScope.$broadcast('survey:save:click', true)
-          #   stop = (ev) ->
-          #     caller_id         = caller.id
-          #     params            = {}
-          #     params.session_id = caller.session_id
-          #     url               = "/call_center/api/#{caller_id}/stop_calling"
-          #     makeRequest(url, params)
-              
-          #   cleanUp = (ev) ->
-          #     if $state.is('dialer.wrap')
-          #       # submit and stop
-          #       submitAndStop(ev)
-          #     else if !$state.is('dialer.ready')
-          #       # end caller session (stop calling)
-          #       stop(ev)
-            
-          #   $window.addEventListener('beforeunload', stopFirst)
-
         ##
         # conference_started
         #
@@ -124,15 +105,7 @@ mod.factory('idCallFlow', [
         #                                                        }}
         # Where the list of 'VOTER_DATA_COLUMNS' fields (listed last) is customized
         # by the campaign admin.
-        ###
-        LEGACY-way
-        - unset call_id on campaign call model
-        - clear & set household (aka lead) info
-        - clear script form
-        - hide placeholder household message
-        - render household info
-        - update caller action buttons
-        ###
+
         conferenceStarted: (household) ->
           # console.log 'conference_started (preview & power only)', household
 
@@ -178,15 +151,6 @@ mod.factory('idCallFlow', [
         # Purpose: notify the client that the caller has been queued to fulfill calls.
         #
         # No parameters.
-        ###
-        LEGACY-way
-        - unset call_id on campaign call model
-        - clear & set household (aka lead) info
-        - clear script form
-        - show placeholder household message
-        - hide household info
-        - update caller action buttons
-        ###
         callerConnectedDialer: ->
           # console.log 'caller_connected_dialer (predictive only)'
           transitionSuccess = ->
@@ -222,17 +186,6 @@ mod.factory('idCallFlow', [
         #
         # When received, the script should be fetched and the household object passed
         # as the param should be rendered and a message displayed to the caller.
-        ###
-        LEGACY-way
-        - fetch script for new campaign, if successful then continue
-        - render new script
-        - clear & set household (aka lead) info
-        - clear script form
-        - hide placeholder household message
-        - show household info
-        - update caller action buttons
-        - alert('You have been reassigned')
-        ###
         callerReassigned: (household) ->
           # console.log 'caller_reassigned', household
           deregister    = {}
@@ -259,10 +212,6 @@ mod.factory('idCallFlow', [
         # the dialer is in preview or power mode.
         #
         # Purpose: notify the client that the household (aka voter) is being dialed.
-        ###
-        LEGACY-way
-        - update caller action buttons
-        ###
         callingVoter: ->
           console.log 'calling_voter'
 
@@ -275,11 +224,6 @@ mod.factory('idCallFlow', [
         # Purpose: notify the client that the household (aka voter) has answered.
         #
         # @param {object} {call_id: Integer} The MySQL ID of the call record.
-        ###
-        LEGACY-way
-        - set call_id on campaign call model
-        - update caller action buttons
-        ###
         voterConnected: (data) ->
           # console.log 'voter_connected', data
           CallCache.put('id', data.call_id)
@@ -298,15 +242,6 @@ mod.factory('idCallFlow', [
         #
         # @param {object} {call_id: Integer, voter: Object} The Object assigned to
         # the voter key describes the household.
-        ###
-        LEGACY-way
-        - set call_id on campaign call model
-        - clear & set household (aka lead) info
-        - clear script form
-        - hide placeholder household message
-        - show household info
-        - update caller action buttons
-        ###
         voterConnectedDialer: (data) ->
           # console.log 'voter_connected_dialer', data
           transitionSuccess = ->
@@ -328,10 +263,6 @@ mod.factory('idCallFlow', [
         # connected.
         #
         # No parameters.
-        ###
-        LEGACY-way
-        - update caller action buttons
-        ###
         voterDisconnected: ->
           # console.log 'voter_disconnected'
           unless isWarmTransfer()
@@ -397,10 +328,6 @@ mod.factory('idCallFlow', [
         # Purpose: notify the client that the attempted transfer has failed.
         #
         # No parameters.
-        ###
-        LEGACY-way
-        - update caller action buttons
-        ###
         transferBusy: ->
           console.log 'transfer_busy'
 
@@ -416,11 +343,6 @@ mod.factory('idCallFlow', [
         #
         # @param {object} {type: String, call_id: String} Where call_id is the
         # MySQL call record ID referencing the dialing of the transfer
-        ###
-        LEGACY-way
-        - set transfer_type on campaign model to param.type
-        - set transfer_call_id on campaign model to campaign model call_id
-        ###
         transferConnected: (data) ->
           console.log 'transfer_connected', data
           # TransferCache.put('id', data.call_id)
@@ -467,13 +389,6 @@ mod.factory('idCallFlow', [
         # Purpose: notify the client that the transfer is no longer connected.
         #
         # No parameters.
-        ###
-        LEGACY-way
-        - iff transfer was disconnected by caller then trigger 'transfer.kicked' event
-        - otherwise, iff transfer was warm then update caller action buttons
-        - quietly unset 'kicking' property from campaign call model
-        - unset 'transfer_type' property from campaign call model
-        ###
         transferConferenceEnded: ->
           console.log 'transfer_conference_ended', $state.current
 
@@ -500,10 +415,6 @@ mod.factory('idCallFlow', [
         # Purpose: notify the client that the caller is now connected to the transfer.
         #
         # No parameters.
-        ###
-        LEGACY-way
-        - update caller action buttons
-        ###
         warmTransfer: ->
           console.log 'warm_transfer deprecated'
           # idFlashFactory.now('info', 'Joining conference...')
@@ -521,10 +432,6 @@ mod.factory('idCallFlow', [
         # transition to the wrap-up phase is impending.
         #
         # No parameters.
-        ###
-        LEGACY-way
-        - update caller action buttons
-        ###
         coldTransfer: ->
           console.log 'cold_transfer deprecated'
           # idFlashFactory.now('info', 'Transfer complete.')
@@ -540,10 +447,6 @@ mod.factory('idCallFlow', [
         # phase or the transition is impending.
         #
         # No parameters.
-        ###
-        LEGACY-way
-        - update caller action buttons
-        ###
         callerKickedOff: ->
           # console.log 'caller_kicked_off'
           p = $state.go('dialer.wrap')
