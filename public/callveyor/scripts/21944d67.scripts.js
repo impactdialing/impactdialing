@@ -34517,8 +34517,8 @@ angular.module("config", [])
     'dialer.ready': ['abort', 'dialer.hold'],
     'dialer.hold': ['abort', 'dialer.active', 'dialer.stop'],
     'dialer.active': ['abort', 'dialer.wrap', 'dialer.stop', 'dialer.active.transfer.selected', 'dialer.active.transfer.reselected', 'dialer.active.transfer.conference'],
-    'dialer.active.transfer.selected': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference'],
-    'dialer.active.transfer.reselected': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference'],
+    'dialer.active.transfer.selected': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference', 'dialer.active.transfer.reselect'],
+    'dialer.active.transfer.reselect': ['abort', 'dialer.active', 'dialer.wrap', 'dialer.active.transfer.conference', 'dialer.active.transfer.selected'],
     'dialer.active.transfer.conference': ['abort', 'dialer.active', 'dialer.wrap'],
     'dialer.wrap': ['abort', 'dialer.hold', 'dialer.stop', 'dialer.ready'],
     'dialer.stop': ['abort', 'dialer.ready']
@@ -34860,16 +34860,6 @@ to fix it.');
             return beforeunloadBeenBound = true;
           }
         },
-        /*
-        LEGACY-way
-        - unset call_id on campaign call model
-        - clear & set household (aka lead) info
-        - clear script form
-        - hide placeholder household message
-        - render household info
-        - update caller action buttons
-        */
-
         conferenceStarted: function(household) {
           var caller, campaign, p;
           campaign = CallStationCache.get('campaign');
@@ -34899,16 +34889,6 @@ to fix it.');
             });
           }
         },
-        /*
-        LEGACY-way
-        - unset call_id on campaign call model
-        - clear & set household (aka lead) info
-        - clear script form
-        - show placeholder household message
-        - hide household info
-        - update caller action buttons
-        */
-
         callerConnectedDialer: function() {
           var p, transitionSuccess;
           transitionSuccess = function() {
@@ -34918,18 +34898,6 @@ to fix it.');
           p = $state.go('dialer.hold');
           return p.then(transitionSuccess, idTransitionPrevented);
         },
-        /*
-        LEGACY-way
-        - fetch script for new campaign, if successful then continue
-        - render new script
-        - clear & set household (aka lead) info
-        - clear script form
-        - hide placeholder household message
-        - show household info
-        - update caller action buttons
-        - alert('You have been reassigned')
-        */
-
         callerReassigned: function(household) {
           var campaign, deregister, old_campaign, update;
           deregister = {};
@@ -34949,20 +34917,9 @@ to fix it.');
           deregister = $rootScope.$on('survey:load:success', update);
           return $rootScope.$broadcast('survey:reload');
         },
-        /*
-        LEGACY-way
-        - update caller action buttons
-        */
-
         callingVoter: function() {
           return console.log('calling_voter');
         },
-        /*
-        LEGACY-way
-        - set call_id on campaign call model
-        - update caller action buttons
-        */
-
         voterConnected: function(data) {
           var p;
           CallCache.put('id', data.call_id);
@@ -34970,16 +34927,6 @@ to fix it.');
           p = $state.go('dialer.active');
           return p["catch"](idTransitionPrevented);
         },
-        /*
-        LEGACY-way
-        - set call_id on campaign call model
-        - clear & set household (aka lead) info
-        - clear script form
-        - hide placeholder household message
-        - show household info
-        - update caller action buttons
-        */
-
         voterConnectedDialer: function(data) {
           var p, transitionSuccess;
           transitionSuccess = function() {
@@ -34992,11 +34939,6 @@ to fix it.');
           p = $state.go('dialer.active');
           return p.then(transitionSuccess, idTransitionPrevented);
         },
-        /*
-        LEGACY-way
-        - update caller action buttons
-        */
-
         voterDisconnected: function() {
           var p;
           if (!isWarmTransfer()) {
@@ -35036,20 +34978,9 @@ to fix it.');
             return hold.reset();
           }
         },
-        /*
-        LEGACY-way
-        - update caller action buttons
-        */
-
         transferBusy: function() {
           return console.log('transfer_busy');
         },
-        /*
-        LEGACY-way
-        - set transfer_type on campaign model to param.type
-        - set transfer_call_id on campaign model to campaign model call_id
-        */
-
         transferConnected: function(data) {
           console.log('transfer_connected', data);
           TransferCache.put('type', data.type);
@@ -35072,14 +35003,6 @@ to fix it.');
           p = $state.go('dialer.active.transfer.conference');
           return p["catch"](idTransitionPrevented);
         },
-        /*
-        LEGACY-way
-        - iff transfer was disconnected by caller then trigger 'transfer.kicked' event
-        - otherwise, iff transfer was warm then update caller action buttons
-        - quietly unset 'kicking' property from campaign call model
-        - unset 'transfer_type' property from campaign call model
-        */
-
         transferConferenceEnded: function() {
           var isWarm, p;
           console.log('transfer_conference_ended', $state.current);
@@ -35094,27 +35017,12 @@ to fix it.');
             return p["catch"](idTransitionPrevented);
           }
         },
-        /*
-        LEGACY-way
-        - update caller action buttons
-        */
-
         warmTransfer: function() {
           return console.log('warm_transfer deprecated');
         },
-        /*
-        LEGACY-way
-        - update caller action buttons
-        */
-
         coldTransfer: function() {
           return console.log('cold_transfer deprecated');
         },
-        /*
-        LEGACY-way
-        - update caller action buttons
-        */
-
         callerKickedOff: function() {
           var p;
           p = $state.go('dialer.wrap');
@@ -35356,7 +35264,7 @@ to fix it.');
       dialer.hangup = function(call_id, transfer, caller) {
         var url;
         dialer.retry = false;
-        if ((transfer != null) && transfer.transfer_type === 'warm') {
+        if ((transfer != null) && transfer.transfer_type === 'warm' && transfer.wasDialed) {
           return dialer.kick(caller, 'caller');
         } else {
           TwilioCache.put('disconnect_pending', 1);
@@ -36373,6 +36281,7 @@ to fix it.');
       transfer.cache = TransferCache;
       selected = transfer.cache.get('selected');
       transfer_type = selected.transfer_type;
+      transfer.wasDialed = false;
       isWarmTransfer = function() {
         return transfer_type === 'warm';
       };
@@ -36388,6 +36297,7 @@ to fix it.');
         };
         $rootScope.transferStatus = 'Preparing to dial...';
         idHttpDialerFactory.dialTransfer(params);
+        transfer.wasDialed = true;
         $rootScope.transitionInProgress = true;
         return usSpinnerService.spin('transfer-spinner');
       };
