@@ -80,7 +80,7 @@ mod.factory('idHttpDialerFactory', [
       # console.log 'dialer.hangup'
       dialer.retry = false
 
-      if transfer? and transfer.transfer_type == 'warm'
+      if transfer? and transfer.transfer_type == 'warm' and transfer.wasDialed
         # console.log 'dialer.hangup - kick caller'
         # Caller clicked hang-up in voter context
         # but is in conference with a transfer and voter.

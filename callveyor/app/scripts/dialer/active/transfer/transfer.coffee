@@ -83,25 +83,26 @@ transfer.factory('TransferDialerEventFactory', [
 transfer.controller('TransferButtonCtrl.selected', [
   '$rootScope', '$scope', '$state', 'TransferCache', 'TransferDialerEventFactory', 'CallCache', 'ContactCache', 'idHttpDialerFactory', 'usSpinnerService', 'CallStationCache',
   ($rootScope,   $scope,   $state,   TransferCache,   TransferDialerEventFactory,   CallCache,   ContactCache,   idHttpDialerFactory,   usSpinnerService,   CallStationCache) ->
-    transfer       = {}
-    transfer.cache = TransferCache
-    selected       = transfer.cache.get('selected')
-    transfer_type  = selected.transfer_type
+    transfer           = {}
+    transfer.cache     = TransferCache
+    selected           = transfer.cache.get('selected')
+    transfer_type      = selected.transfer_type
+    transfer.wasDialed = false
 
     isWarmTransfer = -> transfer_type == 'warm'
 
     transfer.dial = ->
-      params                = {}
-
+      params                    = {}
       contact                   = (ContactCache.get('data') || {}).fields
       caller                    = CallStationCache.get('caller')
       params.call               = CallCache.get('id')
       params.caller_session     = caller.session_id
       params.transfer           = {id: selected.id}
       $rootScope.transferStatus = 'Preparing to dial...'
-
+      
       idHttpDialerFactory.dialTransfer(params)
 
+      transfer.wasDialed = true
       $rootScope.transitionInProgress = true
       usSpinnerService.spin('transfer-spinner')
 
