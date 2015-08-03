@@ -35,17 +35,9 @@ class TransferController < ApplicationController
     transfer_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
     response = case params[:CallStatus] #using the 2010 api
                 when "no-answer", "busy", "failed"
-                  transfer_attempt.caller_session.publish('transfer_busy', {})
-                  # transfer_attempt.fail
-                  Twilio::Verb.new do |v|
-                    v.say "The transfered call was not answered "
-                    v.hangup
-                  end.response
-                else
-                  # transfer_attempt.hangup
-                  Twilio::TwiML::Response.new{|r| r.Hangup}.text
+                  transfer_attempt.caller_session.publish('transfer_busy', {status: params[:CallStatus], label: transfer_attempt.transfer.label})
                 end
-    render :xml => response
+    render nothing: true
   end
 
   def dial
