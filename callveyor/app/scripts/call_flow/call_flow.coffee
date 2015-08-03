@@ -328,8 +328,13 @@ mod.factory('idCallFlow', [
         # Purpose: notify the client that the attempted transfer has failed.
         #
         # No parameters.
-        transferBusy: ->
-          console.log 'transfer_busy'
+        transferBusy: (data)  ->
+          console.log 'transfer_busy', data
+          status = data.status
+          label  = data.label
+          msg    = "Transfer ended with #{data.status}"
+          idFlashFactory.nowAndDismiss('info', msg, 3000)
+          handlers.transferConferenceEnded()
 
         ##
         # transfer_connected
@@ -399,7 +404,7 @@ mod.factory('idCallFlow', [
 
           return if not isWarm
 
-          if $state.is('dialer.active.transfer.conference')
+          if $state.is('dialer.active.transfer.conference') or $state.is('dialer.active.transfer.selected') or $state.is('dialer.active.transfer.reselect')
             # idFlashFactory.now('info', 'Transfer disconnected.')
             p = $state.go('dialer.active')
             p.catch(idTransitionPrevented)
