@@ -150,7 +150,7 @@ public
       xml = Twilio::TwiML::Response.new do |r|
         # Wait quietly for .5 seconds
         # while caller joins transfer conference.
-        r.Play("digits" => "w")
+        r.Play("digits" => "www")
       end.text
     end
     RedisCallerSession.after_pause(@caller_session.session_key, params[:transfer_session_key])

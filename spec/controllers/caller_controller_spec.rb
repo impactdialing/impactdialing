@@ -298,7 +298,7 @@ describe CallerController, :type => :controller do
         RedisCallerSession.deactivate_transfer(caller_session_key)
       end
       it 'Plays silence for 0.5 seconds' do
-        expect(response.body).to include '<Play digits="w"/>'
+        expect(response.body).to include '<Play digits="www"/>'
       end
     end
 
