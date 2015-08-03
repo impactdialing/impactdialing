@@ -34845,7 +34845,10 @@ to fix it.');
     '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', function($rootScope, $state, $window, $cacheFactory, CallCache, idJanitor, TransferCache, FlashCache, HouseholdCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache, TwilioCache, CallerReassignedMessage) {
       var beforeunloadBeenBound, handlers, isWarmTransfer;
       isWarmTransfer = function() {
-        return /warm/i.test(TransferCache.get('type'));
+        var selected;
+        selected = TransferCache.get('selected');
+        console.log('isWarmTransfer() -> selected transfer', selected);
+        return (selected != null) && /warm/i.test(selected.transfer_type);
       };
       $window.idDebugData || ($window.idDebugData = {});
       beforeunloadBeenBound = false;
@@ -34978,8 +34981,14 @@ to fix it.');
             return hold.reset();
           }
         },
-        transferBusy: function() {
-          return console.log('transfer_busy');
+        transferBusy: function(data) {
+          var label, msg, status;
+          console.log('transfer_busy', data);
+          status = data.status;
+          label = data.label;
+          msg = "Transfer ended with " + data.status;
+          idFlashFactory.nowAndDismiss('info', msg, 3000);
+          return handlers.transferConferenceEnded();
         },
         transferConnected: function(data) {
           console.log('transfer_connected', data);
@@ -35012,7 +35021,7 @@ to fix it.');
           if (!isWarm) {
             return;
           }
-          if ($state.is('dialer.active.transfer.conference')) {
+          if ($state.is('dialer.active.transfer.conference') || $state.is('dialer.active.transfer.selected') || $state.is('dialer.active.transfer.reselect')) {
             p = $state.go('dialer.active');
             return p["catch"](idTransitionPrevented);
           }
