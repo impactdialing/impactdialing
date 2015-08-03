@@ -48,7 +48,10 @@ mod.factory('CallerReassignedMessage', [
 mod.factory('idCallFlow', [
     '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', 
     ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   idJanitor,   TransferCache,   FlashCache,   HouseholdCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache,   CallerReassignedMessage) ->
-      isWarmTransfer = -> /warm/i.test(TransferCache.get('type'))
+      isWarmTransfer = ->
+        selected = TransferCache.get('selected')
+        console.log('isWarmTransfer() -> selected transfer', selected)
+        selected? and /warm/i.test(selected.transfer_type)
 
       $window.idDebugData ||= {}
 
