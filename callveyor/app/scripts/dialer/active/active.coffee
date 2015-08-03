@@ -121,6 +121,10 @@ active.controller('TransferCtrl.list', [
       $window._errs.push(err)
 
     transfer.select = (id) ->
+      previousSelection = transfer.cache.get('selected')
+      if previousSelection and previousSelection.wasDialed
+        console.log('previousSelection wasDialed')
+        return false
       matchingID = (obj) -> id == obj.id
       targets = $filter('filter')(transfer.list, matchingID)
       if targets[0]?
