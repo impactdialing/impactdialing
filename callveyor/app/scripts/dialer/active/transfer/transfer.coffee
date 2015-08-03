@@ -87,7 +87,7 @@ transfer.controller('TransferButtonCtrl.selected', [
     transfer.cache     = TransferCache
     selected           = transfer.cache.get('selected')
     transfer_type      = selected.transfer_type
-    transfer.wasDialed = false
+    selected.wasDialed = false
 
     isWarmTransfer = -> transfer_type == 'warm'
 
@@ -101,8 +101,9 @@ transfer.controller('TransferButtonCtrl.selected', [
       $rootScope.transferStatus = 'Preparing to dial...'
       
       idHttpDialerFactory.dialTransfer(params)
+      selected.wasDialed = true
+      transfer.cache.put('selected', selected)
 
-      transfer.wasDialed = true
       $rootScope.transitionInProgress = true
       usSpinnerService.spin('transfer-spinner')
 

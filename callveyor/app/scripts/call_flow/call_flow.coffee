@@ -449,11 +449,15 @@ mod.factory('idCallFlow', [
         # No parameters.
         callerKickedOff: ->
           # console.log 'caller_kicked_off'
+          TransferCache.remove('type')
+          TransferCache.remove('selected')
           p = $state.go('dialer.wrap')
           p.catch(idTransitionPrevented)
 
         callerWrapupVoiceHit: ->
           # in case end_call event is missed, tmp until pusher events are confirmed
+          TransferCache.remove('type')
+          TransferCache.remove('selected')
           if $state.is('dialer.hold')
             holdCache = $cacheFactory.get('hold')
             hold = holdCache.get('sharedScope')
