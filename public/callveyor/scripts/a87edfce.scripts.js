@@ -35025,11 +35025,15 @@ to fix it.');
         },
         callerKickedOff: function() {
           var p;
+          TransferCache.remove('type');
+          TransferCache.remove('selected');
           p = $state.go('dialer.wrap');
           return p["catch"](idTransitionPrevented);
         },
         callerWrapupVoiceHit: function() {
           var hold, holdCache, p;
+          TransferCache.remove('type');
+          TransferCache.remove('selected');
           if ($state.is('dialer.hold')) {
             holdCache = $cacheFactory.get('hold');
             hold = holdCache.get('sharedScope');
@@ -36155,7 +36159,12 @@ to fix it.');
         $window._errs.push(err);
       }
       transfer.select = function(id) {
-        var matchingID, p, s, targets;
+        var matchingID, p, previousSelection, s, targets;
+        previousSelection = transfer.cache.get('selected');
+        if (previousSelection && previousSelection.wasDialed) {
+          console.log('previousSelection wasDialed');
+          return false;
+        }
         matchingID = function(obj) {
           return id === obj.id;
         };
@@ -36281,7 +36290,7 @@ to fix it.');
       transfer.cache = TransferCache;
       selected = transfer.cache.get('selected');
       transfer_type = selected.transfer_type;
-      transfer.wasDialed = false;
+      selected.wasDialed = false;
       isWarmTransfer = function() {
         return transfer_type === 'warm';
       };
@@ -36297,7 +36306,8 @@ to fix it.');
         };
         $rootScope.transferStatus = 'Preparing to dial...';
         idHttpDialerFactory.dialTransfer(params);
-        transfer.wasDialed = true;
+        selected.wasDialed = true;
+        transfer.cache.put('selected', selected);
         $rootScope.transitionInProgress = true;
         return usSpinnerService.spin('transfer-spinner');
       };
