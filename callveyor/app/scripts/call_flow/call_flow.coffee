@@ -332,7 +332,7 @@ mod.factory('idCallFlow', [
         #
         # No parameters.
         transferBusy: (data)  ->
-          console.log 'transfer_busy', data
+          #console.log 'transfer_busy', data
           status = data.status
           label  = data.label
           msg    = "Transfer ended with #{data.status}"
@@ -398,8 +398,6 @@ mod.factory('idCallFlow', [
         #
         # No parameters.
         transferConferenceEnded: ->
-          console.log 'transfer_conference_ended', $state.current
-
           isWarm = isWarmTransfer()
 
           TransferCache.remove('type')
