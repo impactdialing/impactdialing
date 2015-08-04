@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe 'CalculateDialsJob' do
   include FakeCallData
+  include ListHelpers
 
   def make_abandon_rate_acceptable(campaign)
     create_list(:bare_call_attempt, 10, :completed, {
@@ -27,9 +28,15 @@ describe 'CalculateDialsJob' do
     let(:dial_queue) do
       CallFlow::DialQueue.new(campaign)
     end
+    let(:voter_list) do
+      create(:voter_list, campaign: campaign)
+    end
+    let(:households) do
+      build_household_hashes(25, voter_list)
+    end
 
     before do
-      add_voters(campaign, :voter, 25)
+      import_list(voter_list, households)
       add_callers(campaign, 5)
     end
 
@@ -88,7 +95,7 @@ describe 'CalculateDialsJob' do
       end
 
       it 'queues DialerJob w/ campaign_id & list of phone numbers to dial (one number per caller)' do
-        phone_numbers = Voter.order('id').limit(campaign.callers.count).map(&:household).map(&:phone)
+        phone_numbers = campaign.dial_queue.available.all[0..4]
         CalculateDialsJob.perform(campaign.id)
 
         dialer_job = {'class' => 'DialerJob', 'args' => [campaign.id, phone_numbers]}
@@ -164,14 +171,14 @@ describe 'CalculateDialsJob' do
         end
 
         context 'no voters returned from load attempt but voters still in available set' do
-          let(:voters) do
-            create_list(:voter, 2, campaign: campaign)
+          let(:households_two) do
+            build_household_hashes(2, voter_list)
           end
           let(:dial_queue) do
             CallFlow::DialQueue.new(campaign)
           end
           before do
-            dial_queue.cache_all(voters)
+            import_list(voter_list, households_two)
             # bypass initial check
             allow(CalculateDialsJob).to receive(:fit_to_dial?){ true }
             allow(campaign).to receive(:ringing_count){ 5 }
