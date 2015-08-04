@@ -108,11 +108,9 @@ public
         caller_session.publish("warm_transfer",{})
       else
         ##
-        # This redirect is unnecessary because Caller#kick redirects to pause_caller_url.
-        # Furthermore, the Dial:action for Transfer#caller is pause_caller_url.
-        if RedisCallerSession.any_active_transfers?(caller_session.session_key)
-          Providers::Phone::Call.redirect_for(caller_session, :pause)
-        end
+        # This redirect is needed in case the caller is/was in a transfer conference.
+        # todo: fix double pause requests. The Dial:action for Transfer#caller is pause_caller_url so this results in 2 req to /pause.
+        Providers::Phone::Call.redirect_for(caller_session, :pause)
         # todo: handle failures of above redirect
         caller_session.publish("cold_transfer",{})
       end
