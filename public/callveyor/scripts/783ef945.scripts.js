@@ -34845,10 +34845,12 @@ to fix it.');
     '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', function($rootScope, $state, $window, $cacheFactory, CallCache, idJanitor, TransferCache, FlashCache, HouseholdCache, idHttpDialerFactory, idFlashFactory, usSpinnerService, idTransitionPrevented, CallStationCache, TwilioCache, CallerReassignedMessage) {
       var beforeunloadBeenBound, handlers, isWarmTransfer;
       isWarmTransfer = function() {
-        var selected;
+        var selected, type;
         selected = TransferCache.get('selected');
+        type = TransferCache.get('type');
         console.log('isWarmTransfer() -> selected transfer', selected);
-        return (selected != null) && /warm/i.test(selected.transfer_type);
+        console.log('isWarmTransfer() -> type', type);
+        return ((selected != null) && /warm/i.test(selected.transfer_type)) || /warm/i.test(type);
       };
       $window.idDebugData || ($window.idDebugData = {});
       beforeunloadBeenBound = false;
@@ -34983,7 +34985,6 @@ to fix it.');
         },
         transferBusy: function(data) {
           var label, msg, status;
-          console.log('transfer_busy', data);
           status = data.status;
           label = data.label;
           msg = "Transfer ended with " + data.status;
@@ -35013,9 +35014,12 @@ to fix it.');
           return p["catch"](idTransitionPrevented);
         },
         transferConferenceEnded: function() {
-          var isWarm, p;
-          console.log('transfer_conference_ended', $state.current);
+          var isWarm, p, selected;
           isWarm = isWarmTransfer();
+          selected = TransferCache.get('selected');
+          if (selected != null) {
+            TransferCache.put('hangup_method', 'kick');
+          }
           TransferCache.remove('type');
           TransferCache.remove('selected');
           if (!isWarm) {
@@ -35274,10 +35278,10 @@ to fix it.');
         dialer.retry = false;
         return dialer.kick(caller, 'transfer');
       };
-      dialer.hangup = function(call_id, transfer, caller) {
+      dialer.hangup = function(call_id, hangupMethod, caller) {
         var url;
         dialer.retry = false;
-        if ((transfer != null) && transfer.transfer_type === 'warm' && transfer.wasDialed) {
+        if ((hangupMethod != null) && hangupMethod === 'kick') {
           return dialer.kick(caller, 'caller');
         } else {
           TwilioCache.put('disconnect_pending', 1);
@@ -36082,15 +36086,20 @@ to fix it.');
       permissions = CallStationCache.get('permissions');
       active.permissions = permissions;
       active.hangup = function() {
-        var call_id, caller, error, promise, success, transfer;
+        var call_id, caller, error, hangupMethod, promise, selected, success;
         $scope.transitionInProgress = true;
         call_id = CallCache.get('id');
-        transfer = TransferCache.get('selected');
         caller = CallStationCache.get('caller');
-        promise = idHttpDialerFactory.hangup(call_id, transfer, caller);
+        selected = TransferCache.get('selected');
+        hangupMethod = TransferCache.get('hangup_method');
+        if ((selected != null) && selected.wasDialed) {
+          hangupMethod = 'kick';
+        }
+        promise = idHttpDialerFactory.hangup(call_id, hangupMethod, caller);
         success = function() {
           var statePromise;
           statePromise = $state.go('dialer.wrap');
+          TransferCache.remove('hangup_method');
           return statePromise["catch"]($window._errs.push);
         };
         error = function(resp) {

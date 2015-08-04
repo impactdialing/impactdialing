@@ -50,8 +50,10 @@ mod.factory('idCallFlow', [
     ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   idJanitor,   TransferCache,   FlashCache,   HouseholdCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache,   CallerReassignedMessage) ->
       isWarmTransfer = ->
         selected = TransferCache.get('selected')
+        type     = TransferCache.get('type')
         console.log('isWarmTransfer() -> selected transfer', selected)
-        selected? and /warm/i.test(selected.transfer_type)
+        console.log('isWarmTransfer() -> type', type)
+        (selected? and /warm/i.test(selected.transfer_type)) or /warm/i.test(type)
 
       $window.idDebugData ||= {}
 
