@@ -6,9 +6,11 @@ module Providers::Phone::Call
   def self.redirect(call_sid, url, opts={})
     retry_up_to = opts[:retry_up_to]
     info("Redirecting Call[#{call_sid}] to URL[#{url}]")
+    resp = nil
     RescueRetryNotify.on(SocketError, retry_up_to) do
-      service.redirect(call_sid, url)
+      resp = service.redirect(call_sid, url)
     end
+    resp
   end
 
   def self.redirect_for(obj, type=:default)
