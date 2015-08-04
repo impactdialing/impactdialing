@@ -400,6 +400,10 @@ mod.factory('idCallFlow', [
         transferConferenceEnded: ->
           isWarm = isWarmTransfer()
 
+          selected = TransferCache.get('selected')
+          if selected?
+            TransferCache.put('hangup_method', 'kick')
+
           TransferCache.remove('type')
           TransferCache.remove('selected')
 

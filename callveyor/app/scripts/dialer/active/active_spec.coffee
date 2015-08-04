@@ -59,6 +59,7 @@ describe 'dialer.active', ->
           push: jasmine.createSpy('-errorception _errs.push spy-')
         }
 
+        transfers[0].wasDialed = true
         TransferCache.put('selected', transfers[0])
         CallCache.put('id', call.id)
         CallStationCache.put('caller', caller)
@@ -73,9 +74,9 @@ describe 'dialer.active', ->
         dialerFake.hangup = jasmine.createSpy('-idHttpDialerFactory.hangup spy-').andReturn(dialerFake)
         $cacheFactory.get('Call').put('id', call.id)
 
-      it 'calls idHttpDialerFactory.hangup(call_id, transfer, caller)', ->
+      it 'calls idHttpDialerFactory.hangup(call_id, hangupMethod, caller)', ->
         $scope.active.hangup()
-        expect(dialerFake.hangup).toHaveBeenCalledWith(call.id, transfers[0], caller)
+        expect(dialerFake.hangup).toHaveBeenCalledWith(call.id, 'kick', caller)
 
       it 'transitions to dialer.wrap', ->
         dialerFake.then.andCallFake(-> dialerFake.then.calls[0].args[0]())

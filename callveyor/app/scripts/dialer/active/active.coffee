@@ -37,13 +37,17 @@ active.controller('ActiveCtrl.buttons', [
     active.hangup = ->
       $scope.transitionInProgress = true
 
-      call_id  = CallCache.get('id')
-      transfer = TransferCache.get('selected')
-      caller   = CallStationCache.get('caller')
-      promise  = idHttpDialerFactory.hangup(call_id, transfer, caller)
+      call_id      = CallCache.get('id')
+      caller       = CallStationCache.get('caller')
+      selected     = TransferCache.get('selected')
+      hangupMethod = TransferCache.get('hangup_method')
+      if selected? and selected.wasDialed
+        hangupMethod = 'kick'
+      promise      = idHttpDialerFactory.hangup(call_id, hangupMethod, caller)
 
       success = ->
         statePromise = $state.go('dialer.wrap')
+        TransferCache.remove('hangup_method')
         statePromise.catch($window._errs.push)
 
       error = (resp) ->
