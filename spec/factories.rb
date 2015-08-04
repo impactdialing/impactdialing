@@ -226,8 +226,10 @@ FactoryGirl.define do
 
   factory :transfer do
     phone_number { Forgery(:address).phone }
+    label { Forgery(:name).first_name }
   end
   factory :transfer_attempt do
+    transfer
   end
 
   factory :call do

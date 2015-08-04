@@ -107,7 +107,8 @@ describe TransferController, :type => :controller do
       call_attempt: call_attempt,
       transfer: transfer
     })
-    expect(Providers::Phone::Call).to receive(:redirect).with(transfer_attempt.call_attempt.sid, callee_transfer_index_url(url_opts), {retry_up_to: ENV["TWILIO_RETRIES"]})
+    twilio_response = double('Providers::Phone::Twilio::Response', {error?: false})
+    expect(Providers::Phone::Call).to receive(:redirect).with(transfer_attempt.call_attempt.sid, callee_transfer_index_url(url_opts), {retry_up_to: ENV["TWILIO_RETRIES"]}){ twilio_response }
     allow(RedisCallerSession).to receive(:any_active_transfers?).with(caller_session.session_key){ true }
     expect(Providers::Phone::Call).to receive(:redirect).with(caller_session.sid, pause_caller_url(caller, url_opts.merge(session_id: caller_session.id)), {retry_up_to: ENV["TWILIO_RETRIES"]})
 
@@ -122,7 +123,6 @@ describe TransferController, :type => :controller do
     caller_session = create(:caller_session, campaign: campaign, attempt_in_progress: call_attempt)
     transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
     post :end, id: transfer_attempt.id, :CallStatus => 'completed'
-    expect(response.body).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     transfer_attempt.reload
     expect(transfer_attempt.status).to eq('Call completed with success.')
     expect(transfer_attempt.call_end).not_to be_nil
@@ -133,7 +133,6 @@ describe TransferController, :type => :controller do
     caller_session = create(:caller_session, campaign: campaign)
     transfer_attempt = create(:transfer_attempt, caller_session: caller_session)
     post :end, id: transfer_attempt.id, :CallStatus => 'no-answer'
-    expect(response.body).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say voice=\"man\" language=\"en\" loop=\"1\">The transfered call was not answered </Say><Hangup/></Response>")
     transfer_attempt.reload
     expect(transfer_attempt.status).to eq('No answer')
     expect(transfer_attempt.call_end).not_to be_nil
@@ -144,7 +143,6 @@ describe TransferController, :type => :controller do
     caller_session = create(:caller_session, campaign: campaign)
     transfer_attempt = create(:transfer_attempt, caller_session: caller_session)
     post :end, id: transfer_attempt.id, :CallStatus => 'busy'
-    expect(response.body).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say voice=\"man\" language=\"en\" loop=\"1\">The transfered call was not answered </Say><Hangup/></Response>")
     transfer_attempt.reload
     expect(transfer_attempt.status).to eq('No answer busy signal')
     expect(transfer_attempt.call_end).not_to be_nil
@@ -155,7 +153,6 @@ describe TransferController, :type => :controller do
     caller_session = create(:caller_session, campaign: campaign)
     transfer_attempt = create(:transfer_attempt, caller_session: caller_session)
     post :end, id: transfer_attempt.id, :CallStatus => 'failed'
-    expect(response.body).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say voice=\"man\" language=\"en\" loop=\"1\">The transfered call was not answered </Say><Hangup/></Response>")
     transfer_attempt.reload
     expect(transfer_attempt.status).to eq('Call failed')
     expect(transfer_attempt.call_end).not_to be_nil
