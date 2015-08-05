@@ -153,5 +153,15 @@ public
       end
     end
   end
+
+  def manual_message_dropped(recording)
+    storage.save({
+      status: CallAttempt::Status::VOICEMAIL,
+      recording_id: recording.id,
+      recording_delivered_manually: true
+    })
+    caller_session = caller_session_from_sid
+    CallerPusherJob.add_to_queue(caller_session.id, 'message_drop_success')
+  end
 end
 

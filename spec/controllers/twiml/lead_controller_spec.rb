@@ -24,6 +24,33 @@ describe Twiml::LeadController do
     })
   end
 
+  describe '#play_message' do
+    let(:campaign){ create(:predictive) }
+    let(:recording){ create(:recording, account: campaign.account) }
+    let(:dialed_call){ CallFlow::Call::Dialed.new(twilio_params[:AccountSid], twilio_params[:CallSid]) }
+
+    before do
+      dialed_call.caller_session_sid = caller_session.sid
+      campaign.update_attribute(:recording_id, recording.id)
+    end
+
+    it 'tells @dialed_call :manual_message_dropped' do
+      allow(CallFlow::Call::Dialed).to receive(:new){ dialed_call }
+      expect(dialed_call).to receive(:manual_message_dropped).with(recording)
+      post :play_message, twilio_params
+    end
+
+    it 'sets @recording to @campaign.recording' do
+      post :play_message, twilio_params
+      expect(assigns[:recording]).to eq recording
+    end
+
+    it 'renders twiml/lead/play_message.xml.erb' do
+      post :play_message, twilio_params
+      expect(response).to render_template 'twiml/lead/play_message'
+    end
+  end
+
   describe '#completed' do
     let(:campaign){ create(:predictive) }
     let(:status_callback_params) do
@@ -31,14 +58,22 @@ describe Twiml::LeadController do
         'CallDuration'      => 120,
         'RecordingUrl'      => 'http://recordings.twilio.com/yep.mp3',
         'RecordingSid'      => 'RE-341',
-        'RecordingDuration' => 119
+        'RecordingDuration' => 119,
+        'campaign_id'       => campaign.id
       }))
+    end
+    let(:dialed_call) do
+      CallFlow::Call::Dialed.new(twilio_params['AccountSid'], twilio_params['CallSid'])
+    end
+
+    before do
+      dialed_call.caller_session_sid = caller_session.sid
     end
 
     it 'tells @dialed_call :completed' do
       dialed_call = double('CallFlow::Call::Dialed', {completed: nil})
       allow(CallFlow::Call::Dialed).to receive(:new).with(status_callback_params[:AccountSid], status_callback_params[:CallSid]){ dialed_call }
-      expect(dialed_call).to receive(:completed).with(status_callback_params.merge({
+      expect(dialed_call).to receive(:completed).with(campaign, status_callback_params.merge({
         'action' => 'completed',
         'controller' => 'twiml/lead'
       }))

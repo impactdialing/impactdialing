@@ -110,6 +110,7 @@ ImpactDialing::Application.routes.draw do
       post :answered
       post :disconnected
       post :completed
+      post :play_message
     end
     resources :caller_sessions, only: [:create] do
       post :dialing_prohibited

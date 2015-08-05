@@ -1,0 +1,4 @@
+<%= Twilio::TwiML::Response.new do |twiml|
+  twiml.Play @recording.file.url
+  twiml.Hangup
+end.text.html_safe %>

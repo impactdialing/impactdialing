@@ -35,7 +35,10 @@ public
   ##
   # Save required data and play a recorded message to the dialed party.
   # This end-point is requested by Twilio when a Caller clicks to drop message.
+  # See twiml/lead/play_message.xml.erb.
   def play_message
+    @recording = campaign.recording
+    dialed_call.manual_message_dropped(@recording)
   end
 end
 
