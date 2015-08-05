@@ -13,7 +13,6 @@ public
   # Update stats, save required data & populate flags to determine
   # which TwiML response to provide Twilio.
   # See twiml/lead/answered.xml.erb for possible responses.
-  #
   def answered
     dialed_call.answered(campaign, params)
   end
@@ -25,8 +24,11 @@ public
     dialed_call.disconnected(params)
   end
 
+  ##
+  # Update stats, save required data & redirect caller if needed.
+  # Renders nothing because Twilio requests this after the call has ended.
   def completed
-    dialed_call.completed(params)
+    dialed_call.completed(campaign, params)
     render nothing: true
   end
 

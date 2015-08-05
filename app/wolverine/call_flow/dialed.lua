@@ -7,8 +7,6 @@ local populate_data = function(source)
   end
 
   for property,value in pairs(source) do
-    --table.insert(data, property)
-    --table.insert(data, value)
     redis.call('HSET', KEYS[2], property, value)
   end
 end
@@ -20,8 +18,5 @@ populate_data(other_data)
 if tonumber(ARGV[3]) > 0 then
   redis.call('HINCRBY', KEYS[1], 'presented', -1)
 end
--- debugging
---redis.call('RPUSH', 'debug.log', 'calling HMSET with: '..unpack(data))
 redis.call('HINCRBY', KEYS[1], 'ringing', 1)
---redis.call('HMSET', KEYS[2], unpack(data))
 

@@ -15,11 +15,7 @@ module CallFlow
     end
 
     def self.save_param_for(read_param)
-      write_param = read_param.underscore
-      if ['call_status', 'sid'].include?(write_param)
-        write_param.gsub!('call_', '')
-      end
-      write_param
+      read_param.underscore.gsub('call_','')
     end
 
     def self.params_for_create(raw_params)
@@ -44,7 +40,6 @@ module CallFlow
     end
 
     def self.create(raw_params)
-      p ".create called w/ #{raw_params}"
       account_sid = (raw_params['AccountSid'] || raw_params['account_sid'])
       sid         = (raw_params['CallSid'] || raw_params['sid'])
       storage     = CallFlow::Call::Storage.new(account_sid, sid, namespace)

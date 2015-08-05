@@ -41,7 +41,6 @@ public
   end
 
   def save(hash)
-    p "key: #{key} saving: #{hash}"
     redis.mapped_hmset(key, hash)
   end
 

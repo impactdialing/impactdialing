@@ -24,7 +24,6 @@ describe Twiml::CallerSessionsController do
     end
 
     before do
-      p "Campaign Type: #{campaign.type}"
       # CallerIdentity is created when a web caller logs in
       caller.create_caller_identity(generated_session_key)
     end
@@ -43,7 +42,7 @@ describe Twiml::CallerSessionsController do
       expect(RedisStatus.state_time(campaign.id, caller.caller_sessions.last.id).first).to eq 'On hold'
     end
     it 'tells CallerSession to #start_conf' do
-      caller_session = create(:bare_caller_session, :webui, :available, caller: caller)
+      caller_session = create(:bare_caller_session, :webui, :available, caller: caller, campaign: campaign)
       expect(caller_session).to receive(:start_conf)
       expect(caller).to receive(:create_caller_session){ caller_session }
       allow(Caller).to receive_message_chain(:includes, :find){ caller }
