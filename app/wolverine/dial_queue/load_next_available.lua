@@ -18,7 +18,7 @@ for i,phone_on_odds in pairs(next_members) do
   -- update scores for presented zset
   if i % 2 == 0 then
     local old_score = phone_on_odds
-    local new_score = string.gsub(old_score, '%d\.', timestamp..'.', 1)
+    local new_score = timestamp
     table.insert(presented_members, new_score)
     table.insert(presented_members, presented_phone)
     presented_phone = nil

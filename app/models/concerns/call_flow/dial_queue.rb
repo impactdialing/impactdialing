@@ -15,16 +15,6 @@ module CallFlow
       end
     end
 
-    def cache_household?(household)
-      household.cache? and
-      available.missing?(household.phone) and
-      recycle_bin.missing?(household.phone)
-    end
-
-    def cache_voter?(voter)
-      voter.cache?
-    end
-
   public
     def self.log(type, msg)
       msg = "[CallFlow::DialQueue] #{msg}"
@@ -65,24 +55,6 @@ module CallFlow
       available.exists? or recycle_bin.exists? or households.exists?
     end
 
-    def cache(voter)
-      household = voter.household
-
-      if cache_voter?(voter)
-        households.add(household.phone, voter.cache_data)
-      else
-        remove(voter)
-      end
-
-      if cache_household?(household)
-        available.add(household) or recycle_bin.add(household)
-      end
-    end
-
-    def cache_all(voters)
-      voters.each{|voter| cache(voter)}
-    end
-
     def next(n)
       phones = available.next(n)
       return nil if phones.empty?
@@ -118,25 +90,6 @@ module CallFlow
         keys: [available.keys[:presented], completed.keys[:failed], Twillio::InflightStats.key(campaign)],
         argv: [phone, update_presented_count]
       })
-    end
-
-    def remove_household(phone)
-      available.remove(phone)
-      recycle_bin.remove(phone)
-      households.remove_house(phone)
-    end
-
-    def remove(voter)
-      phone             = voter.household.phone
-      remaining_members = households.remove_member(phone, voter)
-      if remaining_members.empty?
-        available.remove(phone)
-        recycle_bin.remove(phone)
-      end
-    end
-
-    def remove_all(voters)
-      voters.each{|voter| remove(voter)}
     end
 
     def size(queue)

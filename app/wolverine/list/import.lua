@@ -56,15 +56,7 @@ local custom_id_register_key_parts = function(custom_id)
   return {rkey, hkey}
 end
 
--- calculates score for new members
--- existing scores must be preserved w/ aggregate max on unionstore
-local zscore = function (sequence)
-  local d = 1000000
-  local y = sequence / d
-  return 1 + y
-end
-
-local add_to_set = function(leads_added, blocked, sequence, phone)
+local add_to_set = function(leads_added, blocked, score, phone)
   if tonumber(blocked) == 0 or blocked == nil then
     local completed_score = redis.call('ZSCORE', completed_set_key, phone)
 
@@ -80,7 +72,7 @@ local add_to_set = function(leads_added, blocked, sequence, phone)
           redis.call('ZREM', completed_set_key, phone)
           --redis.call('LPUSH', 'debug', 'leads_added: ' .. tostring(leads_added) .. '; completed score: ' .. tostring(completed_score))
         else
-          redis.call('ZADD', pending_set_key, zscore(sequence), phone)
+          redis.call('ZADD', pending_set_key, score, phone)
         end
       end
     end
@@ -197,6 +189,7 @@ for phone,household in pairs(households) do
   local updated_leads   = {}
   local current_hh      = {}
   local updated_hh      = household
+  local score           = household['score']
   local leads_added     = false
   local _current_hh     = redis.call('HGET', household_key, phone_key)
   local new_lead_id_set = build_custom_id_set(new_leads)
@@ -217,6 +210,7 @@ for phone,household in pairs(households) do
     -- hh attributes
     uuid     = current_hh['uuid']
     sequence = current_hh['sequence']
+    score    = current_hh['score']
 
     -- leads
     local current_leads       = current_hh['leads']
@@ -265,7 +259,7 @@ for phone,household in pairs(households) do
   updated_hh['uuid']     = uuid
   updated_hh['sequence'] = sequence
 
-  add_to_set(leads_added, updated_hh['blocked'], updated_hh['sequence'], phone)
+  add_to_set(leads_added, updated_hh['blocked'], score, phone)
 
   local _updated_hh = cjson.encode(updated_hh)
   log('HSET '..household_key..' => '..phone_key..' = '.._updated_hh)

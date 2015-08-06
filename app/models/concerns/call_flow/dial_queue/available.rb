@@ -40,7 +40,7 @@ public
   def next(n)
     json = Wolverine.dial_queue.load_next_available({
       keys: [keys[:active], keys[:presented]],
-      argv: [n, Time.now.utc.to_i]
+      argv: [n, Time.now.utc.to_f]
     })
 
     JSON.parse(json || '[]')

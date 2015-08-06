@@ -71,6 +71,10 @@ public
     results.any?
   end
 
+  def save(phone, members)
+    redis.hset( *hkey(phone), members.to_json )
+  end
+
   def find(phone)
     result = redis.hget *hkey(phone)
     if result.blank?
@@ -98,10 +102,7 @@ public
     phone_numbers.each do |number|
       house = find(number)
       unless house.empty?
-        result << {
-          phone: number,
-          voters: house
-        }
+        result << house
       end
     end
     result

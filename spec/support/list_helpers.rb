@@ -20,8 +20,7 @@ module ListHelpers
   end
 
   def zscore(sequence)
-    y = (sequence / 100000.0).to_s.split('.').last
-    "1.#{y}"
+    Time.now.utc.to_f
   end
 
   def disable_list(list)
@@ -80,7 +79,7 @@ module ListHelpers
 
   def build_lead_hash(list, phone, with_custom_id=false)
     h = {
-      voter_list_id: list.id,
+      voter_list_id: list.id.to_s,
       phone: phone,
       first_name: Forgery(:name).first_name,
       last_name: Forgery(:name).last_name
