@@ -94,29 +94,7 @@ class Twillio
   def self.dial_predictive_em(iter, campaign, phone)
     twilio_lib   = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     http         = twilio_lib.make_call_em(campaign, phone)
-    http.callback {
-      handle_response(http.response, campaign, phone)
-      iter.return(http)
-    }
-    http.errback {
-      handle_response(http.response, campaign, phone)
-      iter.return(http)
-    }
-  end
-
-  def self.create_call_attempt(household)
-    campaign     = household.campaign
-    call_attempt = household.call_attempts.create({
-      campaign: campaign,
-      dialer_mode: campaign.type,
-      call_start: Time.now
-    })
-
-
-    call = Call.create(call_attempt: call_attempt, state: "initial")
-
-
-    call_attempt
+    handle_response(http.response, campaign, phone)
   end
 
   def self.mark_caller_unavailable(caller_session)

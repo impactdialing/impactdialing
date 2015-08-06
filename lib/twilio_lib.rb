@@ -28,7 +28,8 @@ class TwilioLib
       host: Settings.incoming_callback_host,
       port: Settings.twilio_callback_port,
       protocol: "http://",
-      campaign_type: campaign.type
+      campaign_type: campaign.type,
+      campaign_id: campaign.id
     }
   end
 
@@ -46,10 +47,10 @@ class TwilioLib
     {
       'From'           => campaign.caller_id,
       'To'             => phone,
-      #'Url'            => incoming_call_url(call.call_sid, shared_callback_url_params(campaign).merge(event: "incoming_call")),
-      #'StatusCallback' => call_ended_call_url(call.call_sid, shared_callback_url_params(campaign).merge(event: "call_ended")),
+      'Url'            => twiml_lead_answered_url(shared_callback_url_params(campaign).merge(event: 'incoming_call')),
+      'StatusCallback' => twiml_lead_completed_url(shared_callback_url_params(campaign).merge(event: "call_ended")),
       'Timeout'        => "15",
-      #'FallbackUrl'    => incoming_call_url(call.call_sid, shared_failover_url_params(campaign).merge(event: "incoming_call"))
+      'FallbackUrl'    => twiml_lead_answered_url(shared_failover_url_params(campaign).merge(event: "incoming_call_fallback"))
     }.merge!(amd_params(campaign))
   end
 
@@ -68,12 +69,13 @@ class TwilioLib
     response.body
   end
 
-  def make_call_em(campaign, household, call_attempt)
-    EventMachine::HttpRequest.new(twilio_calls_uri).apost({
+  def make_call_em(campaign, phone)
+    params = make_call_params(campaign, phone)
+    EventMachine::HttpRequest.new(twilio_calls_uri).post({
       :head => {
         'authorization' => [@http_user, @http_password]
       },
-      :body => make_call_params(campaign, household, call_attempt)
+      :body => params
     })
   end
 
