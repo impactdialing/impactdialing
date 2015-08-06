@@ -1,6 +1,7 @@
 require 'em-http-request'
 require "em-synchrony"
 require "em-synchrony/em-http"
+require "em-synchrony/fiber_iterator"
 
 ##
 # Workhorse for +DialerJob.perform+.
@@ -15,8 +16,8 @@ class Dial
   
   def self.em_dial(campaign, phone_numbers)
     EM.synchrony do
-      concurrency = 10        
-      EM::Synchrony::Iterator.new(phone_numbers, concurrency).map do |phone, iter|
+      concurrency = 10
+      EM::Synchrony::FiberIterator.new(phone_numbers, concurrency).map do |phone, iter|
         Twillio.dial_predictive_em(iter, campaign, phone)
       end        
       EventMachine.stop
