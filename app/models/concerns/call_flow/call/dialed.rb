@@ -133,23 +133,19 @@ public
   def disconnected(params)
     storage.save(params_for_update(params))
 
-    caller_session = caller_session_from_sid
-    unless caller_session.nil?
-      CallerPusherJob.add_to_queue(caller_session.id, 'publish_voter_disconnected')
-    end
+    caller_session.emit('publish_voter_disconnected')
   end
 
   def completed(campaign, params)
     storage.save(params_for_update(params))
 
-    caller_session = caller_session_from_sid
-    CallerPusherJob.add_to_queue(caller_session.id, 'call_ended')
+    caller_session.emit('publish_call_ended', params)
 
     if state_missed?(:answered)
       campaign.number_not_ringing
 
       unless campaign.predictive?
-        RedirectCallerJob.add_to_queue(caller_session.id)
+        caller_session.redirect_to_hold
       end
     end
   end
@@ -160,8 +156,7 @@ public
       recording_id: recording.id,
       recording_delivered_manually: true
     })
-    caller_session = caller_session_from_sid
-    CallerPusherJob.add_to_queue(caller_session.id, 'message_drop_success')
+    caller_session.emit('publish_message_drop_success')
   end
 end
 

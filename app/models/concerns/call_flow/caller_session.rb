@@ -50,5 +50,23 @@ public
       @dialed_call ||= CallFlow::Call::Dialed.new(account_sid, @dialed_call_sid)
     end
   end
+
+  def caller_session_record
+    @caller_session_record ||= ::CallerSession.where(sid: sid).first
+  end
+
+  def redirect_to_hold
+    RedirectCallerJob.add_to_queue(caller_session_record.id)
+    RedisStatus.set_state_changed_time(caller_session_record.campaign_id, "On hold", caller_session_record.id)
+  end
+
+  def stop_calling
+    caller_session_record.end_caller_session
+    EndRunningCallJob.add_to_queue(sid)
+  end
+
+  def emit(event, payload={})
+    CallerPusherJob.add_to_queue(caller_session_record.id, event, payload)
+  end
 end
 

@@ -8,6 +8,39 @@ describe 'CallFlow::CallerSession' do
 
   it 'tracks the current state of a caller session'
 
+  describe '#redirect_to_hold' do
+    let(:caller_session_record){ create(:caller_session, sid: caller_session_sid) }
+    before do
+      subject.storage[:sid] = caller_session_record.sid
+    end
+    it 'queues RedirectCallerJob' do
+      subject.redirect_to_hold
+      expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session_record.id)
+    end
+
+    it 'sets RedisStatus to "On hold"' do
+      subject.redirect_to_hold
+      expect(RedisStatus.state_time(caller_session_record.campaign_id, caller_session_record.id).first).to eq 'On hold'
+    end
+  end
+
+  describe '#stop_calling' do
+    let(:caller_session_record){ double('CallerSession', {end_caller_session: nil, sid: caller_session_sid}) }
+    before do
+      allow(::CallerSession).to receive_message_chain(:where, :first){ caller_session_record }
+    end
+
+    it 'tells caller_session_record :end_caller_session' do
+      expect(caller_session_record).to receive(:end_caller_session)
+      subject.stop_calling
+    end
+
+    it 'queues EndRunningCallJob with caller session sid' do
+      subject.stop_calling
+      expect([:sidekiq, :call_flow]).to have_queued(EndRunningCallJob).with(caller_session_record.sid)
+    end
+  end
+
   describe '#dialed_call_sid=(dialed_call_sid)' do
     # Call#incoming_call (Twillio.set_attempt_in_progress)
     # Twillio.set_attempt_in_progress
