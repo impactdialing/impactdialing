@@ -17,16 +17,18 @@
 # todo: handle failure gracefully
 class CallerPusherJob
   include Sidekiq::Worker
+  extend SidekiqSelfQueue
+
   sidekiq_options :retry => false
   sidekiq_options :failures => true
 
-  def perform(caller_session_id, event)
+  def perform(caller_session_id, event, payload={})
     caller_session = CallerSession.find(caller_session_id)
 
     source         = "ac-#{caller_session.campaign.account_id}.ca-#{caller_session.campaign.id}.cs-#{caller_session.id}"
     metrics        = ImpactPlatform::Metrics::JobStatus.started("#{self.class.to_s.underscore}.#{event}", source)
 
-    begin
+    if payload.empty?
       caller_session.send(event)
     rescue CallFlow::DialQueue::EmptyHousehold => e
       # can be raised when event == publish_caller_conference_started
@@ -38,6 +40,8 @@ class CallerPusherJob
       Rails.logger.error "#{e.class}: #{e.message}"
       name   = "#{event}.dial_queue.empty_household"
       ImpactPlatform::Metrics.count(name, 1, source)
+    else
+      caller_session.send(event, payload)
     end
     
     metrics.completed
