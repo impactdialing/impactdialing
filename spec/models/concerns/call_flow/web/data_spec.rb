@@ -3,73 +3,55 @@ require 'rails_helper'
 describe 'CallFlow::Web::Data' do
   let(:script){ create(:script) }
   let(:house) do
-    {
+    HashWithIndifferentAccess.new({
       phone: Forgery(:address).phone,
-      voters: [
+      leads: [
         {
-          id: 42,
-          fields: {
-            id: 42, first_name: Forgery(:name).first_name, last_name: Forgery(:name).last_name
-          },
-          custom_fields: {
-            'MoreInfo' => 'Call xxx-yyy-zzzz', 'PreviousContribution' => '75'
-          }
+          uuid: 42,
+          first_name: Forgery(:name).first_name,
+          last_name: Forgery(:name).last_name,
+          'MoreInfo' => 'Call xxx-yyy-zzzz',
+          'PreviousContribution' => '75'
         },
         {
-          id: 43,
-          fields: {
-            id: 43, first_name: Forgery(:name).first_name, last_name: Forgery(:name).last_name
-          },
-          custom_fields: {
-            'MoreInfo' => 'Call xxx-yyy-zzzz', 'PreviousContribution' => '43'
-          }
+          uuid: 43,
+          first_name: Forgery(:name).first_name,
+          last_name: Forgery(:name).last_name,
+          'MoreInfo' => 'Call xxx-yyy-zzzz',
+          'PreviousContribution' => '43'
         },
         {
-          id: 44,
-          fields: {
-            id: 44, first_name: Forgery(:name).first_name, last_name: Forgery(:name).last_name
-          },
-          custom_fields: {
-            'MoreInfo' => 'Call xxx-yyy-zzzz', 'PreviousContribution' => '123'
-          }
+          uuid: 44,
+          first_name: Forgery(:name).first_name,
+          last_name: Forgery(:name).last_name,
+          'MoreInfo' => 'Call xxx-yyy-zzzz',
+          'PreviousContribution' => '123'
         }
       ]
-    }
+    })
   end
 
   let(:nameless_house) do
-    {
+    HashWithIndifferentAccess.new({
       phone: Forgery(:address).phone,
-      voters: [
+      leads: [
         {
-          id: 42,
-          fields: {
-            id: 42
-          },
-          custom_fields: {
-            'MoreInfo' => 'Call xxx-yyy-zzzz', 'PreviousContribution' => '75'
-          }
+          uuid: 42,
+          'MoreInfo' => 'Call xxx-yyy-zzzz',
+          'PreviousContribution' => '75'
         },
         {
-          id: 43,
-          fields: {
-            id: 43
-          },
-          custom_fields: {
-            'MoreInfo' => 'Call xxx-yyy-zzzz', 'PreviousContribution' => '43'
-          }
+          uuid: 43,
+          'MoreInfo' => 'Call xxx-yyy-zzzz',
+          'PreviousContribution' => '43'
         },
         {
-          id: 44,
-          fields: {
-            id: 44
-          },
-          custom_fields: {
-            'MoreInfo' => 'Call xxx-yyy-zzzz', 'PreviousContribution' => '123'
-          }
+          uuid: 44,
+          'MoreInfo' => 'Call xxx-yyy-zzzz',
+          'PreviousContribution' => '123'
         }
       ]
-    }
+    })
   end
 
   subject{ CallFlow::Web::Data.new(script) }
@@ -84,26 +66,26 @@ describe 'CallFlow::Web::Data' do
         phone: house[:phone],
         members: [
           {
-            id:     house[:voters][0][:id],
+            id:     house[:leads][0][:uuid],
             fields: {
-              first_name: house[:voters][0][:fields][:first_name],
-              last_name:  house[:voters][0][:fields][:last_name]
+              'first_name' => house[:leads][0][:first_name],
+              'last_name' =>  house[:leads][0][:last_name]
             },
             custom_fields: {}
           },
           {
-            id:     house[:voters][1][:id],
+            id:     house[:leads][1][:uuid],
             fields: {
-              first_name: house[:voters][1][:fields][:first_name],
-              last_name:  house[:voters][1][:fields][:last_name]
+              'first_name' => house[:leads][1][:first_name],
+              'last_name' =>  house[:leads][1][:last_name]
             },
             custom_fields: {}
           },
           {
-            id:     house[:voters][2][:id],
+            id:     house[:leads][2][:uuid],
             fields: {
-              first_name: house[:voters][2][:fields][:first_name],
-              last_name:  house[:voters][2][:fields][:last_name]
+              'first_name' => house[:leads][2][:first_name],
+              'last_name' =>  house[:leads][2][:last_name]
             },
             custom_fields: {}
           }
@@ -116,23 +98,23 @@ describe 'CallFlow::Web::Data' do
         phone: nameless_house[:phone],
         members: [
           {
-            id:     nameless_house[:voters][0][:id],
+            id:     nameless_house[:leads][0][:uuid],
             fields: {
-              use_id: '1'
+              'use_id' => '1'
             },
             custom_fields: {}
           },
           {
-            id:     nameless_house[:voters][1][:id],
+            id:     nameless_house[:leads][1][:uuid],
             fields: {
-              use_id: '1'
+              'use_id' => '1'
             },
             custom_fields: {}
           },
           {
-            id:     nameless_house[:voters][2][:id],
+            id:     nameless_house[:leads][2][:uuid],
             fields: {
-              use_id: '1'
+              'use_id' => '1'
             },
             custom_fields: {}
           }

@@ -45,15 +45,15 @@ public
 
   def build(house)
     if house.present?
-      members = house[:voters].map do |member|
+      members = house['leads'].map do |member|
         {
-          id:            member[:id],
-          fields:        fields(member[:fields]),
-          custom_fields: custom_fields(member[:custom_fields])
+          id:            member['uuid'],
+          fields:        fields(member),
+          custom_fields: custom_fields(member)
         }
       end
       data = {
-        phone: house[:phone],
+        phone: house['phone'],
         members: members
       }
     else
