@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'twiml/lead/play_message.xml.erb' do
+describe 'twiml/lead/play_message.html.erb' do
   let(:recording){ create(:recording) }
 
   it 'renders twiml to play a recorded message' do

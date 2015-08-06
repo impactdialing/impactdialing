@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'twiml/lead/answered.xml.erb' do
+describe 'twiml/lead/answered.html.erb' do
   let(:campaign){ create(:preview) }
   let(:caller_session) do
     create(:bare_caller_session, :webui, {
@@ -13,7 +13,8 @@ describe 'twiml/lead/answered.xml.erb' do
     double('CallFlow::Call::Dialed', {
       caller_session: caller_session,
       twiml_flag: :connect,
-      record_calls: 'false'
+      record_calls: 'false',
+      conference_name: caller_session.session_key
     })
   end
 
@@ -38,7 +39,7 @@ describe 'twiml/lead/answered.xml.erb' do
         beep: false,
         endConferenceOnExit: true
       }
-      render template: 'twiml/lead/answered.xml.erb'
+      render template: 'twiml/lead/answered.html.erb'
       expect(rendered).to dial_conference(dial_options, conference_options)
     end
   end
@@ -50,7 +51,7 @@ describe 'twiml/lead/answered.xml.erb' do
       allow(dialed_call).to receive(:recording_url){ recording_url }
     end
     it 'renders Play twiml' do
-      render template: 'twiml/lead/answered.xml.erb'
+      render template: 'twiml/lead/answered.html.erb'
       expect(rendered).to play(recording_url)
     end
   end
@@ -60,7 +61,7 @@ describe 'twiml/lead/answered.xml.erb' do
       allow(dialed_call).to receive(:twiml_flag){ :hangup }
     end
     it 'renders Hangup twiml' do
-      render template: 'twiml/lead/answered.xml.erb'
+      render template: 'twiml/lead/answered.html.erb'
       expect(rendered).to hangup
     end
   end

@@ -63,7 +63,7 @@ RSpec::Matchers.define :dial_conference do |dial_options, conference_options|
       end
     end.text
 
-    actual.strip == @twiml.strip
+    actual == @twiml
   end
 
   failure_message do |actual|
@@ -95,7 +95,7 @@ RSpec::Matchers.define :hangup do
   match do |actual|
     twiml = Twilio::TwiML::Response.new{|r| r.Hangup}.text
 
-    actual.strip == twiml.strip
+    actual == twiml
   end
 end
 
@@ -106,6 +106,6 @@ RSpec::Matchers.define :play do |expected_url|
       r.Hangup
     end.text
 
-    actual.strip == twiml.strip
+    actual == twiml
   end
 end

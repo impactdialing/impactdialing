@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'twiml/caller_sessions/create.xml.erb' do
+describe 'twiml/caller_sessions/create.html.erb' do
   let(:campaign){ create(:predictive) }
   let(:caller){ create(:caller, campaign: campaign) }
   let(:caller_session){ create(:webui_caller_session, caller: caller, campaign: campaign, session_key: 'caller-session-key') }
@@ -8,7 +8,7 @@ describe 'twiml/caller_sessions/create.xml.erb' do
   it 'renders Conference twiml' do
     assign(:caller, caller)
     assign(:caller_session, caller_session)
-    render template: 'twiml/caller_sessions/create.xml.erb'
+    render template: 'twiml/caller_sessions/create.html.erb'
 
     dial_options = {
       hangupOnStar: true,
