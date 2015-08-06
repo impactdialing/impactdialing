@@ -28,7 +28,7 @@ class CallFlow::Call::Lead < CallFlow::Call
   end
 
   def caller_session
-    if @caller_session_sid.present?
+    if caller_session_sid.present?
       CallFlow::CallerSession.new(account_sid, @caller_session_sid)
     end
   end
