@@ -10,9 +10,8 @@ describe Twiml::LeadController do
       'CallStatus'    => 'in-progress',
       'CallSid'       => 'CA123',
       'AccountSid'    => 'AC432',
-      'campaign_id'   => campaign.id,
-      'campaign_type' => campaign.type,
-      'format'        => 'xml'
+      'campaign_id'   => campaign.id.to_s,
+      'campaign_type' => campaign.type
     })
   end
   let(:caller_session) do
@@ -55,11 +54,11 @@ describe Twiml::LeadController do
     let(:campaign){ create(:predictive) }
     let(:status_callback_params) do
       twilio_params.merge(HashWithIndifferentAccess.new({
-        'CallDuration'      => 120,
+        'CallDuration'      => "120",
         'RecordingUrl'      => 'http://recordings.twilio.com/yep.mp3',
         'RecordingSid'      => 'RE-341',
-        'RecordingDuration' => 119,
-        'campaign_id'       => campaign.id
+        'RecordingDuration' => "119",
+        'campaign_id'       => campaign.id.to_s
       }))
     end
     let(:dialed_call) do

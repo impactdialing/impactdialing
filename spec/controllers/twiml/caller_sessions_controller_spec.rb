@@ -15,8 +15,7 @@ describe Twiml::CallerSessionsController do
         CallSid: 'CA-caller-session-123',
         AccountSid: 'AC-321',
         caller_id: caller.id,
-        session_key: generated_session_key,
-        format: :xml
+        session_key: generated_session_key
       }
     end
     let(:redis_caller_session) do
@@ -91,7 +90,7 @@ describe Twiml::CallerSessionsController do
       expected_endtime = nil
 
       Timecop.freeze do
-        post :dialing_prohibited, caller_session_id: caller_session.id, format: :xml
+        post :dialing_prohibited, caller_session_id: caller_session.id
 
         expected_endtime = Time.now
 
@@ -107,12 +106,12 @@ describe Twiml::CallerSessionsController do
     it 'sets @reason to caller_session.abort_dial_reason' do
       expect(caller_session).to receive(:abort_dial_reason){ :blah }
       allow(CallerSession).to receive(:find){ caller_session }
-      post :dialing_prohibited, caller_session_id: caller_session.id, format: :xml
+      post :dialing_prohibited, caller_session_id: caller_session.id
       expect(assigns[:reason]).to eq :blah
     end
 
     it 'renders twiml/caller_sessions/dialing_prohibited.xml' do
-      post :dialing_prohibited, caller_session_id: caller_session.id, format: :xml
+      post :dialing_prohibited, caller_session_id: caller_session.id
       expect(response).to render_template 'twiml/caller_sessions/dialing_prohibited'
     end
   end
