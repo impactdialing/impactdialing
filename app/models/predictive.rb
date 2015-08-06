@@ -84,10 +84,10 @@ class Predictive < Campaign
     return [] if houses.nil?
 
     houses.each do |house|
-      presented_households.save(house[:phone], house[:voters])
+      presented_households.save(house[:leads].first[:phone], house)
     end
 
-    houses.map{|house| house[:phone]}
+    houses.map{|house| house[:leads].first[:phone]}
   end
 
   def numbers_to_dial

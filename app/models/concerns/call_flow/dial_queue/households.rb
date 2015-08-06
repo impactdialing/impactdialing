@@ -72,6 +72,7 @@ public
   end
 
   def save(phone, members)
+    return nil if phone.blank?
     redis.hset( *hkey(phone), members.to_json )
   end
 
