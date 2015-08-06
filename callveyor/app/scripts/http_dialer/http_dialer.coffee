@@ -90,9 +90,12 @@ mod.factory('idHttpDialerFactory', [
         dialer.kick(caller, 'caller')
       else
         # console.log 'dialer.hangup - voter'
-        TwilioCache.put('disconnect_pending', 1)
-        url = "/call_center/api/#{call_id}/hangup"
-        $http.post(url)
+        #TwilioCache.put('disconnect_pending', 1)
+        url = "/call_center/api/hangup"
+        params = {
+          sid: call_id
+        }
+        $http.post(url, params)
 
     dialer.dropMessage = (call_id) ->
       usSpinnerService.spin('global-spinner')
