@@ -14,7 +14,8 @@ describe 'CallList::Imports' do
     {
       '1234567890' => {
         'leads' => [{'first_name' => 'john'}],
-        'uuid' => 'hh-uuid'
+        'uuid' => 'hh-uuid',
+        'score' => Time.now.utc.to_f
       }
     }
   end
@@ -202,7 +203,8 @@ describe 'CallList::Imports' do
                 {'custom_id' => 123, 'first_name' => 'jack', 'phone' => '1234567890'},
                 {'first_name' => 'aria', 'phone' => '1234567890'} # will not be saved due to missing custom id
               ],
-              'uuid'  => 'hh-uuid-123'
+              'uuid'  => 'hh-uuid-123',
+              'score' => Time.now.utc.to_f
             },
             '4567890123' => {
               'leads' => [
@@ -211,7 +213,8 @@ describe 'CallList::Imports' do
                 {'custom_id' => 456, 'first_name' => 'nathan', 'phone' => '4567890123'},
                 {'first_name' => 'sensa', 'phone' => '4567890123'} # will not be saved due to missing custom id
               ],
-              'uuid'  => 'hh-uuid-234'
+              'uuid'  => 'hh-uuid-234',
+              'score' => Time.now.to_f
             }
           }
         end
@@ -223,7 +226,8 @@ describe 'CallList::Imports' do
                 {'custom_id' => 234, 'first_name' => 'cirrus', 'phone' => '1234567890'},
                 {'first_name' => 'aria', 'phone' => '1234567890'} # will not be saved due to missing custom id
               ],
-              'uuid'  => 'hh-uuid-123'
+              'uuid'  => 'hh-uuid-123',
+              'score' => Time.now.to_f
             },
             '4567890123' => {
               'leads' => [
@@ -231,7 +235,8 @@ describe 'CallList::Imports' do
                 {'custom_id' => 456, 'first_name' => 'dani', 'phone' => '4567890123'},
                 {'first_name' => 'sensa', 'phone' => '4567890123'} # will not be saved due to missing custom id
               ],
-              'uuid'  => 'hh-uuid-234'
+              'uuid'  => 'hh-uuid-234',
+              'score' => Time.now.to_f
             }
           }
         end
