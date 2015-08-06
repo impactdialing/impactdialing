@@ -157,9 +157,10 @@ FactoryGirl.define do
   end
 
   factory :webui_caller_session do
-      state 'initial'
-      created_at Time.now
-      updated_at Time.now
+    caller
+    state 'initial'
+    created_at Time.now
+    updated_at Time.now
   end
 
   factory :phones_only_caller_session do

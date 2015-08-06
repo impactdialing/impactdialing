@@ -91,6 +91,10 @@ RSpec::Matchers.define :be_in_dial_queue_zset do |campaign_id, namespace|
   match do |phone|
     redis.zscore(key, phone).present?
   end
+
+  failure_message do |phone|
+    "expected #{phone} to be in dial queue zset #{key}\ngot #{redis.zrange(key, 0, -1)}"
+  end
 end
 
 RSpec::Matchers.define :have_zscore do |score|

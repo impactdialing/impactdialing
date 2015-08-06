@@ -71,6 +71,16 @@ RSpec::Matchers.define :dial_conference do |dial_options, conference_options|
   end
 end
 
+RSpec::Matchers.define :redirect_voice do |url, url_options={}|
+  match do |actual|
+    twiml = Twilio::TwiML::Response.new do |r|
+      r.Redirect(url, url_options)
+    end.text
+
+    actual == twiml
+  end
+end
+
 RSpec::Matchers.define :redirect do |url, url_options={}|
   match do |actual|
     twiml = Twilio::TwiML::Response.new do |r|

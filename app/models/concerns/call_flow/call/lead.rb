@@ -2,7 +2,7 @@ class CallFlow::Call::Lead < CallFlow::Call
   attr_reader :caller_session_sid
 
   def self.namespace
-    raise "Not implemented"
+    "lead"
   end
 
   def namespace

@@ -1,12 +1,16 @@
 require 'rails_helper'
 
 describe 'CallFlow::Call::Dialed' do
+  include ListHelpers
+
+  let(:caller_record){ create(:caller) }
   let(:caller_session) do
     create(:webui_caller_session, {
       campaign: campaign,
       sid: 'CA-caller-session-sid',
       on_call: true,
-      available_for_call: false
+      available_for_call: false,
+      caller: caller_record
     })
   end
   let(:twilio_params) do
@@ -17,6 +21,92 @@ describe 'CallFlow::Call::Dialed' do
       'campaign_id'   => campaign.id,
       'campaign_type' => campaign.type
     })
+  end
+
+  describe '#dispositioned(params)' do
+    let(:campaign){ create(:predictive) }
+    let(:voter_list){ create(:voter_list, campaign: campaign) }
+    let(:phone){ Forgery(:address).clean_phone }
+    let(:browser_params) do
+      HashWithIndifferentAccess.new({
+        'call_sid' => twilio_params[:CallSid],
+        'lead' => build_lead_hash(voter_list, phone).stringify_keys,
+        'question' => {
+          '42' => "123",
+          '43' => "128",
+          '44' => "136"
+        },
+        'notes' => {
+          'Suggestions' => 'Would like bouncier material.'
+        },
+        'stop_calling' => false
+      })
+    end
+
+    subject{ CallFlow::Call::Dialed.new(caller_record.telephony_provider_account_id, browser_params['call_sid']) }
+
+    let(:call_flow_caller_session){ double('CallFlow::CallerSession', {redirect_to_hold: nil}) } 
+
+    before do
+      subject.caller_session_sid = caller_session.sid
+      allow(CallFlow::CallerSession).to receive(:new).with(caller_record.telephony_provider_account_id, caller_session.sid){ call_flow_caller_session }
+    end
+
+    it 'saves params[:question] as JSON eg {question_id: selected_response_id,...}' do
+      subject.dispositioned(browser_params)
+      expect(subject.storage['questions']).to eq browser_params['question'].to_json
+    end
+
+    it 'saves params[:notes] as JSON eg {note_id: entered text,...}' do
+      subject.dispositioned(browser_params)
+      expect(subject.storage['notes']).to eq browser_params['notes'].to_json
+    end
+
+    it 'saves params[:lead] as JSON eg {phone: 123...,first_name: "John",...}' do
+      subject.dispositioned(browser_params)
+      expect(subject.storage['lead']).to eq browser_params['lead'].to_json
+    end
+
+    context 'params[:stop_calling] is false' do
+      it 'tells CallFlow::CallerSession instance to :redirect_to_hold' do
+        expect(call_flow_caller_session).to receive(:redirect_to_hold)
+        subject.dispositioned(browser_params)
+      end
+    end
+
+    context 'params[:stop_calling] is true' do
+      before do
+        browser_params.merge!({stop_calling: true})
+      end
+      it 'tells CallFlow::CallerSession instance to :stop_calling' do
+        expect(call_flow_caller_session).to receive(:stop_calling)
+        subject.dispositioned(browser_params)
+      end
+    end
+  end
+
+  describe '#manual_message_dropped' do
+    let(:campaign){ create(:power) }
+    let(:recording){ create(:recording, account: campaign.account) }
+
+    subject{ CallFlow::Call::Dialed.new(twilio_params[:AccountSid], twilio_params[:CallSid]) }
+
+    before do
+      subject.caller_session_sid = caller_session.sid
+      campaign.update_attribute(:recording_id, recording.id)
+    end
+
+    it 'records that a manual message was dropped' do
+      subject.manual_message_dropped(recording)
+      expect(subject.storage['status']).to eq CallAttempt::Status::VOICEMAIL
+      expect(subject.storage['recording_id']).to eq recording.id.to_s
+      expect(subject.storage['recording_delivered_manually']).to eq 'true'
+    end
+
+    it 'queues CallerPusherJob with "message_drop_success"' do
+      subject.manual_message_dropped(recording)
+      expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'message_drop_success')
+    end
   end
 
   describe '#completed' do

@@ -9,6 +9,7 @@ module ResqueHelpers
 end
 
 RSpec::Matchers.define :have_queued do |job_class|
+  jobs = nil
   match do |actual|
     queue_type, queue_name = *actual
     jobs                   = send("#{queue_type}_jobs", queue_name)
@@ -17,8 +18,12 @@ RSpec::Matchers.define :have_queued do |job_class|
       'args'  => [*@job_args]
     }
     jobs.include?(expected) or expected.keys.all? do |key|
-      jobs.first[key] == expected[key]
+      jobs.first.present? and jobs.first[key] == expected[key]
     end
+  end
+
+  failure_message do |actual|
+    "expected #{actual} to have queued #{job_class} with #{@job_args}\ngot #{jobs}"
   end
 
   chain :with do |*args|
