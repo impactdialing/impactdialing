@@ -188,7 +188,6 @@ describe PhonesOnlyCallerSession, :type => :model do
         @caller           = create(:caller, campaign: @campaign, account: @account)
         @caller_session   = create(:bare_caller_session, :phones_only, :available, {caller: @caller, campaign: @campaign})
         @voter            = create(:voter, campaign: @campaign)
-        @dial_queue       = cache_available_voters(@campaign)
       end
 
       it_behaves_like 'not fit to dial'
@@ -229,7 +228,6 @@ describe PhonesOnlyCallerSession, :type => :model do
         @campaign   = create(:power, script: @script)
         @caller     = create(:caller, campaign: @campaign)
         @voter      = create(:voter, campaign: @campaign)
-        @dial_queue = cache_available_voters(@campaign)
       end
 
       it "should render twiml for power when voters present" do
