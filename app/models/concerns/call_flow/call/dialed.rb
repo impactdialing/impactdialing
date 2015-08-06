@@ -3,7 +3,7 @@ class CallFlow::Call::Dialed < CallFlow::Call::Lead
 
 private
   def self.storage_key(rest_response)
-    CallFlow::Call::Storage.key(rest_response['account_sid'], rest_response['sid'], 'dialed')
+    CallFlow::Call::Storage.key(rest_response['account_sid'], rest_response['sid'], namespace)
   end
 
   def self.keys(campaign, rest_response)
@@ -43,29 +43,29 @@ private
     ImpactPlatform::Metrics.count(metric_name, 1, source.join('.'))
     @twiml_flag = :hangup
   end
-  def handle_successful_dial(campaign, caller_session, params)
+  def handle_successful_dial(campaign, caller_session_record, params)
     if campaign.predictive? and answered_by_human?(params)
-      Twillio.predictive_dial_answered(caller_session, params)
+      Twillio.predictive_dial_answered(caller_session_record, params)
     end
 
     if answered_by_human?(params) and call_in_progress?(params)
-      attempt_connection(campaign, caller_session, params)
+      attempt_connection(campaign, caller_session_record, params)
     else
-      call_answered_by_machine(campaign, caller_session, params)
+      call_answered_by_machine(campaign, caller_session_record, params)
     end
   end
-  def attempt_connection(campaign, caller_session, params)
-    if caller_session.on_call? and (not caller_session.available_for_call?)
-      RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session.id)
-      VoterConnectedPusherJob.add_to_queue(caller_session.id, params[:CallSid])
+  def attempt_connection(campaign, caller_session_record, params)
+    if caller_session_record.on_call? and (not caller_session_record.available_for_call?)
+      RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session_record.id)
+      VoterConnectedPusherJob.add_to_queue(caller_session_record.id, params[:CallSid])
       @twiml_flag   = :connect
       @record_calls = campaign.account.record_calls.to_s
     else
       @twiml_flag = :hangup
     end
   end
-  def call_answered_by_machine(campaign, caller_session, params)
-    RedirectCallerJob.add_to_queue(caller_session.id)
+  def call_answered_by_machine(campaign, caller_session_record, params)
+    RedirectCallerJob.add_to_queue(caller_session_record.id)
     answering_machine_agent = AnsweringMachineAgent.new(campaign, storage[:phone])
 
     if answering_machine_agent.leave_message?
@@ -106,13 +106,13 @@ public
   end
 
   def caller_session_from_sid
-    @caller_session ||= CallerSession.where(sid: self.caller_session_sid).first
+    @caller_session ||= ::CallerSession.where(sid: self.caller_session_sid).first
   end
 
   def caller_session_from_id(campaign, params)
     @caller_session ||= if campaign.predictive? and answered_by_human?(params)
                           caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign.id)
-                          CallerSession.find(caller_session_id)
+                          ::CallerSession.find(caller_session_id)
                         end
   end
 
@@ -121,10 +121,10 @@ public
     campaign.number_not_ringing
     storage.save(params_for_update(params))
 
-    caller_session = caller_session_from_id(campaign, params) || caller_session_from_sid
+    caller_session_record = caller_session_from_id(campaign, params) || caller_session_from_sid
 
     unless params['ErrorCode'] and params['ErrorUrl']
-      handle_successful_dial(campaign, caller_session, params)
+      handle_successful_dial(campaign, caller_session_record, params)
     else
       handle_failed_dial(campaign, params)
     end
