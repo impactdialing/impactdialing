@@ -1,4 +1,6 @@
 class TwimlController < ApplicationController  
+  layout false
+
 private
   def render_abort_twiml_unless_fit_to(point_in_call_flow, caller_session, &block)
     unless block_given?
