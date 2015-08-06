@@ -105,7 +105,7 @@ describe 'CallFlow::Call::Dialed' do
 
     it 'queues CallerPusherJob with "message_drop_success"' do
       subject.manual_message_dropped(recording)
-      expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'message_drop_success')
+      expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'publish_message_drop_success', {})
     end
   end
 
@@ -129,7 +129,7 @@ describe 'CallFlow::Call::Dialed' do
 
     it 'queues CallerPusherJob for call_ended' do
       subject.completed(campaign, status_callback_params)
-      expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'call_ended')
+      expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'publish_call_ended', status_callback_params)
     end
 
     it 'updates storage with twilio params' do
@@ -187,7 +187,7 @@ describe 'CallFlow::Call::Dialed' do
     end
 
     it 'queues CallerPusherJob for voter_disconnected' do
-      expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'publish_voter_disconnected')
+      expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'publish_voter_disconnected', {})
     end
 
     it 'updates storage with twilio params' do
