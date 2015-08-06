@@ -228,11 +228,11 @@ mod.factory('idCallFlow', [
         #
         # Purpose: notify the client that the household (aka voter) has answered.
         #
-        # @param {object} {call_id: Integer} The MySQL ID of the call record.
+        # @param {object} {call_sid: String} The Twilio SID of the call.
         voterConnected: (data) ->
           # console.log 'voter_connected', data
-          CallCache.put('id', data.call_id)
-          $window.idDebugData.call_id = data.call_id
+          CallCache.put('id', data.call_sid)
+          $window.idDebugData.call_sid = data.call_sid
           p = $state.go('dialer.active')
           p.catch(idTransitionPrevented)
           # console.log CallCache.get('id'), CallCache.info()
@@ -245,16 +245,16 @@ mod.factory('idCallFlow', [
         # Purpose: notify the client that the household (aka voter) has answered and
         # who the household is (i.e. send household data to the client).
         #
-        # @param {object} {call_id: Integer, voter: Object} The Object assigned to
+        # @param {object} {call_sid: String, voter: Object} The Object assigned to
         # the voter key describes the household.
         voterConnectedDialer: (data) ->
           # console.log 'voter_connected_dialer', data
           transitionSuccess = ->
             HouseholdCache.put('data', data.household)
             $rootScope.$broadcast('household:changed')
-            CallCache.put('id', data.call_id)
+            CallCache.put('id', data.call_sid)
             $window.idDebugData.household = data.household
-            $window.idDebugData.call_id   = data.call_id
+            $window.idDebugData.call_sid   = data.call_sid
 
           p = $state.go('dialer.active')
           p.then(transitionSuccess, idTransitionPrevented)
