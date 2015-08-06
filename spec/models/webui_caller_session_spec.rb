@@ -15,27 +15,9 @@ describe WebuiCallerSession, :type => :model do
         @caller = create(:caller, campaign: @callers_campaign, account: @account)
       end
 
-      it "should render correct twiml" do
-        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        expect(caller_session).to receive(:funds_not_available?).and_return(false)        
-        expect(caller_session).to receive(:subscription_limit_exceeded?).and_return(false)
-        expect(caller_session).to receive(:time_period_exceeded?).and_return(false)
-        expect(RedisOnHoldCaller).to receive(:add).with(@campaign.id, caller_session.id)
-        expect(caller_session).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
-
-        dial_options = {
-          hangupOnStar: true,
-          action: pause_caller_url(@caller, session_id: caller_session.id)
-        }
-        conference_options = {
-          startConferenceOnEnter: false,
-          endConferenceOnExit: true,
-          beep: true,
-          waitUrl: 'hold_music',
-          waitMethod: 'GET'
-        }
-        expect(caller_session.start_conf).to dial_conference(dial_options, conference_options)
-      end
+      it 'sets up data in redis for new conference'
+      it 'publishes :start_calling event'
+      it 'queues CallerPusherJob w/ caller_conference_started'
     end
   end
 
@@ -63,28 +45,9 @@ describe WebuiCallerSession, :type => :model do
         @call_attempt = create(:call_attempt)
       end
 
-      it "should render correct twiml if caller is ready" do
-        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", attempt_in_progress: @call_attempt)
-        expect(caller_session).to receive(:funds_not_available?).and_return(false)        
-        expect(caller_session).to receive(:subscription_limit_exceeded?).and_return(false)
-        expect(caller_session).to receive(:time_period_exceeded?).and_return(false)
-
-        expect(RedisOnHoldCaller).to receive(:add).with(@campaign.id,caller_session.id)
-        expect(caller_session).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
-
-        dial_options = {
-          hangupOnStar: true,
-          action: pause_caller_url(@caller, session_id: caller_session.id)
-        }
-        conference_options = {
-          startConferenceOnEnter: false,
-          endConferenceOnExit: true,
-          beep: true,
-          waitUrl: 'hold_music',
-          waitMethod: 'GET'
-        }
-        expect(caller_session.start_conf).to dial_conference(dial_options, conference_options)
-      end
+      it 'sets up data in redis for new conference'
+      it 'publishes :start_calling event'
+      it 'queues CallerPusherJob w/ caller_conference_started'
     end
 
     describe "stop calling" do
@@ -112,54 +75,6 @@ describe WebuiCallerSession, :type => :model do
       it "should render hangup twiml" do
         caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
         expect(caller_session.campaign_out_of_phone_numbers).to say("This campaign has run out of phone numbers.").and_hangup
-      end
-    end
-  end
-
-  describe "paused state" do
-    describe "time_period_exceeded" do
-      before(:each) do
-        @account = create(:account)
-        @script = create(:script)
-        @campaign =  create(:preview, script: @script,:start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")
-        @caller = create(:caller, campaign: @campaign, account: @account)
-      end
-
-      it "should render correct twiml" do
-        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
-        expect(caller_session).to receive(:funds_not_available?).and_return(false)        
-        expect(caller_session).to receive(:subscription_limit_exceeded?).and_return(false)
-        expect(caller_session).to receive(:time_period_exceeded?).and_return(true)
-        expect(caller_session.start_conf).to say("You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.").and_hangup
-      end
-    end
-
-    describe "connected" do
-      before(:each) do
-        @script = create(:script)
-        @campaign =  create(:preview, script: @script)
-        @caller = create(:caller, campaign: @campaign)
-      end
-
-      it "should render correct twiml" do
-        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
-        expect(caller_session).to receive(:funds_not_available?).and_return(false)        
-        expect(caller_session).to receive(:subscription_limit_exceeded?).and_return(false)
-        expect(caller_session).to receive(:time_period_exceeded?).and_return(false)
-        expect(caller_session).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
-
-        dial_options = {
-          hangupOnStar: true,
-          action: pause_caller_url(@caller, session_id: caller_session.id)
-        }
-        conference_options = {
-          startConferenceOnEnter: false,
-          endConferenceOnExit: true,
-          beep: true,
-          waitUrl: 'hold_music',
-          waitMethod: 'GET'
-        }
-        expect(caller_session.start_conf).to dial_conference(dial_options, conference_options)
       end
     end
   end
