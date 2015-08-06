@@ -1,9 +1,16 @@
 require 'rails_helper'
 
 describe 'CallFlow::DialQueue::Jobs::Purge.perform(campaign_id)' do
+  include ListHelpers
+
   let(:campaign){ create(:power) }
-  let!(:available_voters){ create_list(:voter, 5, campaign: campaign) }
-  let!(:recycled_voters){ create_list(:voter, 5, campaign: campaign) }
+  let(:voter_list){ create(:voter_list, campaign: campaign) }
+  let(:available_households) do
+    build_household_hashes(5, voter_list)
+  end
+  let(:recycled_households) do
+    build_household_hashes(5, voter_list)
+  end
 
   let(:set_keys_under_test) do
     [
@@ -16,22 +23,16 @@ describe 'CallFlow::DialQueue::Jobs::Purge.perform(campaign_id)' do
     campaign.dial_queue.households.send(:keys)[:active]
   end
   let(:dial_queue){ campaign.dial_queue }
+  let(:redis){ Redis.new }
 
   before do
-    Redis.new.flushall
+    redis.flushall
 
-    recycled_voters.each do |voter|
-      voter.household.update_attributes!({
-        presented_at: 10.minutes.ago,
-        status: CallAttempt::Status::BUSY
-      })
+    import_list(voter_list, available_households.merge(recycled_households))
+    set_keys_under_test.each do |key|
+      redis.zadd key, [rand(10), Forgery(:address).clean_phone]
     end
-
-    dial_queue.cache_all(campaign.reload.all_voters)
-    dial_queue.next(1)
-    expect(dial_queue.available.all.size).to eq 4
-    expect(dial_queue.available.all(:presented).size).to eq 1
-    expect(dial_queue.recycle_bin.size).to eq 5
+    
     expect(dial_queue.households.exists?).to be_truthy
   end
 

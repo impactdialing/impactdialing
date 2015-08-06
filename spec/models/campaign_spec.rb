@@ -68,9 +68,12 @@ describe Campaign, :type => :model do
     end
 
     describe 'dial queue lifecycle' do
+      include ListHelpers
+
       before do
         Redis.new.flushall
       end
+      let(:voter_list){ create(:voter_list, campaign: campaign) }
 
       let(:purge_job) do
         {
@@ -79,7 +82,7 @@ describe Campaign, :type => :model do
         }
       end
       it 'queues purge when a campaign is archived and a dial queue is present' do
-        campaign.dial_queue.cache(create(:voter, campaign: campaign))
+        import_list(voter_list, build_household_hash(voter_list))
         campaign.active = false
         campaign.save!
 
