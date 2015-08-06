@@ -1,5 +1,5 @@
 class CallFlow::Call::Dialed < CallFlow::Call::Lead
-  attr_reader :twiml_flag, :recording_url, :record_calls
+  attr_reader :twiml_flag, :recording_url, :record_calls, :conference_name
 
 private
   def self.storage_key(rest_response)
@@ -122,6 +122,8 @@ public
     storage.save(params_for_update(params))
 
     caller_session_record = caller_session_from_id(campaign, params) || caller_session_from_sid
+
+    @conference_name = caller_session_record.session_key
 
     unless params['ErrorCode'] and params['ErrorUrl']
       handle_successful_dial(campaign, caller_session_record, params)
