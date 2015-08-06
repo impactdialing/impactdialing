@@ -25,19 +25,6 @@ module FakeCallData
 
   def process_presented(campaign)
     dial_queue = campaign.dial_queue
-    stale      = dial_queue.available.presented_and_stale
-
-    stale.each do |scored_phone|
-      score     = scored_phone.last
-      phone     = scored_phone.first
-      household = campaign.households.find_by_phone(phone)
-
-      household.update_attributes({
-        presented_at: Time.at(score)
-      })
-      dial_queue.dialed(household)
-    end
-
     dial_queue.recycle!
   end
 

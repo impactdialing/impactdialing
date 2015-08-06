@@ -2,15 +2,7 @@ require 'rails_helper'
 
 
 describe Power, :type => :model do
-  include FakeCallData
-
-  describe "next voter to be dialed" do
-    let(:campaign){ create(:power) }
-    let(:dial_queue) do
-      CallFlow::DialQueue.new(campaign)
-    end
-    it_behaves_like 'Preview/Power#next_in_dial_queue'
-  end
+  # todo...
 end
 
 # ## Schema Information
