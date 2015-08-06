@@ -145,18 +145,15 @@ describe VoterListsController, :type => :controller do
           it "renders voter_list attributes as json" do
             vcr do
               post :create, params.merge(upload: csv_upload)
-              expect(response.body).to eq VoterList.select([:id, :name, :enabled]).last.to_json
+              expect(response.body).to eq VoterList.select([:id, :name, :campaign_id, :enabled, :skip_wireless]).last.to_json
             end
           end
 
           it 'queues VoterListUploadJob' do
             vcr do
               post :create, params.merge(upload: csv_upload)
-              expect(Resque.peek(:dial_queue, 0, 100)).to include({
-                'class' => 'VoterListUploadJob',
-                'args' => [anything, anything, anything]
-              })
             end
+            expect([:resque, :import]).to have_queued(CallList::Jobs::Import).with(VoterList.last.id, account.users.first.email)
           end
         end
 
