@@ -160,5 +160,23 @@ public
     })
     caller_session.emit('publish_message_drop_success')
   end
+
+  def dispositioned(params)
+    storage.save({
+      questions: params[:question].try(:to_json),
+      notes: params[:notes].try(:to_json),
+      lead: params[:lead].try(:to_json)
+    })
+
+    unless params[:stop_calling]
+      caller_session.redirect_to_hold
+    else
+      caller_session.stop_calling
+    end
+  end
+
+  def drop_message
+    Providers::Phone::Jobs::DropMessage.add_to_queue(caller_session_sid, sid)
+  end
 end
 

@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe Callers::StationController do
   include FakeCallData
+  include ListHelpers
 
   before do
     admin       = create(:user)
@@ -9,6 +10,87 @@ describe Callers::StationController do
     @account    = admin.account
     @campaign   = create_campaign_with_script(:bare_power, @account).last
     @caller     = create(:caller, {campaign: @campaign, account: @account})
+  end
+
+  shared_context 'browser requests' do
+    let(:voter_list){ create(:voter_list, campaign: @campaign) }
+    let(:phone){ Forgery(:address).clean_phone }
+    let(:call_sid){ 'CA-123' }
+    let(:browser_params) do
+      {
+        'sid' => call_sid,
+        'lead' => build_lead_hash(voter_list, phone).stringify_keys,
+        'question' => {
+          '42' => "123",
+          '43' => "128",
+          '44' => "136"
+        },
+        'notes' => {
+          'Suggestions' => 'Would like bouncier material.'
+        }
+      }
+    end
+
+    before do
+      login_as(@caller)
+    end
+  end
+
+  describe '#drop_message' do
+    include_context 'browser requests'
+    let(:dialed_call){ double('CallFlow::Call::Dialed', {drop_message: nil}) }
+
+    before do
+      allow(CallFlow::Call::Dialed).to receive(:new){ dialed_call }
+    end
+
+    it 'tells CallFlow::Call::Dialed instance :drop_message' do
+      expect(dialed_call).to receive(:drop_message)
+      post :drop_message, browser_params
+    end
+
+    it 'renders nothing' do
+      post :drop_message, browser_params
+      expect(response.body).to be_blank
+    end
+  end
+
+  describe '#disposition' do
+    include_context 'browser requests'
+    let(:dialed_call){ double('CallFlow::Call::Dialed', caller_session_sid: 'ca-321', dispositioned: nil) }
+
+    before do
+      allow(CallFlow::Call::Dialed).to receive(:new){ dialed_call }
+    end
+
+    it 'tells CallFlow::Call::Dialed instance :dispositioned' do
+      expected_params = browser_params.merge({
+        'action' => 'disposition',
+        'controller' => 'callers/station'
+      })
+      expect(dialed_call).to receive(:dispositioned).with(expected_params)
+
+      post :disposition, browser_params
+    end
+
+    it 'renders nothing' do
+      post :disposition, browser_params
+      expect(response.body).to be_blank
+    end
+  end
+
+  describe '#hangup_lead' do
+    include_context 'browser requests'
+
+    it 'queues EndRunningCallJob' do
+      post :hangup_lead, sid: call_sid
+      expect([:sidekiq, :call_flow]).to have_queued(EndRunningCallJob).with(call_sid)
+    end
+
+    it 'renders nothing' do
+      post :hangup_lead, sid: call_sid
+      expect(response.body).to be_blank
+    end
   end
 
   describe '#login' do

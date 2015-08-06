@@ -12,6 +12,7 @@
 #
 class Providers::Phone::Jobs::DropMessage
   include Sidekiq::Worker
+  extend SidekiqSelfQueue
   # This job should only fail in exceptional circumstances. Retries should occur
   # in lower-level dependencies (ie `Providers::Phone::Call.play_message_for`).
   sidekiq_options :retry => false
@@ -22,28 +23,27 @@ public
   # When an error occurs making the request to drop the message, then we let the
   # caller know via voice redirect & pusher job.
   #
-  def perform(call_id)
-    @call = Call.includes(:call_attempt).find call_id
-
-    response = request_message_drop
+  def perform(caller_session_sid, call_sid)
+    response = request_message_drop(call_sid)
 
     if response.error?
-      notify_client_of_error(response)
-      redirect_caller_to_error
+      caller_session = CallerSession.where(sid: caller_session_sid).first
+      notify_client_of_error(caller_session, response)
+      redirect_caller_to_error(caller_session)
     end
   end
 
 private
-  def request_message_drop
-    Providers::Phone::Call.play_message_for(@call)
+  def request_message_drop(call_sid)
+    Providers::Phone::Call.play_message_for(call_sid)
   end
 
-  def redirect_caller_to_error
-    Providers::Phone::Call.redirect_for(@call.caller_session, :play_message_error)
+  def redirect_caller_to_error(caller_session)
+    Providers::Phone::Call.redirect_for(caller_session, :play_message_error)
   end
 
-  def notify_client_of_error(response)
-    @call.caller_session.publish_message_drop_error(I18n.t('dialer.message_drop.failed'), {
+  def notify_client_of_error(caller_session, response)
+    caller_session.publish_message_drop_error(I18n.t('dialer.message_drop.failed'), {
       response: response.response
     })
   end

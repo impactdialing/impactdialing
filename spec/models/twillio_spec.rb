@@ -4,6 +4,7 @@ describe Twillio do
   include FakeCallData
   
   let(:account){ create(:account) }
+  let(:redis){ Redis.new }
 
   before do
     Redis.new.flushall
@@ -29,28 +30,11 @@ describe Twillio do
     }
   end
 
-  shared_examples 'all Twillio.dials' do
-    it 'create CallAttempt record associated to target household & campaign' do
-      call_attempt = CallAttempt.last
-      
-      expect(call_attempt).to be_present
-      expect(household.call_attempts.last).to eq call_attempt
-      expect(campaign.call_attempts.last).to eq call_attempt
-    end
-
-    it 'create Call record associated to CallAttempt' do
-      call = Call.last
-
-      expect(call).to be_present
-      expect(call.call_attempt).to eq CallAttempt.last
-    end
-  end
-
   shared_examples 'all success Twillio.dials' do
-    it 'updates CallAttempt w/ SID from response to make call' do
-      call_attempt = CallAttempt.last
-      expect(call_attempt.sid).to be_present
-      expect(call_attempt.sid).to be =~ /CA.*/
+    it 'creates a CallFlow::Call::Dialed (redis) record' do
+      expect(dialed_call.sid).to eq call_sid
+      expect(dialed_call.account_sid).to eq account_sid
+      expect(dialed_call.storage['status']).to eq call_status
     end
 
     it 'adds 1 to campaign.ringing_count' do
@@ -59,9 +43,6 @@ describe Twillio do
   end
 
   shared_examples 'Predictive success Twillio.dials' do
-    it 'subtracts 1 from campaign.presented_count and ' do
-      expect(campaign.presented_count).to eq 0
-    end
   end
 
   shared_examples 'Predictive failed Twillio.dials' do
@@ -94,17 +75,22 @@ describe Twillio do
     let(:phone){ '15418703001' }
   end
 
+  shared_context 'dialed call' do
+    let(:account_sid){ @twilio_response['account_sid'] }
+    let(:call_sid){ @twilio_response['sid'] }
+    let(:call_status){ 'queued' }
+    let(:dialed_call) do
+      CallFlow::Call::Dialed.new(account_sid, call_sid)
+    end
+  end
+
   describe 'Twillio.dial (Preview/Power)' do
     let(:campaign) do
       create_campaign_with_script(:bare_preview, account).last
     end
-    let(:account_sid){ @twilio_response['account_sid'] }
-    let(:call_sid){ @twilio_response['sid'] }
-    let(:dialed_call) do
-      CallFlow::Call::Dialed.new(account_sid, call_sid)
-    end
 
     include_context 'Twillio setup'
+    include_context 'dialed call'
 
     context 'success' do
       before do
@@ -114,14 +100,7 @@ describe Twillio do
         end
       end
 
-      #it_behaves_like 'all Twillio.dials' => creates CallAttempt & Call w/ proper associations
-      #it_behaves_like 'all success Twillio.dials' => updates CallAttempt SID & increments ringing_count
-
-      it 'creates a CallFlow::Call::Dialed (redis) record' do
-        expect(dialed_call.sid).to eq call_sid
-        expect(dialed_call.account_sid).to eq account_sid
-        expect(dialed_call.storage['status']).to eq @twilio_response['status']
-      end
+      it_behaves_like 'all success Twillio.dials' 
 
       it 'updates CallerSession w/ attempt in progress & available for call flags' do
         expect(caller_session.on_call).to be_truthy
@@ -161,6 +140,13 @@ describe Twillio do
       create_campaign_with_script(:bare_predictive, account).last
     end
 
+    let(:account_sid){ 'AC0987654321' }
+    let(:call_sid){ 'CA1234567890' }
+    let(:call_status){ 'queued' }
+    let(:dialed_call) do
+      CallFlow::Call::Dialed.new(account_sid, call_sid)
+    end
+
     # ugh; todo: figure out how to hook vcr up w/ eventmachine
     class EmHttpFake
       def callback(&block)
@@ -171,28 +157,39 @@ describe Twillio do
       def response
         {
           status: 200,
-          sid: 'CA1234567890'
+          sid: 'CA1234567890',
+          account_sid: 'AC0987654321'
         }.to_json
       end
     end
 
     include_context 'Twillio setup'
+    #include_context 'dialed call'
 
     context 'success' do
       before do
         campaign.number_presented(1)
 
-        twilio_lib = double('TwilioLib instance', {
-          make_call_em: EmHttpFake.new
-        })
-        iterator = double('EmHttpIterator', {return: nil})
-        allow(TwilioLib).to receive(:new){ twilio_lib }
-        Twillio.dial_predictive_em(iterator, household)
+        #twilio_lib = double('TwilioLib instance', {
+        #  make_call_em: EmHttpFake.new
+        #})
+        #iterator = double('EmHttpIterator', {return: nil})
+        #allow(TwilioLib).to receive(:new){ twilio_lib }
+        require "em-synchrony/fiber_iterator"
+        VCR.use_cassette('Twillio.dial_predictive_em success') do
+          EM.synchrony do
+            EM::Synchrony::FiberIterator.new([phone], 1).map do |phone,iter|
+              Twillio.dial_predictive_em(iter, campaign, phone)
+            end
+            EventMachine.stop
+          end
+        end
       end
 
-      it_behaves_like 'all Twillio.dials'
       it_behaves_like 'all success Twillio.dials'
-      it_behaves_like 'Predictive success Twillio.dials'
+      it 'subtracts 1 from campaign.presented_count and ' do
+        expect(campaign.presented_count).to eq 0
+      end
     end
 
     context 'fail' do
@@ -222,10 +219,9 @@ describe Twillio do
         allow(TwilioLib).to receive(:new){ twilio_lib }
 
         household.update_attributes!(phone: twilio_invalid_to)
-        Twillio.dial_predictive_em(iterator, household)
+        @twilio_response = Twillio.dial_predictive_em(iterator, household)
       end
 
-      it_behaves_like 'all Twillio.dials'
       it_behaves_like 'all failed Twillio.dials'
       it_behaves_like 'Predictive failed Twillio.dials'
 

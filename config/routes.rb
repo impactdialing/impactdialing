@@ -60,19 +60,6 @@ ImpactDialing::Application.routes.draw do
   get "/", :to => "callers/station#show", :constraints => {:subdomain => "caller"}
   root :to => "client#login"
 
-  resources :calls do
-    member do
-      post :flow
-      post :call_ended
-      post :incoming
-      post :hangup
-      post :disconnected
-      post :submit_result
-      post :submit_result_and_stop
-      post :play_message
-    end
-  end
-
   resources :caller, :only => [:index] do
     collection do
       get :login
@@ -118,12 +105,6 @@ ImpactDialing::Application.routes.draw do
   end
   # other TwiML
   post 'caller/start_calling', :to => 'caller#start_calling'
-  resources :calls, only: [] do
-    member do
-      post :incoming
-      post :play_message
-    end
-  end
 
   post 'callin/create', :to => 'callin#create', :as => :callin_caller
   post :end_caller_session, :to =>'caller/end_session'
@@ -153,20 +134,37 @@ ImpactDialing::Application.routes.draw do
   post '/app/login', :to => 'callers/station#login'
   post '/app/logout', :to => 'callers/station#logout', :as => :callveyor_logout
   # /new customer facing end-point
-  # new api rough draft
+
   post 'call_center/api/call_station', :to => 'callers/station#create'
   get 'call_center/api/twilio_token', :to => 'callers/station#twilio_token'
   get 'call_center/api/survey_fields', :to => 'callers/station#script'
+
+  # removing :id dependency
+  #post 'call_center/api/call_lead', :to => 'callers/station#call_lead' # replaces caller#call_voter
+  post 'call_center/api/hangup', :to => 'callers/station#hangup_lead' # replaces calls#hangup
+  #post 'call_center/api/skip_lead', :to => 'callers/station#next_lead' # replaces caller#skip_voter
+  post 'call_center/api/drop_message', :to => 'callers/station#drop_message' # replaces calls#drop_message
+
+  #post 'call_center/api/call_transfer', :to => 'callers/station#call_transfer'
+  #post 'call_center/api/hangup_transfer', :to => 'callers/station#hangup_transfer'
+  #post 'call_center/api/leave_transfer', :to => 'callers/station#leave_transfer'
+
+  post 'call_center/api/disposition', :to => 'callers/station#disposition' # replaces calls#submit_result & calls#submit_result_and_stop
+
+  #post 'call_center/api/stop_calling', :to => 'callers/station#stop_calling'
+
+  # new api rough draft
     # include :id in path for back compat. remove later...
-  post 'call_center/api/:id/submit_result', :to => 'calls#submit_result'
-  post 'call_center/api/:id/submit_result_and_stop', :to => 'calls#submit_result_and_stop'
-  post 'call_center/api/:id/hangup', :to => 'calls#hangup'
+  #post 'call_center/api/:id/submit_result', :to => 'calls#submit_result'
+  #post 'call_center/api/:id/submit_result_and_stop', :to => 'calls#submit_result_and_stop'
+  #post 'call_center/api/:id/hangup', :to => 'calls#hangup'
+  #post 'call_center/api/:id/drop_message', :to => 'calls#drop_message'
+
   post 'call_center/api/:id/call_voter', :to => 'caller#call_voter'
   post 'call_center/api/transfer/dial', :to => 'transfer#dial'
   post 'call_center/api/:id/stop_calling', :to => 'caller#stop_calling'
   post 'call_center/api/:id/skip_voter', :to => 'caller#skip_voter'
   post 'call_center/api/:id/kick', :to => 'caller#kick'
-  post 'call_center/api/:id/drop_message', :to => 'calls#drop_message'
   # /new api rough draft
 
   get '/policies', :to => 'client#policies'

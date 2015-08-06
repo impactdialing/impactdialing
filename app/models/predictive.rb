@@ -130,7 +130,7 @@ class Predictive < Campaign
     {event: 'caller_connected_dialer',data: {}}
   end
 
-  def voter_connected_event(call)
+  def voter_connected_event(call_sid)
     data  = CallFlow::Web::Data.new(script)
     phone = call.call_attempt.household.phone
     voters = presented_households.find(phone)
@@ -144,7 +144,7 @@ class Predictive < Campaign
       event: 'voter_connected_dialer',
       data: {
         household: data.build(house),
-        call_id:   call.id
+        call_sid:   call_sid
       }
     }
   end

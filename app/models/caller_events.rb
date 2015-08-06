@@ -16,23 +16,22 @@ module CallerEvents
       pushit('start_calling', {caller_session_id: id, dialer: campaign.type})
     end
 
-    def publish_voter_connected(call_id)
-      call = Call.includes(call_attempt: {household: :voters}).find(call_id)
+    def publish_voter_connected(call_sid)
 
       if caller.is_phones_only? and campaign.predictive?
         # assign first available voter in household to call attempt
-        household = call.call_attempt.household
-        voter     = household.voters.detect{|v| v.not_called?}
-        voter   ||= household.voters.detect{|v| v.call_back or v.retry?}
-        voter   ||= household.voters.sort_by(&:updated_at).first
-        call.call_attempt.update_attributes({
-          voter_id: voter.id
-        })
+        #household = call.call_attempt.household
+        #voter     = household.voters.detect{|v| v.not_called?}
+        #voter   ||= household.voters.detect{|v| v.call_back or v.retry?}
+        #voter   ||= household.voters.sort_by(&:updated_at).first
+        #call.call_attempt.update_attributes({
+        #  voter_id: voter.id
+        #})
 
-        return 
+        #return 
       end
 
-      event_hash = campaign.voter_connected_event(call)
+      event_hash = campaign.voter_connected_event(call_sid)
 
       pushit(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
     end

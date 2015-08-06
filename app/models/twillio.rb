@@ -131,14 +131,16 @@ class Twillio
   end
 
   def self.predictive_dial_answered(caller_session, params)
-    mark_caller_unavailable(caller_session)
-    p "got params: #{params}"
+    mark_caller_unavailable(caller_session) if caller_session.on_call? # caller may have disconnected
     dialed_call                    = CallFlow::Call::Dialed.new(params[:AccountSid], params[:CallSid])
     dialed_call.caller_session_sid = caller_session.sid
   end
 
-  def self.create_dialed_call(campaign, response, caller_session=nil)
-    optional_properties = {}
+  def self.create_dialed_call(campaign, response, phone, caller_session=nil)
+    optional_properties = {
+      phone: phone,
+      campaign_id: campaign.id
+    }
     if caller_session.present?
       optional_properties[:caller_session_sid] = caller_session.sid
     end
@@ -148,7 +150,7 @@ class Twillio
 
   def self.handle_succeeded_call(phone, campaign, caller_session, response)
     count_dial_success(campaign, caller_session)
-    create_dialed_call(campaign, response, caller_session)
+    create_dialed_call(campaign, response, phone, caller_session)
     mark_caller_unavailable(caller_session)
 
     response

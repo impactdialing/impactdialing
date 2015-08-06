@@ -4,11 +4,9 @@ describe Providers::Phone::Jobs::DropMessage do
   let(:recording){ create(:recording) }
   let(:campaign){ create(:power, {recording: recording}) }
   let(:caller){ create(:caller, {campaign: campaign}) }
-  let(:caller_session){ create(:webui_caller_session, {caller: caller}) }
-  let(:voter){ create(:voter, {campaign: campaign}) }
-  let(:call_attempt){ create(:call_attempt, {voter: voter, campaign: campaign, caller_session: caller_session}) }
-  let(:call){ create(:call, {call_attempt: call_attempt}) }
+  let(:caller_session){ create(:webui_caller_session, {caller: caller, sid: 'CA-321'}) }
   let(:response){ double('Response', {error?: false}) }
+  let(:call_sid){ 'CA-123' }
 
   subject{ Providers::Phone::Jobs::DropMessage.new }
 
@@ -18,13 +16,8 @@ describe Providers::Phone::Jobs::DropMessage do
   end
 
   it 'tells Providers::Phone::Call play_message_for call' do
-    expect(Providers::Phone::Call).to receive(:play_message_for).with(call){ response }
-    subject.perform(call.id)
-  end
-
-  context 'when message plays successfully' do
-    it 'caller is redirect automatically via action attr on Dial verb from previous TwiML' do
-    end
+    expect(Providers::Phone::Call).to receive(:play_message_for).with(call_sid){ response }
+    subject.perform(caller_session.sid, call_sid)
   end
 
   context 'when message play fails' do
@@ -39,11 +32,11 @@ describe Providers::Phone::Jobs::DropMessage do
       expect(subject).to receive(:notify_client_of_error)
       # odd error re: backtrace arguments when attempting to set expectation
       # on caller_session
-      subject.perform(call.id)
+      subject.perform(caller_session.sid, call_sid)
     end
     it 'redirects caller voice to play_message_error' do
       expect(Providers::Phone::Call).to receive(:redirect_for).with(caller_session, :play_message_error)
-      subject.perform(call.id)
+      subject.perform(caller_session.sid, call_sid)
     end
   end
 end

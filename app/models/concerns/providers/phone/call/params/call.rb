@@ -3,12 +3,12 @@
 # callees.
 #
 class Providers::Phone::Call::Params::Call
-  attr_reader :active_call
+  attr_reader :call_sid
 
   include Rails.application.routes.url_helpers
 
-  def initialize(active_call, type=:default)
-    @active_call = active_call
+  def initialize(call_sid, type=:default)
+    @call_sid = call_sid
   end
 
   def url_options
@@ -16,6 +16,6 @@ class Providers::Phone::Call::Params::Call
   end
 
   def url
-    play_message_call_url(@active_call, url_options)
+    twiml_lead_play_message_url(url_options)
   end
 end

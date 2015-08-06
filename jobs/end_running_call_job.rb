@@ -16,6 +16,7 @@
 #
 class EndRunningCallJob
   include Sidekiq::Worker
+  extend SidekiqSelfQueue
   # Retries should occur in lower-level dependences (ie `TwilioLib` or `Providers::Phone::Call`).
   # Sidekiq should not be used to retry it will almost certainly retry after
   # the call has ended.

@@ -8,7 +8,8 @@ module Callers
 
     # it is ok to skip csrf verification for :create, :logout
     # since these are innocuous if called by a nefarious 3rd-party
-    skip_before_filter :verify_authenticity_token, only: [:create, :logout]
+    #skip_before_filter :verify_authenticity_token, only: [:create, :logout, :hangup_lead]
+    skip_before_filter :verify_authenticity_token #, only: [:create, :logout, :hangup_lead]
 
     before_filter :disable_header_cache, only: [:show]
 
@@ -133,5 +134,38 @@ contact your account administrator.")
         }
       }
     end
+
+    # replaces:
+    # - caller#call_voter
+    def dial
+      # future
+    end
+
+    # replaces
+    # - calls#hangup
+    def hangup_lead
+      EndRunningCallJob.add_to_queue(params[:sid])
+      render nothing: true
+    end
+
+    # replaces:
+    # - calls#drop_message
+    def drop_message
+      account_sid = @caller.telephony_provider_account_id
+      dialed_call = CallFlow::Call::Dialed.new(account_sid, params[:sid])
+      dialed_call.drop_message
+      render nothing: true
+    end
+
+    # replaces:
+    # - calls#submit_result
+    # - calls#submit_result_and_stop
+    def disposition
+      account_sid = @caller.telephony_provider_account_id
+      dialed_call = CallFlow::Call::Dialed.new(account_sid, params[:sid])
+      dialed_call.dispositioned(params)
+      render nothing: true
+    end
   end
 end
+
