@@ -157,21 +157,19 @@ surveyForm.controller('SurveyFormCtrl', [
 
 
     callAndVoter = ->
-      call_id  = CallCache.get('id')
-      voter_id = (HouseholdCache.get('selected') || {}).id
+      call_sid = CallCache.get('id')
+      lead     = HouseholdCache.get('selected')
 
-      console.log 'survey callAndVoter is returning call_id & voter_id of', call_id, voter_id
-
-      unless call_id?
-        ErrorCache.put('survey.save.failed', "Call had no ID: Call[#{call_id}].")
+      unless call_sid?
+        ErrorCache.put('survey.save.failed', "Call had no ID: Call[#{call_sid}].")
         idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.')
         return false
 
-      unless voter_id?
+      unless lead?
         idFlashFactory.now('warning', 'Select a contact before saving.')
         return false
 
-      return {call_id, voter_id}
+      return {call_sid, lead}
 
     requestInProgress = false
     survey.save = ($event, andContinue) ->
@@ -181,12 +179,10 @@ surveyForm.controller('SurveyFormCtrl', [
 
       usSpinnerService.spin('global-spinner')
 
-      ids = callAndVoter()
-      return unless ids.call_id? and ids.voter_id?
+      cachedParams = callAndVoter()
+      return unless cachedParams.call_sid? and cachedParams.lead?
 
-      action = 'submit_result'
       unless andContinue
-        action += '_and_stop'
         TwilioCache.put('disconnect_pending', 1)
 
       successRan = false
@@ -227,22 +223,26 @@ surveyForm.controller('SurveyFormCtrl', [
       $rootScope.transitionInProgress = true
       
       # make a request, get a promise
-      $http.post("/call_center/api/#{ids.call_id}/#{action}", {
-        voter_id: ids.voter_id,
-        notes: survey.responses.notes,
+      url    = "/call_center/api/disposition"
+      params = {
+        notes: survey.responses.notes
         question: normalizeQuestion()
-      })
-      .then(success, error).finally(always)
+        stop_calling: !andContinue
+      }
+      angular.extend(params, cachedParams)
+      $http.post(url, params).then(success, error).finally(always)
 
     survey.autoSubmitConfig = ->
-      ids = callAndVoter()
-      return unless ids.call_id? and ids.voter_id?
+      cachedParams = callAndVoter()
+      return unless cachedParams.call_sid? and cachedParams.lead?
       {
-        url: "/call_center/api/#{ids.call_id}/submit_result_and_stop"
+        url: "/call_center/api/disposition"
         data: {
-          voter_id: ids.voter_id
+          voter_id: cachedParams.lead
+          call_sid: cachedParams.call_sid
           notes: survey.responses.notes
           question: normalizeQuestion()
+          stop_calling: true
         }
       }
 
