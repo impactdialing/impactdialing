@@ -158,9 +158,6 @@ public
     self.status            = CallAttempt::Status::SUCCESS
     self.caller_id         = call_attempt.caller_id || caller_session.try(:caller).try(:id)
     self.caller_session_id = nil
-    if do_not_call_back?
-      dial_queue.remove(self)
-    end
   end
 
   def self.upload_fields

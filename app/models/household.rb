@@ -109,7 +109,6 @@ public
   def failed!
     self.status       = CallAttempt::Status::FAILED
     self.presented_at = Time.now.utc
-    update_dial_queue
     save
   end
 
@@ -117,7 +116,6 @@ public
   def dialed(call_attempt)
     self.presented_at = call_attempt.call_end
     self.status       = call_attempt.recording_id ? CallAttempt::Status::VOICEMAIL : call_attempt.status
-    update_dial_queue
   end
 
   def presented_recently?

@@ -6,7 +6,9 @@ describe CallStats::ByStatus do
   let(:admin){ create(:user) }
   let(:account){ admin.account }
   let(:campaign){ create_campaign_with_script(:bare_preview, account).last }
-  let(:voters){ add_voters(campaign, :voter, 5) }
+  let(:voter_list){ create(:voter_list, campaign: campaign) }
+  let(:households){ build_household_hashes(5, voter_list) }
+  let(:voters){ create_list(:voter, 5, campaign: campaign) }
   let(:callers){ add_callers(campaign, 1) }
 
   it 'calculates the FCC abandoned rate' do
