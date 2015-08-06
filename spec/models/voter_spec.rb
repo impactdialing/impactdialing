@@ -148,22 +148,6 @@ describe Voter, :type => :model do
       voter.dispositioned(call_attempt)
       expect(voter.caller_session_id).to be_nil
     end
-
-    context 'when Voter should not be contacted again' do
-      let(:dial_queue_instance) do
-        double('DialQueueInstance', {
-          remove: nil
-        })
-      end
-      before do
-        allow(CallFlow::DialQueue).to receive(:new){ dial_queue_instance }
-        allow(voter).to receive(:do_not_call_back?){ true }
-      end
-      it 'is removed from the dial queue' do
-        expect(dial_queue_instance).to receive(:remove).with(voter)
-        voter.dispositioned(call_attempt)
-      end
-    end
   end
 
   describe '#info' do
