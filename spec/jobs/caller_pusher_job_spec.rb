@@ -14,7 +14,7 @@ describe CallerPusherJob do
       job.perform(caller_session.id, "publish_voter_disconnected")
     end
 
-    it 're-queues itself when CallFlow::DialQueue::Available::RedisTransactionAborted is raised' do
+    it 're-queues itself when CallFlow::DialQueue::Available::EmptyHousehold is raised' do
       event = 'publish_caller_conference_started'
       expect(caller_session).to receive(:publish_caller_conference_started).and_raise(CallFlow::DialQueue::EmptyHousehold)
 
@@ -25,7 +25,7 @@ describe CallerPusherJob do
       expected = {
         'queue' => 'call_flow',
         'class' => 'CallerPusherJob',
-        'args' => [caller_session.id, event]
+        'args' => [caller_session.id, event, {}]
       }
 
       expected.keys.each do |key|

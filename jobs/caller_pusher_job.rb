@@ -28,20 +28,22 @@ class CallerPusherJob
     source         = "ac-#{caller_session.campaign.account_id}.ca-#{caller_session.campaign.id}.cs-#{caller_session.id}"
     metrics        = ImpactPlatform::Metrics::JobStatus.started("#{self.class.to_s.underscore}.#{event}", source)
 
-    if payload.empty?
-      caller_session.send(event)
+    begin
+      if payload.empty?
+        caller_session.send(event)
+      else
+        caller_session.send(event, payload)
+      end
     rescue CallFlow::DialQueue::EmptyHousehold => e
       # can be raised when event == publish_caller_conference_started
       Sidekiq::Client.push({
         'queue' => 'call_flow',
         'class' => CallerPusherJob,
-        'args'  => [caller_session_id, event]
+        'args'  => [caller_session_id, event, payload]
       })
       Rails.logger.error "#{e.class}: #{e.message}"
       name   = "#{event}.dial_queue.empty_household"
       ImpactPlatform::Metrics.count(name, 1, source)
-    else
-      caller_session.send(event, payload)
     end
     
     metrics.completed
