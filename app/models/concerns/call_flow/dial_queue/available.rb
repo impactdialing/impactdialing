@@ -23,35 +23,6 @@
 # 
 #
 class CallFlow::DialQueue::Available < CallFlow::DialQueue::PhoneNumberSet
-  class RedisTransactionAborted < RuntimeError; end
-
-private
-  def zpoppush(n)
-    n             = size if n > size
-    retries       = 0
-    phone_numbers = []
-
-    # completed trxns return array ['OK'...]
-    redis_result = redis.watch(keys[:active]) do
-      members = redis.zrange keys[:active], 0, (n-1), with_scores: true
-      
-      return phone_numbers if members.empty?
-
-      members.map(&:rotate!)
-      phone_numbers = members.map(&:last)
-      # update score so we can push these back to active if they're here too long
-      presented     = members.map{|m| [Time.now.to_i, m[1]]}
-      redis.multi do |multi|
-        multi.zrem keys[:active], phone_numbers
-        multi.zadd keys[:presented], presented
-      end
-    end
-
-    raise RedisTransactionAborted if redis_result.nil? # trxn was aborted
-
-    return phone_numbers
-  end
-
 public
   def keys
     {
@@ -67,24 +38,17 @@ public
   end
 
   def next(n)
-    _phones = Wolverine.dial_queue.load_next_available({
+    json = Wolverine.dial_queue.load_next_available({
       keys: [keys[:active], keys[:presented]],
       argv: [n, Time.now.utc.to_i]
     })
-    _phones = _phones.blank? ? '[]' : _phones
-    phones = JSON.parse(_phones)
-    phones
+
+    JSON.parse(json || '[]')
   end
 
   def insert(scored_members)
     return if scored_members.empty?
     redis.zadd(keys[:active], scored_members)
-  end
-
-  def add(household)
-    return false if household.presented_recently?
-
-    redis.zadd keys[:active], *memberize(household)
   end
 
   def dialed(phones)

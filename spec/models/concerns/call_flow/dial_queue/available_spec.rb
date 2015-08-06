@@ -33,3 +33,4 @@ describe 'CallFlow::DialQueue::Available' do
     end
   end
 end
+
