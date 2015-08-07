@@ -16,7 +16,7 @@ module CallerEvents
       pushit('start_calling', {caller_session_id: id, dialer: campaign.type})
     end
 
-    def publish_voter_connected(call_sid)
+    def publish_voter_connected(call_sid, phone)
 
       if caller.is_phones_only? and campaign.predictive?
         # assign first available voter in household to call attempt
@@ -31,7 +31,7 @@ module CallerEvents
         #return 
       end
 
-      event_hash = campaign.voter_connected_event(call_sid)
+      event_hash = campaign.voter_connected_event(call_sid, phone)
 
       pushit(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
     end

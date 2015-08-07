@@ -57,7 +57,7 @@ private
   def attempt_connection(campaign, caller_session_record, params)
     if caller_session_record.on_call? and (not caller_session_record.available_for_call?)
       RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session_record.id)
-      VoterConnectedPusherJob.add_to_queue(caller_session_record.id, params[:CallSid])
+      VoterConnectedPusherJob.add_to_queue(caller_session_record.id, params[:CallSid], params[:phone])
       @twiml_flag   = :connect
       @record_calls = campaign.account.record_calls.to_s
     else

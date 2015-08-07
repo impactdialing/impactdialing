@@ -23,23 +23,24 @@ class TwilioLib
     "#{@root}Calls.json"
   end
 
-  def shared_callback_url_params(campaign)
+  def shared_callback_url_params(campaign, phone)
     {
       host: Settings.incoming_callback_host,
       port: Settings.twilio_callback_port,
       protocol: "http://",
       campaign_type: campaign.type,
-      campaign_id: campaign.id
+      campaign_id: campaign.id,
+      phone: phone
     }
   end
 
-  def shared_failover_url_params(campaign)
+  def shared_failover_url_params(campaign, phone)
     if Settings.twilio_failover_host.present?
-      shared_callback_url_params(campaign).merge({
+      shared_callback_url_params(campaign, phone).merge({
         host: Settings.twilio_failover_host
       })
     else
-      shared_callback_url_params(campaign)
+      shared_callback_url_params(campaign, phone)
     end
   end
 
@@ -47,10 +48,16 @@ class TwilioLib
     {
       'From'           => campaign.caller_id,
       'To'             => phone,
-      'Url'            => twiml_lead_answered_url(shared_callback_url_params(campaign).merge(event: 'incoming_call')),
-      'StatusCallback' => twiml_lead_completed_url(shared_callback_url_params(campaign).merge(event: "call_ended")),
+      'Url'            => twiml_lead_answered_url(shared_callback_url_params(campaign, phone).merge({
+        event: 'incoming_call'
+      })),
+      'StatusCallback' => twiml_lead_completed_url(shared_callback_url_params(campaign, phone).merge({
+        event: "call_ended"
+      })),
       'Timeout'        => "15",
-      'FallbackUrl'    => twiml_lead_answered_url(shared_failover_url_params(campaign).merge(event: "incoming_call_fallback"))
+      'FallbackUrl'    => twiml_lead_answered_url(shared_failover_url_params(campaign, phone).merge({
+        event: "incoming_call_fallback"
+      }))
     }.merge!(amd_params(campaign))
   end
 

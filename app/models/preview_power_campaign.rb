@@ -29,7 +29,7 @@ module PreviewPowerCampaign
     }
   end
 
-  def voter_connected_event(call_sid)
+  def voter_connected_event(call_sid, phone)
     return {
       event: 'voter_connected',
       data: {call_sid: call_sid}
