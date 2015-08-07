@@ -225,11 +225,12 @@ surveyForm.controller('SurveyFormCtrl', [
       # make a request, get a promise
       url    = "/call_center/api/disposition"
       params = {
+        lead: cachedParams.lead
+        sid: cachedParams.call_sid
         notes: survey.responses.notes
         question: normalizeQuestion()
         stop_calling: !andContinue
       }
-      angular.extend(params, cachedParams)
       $http.post(url, params).then(success, error).finally(always)
 
     survey.autoSubmitConfig = ->
@@ -238,8 +239,8 @@ surveyForm.controller('SurveyFormCtrl', [
       {
         url: "/call_center/api/disposition"
         data: {
-          voter_id: cachedParams.lead
-          call_sid: cachedParams.call_sid
+          lead: cachedParams.lead
+          sid: cachedParams.call_sid
           notes: survey.responses.notes
           question: normalizeQuestion()
           stop_calling: true
