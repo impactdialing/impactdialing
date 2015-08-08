@@ -158,7 +158,7 @@ public
 
   def manual_message_dropped(recording)
     storage.save({
-      status: CallAttempt::Status::VOICEMAIL,
+      mapped_status: CallAttempt::Status::VOICEMAIL,
       recording_id: recording.id,
       recording_delivered_manually: true
     })
