@@ -88,13 +88,17 @@ private
 
 public
   def self.create(campaign, rest_response, optional_properties={})
+    account_sid = rest_response['account_sid']
+    sid         = rest_response['sid']
+    validate!(account_sid, sid)
+
     opts = lua_options(campaign, rest_response, optional_properties)
     Wolverine.call_flow.dialed(opts)
     if campaign.class.to_s !~ /(Preview|Power|Predictive)/ or campaign.new_record?
       raise ArgumentError, "CallFlow::Call::Dialed received new or unknown campaign: #{campaign.class}"
     end
 
-    self.new(rest_response['account_sid'], rest_response['sid'])
+    self.new(account_sid, sid)
   end
 
   def self.namespace

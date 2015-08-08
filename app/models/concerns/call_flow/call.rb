@@ -26,10 +26,14 @@ module CallFlow
       save_params
     end
 
-    def validate!
+    def self.validate!(account_sid, sid)
       if account_sid.blank? or sid.blank?
         raise CallFlow::Call::InvalidParams, "SIDs for Account and Call are required for CallFlow::Call. They were: AccountSid[#{account_sid}] CallSid[#{sid}]."
       end
+    end
+
+    def validate!
+      self.class.validate!(account_sid, sid)
     end
 
   public
@@ -40,9 +44,11 @@ module CallFlow
     end
 
     def self.create(raw_params)
-      account_sid = (raw_params['AccountSid'] || raw_params['account_sid'])
-      sid         = (raw_params['CallSid'] || raw_params['sid'])
-      storage     = CallFlow::Call::Storage.new(account_sid, sid, namespace)
+      @account_sid = (raw_params['AccountSid'] || raw_params['account_sid'])
+      @sid         = (raw_params['CallSid'] || raw_params['sid'])
+      validate!
+
+      storage = CallFlow::Call::Storage.new(account_sid, sid, namespace)
 
       storage.save(params_for_create(raw_params))
       self.new(account_sid, sid)
