@@ -26,7 +26,7 @@ private
 
   def params_for_update(params)
     whitelist = self.class.params_for_create(params)
-    [:campaign_id, :campaign_type].each do |key|
+    [:campaign_id, :campaign_type, :phone].each do |key|
       whitelist.merge!(key => params[key]) if params[key].present?
     end
     whitelist
