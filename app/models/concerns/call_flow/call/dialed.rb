@@ -154,6 +154,8 @@ public
         caller_session.redirect_to_hold
       end
     end
+
+    CallFlow::Jobs::Persistence::DialedCall.perform_async(account_sid, sid)
   end
 
   def manual_message_dropped(recording)

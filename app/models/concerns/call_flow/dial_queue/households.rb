@@ -26,10 +26,11 @@ class CallFlow::DialQueue::Households
 private
   def keys
     {
-      active: "dial_queue:#{campaign.id}:households:active",
-      presented: "dial_queue:#{campaign.id}:households:presented",
-      inactive: "dial_queue:#{campaign.id}:households:inactive",
-      message_drops: "dial_queue:#{campaign.id}:households:message_drops"
+      active: "dial_queue:#{campaign.id}:households:active", # redis key/hash/json data
+      presented: "dial_queue:#{campaign.id}:households:presented", # redis key/hash/json data
+      inactive: "dial_queue:#{campaign.id}:households:inactive", # redis key/hash/json data
+      pending_persistence: "dial_queue:#{campaign.id}:households:pending_persistence", # redis key/hash/json data
+      message_drops: "dial_queue:#{campaign.id}:households:message_drops" # redis bitmap
     }
   end
 
