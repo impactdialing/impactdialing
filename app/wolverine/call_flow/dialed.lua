@@ -1,6 +1,7 @@
 local call_data     = cjson.decode(ARGV[1])
 local other_data    = cjson.decode(ARGV[2])
 local data          = {}
+local next          = next
 local populate_data = function(source)
   if next(source) == nil then
     return
