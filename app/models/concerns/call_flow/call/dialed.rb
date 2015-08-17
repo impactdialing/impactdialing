@@ -173,6 +173,28 @@ public
       notes: params[:notes].try(:to_json),
       lead: params[:lead].try(:to_json)
     })
+    # do something like this (in lua):
+    # household = dial_queue.households.find(storage['phone'])
+    # storage.save({
+    #   questions: ...,
+    #   notes: ...,
+    #   household: household.to_json
+    # })
+    # dial_queue.households.delete(storage['phone'])
+    #
+    # or do the above in .create (when the dial is made)
+    # 
+    # and in post-persistence, copy active data back to households :active
+    #
+    # trouble is, what to do if 
+    #   a) dialing started before list finished import
+    #   b) dialing and custom id is used and 2nd list is updating leads 
+    # which is a problem inherent in moving households around while dialing, regardless of destination
+    # that said, another option is to move housheolds to eg :pending_persistence namespace
+    #
+    # better would be, save lead UUID here and have persistence load data from :active households
+    # gotcha edge-case here is if a voter is dispositioned, list is disabled (moving lead to :inactive households)
+    # then persistence job runs => lead data won't be found/imported w/out extra lookup in :inactive
 
     unless params[:stop_calling]
       caller_session.redirect_to_hold

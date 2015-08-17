@@ -79,8 +79,10 @@ module ListHelpers
   end
 
   def build_lead_hash(list, phone, with_custom_id=false)
+    @uuid ||= UUID.new
     h = {
       voter_list_id: list.id.to_s,
+      uuid: @uuid.generate,
       phone: phone,
       first_name: Forgery(:name).first_name,
       last_name: Forgery(:name).last_name
