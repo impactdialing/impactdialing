@@ -288,7 +288,26 @@ describe 'CallFlow::Jobs::Persistence::DialedCall' do
         expect(Voter.where(status: Voter::Status::NOTCALLED).count).to eq households[phone][:leads].size
       end
     end
+  end
 
+  shared_examples_for 'persistence of any subsequently dialed call (to same phone)' do
+    describe 'updating Household record' do
+      let(:household){ campaign.households.where(phone: phone).first }
+
+      it 'w/ mapped call status' do
+        expect(household.status).to eq CallAttempt::Status::MAP[not_answered_params[:CallStatus]]
+      end
+    end
+
+    describe 'updating Voter record(s)' do
+      it 'dispositioned w/out retry Voter records retain status from previous call' do
+        expect(Voter.where(status: CallAttempt::Status::SUCCESS).count).to eq 1
+      end
+
+      context 'incomplete Voter records (ie not dispositioned or will be retried)' do
+        it 'inherit Household status'
+      end
+    end
   end
 
   context 'subsequent dialed calls to a given phone' do
@@ -300,6 +319,7 @@ describe 'CallFlow::Jobs::Persistence::DialedCall' do
         'sid' => call_sid
       }
     end
+    let(:dispositioned_lead){ households[phone][:leads].last }
     let(:call_sid_two){ not_answered_params[:CallSid] }
     let(:create_params_two) do
       {
@@ -312,39 +332,27 @@ describe 'CallFlow::Jobs::Persistence::DialedCall' do
       dialed_call = CallFlow::Call::Dialed.create(campaign, create_params, {caller_session_sid: caller_session.sid})
       dialed_call.storage.save(dialed_call.send(:params_for_update, callback_params))
       dialed_call.storage.save(dialed_call.send(:params_for_update, completed_params))
+      dialed_call.storage['lead_uuid'] = dispositioned_lead[:uuid]
       subject.perform(account_sid, call_sid) # first call persistence (answered & lead dispositioned)
-
-      dialed_call = CallFlow::Call::Dialed.create(campaign, create_params_two, {caller_session_sid: caller_session.sid})
-      dialed_call.storage.save(dialed_call.send(:params_for_update, callback_params))
-      dialed_call.storage.save(dialed_call.send(:params_for_update, not_answered_params))
-      subject.perform(account_sid, call_sid_two)
     end
 
-    describe 'updates Household record' do
-      let(:household){ campaign.households.where(phone: phone).first }
-      it 'w/ mapped call status' do
-        expect(household.status).to eq CallAttempt::Status::MAP[not_answered_params[:CallStatus]]
+    context 'when last dialed call was not answered' do
+      before do
+        dialed_call = CallFlow::Call::Dialed.create(campaign, create_params_two, {caller_session_sid: caller_session.sid})
+        dialed_call.storage.save(dialed_call.send(:params_for_update, callback_params))
+        dialed_call.storage.save(dialed_call.send(:params_for_update, not_answered_params))
+        subject.perform(account_sid, call_sid_two) # second call persistence (not answered/busy)
       end
+
+      it_behaves_like 'persistence of any subsequently dialed call (to same phone)'
     end
 
-    describe 'updates Voter records' do
-      context 'completed Voter records (ie has been dispositioned & will not be retried)' do
-        it 'are left untouched'
-      end
+    context 'when last dialed call was answered' do
+      it 'each Voter record not associated w/ dialed call are left untouched'
 
-      context 'when dialed call was answered' do
-        it 'each Voter record not associated w/ dialed call are left untouched'
-
-        context 'the Voter record associated w/ dialed call' do
-          it 'inherits Household status'
-          it 'associated w/ proper CallerSession'
-        end
-      end
-
-      context 'when dialed call was not answered (eg busy, no-answer, failed, abandoned, etc)' do
-        context 'incomplete Voter records (ie not dispositioned or will be retried)' do
-          it 'inherit Household status'
-        end
+      context 'the Voter record associated w/ dialed call' do
+        it 'inherits Household status'
+        it 'associated w/ proper CallerSession'
       end
     end
   end
