@@ -80,7 +80,7 @@ describe 'CallFlow::DialQueue::Households' do
     end
 
     it 'returns false otherwise' do
-      Redis.new.flushall
+      redis.flushall
       expect(subject.exists?).to be_falsey
     end
   end
@@ -118,6 +118,46 @@ describe 'CallFlow::DialQueue::Households' do
           phone_two => household_two
         }
         expect(actual).to eq expected
+      end
+    end
+  end
+
+  describe 'updating leads w/ persisted Voter SQL IDs' do
+    let(:phone){ households.keys.first }
+    let(:redis_household){ redis.hgetall("dial_queue:#{campaign.id}:households:active:#{phone[0..-4]}") }
+    let(:redis_leads){ JSON.parse(redis_household[phone[-3..-1]])['leads'] }
+    let(:household_record) do
+      Household.create!({
+        phone: phone,
+        status: CallAttempt::Status::BUSY,
+        campaign: campaign,
+        account: campaign.account
+      })
+    end
+    let(:uuid_to_id_map) do
+      {}
+    end
+
+    before do
+      redis_leads.each do |lead|
+        attrs = {
+          campaign_id: campaign.id,
+          account_id: campaign.account_id,
+          household_id: household_record.id
+        }
+        lead.each do |prop,val|
+          attrs[prop] = val if prop != 'id' and Voter.column_names.include?(prop)
+        end
+        voter_record                = Voter.create!(attrs)
+        uuid_to_id_map[lead[:uuid]] = voter_record.id
+      end
+
+      subject.update_leads_with_sql_ids(phone, uuid_to_id_map)
+    end
+
+    it 'stores Voter SQL ID with redis lead data' do
+      redis_leads.each do |lead|
+        expect(lead['sql_id']).to eq uuid_to_id_map[lead['uuid']]
       end
     end
   end

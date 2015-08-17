@@ -29,7 +29,6 @@ private
       active: "dial_queue:#{campaign.id}:households:active", # redis key/hash/json data
       presented: "dial_queue:#{campaign.id}:households:presented", # redis key/hash/json data
       inactive: "dial_queue:#{campaign.id}:households:inactive", # redis key/hash/json data
-      pending_persistence: "dial_queue:#{campaign.id}:households:pending_persistence", # redis key/hash/json data
       message_drops: "dial_queue:#{campaign.id}:households:message_drops" # redis bitmap
     }
   end
@@ -56,7 +55,7 @@ public
 
   def key(phone, _type=nil)
     _type ||= self.type
-    "#{keys[type]}:#{phone[0..phone_key_index_stop]}"
+    "#{keys[_type]}:#{phone[0..phone_key_index_stop]}"
   end
 
   def phone_key_index_stop
@@ -143,6 +142,18 @@ public
 
   def no_message_dropped?(phone)
     not message_dropped?(phone)
+  end
+
+  ##
+  # Cache given SQL IDs with associated lead data in redis.
+  #
+  # :phone: the phone where the lead can be found in redis
+  # :uuid_to_id_map: a hash of lead uuids as keys and sql ids as values
+  def update_leads_with_sql_ids(phone, uuid_to_id_map)
+    Wolverine.dial_queue.update_leads_with_sql_id({
+      keys: keys_for_lua(phone),
+      argv: [hkey(phone).last, uuid_to_id_map.to_json]
+    })
   end
 end
 
