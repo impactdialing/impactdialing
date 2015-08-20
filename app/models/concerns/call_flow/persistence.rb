@@ -31,64 +31,11 @@ private
     call_data[:caller_session_sid]
   end
 
-  def create_household_record
-    @household_record = campaign.households.create!({
-      account_id: campaign.account_id,
-      phone: phone,
-      status: household_status
-    })
-  end
-
-  def update_household_record
-    household_record.update_attributes!(status: household_status)
-  end
-
-  def create_answer_records
-  end
-
-  def create_note_response_records
-  end
-
-  def call_attempt
-    @call_attempt ||= CallFlow::Persistence::DialedCall.new(dialed_call, campaign, household_record)
-  end
-
-  def voters
-    @voters ||= CallFlow::Persistence::Leads.new(dialed_call, campaign, household_record)
-  end
-
-  def answers
-    @answers ||= CallFlow::Persistence::Answers.new(dialed_call, campaign, household_record)
-  end
-
-  def notes
-    @notes ||= CallFlow::Persistence::Notes.new(dialed_call, campaign, household_record)
-  end
-
 public
   def initialize(dialed_call, campaign, household_record)
     @dialed_call      = dialed_call
     @campaign         = campaign
     @household_record = household_record
   end
-
-  #def save_call_outcome
-  #  if household_record.present? # subsequent dial
-  #    update_household_record
-  #  else # first dial
-  #    create_household_record
-  #  end
-
-  #  if any_leads_not_persisted?
-  #    voters.import_records
-  #  end
-
-  #  call_attempt.create(voters.dispositioned_record)
-
-  #  if dialed_call.answered_by_human?
-  #    create_answer_records
-  #    create_note_response_records
-  #  end 
-  #end
 end
 

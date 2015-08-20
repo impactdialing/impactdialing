@@ -1,4 +1,6 @@
 class CallFlow::Persistence::Leads < CallFlow::Persistence
+  attr_reader :dispositioned_voter
+
 private
   def redis_household
     dial_queue_households.find(phone)
@@ -17,26 +19,26 @@ private
   end
 
   def target_lead
-    active_redis_leads.detect{|ld| ld[:uuid] == call_data[:lead_uuid]}
+    active_redis_leads.detect{|ld| ld['uuid'] == call_data[:lead_uuid]}
   end
 
   def leads_without_target
-    active_redis_leads.select{|ld| ld[:uuid] != call_data[:lead_uuid]}
+    active_redis_leads.select{|ld| ld['uuid'] != call_data[:lead_uuid]}
   end
 
   def new_leads_without_target
-    leads_without_target.select{|ld| ld[:sql_id].blank?}
+    leads_without_target.select{|ld| ld['sql_id'].blank?}
   end
 
 public
   def import_records
     leads               = active_redis_leads
-    dispositioned_voter = nil
+    @dispositioned_voter = nil
     uuid_to_id_map      = {}
 
     if dialed_call.completed? and dialed_call.answered_by_human?
       # create 1 voter record & attach to call attempt
-      dispositioned_voter, uuid_to_id_map = create_or_update_dispositioned_voter_record(target_lead)
+      @dispositioned_voter, uuid_to_id_map = create_or_update_dispositioned_voter_record(target_lead)
     end
 
     not_called_uuid_to_id_map = create_voter_records(new_leads_without_target)
@@ -46,7 +48,7 @@ public
       dial_queue_households.update_leads_with_sql_ids(phone, uuid_to_id_map)
     end
 
-    dispositioned_voter
+    @dispositioned_voter
   end
 
   def create_voter_records(leads)

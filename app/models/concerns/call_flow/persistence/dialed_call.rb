@@ -3,6 +3,18 @@
 #
 class CallFlow::Persistence::DialedCall < CallFlow::Persistence
 
+  def create_household_record
+    @household_record = campaign.households.create!({
+      account_id: campaign.account_id,
+      phone: phone,
+      status: household_status
+    })
+  end
+
+  def update_household_record
+    household_record.update_attributes!(status: household_status)
+  end
+
   ##
   # Build & create a new CallAttempt record.
   def create(dispositioned_voter=nil)
@@ -34,3 +46,4 @@ class CallFlow::Persistence::DialedCall < CallFlow::Persistence
     CallAttempt.create(call_attempt_attrs)
   end
 end
+

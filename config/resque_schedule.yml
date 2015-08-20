@@ -12,26 +12,26 @@ debit_money:
   args:
   description: "This job debits minutes from Account#debitable_subscription."
 
-process_answered_attempts:
-  cron: "*/3 * * * *"
-  class: AnsweredJob
-  queue: persist_jobs
-  args:
-  description: "This job processes answers and stores them in a relational schema"
+#process_answered_attempts:
+#  cron: "*/3 * * * *"
+#  class: AnsweredJob
+#  queue: persist_jobs
+#  args:
+#  description: "This job processes answers and stores them in a relational schema"
 
-persist_phones_only_answers:
-  cron: "* * * * *"
-  class: PersistPhonesOnlyAnswers
-  queue: persist_jobs
-  args:
-  description: "This job persists phones only answers data"
+#persist_phones_only_answers:
+#  cron: "* * * * *"
+#  class: PersistPhonesOnlyAnswers
+#  queue: persist_jobs
+#  args:
+#  description: "This job persists phones only answers data"
 
-persist_calls:
-  cron: "* * * * *"
-  class: PersistCalls
-  queue: persist_jobs
-  args:
-  description: "This job persists call attempts and voter data"
+#persist_calls:
+#  cron: "* * * * *"
+#  class: PersistCalls
+#  queue: persist_jobs
+#  args:
+#  description: "This job persists call attempts and voter data"
 
 recycle_dial_queue:
   cron: "*/5 * * * *"
