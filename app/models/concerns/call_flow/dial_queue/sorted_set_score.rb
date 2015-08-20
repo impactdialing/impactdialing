@@ -7,6 +7,7 @@ module CallFlow::DialQueue::SortedSetScore
     y = (BigDecimal.new(object.id) / BigDecimal.new(divisor))
     y = y.to_s.split('.').last
     x = x.zero? ? 1 : x
+    # timestamp or 1 go first,
     "#{x}.#{y}"
   end
 
