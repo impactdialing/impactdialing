@@ -28,6 +28,26 @@ RSpec::Matchers.define :have_leads_from do |voter_list|
   end
 end
 
+RSpec::Matchers.define :have_household_at do |campaign_id, namespace|
+  redis            = Redis.new
+  key              = nil
+  stored_household = nil
+
+  match do |phone|
+    key              = "dial_queue:#{campaign_id}:households:#{namespace}:#{phone[0..-4]}"
+    stored_household = redis.hget(key, phone[-3..-1])
+    stored_household.present?
+  end
+
+  failure_message do |phone|
+    "expected #{phone} to have a household at #{key}\ngot: #{stored_household}"
+  end
+
+  failure_message_when_negated do |phone|
+    "expected #{phone} to not have a household at #{key}\ngot: #{stored_household}"
+  end
+end
+
 RSpec::Matchers.define :be_in_redis_households do |campaign_id, namespace|
   redis                    = Redis.new
   expected_leads           = []

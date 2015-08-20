@@ -19,6 +19,16 @@ module ListHelpers
     end
   end
 
+  def add_leads(list, phone, leads, household_namespace='active', zset_namespace='active')
+    redis = Redis.new
+    base_key = "dial_queue:#{list.campaign_id}:households:#{household_namespace}"
+    key = "#{base_key}:#{phone[0..ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i]}"
+    hkey = phone[ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i + 1..-1]
+    current_household = JSON.parse(redis.hget(key, hkey))
+    current_household['leads'] += leads
+    redis.hset(key, hkey, current_household.to_json)
+  end
+
   def zscore(sequence)
     Time.now.utc.to_f
   end

@@ -47,5 +47,9 @@ public
   def multi(&block)
     redis.multi(&block)
   end
+
+  def attributes
+    HashWithIndifferentAccess.new(redis.hgetall(key))
+  end
 end
 
