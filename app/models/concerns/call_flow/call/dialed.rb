@@ -58,6 +58,7 @@ private
     if caller_session_record.on_call? and (not caller_session_record.available_for_call?)
       RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session_record.id)
       VoterConnectedPusherJob.add_to_queue(caller_session_record.id, params[:CallSid], params[:phone])
+      update_history(:caller_and_lead_connected)
       @twiml_flag   = :connect
       @record_calls = campaign.account.record_calls.to_s
     else
@@ -126,8 +127,13 @@ public
                           ::CallerSession.find(caller_session_id)
                         end
   end
+  
+  def completed?
+    storage[:status] == 'completed'
+  end
 
   def answered(campaign, params)
+    # todo: make following writes atomic
     update_history(:answered)
     campaign.number_not_ringing
     storage.save(params_for_update(params))
@@ -162,13 +168,9 @@ public
       end
     end
 
-    unless completed?
+    unless state_missed?(:caller_and_lead_connected)
       CallFlow::Jobs::Persistence.perform_async(account_sid, sid)
     end
-  end
-
-  def completed?
-    storage[:status] == 'completed'
   end
 
   def manual_message_dropped(recording)
