@@ -168,7 +168,7 @@ public
       end
     end
 
-    unless state_missed?(:caller_and_lead_connected)
+    if state_missed?(:caller_and_lead_connected)
       CallFlow::Jobs::Persistence.perform_async(account_sid, sid)
     end
   end
