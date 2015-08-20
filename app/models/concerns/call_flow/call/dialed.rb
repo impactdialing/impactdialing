@@ -79,9 +79,6 @@ private
   def answered_by_machine?(params)
     params[:AnsweredBy] == 'machine'
   end
-  def answered_by_human?(params)
-    not answered_by_machine?(params)
-  end
   def call_in_progress?(params)
     params[:CallStatus] == 'in-progress'
   end
@@ -107,6 +104,11 @@ public
 
   def namespace
     self.class.namespace
+  end
+
+  def answered_by_human?(params={})
+    params = params.empty? ? storage : params
+    not answered_by_machine?(params)
   end
 
   def caller_session_from_sid
