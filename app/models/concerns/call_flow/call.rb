@@ -44,9 +44,9 @@ module CallFlow
     end
 
     def self.create(raw_params)
-      @account_sid = (raw_params['AccountSid'] || raw_params['account_sid'])
-      @sid         = (raw_params['CallSid'] || raw_params['sid'])
-      validate!
+      account_sid = (raw_params['AccountSid'] || raw_params['account_sid'])
+      sid         = (raw_params['CallSid'] || raw_params['sid'])
+      validate!(account_sid, sid)
 
       storage = CallFlow::Call::Storage.new(account_sid, sid, namespace)
 
