@@ -162,7 +162,13 @@ public
       end
     end
 
-    CallFlow::Jobs::Persistence::DialedCall.perform_async(account_sid, sid)
+    unless completed?
+      CallFlow::Jobs::Persistence.perform_async(account_sid, sid)
+    end
+  end
+
+  def completed?
+    storage[:status] == 'completed'
   end
 
   def manual_message_dropped(recording)
@@ -208,6 +214,8 @@ public
     else
       caller_session.stop_calling
     end
+
+    CallFlow::Jobs::Persistence.perform_async(account_sid, sid)
   end
 
   def drop_message
