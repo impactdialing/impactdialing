@@ -105,6 +105,7 @@ module CallFlow
     end
 
     def failed!(phone)
+      phone = PhoneNumber.sanitize(phone)
       update_presented_count = campaign.predictive? ? 1 : 0
       Wolverine.dial_queue.dial_failed({
         keys: [available.keys[:presented], completed.keys[:failed], Twillio::InflightStats.key(campaign)],
