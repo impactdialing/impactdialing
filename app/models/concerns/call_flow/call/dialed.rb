@@ -72,6 +72,11 @@ private
       @twiml_flag    = :leave_message
       @recording_url = campaign.recording.file.url
       answering_machine_agent.record_message_drop
+      storage.save({
+        mapped_status: CallAttempt::Status::VOICEMAIL,
+        recording_id: campaign.recording.id,
+        recording_delivered_manually: 0
+      })
     else
       @twiml_flag = :hangup
     end
@@ -164,7 +169,7 @@ public
     storage.save({
       mapped_status: CallAttempt::Status::VOICEMAIL,
       recording_id: recording.id,
-      recording_delivered_manually: true
+      recording_delivered_manually: 1
     })
     caller_session.emit('publish_message_drop_success')
   end
