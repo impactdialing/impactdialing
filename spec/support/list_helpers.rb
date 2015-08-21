@@ -9,8 +9,16 @@ module ListHelpers
     redis = Redis.new
     base_key = "dial_queue:#{list.campaign_id}:households:#{household_namespace}"
     sequence = 1
+    lead_sequence = 1
     households.each do |phone, household|
       household['sequence'] = sequence
+      leads = []
+      household[:leads].each do |lead|
+        lead['sequence'] = lead_sequence
+        leads << lead
+        lead_sequence += 1
+      end
+      household[:leads] = leads
       key = "#{base_key}:#{phone[0..ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i]}"
       hkey = phone[ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i + 1..-1]
       redis.hset key, hkey, household.to_json
@@ -20,6 +28,14 @@ module ListHelpers
   end
 
   def add_leads(list, phone, leads, household_namespace='active', zset_namespace='active')
+    lead_sequence = 1
+    lds = []
+    leads.each do |lead|
+      lead['sequence'] = lead_sequence
+      lead_sequence += 1
+      lds << lead
+    end
+    leads = lds
     redis = Redis.new
     base_key = "dial_queue:#{list.campaign_id}:households:#{household_namespace}"
     key = "#{base_key}:#{phone[0..ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i]}"

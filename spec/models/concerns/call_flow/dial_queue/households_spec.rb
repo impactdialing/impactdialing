@@ -206,5 +206,55 @@ describe 'CallFlow::DialQueue::Households' do
       end
     end
   end
+
+  describe 'determine if phone should be dialed again' do
+    let(:phone){ households.keys.first }
+    let(:redis_household){ redis.hgetall("dial_queue:#{campaign.id}:households:active:#{phone[0..-4]}") }
+    let(:redis_leads){ JSON.parse(redis_household[phone[-3..-1]])['leads'] }
+
+    context 'all leads have been completed' do
+      before do
+        redis_leads.each do |lead|
+          subject.mark_lead_completed(lead['sequence'])
+        end
+      end
+
+      it 'returns false' do
+        expect(subject.dial_again?(phone)).to be_falsey
+      end
+    end
+
+    context 'Answering Machine Detection is set to drop messages automatically' do
+      before do
+        campaign.update_attributes!({
+          use_recordings: true,
+          answering_machine_detect: true
+        })
+      end
+      context 'Campaign calls back after voicemail delivery' do
+        before do
+          campaign.update_attributes!({
+            call_back_after_voicemail_delivery: true
+          })
+        end
+        it 'returns true when no message has been dropped' do
+          expect(subject.dial_again?(phone)).to be_truthy
+        end
+        it 'returns true when a message has been dropped' do
+          expect(subject.dial_again?(phone)).to be_truthy
+        end
+      end
+
+      context 'Campaign does not call back after voicemail delivery' do
+        it 'returns true when no message has been dropped' do
+          expect(subject.dial_again?(phone)).to be_truthy
+        end
+        it 'returns false when a message has been dropped' do
+          subject.record_message_drop_by_phone(phone)
+          expect(subject.dial_again?(phone)).to be_falsey
+        end
+      end
+    end
+  end
 end
 
