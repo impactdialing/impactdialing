@@ -4,7 +4,7 @@ def voter_system_fields
   %w(first_name last_name middle_name suffix email address city state zip_code country)
 end
 
-describe 'CallFlow::Jobs::Persistence::DialedCall' do
+describe 'CallFlow::Jobs::Persistence' do
   include ListHelpers
 
   let(:account){ create(:account) }
@@ -81,7 +81,7 @@ describe 'CallFlow::Jobs::Persistence::DialedCall' do
   let(:redis){ Redis.new }
   let(:account_sid){ completed_params[:AccountSid] }
 
-  subject{ CallFlow::Jobs::Persistence::DialedCall.new }
+  subject{ CallFlow::Jobs::Persistence.new }
 
   before do
     import_list(voter_list, households, 'active', 'presented')
@@ -101,6 +101,14 @@ describe 'CallFlow::Jobs::Persistence::DialedCall' do
     end
     let(:dialed_call){ CallFlow::Call::Dialed.create(campaign, create_params, {caller_session_sid: caller_session.sid}) }
     let(:voter_record){ Voter.last }
+  end
+
+  shared_examples_for 'persistence of any call outcome' do
+    it 'creates a CallAttempt record' do
+      expect{
+        subject.perform(account_sid, call_sid)
+      }.to change{ CallAttempt.count }.by 1
+    end
   end
 
   shared_examples_for 'persistence of any first call outcome' do
@@ -234,7 +242,6 @@ describe 'CallFlow::Jobs::Persistence::DialedCall' do
     end
 
     context 'when dialed call was not answered (eg busy, no-answer, failed, abandoned, etc)' do
-      let(:household_status){ Household.last.status }
       before do
         dialed_call = CallFlow::Call::Dialed.create(campaign, create_params, {caller_session_sid: caller_session.sid})
         dialed_call.storage.save(dialed_call.send(:params_for_update, not_answered_params))
@@ -244,21 +251,6 @@ describe 'CallFlow::Jobs::Persistence::DialedCall' do
         subject.perform(account_sid, call_sid)
         expect(Voter.where(status: Voter::Status::NOTCALLED).count).to eq households[phone][:leads].size
       end
-    end
-  end
-
-  shared_examples_for 'persistence of any subsequently dialed call (to same phone)' do
-    describe 'updating Household record' do
-      let(:household){ campaign.households.where(phone: phone).first }
-
-      it 'w/ mapped call status' do
-        subject.perform(account_sid, call_sid_two) # second call persistence (not answered/busy)
-        expect(household.status).to eq CallAttempt::Status::MAP[not_answered_params[:CallStatus]]
-      end
-    end
-
-    it 'does not create more Voter records' do
-      expect{ subject.perform(account_sid, call_sid_two) }.to change{ Voter.count }.by(0)
     end
   end
 
@@ -289,31 +281,43 @@ describe 'CallFlow::Jobs::Persistence::DialedCall' do
     end
 
     context 'when last dialed call was not answered' do
+      let(:subject_two){ CallFlow::Jobs::Persistence.new }
       before do
         dialed_call = CallFlow::Call::Dialed.create(campaign, create_params_two, {caller_session_sid: caller_session.sid})
         dialed_call.storage.save(dialed_call.send(:params_for_update, callback_params))
         dialed_call.storage.save(dialed_call.send(:params_for_update, not_answered_params))
       end
 
-      it_behaves_like 'persistence of any subsequently dialed call (to same phone)'
+      describe 'updating Household record' do
+        let(:household){ campaign.households.where(phone: phone).first }
+
+        it 'w/ mapped call status' do
+          subject_two.perform(account_sid, call_sid_two) # second call persistence (not answered/busy)
+          expect(household.reload.status).to eq CallAttempt::Status::MAP[not_answered_params[:CallStatus]]
+        end
+      end
+
+      it 'does not create more Voter records' do
+        expect{ subject_two.perform(account_sid, call_sid_two) }.to change{ Voter.count }.by(0)
+      end
 
       it 'previously dispositioned w/ retry Voter records retain status from previous call' do
         voter_record = Voter.where(status: CallAttempt::Status::SUCCESS).first
         voter_record.update_attributes!({
           call_back: true
         })
-        subject.perform(account_sid, call_sid_two) # second call persistence (not answered/busy)
+        subject_two.perform(account_sid, call_sid_two) # second call persistence (not answered/busy)
         expect(voter_record.reload.status).to eq CallAttempt::Status::SUCCESS
         expect(voter_record.reload.call_back).to be_truthy
       end
 
       it 'previously dispositioned w/out retry Voter records retain status from previous call' do
-        subject.perform(account_sid, call_sid_two) # second call persistence (not answered/busy)
+        subject_two.perform(account_sid, call_sid_two) # second call persistence (not answered/busy)
         expect(Voter.where(status: CallAttempt::Status::SUCCESS).count).to eq 1
       end
 
       it 'not dispositioned Voter records retain NOTCALLED status' do
-        subject.perform(account_sid, call_sid_two) # second call persistence (not answered/busy)
+        subject_two.perform(account_sid, call_sid_two) # second call persistence (not answered/busy)
         expect(Voter.where(status: Voter::Status::NOTCALLED).count).to eq Voter.count - 1
       end
     end
