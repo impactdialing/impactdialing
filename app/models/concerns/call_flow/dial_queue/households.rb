@@ -153,6 +153,17 @@ public
     redis.getbit(keys[:completed_leads], lead_sequence).to_i > 0
   end
 
+  def incomplete_lead_count_for(phone)
+    Wolverine.dial_queue.count_incomplete_leads({
+      keys: keys_for_lua(phone) + [keys[:completed_leads]],
+      argv: [phone, hkey(phone).last]
+    }).to_i
+  end
+
+  def any_incomplete_leads_for?(phone)
+    incomplete_lead_count_for(phone) > 0
+  end
+
   ##
   # Cache given SQL IDs with associated lead data in redis.
   #
