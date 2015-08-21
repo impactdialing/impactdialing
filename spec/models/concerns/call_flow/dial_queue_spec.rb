@@ -52,17 +52,59 @@ describe 'CallFlow::DialQueue' do
     end
   end
 
-  describe 'failed!(phone)' do
-    let(:redis){ Redis.new }
+  shared_context 'a dialed number' do
+    subject{ CallFlow::DialQueue.new(campaign) }
+    let(:phone){ households.keys.first }
+    before do
+      redis.zadd subject.available.keys[:presented], 1.000001, phone
+      expect(phone).to be_in_dial_queue_zset(campaign.id, 'presented')
+    end
+  end
 
-    shared_context 'a dialed number' do
-      subject{ CallFlow::DialQueue.new(campaign) }
-      let(:phone){ Forgery('address').clean_phone }
-      before do
-        redis.zadd subject.available.keys[:presented], 1.000001, phone
-        expect(phone).to be_in_dial_queue_zset(campaign.id, 'presented')
+  describe 'dialed_number_persisted(phone)' do
+    let(:redis){ Redis.new }
+    include_context 'a dialed number'
+
+    shared_examples_for 'any persisted dial' do
+      it 'removes the phone from the available presented zset' do
+        subject.dialed_number_persisted(phone, nil)
+        expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'presented')
       end
     end
+
+    shared_examples_for 'dials that are retried' do
+      it 'adds the phone to the recycle_bin bin zset' do
+        subject.dialed_number_persisted(phone, nil)
+        expect(phone).to be_in_dial_queue_zset(campaign.id, 'bin')
+      end
+    end
+
+    shared_examples_for 'dials that are not retried' do
+      it 'adds the phone to the completed completed zset' do
+        subject.dialed_number_persisted(phone, nil)
+        expect(phone).to be_in_dial_queue_zset(campaign.id, 'completed')
+      end
+    end
+
+    context 'Households#dial_again? => true' do
+      before do
+        allow(subject.households).to receive(:dial_again?){ true }
+      end
+      it_behaves_like 'any persisted dial'
+      it_behaves_like 'dials that are retried'
+    end
+
+    context 'Households#dial_again? => false' do
+      before do
+        allow(subject.households).to receive(:dial_again?){ false }
+      end
+      it_behaves_like 'any persisted dial'
+      it_behaves_like 'dials that are not retried'
+    end
+  end
+
+  describe 'failed!(phone)' do
+    let(:redis){ Redis.new }
 
     shared_examples_for 'any failed dial' do
       it 'removes the phone from the available presented zset' do

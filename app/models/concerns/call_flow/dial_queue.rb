@@ -84,24 +84,12 @@ module CallFlow
       available.dialed(household.phone)
     end
 
-    def dial_completed(phone)
-      # when phone should be dialed again: add to recycle bin set
-      # when phone should not be dialed again: add to completed set
-      # always: remove from presented
-      #
-      # determine whether a phone should be dialed again:
-      # - yes: amd:on dmsg:on cbamd:on ltd:yes
-      # - yes: amd:off ltd:yes
-      # - no: amd:on dmsg:on cbamd:off ltd:yes/no
-      # - no: ltd:no amd:on/off
-      #
-      # determine if any leads to dial
-      # - yes: any leads have not dispositioned
-      # - yes: any dispositioned leads have retry responses
-      # - yes: any leads not dispositioned & amd:on dmsg:on cbamd:on
-      #
-      # possol: store completed lead uuids in set, leads w/ retry responses would not be in completed set
-      # - would need to have retry data in redis 
+    def dialed_number_persisted(phone, dispositioned_lead)
+      add_to_recycle_bin = households.dial_again?(phone) ? 1 : 0
+      Wolverine.dial_queue.dialed_number_persisted({
+        keys: [available.keys[:presented], recycle_bin.keys[:bin], completed.keys[:completed]],
+        argv: [phone, add_to_recycle_bin]
+      })
     end
 
     def failed!(phone)
