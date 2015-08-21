@@ -11,7 +11,7 @@ if _household == nil then
   _household = redis.call('HGET', inactive_key, hkey)
 end
 
-if _household ~= nil then
+if _household then
   local household = cjson.decode(_household)
   bit = redis.call('SETBIT', message_drop_key, household.sequence, 1)
 end

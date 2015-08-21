@@ -10,7 +10,7 @@ if _household == nil then
   _household = redis.call('HGET', inactive_key, hkey)
 end
 
-if _household ~= nil then
+if _household then
   local household = cjson.decode(_household)
   local bit       = 0
   for _,lead in pairs(household.leads) do
