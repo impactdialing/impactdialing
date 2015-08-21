@@ -29,7 +29,8 @@ private
       active: "dial_queue:#{campaign.id}:households:active", # redis key/hash/json data
       presented: "dial_queue:#{campaign.id}:households:presented", # redis key/hash/json data
       inactive: "dial_queue:#{campaign.id}:households:inactive", # redis key/hash/json data
-      message_drops: "dial_queue:#{campaign.id}:households:message_drops" # redis bitmap
+      message_drops: "dial_queue:#{campaign.id}:households:message_drops", # redis bitmap
+      completed_leads: "dial_queue:#{campaign.id}:households:completed_leads" # redis bitmap
     }
   end
 
@@ -142,6 +143,14 @@ public
 
   def no_message_dropped?(phone)
     not message_dropped?(phone)
+  end
+
+  def mark_lead_completed(lead_sequence)
+    redis.setbit(keys[:completed_leads], lead_sequence, 1)
+  end
+
+  def lead_completed?(lead_sequence)
+    redis.getbit(keys[:completed_leads], lead_sequence).to_i > 0
   end
 
   ##

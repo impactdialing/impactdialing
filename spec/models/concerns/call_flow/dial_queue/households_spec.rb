@@ -161,5 +161,34 @@ describe 'CallFlow::DialQueue::Households' do
       end
     end
   end
+
+  describe 'marking leads completed' do
+    let(:redis_key){ "dial_queue:#{campaign.id}:households:completed_leads" }
+    let(:phone){ households.keys.last }
+    let(:redis_household){ redis.hgetall("dial_queue:#{campaign.id}:households:active:#{phone[0..-4]}") }
+    let(:redis_leads){ JSON.parse(redis_household[phone[-3..-1]])['leads'] }
+    let(:sequence){ redis_leads.first['sequence'] }
+    
+    before do
+      expect(sequence).to be > 0
+      subject.mark_lead_completed(sequence)
+    end
+
+    describe '#mark_lead_completed' do
+      it 'sets bitmap to 1 for given lead.sequence' do
+        expect(redis.getbit(redis_key, sequence)).to eq 1
+      end
+    end
+
+    describe '#lead_completed?' do
+      it 'returns true when lead is marked completed' do
+        expect(subject.lead_completed?(sequence)).to be_truthy
+      end
+
+      it 'returns false when lead is not marked completed' do
+        expect(subject.lead_completed?(sequence+1)).to be_falsey
+      end
+    end
+  end
 end
 
