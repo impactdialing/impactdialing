@@ -19,12 +19,20 @@ public
     @campaign = campaign
   end
 
+  def household_sequence
+    @household_sequence ||= campaign.household_sequence
+  end
+
+  def lead_sequence
+    @lead_sequence ||= campaign.lead_sequence
+  end
+
   def total_households
     @total_households ||= campaign.list_stats[:total_numbers].to_i
   end
 
   def not_dialed
-    @not_dialed ||= dial_queue.available.count(:active, '-inf', '2.0')
+    @not_dialed ||= dial_queue.available.count(:active, '-inf', lead_sequence + 1)
   end
 
   def completed
@@ -32,7 +40,7 @@ public
   end
 
   def retrying
-    @retrying ||= dial_queue.available.count(:active, '2.0', '+inf')
+    @retrying ||= dial_queue.available.count(:active, lead_sequence + 1, '+inf')
   end
 
   def pending_retry

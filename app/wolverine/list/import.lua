@@ -85,7 +85,7 @@ for phone,household in pairs(households) do
   local updated_leads   = {}
   local current_hh      = {}
   local updated_hh      = household
-  local score           = household['score']
+  local score           = new_leads[1].line_number
   local leads_added     = false
   local _current_hh     = redis.call('HGET', household_key, phone_key)
 
@@ -113,13 +113,13 @@ for phone,household in pairs(households) do
     process_leads(updated_leads, new_leads)
 
     new_number_count = new_number_count + 1
-
-    sequence = redis.call('HINCRBY', campaign_stats_key, 'number_sequence', 1)
+    sequence         = redis.call('HINCRBY', campaign_stats_key, 'number_sequence', 1)
   end
 
   updated_hh['leads']    = updated_leads
   updated_hh['uuid']     = uuid
   updated_hh['sequence'] = sequence
+  updated_hh['score']    = score
 
   add_to_set(leads_added, updated_hh['blocked'], score, phone)
 

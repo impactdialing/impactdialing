@@ -163,7 +163,6 @@ public
       # note: imports.lua takes care to not overwrite uuid for existing households
       # so generating uuid here is safe even if phone number appears in multiple batches
       'uuid'        => uuid.generate,
-      'score'       => Time.now.utc.to_f,
       'account_id'  => voter_list.account_id,
       'campaign_id' => voter_list.campaign_id,
       'phone'       => phone,
@@ -198,7 +197,7 @@ public
     # so generating here is safe even if lead w/ same custom id appears in multiple batches
     lead['uuid']          = uuid.generate
     lead['voter_list_id'] = voter_list.id
-    lead['line_number']   = (cursor - batch_count) + batch_index + 1
+    lead['line_number']   = cursor + batch_index + 1
     lead['account_id']    = voter_list.account_id
     lead['campaign_id']   = voter_list.campaign_id
     lead['enabled']       = Voter.bitmask_for_enabled(:list)

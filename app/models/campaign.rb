@@ -219,6 +219,10 @@ public
     list_stats['number_sequence'].to_i
   end
 
+  def lead_sequence
+    list_stats['lead_sequence'].to_i
+  end
+
   def custom_id_register_key_base
     call_list.custom_id_register_key_base
   end

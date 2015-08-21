@@ -209,7 +209,7 @@ for phone,household in pairs(households) do
   local updated_leads   = {}
   local current_hh      = {}
   local updated_hh      = household
-  local score           = household['score']
+  local score           = new_leads[1].line_number
   local leads_added     = false
   local _current_hh     = redis.call('HGET', household_key, phone_key)
   local new_lead_id_set = build_custom_id_set(new_leads)
