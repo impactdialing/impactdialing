@@ -26,13 +26,6 @@ debit_money:
 #  args:
 #  description: "This job persists phones only answers data"
 
-recycle_dial_queue:
-  cron: "*/5 * * * *"
-  class: CallFlow::DialQueue::Jobs::Recycle
-  queue: dial_queue
-  args:
-  description: "Clean up stale or dialed numbers and shunt them to appropriate cache silo"
-
 update_twilio_stats_attempt_em:
   cron: "* * * * *"
   class: UpdateStatsAttemptsEm
