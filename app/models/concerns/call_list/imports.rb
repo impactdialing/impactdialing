@@ -100,10 +100,17 @@ public
   def save(redis_keys, households)
     key_base    = redis_keys.first.split(':')[0..-2].join(':')
     
-    Wolverine.list.import({
-      keys: common_redis_keys + redis_keys,
-      argv: [key_base, @starting_household_sequence, households.to_json]
-    })
+    if voter_list.campaign.using_custom_ids?
+      Wolverine.list.import_with_custom_ids({
+        keys: common_redis_keys + redis_keys,
+        argv: [key_base, @starting_household_sequence, households.to_json]
+      })
+    else
+      Wolverine.list.import({
+        keys: common_redis_keys + redis_keys,
+        argv: [key_base, @starting_household_sequence, households.to_json]
+      })
+    end
   end
 
   def final_results
