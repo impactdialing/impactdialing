@@ -9,7 +9,7 @@ class UserMailer < MandrillMailer
               :text => emailText,
               :from_name => 'Impact Dialing',
               :from_email => FROM_EMAIL,
-              :to=>[{email: SALES_EMAIL},{email: TECH_EMAIL}],
+              :to=>[{email: SALES_EMAIL},{email: TECH_EMAIL},{email: SALES_ASSISTANT_EMAIL}],
               :track_opens => true,
               :track_clicks => true
               })
