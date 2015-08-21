@@ -26,6 +26,13 @@ class CallFlow::Jobs::Persistence
     call_attempt_record = dialed_call_persistence.create(leads.dispositioned_voter)
 
     survey_responses.save(leads.dispositioned_voter, call_attempt_record)
+
+    if survey_responses.complete_lead?
+      completed_lead_sequence = leads.target_lead['sequence']
+      campaign.dial_queue.households.mark_lead_completed(completed_lead_sequence)
+    end
+
+    campaign.dial_queue.dialed_number_persisted(household_record.phone, leads.target_lead)
   end
 
   def dialed_call_persistence

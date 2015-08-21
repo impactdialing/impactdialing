@@ -1,4 +1,18 @@
 class CallFlow::Persistence::SurveyResponses < CallFlow::Persistence
+private
+  def questions
+    @questions ||= JSON.parse(call_data[:questions] || '{}')
+  end
+
+  def notes
+    @notes ||= JSON.parse(call_data[:notes] || '{}')
+  end
+
+  def possible_responses_that_retry
+    @possible_responses_that_retry ||= PossibleResponse.where(id: questions.values, retry: true)
+  end
+
+public
   def save(voter_record, call_attempt_record)
     if dialed_call.answered_by_human?
       save_answers(voter_record, call_attempt_record)
@@ -6,12 +20,8 @@ class CallFlow::Persistence::SurveyResponses < CallFlow::Persistence
     end
   end
 
-  def questions
-    JSON.parse(call_data[:questions] || '{}')
-  end
-
-  def notes
-    JSON.parse(call_data[:notes] || '{}')
+  def complete_lead?
+    possible_responses_that_retry.count.zero?
   end
 
   def save_answers(voter_record, call_attempt_record)

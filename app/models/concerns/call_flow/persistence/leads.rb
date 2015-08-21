@@ -18,10 +18,6 @@ private
     active_new_redis_leads.any?
   end
 
-  def target_lead
-    active_redis_leads.detect{|ld| ld['uuid'] == call_data[:lead_uuid]}
-  end
-
   def leads_without_target
     active_redis_leads.select{|ld| ld['uuid'] != call_data[:lead_uuid]}
   end
@@ -49,6 +45,10 @@ public
     end
 
     @dispositioned_voter
+  end
+
+  def target_lead
+    active_redis_leads.detect{|ld| ld['uuid'] == call_data[:lead_uuid]}
   end
 
   def create_voter_records(leads)
