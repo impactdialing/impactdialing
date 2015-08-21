@@ -24,13 +24,6 @@ local pre_existing_number_count   = 0
 local new_lead_count              = 0
 local updated_lead_count          = 0
 
-local log = function (message)
-  redis.call('RPUSH', 'debug.log', message)
-end
-local capture = function (k,data)
-  redis.call('RPUSH', 'debug.' .. k, cjson.encode(data))
-end
-
 -- build household key parts
 local household_key_parts = function(phone)
   local rkey = household_key_base .. ':' .. string.sub(phone, 0, -4)
@@ -163,11 +156,9 @@ local update_lead = function (lead_to_update, lead_with_updates)
 end
 
 local create_lead_sequence = function (lead)
-  log('creating new sequence for: '..cjson.encode(lead))
   if lead['sequence'] == nil then
     lead['sequence'] = redis.call('HINCRBY', campaign_stats_key, 'lead_sequence', 1)
   end
-  log('lead got sequence: '..lead['sequence'])
 end
 
 local merge_leads = function(current_leads, new_leads)
@@ -199,7 +190,6 @@ end
 local next = next
 
 for phone,household in pairs(households) do
-  log('processing phone: '..phone)
   local key_parts       = household_key_parts(phone)
   local household_key   = key_parts[1]
   local phone_key       = key_parts[2]
@@ -219,7 +209,6 @@ for phone,household in pairs(households) do
   end
 
   if _current_hh then
-    log('current hh, updating stuff')
     -- this household has been saved so merge
     -- current_hh = cmsgpack.unpack(_current_hh)
     current_hh = cjson.decode(_current_hh)
@@ -236,9 +225,6 @@ for phone,household in pairs(households) do
     -- if existing & new don't have custom ids then go to append mode
     -- campaign contract says each list will either use or not custom ids as of July 2015
     if next(current_lead_id_set) ~= nil and next(new_lead_id_set) ~= nil then
-      log('using custom ids, both id sets have members')
-      log('current set: '..cjson.encode(current_lead_id_set))
-      log('new set: '..cjson.encode(new_lead_id_set))
       updated_leads = merge_leads(current_lead_id_set, new_lead_id_set)
 
       if new_lead_count > 0 then
@@ -250,7 +236,6 @@ for phone,household in pairs(households) do
       pre_existing_number_count = pre_existing_number_count + 1
     end
   else
-    log('no current hh, adding new stuff')
     -- brand new household
     for _,lead in pairs(new_leads) do
       new_lead_count = new_lead_count + 1
@@ -269,7 +254,6 @@ for phone,household in pairs(households) do
   add_to_set(leads_added, updated_hh['blocked'], score, phone)
 
   local _updated_hh = cjson.encode(updated_hh)
-  log('HSET '..household_key..' => '..phone_key..' = '.._updated_hh)
   redis.call('HSET', household_key, phone_key, _updated_hh)
 end
 

@@ -75,7 +75,6 @@ end
 local next = next
 
 for phone,household in pairs(households) do
-  log('processing phone: '..phone)
   local key_parts       = household_key_parts(phone)
   local household_key   = key_parts[1]
   local phone_key       = key_parts[2]
@@ -90,7 +89,6 @@ for phone,household in pairs(households) do
   local _current_hh     = redis.call('HGET', household_key, phone_key)
 
   if _current_hh then
-    log('current hh, updating stuff')
     -- this household has been saved so merge
     -- current_hh = cmsgpack.unpack(_current_hh)
     current_hh = cjson.decode(_current_hh)
