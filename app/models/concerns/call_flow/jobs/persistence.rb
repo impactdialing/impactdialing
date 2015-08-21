@@ -27,7 +27,7 @@ class CallFlow::Jobs::Persistence
 
     survey_responses.save(leads.dispositioned_voter, call_attempt_record)
 
-    if survey_responses.complete_lead?
+    if leads.dispositioned_voter.present? and survey_responses.complete_lead?
       completed_lead_sequence = leads.target_lead['sequence']
       campaign.dial_queue.households.mark_lead_completed(completed_lead_sequence)
     end
