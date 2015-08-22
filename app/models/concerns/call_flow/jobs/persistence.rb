@@ -47,3 +47,4 @@ class CallFlow::Jobs::Persistence
     @answers ||= CallFlow::Persistence::SurveyResponses.new(dialed_call, campaign, household_record)
   end
 end
+
