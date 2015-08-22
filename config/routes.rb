@@ -281,6 +281,8 @@ ImpactDialing::Application.routes.draw do
 
   get 'client', :to => 'client#index', :as => 'client_root'
   scope 'client' do
+    get 'forgot', :to => 'client#forgot'
+    post 'forgot', :to => 'client#forgot'
     get 'recording_add', :to => 'client#recording_add'
     post 'recording_add', :to => 'client#recording_add'
     resources :campaigns do

@@ -25,7 +25,11 @@ class MandrillMailer
   end
 
   def send_email(message)
-    _params = {:message => message, :async => false}
-    return @mandrill.call 'messages/send', _params
+    if Rails.env.development?
+      p "Sending email: #{message}"
+    else
+      _params = {:message => message, :async => false}
+      return @mandrill.call 'messages/send', _params
+    end
   end
 end
