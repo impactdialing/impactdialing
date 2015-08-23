@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'CallFlow::Persistence::CallAttempt' do
+describe 'CallFlow::Persistence::Call' do
   describe '#create(dispositioned_voter_record)' do
     let(:dialed_call_storage) do
       instance_double('CallFlow::Call::Storage')
@@ -23,7 +23,7 @@ describe 'CallFlow::Persistence::CallAttempt' do
     let(:dispositioned_voter_record){ nil }
     let(:call_attempt_record){ CallAttempt.last }
 
-    subject{ CallFlow::Persistence::DialedCall.new(dialed_call, campaign, household_record) }
+    subject{ CallFlow::Persistence::Call.new(dialed_call, campaign, household_record) }
 
     before do
       allow(dialed_call_storage).to receive(:attributes).and_return({
@@ -36,7 +36,7 @@ describe 'CallFlow::Persistence::CallAttempt' do
     shared_examples_for 'persisting any call attempt record' do
       it 'creates a CallAttempt record' do
         expect{
-          subject.create(dispositioned_voter_record)
+          subject.create_call_attempt(dispositioned_voter_record)
         }.to change{
           CallAttempt.count
         }.by 1
@@ -44,23 +44,23 @@ describe 'CallFlow::Persistence::CallAttempt' do
 
       describe 'imported attributes' do
         it 'associates w/ proper Household record' do
-          subject.create(dispositioned_voter_record)
+          subject.create_call_attempt(dispositioned_voter_record)
           expect(call_attempt_record.household_id).to eq household_record.id
         end
         it 'associates w/ proper Campaign record' do
-          subject.create(dispositioned_voter_record)
+          subject.create_call_attempt(dispositioned_voter_record)
           expect(call_attempt_record.campaign_id).to eq campaign.id
         end
         it 'w/ mapped call status' do
-          subject.create(dispositioned_voter_record)
+          subject.create_call_attempt(dispositioned_voter_record)
           expect(call_attempt_record.status).to eq dialed_call_storage.attributes[:mapped_status]
         end
         it 'w/ sid' do
-          subject.create(dispositioned_voter_record)
+          subject.create_call_attempt(dispositioned_voter_record)
           expect(call_attempt_record.sid).to eq dialed_call_storage.attributes[:sid]
         end
         it 'w/ dialer_mode' do
-          subject.create(dispositioned_voter_record)
+          subject.create_call_attempt(dispositioned_voter_record)
           expect(call_attempt_record.dialer_mode).to eq campaign.type
         end
       end
@@ -85,7 +85,7 @@ describe 'CallFlow::Persistence::CallAttempt' do
       it_behaves_like 'persisting any call attempt record'
 
       it 'associates w/ proper Voter record' do
-        subject.create(dispositioned_voter_record)
+        subject.create_call_attempt(dispositioned_voter_record)
         expect(call_attempt_record.voter_id).to eq dispositioned_voter_record.id
       end
     end
@@ -112,11 +112,11 @@ describe 'CallFlow::Persistence::CallAttempt' do
       it_behaves_like 'persisting any call attempt record'
 
       it 'associates w/ proper CallerSession record' do
-        subject.create
+        subject.create_call_attempt
         expect(call_attempt_record.caller_session_id).to eq caller_session.id
       end
       it 'associates w/ proper Caller record' do
-        subject.create
+        subject.create_call_attempt
         expect(call_attempt_record.caller_id).to eq caller_session.caller_id
       end
     end
@@ -135,12 +135,12 @@ describe 'CallFlow::Persistence::CallAttempt' do
       it_behaves_like 'persisting any call attempt record'
 
       it 'persists recording_url' do
-        subject.create
+        subject.create_call_attempt
         expect(call_attempt_record.recording_url).to eq dialed_call_storage.attributes[:recording_url]
       end
 
       it 'persists recording_duration' do
-        subject.create
+        subject.create_call_attempt
         expect(call_attempt_record.recording_duration).to eq dialed_call_storage.attributes[:recording_duration]
       end
     end
@@ -159,12 +159,12 @@ describe 'CallFlow::Persistence::CallAttempt' do
       it_behaves_like 'persisting any call attempt record'
 
       it 'persists recording_id' do
-        subject.create
+        subject.create_call_attempt
         expect(call_attempt_record.recording_id).to eq dialed_call_storage.attributes[:recording_id]
       end
 
       it 'persists recording_delivered_manually' do
-        subject.create
+        subject.create_call_attempt
         expect(call_attempt_record.recording_delivered_manually).to be_falsey
       end
     end

@@ -1,8 +1,7 @@
 ##
 # Manages persistence of CallAttempt records from CallFlow::Call::Dialed.
 #
-class CallFlow::Persistence::DialedCall < CallFlow::Persistence
-
+class CallFlow::Persistence::Call < CallFlow::Persistence
   def create_household_record
     @household_record = campaign.households.create!({
       account_id: campaign.account_id,
@@ -13,11 +12,20 @@ class CallFlow::Persistence::DialedCall < CallFlow::Persistence
 
   def update_household_record
     household_record.update_attributes!(status: household_status)
+    household_record
+  end
+
+  def create_or_update_household_record
+    if household_record.present?
+      update_household_record
+    else
+      create_household_record
+    end
   end
 
   ##
   # Build & create a new CallAttempt record.
-  def create(dispositioned_voter=nil)
+  def create_call_attempt(dispositioned_voter=nil)
     call_attempt_attrs = {
       household_id: household_record.id,
       campaign_id: campaign.id,
@@ -43,7 +51,7 @@ class CallFlow::Persistence::DialedCall < CallFlow::Persistence
 
     call_attempt_attrs[:voter_id] = dispositioned_voter.id unless dispositioned_voter.nil?
 
-    CallAttempt.create(call_attempt_attrs)
+    ::CallAttempt.create(call_attempt_attrs)
   end
 end
 

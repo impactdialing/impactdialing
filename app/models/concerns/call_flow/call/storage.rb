@@ -1,35 +1,35 @@
 class CallFlow::Call::Storage
   include CallFlow::DialQueue::Util
 
-  attr_reader :account_sid, :call_sid, :namespace
+  attr_reader :group_key, :object_key, :namespace
 
 private
   def validate!
-    if account_sid.blank? or call_sid.blank?
-      raise CallFlow::Call::InvalidParams, "CallFlow::Call::Data requires non-blank account_sid & call_sid."
+    if group_key.blank? or object_key.blank?
+      raise CallFlow::Call::InvalidParams, "CallFlow::Call::Storage requires non-blank group_key & object_key."
     end
   end
 
 
 public
-  def initialize(account_sid, call_sid, namespace=nil)
-    @account_sid = account_sid
-    @call_sid    = call_sid
-    @namespace   = namespace
+  def initialize(group_key, object_key, namespace=nil)
+    @group_key  = group_key
+    @object_key = object_key
+    @namespace  = namespace
     validate!
   end
 
-  def self.key(account_sid, call_sid, namespace=nil)
+  def self.key(group_key, object_key, namespace=nil)
     [
       'calls',
-      account_sid,
-      call_sid,
+      group_key,
+      object_key,
       namespace
     ].compact.join(':')
   end
 
   def key
-    @key ||= self.class.key(account_sid, call_sid, namespace)
+    @key ||= self.class.key(group_key, object_key, namespace)
   end
 
   def [](property)
