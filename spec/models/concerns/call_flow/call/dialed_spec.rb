@@ -3,6 +3,7 @@ require 'rails_helper'
 describe 'CallFlow::Call::Dialed' do
   include ListHelpers
 
+  let(:phone){ Forgery(:address).clean_phone }
   let(:caller_record){ create(:caller) }
   let(:caller_session) do
     create(:webui_caller_session, {
@@ -19,7 +20,8 @@ describe 'CallFlow::Call::Dialed' do
       'CallSid'       => 'CA123',
       'AccountSid'    => 'AC432',
       'campaign_id'   => campaign.id,
-      'campaign_type' => campaign.type
+      'campaign_type' => campaign.type,
+      'phone'         => phone
     })
   end
 
@@ -27,10 +29,13 @@ describe 'CallFlow::Call::Dialed' do
     let(:campaign){ create(:predictive) }
     let(:voter_list){ create(:voter_list, campaign: campaign) }
     let(:phone){ Forgery(:address).clean_phone }
+    let(:lead){ build_lead_hash(voter_list, phone) }
     let(:browser_params) do
       HashWithIndifferentAccess.new({
         'call_sid' => twilio_params[:CallSid],
-        'lead' => build_lead_hash(voter_list, phone).stringify_keys,
+        'lead' => {
+          id: lead[:uuid]
+        }.merge(lead),
         'question' => {
           '42' => "123",
           '43' => "128",
@@ -64,7 +69,7 @@ describe 'CallFlow::Call::Dialed' do
 
     it 'saves params[:lead] as JSON eg {phone: 123...,first_name: "John",...}' do
       subject.dispositioned(browser_params)
-      expect(subject.storage['lead']).to eq browser_params['lead'].to_json
+      expect(subject.storage['lead_uuid']).to eq browser_params['lead']['id']
     end
 
     context 'params[:stop_calling] is false' do
@@ -98,9 +103,9 @@ describe 'CallFlow::Call::Dialed' do
 
     it 'records that a manual message was dropped' do
       subject.manual_message_dropped(recording)
-      expect(subject.storage['status']).to eq CallAttempt::Status::VOICEMAIL
+      expect(subject.storage['mapped_status']).to eq CallAttempt::Status::VOICEMAIL
       expect(subject.storage['recording_id']).to eq recording.id.to_s
-      expect(subject.storage['recording_delivered_manually']).to eq 'true'
+      expect(subject.storage['recording_delivered_manually']).to eq '1'
     end
 
     it 'queues CallerPusherJob with "message_drop_success"' do
@@ -258,7 +263,7 @@ describe 'CallFlow::Call::Dialed' do
             expect(status).to eq 'On call'
           end
           it 'queues VoterConnectedPusherJob' do
-            expect([:sidekiq, :call_flow]).to have_queued(VoterConnectedPusherJob).with(caller_session.id, twilio_params['CallSid'])
+            expect([:sidekiq, :call_flow]).to have_queued(VoterConnectedPusherJob).with(caller_session.id, twilio_params['CallSid'], phone)
           end
           it 'sets @record_calls = campaign.account.record_calls' do
             expect(subject.record_calls).to eq 'true'
@@ -321,6 +326,7 @@ describe 'CallFlow::Call::Dialed' do
 
     context 'Preview dial mode' do
       let(:campaign){ create(:preview) }
+      let(:phone){ Forgery(:address).clean_phone }
 
       it_behaves_like 'answered call of any dialing mode'
       it_behaves_like 'Preview or Power dial modes'
@@ -328,6 +334,7 @@ describe 'CallFlow::Call::Dialed' do
 
     context 'Power dial mode' do
       let(:campaign){ create(:power) }
+      let(:phone){ Forgery(:address).clean_phone }
       
       it_behaves_like 'answered call of any dialing mode'
       it_behaves_like 'Preview or Power dial modes'
@@ -335,6 +342,7 @@ describe 'CallFlow::Call::Dialed' do
 
     context 'Predictive dial mode' do
       let(:campaign){ create(:predictive) }
+      let(:phone){ Forgery(:address).clean_phone }
 
       before do
         RedisOnHoldCaller.add(campaign.id, caller_session.id)
