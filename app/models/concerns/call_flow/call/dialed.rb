@@ -151,7 +151,9 @@ public
 
   def disconnected(params)
     storage.save(params_for_update(params))
-
+    if caller_session_from_sid.present?
+      RedisStatus.set_state_changed_time(caller_session_from_sid.campaign_id, "Wrap up", caller_session_from_sid.id)
+    end
     caller_session.emit('publish_voter_disconnected')
   end
 

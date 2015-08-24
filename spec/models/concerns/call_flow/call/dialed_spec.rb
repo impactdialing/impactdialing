@@ -195,6 +195,10 @@ describe 'CallFlow::Call::Dialed' do
       expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'publish_voter_disconnected', {})
     end
 
+    it 'updates RedisStatus for caller session to "Wrap up"' do
+      expect(RedisStatus.state_time(campaign.id, caller_session.id).first).to eq 'Wrap up'
+    end
+
     it 'updates storage with twilio params' do
       disconnected_params.each do |key,value|
         key = key.underscore.gsub('call_','')
