@@ -59,7 +59,7 @@ VoterLists.prototype.validate_csv_file = function(evt){
             $(this).val(newField);
           }
         }
-        //GroupedSelects.toggleOptions('#column_headers select', this);
+        GroupedSelects.toggleOptions('#column_headers select', this);
       });
     }
   };
