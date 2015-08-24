@@ -29,7 +29,7 @@ class UpdateTwilioStatsCallerSession
     caller_sessions = []
     twillio_lib = TwilioLib.new
 
-    WebuiCallerSession.where("endtime is not NULL and tPrice is NULL and (tStatus is NULL or tStatus = 'completed') ").limit(100).each do |session|
+    WebuiCallerSession.where("endtime is not NULL and tCallSegmentSid is NULL and (tStatus is NULL or tStatus = 'completed') ").limit(100).each do |session|
         if !session.sid.nil? && !session.sid.starts_with?("CA")
           session.tEndTime = session.endtime
           session.tStartTime = session.starttime
@@ -45,7 +45,7 @@ class UpdateTwilioStatsCallerSession
     caller_sessions = []
     twillio_lib = TwilioLib.new
 
-    PhonesOnlyCallerSession.where("endtime is not NULL and tPrice is NULL and (tStatus is NULL or tStatus = 'completed') ").limit(100).each do |session|
+    PhonesOnlyCallerSession.where("endtime is not NULL and tCallSegmentSid is NULL and (tStatus is NULL or tStatus = 'completed') ").limit(100).each do |session|
       if !session.sid.nil? && !session.sid.starts_with?("CA")
         session.tEndTime = session.endtime
         session.tStartTime = session.starttime
