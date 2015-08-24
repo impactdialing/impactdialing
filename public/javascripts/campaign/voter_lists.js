@@ -1,26 +1,26 @@
 var VoterLists = function(){
-  $('#upload_datafile').change(this.validate_csv_file);
+    $('#upload_datafile').change(this.validate_csv_file);
 
-  $("#file_upload_submit").click(function(){
-  if ($("#voter_list_name").val().trim() == ""){
-    alert("Please enter a name for the list to be uploaded.");
-    return false;
-  }
-  if ($("#voter_list_name").val().trim().length <= 3){
-    alert("Voter List name is too short. Please enter more than 3 characters.");
-    return false;
-  }
-  var selected_mapping = []
-  $(".select-column-mapping").each(function( index ) {
-    selected_mapping.push($(this).val());
-  });
+    $("#file_upload_submit").click(function(){
+    if ($("#voter_list_name").val().trim() == ""){
+      alert("Please enter a name for the list to be uploaded.");
+      return false;
+    }
+    if ($("#voter_list_name").val().trim().length <= 3){
+      alert("Voter List name is too short. Please enter more than 3 characters.");
+      return false;
+    }
+    var selected_mapping = []
+    $(".select-column-mapping").each(function( index ) {
+      selected_mapping.push($(this).val());
+    });
 
-  if($.inArray("phone", selected_mapping) == -1){
-    alert("Please choose map a column to the Phone field before uploading.");
-    return false;
-  }
+    if($.inArray("phone", selected_mapping) == -1){
+      alert("Please choose map a column to the Phone field before uploading.");
+      return false;
+    }
 
-  return true
+    return true
 
   });
 }
@@ -45,6 +45,9 @@ VoterLists.prototype.validate_csv_file = function(evt){
       $("#list_name").show();
       $("#voter_list_separator").val(separator)
       $("#voter_upload").show();
+      $('#column_headers select').each(function(i, el) {
+        GroupedSelects.toggleOptions('#column_headers select', el);
+      });
       $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists");
 
       $("#column_headers select").change(function(eventObj) {
