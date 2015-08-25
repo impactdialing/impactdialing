@@ -14,9 +14,9 @@ describe 'CallList::Imports' do
     {
       '1234567890' => {
         'leads' => [
-          {'custom_id' => 123, 'first_name' => 'john1a', 'phone' => '1234567890'},
-          {'custom_id' => 234, 'first_name' => 'lucy', 'phone' => '1234567890'},
-          {'custom_id' => 123, 'first_name' => 'jack1b', 'phone' => '1234567890'},
+          {'custom_id' => 123, 'first_name' => 'john1a', 'phone' => '1234567890', 'line_number' => '1'},
+          {'custom_id' => 234, 'first_name' => 'lucy', 'phone' => '1234567890', 'line_number' => '2'},
+          {'custom_id' => 123, 'first_name' => 'jack1b', 'phone' => '1234567890', 'line_number' => '3'},
           {'first_name' => 'aria', 'phone' => '1234567890'} # will not be saved due to missing custom id
         ],
         'uuid'  => 'hh-uuid-123',
@@ -24,9 +24,9 @@ describe 'CallList::Imports' do
       },
       '4567890123' => {
         'leads' => [
-          {'custom_id' => 123, 'first_name' => 'john2', 'phone' => '4567890123'},
-          {'custom_id' => 345, 'first_name' => 'sala', 'phone' => '4567890123'},
-          {'custom_id' => 456, 'first_name' => 'nathan', 'phone' => '4567890123'},
+          {'custom_id' => 123, 'first_name' => 'john2', 'phone' => '4567890123', 'line_number' => '4'},
+          {'custom_id' => 345, 'first_name' => 'sala', 'phone' => '4567890123', 'line_number' => '5'},
+          {'custom_id' => 456, 'first_name' => 'nathan', 'phone' => '4567890123', 'line_number' => '6'},
           {'first_name' => 'sensa', 'phone' => '4567890123'} # will not be saved due to missing custom id
         ],
         'uuid'  => 'hh-uuid-234',
@@ -38,8 +38,8 @@ describe 'CallList::Imports' do
     {
       '1234567890' => {
         'leads' => [
-          {'custom_id' => 123, 'first_name' => 'styx', 'phone' => '1234567890'},
-          {'custom_id' => 234, 'first_name' => 'cirrus', 'phone' => '1234567890'},
+          {'custom_id' => 123, 'first_name' => 'styx', 'phone' => '1234567890', 'line_number' => '1'},
+          {'custom_id' => 234, 'first_name' => 'cirrus', 'phone' => '1234567890', 'line_number' => '2'},
           {'first_name' => 'aria', 'phone' => '1234567890'} # will not be saved due to missing custom id
         ],
         'uuid'  => 'hh-uuid-123',
@@ -47,8 +47,8 @@ describe 'CallList::Imports' do
       },
       '4567890123' => {
         'leads' => [
-          {'custom_id' => 345, 'first_name' => 'raka', 'phone' => '4567890123'},
-          {'custom_id' => 456, 'first_name' => 'dani', 'phone' => '4567890123'},
+          {'custom_id' => 345, 'first_name' => 'raka', 'phone' => '4567890123', 'line_number' => '3'},
+          {'custom_id' => 456, 'first_name' => 'dani', 'phone' => '4567890123', 'line_number' => '4'},
           {'first_name' => 'sensa', 'phone' => '4567890123'} # will not be saved due to missing custom id
         ],
         'uuid'  => 'hh-uuid-234',
@@ -196,6 +196,33 @@ describe 'CallList::Imports' do
 
           expect(updated_lead_uuid).to eq existing_lead_uuid
         end
+      end
+    end
+
+    context 'and no leads have been added (only possible when custom id is in use)' do
+      let(:completed_key){ common_keys[6] }
+      let(:pending_key){ common_keys[0] }
+      before do
+        parsed_households[phone]['leads'][0].merge!({'custom_id' => 5})
+        subject.save(redis_keys, parsed_households)
+        redis.zrem(pending_key, phone)
+        redis.zadd(completed_key, 2.2, phone)
+      end
+
+      it 'is not added to any set' do
+        keys  = [
+          pending_key,
+          common_keys[3],
+          common_keys[4],
+          common_keys[5]
+        ]
+        keys.each do |key|
+          expect(redis.zscore(key, phone)).to(be_nil, key)
+        end
+      end
+
+      it 'is left in completed set' do
+        expect(redis.zscore(common_keys[6], phone)).to_not be_nil
       end
     end
 

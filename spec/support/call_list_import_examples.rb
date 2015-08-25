@@ -50,27 +50,6 @@ shared_examples_for 'any call list import' do
           redis.zadd(completed_key, 2.2, phone)
         end
 
-        context 'and no leads have been added (only possible when custom id is in use)' do
-          before do
-            subject.save(redis_keys, parsed_households)
-          end
-
-          it 'is not added to any set' do
-            keys  = [
-              pending_key,
-              common_keys[3],
-              common_keys[4],
-              common_keys[5]
-            ]
-            keys.each do |key|
-              expect(redis.zscore(key, phone)).to(be_nil, key)
-            end
-          end
-
-          it 'is left in completed set' do
-            expect(redis.zscore(common_keys[6], phone)).to_not be_nil
-          end
-        end
 
         context 'and 1 or more leads have been added' do
           before do

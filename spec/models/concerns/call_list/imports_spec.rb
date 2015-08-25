@@ -1,7 +1,14 @@
 require 'rails_helper'
 
 describe 'CallList::Imports' do
-  let(:voter_list){ create(:voter_list) }
+  let(:voter_list) do
+    create(:voter_list, {
+      csv_to_system_map: {
+        'DISTRICT' => 'District',
+        'POLLING LOC' => 'Polling location'
+      }
+    })
+  end
 
   let(:redis_keys) do
     [
@@ -13,7 +20,7 @@ describe 'CallList::Imports' do
   let(:parsed_households) do
     {
       '1234567890' => {
-        'leads' => [{'first_name' => 'john', 'sequence' => '1'}],
+        'leads' => [{'first_name' => 'john', 'Polling location' => 'Albany', 'District' => '1A', 'sequence' => '1', 'line_number' => '1'}],
         'uuid' => 'hh-uuid',
         'score' => Time.now.utc.to_f
       }
@@ -25,6 +32,24 @@ describe 'CallList::Imports' do
 
   after do
     Redis.new.flushall
+  end
+
+  describe 'importing CustomVoterFields to SQL backend' do
+    subject{ CallList::Imports.new(voter_list) }
+
+    it 'creates a new CustomVoterField record for each user-defined field' do
+      expect{ subject.create_new_custom_voter_fields! }.to change{ CustomVoterField.count }.by 2
+    end
+
+    it 'each CustomVoterField record is associated w/ the account of the admin who uploaded the list' do
+      subject.create_new_custom_voter_fields!
+      expect(voter_list.account.custom_voter_fields.count).to eq 2
+    end
+
+    it 'does not create records if matching field exists' do
+      subject.create_new_custom_voter_fields!
+      expect{ subject.create_new_custom_voter_fields! }.to change{ CustomVoterField.count }.by 0
+    end
   end
 
   describe 'initialize' do
@@ -158,6 +183,8 @@ describe 'CallList::Imports' do
       JSON.parse(saved_households[hkey])
     end
 
+    it_behaves_like 'any call list import'
+
     it 'saves households & leads at given redis keys' do
       subject.save(redis_keys, parsed_households)
       household = fetch_saved_household(voter_list, phone)
@@ -208,7 +235,5 @@ describe 'CallList::Imports' do
         expect(updated_household_uuid).to eq existing_household_uuid
       end
     end
-
-    it_behaves_like 'any call list import'
   end
 end

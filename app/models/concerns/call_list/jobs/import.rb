@@ -25,6 +25,7 @@ class CallList::Jobs::Import
     begin
       voter_list  = VoterList.includes(:campaign).find(voter_list_id)
       imports     = CallList::Imports.new(voter_list, cursor, results)
+      imports.create_new_custom_fields!
 
       imports.parse do |redis_keys, households|
         imports.save(redis_keys, households)
