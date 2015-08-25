@@ -171,7 +171,7 @@ public
     end
 
     if state_missed?(:caller_and_lead_connected)
-      CallFlow::Jobs::Persistence.perform_async(account_sid, sid)
+      CallFlow::Jobs::Persistence.perform_async('Completed', account_sid, sid)
     end
   end
 
@@ -197,7 +197,7 @@ public
       caller_session.stop_calling
     end
 
-    CallFlow::Jobs::Persistence.perform_async(account_sid, sid)
+    CallFlow::Jobs::Persistence.perform_async('Completed', account_sid, sid)
   end
 
   def drop_message
