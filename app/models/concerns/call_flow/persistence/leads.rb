@@ -134,6 +134,7 @@ public
     })
 
     voter_record = create_voter_record(voter_attrs)
+    create_custom_voter_field_value_records(voter_record, lead)
 
     [
       voter_record,

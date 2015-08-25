@@ -160,6 +160,22 @@ describe 'CallFlow::Persistence::Leads' do
           subject.import_records
           expect(Voter.where(status: CallAttempt::Status::SUCCESS).pluck(:id)).to eq [target_lead['sql_id'].to_i]
         end
+
+        it 'imports CustomVoterFieldValue records for lead in redis associated w/ dialed call' do
+          ['Polling location', 'Party affil.'].each do |field|
+              campaign.account.custom_voter_fields.create(name: field)
+          end
+          ['Polling location', 'Party affil.'].each do |field|
+              subject.import_records
+              lead = target_lead
+              voter = Voter.find(lead['sql_id'])
+              byebug
+              custom_field_value = voter.custom_voter_field_values.where(value: lead[field])
+              expect(custom_field_value.count).to eq 1
+              custom_field_name  = custom_field_value.first.custom_voter_field.name
+              expect(custom_field_name).to eq field
+          end
+        end
       end
 
       context 'subsequent dials' do
