@@ -14,7 +14,7 @@ private
 
 public
   def save(voter_record, call_attempt_record)
-    if dialed_call.answered_by_human?
+    if dialed_call.completed? and dialed_call.answered_by_human?
       save_answers(voter_record, call_attempt_record)
       save_notes(voter_record, call_attempt_record)
     end
