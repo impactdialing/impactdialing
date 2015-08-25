@@ -26,6 +26,23 @@ private
     leads_without_target.select{|ld| ld['sql_id'].blank?}
   end
 
+  def build_voter_attributes(lead)
+    voter_attrs = {}
+    voter_system_fields.each do |field|
+      voter_attrs[field] = lead[field]
+    end
+
+    voter_attrs.merge!({
+      account_id: campaign.account_id,
+      campaign_id: campaign.id
+    })
+    return voter_attrs
+  end
+  
+  def create_voter_record(voter_attributes)
+    household_record.voters.create(voter_attributes)
+  end
+
 public
   def import_records
     leads               = active_redis_leads
@@ -57,17 +74,7 @@ public
     return uuid_to_id_map if leads.empty?
 
     leads.each do |lead|
-      voter_attrs = {}
-      voter_system_fields.each do |field|
-        voter_attrs[field] = lead[field]
-      end
-
-      voter_attrs.merge!({
-        account_id: campaign.account_id,
-        campaign_id: campaign.id
-      })
-
-      voter_record = household_record.voters.create(voter_attrs)
+      voter_record = create_voter_record(build_voter_attributes(lead))
       uuid_to_id_map[lead[:uuid]] = voter_record.id
     end
 
@@ -97,18 +104,12 @@ public
   end
 
   def create_dispositioned_voter_record(lead)
-    voter_attrs = {}
-    voter_system_fields.each do |field|
-      voter_attrs[field] = lead[field]
-    end
-
+    voter_attrs = build_voter_attributes(lead)
     voter_attrs.merge!({
-      account_id: campaign.account_id,
-      campaign_id: campaign.id,
       status: household_status
     })
 
-    voter_record = household_record.voters.create(voter_attrs)
+    voter_record = create_voter_record(voter_attrs)
 
     [
       voter_record,
