@@ -43,6 +43,29 @@ private
     household_record.voters.create(voter_attributes)
   end
 
+  def custom_voter_fields
+    return @custom_voter_fields if defined?(@custom_voter_fields)
+    @custom_voter_fields = {}
+    campaign.account.custom_voter_fields.select([:id, :name]).each do |field|
+      @custom_voter_fields[field.name.strip] = field.id
+    end
+    @custom_voter_fields
+  end
+
+  def create_custom_voter_field_value_records(voter_record, lead)
+    custom_lead_attrs   = lead.stringify_keys.keys - (voter_system_fields + ['sequence', 'uuid'])
+    custom_lead_attrs.each do |field|
+      custom_voter_field_id = custom_voter_fields[field.strip]
+      if custom_voter_field_id.present?
+        voter_record.custom_voter_field_values.create({
+          custom_voter_field_id: custom_voter_field_id,
+          voter_id: voter_record.id,
+          value: lead[field]
+        })
+      end
+    end
+  end
+
 public
   def import_records
     leads               = active_redis_leads
@@ -75,6 +98,7 @@ public
 
     leads.each do |lead|
       voter_record = create_voter_record(build_voter_attributes(lead))
+      create_custom_voter_field_value_records(voter_record, lead)
       uuid_to_id_map[lead[:uuid]] = voter_record.id
     end
 

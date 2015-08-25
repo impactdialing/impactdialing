@@ -90,6 +90,18 @@ describe 'CallFlow::Persistence::Leads' do
           subject.import_records
         }.to change{ Voter.count }.by households[phone][:leads].size
       end
+
+      ['Polling location', 'Party affil.'].each do |field|
+        it "imports CustomVoterField & CustomVoterFieldValue records for all active leads, eg #{field}" do
+          campaign.account.custom_voter_fields.create(name: field)
+          subject.import_records
+          lead = households[phone][:leads].last
+          custom_field_value = voter_records.last.custom_voter_field_values.where(value: lead[field])
+          expect(custom_field_value.count).to eq 1
+          custom_field_name  = custom_field_value.first.custom_voter_field.name
+          expect(custom_field_name).to eq field
+        end
+      end
     end
 
     context 'subsequent import (subsequent call just dialed & new leads uploaded since first call)' do

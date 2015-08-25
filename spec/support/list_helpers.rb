@@ -111,7 +111,9 @@ module ListHelpers
       uuid: @uuid.generate,
       phone: phone,
       first_name: Forgery(:name).first_name,
-      last_name: Forgery(:name).last_name
+      last_name: Forgery(:name).last_name,
+      'Polling location' => 'Kansas City',
+      'Party affil.' => 'I'
     }
     if with_custom_id
       custom_id = with_custom_id.kind_of?(Integer) ? with_custom_id : Forgery(:basic).number
