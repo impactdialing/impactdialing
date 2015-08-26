@@ -28,7 +28,8 @@ describe 'CallList::Jobs::Import' do
         cursor:                    6,
         results:                   results,
         final_results:             results,
-        move_pending_to_available: nil
+        move_pending_to_available: nil,
+        create_new_custom_fields!: nil
       })
     end
     let(:voter_list){ create(:voter_list) }
