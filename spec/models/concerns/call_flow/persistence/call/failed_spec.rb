@@ -19,7 +19,7 @@
 
    before do
      import_list(voter_list, households, 'active', 'presented')
-     CallFlow::Call::Failed.create(campaign.id, phone, {})
+     CallFlow::Call::Failed.create(campaign, phone, {})
    end
    subject{ CallFlow::Persistence::Call::Failed.new(campaign.id, phone) }
 

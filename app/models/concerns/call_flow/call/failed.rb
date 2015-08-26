@@ -5,22 +5,24 @@ class CallFlow::Call::Failed < CallFlow::Call::Lead
     "failed"
   end
 
-  def self.create(campaign_id, phone, rest_response)
+  def self.create(campaign, phone, rest_response)
     phone = PhoneNumber.sanitize(phone)
 
-    validate!(campaign_id, phone)
+    validate!(campaign.id, phone)
 
-    storage = CallFlow::Call::Storage.new(campaign_id, phone, namespace)
+    storage = CallFlow::Call::Storage.new(campaign.id, phone, namespace)
 
     params = rest_response.merge({
       mapped_status: CallAttempt::Status::FAILED,
       phone: phone,
-      campaign_id: campaign_id
+      campaign_id: campaign.id
     })
+
+    campaign.dial_queue.failed!(phone)
 
     storage.save(params)
 
-    CallFlow::Jobs::Persistence.perform_async('Failed', campaign_id, phone)
+    CallFlow::Jobs::Persistence.perform_async('Failed', campaign.id, phone)
   end
 
   def initialize(campaign_id, phone)

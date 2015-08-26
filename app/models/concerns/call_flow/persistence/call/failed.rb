@@ -13,8 +13,6 @@ class CallFlow::Persistence::Call::Failed
 
     leads.import_records
     call_attempt_record = call_persistence.create_call_attempt
-
-    campaign.dial_queue.failed!(phone)
   end
 
   def call_persistence
