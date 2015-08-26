@@ -22,14 +22,14 @@ describe 'CallList::Jobs::Import' do
       }
     end
     let(:imports) do
-      double('CallList::Imports', {
+      instance_double('CallList::Imports', {
         parse:                     nil,
         save:                      nil,
         cursor:                    6,
         results:                   results,
         final_results:             results,
         move_pending_to_available: nil,
-        create_new_custom_fields!: nil
+        create_new_custom_voter_fields!: nil
       })
     end
     let(:voter_list){ create(:voter_list) }
