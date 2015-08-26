@@ -6,7 +6,8 @@ describe 'CallFlow::DialQueue::Jobs::Recycle' do
   let(:fake_dial_queue) do
     double('FakeDialQueue', {
       available: double('FakeAvailable', {
-        presented_and_stale: []
+        presented_and_stale: [],
+        insert: nil
       }),
       recycle!: {},
       dialed: {}

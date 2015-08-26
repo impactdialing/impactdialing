@@ -23,17 +23,8 @@ private
     def self.recycle(dial_queue)
       stale = dial_queue.available.presented_and_stale
 
-      stale.each do |scored_phone|
-        score     = scored_phone.last
-        phone     = scored_phone.first
-        household = campaign.households.find_by_phone(phone)
-        
-        if household.present?
-          household.update_attributes({
-            presented_at: Time.at(score)
-          })
-          dial_queue.dialed(household)
-        end
+      if stale.any?
+        dial_queue.available.insert(stale.map(&:reverse))
       end
 
       dial_queue.recycle!
