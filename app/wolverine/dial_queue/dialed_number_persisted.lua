@@ -12,3 +12,4 @@ else
 end
 
 redis.call('ZREM', presented_key, phone)
+

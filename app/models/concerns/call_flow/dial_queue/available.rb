@@ -55,3 +55,4 @@ public
     redis.zrem keys[:presented], [*phones]
   end
 end
+

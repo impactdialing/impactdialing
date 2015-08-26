@@ -71,7 +71,6 @@ module CallFlow
       end
     end
 
-    # tell available & recycle bin of the dialed household
     def dialed(household)
       unless recycle_bin.dialed(household)
         log :info, "Rejected by recycle bin. Removing Household[#{household.id}]"
@@ -127,3 +126,4 @@ module CallFlow
     end
   end
 end
+
