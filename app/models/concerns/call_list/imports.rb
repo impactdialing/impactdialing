@@ -121,7 +121,8 @@ public
     custom_voter_field_names     = voter_field_names.reject{|name| voter_system_field_names.include?(name)}
     existing_voter_field_names   = account.custom_voter_fields.where(name: custom_voter_field_names).pluck(:name)
     new_custom_voter_field_names = custom_voter_field_names - existing_voter_field_names
-    new_custom_voter_field_names.each do |name|
+    new_custom_voter_field_names.compact.each do |name|
+      next if name.blank?
       account.custom_voter_fields.create({name: name})
     end
   end
@@ -151,3 +152,4 @@ public
     end
   end
 end
+
