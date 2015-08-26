@@ -40,9 +40,6 @@ describe Twillio do
     end
   end
 
-  shared_examples 'Predictive success Twillio.dials' do
-  end
-
   shared_examples 'Predictive failed Twillio.dials' do
     it 'subtracts 1 from campaign.presented_count' do
       expect(campaign.presented_count).to eq 0
@@ -56,6 +53,10 @@ describe Twillio do
 
     it 'removes phone from available:presented zset' do
       expect(phone).to_not be_in_dial_queue_zset campaign.id, 'presented'
+    end
+
+    it 'queues CallFlow::Jobs::Persistence' do
+      expect([:sidekiq, :persistence]).to have_queued(CallFlow::Jobs::Persistence).with('Failed', campaign.id, phone)
     end
   end
 
