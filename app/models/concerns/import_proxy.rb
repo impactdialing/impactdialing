@@ -34,6 +34,13 @@ private
     end
   end
 
+  def metric_source(hash)
+    source = []
+    source << "ac-#{hash[:account_id]}"
+    source << "ca-#{hash[:campaign_id]}"
+    source
+  end
+
 public
   def import_hashes(hashes, options={})
     if ENV['UPSERT_GEM_ON'].to_i > 0
@@ -58,7 +65,14 @@ public
 
     options[:on_duplicate_key_update] = options.delete(:columns_to_update)
 
-    self.import hashes.map{|h| self.new(h)}, options
+    result = self.import hashes.map{|h| self.new(h)}, options
+
+    if result.failed_instances.any?
+      source = metric_source(hashes.first) + ['import_proxy']
+      ImpactPlatform::Metrics.count('failed_instances', result.failed_instances.size, source.join('.'))
+    end
+
+    return result
   end
 
   def import_hashes_upsert(hashes, options={})
