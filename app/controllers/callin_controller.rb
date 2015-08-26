@@ -53,7 +53,8 @@ public
           xml = load_caller_session.callin_choice
         else
           RedisDataCentre.set_datacentres_used(load_caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
-          xml = load_caller_session.start_conf
+          load_caller_session.start_conf
+          xml = load_caller_session.connected_twiml
         end
 
         render xml: xml and return
@@ -63,3 +64,4 @@ public
     end
   end
 end
+
