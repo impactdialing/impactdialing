@@ -104,6 +104,7 @@ public
     phone_numbers.each do |number|
       house = find(number)
       unless house.empty?
+        house[:leads].reject!{|lead| lead_completed?(lead[:sequence])}
         result << house
       end
     end
