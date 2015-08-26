@@ -50,6 +50,13 @@ describe 'CallFlow::Persistence::Leads' do
 
     shared_examples_for 'updating Voter fields' do
       context 'updating Voter system & user-defined fields' do
+        let!(:original_voters) do
+          h = {}
+          campaign.all_voters.each do |voter|
+            h[voter.id] = voter.attributes
+          end
+          h
+        end
         before do
           households[phone][:leads] = update_leads(households[phone][:leads]) do |lead|
             lead[system_field] = Forgery(:name).first_name
@@ -59,9 +66,22 @@ describe 'CallFlow::Persistence::Leads' do
           subject.import_records
         end
         it 'updates Voter records for leads w/ `sql_id` property' do
-          campaign.all_voters.each do |voter|
+          campaign.all_voters.reload.each do |voter|
             lead = households[phone][:leads].detect{|ld| ld[:last_name] == voter.last_name}
             expect(voter[system_field]).to eq lead[system_field]
+          end
+        end
+
+        it 'leaves unchanged Voter attributes alone' do
+          campaign.all_voters.each do |voter|
+            original = original_voters[voter.id]
+            household = campaign.households.find_by_phone(phone)
+            aggregate_failures do
+              expect(voter.household_id).to eq original['household_id']
+              expect(voter.campaign_id).to eq original['campaign_id']
+              expect(voter.account_id).to eq original['account_id']
+              expect(voter.status).to eq original['status']
+            end
           end
         end
 

@@ -79,34 +79,52 @@ private
   end
 
   def create_custom_voter_field_value_records(voter_record, lead)
+    custom_field_values = []
     custom_lead_attrs(lead) do |field, custom_voter_field_id|
       next if voter_record.custom_voter_field_values.where(value: lead[field]).count > 0
-      voter_record.custom_voter_field_values.create({
+      custom_field_values << {
         custom_voter_field_id: custom_voter_field_id,
         voter_id: voter_record.id,
         value: lead[field]
-      })
+      }
     end
+
+    CustomVoterFieldValue.import_hashes(custom_field_values)
   end
 
-  def update_custom_voter_field_values(voter_record, lead)
-    voter_record.custom_voter_field_values.each do |custom_voter_field_value|
-      target_field = custom_voter_fields_by_id[custom_voter_field_value.custom_voter_field.id]
-      if lead[target_field].present?
-        custom_voter_field_value.update_column(:value, lead[target_field])
+  def build_custom_voter_field_values(leads)
+    voter_record_ids    = leads.map{|lead| lead['sql_id']}
+    voter_records       = Voter.where(id: voter_record_ids).includes(:custom_voter_field_values)
+    custom_field_values = []
+    voter_records.each do |voter_record|
+      lead = leads.detect{|lead| lead['sql_id'].to_i == voter_record.id}
+      voter_record.custom_voter_field_values.each do |custom_voter_field_value|
+        target_field = custom_voter_fields_by_id[custom_voter_field_value.custom_voter_field_id]
+        custom_field_values << {
+          id: custom_voter_field_value.id,
+          voter_id: voter_record.id,
+          custom_voter_field_id: custom_voter_field_value.custom_voter_field_id,
+          value: lead[target_field]
+        }
       end
     end
+    custom_field_values
   end
 
   def update_all_voter_records_and_custom_field_values(leads)
+    updated_voter_attributes = []
+    updated_custom_values    = build_custom_voter_field_values(leads)
     leads.each do |lead|
-      voter_record = Voter.find(lead['sql_id'])
       new_voter_attrs = build_voter_attributes(lead)
-      new_voter_attrs.delete(:campaign_id)
-      new_voter_attrs.delete(:account_id)
-      voter_record.update_attributes!(new_voter_attrs)
-      update_custom_voter_field_values(voter_record, lead)
+      new_voter_attrs.merge!({
+        id: lead['sql_id'],
+        household_id: household_record.id
+      })
+      updated_voter_attributes << new_voter_attrs
     end
+    
+    Voter.import_hashes(updated_voter_attributes)
+    CustomVoterFieldValue.import_hashes(updated_custom_values)
   end
 
 public
