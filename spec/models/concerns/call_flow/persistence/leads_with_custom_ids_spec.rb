@@ -9,13 +9,14 @@ describe 'CallFlow::Persistence::Leads' do
   let(:voter_list){ create(:voter_list, campaign: campaign) }
   let(:caller_session){ create(:webui_caller_session, campaign: campaign, sid: 'caller-session-sid') }
   let(:households) do
-    build_household_hashes(1, voter_list)
+    build_household_hashes(1, voter_list, true)
   end
   let(:phone) do
     households.keys.first
   end
 
   before do
+    allow(campaign).to receive(:using_custom_ids?){ true }
     import_list(voter_list, households, 'active', 'presented')
   end
 
@@ -23,7 +24,7 @@ describe 'CallFlow::Persistence::Leads' do
     redis.flushall
   end
 
-  describe '#import_records' do
+  describe '#import_records when campaign is using custom ids' do
     let(:dialed_call_storage) do
       instance_double('CallFlow::Call::Storage')
     end
@@ -41,56 +42,60 @@ describe 'CallFlow::Persistence::Leads' do
     let(:voter_records){ Voter.all }
 
     subject{ CallFlow::Persistence::Leads.new(dialed_call, campaign, household_record) }
-    
-    context 'initial import (first call just dialed)' do
-      before do
-        allow(dialed_call_storage).to receive(:attributes).and_return({
-          mapped_status: CallAttempt::Status::BUSY,
-          sid: 'dialed-call-sid',
-          campaign_type: campaign.type,
-          phone: phone
-        })
-      end
 
-      it_behaves_like 'every Voter record imported'
+    shared_context 'setup Voter field updates' do
+      let(:custom_field){ 'Polling location' }
+      let(:system_field){ :first_name }
+    end
 
-      it 'imports all active leads associated w/ phone/household' do
-        expect{ 
+    shared_examples_for 'updating Voter fields' do
+      context 'updating Voter system & user-defined fields' do
+        before do
+          households[phone][:leads] = update_leads(households[phone][:leads]) do |lead|
+            lead[system_field] = Forgery(:name).first_name
+            lead[custom_field] = Forgery(:address).city
+          end
+          save_lead_update(voter_list, phone, households[phone][:leads], 'active', 'presented') # 3rd upload
           subject.import_records
-        }.to change{ Voter.count }.by households[phone][:leads].size
-      end
+        end
+        it 'updates Voter records for leads w/ `sql_id` property' do
+          campaign.all_voters.each do |voter|
+            lead = households[phone][:leads].detect{|ld| ld[:last_name] == voter.last_name}
+            expect(voter[system_field]).to eq lead[system_field]
+          end
+        end
 
-      ['Polling location', 'Party affil.'].each do |field|
-        it "imports CustomVoterField & CustomVoterFieldValue records for all active leads, eg #{field}" do
-          campaign.account.custom_voter_fields.create(name: field)
-          subject.import_records
-          lead = households[phone][:leads].last
-          custom_field_value = voter_records.last.custom_voter_field_values.where(value: lead[field])
-          expect(custom_field_value.count).to eq 1
-          custom_field_name  = custom_field_value.first.custom_voter_field.name
-          expect(custom_field_name).to eq field
+        it 'updates CustomVoterFieldValues for leads w/ `sql_id` property' do
+          campaign.all_voters.each do |voter|
+            lead = households[phone][:leads].detect{|ld| ld[:last_name] == voter.last_name}
+            expect(voter.custom_voter_field_values.where(value: lead[custom_field]).count).to eq 1
+          end
         end
       end
     end
 
     context 'subsequent import (subsequent call & new leads uploaded since first call)' do
       let(:leads_two) do
-        build_leads_array(2, voter_list, phone)
+        build_leads_array(2, voter_list, phone, true)
       end
 
+      include_context 'setup Voter field updates'
+
       before do
+        campaign.account.custom_voter_fields.create(name: custom_field)
         allow(dialed_call_storage).to receive(:attributes).and_return({
           mapped_status: CallAttempt::Status::BUSY,
           sid: 'dialed-call-sid',
           campaign_type: campaign.type,
           phone: phone
         })
-        subject.import_records
+        subject.import_records # 1st call persists
         households[phone][:leads] += leads_two
-        add_leads(voter_list, phone, leads_two, 'active', 'presented')
+        add_leads(voter_list, phone, leads_two, 'active', 'presented') # 2nd upload
       end
 
       it_behaves_like 'every Voter record imported'
+      it_behaves_like 'updating Voter fields'
 
       it 'imports only the leads lacking `sql_id` property' do
         expect{
@@ -112,13 +117,13 @@ describe 'CallFlow::Persistence::Leads' do
         allow(dialed_call).to receive(:answered_by_human?){ true }
         allow(dialed_call).to receive(:storage){ dialed_call_storage }
       end
-
       context 'first dial' do
         let(:target_lead) do
           household = JSON.parse(redis.hget("dial_queue:#{campaign.id}:households:active:#{phone[0..-4]}", phone[-3..-1]))
           household['leads'].first
         end
         subject{ CallFlow::Persistence::Leads.new(dialed_call, campaign, household_record) }
+
         it 'imports each lead in redis not associated w/ dialed call w/ status Voter::Status::NOTCALLED' do
           subject.import_records
           expect(Voter.where(status: Voter::Status::NOTCALLED).count).to eq households[phone][:leads].size - 1
@@ -134,8 +139,8 @@ describe 'CallFlow::Persistence::Leads' do
           ['Polling location', 'Party affil.'].each do |field|
               campaign.account.custom_voter_fields.create(name: field)
           end
+          subject.import_records
           ['Polling location', 'Party affil.'].each do |field|
-              subject.import_records
               lead = target_lead
               voter = Voter.find(lead['sql_id'])
               custom_field_value = voter.custom_voter_field_values.where(value: lead[field])
@@ -148,14 +153,18 @@ describe 'CallFlow::Persistence::Leads' do
 
       context 'subsequent dials' do
         let(:leads_two) do
-          build_leads_array(2, voter_list, phone)
+          build_leads_array(2, voter_list, phone, true)
         end
+        include_context 'setup Voter field updates'
 
         before do
+          campaign.account.custom_voter_fields.create(name: custom_field)
           subject.import_records
           households[phone][:leads] += leads_two
           add_leads(voter_list, phone, leads_two, 'active', 'presented')
         end
+
+        it_behaves_like 'updating Voter fields'
 
         context 'new leads uploaded since last dial' do
           subject{ CallFlow::Persistence::Leads.new(dialed_call, campaign, household_record) }

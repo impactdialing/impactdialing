@@ -45,6 +45,26 @@ module ListHelpers
     redis.hset(key, hkey, current_household.to_json)
   end
 
+  def save_lead_update(list, phone, updated_leads, household_namespace='active', zset_namespace='active')
+    redis             = Redis.new
+    base_key          = "dial_queue:#{list.campaign_id}:households:#{household_namespace}"
+    key               = "#{base_key}:#{phone[0..ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i]}"
+    hkey              = phone[ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i + 1..-1]
+    current_household = JSON.parse(redis.hget(key, hkey))
+    black_keys        = %w(custom_id uuid sequence sql_id)
+    lds               = []
+    current_household['leads'].each do |cur_lead|
+      updated_lead = updated_leads.detect{|ld| ld[:custom_id] == cur_lead['custom_id'].to_i}
+
+      updated_lead.keys.each do |key|
+        cur_lead[key] = updated_lead[key] unless black_keys.include?(key.to_s)
+      end
+      lds << cur_lead
+    end
+    current_household['leads'] = lds
+    redis.hset(key, hkey, current_household.to_json)
+  end
+
   def zscore(sequence)
     Time.now.utc.to_f
   end
@@ -93,6 +113,15 @@ module ListHelpers
         score: Time.now.to_f
       }
     }
+  end
+
+  def update_leads(leads, &block)
+    updated_leads = []
+    leads.each do |lead|
+      yield lead
+      updated_leads << lead
+    end
+    updated_leads
   end
 
   def build_leads_array(n, list, phone, with_custom_id=false)

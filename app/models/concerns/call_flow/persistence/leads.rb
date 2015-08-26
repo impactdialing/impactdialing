@@ -14,6 +14,14 @@ private
     redis_household['leads'].select{|lead| lead['sql_id'].blank?}
   end
 
+  def active_persisted_redis_leads
+    redis_household['leads'].select{|lead| lead['sql_id'].present?}
+  end
+
+  def any_leads_persisted?
+    active_persisted_redis_leads.any?
+  end
+
   def any_leads_not_persisted?
     active_new_redis_leads.any?
   end
@@ -52,17 +60,52 @@ private
     @custom_voter_fields
   end
 
-  def create_custom_voter_field_value_records(voter_record, lead)
-    custom_lead_attrs   = lead.stringify_keys.keys - (voter_system_fields + ['sequence', 'uuid'])
-    custom_lead_attrs.each do |field|
+  def custom_voter_fields_by_id
+    return @custom_voter_fields_by_id if defined?(@custom_voter_fields_by_id)
+    @custom_voter_fields_by_id = {}
+    campaign.account.custom_voter_fields.select([:id, :name]).each do |field|
+      @custom_voter_fields_by_id[field.id] = field.name.strip
+    end
+    @custom_voter_fields_by_id
+  end
+
+  def custom_lead_attrs(lead, &block)
+    custom_attrs = lead.stringify_keys.keys - (voter_system_fields + ['sequence', 'uuid'])
+    custom_attrs.each do |field|
       custom_voter_field_id = custom_voter_fields[field.strip]
-      if custom_voter_field_id.present?
-        voter_record.custom_voter_field_values.create({
-          custom_voter_field_id: custom_voter_field_id,
-          voter_id: voter_record.id,
-          value: lead[field]
-        })
+      next if custom_voter_field_id.blank?
+      yield field, custom_voter_field_id
+    end
+  end
+
+  def create_custom_voter_field_value_records(voter_record, lead)
+    custom_lead_attrs(lead) do |field, custom_voter_field_id|
+      next if voter_record.custom_voter_field_values.where(value: lead[field]).count > 0
+      voter_record.custom_voter_field_values.create({
+        custom_voter_field_id: custom_voter_field_id,
+        voter_id: voter_record.id,
+        value: lead[field]
+      })
+    end
+  end
+
+  def update_custom_voter_field_values(voter_record, lead)
+    voter_record.custom_voter_field_values.each do |custom_voter_field_value|
+      target_field = custom_voter_fields_by_id[custom_voter_field_value.custom_voter_field.id]
+      if lead[target_field].present?
+        custom_voter_field_value.update_column(:value, lead[target_field])
       end
+    end
+  end
+
+  def update_all_voter_records_and_custom_field_values(leads)
+    leads.each do |lead|
+      voter_record = Voter.find(lead['sql_id'])
+      new_voter_attrs = build_voter_attributes(lead)
+      new_voter_attrs.delete(:campaign_id)
+      new_voter_attrs.delete(:account_id)
+      voter_record.update_attributes!(new_voter_attrs)
+      update_custom_voter_field_values(voter_record, lead)
     end
   end
 
@@ -71,6 +114,10 @@ public
     leads               = active_redis_leads
     @dispositioned_voter = nil
     uuid_to_id_map      = {}
+
+    if campaign.using_custom_ids? and any_leads_persisted?
+      update_all_voter_records_and_custom_field_values(active_persisted_redis_leads)
+    end
 
     if dialed_call.completed? and dialed_call.answered_by_human?
       # create 1 voter record & attach to call attempt
