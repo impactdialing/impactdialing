@@ -80,6 +80,16 @@ public
     end
   end
 
+  def get_call_attempts_number_by_voter_id(voter_ids)
+    query = CallAttempt.where(voter_id: voter_ids).
+      select("voter_id, max(id) as last_id").group(:voter_id).to_sql
+    @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
+      memo[hash['voter_id']] = {
+        last_id: hash['last_id']
+      }
+    end
+  end
+
   def get_voicemail_history(household_ids)
     query = CallAttempt.where(household_id: household_ids).
       select("id, household_id, recording_id, recording_delivered_manually").to_sql
@@ -179,21 +189,26 @@ public
   end
 
   def process_households(households)
-    data               = {}
-    call_attempt_ids   = []
-    household_ids      = households.map(&:id)
-    voter_ids          = households.map(&:voters).flatten.map(&:id)
-    attempt_numbers    = get_call_attempts_number(household_ids)
-    voter_field_values = get_custom_voter_field_values(voter_ids)
-    voicemail_history  = get_voicemail_history(household_ids)
+    data                  = {}
+    call_attempt_ids      = []
+    household_ids         = households.map(&:id)
+    voter_ids             = households.map(&:voters).flatten.map(&:id)
+    attempt_numbers       = get_call_attempts_number(household_ids)
+    voter_attempt_numbers = get_call_attempts_number_by_voter_id(voter_ids)
+    voter_field_values    = get_custom_voter_field_values(voter_ids)
+    voicemail_history     = get_voicemail_history(household_ids)
 
     households.each do |household|
       household.voters.each do |voter|
         voter_data     = voter.attributes.merge('phone' => household.phone)
         data[voter.id] = csv_for(voter_data, voter_field_values[voter.id])
+        if voter_attempt_numbers[voter.id]
+          call_attempt_ids << voter_attempt_numbers[voter.id][:last_id] 
+        end
         call_attempt_ids << attempt_numbers[household['id']][:last_id] if attempt_numbers[household['id']]
       end
     end
+    call_attempt_ids.uniq!
 
     conn              = OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2))
     attempts          = conn.execute(CallAttempt.where(id: call_attempt_ids.compact).includes(:transfer_attempt).to_sql).each(as: :hash)
