@@ -66,8 +66,15 @@ module CallerTwiml
     end
 
     def read_choice_twiml
+      action_url = read_instruction_options_caller_url(caller_id, default_twiml_url_params)
       Twilio::TwiML::Response.new do |r|
-        r.Gather(:numDigits => 1, :timeout => 10, :action => read_instruction_options_caller_url(caller_id, default_twiml_url_params), :method => "POST", :finishOnKey => "5") do
+        r.Gather({
+          :numDigits => 1,
+          :timeout => 10,
+          :action => action_url,
+          :method => "POST",
+          :finishOnKey => "5"
+        }) do
           r.Say I18n.t(:caller_instruction_choice)
         end
       end.text
@@ -106,8 +113,8 @@ module CallerTwiml
       default_twiml_url_params.merge(params)
     end
 
-    def next_question_url_params(voter_id = nil)
-      question_url_params(redis_question_number + 1, voter_id)
+    def next_question_url_params(params={})
+      question_url_params(params[:question_number].to_i + 1, params[:voter_id])
     end
 
     def default_twiml_url_params
@@ -145,8 +152,14 @@ module CallerTwiml
     end
 
     def conference_started_phones_only_twiml(voter_id, phone)
+      action_url = gather_response_caller_url(caller_id, question_url_params(0, voter_id).merge({
+        question_number: 0
+      }))
       Twilio::TwiML::Response.new do |r|
-        r.Dial(:hangupOnStar => true, :action => gather_response_caller_url(caller_id, question_url_params(0, voter_id).merge(question_number: 0))) do
+        r.Dial({
+          :hangupOnStar => true,
+          :action => action_url
+        }) do
           r.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
         end
       end.text
@@ -166,12 +179,12 @@ module CallerTwiml
      end.text
    end
 
-   def read_next_question_twiml(voter_id)
-    question = RedisQuestion.get_question_to_read(script_id, redis_question_number)
+   def read_next_question_twiml(params)
+    question = RedisQuestion.get_question_to_read(script_id, params[:question_number])
     action   = submit_response_caller_url(caller_id, default_twiml_url_params.merge({
                   question_id:     question['id'],
-                  question_number: redis_question_number,
-                  voter_id:        voter_id
+                  question_number: params[:question_number],
+                  voter_id:        params[:voter_id]
                 }))
     Twilio::TwiML::Response.new do |r|
       r.Gather({timeout: 60, finishOnKey: "*", action: action, method:  "POST"}) do
@@ -184,10 +197,10 @@ module CallerTwiml
     end.text
   end
 
-  def redirect_to_next_question_twiml(voter_id)
-    params = next_question_url_params(voter_id)
+  def redirect_to_next_question_twiml(params)
+    redirect_params = next_question_url_params(params)
     Twilio::TwiML::Response.new do |r|
-      r.Redirect(gather_response_caller_url(caller_id, params))
+      r.Redirect(gather_response_caller_url(caller_id, redirect_params))
     end.text
   end
 

@@ -158,6 +158,7 @@ FactoryGirl.define do
 
   factory :webui_caller_session do
     caller
+    sid { generate(:sid) }
     state 'initial'
     created_at Time.now
     updated_at Time.now
@@ -165,6 +166,7 @@ FactoryGirl.define do
 
   factory :phones_only_caller_session do
     state 'initial'
+    sid { generate(:sid) }
     created_at Time.now
     updated_at Time.now
   end

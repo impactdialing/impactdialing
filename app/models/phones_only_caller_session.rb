@@ -6,9 +6,9 @@ class PhonesOnlyCallerSession < CallerSession
     read_choice_twiml
   end
 
-  def read_choice
-    return instructions_options_twiml if pound_selected?
-    return ready_to_call if star_selected?
+  def read_choice(params={})
+    return instructions_options_twiml if pound_selected?(params)
+    return ready_to_call if star_selected?(params)
     read_choice_twiml
   end
 
@@ -35,11 +35,11 @@ class PhonesOnlyCallerSession < CallerSession
 
     return campaign_out_of_phone_numbers_twiml if house.nil?
 
-    voter = house[:voters].first[:fields]
+    voter = house[:leads].first
     if preview?
-      choosing_voter_to_dial_twiml(voter['id'], house[:phone], voter['first_name'], voter['last_name'])
+      choosing_voter_to_dial_twiml(voter['uuid'], house[:phone], voter['first_name'], voter['last_name'])
     elsif power?
-      choosing_voter_and_dial_twiml(voter['id'], house[:phone], voter['first_name'], voter['last_name'])
+      choosing_voter_and_dial_twiml(voter['uuid'], house[:phone], voter['first_name'], voter['last_name'])
     end
   end
 
@@ -53,10 +53,13 @@ class PhonesOnlyCallerSession < CallerSession
     dial(voter_id, phone)
   end
 
-  def conference_started_phones_only_preview(voter_id, phone)
-    if pound_selected?
+  def conference_started_phones_only_preview(params)
+    voter_id = params[:voter_id]
+    phone    = params[:phone]
+
+    if pound_selected?(params)
       return skip_voter_twiml
-    elsif star_selected?
+    elsif star_selected?(params)
       return dial(voter_id, phone)
     else
       return choosing_voter_to_dial_twiml(voter_id, phone)
@@ -68,22 +71,41 @@ class PhonesOnlyCallerSession < CallerSession
     conference_started_phones_only_predictive_twiml
   end
 
-  def gather_response(voter_id)
-    return read_next_question_twiml(voter_id) if call_answered?
-    wrapup_call(voter_id)
+  def gather_response(params)
+    return read_next_question_twiml(params) if call_answered?(params)
+    wrapup_call(params)
   end
 
-  def submit_response(voter_id)
-    voter_id ||= attempt_in_progress.voter_id # for predictive
-    household_id = attempt_in_progress.household_id
-    RedisPhonesOnlyAnswer.push_to_list(voter_id, household_id, self.id, redis_digit, redis_question_id)
+  def redis_survey_response_from_digits(params)
+    possible_responses = RedisPossibleResponse.possible_responses(params[:question_id])
+    possible_responses.detect{|possible_response| possible_response['keypad'] == params[:Digits]} || {}
+  end
+
+  def submit_response(params)
+    dialed_call.collect_response(params, redis_survey_response_from_digits(params)) 
+
     return disconnected_twiml if disconnected?
-    return wrapup_call(voter_id) if skip_all_questions?
-    redirect_to_next_question_twiml(voter_id)
+    return wrapup_call(params) if skip_all_questions?(params)
+    redirect_to_next_question_twiml(params)
   end
 
-  def wrapup_call(voter_id)
-    wrapup_call_attempt(voter_id)
+  def wrapup_call(params)
+    voter_id = params.try(:[], :voter_id)
+    voter_id ||= dialed_call.storage[:lead_uuid]
+    wrapup_call_attempt
+
+    # normalize survey responses for persistence
+    survey_responses = {
+      questions: {},
+      lead: {id: voter_id}
+    }
+    dialed_call_data = dialed_call.storage.attributes
+    dialed_call_data.each do |key, val|
+      next unless key =~ /\Aquestion_\d+/
+      _,question_id = key.split '_'
+      survey_responses[:questions][question_id] = val
+    end
+    dialed_call.dispositioned(survey_responses)
 
     wrapup_call_twiml
   end
@@ -96,32 +118,41 @@ class PhonesOnlyCallerSession < CallerSession
     skip_voter_twiml
   end
 
-  def skip_all_questions?
-    redis_digit == "999"
+  def skip_all_questions?(params)
+    params[:Digits] == "999"
   end
 
-  def wrapup_call_attempt(voter_id)
+  def wrapup_call_attempt
     RedisStatus.set_state_changed_time(campaign_id, "On hold", self.id)
-    unless attempt_in_progress.nil?
-      voter_id ||= attempt_in_progress.voter_id # for predictive
-      RedisCallFlow.push_to_wrapped_up_call_list(attempt_in_progress.id, CallerSession::CallerType::PHONE, voter_id)
-    end
   end
 
-  def more_questions_to_be_answered?
-    RedisQuestion.more_questions_to_be_answered?(script_id, redis_question_number)
+  def more_questions_to_be_answered?(params)
+    RedisQuestion.more_questions_to_be_answered?(script_id, params[:question_number])
   end
 
-  def call_answered?
-    attempt_in_progress.try(:connecttime) != nil && more_questions_to_be_answered?
+  def caller_session_call
+    twilio_account_sid = TWILIO_ACCOUNT
+    @caller_session_call ||= CallFlow::CallerSession.new(twilio_account_sid, sid)
   end
 
-  def star_selected?
-    redis_digit == "*"
+  def dialed_call
+    @dialed_call ||= caller_session_call.dialed_call
   end
 
-  def pound_selected?
-    redis_digit == "#"
+  def lead_connected_to_caller?
+    dialed_call.present? and (dialed_call.completed? or dialed_call.in_progress?) and dialed_call.answered_by_human?
+  end
+
+  def call_answered?(params)
+    lead_connected_to_caller? && more_questions_to_be_answered?(params)
+  end
+
+  def star_selected?(params)
+    params[:Digits] == "*"
+  end
+
+  def pound_selected?(params)
+    params[:Digits] == "#"
   end
 
   def preview?

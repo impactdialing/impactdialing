@@ -39,7 +39,7 @@ class RedisQuestion
   
   def self.more_questions_to_be_answered?(script_id, question_number)
     number_of_questions = redis.llen key(script_id)
-    number_of_questions > question_number
+    number_of_questions > question_number.to_i
   end
   
   def self.clear_list(script_id)
