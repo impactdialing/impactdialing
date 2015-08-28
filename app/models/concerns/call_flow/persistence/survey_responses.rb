@@ -1,11 +1,13 @@
 class CallFlow::Persistence::SurveyResponses < CallFlow::Persistence
 private
   def questions
-    @questions ||= JSON.parse(call_data[:questions] || '{}')
+    data = call_data[:questions].blank? ? '{}' : call_data[:questions]
+    @questions ||= JSON.parse(data)
   end
 
   def notes
-    @notes ||= JSON.parse(call_data[:notes] || '{}')
+    data = call_data[:notes].blank? ?  '{}' : call_data[:notes]
+    @notes ||= JSON.parse(data)
   end
 
   def possible_responses_that_retry
