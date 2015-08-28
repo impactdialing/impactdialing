@@ -58,6 +58,7 @@ private
     if caller_session_record.on_call? and (not caller_session_record.available_for_call?)
       RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session_record.id)
       VoterConnectedPusherJob.add_to_queue(caller_session_record.id, params[:CallSid], params[:phone])
+      caller_session_call.dialed_call_sid = params[:CallSid]
       update_history(:caller_and_lead_connected)
       @twiml_flag   = :connect
       @record_calls = campaign.account.record_calls.to_s
@@ -127,9 +128,17 @@ public
                           ::CallerSession.find(caller_session_id)
                         end
   end
+
+  def caller_session_call
+    @caller_session_call ||= CallFlow::CallerSession.new(account_sid, caller_session_sid)
+  end
   
   def completed?
     storage[:status] == 'completed'
+  end
+
+  def in_progress?
+    storage[:status] == 'in-progress'
   end
 
   def answered(campaign, params)
@@ -191,13 +200,25 @@ public
       lead_uuid: params[:lead][:id]
     })
 
-    unless params[:stop_calling]
-      caller_session.redirect_to_hold
-    else
-      caller_session.stop_calling
+    unless caller_session.is_phones_only?
+      unless params[:stop_calling]
+        caller_session.redirect_to_hold
+      else
+        caller_session.stop_calling
+      end
     end
 
     CallFlow::Jobs::Persistence.perform_async('Completed', account_sid, sid)
+  end
+
+  def collect_response(params, survey_response)
+    for_save = {}
+    if storage[:lead_uuid].blank?
+      for_save[:lead_uuid] = params[:voter_id]
+    end
+    storage.save({
+      "question_#{survey_response['id']}" => survey_response['possible_response_id']
+    }.merge(for_save))
   end
 
   def drop_message

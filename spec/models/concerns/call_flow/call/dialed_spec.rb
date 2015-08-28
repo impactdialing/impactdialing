@@ -25,6 +25,33 @@ describe 'CallFlow::Call::Dialed' do
     })
   end
 
+  describe '#collect_response(params, survey_response)' do
+    let(:params) do
+      {
+        voter_id: 'lead-uuid'
+      }
+    end
+    let(:survey_response) do
+      {
+        'id' => '42',
+        'possible_response_id' => '41'
+      }
+    end
+    let(:call_sid){ 'dialed-call-sid' }
+
+    subject{ CallFlow::Call::Dialed.new(caller_record.telephony_provider_account_id, call_sid) }
+
+    it 'saves the survey response' do
+      subject.collect_response(params, survey_response)
+      expect(subject.storage[:question_42]).to eq '41'
+    end
+
+    it 'saves params[:voter_id] as :lead_uuid' do
+      subject.collect_response(params, survey_response)
+      expect(subject.storage[:lead_uuid]).to eq 'lead-uuid'
+    end
+  end
+
   describe '#dispositioned(params)' do
     let(:campaign){ create(:predictive) }
     let(:voter_list){ create(:voter_list, campaign: campaign) }
@@ -50,7 +77,12 @@ describe 'CallFlow::Call::Dialed' do
 
     subject{ CallFlow::Call::Dialed.new(caller_record.telephony_provider_account_id, browser_params['call_sid']) }
 
-    let(:call_flow_caller_session){ double('CallFlow::CallerSession', {redirect_to_hold: nil}) } 
+    let(:call_flow_caller_session) do
+      double('CallFlow::CallerSession', {
+        redirect_to_hold: nil,
+        is_phones_only?: false
+      })
+    end
 
     before do
       subject.caller_session_sid = caller_session.sid
@@ -86,6 +118,23 @@ describe 'CallFlow::Call::Dialed' do
       it 'tells CallFlow::CallerSession instance to :stop_calling' do
         expect(call_flow_caller_session).to receive(:stop_calling)
         subject.dispositioned(browser_params)
+      end
+    end
+
+    context 'caller is phones only' do
+      before do
+        allow(caller_session).to receive(:is_phones_only?){ true }
+        allow(subject).to receive(:caller_session){ caller_session }
+        expect(caller_session).to_not receive(:redirect_to_hold)
+        expect(caller_session).to_not receive(:stop_calling)
+      end
+
+      it 'does not redirect_to_hold' do
+        subject.dispositioned(browser_params)
+      end
+
+      it 'does not stop_calling' do
+        subject.dispositioned(browser_params.merge(stop_calling: true))
       end
     end
   end
@@ -253,6 +302,11 @@ describe 'CallFlow::Call::Dialed' do
         expect(subject.storage['campaign_id'].to_i).to eq campaign.id
         expect(subject.storage['campaign_type']).to eq campaign.type
         expect(subject.storage['status']).to eq twilio_params['CallStatus']
+      end
+
+      it 'sets :dialed_call_sid on caller_session' do
+        subject.answered(campaign, twilio_params)
+        expect(subject.caller_session.dialed_call_sid).to eq rest_response['sid']
       end
 
       context 'when call is answered by human and CallStatus == "in-progress"' do
