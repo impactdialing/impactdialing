@@ -2,7 +2,7 @@ class CallerController < TwimlController
   include SidekiqEvents
   layout "caller"
   skip_before_filter :verify_authenticity_token, :only =>[
-    :call_voter, :start_calling, :stop_calling, :token,
+    :call_voter, :stop_calling, :token,
     :end_session, :skip_voter, :ready_to_call,
     :continue_conf, :pause, :run_out_of_numbers,
     :callin_choice, :read_instruction_options,
@@ -16,7 +16,7 @@ class CallerController < TwimlController
   ]
 
   before_filter :check_login, :except=>[
-    :login, :end_session, :start_calling,
+    :login, :end_session,
     :phones_only, :call_voter, :stop_calling,
     :ready_to_call, :continue_conf, :pause, :run_out_of_numbers,
     :callin_choice, :read_instruction_options,
@@ -93,22 +93,6 @@ public
 
   def v1
     redirect_to callveyor_path and return
-  end
-
-  def start_calling
-    caller = Caller.find(params[:caller_id])
-    identity = CallerIdentity.find_by_session_key(params[:session_key])
-    session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
-    load_caller_session = CallerSession.find_by_id_cached(session.id)
-
-    render_abort_twiml_unless_fit_to(:start_calling, load_caller_session) do
-      # cache twiml params to redis to provide central point of ref for caller state
-      CallFlow::CallerSession.create(params)
-
-      caller.started_calling(load_caller_session)
-      RedisDataCentre.set_datacentres_used(load_caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
-      render xml: load_caller_session.start_conf
-    end
   end
 
   def ready_to_call
