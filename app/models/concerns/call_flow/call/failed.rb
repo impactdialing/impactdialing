@@ -8,7 +8,7 @@ class CallFlow::Call::Failed < CallFlow::Call::Lead
   def self.create(campaign, phone, rest_response)
     phone = PhoneNumber.sanitize(phone)
 
-    validate!(campaign.id, phone)
+    validate!(campaign.try(:id), phone)
 
     storage = CallFlow::Call::Storage.new(campaign.id, phone, namespace)
 
