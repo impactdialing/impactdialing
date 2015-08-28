@@ -6,7 +6,6 @@ class Twiml::CallerSessionsController < TwimlController
   end
 
   def create
-    # from CallerController#start_calling
     @caller        = Caller.includes(:campaign).find(params[:caller_id])
     campaign       = @caller.campaign
     identity       = CallerIdentity.find_by_session_key(params[:session_key])

@@ -134,6 +134,7 @@ public
     RedisPredictiveCampaign.add(campaign.id, campaign.type)
     RedisStatus.set_state_changed_time(campaign.id, "On hold", session.id)
   end
+  deprecate :started_calling # moved to Twiml::CallerSessionsController#create
 
   def calling_voter_preview_power(session, voter_id)
     enqueue_call_flow(CallerPusherJob, [session.id, "publish_calling_voter"])

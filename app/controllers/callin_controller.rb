@@ -59,7 +59,6 @@ public
         render xml: xml and return
       end
     else
-p "before render abort"
       render xml: ask_for_pin_twiml and return
     end
   end
