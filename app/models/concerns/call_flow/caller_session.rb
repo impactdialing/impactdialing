@@ -46,7 +46,7 @@ public
   end
 
   def dialed_call
-    if @dialed_call_sid.present?
+    if dialed_call_sid.present?
       @dialed_call ||= CallFlow::Call::Dialed.new(account_sid, @dialed_call_sid)
     end
   end
