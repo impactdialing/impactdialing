@@ -69,7 +69,7 @@ private
       })
     end
 
-    {}
+    {json: {message: "Unable to dial campaign at this time."}, status: 403}
   end
 
   def caller_line_completed?
@@ -223,11 +223,10 @@ public
   end
 
   def skip_voter
-    caller         = Caller.includes(:campaign).find(params[:id])
-    caller_session = caller.caller_sessions.find(params[:session_id])
+    caller_session = CallerSession.includes(:campaign).where(id: params[:session_id], caller_id: params[:id]).first
 
     if caller_session.fit_to_dial?
-      info = caller.campaign.caller_conference_started_event
+      info = caller_session.campaign.caller_conference_started_event
       render json: info[:data].to_json
     else
       enqueue_call_flow(RedirectCallerJob, [caller_session.id])

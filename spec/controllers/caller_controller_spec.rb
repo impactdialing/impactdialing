@@ -72,55 +72,45 @@ describe CallerController, :type => :controller do
 
     describe 'POST caller/:id/skip_voter, session_id:, voter_id:' do
       include FakeCallData
+      include ListHelpers
+
+      let(:voter_list){ create(:voter_list, campaign: campaign) }
+      let(:household) do
+        build_household_hash(voter_list)
+      end
 
       before do
-        Redis.new.flushall
-        current_voter
-        next_voter
-        dial_queue = cache_available_voters(campaign)
-        campaign.caller_conference_started_event # pop the current_voter off the list
         login_as(caller)
+        allow(caller_session).to receive(:campaign){ campaign }
+        allow(CallerSession).to receive_message_chain(:includes, :where, :first){ caller_session }
       end
 
       context 'when fit to dial' do
+        before do
+          allow(caller_session).to receive(:fit_to_dial){ true }
+          allow(campaign).to receive(:caller_conference_started_event){ {data: household} }
+        end
         it 'renders next lead (voter) data' do
-          campaign.update_attributes! script: create(:script)
-          data            = {
-            phone: next_voter.household.phone,
-            members: [
-              {
-                id: next_voter.id,
-                fields: {
-                  first_name: next_voter.first_name,
-                  last_name:  next_voter.last_name
-                },
-                custom_fields: {}
-              }
-            ]
-          }
-          CallFlow::Web::Data.new(campaign.script)
-
           post :skip_voter, valid_params
-          
-          expect(response.body).to eq data.to_json
+          expect(response.body).to eq household.to_json
         end
       end
 
       context 'when not fit to dial' do
         before do
-          now = Time.now.utc
-          anchor = now.hour % 12 == 0 ? 10 : now.hour
-          campaign.update_attributes!(start_time: Time.new(2015, 1, 1, anchor), end_time: Time.new(2015, 1, 1, anchor + 1))
+          allow(caller_session).to receive(:fit_to_dial?){ false }
+          allow(CallerSession).to receive_message_chain(:includes, :where, :first){ caller_session }
         end
 
         it 'queues RedirectCallerJob, relying on calculated redirect url to return :dialing_prohibited' do
-          expect(Voter.count).to eq 2
-          expect(Sidekiq::Client).to receive(:push).with('queue' => 'call_flow', 'class' => RedirectCallerJob, 'args' => [caller_session.id])
           post :skip_voter, valid_params
+          expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session.id) 
         end
 
         it 'renders abort json' do
-          campaign.reload
+          allow(campaign).to receive(:time_period_exceeded?){ true }
+          allow(caller).to receive(:campaign){ campaign }
+          allow(Caller).to receive(:find){ caller }
 
           expected_json = {
             message: I18n.t('dialer.campaign.time_period_exceeded', {
@@ -134,28 +124,6 @@ describe CallerController, :type => :controller do
           expect(response.status).to eq 403
         end
       end
-    end
-  end
-
-  describe "start calling" do
-    it "should start a new caller conference" do
-      account = create(:account)
-      campaign = create(:predictive, account: account, start_time: Time.now.beginning_of_day, end_time: Time.now.end_of_day)
-      caller = create(:caller, campaign: campaign, account: account)
-      caller_identity = create(:caller_identity)
-      caller_session = create(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller, campaign: campaign)
-      expect(Caller).to receive(:find).and_return(caller)
-      expect(caller).to receive(:create_caller_session).and_return(caller_session)
-      expect(RedisPredictiveCampaign).to receive(:add).with(caller.campaign_id, caller.campaign.type)
-      post :start_calling, caller_id: caller.id, session_key: caller_identity.session_key, CallSid: "abc", AccountSid: "cba"
-      twiml = [
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-        "<Response>",
-        "<Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}/caller/#{caller.id}/pause?session_id=#{caller_session.id}\">",
-        "<Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/>",
-        "</Dial></Response>"
-      ]
-      expect(response.body).to eq(twiml.join)
     end
   end
 
