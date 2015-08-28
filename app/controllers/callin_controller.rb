@@ -43,16 +43,15 @@ public
     if caller
       session = caller.create_caller_session(session_key, params[:CallSid], CallerSession::CallerType::PHONE)
       load_caller_session = CallerSession.find_by_id_cached(session.id)
-
       render_abort_twiml_unless_fit_to(:start_calling, load_caller_session) do
-
-        caller.started_calling(load_caller_session)
+        CallFlow::CallerSession.create(params)
+        RedisPredictiveCampaign.add(caller.campaign.id, caller.campaign.type)
+        RedisStatus.set_state_changed_time(caller.campaign.id, "On hold", load_caller_session.id)
 
         if caller.is_phones_only?
           CachePhonesOnlyScriptQuestions.add_to_queue caller.campaign.script_id, 'seed'
           xml = load_caller_session.callin_choice
         else
-          RedisDataCentre.set_datacentres_used(load_caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
           load_caller_session.start_conf
           xml = load_caller_session.connected_twiml
         end
@@ -60,6 +59,7 @@ public
         render xml: xml and return
       end
     else
+p "before render abort"
       render xml: ask_for_pin_twiml and return
     end
   end
