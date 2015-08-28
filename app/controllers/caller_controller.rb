@@ -169,15 +169,15 @@ public
   end
 
   def read_instruction_options
-    render xml: @caller_session.read_choice
+    render xml: @caller_session.read_choice(params)
   end
 
   def conference_started_phones_only_preview
-    render xml: @caller_session.conference_started_phones_only_preview(params[:voter_id], params[:phone])
+    render xml: @caller_session.conference_started_phones_only_preview(params)
   end
 
   def conference_started_phones_only_power
-    render xml: @caller_session.conference_started_phones_only_power(params[:voter_id], params[:phone])
+    render xml: @caller_session.conference_started_phones_only_power(params)
   end
 
   def conference_started_phones_only_predictive
@@ -185,11 +185,11 @@ public
   end
 
   def gather_response
-    render xml: @caller_session.gather_response(params[:voter_id])
+    render xml: @caller_session.gather_response(params)
   end
 
   def submit_response
-    render xml: @caller_session.submit_response(params[:voter_id])
+    render xml: @caller_session.submit_response(params)
   end
 
   def next_call
