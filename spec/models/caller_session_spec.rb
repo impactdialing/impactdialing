@@ -15,6 +15,14 @@ describe CallerSession, :type => :model do
     expect(CallerSession.available).to include(caller_session2, caller_session4, caller_session5)
   end
 
+
+  it 'knows if it is phones only' do
+    caller_session = WebuiCallerSession.new
+    expect(caller_session.is_phones_only?).to be_falsey
+    caller_session = PhonesOnlyCallerSession.new
+    expect(caller_session.is_phones_only?).to be_truthy
+  end
+
   it "has one attempt in progress" do
     session = create(:caller_session)
     attempt = create(:call_attempt, :status => CallAttempt::Status::ANSWERED, :caller_session => session)

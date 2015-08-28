@@ -138,6 +138,10 @@ public
     self.attempt_in_progress = nil
   end
 
+  def is_phones_only?
+    self.is_a? PhonesOnlyCallerSession
+  end
+
   def end_caller_session
     begin
       end_session
