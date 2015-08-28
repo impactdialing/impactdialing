@@ -55,6 +55,10 @@ public
     @caller_session_record ||= ::CallerSession.where(sid: sid).first
   end
 
+  def is_phones_only?
+    caller_session_record.is_phones_only?
+  end
+
   def redirect_to_hold
     RedirectCallerJob.add_to_queue(caller_session_record.id)
     RedisStatus.set_state_changed_time(caller_session_record.campaign_id, "On hold", caller_session_record.id)
@@ -66,6 +70,7 @@ public
   end
 
   def emit(event, payload={})
+    return if is_phones_only?
     CallerPusherJob.add_to_queue(caller_session_record.id, event, payload)
   end
 end
