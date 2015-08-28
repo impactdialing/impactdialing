@@ -78,11 +78,12 @@ class PhonesOnlyCallerSession < CallerSession
 
   def redis_survey_response_from_digits(params)
     possible_responses = RedisPossibleResponse.possible_responses(params[:question_id])
-    possible_responses.detect{|possible_response| possible_response['keypad'] == params[:Digits]} || {}
+    possible_responses.detect{|possible_response| possible_response['keypad'] == params[:Digits].to_i} || {}
   end
 
   def submit_response(params)
-    dialed_call.collect_response(params, redis_survey_response_from_digits(params)) 
+    selected_response = redis_survey_response_from_digits(params)
+    dialed_call.collect_response(params, selected_response) 
 
     return disconnected_twiml if disconnected?
     return wrapup_call(params) if skip_all_questions?(params)
