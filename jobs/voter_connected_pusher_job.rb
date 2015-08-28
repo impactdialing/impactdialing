@@ -34,3 +34,4 @@ class VoterConnectedPusherJob
     metrics.completed
   end
 end
+

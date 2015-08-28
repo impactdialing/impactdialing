@@ -19,16 +19,17 @@ module CallerEvents
     def publish_voter_connected(call_sid, phone)
 
       if caller.is_phones_only? and campaign.predictive?
-        # assign first available voter in household to call attempt
-        #household = call.call_attempt.household
-        #voter     = household.voters.detect{|v| v.not_called?}
-        #voter   ||= household.voters.detect{|v| v.call_back or v.retry?}
-        #voter   ||= household.voters.sort_by(&:updated_at).first
-        #call.call_attempt.update_attributes({
-        #  voter_id: voter.id
-        #})
+        account_sid = TWILIO_ACCOUNT
+        dialed_call = CallFlow::Call::Dialed.new(account_sid, call_sid)
+        households  = campaign.dial_queue.households
+        house       = households.find(phone)
+        leads       = house[:leads].sort_by{|lead| lead['sequence'].to_i}
+        lead        = leads.detect{|v| v['sql_id'].blank?}
+        lead      ||= leads.detect{|v| (not households.lead_completed?)}
 
-        #return 
+        dialed_call.storage[:lead_uuid] = lead['uuid']
+
+        return 
       end
 
       event_hash = campaign.voter_connected_event(call_sid, phone)
