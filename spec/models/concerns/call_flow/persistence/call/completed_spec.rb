@@ -238,6 +238,12 @@ describe 'CallFlow::Persistence::Call::Completed' do
         it 'inherits the Household status' do
           expect(Voter.where(status: household_status).count).to eq 1
         end
+
+        context 'when the Voter should be retried' do
+          it 'has call_back attribute set to true on sql record'
+
+          it 'has call_back attribute set to "1" on redis record'
+        end
       end
     end
 

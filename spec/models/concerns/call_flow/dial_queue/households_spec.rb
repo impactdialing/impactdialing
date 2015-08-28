@@ -23,6 +23,20 @@ describe 'CallFlow::DialQueue::Households' do
     redis.flushall
   end
 
+  describe 'auto selecting best available lead for disposition from target household' do
+    context 'no leads have been dispositioned' do
+      it 'returns the lead w/ the lowest sequence first'
+    end
+
+    context '1 lead has been dispositioned but is not complete' do
+      it 'returns the lead that has not been dispositioned first'
+    end
+
+    context 'all leads have been dispositioned but are not complete' do
+      it 'returns the lead w/ the lowest sequence first'
+    end
+  end
+
   describe 'automatic message drops' do
     let(:redis_key){ "dial_queue:#{campaign.id}:households:message_drops" }
     let(:phone_one){ households.keys.last }
