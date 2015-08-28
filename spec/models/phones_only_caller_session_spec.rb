@@ -477,13 +477,16 @@ describe PhonesOnlyCallerSession, :type => :model do
 
         expect(caller_session).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.household.phone])
 
-        actual = caller_session.conference_started_phones_only_power(@voter.id, @voter.household.phone)
+        actual = caller_session.conference_started_phones_only_power({
+          voter_id: 'lead-uuid',
+          phone: @voter.household.phone
+        })
         dial_options = {
           hangupOnStar: true,
           action: gather_response_caller_url(@caller, {
             question_number: 0,
             session_id: caller_session.id,
-            voter_id: @voter.id
+            voter_id: 'lead-uuid'
           })
         }
         conference_options = {
@@ -659,7 +662,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         end
         it 'collects each storage attribute like "question_<id>" into hash like questions => {question_id => response_id}' do
           expect(dialed_call).to receive(:dispositioned).with({
-            questions: {
+            question: {
               '1' => '42'
             },
             lead: {
@@ -804,7 +807,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         allow(caller_session).to receive(:call_answered?){ false }
 
         expect(dialed_call).to receive(:dispositioned).with({
-          questions: {},
+          question: {},
           lead: {id: 'lead-uuid'}
         })
 

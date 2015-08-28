@@ -49,7 +49,9 @@ class PhonesOnlyCallerSession < CallerSession
     conference_started_phones_only_twiml(voter_id, phone)
   end
 
-  def conference_started_phones_only_power(voter_id, phone)
+  def conference_started_phones_only_power(params)
+    voter_id = params[:voter_id]
+    phone    = params[:phone]
     dial(voter_id, phone)
   end
 
