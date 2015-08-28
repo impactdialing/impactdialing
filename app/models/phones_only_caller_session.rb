@@ -95,18 +95,20 @@ class PhonesOnlyCallerSession < CallerSession
     voter_id ||= dialed_call.storage[:lead_uuid]
     wrapup_call_attempt
 
-    # normalize survey responses for persistence
-    survey_responses = {
-      questions: {},
-      lead: {id: voter_id}
-    }
-    dialed_call_data = dialed_call.storage.attributes
-    dialed_call_data.each do |key, val|
-      next unless key =~ /\Aquestion_\d+/
-      _,question_id = key.split '_'
-      survey_responses[:questions][question_id] = val
+    if dialed_call.present?
+      # normalize survey responses for persistence
+      survey_responses = {
+        question: {},
+        lead: {id: voter_id}
+      }
+      dialed_call_data = dialed_call.storage.attributes
+      dialed_call_data.each do |key, val|
+        next unless key =~ /\Aquestion_\d+/
+        _,question_id = key.split '_'
+        survey_responses[:question][question_id] = val
+      end
+      dialed_call.dispositioned(survey_responses)
     end
-    dialed_call.dispositioned(survey_responses)
 
     wrapup_call_twiml
   end
