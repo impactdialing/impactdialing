@@ -100,8 +100,13 @@ public
   end
 
   def next(n)
-    # every number in :active set is guaranteed to have a corresponding presentable contact
-    zpoppush(n)
+    _phones = Wolverine.dial_queue.load_next_available({
+      keys: [keys[:active], keys[:presented]],
+      argv: [n, Time.now.utc.to_i]
+    })
+    _phones = _phones.blank? ? '[]' : _phones
+    phones = JSON.parse(_phones)
+    phones
   end
 
   def missing?(phone)

@@ -16,7 +16,7 @@ describe CallerPusherJob do
 
     it 're-queues itself when CallFlow::DialQueue::Available::RedisTransactionAborted is raised' do
       event = 'publish_caller_conference_started'
-      expect(caller_session).to receive(:publish_caller_conference_started).and_raise(CallFlow::DialQueue::Available::RedisTransactionAborted)
+      expect(caller_session).to receive(:publish_caller_conference_started).and_raise(CallFlow::DialQueue::EmptyHousehold)
 
       CallerPusherJob.new.perform(caller_session.id, event)
       

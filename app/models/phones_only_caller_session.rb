@@ -25,9 +25,10 @@ class PhonesOnlyCallerSession < CallerSession
   def setup_call
     begin
       house = campaign.next_in_dial_queue
-    rescue CallFlow::DialQueue::Available::RedisTransactionAborted => e
+    rescue CallFlow::DialQueue::EmptyHousehold => e
+      Rails.logger.error "#{e.class}: #{e.message}"
       source = "ac-#{self.campaign.account_id}.ca-#{self.campaign.id}.cs-#{self.id}"
-      name   = "phones_only.dial_queue.available.redis_transaction_aborted"
+      name   = "phones_only.dial_queue.empty_household"
       ImpactPlatform::Metrics.count(name, 1, source)
       return twiml_redirect_to_next_call # have Twilio retry this request
     end

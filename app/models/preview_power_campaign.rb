@@ -11,20 +11,17 @@ module PreviewPowerCampaign
     house = nil
 
     timing('dialer.voter_load') do
-      unless (phone_number = dial_queue.next(1).first).blank?
-        house = {
-          phone: phone_number,
-          voters: dial_queue.households.find(phone_number)
-        }
-      end
+      house = dial_queue.next(1).try(:first)
     end
 
     return house
   end
 
   def caller_conference_started_event
+    house = next_in_dial_queue
+    
     json = CallFlow::Web::Data.new(script)
-    data = json.build(next_in_dial_queue)
+    data = json.build(house)
 
     return {
       event: 'conference_started',

@@ -31,24 +31,5 @@ describe 'CallFlow::DialQueue::Available' do
     it 'keeps retrieved numbers in presented list' do
       expect(@available.all(:presented)).to eq @retrieved
     end
-
-    context 'when the active list changes during retrieval' do
-      it 'raises CallFlow::DialQueue::Available::RedisTransactionAborted' do
-        key    = @available.send(:keys)[:active]
-        thread = Thread.new(key) do |key|
-          client = Redis.new
-          25.times do |i|
-            client.zadd key, ["#{i}.0", phone_numbers.first]
-          end
-        end
-        expect{
-          10.times{ @available.next(1) }
-        }.to raise_error{
-          CallFlow::DialQueue::Available::RedisTransactionAborted
-        }
-        # wait for thread to finish before moving on
-        sleep(0.01) until thread.join
-      end
-    end
   end
 end

@@ -221,28 +221,58 @@ describe 'CallFlow::DialQueue' do
   end
 
   describe 'dialing through available' do
-    it 'retrieve one phone number' do
-      expected = [Household.first.phone]
+    it 'retrieve one household' do
+      expected = [{
+        phone: Household.first.phone,
+        voters: Household.first.voters.map{|v| v.cache_data.stringify_keys}
+      }]
       actual   = @dial_queue.next(1)
 
       expect(actual).to eq expected
     end
 
     it 'retrieves multiple phone numbers' do
-      expected = Household.limit(10).map(&:phone)
+      expected = []
+      Household.limit(10).each do |household|
+        expected << {
+          phone: household.phone,
+          voters: household.voters.map(&:cache_data).map(&:stringify_keys)
+        }
+      end
       actual   = @dial_queue.next(10)
 
       expect(actual).to eq expected
     end
 
     it 'moves retrieved phone number(s) from :active queue to :presented' do
-      phones           = @dial_queue.next(5)
+      houses           = @dial_queue.next(5)
       remaining_phones = @dial_queue.available.all(:active, with_scores: false)
       presented_phones = @dial_queue.available.all(:presented, with_scores: false)
 
-      phones.each do |dialed|
-        expect(presented_phones).to include dialed
-        expect(remaining_phones).to_not include dialed
+      houses.each do |house|
+        phone = house[:phone]
+        expect(presented_phones).to include phone
+        expect(remaining_phones).to_not include phone
+      end
+    end
+
+    context 'when a household has no leads in redis for presentation' do
+      it 'raises CallFlow::DialQueue::EmptyHousehold' do
+        phone = Redis.new.zrange(@dial_queue.available.keys[:active], 0, 0).first
+        @dial_queue.households.save(phone, [])
+
+        expect{ @dial_queue.next(1) }.to raise_error(CallFlow::DialQueue::EmptyHousehold)
+      end
+    end
+
+    context 'when no more phone numbers are found' do
+      it 'returns nil' do
+        redis = Redis.new
+        key = @dial_queue.available.keys[:active]
+        phones = redis.zrange(key, 0, -1)
+        redis.zrem key, phones
+
+        expect(@dial_queue.next(1)).to be_nil
       end
     end
   end

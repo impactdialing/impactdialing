@@ -109,6 +109,23 @@ public
     result
   end
 
+  def find_presentable(phone_numbers)
+    result = []
+
+    return result if phone_numbers.empty?
+
+    phone_numbers.each do |number|
+      house = find(number)
+      unless house.empty?
+        result << {
+          phone: number,
+          voters: house
+        }
+      end
+    end
+    result
+  end
+
   def remove_house(phone)
     redis.hdel *hkey(phone)
   end

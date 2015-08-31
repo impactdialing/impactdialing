@@ -28,18 +28,19 @@ class CallerPusherJob
 
     begin
       caller_session.send(event)
-    rescue CallFlow::DialQueue::Available::RedisTransactionAborted => e
+    rescue CallFlow::DialQueue::EmptyHousehold => e
       # can be raised when event == publish_caller_conference_started
-      # which pops next number off the queue and sends it to the client
       Sidekiq::Client.push({
         'queue' => 'call_flow',
         'class' => CallerPusherJob,
         'args'  => [caller_session_id, event]
       })
-      name   = "#{event}.dial_queue.available.redis_transaction_aborted"
+      Rails.logger.error "#{e.class}: #{e.message}"
+      name   = "#{event}.dial_queue.empty_household"
       ImpactPlatform::Metrics.count(name, 1, source)
     end
     
     metrics.completed
   end
 end
+

@@ -169,7 +169,7 @@ describe PhonesOnlyCallerSession, :type => :model do
       end
 
       it 'returns twiml to redirect caller back to /caller/next_call and effectively retry this request' do
-        expect(campaign).to receive(:next_in_dial_queue).and_raise(CallFlow::DialQueue::Available::RedisTransactionAborted)
+        expect(campaign).to receive(:next_in_dial_queue).and_raise(CallFlow::DialQueue::EmptyHousehold)
 
         ready_to_call_twiml         = caller_session.ready_to_call
         redirect_to_next_call_twiml = caller_session.twiml_redirect_to_next_call

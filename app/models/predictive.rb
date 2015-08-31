@@ -76,8 +76,10 @@ class Predictive < Campaign
   end
 
   def next_in_dial_queue(n)
-    numbers = dial_queue.next(n)
-    numbers
+    houses = dial_queue.next(n)
+    return [] if houses.nil?
+    # todo: save houses to redis to ensure data availability when voter connects
+    houses.map{|house| house[:phone]}
   end
 
   def numbers_to_dial

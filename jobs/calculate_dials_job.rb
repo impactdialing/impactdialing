@@ -37,10 +37,10 @@ class CalculateDialsJob
       return
     end
 
-    # This could raise CallFlow::DialQueue::Available::RedisTransactionAborted
-    # which means the key containing the list of numbers changed while pulling numbers
-    # off the queue. Let it bubble up & log as failed job since this is queued from
-    # a loop (dialer_loop).
+    # This could raise CallFlow::DialQueue::EmptyHousehold
+    # which means all phone numbers next in queue have no voter data
+    # for display. Let it raise & cause job failure; job is run every few seconds
+    # and allowing it to fail will maintain failure record.
     phone_numbers = campaign.numbers_to_dial
 
     unless phone_numbers.empty?

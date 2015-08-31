@@ -4,8 +4,9 @@
 module CallFlow
   class DialQueue
     attr_reader :campaign
-    delegate :next, to: :available
     delegate :phone_key_index_stop, to: :households
+
+    class EmptyHousehold < ArgumentError; end
     
   private
     def self.validate_campaign!(campaign)
@@ -72,6 +73,16 @@ module CallFlow
 
     def cache_all(voters)
       voters.each{|voter| cache(voter)}
+    end
+
+    def next(n)
+      phones = available.next(n)
+      return nil if phones.empty?
+      houses = households.find_presentable(phones)
+      if houses.empty? and available.size > 0
+        raise EmptyHousehold, "CallFlow::DialQueue#next(#{n}) found only empty households for #{phones}"
+      end
+      return houses
     end
 
     def recycle!
