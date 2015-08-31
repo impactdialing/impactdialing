@@ -33,13 +33,6 @@ class CallFlow::DialQueue::Available
   class RedisTransactionAborted < RuntimeError; end
 
 private
-  def keys
-    {
-      active: "dial_queue:#{campaign.id}:active",
-      presented: "dial_queue:#{campaign.id}:presented"
-    }
-  end
-
   def zpoppush(n)
     n             = size if n > size
     retries       = 0
@@ -71,6 +64,13 @@ public
   def initialize(campaign)
     CallFlow::DialQueue.validate_campaign!(campaign)
     @campaign = campaign
+  end
+
+  def keys
+    {
+      active: "dial_queue:#{campaign.id}:active",
+      presented: "dial_queue:#{campaign.id}:presented"
+    }
   end
 
   def exists?
