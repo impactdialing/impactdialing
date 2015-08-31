@@ -26,7 +26,8 @@ class CallFlow::DialQueue::Households
 private
   def keys
     {
-      active: "dial_queue:#{campaign.id}:households:active"
+      active: "dial_queue:#{campaign.id}:households:active",
+      presented: "dial_queue:#{campaign.id}:households:presented"
     }
   end
 

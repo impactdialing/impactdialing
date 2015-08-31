@@ -67,8 +67,20 @@ describe Predictive do
     end
 
     context 'numbers_to_dial_count > zero' do
+      let!(:voter){ add_voters(campaign, :voter, 1).first }
+
+      it 'copies households of returned numbers to Households :presented key' do
+        phone_numbers = nil
+        dial_queue_retry_on_trxn_fail do
+          phone_numbers = campaign.numbers_to_dial
+        end
+        presented_households = CallFlow::DialQueue::Households.new(campaign, :presented)
+        phone_numbers.each do |phone|
+          expect(presented_households.find(phone)).to eq [voter.cache_data.stringify_keys]
+        end
+      end
+
       it "returns set of numbers" do
-        voter         = add_voters(campaign, :voter, 1).first
         phone_numbers = nil
         dial_queue_retry_on_trxn_fail do
           phone_numbers = campaign.numbers_to_dial
