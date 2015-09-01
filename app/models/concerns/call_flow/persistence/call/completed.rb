@@ -15,9 +15,17 @@ class CallFlow::Persistence::Call::Completed
 
     survey_responses.save(leads.dispositioned_voter, call_attempt_record)
 
-    if leads.dispositioned_voter.present? and survey_responses.complete_lead?
-      completed_lead_sequence = leads.target_lead['sequence']
-      campaign.dial_queue.households.mark_lead_completed(completed_lead_sequence)
+    if leads.dispositioned_voter.present?
+      lead_sequence = leads.target_lead['sequence']
+      campaign.dial_queue.households.mark_lead_dispositioned(lead_sequence)
+
+      if survey_responses.complete_lead?
+        campaign.dial_queue.households.mark_lead_completed(lead_sequence)
+      else
+        leads.dispositioned_voter.update_attributes({
+          call_back: true
+        })
+      end
     end
 
     campaign.dial_queue.dialed_number_persisted(household_record.phone, leads.target_lead)

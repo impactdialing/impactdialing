@@ -12,7 +12,7 @@ describe 'CallFlow::Persistence::Call::Completed' do
   let(:voter_list){ create(:voter_list, campaign: campaign) }
   let(:caller_session){ create(:webui_caller_session, campaign: campaign, sid: 'caller-session-sid') }
   let(:households) do
-    hh = build_household_hashes(1, voter_list)
+    hh = build_household_hashes(1, voter_list, false, true)
     hh.each do |phone,data|
       hh[phone][:leads] = data[:leads].map{|lead| lead[:uuid] = UUID.new.generate; lead}
     end
@@ -222,27 +222,76 @@ describe 'CallFlow::Persistence::Call::Completed' do
       end
 
       context 'the Voter record associated w/ dialed call' do
+        let(:question){ create(:question) }
+        let(:retry_response) do
+          create(:possible_response, {
+            question: question,
+            value: 'Yes',
+            retry: true
+          })
+        end
+        let(:completed_response) do
+          create(:possible_response, {
+            question: question,
+            value: 'No',
+            retry: false
+          })
+        end
         let(:household_status){ Household.last.status }
         let(:voter_record_query){ Voter.where(status: household_status) }
         let(:voter_record){ voter_record_query.first }
-
-        before do
-          subject.persist_call_outcome
-        end
+        let(:completed_lead_key){ campaign.dial_queue.households.send(:keys)[:completed_leads] }
+        let(:dispositioned_lead_key){ campaign.dial_queue.households.send(:keys)[:dispositioned_leads] }
 
         it 'imports the correct lead data associated w/ the disposition' do
+          subject.persist_call_outcome
           voter_system_fields.each do |field|
             expect(voter_record[field]).to eq dispositioned_lead[field.to_sym]
           end
         end
+
+        it 'marks the lead as dispositioned' do
+          subject.persist_call_outcome
+          expect(redis.getbit(dispositioned_lead_key, dispositioned_lead['sequence'])).to eq 1
+        end
+
         it 'inherits the Household status' do
+          subject.persist_call_outcome
           expect(Voter.where(status: household_status).count).to eq 1
         end
 
         context 'when the Voter should be retried' do
-          it 'has call_back attribute set to true on sql record'
+          before do
+            dialed_call.storage['questions'] = {
+              question.id => retry_response.id
+            }.to_json 
+            subject.persist_call_outcome
+          end
 
-          it 'has call_back attribute set to "1" on redis record'
+          it 'has call_back attribute set to true on sql record' do
+            expect(Voter.where(call_back: true).count).to eq 1
+          end
+
+          it 'has completed bit set to "0" on redis completed leads bitmap' do
+            expect(redis.getbit(completed_lead_key, dispositioned_lead['sequence'])).to be_zero
+          end
+        end
+
+        context 'when the Voter is completed' do
+          before do
+            dialed_call.storage['questions'] = {
+              question.id => completed_response.id
+            }.to_json
+            subject.persist_call_outcome
+          end
+
+          it 'has call_back attribute set to false on sql record' do
+            expect(Voter.where(call_back: true).count).to be_zero
+          end
+
+          it 'has completed bit set to "1" on redis completed leads bitmap' do
+            expect(redis.getbit(completed_lead_key, dispositioned_lead['sequence'])).to eq 1
+          end
         end
       end
     end
@@ -329,11 +378,23 @@ describe 'CallFlow::Persistence::Call::Completed' do
     end
 
     context 'when last dialed call was answered' do
-      it 'each Voter record not associated w/ dialed call are left untouched'
+      let(:subject_two){ CallFlow::Persistence::Call::Completed.new(account_sid, call_sid) }
+      let(:dispositioned_lead_two){ households[phone][:leads].first }
 
-      context 'the Voter record associated w/ dialed call' do
-        it 'inherits Household status'
-        it 'associated w/ proper CallerSession'
+      before do
+        dialed_call = CallFlow::Call::Dialed.create(campaign, create_params, {caller_session_sid: caller_session.sid})
+        dialed_call.storage.save(dialed_call.send(:params_for_update, callback_params))
+        dialed_call.storage.save(dialed_call.send(:params_for_update, completed_params))
+        dialed_call.storage['lead_uuid'] = dispositioned_lead_two[:uuid]
+        subject_two.persist_call_outcome
+      end
+
+      it 'each Voter record not associated w/ dialed call are left untouched' do
+        expect(Voter.where(status: Voter::Status::NOTCALLED).count).to eq Voter.count - 2
+      end
+
+      it 'the Voter record associated w/ dialed call inherits Household status' do
+        expect(Voter.where(status: CallAttempt::Status::SUCCESS).count).to eq 2
       end
     end
   end
