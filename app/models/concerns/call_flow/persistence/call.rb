@@ -6,12 +6,16 @@ class CallFlow::Persistence::Call < CallFlow::Persistence
     @household_record = campaign.households.create!({
       account_id: campaign.account_id,
       phone: phone,
-      status: household_status
+      status: household_status,
+      presented_at: Time.now.utc
     })
   end
 
   def update_household_record
-    household_record.update_attributes!(status: household_status)
+    household_record.update_attributes!({
+      status: household_status,
+      presented_at: Time.now.utc
+    })
     household_record
   end
 
