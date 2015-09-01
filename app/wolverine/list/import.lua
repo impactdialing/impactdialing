@@ -21,7 +21,6 @@ local _updated_hh                 = {}
 local new_number_count            = 0
 local pre_existing_number_count   = 0
 local new_lead_count              = 0
-local updated_lead_count          = 0
 
 -- build household key parts
 local household_key_parts = function(phone)
@@ -128,11 +127,10 @@ end
 -- these stats will be used by the new voter list display so do not expire
 
 redis.call('HINCRBY', list_stats_key, 'new_leads', new_lead_count)
-redis.call('HINCRBY', list_stats_key, 'updated_leads', updated_lead_count)
 redis.call('HINCRBY', list_stats_key, 'new_numbers', new_number_count)
 redis.call('HINCRBY', list_stats_key, 'pre_existing_numbers', pre_existing_number_count)
 redis.call('HINCRBY', list_stats_key, 'total_leads', new_lead_count)
-redis.call('HINCRBY', list_stats_key, 'total_numbers', new_number_count)
+redis.call('HINCRBY', list_stats_key, 'total_numbers', new_number_count + pre_existing_number_count)
 redis.call('HINCRBY', campaign_stats_key, 'total_leads', new_lead_count)
 redis.call('HINCRBY', campaign_stats_key, 'total_numbers', new_number_count)
 

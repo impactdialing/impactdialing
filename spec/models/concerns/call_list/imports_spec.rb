@@ -209,9 +209,6 @@ describe 'CallList::Imports' do
         it 'redis hash.new_leads = 1' do
           expect(redis.hget(stats_key, 'new_leads')).to eq '1'
         end
-        it 'redis hash.updated_leads = 0' do
-          expect(redis.hget(stats_key, 'updated_leads')).to eq '0'
-        end
         it 'redis hash.new_numbers = 1' do
           expect(redis.hget(stats_key, 'new_numbers')).to eq '1'
         end
