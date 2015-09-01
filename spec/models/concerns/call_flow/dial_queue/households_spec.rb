@@ -6,7 +6,7 @@ describe 'CallFlow::DialQueue::Households' do
   let(:campaign){ create(:power) }
   let(:voter_list){ create(:voter_list, campaign: campaign) }
   let(:households) do
-    build_household_hashes(10, voter_list)
+    build_household_hashes(10, voter_list, false, true)
   end
 
   subject{ CallFlow::DialQueue::Households.new(campaign) }
@@ -24,16 +24,36 @@ describe 'CallFlow::DialQueue::Households' do
   end
 
   describe 'auto selecting best available lead for disposition from target household' do
+    let(:phone){ households.keys.first }
+    let(:first_lead){ households[phone][:leads].sort_by{|lead| lead['sequence']}.first }
+    let(:second_lead){ households[phone][:leads].sort_by{|lead| lead['sequence']}[1] } 
+
     context 'no leads have been dispositioned' do
-      it 'returns the lead w/ the lowest sequence first'
+      it 'returns the lead w/ the lowest sequence first' do
+        expect(subject.auto_select_lead_for_disposition(phone)).to match first_lead 
+      end
     end
 
     context '1 lead has been dispositioned but is not complete' do
-      it 'returns the lead that has not been dispositioned first'
+      before do
+        subject.mark_lead_dispositioned(first_lead['sequence'])
+      end
+
+      it 'returns the lead that has not been dispositioned first' do
+        expect(subject.auto_select_lead_for_disposition(phone)).to match second_lead
+      end
     end
 
-    context 'all leads have been dispositioned but are not complete' do
-      it 'returns the lead w/ the lowest sequence first'
+    context 'all leads have been dispositioned but only the second is completed' do
+      before do
+        households[phone][:leads].each do |lead|
+          subject.mark_lead_dispositioned(lead['sequence'])
+        end
+        subject.mark_lead_completed(second_lead['sequence'])
+      end
+      it 'returns the lead w/ the lowest sequence first' do
+        expect(subject.auto_select_lead_for_disposition(phone)).to match first_lead
+      end
     end
   end
 

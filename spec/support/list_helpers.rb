@@ -82,17 +82,18 @@ module ListHelpers
     allow(CallList::Imports::Parser).to receive(:new){ parser_double }
   end
 
-  def build_household_hashes(n, list, with_custom_id=false)
+  def build_household_hashes(n, list, with_custom_id=false, two_lead_min=false)
     h = {}
     n.times do
-      h.merge!(build_household_hash(list, with_custom_id))
+      h.merge!(build_household_hash(list, with_custom_id, two_lead_min))
     end
     h
   end
 
-  def build_household_hash(list, with_custom_id=false)
+  def build_household_hash(list, with_custom_id=false, two_lead_min=false)
     phone = Forgery(:address).clean_phone
-    leads = build_leads_array( (1..5).to_a.sample, list, phone, with_custom_id )
+    min   = two_lead_min ? 2 : 1
+    leads = build_leads_array( (min..5).to_a.sample, list, phone, with_custom_id )
     if with_custom_id
       # de-dup
       ids = []

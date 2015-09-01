@@ -30,7 +30,8 @@ private
       presented: "dial_queue:#{campaign.id}:households:presented", # redis key/hash/json data
       inactive: "dial_queue:#{campaign.id}:households:inactive", # redis key/hash/json data
       message_drops: "dial_queue:#{campaign.id}:households:message_drops", # redis bitmap
-      completed_leads: "dial_queue:#{campaign.id}:households:completed_leads" # redis bitmap
+      completed_leads: "dial_queue:#{campaign.id}:households:completed_leads", # redis bitmap
+      dispositioned_leads: "dial_queue:#{campaign.id}:households:dispositioned_leads" # redis bitmap
     }
   end
 
@@ -97,6 +98,7 @@ public
   end
 
   def find_presentable(phone_numbers)
+    phone_numbers = [*phone_numbers]
     result = []
 
     return result if phone_numbers.empty?
@@ -109,6 +111,14 @@ public
       end
     end
     result
+  end
+
+  def auto_select_lead_for_disposition(phone)
+    _lead = Wolverine.dial_queue.auto_select_lead_for_disposition({
+      keys: keys_for_lua(phone) + [keys[:completed_leads], keys[:dispositioned_leads]],
+      argv: [phone, hkey(phone).last]
+    })
+    HashWithIndifferentAccess.new JSON.parse(_lead)
   end
 
   def remove_house(phone)
@@ -148,6 +158,14 @@ public
 
   def mark_lead_completed(lead_sequence)
     redis.setbit(keys[:completed_leads], lead_sequence, 1)
+  end
+
+  def mark_lead_dispositioned(lead_sequence)
+    redis.setbit(keys[:dispositioned_leads], lead_sequence, 1)
+  end
+
+  def lead_dispositioned?(lead_sequence)
+    redis.getbit(keys[:dispositioned_leads], lead_sequence).to_i > 0
   end
 
   def lead_completed?(lead_sequence)
