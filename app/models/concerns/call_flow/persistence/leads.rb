@@ -137,7 +137,7 @@ public
       update_all_voter_records_and_custom_field_values(active_persisted_redis_leads)
     end
 
-    if dialed_call.completed? and dialed_call.answered_by_human?
+    if dialed_call.dispositioned?
       # create 1 voter record & attach to call attempt
       @dispositioned_voter, uuid_to_id_map = create_or_update_dispositioned_voter_record(target_lead)
     end

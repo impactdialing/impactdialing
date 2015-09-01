@@ -184,6 +184,10 @@ public
     end
   end
 
+  def dispositioned?
+    completed? and answered_by_human? and state.visited?(:caller_and_lead_connected)
+  end
+
   def manual_message_dropped(recording)
     storage.save({
       mapped_status: CallAttempt::Status::VOICEMAIL,
