@@ -155,9 +155,13 @@ public
   end
 
   def incomplete_lead_count_for(phone)
-    Wolverine.dial_queue.count_incomplete_leads({
-      keys: keys_for_lua(phone) + [keys[:completed_leads]],
-      argv: [phone, hkey(phone).last]
+    count_leads_with_bit(phone, :completed_leads, 0)
+  end
+
+  def count_leads_with_bit(phone, bitmap, bit)
+    Wolverine.dial_queue.count_leads_with_bit({
+      keys: keys_for_lua(phone) + [keys[bitmap]],
+      argv: [phone, hkey(phone).last, bit]
     }).to_i
   end
 
