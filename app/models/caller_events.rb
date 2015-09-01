@@ -21,7 +21,7 @@ module CallerEvents
       if caller.is_phones_only? and campaign.predictive?
         account_sid = TWILIO_ACCOUNT
         dialed_call = CallFlow::Call::Dialed.new(account_sid, call_sid)
-        lead        = campaign.dial_queue.households.auto_select_best_lead_for_disposition
+        lead        = campaign.dial_queue.households.auto_select_lead_for_disposition(phone)
 
         dialed_call.storage[:lead_uuid] = lead['uuid']
 
