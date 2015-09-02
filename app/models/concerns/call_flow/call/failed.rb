@@ -38,6 +38,10 @@ class CallFlow::Call::Failed < CallFlow::Call::Lead
     false
   end
 
+  def dispositioned?
+    false
+  end
+
   def self.validate!(campaign_id, phone)
     if campaign_id.blank? or phone.blank?
       raise CallFlow::Call::InvalidParams, "Campaign ID and phone are both required for CallFlow::Call::Failed. They were: Campaign ID: #{campaign_id} and Phone: #{phone}"

@@ -85,6 +85,7 @@ describe 'CallFlow::Persistence::Call::Completed' do
 
   before do
     import_list(voter_list, households, 'active', 'presented')
+    campaign.dial_queue.households.find_presentable(phone)
   end
 
   after do
@@ -140,6 +141,9 @@ describe 'CallFlow::Persistence::Call::Completed' do
     end
 
     describe 'the Voter record(s)' do
+      before do
+        campaign.dial_queue.households.find_presentable(phone)
+      end
       it 'associated w/ created Household record' do
         subject.persist_call_outcome
         expect(voter_record.household).to eq Household.last
@@ -211,6 +215,7 @@ describe 'CallFlow::Persistence::Call::Completed' do
         dialed_call                      = CallFlow::Call::Dialed.new(account_sid, call_sid)
         dialed_call.storage.save(dialed_call.send(:params_for_update, completed_params))
         dialed_call.storage['lead_uuid'] = dispositioned_lead[:uuid]
+        dialed_call.state.visited(:caller_and_lead_connected)
       end
 
       it_behaves_like 'persistence of any call outcome'
@@ -332,15 +337,18 @@ describe 'CallFlow::Persistence::Call::Completed' do
       dialed_call.storage.save(dialed_call.send(:params_for_update, callback_params))
       dialed_call.storage.save(dialed_call.send(:params_for_update, completed_params))
       dialed_call.storage['lead_uuid'] = dispositioned_lead[:uuid]
+      dialed_call.state.visited(:caller_and_lead_connected)
       subject.persist_call_outcome # first call persistence (answered & lead dispositioned)
     end
 
     context 'when last dialed call was not answered' do
       let(:subject_two){ CallFlow::Persistence::Call::Completed.new(account_sid, call_sid_two) }
       before do
+        campaign.dial_queue.households.find_presentable(phone)
         dialed_call = CallFlow::Call::Dialed.create(campaign, create_params_two, {caller_session_sid: caller_session.sid})
         dialed_call.storage.save(dialed_call.send(:params_for_update, callback_params))
         dialed_call.storage.save(dialed_call.send(:params_for_update, not_answered_params))
+        dialed_call.state.visited(:caller_and_lead_connected)
       end
 
       describe 'updating Household record' do
@@ -382,10 +390,12 @@ describe 'CallFlow::Persistence::Call::Completed' do
       let(:dispositioned_lead_two){ households[phone][:leads].first }
 
       before do
+        campaign.dial_queue.households.find_presentable(phone)
         dialed_call = CallFlow::Call::Dialed.create(campaign, create_params, {caller_session_sid: caller_session.sid})
         dialed_call.storage.save(dialed_call.send(:params_for_update, callback_params))
         dialed_call.storage.save(dialed_call.send(:params_for_update, completed_params))
         dialed_call.storage['lead_uuid'] = dispositioned_lead_two[:uuid]
+        dialed_call.state.visited(:caller_and_lead_connected)
         subject_two.persist_call_outcome
       end
 

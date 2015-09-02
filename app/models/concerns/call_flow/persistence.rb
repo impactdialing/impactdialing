@@ -18,8 +18,12 @@ private
     call_data[:phone]
   end
 
-  def dial_queue_households
-    CallFlow::DialQueue::Households.new(campaign)
+  def presented_households
+    campaign.dial_queue.presented_households
+  end
+
+  def active_households
+    campaign.dial_queue.households
   end
 
   def caller_session

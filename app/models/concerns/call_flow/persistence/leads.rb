@@ -3,7 +3,7 @@ class CallFlow::Persistence::Leads < CallFlow::Persistence
 
 private
   def redis_household
-    dial_queue_households.find(phone)
+    presented_households.find(phone)
   end
 
   def active_redis_leads
@@ -146,7 +146,7 @@ public
 
     if active_new_redis_leads.any?
       uuid_to_id_map.merge!(not_called_uuid_to_id_map)
-      dial_queue_households.update_leads_with_sql_ids(phone, uuid_to_id_map)
+      active_households.update_leads_with_sql_ids(phone, uuid_to_id_map)
     end
 
     @dispositioned_voter

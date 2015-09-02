@@ -197,6 +197,7 @@ public
 
   ##
   # Cache given SQL IDs with associated lead data in redis.
+  # Searches both :active & :inactive namespaces for leads to update.
   #
   # :phone: the phone where the lead can be found in redis
   # :uuid_to_id_map: a hash of lead uuids as keys and sql ids as values

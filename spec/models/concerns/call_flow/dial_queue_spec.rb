@@ -200,7 +200,7 @@ describe 'CallFlow::DialQueue' do
       expected = [households[phone]]
       actual   = dial_queue.next(1)
 
-      expect(actual).to match expected
+      expect(actual.first[:leads]).to match expected.first[:leads].map(&:stringify_keys)
     end
 
     it 'retrieves multiple phone numbers' do
@@ -211,7 +211,9 @@ describe 'CallFlow::DialQueue' do
       end
       actual   = dial_queue.next(10)
 
-      expect(actual).to match expected
+      actual.each_with_index do |house, i|
+        expect(house[:leads]).to match expected[i][:leads].map(&:stringify_keys)
+      end
     end
 
     it 'moves retrieved phone number(s) from :active queue to :presented' do
@@ -227,11 +229,23 @@ describe 'CallFlow::DialQueue' do
     end
 
     context 'when a household has no leads in redis for presentation' do
-      it 'raises CallFlow::DialQueue::EmptyHousehold' do
+      before do
         phone = Redis.new.zrange(dial_queue.available.keys[:active], 0, 0).first
         dial_queue.households.save(phone, [])
+      end
 
+      it 'raises CallFlow::DialQueue::EmptyHousehold' do
         expect{ dial_queue.next(1) }.to raise_error(CallFlow::DialQueue::EmptyHousehold)
+      end
+
+      context '1 household has no leads but others do' do
+        it 'returns households with leads and ignores those without' do
+          phone_two = Redis.new.zrange(dial_queue.available.keys[:active], 1, 1).first
+          houses = dial_queue.next(2)
+          expect(houses.size).to eq 1
+
+          expect(houses.first[:leads]).to match households[phone_two][:leads].map(&:stringify_keys)
+        end
       end
     end
 

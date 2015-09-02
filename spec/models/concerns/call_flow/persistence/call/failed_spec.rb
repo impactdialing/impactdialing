@@ -9,9 +9,6 @@
      end
    end
 
-   shared_context 'first dial to household' do
-   end
-
    let(:campaign){ create(:power) }
    let(:voter_list){ create(:voter_list, campaign: campaign) }
    let(:households){ build_household_hashes(5, voter_list) }
@@ -19,6 +16,7 @@
 
    before do
      import_list(voter_list, households, 'active', 'presented')
+     campaign.dial_queue.households.find_presentable(phone)
      CallFlow::Call::Failed.create(campaign, phone, {})
    end
    subject{ CallFlow::Persistence::Call::Failed.new(campaign.id, phone) }

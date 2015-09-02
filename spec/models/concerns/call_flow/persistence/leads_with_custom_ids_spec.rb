@@ -18,6 +18,8 @@ describe 'CallFlow::Persistence::Leads' do
   before do
     allow(campaign).to receive(:using_custom_ids?){ true }
     import_list(voter_list, households, 'active', 'presented')
+    target_house = campaign.dial_queue.households.find(phone)
+    campaign.dial_queue.presented_households.save(phone, target_house)
   end
 
   after do
@@ -31,8 +33,7 @@ describe 'CallFlow::Persistence::Leads' do
     let(:dialed_call) do
       instance_double('CallFlow::Call::Dialed', {
         storage: dialed_call_storage,
-        completed?: false,
-        answered_by_human?: false
+        dispositioned?: false,
       })
     end
     let(:household_record) do
@@ -63,7 +64,10 @@ describe 'CallFlow::Persistence::Leads' do
             lead[custom_field] = Forgery(:address).city
           end
           save_lead_update(voter_list, phone, households[phone][:leads], 'active', 'presented') # 3rd upload
-          subject.import_records
+          target_house = campaign.dial_queue.households.find(phone)
+          campaign.dial_queue.presented_households.save(phone, target_house)
+
+          subject.import_records # method under test
         end
         it 'updates Voter records for leads w/ `sql_id` property' do
           campaign.all_voters.reload.each do |voter|
@@ -112,6 +116,8 @@ describe 'CallFlow::Persistence::Leads' do
         subject.import_records # 1st call persists
         households[phone][:leads] += leads_two
         add_leads(voter_list, phone, leads_two, 'active', 'presented') # 2nd upload
+        target_house = campaign.dial_queue.households.find(phone)
+        campaign.dial_queue.presented_households.save(phone, target_house)
       end
 
       it_behaves_like 'every Voter record imported'
@@ -133,8 +139,7 @@ describe 'CallFlow::Persistence::Leads' do
           phone: phone,
           lead_uuid: households[phone][:leads].first[:uuid]
         })
-        allow(dialed_call).to receive(:completed?){ true }
-        allow(dialed_call).to receive(:answered_by_human?){ true }
+        allow(dialed_call).to receive(:dispositioned?){ true }
         allow(dialed_call).to receive(:storage){ dialed_call_storage }
       end
       context 'first dial' do
@@ -182,6 +187,8 @@ describe 'CallFlow::Persistence::Leads' do
           subject.import_records
           households[phone][:leads] += leads_two
           add_leads(voter_list, phone, leads_two, 'active', 'presented')
+          target_house = campaign.dial_queue.households.find(phone)
+          campaign.dial_queue.presented_households.save(phone, target_house)
         end
 
         it_behaves_like 'updating Voter fields'

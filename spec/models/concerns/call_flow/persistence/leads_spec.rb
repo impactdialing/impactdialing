@@ -17,6 +17,8 @@ describe 'CallFlow::Persistence::Leads' do
 
   before do
     import_list(voter_list, households, 'active', 'presented')
+    target_house = campaign.dial_queue.households.find(phone)
+    campaign.dial_queue.presented_households.save(phone, target_house)
   end
 
   after do
@@ -30,8 +32,7 @@ describe 'CallFlow::Persistence::Leads' do
     let(:dialed_call) do
       instance_double('CallFlow::Call::Dialed', {
         storage: dialed_call_storage,
-        completed?: false,
-        answered_by_human?: false
+        dispositioned?: false
       })
     end
     let(:household_record) do
@@ -88,6 +89,8 @@ describe 'CallFlow::Persistence::Leads' do
         subject.import_records
         households[phone][:leads] += leads_two
         add_leads(voter_list, phone, leads_two, 'active', 'presented')
+        target_house = campaign.dial_queue.households.find(phone)
+        campaign.dial_queue.presented_households.save(phone, target_house)
       end
 
       it_behaves_like 'every Voter record imported'
@@ -108,8 +111,7 @@ describe 'CallFlow::Persistence::Leads' do
           phone: phone,
           lead_uuid: households[phone][:leads].first[:uuid]
         })
-        allow(dialed_call).to receive(:completed?){ true }
-        allow(dialed_call).to receive(:answered_by_human?){ true }
+        allow(dialed_call).to receive(:dispositioned?){ true }
         allow(dialed_call).to receive(:storage){ dialed_call_storage }
       end
 
@@ -155,6 +157,8 @@ describe 'CallFlow::Persistence::Leads' do
           subject.import_records
           households[phone][:leads] += leads_two
           add_leads(voter_list, phone, leads_two, 'active', 'presented')
+          target_house = campaign.dial_queue.households.find(phone)
+          campaign.dial_queue.presented_households.save(phone, target_house)
         end
 
         context 'new leads uploaded since last dial' do
