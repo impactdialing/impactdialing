@@ -75,17 +75,9 @@ class Predictive < Campaign
     ).to_i
   end
 
-  def presented_households
-    @presented_households ||= CallFlow::DialQueue::Households.new(self, :presented)
-  end
-
   def next_in_dial_queue(n)
     houses = dial_queue.next(n)
     return [] if houses.nil?
-
-    houses.each do |house|
-      presented_households.save(house[:leads].first[:phone], house)
-    end
 
     houses.map{|house| house[:leads].first[:phone]}
   end
@@ -133,7 +125,6 @@ class Predictive < Campaign
   def voter_connected_event(call_sid, phone)
     data  = CallFlow::Web::Data.new(script)
     house = presented_households.find(phone)
-    presented_households.remove_house(phone)
 
     return {
       event: 'voter_connected_dialer',

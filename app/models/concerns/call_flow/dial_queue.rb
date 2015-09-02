@@ -43,6 +43,10 @@ module CallFlow
       @households ||= CallFlow::DialQueue::Households.new(campaign)
     end
 
+    def presented_households
+      @presented_households ||= CallFlow::DialQueue::Households.new(campaign, :presented)
+    end
+
     def completed
       @completed ||= CallFlow::DialQueue::Completed.new(campaign)
     end
@@ -62,6 +66,10 @@ module CallFlow
       if houses.empty? and available.size > 0
         raise EmptyHousehold, "CallFlow::DialQueue#next(#{n}) found only empty households for #{phones}"
       end
+      houses.each do |house|
+        presented_households.save(house[:leads].first[:phone], house)
+      end
+
       return houses
     end
 
@@ -89,6 +97,7 @@ module CallFlow
         keys: [available.keys[:presented], recycle_bin.keys[:bin], completed.keys[:completed]],
         argv: [phone, add_to_recycle_bin]
       })
+      presented_households.remove_house(phone)
     end
 
     def failed!(phone)
