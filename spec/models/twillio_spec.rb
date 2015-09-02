@@ -67,7 +67,7 @@ describe Twillio do
     let(:caller_session) do
       create(:bare_caller_session, :webui, :available, campaign: campaign, caller: caller)
     end
-    let(:phone){ '15418703001' }
+    let(:phone){ twilio_valid_to }
   end
 
   shared_context 'dialed call' do
