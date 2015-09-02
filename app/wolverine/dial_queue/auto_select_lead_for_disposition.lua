@@ -1,13 +1,13 @@
-local active_key               = KEYS[1]
-local completed_bitmap_key     = KEYS[3]
-local dispositioned_bitmap_key = KEYS[4]
+local presented_key            = KEYS[2]
+local completed_bitmap_key     = KEYS[4]
+local dispositioned_bitmap_key = KEYS[5]
 local phone                    = ARGV[1]
 local hkey                     = ARGV[2]
 local available_leads          = {}
 local fresh_leads              = {}
 local target_lead              = {}
 
-local _household = redis.call('HGET', active_key, hkey)
+local _household = redis.call('HGET', presented_key, hkey)
 
 local collect_zero_bit_leads = function (bitmap_key, source, dest)
   for _,lead in pairs(source) do

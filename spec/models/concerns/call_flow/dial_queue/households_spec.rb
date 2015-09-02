@@ -23,12 +23,50 @@ describe 'CallFlow::DialQueue::Households' do
     redis.flushall
   end
 
+  describe 'finding presentable households' do
+    let(:phone) do
+      households.keys.first
+    end
+    let(:phones) do
+      households.keys[0..5]
+    end
+    let(:household_collection) do
+      households.values
+    end
+
+    it 'returns a collection of households given a set of phone numbers' do
+      expect(subject.find_presentable(phone).first[:leads]).to match household_collection.first[:leads]
+
+      subject.find_presentable(phones).each_with_index do |house, i|
+        expect(house[:leads]).to match household_collection[i][:leads]
+      end
+    end
+
+    it 'saves a copy of each returned household to the :presented namespace' do
+      subject.find_presentable(phones)
+
+      presented_households = CallFlow::DialQueue::Households.new(campaign, :presented)
+      phones.each do |phone|
+        expect(presented_households.find(phone)[:leads]).to match households[phone][:leads]
+      end
+    end
+
+    it 'does not include completed leads in returned households' do
+      completed_lead_key = subject.send(:keys)[:completed_leads]
+      redis.setbit(completed_lead_key, households[phone][:leads].first['sequence'], 1)
+      expect(subject.find_presentable(phone).first[:leads]).to_not include households[phone][:leads].first
+    end
+  end
+
   describe 'auto selecting best available lead for disposition from target household' do
     let(:phone){ households.keys.first }
     let(:first_lead){ households[phone][:leads].sort_by{|lead| lead['sequence']}.first }
     let(:second_lead){ households[phone][:leads].sort_by{|lead| lead['sequence']}[1] } 
 
     context 'no leads have been dispositioned' do
+      before do
+        subject.find_presentable(phone)
+      end
       it 'returns the lead w/ the lowest sequence first' do
         expect(subject.auto_select_lead_for_disposition(phone)).to match first_lead 
       end
@@ -37,6 +75,7 @@ describe 'CallFlow::DialQueue::Households' do
     context '1 lead has been dispositioned but is not complete' do
       before do
         subject.mark_lead_dispositioned(first_lead['sequence'])
+        subject.find_presentable(phone)
       end
 
       it 'returns the lead that has not been dispositioned first' do
@@ -50,6 +89,7 @@ describe 'CallFlow::DialQueue::Households' do
           subject.mark_lead_dispositioned(lead['sequence'])
         end
         subject.mark_lead_completed(second_lead['sequence'])
+        subject.find_presentable(phone)
       end
       it 'returns the lead w/ the lowest sequence first' do
         expect(subject.auto_select_lead_for_disposition(phone)).to match first_lead

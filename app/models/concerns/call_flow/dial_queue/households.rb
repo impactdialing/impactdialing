@@ -38,6 +38,7 @@ private
   def keys_for_lua(phone)
     [
       key(phone, :active),
+      key(phone, :presented),
       key(phone, :inactive)
     ]
   end
@@ -103,13 +104,16 @@ public
 
     return result if phone_numbers.empty?
 
-    phone_numbers.each do |number|
-      house = find(number)
-      unless house.empty?
-        house[:leads].reject!{|lead| lead_completed?(lead[:sequence])}
-        result << house
+    phone_numbers.each do |phone|
+      house = Wolverine.dial_queue.find_presentable_households({
+        keys: keys_for_lua(phone) + [keys[:completed_leads]],
+        argv: [phone, hkey(phone).last]
+      })
+      unless house.blank?
+        result << HashWithIndifferentAccess.new(JSON.parse(house)) 
       end
     end
+
     result
   end
 

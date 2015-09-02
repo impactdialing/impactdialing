@@ -1,5 +1,5 @@
 local active_key          = KEYS[1]
-local inactive_key        = KEYS[2]
+local inactive_key        = KEYS[3]
 local hash_key            = ARGV[1]
 local uuid_map            = cjson.decode(ARGV[2])
 local _active_household   = redis.call('HGET', active_key, hash_key)
