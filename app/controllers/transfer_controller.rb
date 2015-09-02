@@ -46,10 +46,9 @@ class TransferController < ApplicationController
     logger.debug "DoublePause: Transfer#dial"
     transfer        = Transfer.find params[:transfer][:id]
     caller_session  = CallerSession.find params[:caller_session]
-    call            = Call.find params[:call]
 
     transfer_dialer = TransferDialer.new(transfer)
-    json            = transfer_dialer.dial(caller_session, call)
+    json            = transfer_dialer.dial(caller_session)
 
     render json: json
   end

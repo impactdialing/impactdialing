@@ -6,24 +6,6 @@ describe TransferDialer do
   before do
     WebMock.disable_net_connect!
   end
-  let(:household) do
-    build(:household)
-  end
-  let(:call_attempt) do
-    create(:call_attempt, {
-      household: household
-    })
-  end
-  let(:call) do
-    create(:call, {
-      call_attempt: call_attempt
-    })
-  end
-  let(:voter) do
-    create(:voter, {
-      household: household
-    })
-  end
   let(:session_key){ 'caller.session_key-abc123' }
   let(:caller_session) do
     create(:caller_session, {
@@ -34,8 +16,7 @@ describe TransferDialer do
   let(:transfer_attempt) do
     create(:transfer_attempt, {
       caller_session: caller_session,
-      session_key: 'transfer-attempt-session-key',
-      call_attempt: call_attempt
+      session_key: 'transfer-attempt-session-key'
     })
   end
   let(:transfer) do
@@ -53,7 +34,6 @@ describe TransferDialer do
         campaign_id: caller_session.campaign_id,
         status: 'Ringing',
         caller_session_id: caller_session.id,
-        call_attempt_id: call.call_attempt.id,
         transfer_type: transfer.transfer_type
       }
     end
@@ -72,25 +52,37 @@ describe TransferDialer do
         success?: false
       })
     end
+    let(:dialed_call_storage) do
+      instance_double('CallFlow::Call::Storage', {
+        :[]= => nil
+      })
+    end
+    let(:dialed_call) do
+      instance_double('CallFlow::Call::Dialed', {
+        storage: dialed_call_storage
+      })
+    end
+
     before do
-      Redis.new.flushall
+      allow(dialed_call_storage).to receive(:[]).with(:phone){ twilio_valid_to }
+      allow(caller_session).to receive(:dialed_call){ dialed_call }
       allow(Providers::Phone::Call).to receive(:make){ success_response }
     end
 
     it 'creates a transfer_attempt' do
       expect(transfer.transfer_attempts).to receive(:create).with(expected_transfer_attempt_attrs){ transfer_attempt }
-      transfer_dialer.dial(caller_session, call)
+      transfer_dialer.dial(caller_session)
     end
 
     it 'activates the transfer' do
-      transfer_dialer.dial(caller_session, call)
+      transfer_dialer.dial(caller_session)
       expect(RedisCallerSession.party_count(transfer.transfer_attempts.first.session_key)).to eq -1
     end
 
     it 'makes the call to connect the transfer' do
       expect(Providers::Phone::Call).to(
         receive(:make).with(
-          call_attempt.household.phone,
+          twilio_valid_to,
           transfer.phone_number,
           connect_transfer_url(transfer_attempt.id + 1, host: 'test.com'),
           {
@@ -101,16 +93,16 @@ describe TransferDialer do
             retry_up_to: ENV['TWILIO_RETRIES']
           })
       ){ success_response }
-      transfer_dialer.dial(caller_session, call)
+      transfer_dialer.dial(caller_session)
     end
 
     it 'returns a hash {type: transfer_type, status: ''}' do
-      expect(transfer_dialer.dial(caller_session, call)).to eq({type: transfer.transfer_type, status: 'Ringing'})
+      expect(transfer_dialer.dial(caller_session)).to eq({type: transfer.transfer_type, status: 'Ringing'})
     end
 
     context 'the transfer succeeds' do
       it 'updates the transfer_attempt sid with the call_sid from the response' do
-        transfer_dialer.dial(caller_session, call)
+        transfer_dialer.dial(caller_session)
         expect(transfer.transfer_attempts.last.sid).to eq success_response.call_sid
       end
     end
@@ -122,11 +114,11 @@ describe TransferDialer do
 
       it 'deactivates the transfer' do
         expect(RedisCallerSession).not_to receive(:activate_transfer)
-        transfer_dialer.dial(caller_session, call)
+        transfer_dialer.dial(caller_session)
       end
 
       it 'updates the transfer_attempt status with "Call failed"' do
-        transfer_dialer.dial(caller_session, call)
+        transfer_dialer.dial(caller_session)
         expect(transfer.transfer_attempts.last.status).to eq 'Call failed'
       end
     end

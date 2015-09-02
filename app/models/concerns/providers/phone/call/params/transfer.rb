@@ -1,11 +1,12 @@
 class Providers::Phone::Call::Params::Transfer
-  attr_reader :transfer, :transfer_attempt, :call_attempt, :type
+  attr_reader :transfer, :transfer_attempt, :lead_call, :type
 
   include Rails.application.routes.url_helpers
 
-  def initialize(transfer, type, transfer_attempt)
+  def initialize(transfer, type, transfer_attempt, lead_call)
     @transfer         = transfer
     @transfer_attempt = transfer_attempt
+    @lead_call        = lead_call
     @type             = type == :default ? :connect : type
   end
 
@@ -14,7 +15,7 @@ class Providers::Phone::Call::Params::Transfer
   end
 
   def from
-    return transfer_attempt.call_attempt.household.phone
+    return lead_call.storage[:phone]
   end
 
   def to
@@ -59,7 +60,7 @@ class Providers::Phone::Call::Params::Transfer
   end
 
   def callee_call_sid
-    transfer_attempt.call_attempt.sid
+    lead_call.sid
   end
 
   def url

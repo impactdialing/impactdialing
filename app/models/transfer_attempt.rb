@@ -31,7 +31,7 @@ class TransferAttempt < ActiveRecord::Base
   end
 
   def fail
-     xml =  Twilio::Verb.new do |v|
+     xml = Twilio::Verb.new do |v|
        v.say "The transfered call was not answered "
        v.hangup
     end
@@ -66,8 +66,6 @@ class TransferAttempt < ActiveRecord::Base
 
     result
   end
-
-
 end
 
 # ## Schema Information

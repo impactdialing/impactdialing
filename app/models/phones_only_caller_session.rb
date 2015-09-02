@@ -135,15 +135,6 @@ class PhonesOnlyCallerSession < CallerSession
     RedisQuestion.more_questions_to_be_answered?(script_id, params[:question_number])
   end
 
-  def caller_session_call
-    twilio_account_sid = TWILIO_ACCOUNT
-    @caller_session_call ||= CallFlow::CallerSession.new(twilio_account_sid, sid)
-  end
-
-  def dialed_call
-    @dialed_call ||= caller_session_call.dialed_call
-  end
-
   def lead_connected_to_caller?
     dialed_call.present? and (dialed_call.completed? or dialed_call.in_progress?) and dialed_call.answered_by_human?
   end

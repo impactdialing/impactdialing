@@ -1,6 +1,12 @@
 module TwilioRequestHelpers
   include RequestHelpers
 
+  def twilio_invalid_to
+    '+15005550001'
+  end
+  def twilio_valid_to
+    '15005550006'
+  end
   def twilio_credentials
     "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@"
   end

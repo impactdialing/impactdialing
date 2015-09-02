@@ -63,6 +63,15 @@ private
   end
 
 public
+  def caller_session_call
+    twilio_account_sid = TWILIO_ACCOUNT
+    @caller_session_call ||= CallFlow::CallerSession.new(twilio_account_sid, sid)
+  end
+
+  def dialed_call
+    @dialed_call ||= caller_session_call.dialed_call
+  end
+
   def available?
     on_call? and available_for_call?
   end
