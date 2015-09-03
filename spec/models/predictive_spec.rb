@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 describe Predictive do
+  include ListHelpers
+
   def attach_simulated_values(campaign, simulated_values)
     campaign.simulated_values = simulated_values
     campaign.save!
@@ -18,6 +20,38 @@ describe Predictive do
 
   before do
     Redis.new.flushall
+  end
+
+  describe 'voter_connected_event' do
+    let(:voter_list){ create(:voter_list, campaign: campaign) }
+    let(:household) do
+      build_household_hash(voter_list)
+    end
+    let(:phone){ household.keys.first }
+    let(:house) do
+      HashWithIndifferentAccess.new(household[phone].merge(phone: phone))
+    end
+    let(:call_sid){ 'call-sid-123' }
+    let(:web_data) do
+      instance_double('CallFlow::Web::Data', {
+        build: house
+      })
+    end
+    before do
+      allow(campaign.dial_queue.presented_households).to receive(:find).with(phone){ house }
+      allow(CallFlow::Web::Data).to receive(:new){ web_data }
+    end
+
+    it 'returns hash w/ :event key' do
+      expect(campaign.voter_connected_event(call_sid, phone)[:event]).to eq 'voter_connected_dialer'
+    end
+
+    it 'returns hash w/ nested :data hash' do
+      expect(campaign.voter_connected_event(call_sid, phone)[:data]).to eq({
+        household: house,
+        call_sid: call_sid
+      })
+    end
   end
 
   describe 'abort_available_callers_with(twilio_redirect)' do
