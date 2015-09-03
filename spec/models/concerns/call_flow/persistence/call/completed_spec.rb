@@ -110,6 +110,11 @@ describe 'CallFlow::Persistence::Call::Completed' do
         subject.persist_call_outcome
       }.to change{ CallAttempt.count }.by 1
     end
+
+    it 'updates transfer attempts' do
+      expect(subject.call_persistence).to receive(:update_transfer_attempts)
+      subject.persist_call_outcome
+    end
   end
 
   shared_examples_for 'persistence of any first call outcome' do

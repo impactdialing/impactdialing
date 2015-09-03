@@ -27,6 +27,15 @@ class CallFlow::Persistence::Call < CallFlow::Persistence
     end
   end
 
+  def update_transfer_attempts(call_attempt_record)
+    return if transfer_attempt_ids.blank?
+
+    transfer_attempts = TransferAttempt.where(id: transfer_attempt_ids)
+    transfer_attempts.update_all({
+      call_attempt_id: call_attempt_record.id
+    })
+  end
+
   ##
   # Build & create a new CallAttempt record.
   def create_call_attempt(dispositioned_voter=nil)

@@ -1,6 +1,8 @@
 class CallFlow::Persistence
   attr_reader :campaign, :dialed_call, :household_record
 
+  delegate :transfer_attempt_ids, to: :dialed_call
+
 private
   def call_data
     @call_data ||= dialed_call.storage.attributes

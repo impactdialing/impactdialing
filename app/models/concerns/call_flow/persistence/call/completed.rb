@@ -12,6 +12,7 @@ class CallFlow::Persistence::Call::Completed
 
     leads.import_records
     call_attempt_record = call_persistence.create_call_attempt(leads.dispositioned_voter)
+    call_persistence.update_transfer_attempts(call_attempt_record)
 
     survey_responses.save(leads.dispositioned_voter, call_attempt_record)
 

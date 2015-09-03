@@ -59,7 +59,8 @@ describe TransferDialer do
     end
     let(:dialed_call) do
       instance_double('CallFlow::Call::Dialed', {
-        storage: dialed_call_storage
+        storage: dialed_call_storage,
+        transfer_attempted: nil
       })
     end
 

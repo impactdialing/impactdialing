@@ -90,7 +90,7 @@ describe 'CallFlow::Persistence::Call' do
       end
     end
 
-    context 'caller_session is associates w/ dialed_call (Preview/Power)' do
+    context 'caller_session is associated w/ dialed_call (Preview/Power)' do
       let(:caller_session) do
         instance_double('WebuiCallerSession', {
           id: 42,
@@ -118,6 +118,20 @@ describe 'CallFlow::Persistence::Call' do
       it 'associates w/ proper Caller record' do
         subject.create_call_attempt
         expect(call_attempt_record.caller_id).to eq caller_session.caller_id
+      end
+    end
+
+    context 'dialed call was transferred' do
+      let(:transfer_attempt){ create(:transfer_attempt) }
+
+      before do
+        allow(dialed_call).to receive(:transfer_attempt_ids){ [transfer_attempt.id] }
+        subject.create_call_attempt
+      end
+
+      it 'updates TransferAttempt records with CallAttempt#id' do
+        subject.update_transfer_attempts(call_attempt_record)
+        expect(transfer_attempt.reload.call_attempt).to eq call_attempt_record
       end
     end
 
