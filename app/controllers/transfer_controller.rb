@@ -19,7 +19,8 @@ class TransferController < ApplicationController
     logger.debug "DoublePause: Transfer#disconnect - #{params}"
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_attempt.update_attribute(:status, CallAttempt::Status::SUCCESS)
-    if transfer_attempt.caller_session.attempt_in_progress != nil && transfer_attempt.caller_session.attempt_in_progress.id == transfer_attempt.call_attempt.id
+    dialed_call = transfer_attempt.caller_session.dialed_call
+    if dialed_call.present? and dialed_call.storage[:transfer_attempt_id].to_i == transfer_attempt.id
       transfer_attempt.caller_session.publish('transfer_conference_ended', {})
     end
     render xml: Twilio::TwiML::Response.new { |r| r.Hangup }.text
