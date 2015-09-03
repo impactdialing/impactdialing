@@ -40,6 +40,20 @@ public
     redis.hset(key, property, value)
   end
 
+  def add_to_collection(collection_name, items)
+    return if items.blank?
+    items = [*items]
+    Wolverine.call_flow.add_to_collection({
+      keys: [key],
+      argv: [collection_name, items.to_json]
+    })
+  end
+
+  def get_collection(collection_name)
+    collection = self[collection_name] || '[]'
+    JSON.parse(collection)
+  end
+
   def save(hash)
     redis.mapped_hmset(key, hash)
   end

@@ -51,6 +51,34 @@ describe 'CallFlow::Call::Storage' do
         end
       end
     end
+
+    describe '#add_to_collection(collection_name, items)' do
+      it 'appends a single item to values at hash key <collection_name>' do
+        subject.add_to_collection 'my_collection', 'some value'
+        expect(redis.hget(base_key, 'my_collection')).to eq ['some value'].to_json
+      end
+
+      it 'appends multiple items to values at hash key <collection_name>' do
+        subject.add_to_collection 'my_c', %w(a b)
+        subject.add_to_collection 'my_c', %w(c d)
+        expect(redis.hget(base_key, 'my_c')).to eq %w(a b c d).to_json
+      end
+
+      it 'does not call lua script when items is empty' do
+        expect(Wolverine.call_flow).to_not receive(:add_to_collection)
+        subject.add_to_collection 'my_c', []
+        subject.add_to_collection 'my_c', nil
+        subject.add_to_collection 'my_c', ''
+      end
+    end
+
+    describe '#get_collection(collection_name)' do
+      it 'returns collection as Array' do
+        array = %w(newton leibniz)
+        subject.add_to_collection 'ccc', array
+        expect(subject.get_collection('ccc')).to eq array
+      end
+    end
   end
 end
 
