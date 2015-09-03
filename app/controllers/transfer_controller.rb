@@ -20,7 +20,7 @@ class TransferController < ApplicationController
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_attempt.update_attribute(:status, CallAttempt::Status::SUCCESS)
     dialed_call = transfer_attempt.caller_session.dialed_call
-    if dialed_call.present? and dialed_call.storage[:transfer_attempt_id].to_i == transfer_attempt.id
+    if dialed_call.try(:transferred?, transfer_attempt.id)
       transfer_attempt.caller_session.publish('transfer_conference_ended', {})
     end
     render xml: Twilio::TwiML::Response.new { |r| r.Hangup }.text

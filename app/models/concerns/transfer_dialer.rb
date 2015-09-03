@@ -71,7 +71,7 @@ public
     @caller_session   = caller_session
     @transfer_attempt = create_transfer_attempt
 
-    lead_call.storage[:transfer_attempt_id] = @transfer_attempt.id
+    lead_call.transfer_attempted @transfer_attempt.id
 
     deactivate_transfer(caller_session.session_key)
     # twilio makes synchronous callback requests so redis flag must be set

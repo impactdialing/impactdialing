@@ -141,6 +141,18 @@ public
     storage[:status] == 'in-progress'
   end
 
+  def transfer_attempted(transfer_attempt_id)
+    storage.add_to_collection('transfer_attempt_ids', transfer_attempt_id)
+  end
+
+  def transfer_attempt_ids
+    storage.get_collection('transfer_attempt_ids').map(&:to_i)
+  end
+
+  def transferred?(transfer_attempt_id)
+    transfer_attempt_ids.include?(transfer_attempt_id)
+  end
+
   def answered(campaign, params)
     # todo: make following writes atomic
     update_history(:answered)

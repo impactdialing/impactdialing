@@ -37,6 +37,7 @@ describe TransferController, :type => :controller do
   let(:dialed_call) do
     instance_double('CallFlow::Call::Dialed', {
       storage: dialed_call_storage,
+      transfer_attempted: nil,
       sid: call_sid
     })
   end
