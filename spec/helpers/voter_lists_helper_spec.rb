@@ -41,8 +41,8 @@ describe VoterListsHelper, :type => :helper do
       CallFlow::Web::ContactFields::Options.new(@account).save([custom_field_one, custom_field_two])
       custom_option_one = [custom_field_one, custom_field_one]
       custom_option_two = [custom_field_two, custom_field_two]
-      expected_options.insert -2, custom_option_one
-      expected_options.insert -3, custom_option_two
+      expected_options.insert -2, custom_option_two
+      expected_options.insert -3, custom_option_one
       expect(helper.system_column_headers("foo", @account)).to eq(expected_options)
     end
 

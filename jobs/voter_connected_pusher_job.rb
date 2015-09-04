@@ -26,8 +26,7 @@ class VoterConnectedPusherJob
 
   def perform(caller_session_id, call_sid, phone)
   	metrics = ImpactPlatform::Metrics::JobStatus.started(self.class.to_s.underscore)
-    
-    # todo: update callveyor to use call_sid instead of call_id, if it matters
+
     caller_session = CallerSession.find(caller_session_id)
     caller_session.send('publish_voter_connected', call_sid, phone)
 
