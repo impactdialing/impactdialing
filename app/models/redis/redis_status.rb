@@ -12,12 +12,14 @@ class RedisStatus
   end
 
   def self.state_time(campaign_id, caller_session_id)
+    result = []
     time_status = $redis_dialer_connection.hget "campaign:#{campaign_id}:status", caller_session_id
     unless time_status.nil?
       element = JSON.parse(time_status)
       time_spent = Time.now - Time.parse(element['time'] || Time.now.to_s)
-      [element['status'], seconds_fraction_to_time(time_spent)]
+      result = [element['status'], seconds_fraction_to_time(time_spent)]
     end
+    return result
   end
 
   def self.delete_state(campaign_id, caller_session_id)

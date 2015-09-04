@@ -44,7 +44,7 @@ private
     @twiml_flag = :hangup
   end
   def handle_successful_dial(campaign, caller_session_record, params)
-    if campaign.predictive? and answered_by_human?(params)
+    if campaign.predictive? and answered_by_human?(params) and caller_session_record.present?
       Twillio.predictive_dial_answered(caller_session_record, params)
     end
 
@@ -55,14 +55,14 @@ private
     end
   end
   def attempt_connection(campaign, caller_session_record, params)
-    if caller_session_record.on_call? and (not caller_session_record.available_for_call?)
-      RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session_record.id)
-      VoterConnectedPusherJob.add_to_queue(caller_session_record.id, params[:CallSid], params[:phone])
-      caller_session_call.dialed_call_sid = params[:CallSid]
+    if caller_session_record.present? and caller_session_call.on_hold?
+      caller_session_call.connect_to_lead(params[:phone], params[:CallSid])
       update_history(:caller_and_lead_connected)
-      @twiml_flag   = :connect
-      @record_calls = campaign.account.record_calls.to_s
+      @conference_name = caller_session_record.session_key
+      @twiml_flag      = :connect
+      @record_calls    = campaign.account.record_calls.to_s
     else
+      storage[:mapped_status] = CallAttempt::Status::ABANDONED
       @twiml_flag = :hangup
     end
   end
@@ -125,7 +125,7 @@ public
   def caller_session_from_id(campaign, params)
     @caller_session ||= if campaign.predictive? and answered_by_human?(params)
                           caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign.id)
-                          ::CallerSession.find(caller_session_id)
+                          ::CallerSession.where(id: caller_session_id).first
                         end
   end
 
@@ -160,8 +160,6 @@ public
     storage.save(params_for_update(params))
 
     caller_session_record = caller_session_from_id(campaign, params) || caller_session_from_sid
-
-    @conference_name = caller_session_record.session_key
 
     unless params['ErrorCode'] and params['ErrorUrl']
       handle_successful_dial(campaign, caller_session_record, params)

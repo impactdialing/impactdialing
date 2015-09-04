@@ -10,7 +10,6 @@ describe 'CallFlow::Call::Dialed' do
       campaign: campaign,
       sid: 'CA-caller-session-sid',
       on_call: true,
-      available_for_call: false,
       caller: caller_record
     })
   end
@@ -237,6 +236,8 @@ describe 'CallFlow::Call::Dialed' do
 
     before do
       subject.caller_session_sid = caller_session.sid
+      subject.caller_session_call.dialed_call_sid = disconnected_params[:CallSid]
+      expect(subject.caller_session_call.dialed_call_sid).to eq disconnected_params[:CallSid]
       subject.disconnected(disconnected_params)
     end
 
@@ -287,16 +288,19 @@ describe 'CallFlow::Call::Dialed' do
 
     shared_examples_for 'answered call of any dialing mode' do
       it 'updates state history to record that :answered was visited' do
+        RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
         subject.answered(campaign, twilio_params)
         expect(subject.state_visited?(:answered)).to be_truthy
       end
 
       it 'tells campaign :number_not_ringing' do
+        RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
         expect(campaign).to receive(:number_not_ringing)
         subject.answered(campaign, twilio_params)
       end
 
       it 'updates storage with twilio params' do
+        RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
         subject.answered(campaign, twilio_params)
 
         expect(subject.storage['campaign_id'].to_i).to eq campaign.id
@@ -305,6 +309,7 @@ describe 'CallFlow::Call::Dialed' do
       end
 
       it 'sets :dialed_call_sid on caller_session' do
+        RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
         subject.answered(campaign, twilio_params)
         expect(subject.caller_session.dialed_call_sid).to eq rest_response['sid']
       end
@@ -312,31 +317,50 @@ describe 'CallFlow::Call::Dialed' do
       context 'when call is answered by human and CallStatus == "in-progress"' do
         context 'when caller is still connected' do
           before do
+            RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
             campaign.account.update_attributes(record_calls: true)
-            subject.answered(campaign, twilio_params)
           end
 
           it 'updates RedisStatus for caller session to On call' do
+            subject.answered(campaign, twilio_params)
             status, time = RedisStatus.state_time(campaign.id, caller_session.id)
             expect(status).to eq 'On call'
           end
           it 'queues VoterConnectedPusherJob' do
+            subject.answered(campaign, twilio_params)
             expect([:sidekiq, :call_flow]).to have_queued(VoterConnectedPusherJob).with(caller_session.id, twilio_params['CallSid'], phone)
           end
           it 'sets @record_calls = campaign.account.record_calls' do
+            subject.answered(campaign, twilio_params)
             expect(subject.record_calls).to eq 'true'
           end
           it 'sets @twiml_flag = :connect' do
+            subject.answered(campaign, twilio_params)
             expect(subject.twiml_flag).to eq :connect
           end
         end
         context 'caller has disconnected' do
           before do
-            caller_session.update_attributes!({on_call: false, available_for_call: false})
+            caller_session.update_attributes!({on_call: false})
           end
           it 'sets @twiml_flag = :hangup' do
             subject.answered(campaign, twilio_params)
             expect(subject.twiml_flag).to eq :hangup
+          end
+        end
+        context 'caller is already talking to a lead' do
+          before do
+            RedisStatus.set_state_changed_time(campaign.id, 'On call', caller_session.id)
+          end
+
+          it 'sets @twiml_flag = :hangup' do
+            subject.answered(campaign, twilio_params)
+            expect(subject.twiml_flag).to eq :hangup
+          end
+
+          it 'sets #storage[:mapped_status] to CallAttempt::Status::ABANDONED' do
+            subject.answered(campaign, twilio_params)
+            expect(subject.storage[:mapped_status]).to eq CallAttempt::Status::ABANDONED
           end
         end
       end

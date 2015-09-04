@@ -51,12 +51,22 @@ public
     end
   end
 
+  def on_hold?
+    RedisStatus.state_time(caller_session_record.campaign_id, caller_session_record.id).include?('On hold')
+  end
+
   def caller_session_record
     @caller_session_record ||= ::CallerSession.where(sid: sid).first
   end
 
   def is_phones_only?
     caller_session_record.is_phones_only?
+  end
+
+  def connect_to_lead(phone, call_sid)
+    RedisStatus.set_state_changed_time(caller_session_record.campaign_id, "On call", caller_session_record.id)
+    VoterConnectedPusherJob.add_to_queue(caller_session_record.id, call_sid, phone)
+    self.dialed_call_sid = call_sid
   end
 
   def redirect_to_hold

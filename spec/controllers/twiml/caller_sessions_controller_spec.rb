@@ -99,7 +99,7 @@ describe Twiml::CallerSessionsController do
         expect(caller_session.endtime).to be_within(1.second).of(expected_endtime)
         expect(caller_session.on_call).to be_falsy
         expect(caller_session.available_for_call).to be_falsy
-        expect(RedisStatus.state_time(campaign.id, caller_session.id)).to be_nil
+        expect(RedisStatus.state_time(campaign.id, caller_session.id)).to be_empty
       end
     end
 
