@@ -67,7 +67,10 @@ private
     end
   end
   def call_answered_by_machine(campaign, caller_session_record, params)
-    RedirectCallerJob.add_to_queue(caller_session_record.id)
+    unless campaign.predictive?
+      # caller will not be associated w/ dialed call in predictive mode
+      caller_session_call.redirect_to_hold
+    end
     answering_machine_agent = AnsweringMachineAgent.new(campaign, storage[:phone])
 
     if answering_machine_agent.leave_message?
