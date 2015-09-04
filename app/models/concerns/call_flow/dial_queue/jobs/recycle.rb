@@ -36,7 +36,7 @@ private
       # 2014 (w/ mid-term election) saw total of 1103 different campaigns though so 
       # loading caller sessions from the last 2 weeks won't return many distinct campaigns
       processed = []
-      CallerSession.where('created_at > ?', 2.weeks.ago).select('DISTINCT caller_sessions.campaign_id, caller_sessions.id').includes(:campaign).find_in_batches do |caller_sessions|
+      ::CallerSession.where('created_at > ?', 2.weeks.ago).select('DISTINCT caller_sessions.campaign_id, caller_sessions.id').includes(:campaign).find_in_batches do |caller_sessions|
         caller_sessions.each do |caller_session|
           next if processed.include? caller_session.campaign.id
           yield caller_session.campaign
