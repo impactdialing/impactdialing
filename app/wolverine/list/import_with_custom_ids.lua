@@ -13,10 +13,13 @@ local available_set_key           = KEYS[4]
 local recycle_bin_set_key         = KEYS[5]
 local blocked_set_key             = KEYS[6]
 local completed_set_key           = KEYS[7]
-local custom_id_register_key_base = KEYS[8]
+local completed_leads_key         = KEYS[8]
+local message_drop_key            = KEYS[9]
+local custom_id_register_key_base = KEYS[10]
 local household_key_base          = ARGV[1] -- dial_queue:{campaign_id}:households:active
 local starting_household_sequence = ARGV[2]
-local households                  = cjson.decode(ARGV[3])
+local message_drop_completes      = tonumber(ARGV[3])
+local households                  = cjson.decode(ARGV[4])
 local update_statistics           = 1
 local _updated_hh                 = {}
 local new_number_count            = 0
@@ -49,9 +52,20 @@ local custom_id_register_key_parts = function(custom_id)
   return {rkey, hkey}
 end
 
-local add_to_set = function(leads_added, blocked, score, phone)
+local add_to_set = function(leads_added, blocked, score, sequence, phone)
   if tonumber(blocked) == 0 or blocked == nil then
     local completed_score = redis.call('ZSCORE', completed_set_key, phone)
+
+    if message_drop_completes > 0 then
+      local message_dropped_bit = redis.call('GETBIT', message_drop_key, sequence)
+      if tonumber(message_dropped_bit) > 0 then
+        if not completed_score then
+          redis.call('ZADD', completed_set_key, score, phone)
+          completed_score = score
+        end
+        leads_added = false
+      end
+    end
 
     if leads_added or (not completed_score) then
       -- leads were added or the household is not complete
@@ -251,7 +265,7 @@ for phone,household in pairs(households) do
   updated_hh['uuid']     = uuid
   updated_hh['sequence'] = sequence
 
-  add_to_set(leads_added, updated_hh['blocked'], score, phone)
+  add_to_set(leads_added, updated_hh['blocked'], score, sequence, phone)
 
   local _updated_hh = cjson.encode(updated_hh)
   redis.call('HSET', household_key, phone_key, _updated_hh)

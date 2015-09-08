@@ -109,6 +109,11 @@ for phone,_ in pairs(households) do
         if score then
           redis.call('ZREM', recycle_bin_set_key, phone)
           log('removed '..phone..' from recycle bin set')
+        else
+          score = redis.call('ZSCORE', completed_set_key, phone)
+          if score then
+            redis.call('ZREM', completed_set_key, phone)
+          end
         end
       end
 

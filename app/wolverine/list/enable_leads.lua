@@ -4,9 +4,12 @@ local available_set_key      = KEYS[4]
 local recycle_bin_set_key    = KEYS[5]
 local blocked_set_key        = KEYS[6]
 local completed_set_key      = KEYS[7]
+local completed_leads_key    = KEYS[8]
+local message_drop_key       = KEYS[9]
 local base_key               = ARGV[1]
 local list_id                = tonumber(ARGV[2])
-local households             = cjson.decode(ARGV[3])
+local message_drop_completes = tonumber(ARGV[3])
+local households             = cjson.decode(ARGV[4])
 local count                  = 0
 
 local log = function (message)
@@ -27,12 +30,24 @@ local copy_household_primitives = function(source_hh, dest_hh)
   end
 end
 
-local add_to_set = function(leads_added, blocked, score, phone)
-  log('add_to_set: START: '..tostring(leads_added)..', '..tostring(blocked)..', '..tostring(score)..', '..tostring(phone))
-  if tonumber(blocked) == 0 or blocked == nil then
+local add_to_set = function(leads_added, household, phone)
+  local score = household.score
+  log('add_to_set: START: '..tostring(leads_added)..', '..tostring(household.blocked)..', '..tostring(score)..', '..tostring(phone))
+  if tonumber(household.blocked) == 0 or household.blocked == nil then
     log('add_to_set: not blocked '..phone)
-    local available_score = redis.call('ZSCORE', available_set_key, phone)
+
     local completed_score = redis.call('ZSCORE', completed_set_key, phone)
+    if message_drop_completes > 0 then
+      local message_dropped_bit = redis.call('GETBIT', message_drop_key, household.sequence)
+      if tonumber(message_dropped_bit) > 0 then
+        if not completed_score then
+          redis.call('ZADD', completed_set_key, score, phone)
+        end
+        leads_added = false
+      end
+    end
+
+    local available_score = redis.call('ZSCORE', available_set_key, phone)
     local recycled_score = redis.call('ZSCORE', recycle_bin_set_key, phone)
 
     if leads_added then
@@ -103,17 +118,20 @@ for phone,_ in pairs(households) do
     current_inactive_leads = inactive_household.leads
 
     for _,lead in pairs(current_inactive_leads) do
+      local lead_completed = redis.call('GETBIT', completed_leads_key, lead.sequence)
       if tonumber(lead.voter_list_id) == list_id then
         -- lead belongs to target list, so move to active
         log('lead.voter_list_id('..lead.voter_list_id..') == list_id('..list_id..')')
         if #lead_id_set ~= 0 then
           if lead_id_set[lead.custom_id] == nil then
             lead_id_set[lead.custom_id] = lead
-            leads_added = true
+            if lead_completed < 1 then
+              leads_added = true
+            end
             -- ignore inactive leads w/ matching custom id of active lead: active lead data wins
             -- and if all is well, then there should not be matching custom id between active/inactive
           end
-        else
+        elseif lead_completed < 1 then
           leads_added = true
         end
         log('new active leads '..cjson.encode(lead))
@@ -144,7 +162,7 @@ for phone,_ in pairs(households) do
         copy_household_primitives(inactive_household, active_household)
       end
       active_household.leads = new_active_leads
-      add_to_set(leads_added, active_household.blocked, inactive_household.score, phone)
+      add_to_set(leads_added, active_household, phone)
       _active_household = cjson.encode(active_household)
       log('calling HSET with: '..active_key..', '..hkey..', '.._active_household)
       redis.call('HSET', active_key, hkey, _active_household)

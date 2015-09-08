@@ -64,6 +64,8 @@ private
       dial_queue.recycle_bin.keys[:bin],
       dial_queue.blocked.keys[:blocked],
       dial_queue.completed.keys[:completed],
+      dial_queue.households.keys[:completed_leads],
+      dial_queue.households.keys[:message_drops],
       voter_list.campaign.custom_id_register_key_base
     ]
   end
@@ -98,18 +100,28 @@ public
   end
 
   def save(redis_keys, households)
-    key_base    = redis_keys.first.split(':')[0..-2].join(':')
+    campaign = voter_list.campaign
+    key_base = redis_keys.first.split(':')[0..-2].join(':')
+
+    message_drop_completes = 0
+    if campaign.use_recordings? and (not campaign.call_back_after_voicemail_delivery?)
+      message_drop_completes = 1
+    end
+
+    options = {
+        keys: common_redis_keys + redis_keys,
+        argv: [
+          key_base,
+          @starting_household_sequence,
+          message_drop_completes,
+          households.to_json
+        ]
+      }
     
     if voter_list.campaign.using_custom_ids?
-      Wolverine.list.import_with_custom_ids({
-        keys: common_redis_keys + redis_keys,
-        argv: [key_base, @starting_household_sequence, households.to_json]
-      })
+      Wolverine.list.import_with_custom_ids(options)
     else
-      Wolverine.list.import({
-        keys: common_redis_keys + redis_keys,
-        argv: [key_base, @starting_household_sequence, households.to_json]
-      })
+      Wolverine.list.import(options)
     end
   end
 

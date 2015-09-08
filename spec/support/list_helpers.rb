@@ -9,7 +9,7 @@ module ListHelpers
     redis = Redis.new
     base_key = "dial_queue:#{list.campaign_id}:households:#{household_namespace}"
     sequence = 1
-    lead_sequence = 1
+    lead_sequence = "#{sequence}0".to_i
     households.each do |phone, household|
       household['sequence'] = sequence
       leads = []

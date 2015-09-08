@@ -24,17 +24,6 @@ class CallFlow::DialQueue::Households
   include CallFlow::DialQueue::Util
 
 private
-  def keys
-    {
-      active: "dial_queue:#{campaign.id}:households:active", # redis key/hash/json data
-      presented: "dial_queue:#{campaign.id}:households:presented", # redis key/hash/json data
-      inactive: "dial_queue:#{campaign.id}:households:inactive", # redis key/hash/json data
-      message_drops: "dial_queue:#{campaign.id}:households:message_drops", # redis bitmap
-      completed_leads: "dial_queue:#{campaign.id}:households:completed_leads", # redis bitmap
-      dispositioned_leads: "dial_queue:#{campaign.id}:households:dispositioned_leads" # redis bitmap
-    }
-  end
-
   def keys_for_lua(phone)
     [
       key(phone, :active),
@@ -54,6 +43,17 @@ public
 
     @campaign    = campaign
     @type        = type
+  end
+
+  def keys
+    {
+      active: "dial_queue:#{campaign.id}:households:active", # redis key/hash/json data
+      presented: "dial_queue:#{campaign.id}:households:presented", # redis key/hash/json data
+      inactive: "dial_queue:#{campaign.id}:households:inactive", # redis key/hash/json data
+      message_drops: "dial_queue:#{campaign.id}:households:message_drops", # redis bitmap
+      completed_leads: "dial_queue:#{campaign.id}:households:completed_leads", # redis bitmap
+      dispositioned_leads: "dial_queue:#{campaign.id}:households:dispositioned_leads" # redis bitmap
+    }
   end
 
   def key(phone, _type=nil)

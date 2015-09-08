@@ -224,7 +224,25 @@ describe 'CallList::DisabledTrimmer' do
       expect(households_one).to be_in_redis_households(campaign.id, 'active')
     end
 
-    context 'phone number is not completed (ie leads active from other lists when enabling target list)' do
+    context 'phone was completed via message drops' do
+      let(:message_drop_key){ campaign.dial_queue.households.keys[:message_drops] }
+      before do
+        redis.setbit(message_drop_key, households_one['sequence'], 1)
+      end
+
+      it 'adds phone to completed set' do
+        subject.enable_leads
+        expect(phone).to be_in_dial_queue_zset(campaign.id, 'completed')
+      end
+
+      it 'does not update phone score when already in completed set' do
+        redis.zadd(completed_key, 3.3, phone)
+        subject.enable_leads
+        expect(redis.zscore(completed_key, phone)).to eq 3.3
+      end
+    end
+
+    context 'phone has not been completed' do
       it 'is not moved from available set' do
         redis.zadd available_key, 1.1, phone
         subject.enable_leads
