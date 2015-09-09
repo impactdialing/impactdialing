@@ -68,7 +68,10 @@ local add_to_set = function(leads_added, household, phone)
         redis.call('ZADD', recycle_bin_set_key, score, phone)
       end
     else
-      log('add_to_set: no leads added, noop')
+      if not completed_score and not available_score and not recycled_score then
+        redis.call('ZADD', completed_set_key, score, phone)
+      end
+      log('add_to_set: no leads added: adding to completed')
     end
   else
     -- add to blocked set
