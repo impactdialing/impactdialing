@@ -33,6 +33,7 @@ class Campaign < ActiveRecord::Base
   has_many :caller_sessions
   has_many :caller_sessions_on_call, -> { where on_call: true }, class_name: 'CallerSession'
   has_many :voter_lists, -> { where active: true }
+  has_many :lists, class_name: 'VoterList'
   has_many :all_voters, :class_name => 'Voter'
   has_many :call_attempts
   has_many :transfer_attempts
@@ -232,19 +233,19 @@ public
   end
 
   def requires_custom_ids?
-    (not voter_lists.count.zero?) and using_custom_ids?
+    (not lists.count.zero?) and using_custom_ids?
   end
 
   def can_use_custom_ids?
-    voter_lists.count.zero? or using_custom_ids?
+    lists.count.zero? or using_custom_ids?
   end
 
   def cannot_use_custom_ids?
-    (not voter_lists.count.zero?) and (not using_custom_ids?)
+    (not lists.count.zero?) and (not using_custom_ids?)
   end
 
   def using_custom_ids?
-    voter_lists.first.maps_custom_id?
+    lists.first.maps_custom_id?
   end
 
   def dial_queue
