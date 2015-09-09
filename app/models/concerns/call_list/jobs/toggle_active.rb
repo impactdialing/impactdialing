@@ -17,5 +17,15 @@ class CallList::Jobs::ToggleActive
     else
       trimmer.disable_leads
     end
+    campaign = voter_list.campaign
+    dial_queue = campaign.dial_queue
+    total_numbers = 0
+    count_args    = ['-inf','+inf']
+    total_numbers += dial_queue.available.count(:active, *count_args)
+    total_numbers += dial_queue.available.count(:presented, *count_args)
+    total_numbers += dial_queue.completed.count(:completed, *count_args)
+    total_numbers += dial_queue.recycle_bin.count(:bin, *count_args)
+    total_numbers += dial_queue.blocked.count(:blocked, *count_args)
+    campaign.list_stats_reset('total_numbers', total_numbers)
   end
 end

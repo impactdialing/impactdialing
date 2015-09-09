@@ -64,8 +64,8 @@ shared_examples_for 'any call list import' do
             expect(redis.zscore(common_keys[6], phone)).to be_nil
           end
 
-          it 'is added to pending set' do
-            expect(redis.zscore(common_keys[0], phone)).to_not be_nil
+          it 'is added to recycle bin set' do
+            expect(redis.zscore(common_keys[4], phone)).to_not be_nil
           end
         end
       end

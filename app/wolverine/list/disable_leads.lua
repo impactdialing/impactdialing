@@ -71,7 +71,9 @@ for phone,_ in pairs(households) do
     end
 
     for _,lead in pairs(current_active_leads) do
+      log('scanning for leads in list: '..list_id..': lead list: '..lead.voter_list_id..' lead: '..cjson.encode(lead))
       if tonumber(lead.voter_list_id) == list_id then
+        log('lead.voter_list_id('..lead.voter_list_id..') == list_id('..list_id..') lead: '..cjson.encode(lead))
         -- lead belongs to target list, so move to inactive
         if #lead_id_set ~= 0 then
           log('#lead_id_set ~= 0; merging')

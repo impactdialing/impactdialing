@@ -100,11 +100,11 @@ describe 'CallList::DisabledTrimmer' do
           subject.disable_leads
           expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'blocked')
         end
-        it 'is NOT removed from completed set' do
+        it 'is removed from completed set' do
           redis.zrem available_key, phone
           redis.zadd completed_key, "#{Time.now.to_i}.000005", phone
           subject.disable_leads
-          expect(phone).to be_in_dial_queue_zset(campaign.id, 'completed')
+          expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'completed')
         end
       end
 
@@ -213,6 +213,7 @@ describe 'CallList::DisabledTrimmer' do
     subject{ CallList::DisabledTrimmer.new(list_one) }
     before do
       import_list(list_one, households_one)
+      import_list(list_two, households_two)
       expect(households_one).to be_in_redis_households(campaign.id, 'active')
       stub_list_parser(parser, active_redis_key, households_one)
       subject.disable_leads
@@ -226,8 +227,14 @@ describe 'CallList::DisabledTrimmer' do
 
     context 'phone was completed via message drops' do
       let(:message_drop_key){ campaign.dial_queue.households.keys[:message_drops] }
+      let(:household_one_seq){ 1 }
       before do
-        redis.setbit(message_drop_key, households_one['sequence'], 1)
+        campaign.update_attributes!({
+          use_recordings: true,
+          answering_machine_detect: true,
+          call_back_after_voicemail_delivery: false
+        })
+        redis.setbit(message_drop_key, household_one_seq, 1)
       end
 
       it 'adds phone to completed set' do
@@ -262,30 +269,38 @@ describe 'CallList::DisabledTrimmer' do
       end
     end
 
-    context 'phone number is currently completed (ie has no leads active from other lists when enabling target list)' do
-      context 'phone number is in completed set' do
-        let(:score){ "#{(list_one.campaign.recycle_rate + 1).hours.ago.to_i}.0005" }
-        before do
-          redis.zrem available_key, phone
-          redis.zadd completed_key, score, phone
-        end
+    #context 'phone was completed via dispositioned leads but newly enabled list adds incomplete leads' do
+    #  let(:completed_leads_key){ campaign.dial_queue.households.keys[:completed_leads] }
+    #  let(:score){ 142 }
+    #  let(:phone_two){ households_two.keys.first }
+    #  let(:leads_two) do
+    #    k = "#{campaign.dial_queue.households.keys[:active]}:#{phone_two[0..-4]}"
+    #    JSON.parse( redis.hget(k, phone_two[-3..-1]) )
+    #  end
+    #  before do
+    #    leads_two.each do |lead|
+    #      redis.setbit(completed_leads_key, lead['sequence'], 1)
+    #    end
+    #    redis.zrem available_key, phone
+    #    redis.zadd completed_key, score, phone
+    #  end
 
-        it 'is removed from completed set' do
-          subject.enable_leads
-          expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'completed')
-        end
-        
-        it 'is added to recycle bin set' do
-          subject.enable_leads
-          expect(phone).to be_in_dial_queue_zset(campaign.id, 'bin')
-        end
+    #  it 'is removed from completed set' do
+    #    byebug
+    #    subject.enable_leads
+    #    expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'completed')
+    #  end
+    #  
+    #  it 'is added to recycle bin set' do
+    #    subject.enable_leads
+    #    expect(phone).to be_in_dial_queue_zset(campaign.id, 'bin')
+    #  end
 
-        it 'keeps the completed zscore' do
-          subject.enable_leads
-          expect(phone).to have_zscore(score).in_dial_queue_zset(campaign.id, 'bin') 
-        end
-      end
-    end
+    #  it 'keeps the completed zscore' do
+    #    subject.enable_leads
+    #    expect(phone).to have_zscore(score).in_dial_queue_zset(campaign.id, 'bin') 
+    #  end
+    #end
   end
 end
 

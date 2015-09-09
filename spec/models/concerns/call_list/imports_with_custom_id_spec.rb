@@ -89,7 +89,7 @@ describe 'CallList::Imports' do
 
     describe 'updating voter list stats' do
       let(:stats_key){ common_keys[1] }
-      let(:custom_id_register_key){ common_keys[7] }
+      let(:custom_id_register_key){ common_keys[9] }
 
       def redis
         @redis ||= Redis.new

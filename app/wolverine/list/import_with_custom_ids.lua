@@ -34,6 +34,16 @@ local household_key_parts = function(phone)
   return {rkey, hkey}
 end
 
+-- enable/disable support
+-- in case uploaded hh was recently dialed & disabled
+local inactive_hh_count = 0
+local i_household_key_parts = function(phone)
+  local base = string.gsub(household_key_base, 'active', 'inactive')
+  local rkey = base .. ':' .. string.sub(phone, 0, -4)
+  local hkey = string.sub(phone, -3, -1)
+  return {rkey, hkey}
+end
+
 -- build custom id key parts
 local custom_id_register_key_parts = function(custom_id)
   local hkey   = nil
@@ -52,7 +62,7 @@ local custom_id_register_key_parts = function(custom_id)
   return {rkey, hkey}
 end
 
-local add_to_set = function(leads_added, blocked, score, sequence, phone)
+local add_to_set = function(leads_added, blocked, score, sequence, phone, inactive_hh)
   if tonumber(blocked) == 0 or blocked == nil then
     local completed_score = redis.call('ZSCORE', completed_set_key, phone)
 
@@ -75,11 +85,15 @@ local add_to_set = function(leads_added, blocked, score, sequence, phone)
         if leads_added and completed_score then
           -- household is no longer considered complete if leads were added
           -- preserve score from completed set to prevent recycle rate violations
-          redis.call('ZADD', pending_set_key, completed_score, phone)
+          redis.call('ZADD', recycle_bin_set_key, completed_score, phone)
           redis.call('ZREM', completed_set_key, phone)
           --redis.call('LPUSH', 'debug', 'leads_added: ' .. tostring(leads_added) .. '; completed score: ' .. tostring(completed_score))
         else
-          redis.call('ZADD', pending_set_key, score, phone)
+          if inactive_hh then
+            redis.call('ZADD', recycle_bin_set_key, score, phone)
+          else
+            redis.call('ZADD', pending_set_key, score, phone)
+          end
         end
       end
     end
@@ -217,28 +231,52 @@ for phone,household in pairs(households) do
   local leads_added     = false
   local _current_hh     = redis.call('HGET', household_key, phone_key)
   local new_lead_id_set = build_custom_id_set(new_leads)
+  local inactive_hh     = false
 
   if next(new_lead_id_set) ~= nil then
     new_leads = new_lead_id_set
   end
 
-  if _current_hh then
+  -- enable/disable support
+  -- if uploaded hh is inactive
+  -- then copy hh attrs from there
+  if not _current_hh then
+    local i_key_parts     = i_household_key_parts(phone)
+    local i_household_key = i_key_parts[1]
+    local i_phone_key     = i_key_parts[2]
+    local _i_current_hh   = redis.call('HGET', i_household_key, i_phone_key)
+    if _i_current_hh then
+      redis.call('RPUSH', 'debug.log', '_i_current_hh: '.._i_current_hh)
+      local i_current_hh = cjson.decode(_i_current_hh)
+      local i_hh         = {}
+      i_hh.uuid          = i_current_hh.uuid
+      i_hh.sequence      = i_current_hh.sequence
+      i_hh.score         = i_current_hh.score
+      i_hh.leads         = i_current_hh.leads
+      current_hh         = i_hh
+      inactive_hh        = true
+      inactive_hh_count = inactive_hh_count + 1
+    end
+  end
+
+  if _current_hh or current_hh.uuid then
     -- this household has been saved so merge
     -- current_hh = cmsgpack.unpack(_current_hh)
-    current_hh = cjson.decode(_current_hh)
+    if _current_hh then
+      current_hh = cjson.decode(_current_hh)
+    end
 
     -- hh attributes
-    uuid     = current_hh['uuid']
-    sequence = current_hh['sequence']
-    score    = current_hh['score']
+    uuid     = current_hh.uuid
+    sequence = current_hh.sequence
+    score    = current_hh.score
 
     -- leads
-    local current_leads       = current_hh['leads']
+    local current_leads       = current_hh.leads
     local current_lead_id_set = build_custom_id_set(current_leads)
     
-    -- if existing & new don't have custom ids then go to append mode
     -- campaign contract says each list will either use or not custom ids as of July 2015
-    if next(current_lead_id_set) ~= nil and next(new_lead_id_set) ~= nil then
+    if next(new_lead_id_set) ~= nil then
       updated_leads = merge_leads(current_lead_id_set, new_lead_id_set)
 
       if new_lead_count > 0 then
@@ -265,7 +303,7 @@ for phone,household in pairs(households) do
   updated_hh['uuid']     = uuid
   updated_hh['sequence'] = sequence
 
-  add_to_set(leads_added, updated_hh['blocked'], score, sequence, phone)
+  add_to_set(leads_added, updated_hh['blocked'], score, sequence, phone, inactive_hh)
 
   local _updated_hh = cjson.encode(updated_hh)
   redis.call('HSET', household_key, phone_key, _updated_hh)
@@ -280,5 +318,5 @@ redis.call('HINCRBY', list_stats_key, 'pre_existing_numbers', pre_existing_numbe
 redis.call('HINCRBY', list_stats_key, 'total_leads', new_lead_count + updated_lead_count)
 redis.call('HINCRBY', list_stats_key, 'total_numbers', new_number_count + pre_existing_number_count)
 redis.call('HINCRBY', campaign_stats_key, 'total_leads', new_lead_count)
-redis.call('HINCRBY', campaign_stats_key, 'total_numbers', new_number_count)
+redis.call('HINCRBY', campaign_stats_key, 'total_numbers', new_number_count + inactive_hh_count)
 

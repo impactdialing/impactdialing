@@ -13,5 +13,9 @@ module CallList::Stats
   def list_stats
     HashWithIndifferentAccess.new(redis.hgetall(list_stats_key))
   end
+
+  def list_stats_reset(key, value)
+    redis.hset(list_stats_key, key, value)
+  end
 end
 
