@@ -193,7 +193,7 @@ public
 
   def dial_again?(phone)
     if campaign.use_recordings?
-      campaign.call_back_after_voicemail_delivery? or no_message_dropped?(phone)
+      (campaign.call_back_after_voicemail_delivery? or no_message_dropped?(phone)) and any_incomplete_leads_for?(phone)
     else
       any_incomplete_leads_for?(phone)
     end
