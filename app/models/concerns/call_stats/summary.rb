@@ -40,7 +40,7 @@ public
   end
 
   def retrying
-    @retrying ||= dial_queue.available.count(:active, lead_sequence + 1, '+inf')
+    @retrying ||= dial_queue.available.count(:active, "(#{lead_sequence + 1}", '+inf')
   end
 
   def pending_retry

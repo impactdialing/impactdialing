@@ -14,7 +14,7 @@ describe CallStats::Summary do
       let(:retrying){ 3 }
 
       it 'completed, abandoned and hangup calls are included in the count' do
-        allow(dial_queue.available).to receive(:count).with(:active, campaign.household_sequence + 1, '+inf'){ retrying }
+        allow(dial_queue.available).to receive(:count).with(:active, "(#{campaign.household_sequence + 1}", '+inf'){ retrying }
 
         dial_report = CallStats::Summary.new(campaign)
         expect(dial_report.retrying).to eq(retrying)
@@ -102,7 +102,7 @@ describe CallStats::Summary do
 
       before do
         allow(dial_queue.available).to receive(:count).with(:active, '-inf', campaign.household_sequence + 1){ not_dialed }
-        allow(dial_queue.available).to receive(:count).with(:active, campaign.household_sequence + 1, '+inf'){ retrying }
+        allow(dial_queue.available).to receive(:count).with(:active, "(#{campaign.household_sequence + 1}", '+inf'){ retrying }
         allow(dial_queue.completed).to receive(:count).with(:completed, '-inf', '+inf'){ completed }
         allow(dial_queue.available).to receive(:size).with(:active){ available }
         allow(dial_queue.available).to receive(:size).with(:presented){ 0 }
