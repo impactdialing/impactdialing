@@ -263,10 +263,18 @@ describe 'CallFlow::DialQueue' do
 
   describe 'removing all data from redis' do
     let(:redis){ Redis.new }
+    let(:phone){ Forgery(:address).clean_phone }
 
     before do
+      redis.zadd dial_queue.available.keys[:active], 3.0, phone
+      redis.zadd dial_queue.available.keys[:presented], 3.0, phone
+      redis.zadd dial_queue.completed.keys[:completed], 3.0, phone
+      redis.zadd dial_queue.blocked.keys[:blocked], 3.0, phone
+      redis.zadd dial_queue.recycle_bin.keys[:bin], 3.0, phone
       @expected_purge_count = dial_queue.available.size + 
                               dial_queue.available.all(:presented).size +
+                              dial_queue.completed.size +
+                              dial_queue.blocked.size +
                               dial_queue.recycle_bin.size
       @result = dial_queue.purge
     end
@@ -278,6 +286,16 @@ describe 'CallFlow::DialQueue' do
 
     it 'removes all data from RecycleBin' do
       key = dial_queue.recycle_bin.send(:keys)[:bin]
+      expect(redis.keys).to_not include(key)
+    end
+
+    it 'removes all data from Completed' do
+      key = dial_queue.completed.send(:keys)[:completed]
+      expect(redis.keys).to_not include(key)
+    end
+
+    it 'removes all data from Blocked' do
+      key = dial_queue.completed.send(:keys)[:blocked]
       expect(redis.keys).to_not include(key)
     end
 

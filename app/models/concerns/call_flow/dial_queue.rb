@@ -119,8 +119,9 @@ module CallFlow
 
     def purge
       set_keys                 = []
-      set_keys                += available.send(:keys).values
-      set_keys                += recycle_bin.send(:keys).values
+      [available, recycle_bin, blocked, completed].each do |set|
+        set_keys += set.send(:keys).values
+      end
       household_prefix         = households.send(:keys)[:active]
       lua_phone_key_index_stop = phone_key_index_stop > 0 ? phone_key_index_stop + 1 : phone_key_index_stop
       purged_count             = 0
