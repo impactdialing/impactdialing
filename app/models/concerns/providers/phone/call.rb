@@ -32,7 +32,7 @@ module Providers::Phone::Call
   end
 
   def self.play_message_for(call_sid)
-    params = Params.for(call_sid, :play_message)
+    params = Providers::Phone::Call::Params::Call.new(call_sid)
     redirect(call_sid, params.url, Providers::Phone.default_options)
   end
 

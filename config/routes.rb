@@ -143,7 +143,7 @@ ImpactDialing::Application.routes.draw do
   #post 'call_center/api/call_lead', :to => 'callers/station#call_lead' # replaces caller#call_voter
   post 'call_center/api/hangup', :to => 'callers/station#hangup_lead' # replaces calls#hangup
   #post 'call_center/api/skip_lead', :to => 'callers/station#next_lead' # replaces caller#skip_voter
-  post 'call_center/api/drop_message', :to => 'callers/station#drop_message' # replaces calls#drop_message
+  post 'call_center/api/:sid/drop_message', :to => 'callers/station#drop_message' # replaces calls#drop_message
 
   #post 'call_center/api/call_transfer', :to => 'callers/station#call_transfer'
   #post 'call_center/api/hangup_transfer', :to => 'callers/station#hangup_transfer'
