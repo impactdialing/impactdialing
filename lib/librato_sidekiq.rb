@@ -66,9 +66,13 @@ module LibratoSidekiq
       end
 
       sidekiq_queues.each do |queue_name|
-        queue   = ::Sidekiq::Queue.new(queue_name)
-        namespace.measure("#{metric_prefix}.queue.latency", queue.latency, source: source(queue_name))
-        namespace.measure("#{metric_prefix}.queue.size", queue.size, source: source(queue_name))
+        begin
+          queue   = ::Sidekiq::Queue.new(queue_name)
+          namespace.measure("#{metric_prefix}.queue.latency", queue.latency, source: source(queue_name))
+          namespace.measure("#{metric_prefix}.queue.size", queue.size, source: source(queue_name))
+        rescue TypeError => e
+          Rails.logger.error("[LibratoSidekiq] TypeError rescued when recording sidekiq stats for #{queue_name}: #{e.message}")
+        end
       end
     end
   end
