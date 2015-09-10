@@ -10,7 +10,7 @@ describe RedisStatus, :type => :model do
   it "should delete state" do
     RedisStatus.set_state_changed_time(1, "On hold", 1)
     RedisStatus.delete_state(1,1)
-    expect(RedisStatus.state_time(1, 1)).to be_nil
+    expect(RedisStatus.state_time(1, 1)).to be_empty
   end
   
   it "should return count by status" do
