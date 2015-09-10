@@ -61,6 +61,75 @@ describe 'CallFlow::DialQueue' do
     end
   end
 
+  describe 'when a new number is blocked' do
+    subject{ CallFlow::DialQueue.new(campaign) }
+    let(:phone){ households.keys.first }
+    let(:score){ 3.0 }
+    
+    context 'enable/disable list support (going away w/ future change)' do
+      it 'updates inactive household' do
+        house = subject.households.find phone
+        hh    = CallFlow::DialQueue::Households.new(campaign, :inactive)
+        redis.hset *hh.hkey(phone), house.to_json
+
+        subject.update_blocked_property(phone, 1)
+
+        house = hh.find phone
+        expect(house['blocked']).to eq 1
+      end
+    end
+
+    it 'adds given int to current blocked property int value for active household' do
+      subject.update_blocked_property(phone, 1)
+      house = subject.households.find phone
+      expect(house['blocked']).to eq 1
+    end
+
+    it 'removes the phone from all available zsets' do
+      redis.zadd subject.available.keys[:active], score, phone
+      redis.zadd subject.available.keys[:presented], score, phone
+      subject.update_blocked_property(phone, 1)
+      expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'active')
+      expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'inactive')
+    end
+
+    it 'removes the phone from recycle_bin zset' do
+      redis.zadd subject.recycle_bin.keys[:bin], score, phone
+      subject.update_blocked_property(phone, 1)
+      expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'bin')
+    end
+
+    it 'adds the phone to the "blocked" zset' do
+      subject.update_blocked_property(phone, 1)
+      expect(phone).to be_in_dial_queue_zset campaign.id, 'blocked'
+    end
+  end
+
+  describe 'when a number is un-blocked' do
+    subject{ CallFlow::DialQueue.new(campaign) }
+    let(:phone){ households.keys.first }
+    
+    before do
+      subject.update_blocked_property(phone, 1)
+      house = subject.households.find phone
+      expect(house['blocked']).to eq 1
+      subject.update_blocked_property(phone, -1)
+    end
+
+    it 'adds given int to current blocked property int value' do
+      house = subject.households.find phone
+      expect(house['blocked']).to eq 0
+    end
+
+    it 'adds the phone to the "bin" zset' do
+      expect(phone).to be_in_dial_queue_zset(campaign.id, 'bin')
+    end
+
+    it 'removes the phone from the "blocked" zset' do
+      expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'blocked')
+    end
+  end
+
   describe 'dialed_number_persisted(phone)' do
     let(:redis){ Redis.new }
     include_context 'a dialed number'
@@ -230,8 +299,9 @@ describe 'CallFlow::DialQueue' do
 
     context 'when a household has no leads in redis for presentation' do
       before do
-        phone = Redis.new.zrange(dial_queue.available.keys[:active], 0, 0).first
-        dial_queue.households.save(phone, [])
+        redis = Redis.new
+        phone = redis.zrange(dial_queue.available.keys[:active], 0, 0).first
+        redis.hset *dial_queue.households.hkey(phone), [].to_json
       end
 
       it 'raises CallFlow::DialQueue::EmptyHousehold' do

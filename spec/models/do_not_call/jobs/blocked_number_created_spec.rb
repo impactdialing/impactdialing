@@ -1,58 +1,52 @@
 require 'rails_helper'
 
 describe 'DoNotCall::Jobs::BlockedNumberCreated' do
-  include FakeCallData
+  include ListHelpers
 
   let(:account){ create(:account) }
   let(:campaign){ create(:power, account: account) }
-  let!(:voters){ create_list(:voter, 10, account: account, campaign: campaign) }
-  let(:households){ voters.map(&:household) }
-  let(:household_blocked_account_wide){ households.first }
-  let(:household_blocked_campaign_wide){ households.last }
-  let(:account_wide){ create(:blocked_number, account: account, number: household_blocked_account_wide.phone) }
-  let(:campaign_wide){ create(:blocked_number, account: account, campaign: campaign, number: household_blocked_campaign_wide.phone) }
-
-  let(:other_account){ create(:account) }
-  let(:other_campaign){ create(:power, account: other_account) }
-  let!(:other_voters){ create_list(:voter, 10, account: other_account, campaign: other_campaign) }
-  let(:other_households){ other_voters.map(&:household) }
-  let(:other_account_wide){ create(:blocked_number, account: other_account, number: other_households.first.phone) }
-  let(:other_campaign_wide){ create(:blocked_number, account: other_account, campaign: other_campaign, number: other_households.last.phone) }
-
-  before do
-    cache_available_voters(campaign)
-    cache_available_voters(other_campaign)
-    DoNotCall::Jobs::BlockedNumberCreated.perform(account_wide.id)
-    DoNotCall::Jobs::BlockedNumberCreated.perform(campaign_wide.id)
-    DoNotCall::Jobs::BlockedNumberCreated.perform(other_account_wide.id)
-    DoNotCall::Jobs::BlockedNumberCreated.perform(other_campaign_wide.id)
+  let(:campaign_two){ create(:preview, account: account) }
+  let(:voter_list){ create(:voter_list, campaign: campaign) }
+  let(:households) do
+    build_household_hashes(2, voter_list)
   end
-  
-  it 'marks household blocked from account-wide list' do
-    expect( household_blocked_account_wide.reload.blocked?(:dnc) ).to be_truthy
-  end
-  it 'removes blocked household from dial queue' do
-    dial_queue = CallFlow::DialQueue.new(campaign)
-    expect( dial_queue.available.missing?(account_wide.number) ).to be_truthy
-    expect( dial_queue.recycle_bin.missing?(account_wide.number) ).to be_truthy
-    expect( dial_queue.households.missing?(account_wide.number) ).to be_truthy
+  let(:phone_account_wide){ households.keys.first }
+  let(:phone_campaign_wide){ households.keys.last }
+  let(:account_wide){ create(:blocked_number, account: account, number: phone_account_wide) }
+  let(:campaign_wide){ create(:blocked_number, account: account, campaign: campaign, number: phone_campaign_wide) }
+
+  let(:dial_queue) do
+    instance_double('CallFlow::DialQueue')
   end
 
-  it 'marks household blocked from campaign-wide list' do
-    expect( household_blocked_campaign_wide.reload.blocked?(:dnc) ).to be_truthy
-  end
-  it 'removes blocked household from dial queue' do
-    dial_queue = CallFlow::DialQueue.new(campaign)
-    expect( dial_queue.available.missing?(campaign_wide.number) ).to be_truthy
-    expect( dial_queue.recycle_bin.missing?(campaign_wide.number) ).to be_truthy
-    expect( dial_queue.households.missing?(campaign_wide.number) ).to be_truthy
+  subject{ DoNotCall::Jobs::BlockedNumberCreated }
+
+  context 'number is blocked for a campaign' do
+    before do
+      expect(CallFlow::DialQueue).to receive(:new).once.with(campaign){ dial_queue }
+    end
+
+    it 'tells the dial_queue to update blocked bit for the campaign' do
+      expect(dial_queue).to receive(:update_blocked_property).with(phone_campaign_wide, 1)
+      subject.perform(campaign_wide.id)
+    end
   end
 
-  it 'does not mark household from another account' do
-    expect( other_households.second.reload.blocked?(:dnc) ).to be_falsey
-  end
+  context 'number is blocked for an account' do
+    let(:dial_queue_two) do
+      instance_double('CallFlow::DialQueue')
+    end
 
-  it 'does not mark household from another campaign' do
-    expect( other_households.third.reload.blocked?(:dnc) ).to be_falsey
+    before do
+      expect(CallFlow::DialQueue).to receive(:new).once.with(campaign){ dial_queue }
+      expect(CallFlow::DialQueue).to receive(:new).once.with(campaign_two){ dial_queue_two }
+    end
+
+    it 'tells the dial_queue to update blocked bit for all campaigns in the account' do
+      expect(dial_queue).to receive(:update_blocked_property).with(account_wide.number, 1)
+      expect(dial_queue_two).to receive(:update_blocked_property).with(account_wide.number, 1)
+      subject.perform(account_wide.id)
+    end
   end
 end
+

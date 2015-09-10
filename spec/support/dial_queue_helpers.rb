@@ -3,7 +3,7 @@ module DialQueueHelpers
     subject.send(:keys)
   end
   def redis
-    subject.send(:redis)
+    subject.respond_to?(:redis) ? subject.send(:redis) : Redis.new
   end
   # workaround race condition
   # cause unclear but related to Redis.new.flushall in before/after hooks

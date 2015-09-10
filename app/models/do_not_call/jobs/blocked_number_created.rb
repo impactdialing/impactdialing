@@ -23,14 +23,12 @@ class DoNotCall::Jobs::BlockedNumberCreated
 
   def self.perform(blocked_number_id)
     blocked_number = BlockedNumber.find blocked_number_id
-    households = households_with(blocked_number)
-    households.with_blocked(:cell).update_all(blocked: Household.bitmask_for_blocked(:dnc, :cell))
-    households.without_blocked(:cell).update_all(blocked: Household.bitmask_for_blocked(:dnc))
 
     dial_queues = dial_queues_for(blocked_number)
-    dial_queues.each{|dial_queue| dial_queue.remove_household(blocked_number.number)}
-
-    Rails.logger.info "DoNotCall::Jobs::BlockedNumberCreated Account[#{blocked_number.account_id}] Campaign[#{blocked_number.campaign_id}] Number[#{blocked_number.number}] marked #{households.count} households blocked."
+    dial_queues.each do |dial_queue|
+      # bitmask for :dnc block is 1; for :cell is 2; for both is 3
+      dial_queue.update_blocked_property(blocked_number.number, 1)
+    end
   end
 
   def self.dial_queues_for(blocked_number)
@@ -38,15 +36,5 @@ class DoNotCall::Jobs::BlockedNumberCreated
     queues = [*campaigns].map do |campaign|
       CallFlow::DialQueue.new(campaign)
     end
-  end
-
-  def self.households_with(blocked_number)
-    households = unless blocked_number.account_wide?
-                   blocked_number.campaign.households
-                 else
-                   blocked_number.account.households
-                 end
-
-    households.where(phone: blocked_number.number)
   end
 end

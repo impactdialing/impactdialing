@@ -23,21 +23,6 @@ class CallFlow::DialQueue::Households
 
   include CallFlow::DialQueue::Util
 
-private
-  def keys_for_lua(phone)
-    [
-      key(phone, :active),
-      key(phone, :presented),
-      key(phone, :inactive)
-    ]
-  end
-
-  def hkey(phone)
-    [ key(phone), phone[phone_hkey_index_start..-1] ]
-  end
-
-public
-
   def initialize(campaign, type=:active)
     CallFlow::DialQueue.validate_campaign!(campaign)
 
@@ -67,6 +52,18 @@ public
 
   def phone_hkey_index_start
     phone_key_index_stop + 1
+  end
+
+  def hkey(phone)
+    [ key(phone), phone[phone_hkey_index_start..-1] ]
+  end
+
+  def keys_for_lua(phone)
+    [
+      key(phone, :active),
+      key(phone, :presented),
+      key(phone, :inactive)
+    ]
   end
 
   def exists?

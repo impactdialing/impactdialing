@@ -15,6 +15,17 @@ module CallFlow
       end
     end
 
+    def zset_keys
+      @zset_keys ||= [
+        available.keys[:active],
+        available.keys[:presented],
+        completed.keys[:failed],
+        completed.keys[:completed],
+        recycle_bin.keys[:bin],
+        blocked.keys[:blocked]
+      ]
+    end
+
   public
     def self.log(type, msg)
       msg = "[CallFlow::DialQueue] #{msg}"
@@ -115,6 +126,23 @@ module CallFlow
 
     def last(queue)
       send(queue).last
+    end
+
+    ##
+    # Update `blocked` property of given household.
+    # Adds given integer to current blocked property value.
+    def update_blocked_property(phone, integer)
+      zset_keys = [
+        available.keys[:active],
+        available.keys[:presented],
+        recycle_bin.keys[:bin],
+        blocked.keys[:blocked]
+      ]
+      lua_keys = households.keys_for_lua(phone) + zset_keys
+      Wolverine.dial_queue.update_blocked_property({
+        keys: lua_keys,
+        argv: [households.hkey(phone).last, integer, phone]
+      })
     end
 
     def purge
