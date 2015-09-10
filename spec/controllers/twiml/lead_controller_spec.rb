@@ -29,6 +29,7 @@ describe Twiml::LeadController do
     let(:dialed_call){ CallFlow::Call::Dialed.new(twilio_params[:AccountSid], twilio_params[:CallSid]) }
 
     before do
+      dialed_call.storage[:campaign_id] = campaign.id
       dialed_call.caller_session_sid = caller_session.sid
       campaign.update_attribute(:recording_id, recording.id)
     end
