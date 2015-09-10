@@ -66,19 +66,6 @@ module Client
       end
     end
 
-    def restore
-      @campaign.active = true
-      if @campaign.save
-        flash_message(:notice, 'Campaign restored')
-      else
-        flash_message(:error, @campaign.errors.full_messages.join('; '))
-      end
-
-      respond_with @campaign, location: client_campaigns_url do |format|
-        format.json { render :json => {message: "Campaign restored" }, :status => :ok } if @campaign.errors.empty?
-      end
-    end
-
     def can_change_script
       if (@campaign.script_id.to_s == params[:script_id] || params[:script_id].nil?)
           render :json => {message: true, script_id: @campaign.script_id}

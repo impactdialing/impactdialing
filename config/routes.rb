@@ -226,8 +226,10 @@ ImpactDialing::Application.routes.draw do
     [:campaigns, :scripts, :callers].each do |type_plural|
       get "/archived_#{type_plural}", :to => "#{type_plural}#archived", :as => "archived_#{type_plural}"
       resources type_plural, :only => [:new, :index, :show, :destroy, :create, :update, :edit] do
-        member do
-          patch 'restore', :to => "#{type_plural}#restore"
+        unless type_plural == :campaigns
+          member do
+            patch 'restore', :to => "#{type_plural}#restore"
+          end
         end
       end
     end

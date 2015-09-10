@@ -105,8 +105,6 @@ private
     case active_change
     when [true, false]
       @archive_flag = 'campaigns.archived'
-    when [false, true]
-      @archive_flag = 'campaigns.restored'
     end
 
     return true

@@ -12,10 +12,3 @@ ActiveSupport::Notifications.subscribe('campaigns.archived') do |name, start, fi
   end
 end
 
-ActiveSupport::Notifications.subscribe('campaigns.restored') do |name, start, finish, id, payload|
-  campaign = payload[:campaign]
-
-  if campaign.active?
-    Archival::Jobs::CampaignRestored.add_to_queue(campaign.id)
-  end
-end
