@@ -69,7 +69,7 @@ private
       })
     end
 
-    {json: {message: "Unable to dial campaign at this time."}, status: 403}
+    {}
   end
 
   def caller_line_completed?
