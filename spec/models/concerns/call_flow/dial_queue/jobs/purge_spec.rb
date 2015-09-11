@@ -16,11 +16,17 @@ describe 'CallFlow::DialQueue::Jobs::Purge.perform(campaign_id)' do
     [
       campaign.dial_queue.available.send(:keys)[:active],
       campaign.dial_queue.available.send(:keys)[:presented],
-      campaign.dial_queue.recycle_bin.send(:keys)[:bin]
+      campaign.dial_queue.recycle_bin.send(:keys)[:bin],
+      campaign.dial_queue.completed.send(:keys)[:completed],
+      campaign.dial_queue.blocked.send(:keys)[:blocked]
     ]
   end
-  let(:hash_key_root_under_test) do
-    campaign.dial_queue.households.send(:keys)[:active]
+  let(:hash_keys_root_under_test) do
+    [
+      campaign.dial_queue.households.keys[:active],
+      campaign.dial_queue.households.keys[:inactive],
+      campaign.dial_queue.households.keys[:presented]
+    ]
   end
   let(:dial_queue){ campaign.dial_queue }
   let(:redis){ Redis.new }
@@ -44,7 +50,8 @@ describe 'CallFlow::DialQueue::Jobs::Purge.perform(campaign_id)' do
     set_keys_under_test.each do |key|
       expect(existing_redis_keys).to_not include(key)
     end
-
-    expect(redis.keys("#{hash_key_root_under_test}*")).to be_empty
+    hash_keys_root_under_test.each do |key|
+      expect(redis.keys("#{key}*")).to be_empty
+    end
   end
 end
