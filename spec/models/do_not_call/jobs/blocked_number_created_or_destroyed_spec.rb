@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'DoNotCall::Jobs::BlockedNumberCreated' do
+describe 'DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed' do
   include ListHelpers
 
   let(:account){ create(:account) }
@@ -19,7 +19,7 @@ describe 'DoNotCall::Jobs::BlockedNumberCreated' do
     instance_double('CallFlow::DialQueue')
   end
 
-  subject{ DoNotCall::Jobs::BlockedNumberCreated }
+  subject{ DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed }
 
   context 'number is blocked for a campaign' do
     before do
@@ -28,7 +28,7 @@ describe 'DoNotCall::Jobs::BlockedNumberCreated' do
 
     it 'tells the dial_queue to update blocked bit for the campaign' do
       expect(dial_queue).to receive(:update_blocked_property).with(phone_campaign_wide, 1)
-      subject.perform(campaign_wide.id)
+      subject.perform(account.id, campaign.id, campaign_wide.number, 1)
     end
   end
 
@@ -45,7 +45,7 @@ describe 'DoNotCall::Jobs::BlockedNumberCreated' do
     it 'tells the dial_queue to update blocked bit for all campaigns in the account' do
       expect(dial_queue).to receive(:update_blocked_property).with(account_wide.number, 1)
       expect(dial_queue_two).to receive(:update_blocked_property).with(account_wide.number, 1)
-      subject.perform(account_wide.id)
+      subject.perform(account.id, nil, account_wide.number, 1)
     end
   end
 end

@@ -26,11 +26,11 @@ private
   end
 
   def block_voters
-    Resque.enqueue DoNotCall::Jobs::BlockedNumberCreated, self.id
+    Resque.enqueue DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed, account_id, campaign_id, number, 1
   end
 
   def unblock_voters
-    Resque.enqueue DoNotCall::Jobs::BlockedNumberDestroyed, account.id, campaign.try(:id), number
+    Resque.enqueue DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed, account_id, campaign_id, number, -1
   end
 
 public
