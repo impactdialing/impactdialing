@@ -205,7 +205,7 @@ public
         if voter_attempt_numbers[voter.id]
           call_attempt_ids << voter_attempt_numbers[voter.id][:last_id] 
         end
-        call_attempt_ids << attempt_numbers[household['id']][:last_id] if attempt_numbers[household['id']]
+        call_attempt_ids << attempt_numbers[household.id][:last_id] if attempt_numbers[household.id]
       end
     end
     call_attempt_ids.uniq!
@@ -219,11 +219,19 @@ public
 
     attempts.each do |attempt|
       household = households.find{ |household| household.id == attempt['household_id'] }
+      # workaround bug where attempt['household_id'] identifies valid household but
+      # pivotal ticket: 103160014
       if household.nil?
-        Rails.logger.error("[CallerCampaignReportStrategy] Unable to find household for CallAttempt#household_id[#{attempt['household_id']}]")
-        p "[CallerCampaignReportStrategy] Unable to find household for CallAttempt#household_id[#{attempt['household_id']}]"
+        p "[CallerCampaignReportStrategy::HouseholdNotFound] Unable to find household. Data for this row will display as 'Not called'. CallAttempt[#{attempt}]"
+
+        metric_name = 'caller_campaign_report_strategy.household_not_found'
+        source      = Rails.env.to_s
+        ImpactPlatform::Metrics.count(metric_name, 1, source)
+
         next
       end
+      # / end workaround for 103160014
+
       household.voters.each do |voter|
         if attempt['voter_id'] == voter.id or attempt['voter_id'].blank?
           data[voter.id][-1] = call_attempt_details(attempt, answers[attempt['id']], note_responses[attempt['id']], caller_names, attempt_numbers, @possible_responses, transfer_attempts[attempt['id']], voter, voicemail_history)
