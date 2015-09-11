@@ -221,6 +221,7 @@ public
       household = households.find{ |household| household.id == attempt['household_id'] }
       if household.nil?
         Rails.logger.error("[CallerCampaignReportStrategy] Unable to find household for CallAttempt#household_id[#{attempt['household_id']}]")
+        p "[CallerCampaignReportStrategy] Unable to find household for CallAttempt#household_id[#{attempt['household_id']}]"
         next
       end
       household.voters.each do |voter|
