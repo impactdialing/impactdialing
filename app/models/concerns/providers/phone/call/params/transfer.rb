@@ -9,6 +9,10 @@ class Providers::Phone::Call::Params::Transfer
     @type             = type == :default ? :connect : type
   end
 
+  def dial_timeout
+    ENV['DIAL_TRANSFER_TIMEOUT'] || '15'
+  end
+
   def from
     return transfer_attempt.call_attempt.household.phone
   end
@@ -20,7 +24,7 @@ class Providers::Phone::Call::Params::Transfer
   def params
     return {
       'StatusCallback' => end_url,
-      'Timeout' => "15"
+      'Timeout' => dial_timeout
     }
   end
 

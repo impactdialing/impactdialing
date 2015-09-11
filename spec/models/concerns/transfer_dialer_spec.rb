@@ -95,7 +95,7 @@ describe TransferDialer do
           connect_transfer_url(transfer_attempt.id + 1, host: 'test.com'),
           {
             "StatusCallback" => end_transfer_url(transfer_attempt.id + 1, host: 'test.com'),
-            "Timeout" => "15"
+            "Timeout" => ENV['DIAL_TRANSFER_TIMEOUT'] || '15'
           },
           {
             retry_up_to: ENV['TWILIO_RETRIES']
