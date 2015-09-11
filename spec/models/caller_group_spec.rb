@@ -37,6 +37,13 @@ describe CallerGroup, :type => :model do
       caller_group.reassign_in_background
       expect(caller.campaign).to eq new_campaign
     end
+
+    it 'triggers callbacks on each caller record' do
+      expect(caller).to receive(:update_attributes).with({campaign_id: caller_group.campaign_id})
+      caller_records = [caller]
+      allow(caller_group).to receive(:callers){ caller_records }
+      caller_group.reassign_in_background
+    end
   end
 end
 
