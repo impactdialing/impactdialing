@@ -1,5 +1,5 @@
 class CallList
-  attr_reader :campaign
+  attr_reader :campaign, :stats
 
   # todo: encapsulate CallList::Stats here
 
@@ -7,6 +7,7 @@ class CallList
     CallFlow::DialQueue.validate_campaign!(campaign)
 
     @campaign = campaign
+    @stats    = CallList::Stats.new(campaign)
   end
 
   def custom_id_register_key_base

@@ -102,7 +102,7 @@ describe 'CallList::Imports' do
         end
         let(:second_subject){ CallList::Imports.new(second_voter_list) }
         let(:second_stats_key){ second_subject.send(:common_redis_keys)[1] }
-        let(:campaign_stats_key){ voter_list.campaign.list_stats_key }
+        let(:campaign_stats_key){ voter_list.campaign.call_list.stats.key }
 
         before do
           # save first list

@@ -26,6 +26,6 @@ class CallList::Jobs::ToggleActive
     total_numbers += dial_queue.completed.count(:completed, *count_args)
     total_numbers += dial_queue.recycle_bin.count(:bin, *count_args)
     total_numbers += dial_queue.blocked.count(:blocked, *count_args)
-    campaign.list_stats_reset('total_numbers', total_numbers)
+    campaign.call_list.stats.reset('total_numbers', total_numbers)
   end
 end

@@ -23,7 +23,6 @@ require 'impact_platform/metrics'
 #
 class Campaign < ActiveRecord::Base
   include Deletable
-  include CallList::Stats
 
   acts_as_reportable
 
@@ -215,11 +214,11 @@ public
   end
 
   def household_sequence
-    list_stats['number_sequence'].to_i
+    call_list.stats['number_sequence'].to_i
   end
 
   def lead_sequence
-    list_stats['lead_sequence'].to_i
+    call_list.stats['lead_sequence'].to_i
   end
 
   def custom_id_register_key_base

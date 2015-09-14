@@ -1,21 +1,28 @@
-module CallList::Stats
+class CallList::Stats
+  attr_reader :record
+
   include CallFlow::DialQueue::Util
 
-  def redis_namespace
-    klass = self.kind_of?(Campaign) ? Campaign : self.class
-    "list:#{klass.to_s.underscore}:#{self.id}"
+private
+  def namespace
+    klass = record.kind_of?(Campaign) ? Campaign : record.class
+    "list:#{klass.to_s.underscore}:#{record.id}"
   end
 
-  def list_stats_key
-    "#{redis_namespace}:stats"
+  def initialize(record)
+    @record = record
   end
 
-  def list_stats
-    HashWithIndifferentAccess.new(redis.hgetall(list_stats_key))
+  def key
+    "#{namespace}:stats"
   end
 
-  def list_stats_reset(key, value)
-    redis.hset(list_stats_key, key, value)
+  def reset(hkey, value)
+    redis.hset(key, hkey, value)
+  end
+
+  def [](attribute)
+    redis.hget(key, attribute).to_i
   end
 end
 

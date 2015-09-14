@@ -28,7 +28,7 @@ public
   end
 
   def total_households
-    @total_households ||= campaign.list_stats[:total_numbers].to_i
+    @total_households ||= campaign.call_list.stats[:total_numbers]
   end
 
   def not_dialed

@@ -74,9 +74,9 @@ describe CallStats::Summary do
       describe 'households' do
         let(:total_households){ 42 }
         before do
-          expect(campaign).to receive(:list_stats){ {total_numbers: total_households} }
+          expect(campaign.call_list.stats).to receive(:[]){ total_households }
         end
-        it 'are loaded from redis (Campaign#list_stats[:total_numbers]' do
+        it 'are loaded from redis (Campaign#call_list.stats[:total_numbers]' do
           expect(summary(campaign).total_households).to eq total_households
         end
       end
