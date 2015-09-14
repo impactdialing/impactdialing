@@ -334,6 +334,7 @@ describe 'CallFlow::DialQueue' do
   describe 'removing all data from redis' do
     let(:redis){ Redis.new }
     let(:phone){ Forgery(:address).clean_phone }
+    let(:voter_list){ create(:voter_list, campaign: campaign) }
 
     before do
       redis.zadd dial_queue.available.keys[:active], 3.0, phone
@@ -341,6 +342,8 @@ describe 'CallFlow::DialQueue' do
       redis.zadd dial_queue.completed.keys[:completed], 3.0, phone
       redis.zadd dial_queue.blocked.keys[:blocked], 3.0, phone
       redis.zadd dial_queue.recycle_bin.keys[:bin], 3.0, phone
+      redis.mapped_hmset dial_queue.campaign.call_list.stats.key, {total_numbers: 12, total_leads: 14}
+      redis.mapped_hmset voter_list.stats.key, {total_numbers: 12, total_leads: 14}
       @expected_purge_count = dial_queue.available.size + 
                               dial_queue.available.all(:presented).size +
                               dial_queue.completed.size +
@@ -376,6 +379,16 @@ describe 'CallFlow::DialQueue' do
 
     it 'removes all data from Available:presented' do
       key = dial_queue.available.send(:keys)[:presented]
+      expect(redis.keys).to_not include(key)
+    end
+
+    it 'removes campaign list stats' do
+      key = dial_queue.campaign.call_list.stats.key
+      expect(redis.keys).to_not include(key)
+    end
+
+    it 'removes all campaign voter lists stats' do
+      key = voter_list.stats.key
       expect(redis.keys).to_not include(key)
     end
 

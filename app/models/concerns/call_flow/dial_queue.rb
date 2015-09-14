@@ -155,7 +155,12 @@ module CallFlow
       purged_count             = 0
 
       campaign.timing("dial_queue.purge.time") do
-        purged_count = Wolverine.dial_queue.purge(keys: set_keys, argv: [household_prefix, lua_phone_key_index_stop])
+        CallList::Stats.purge(campaign)
+
+        purged_count = Wolverine.dial_queue.purge({
+          keys: set_keys,
+          argv: [household_prefix, lua_phone_key_index_stop]
+        })
       end
 
       ImpactPlatform::Metrics.sample("dial_queue.purge.count", purged_count, campaign.metric_source.join('.'))
