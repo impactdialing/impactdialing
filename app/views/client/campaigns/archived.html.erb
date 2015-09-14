@@ -17,24 +17,37 @@
   <table>
     <tr>
       <th>Name</th>
-      <th>Reports</th>
+      <th colspan="6">Reports</th>
       <th>Date archived</th>
       <th width="55" class="ac"></th>
     </tr>
     <% @campaigns.each_with_index do |c, index| %>
       <tr>
         <td><strong><%= c.name %></strong></td>
-        <td>
-          <% options = [
-            ['Usage', usage_client_reports_path(:campaign_id => c.id)],
-            ['Answers', answer_client_reports_path(:campaign_id => c.id)],
-            ['Stats', performance_client_campaign_reports_path(c.id)],
-            ['Dials', dials_client_reports_path(:campaign_id => c.id)],
-            ['Download', download_report_client_campaign_reports_path(c, archived: '1')],
-            ["Ready [#{@download_report_count[c.id.to_s] || 0}]", downloaded_reports_client_campaign_reports_path(c)]
-          ] %>
-          <%= select_tag '', options_for_select(options), include_blank: true, class: 'report_select_menu' %>
-        </td>
+        <td <% if index == 0 %>
+              data-step="1" data-intro="Provides billable and total minutes used."
+            <% end %>
+            ><%= link_to "Usage", usage_client_reports_path(:campaign_id => c.id) %></td>
+        <td <% if index == 0 %>
+               data-step="2" data-intro="Provides a detailed view of conversation outcomes (how many responded and in what way)."
+            <% end %>
+            ><%= link_to "Answers", answer_client_reports_path(:campaign_id => c.id) %></td>
+        <td <% if index == 0 %>
+              data-step="3" data-intro="Provides general performance stats (dials per hour, etc)."
+            <% end %>
+            ><%= link_to "Stats", performance_client_campaign_reports_path(c.id) %></td>
+        <td <% if index == 0 %>
+              data-step="4" data-intro="Provides an overview of the current state of a campaign and breaks down the number of dials by outcome (answered, hung-up, etc)."
+            <% end %>
+            ><%= link_to "Dials", dials_client_reports_path(:campaign_id => c.id) %></td>
+        <td <% if index == 0 %>
+              data-step="5" data-intro="Export your data to a CSV file (exports are automatically purged 24 hours from click)."
+            <% end %>
+            ><%= link_to "Download", download_report_client_campaign_reports_path(c) %><br/></td>
+        <td <% if index == 0 %>
+              data-step="6" data-intro="The number of exported CSV files available for download."
+            <% end %>
+            ><%= link_to "[#{@download_report_count[c.id] || 0 }]", downloaded_reports_client_campaign_reports_path(c) %></td>
         <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
       </tr>
     <% end %>
