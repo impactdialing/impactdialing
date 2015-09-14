@@ -246,7 +246,6 @@ for phone,household in pairs(households) do
     local i_phone_key     = i_key_parts[2]
     local _i_current_hh   = redis.call('HGET', i_household_key, i_phone_key)
     if _i_current_hh then
-      redis.call('RPUSH', 'debug.log', '_i_current_hh: '.._i_current_hh)
       local i_current_hh = cjson.decode(_i_current_hh)
       local i_hh         = {}
       i_hh.uuid          = i_current_hh.uuid

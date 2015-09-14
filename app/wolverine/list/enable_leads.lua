@@ -12,19 +12,9 @@ local message_drop_completes = tonumber(ARGV[3])
 local households             = cjson.decode(ARGV[4])
 local count                  = 0
 
-local log = function (message)
-  redis.call('RPUSH', 'debug.log', message)
-end
-local capture = function (k,data)
-  redis.call('RPUSH', 'debug.' .. k, cjson.encode(data))
-end
-
-log('START enable_leads.lua')
-
 local copy_household_primitives = function(source_hh, dest_hh)
   for k,v in pairs(source_hh) do
     if k ~= 'leads' and v ~= nil and v ~= "" then
-      log('updating active household '..k..' with '..v)
       dest_hh[k] = v
     end
   end
@@ -32,12 +22,8 @@ end
 
 local add_to_set = function(leads_added, household, phone)
   local score = household.score
-  log('add_to_set: START: '..tostring(leads_added)..', '..tostring(household.blocked)..', '..tostring(score)..', '..tostring(phone))
   if tonumber(household.blocked) == 0 or household.blocked == nil then
-    log('add_to_set: not blocked '..phone)
-
     local completed_score = redis.call('ZSCORE', completed_set_key, phone)
-    log('enable_leads: add_to_set: message_drop_key: '..message_drop_key)
     if message_drop_completes > 0 then
       local message_dropped_bit = redis.call('GETBIT', message_drop_key, household.sequence)
       if tonumber(message_dropped_bit) > 0 then
@@ -52,21 +38,17 @@ local add_to_set = function(leads_added, household, phone)
     local recycled_score = redis.call('ZSCORE', recycle_bin_set_key, phone)
 
     if leads_added then
-      log('add_to_set: leads added '..phone)
       -- leads were added 
 
       if (not available_score) then
-        log('add_to_set: not in available '..phone)
         if completed_score then
           score = completed_score
-          log('completed_score was truthy, removing from completed set')
           -- household is no longer considered complete if leads were added
           -- preserve score from completed set to prevent recycle rate violations
           redis.call('ZREM', completed_set_key, phone)
         elseif recycled_score then
           score = recycled_score
         end
-        log('adding to recycle bin')
         -- update recycle bin score or add phone to recycle bin
         redis.call('ZADD', recycle_bin_set_key, score, phone)
       end
@@ -74,7 +56,6 @@ local add_to_set = function(leads_added, household, phone)
       if not completed_score and not available_score and not recycled_score then
         redis.call('ZADD', completed_set_key, score, phone)
       end
-      log('add_to_set: no leads added: adding to completed')
     end
   else
     -- add to blocked set
@@ -105,45 +86,33 @@ for phone,_ in pairs(households) do
     -- destination household exists, prepare for merge
     active_household = cjson.decode(_active_household)
 
-    log('parsed active household')
-
     current_active_leads = active_household.leads
     if current_active_leads[1] and current_active_leads[1].custom_id ~= nil then
-      log('ENABLE: current_active_leads did contained custom ids...'..cjson.encode(current_active_leads))
       -- current active leads have custom ids so make sure to merge & not duplicate
       for _,lead in pairs(current_active_leads) do
         lead_id_set[lead.custom_id] = lead
       end
     else
-      log('ENABLE: current_active_leads contained no custom ids...'..cjson.encode(current_active_leads))
       -- no custom ids, append leads
       new_active_leads = current_active_leads
     end
   end
 
-  log('ENABLE: _active_household: lead_id_set: '..cjson.encode(lead_id_set))
-
   if _inactive_household then
     -- source household exists
     inactive_household     = cjson.decode(_inactive_household)
-
-    log('parsed inactive household')
 
     current_inactive_leads = inactive_household.leads
 
     for _,lead in pairs(current_inactive_leads) do
       local lead_completed = redis.call('GETBIT', completed_leads_key, lead.sequence)
-      log('completed_leads_key: '..completed_leads_key)
-      log('lead_completed bit: '..cjson.encode(lead_completed))
       if tonumber(lead.voter_list_id) == list_id then
         -- lead belongs to target list, so move to active
-        log('lead.voter_list_id('..lead.voter_list_id..') == list_id('..list_id..')')
         if next(lead_id_set) ~= nil then
           if lead_id_set[lead.custom_id] == nil then
             lead_id_set[lead.custom_id] = lead
             if lead_completed < 1 then
               leads_added = true
-              log('new active lead (update): '..cjson.encode(lead))
               count = count + 1
             end
             -- ignore inactive leads w/ matching custom id of active lead: active lead data wins
@@ -151,53 +120,39 @@ for phone,_ in pairs(households) do
           end
         elseif lead_completed < 1 then
           leads_added = true
-          log('new active lead (append): '..cjson.encode(lead))
           table.insert(new_active_leads, lead)
         end
         redis.call('HINCRBY', campaign_stats_key, 'total_leads', 1)
       else
-        log('lead.voter_list_id('..lead.voter_list_id..') ~= list_id('..list_id..')')
         -- lead does not belong to target list, so leave in inactive
         table.insert(new_inactive_leads, lead)
       end
     end
 
-    log('ENABLE: _active_household: lead_id_set: after inactive + active merge'..cjson.encode(lead_id_set))
 
     if next(lead_id_set) ~= nil then
       for id,lead in pairs(lead_id_set) do
         table.insert(new_active_leads, lead)
       end
-
-      log('ENABLE: lead_id_set added to new_active_leads: '..cjson.encode(new_active_leads))
     end
 
-    log('#new_inactive_leads = '..#new_inactive_leads)
-    log('#new_active_leads = '..#new_active_leads)
     if #new_inactive_leads ~= 0 then
-      log('storing inactive leads')
-
       inactive_household.leads = new_inactive_leads
       redis.call('HSET', inactive_key, hkey, cjson.encode(inactive_household))
     else
       redis.call('HDEL', inactive_key, hkey)
     end
     if #new_active_leads ~= 0 then
-      log('storing active leads')
-
       if #active_household == 0 then
         copy_household_primitives(inactive_household, active_household)
       end
       active_household.leads = new_active_leads
       add_to_set(leads_added, active_household, phone)
       _active_household = cjson.encode(active_household)
-      log('calling HSET with: '..active_key..', '..hkey..', '.._active_household)
       redis.call('HSET', active_key, hkey, _active_household)
     end
   end
 end
-
-log('END enable_leads.lua')
 
 return count 
 
