@@ -16,7 +16,6 @@ class VoterList < ActiveRecord::Base
   validate :custom_id_usage, :before => :validation
   
   after_update :enable_disable_members
-  after_create :save_custom_fields
 
   VOTER_DATA_COLUMNS = {"phone"=> "Phone", "custom_id" => "ID", "last_name"=>"LastName", "first_name"=>"FirstName",
                         "middle_name"=>"MiddleName", "suffix"=>"Suffix", "email"=>"Email", "address"=>"Address", "city"=>"City",
@@ -34,6 +33,9 @@ private
     end
   end
 
+  ##
+  # Useful for after_create hook.
+  # Not in-use yet; CustomVoterFields are created via CallList::Imports#create_new_custom_voter_fields!
   def save_custom_fields
     new_fields = []
     csv_to_system_map.each do |key,value|

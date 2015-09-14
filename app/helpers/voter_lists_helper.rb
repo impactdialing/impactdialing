@@ -19,9 +19,9 @@ module VoterListsHelper
   end
 
   def system_column_headers(csv_header, account, use_custom_ids=true)
-    custom_options = CallFlow::Web::ContactFields::Options.new(account).all
-    custom_options += account.custom_voter_fields.map(&:name)
-    custom_options.uniq!
+    #custom_options = CallFlow::Web::ContactFields::Options.new(account).all
+    custom_options = account.custom_voter_fields.map(&:name)
+    #custom_options.uniq!
 
     basic_header = [["(Discard this column)", nil]]
     basic_header.concat(VoterList::VOTER_DATA_COLUMNS.values.zip(VoterList::VOTER_DATA_COLUMNS.keys))
