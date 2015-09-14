@@ -5,14 +5,27 @@
   <table>
     <tr>
       <th>Name</th>
+      <th colspan="7">Reports</th>
       <th>Date archived</th>
       <th width="55" class="ac"></th>
     </tr>
-    <% @callers.each do |c| %>
+    <% @callers.each_with_index do |caller_record,index| %>
       <tr>
-        <td><strong><%= c.known_as %></strong></td>
-        <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
-        <td><%= link_to 'Restore', restore_client_caller_path(c), :method => :patch %></td>
+        <td><strong><%= caller_record.known_as %></strong></td>
+        <td <% if index == 0 %>
+              data-step="7" data-intro="Provides billable and total minutes used for a specific caller_record."
+            <% end %>
+            ><%= link_to("Usage", usage_client_caller_path(caller_record, archived: 1)) %></td>
+        <td <% if index == 0 %>
+              data-step="8" data-intro="Provides a detailed view of conversation outcomes (how many responded and in what way) for a specific caller_record."
+            <% end %>
+            ><%= link_to("Answers", call_details_client_caller_path(caller_record, archived: 1)) %></td>
+        <td colspan="4" <% if index == 0 %>
+              data-step="9" data-intro="Provides general performance stats (dials per hour, etc) for a specific caller_record."
+            <% end %>
+            ><%= link_to("Stats", performance_client_caller_reports_path(caller_record)) %></td>
+        <td><%= caller_record.updated_at.strftime("%m/%d/%Y") %></td>
+        <td><%= link_to 'Restore', restore_client_caller_path(caller_record), :method => :patch %></td>
       </tr>
     <% end %>
   </table>
