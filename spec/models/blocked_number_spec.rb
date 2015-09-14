@@ -36,15 +36,16 @@ describe BlockedNumber, :type => :model do
   end
 
   describe '(un)blocking Voters with a `phone` matching `BlockedNumber#number`' do
+    let(:dnc_bitmask){ Household.bitmask_for_blocked(:dnc) }
     let!(:blocked_number){ BlockedNumber.create(account: account, campaign: campaign, number: '1234567890') }
 
     it 'queues DoNotCall::Jobs::BlockedNumberCreated after a BlockedNumber record is created' do
-      expect([:resque, :dial_queue]).to have_queued(DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed).with(account.id, campaign.id, blocked_number.number, 1)
+      expect([:resque, :dial_queue]).to have_queued(DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed).with(account.id, campaign.id, blocked_number.number, dnc_bitmask)
     end
 
     it 'queues DoNotCall::Jobs::BlockedNumberDestroyed after a BlockedNumber record is destroyed' do
       blocked_number.destroy
-      expect([:resque, :dial_queue]).to have_queued(DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed).with(account.id, campaign.id, blocked_number.number, -1)
+      expect([:resque, :dial_queue]).to have_queued(DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed).with(account.id, campaign.id, blocked_number.number, -(dnc_bitmask))
     end
   end
 
