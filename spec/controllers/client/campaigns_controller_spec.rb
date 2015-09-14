@@ -33,14 +33,6 @@ describe Client::CampaignsController, :type => :controller do
       expect(response).to redirect_to 'http://test.host/client/campaigns'
     end
 
-    it "restore campaigns" do
-      request.env['HTTP_REFERER'] = 'http://referer'
-      campaign = create(:preview, :account => account, :active => true)
-      put :restore, :id => campaign.id
-      expect(campaign.reload).to be_active
-      expect(response).to redirect_to 'http://test.host/client/campaigns'
-    end
-
     it "creates a new campaign" do
       script = create(:script, :account => account)
       callers = 3.times.map{create(:caller, :account => account)}
@@ -182,14 +174,6 @@ describe Client::CampaignsController, :type => :controller do
         inactive_campaign = create(:power, :account => account, :active => false)
         get :archived, :api_key=> account.api_key, :format => "json"
         expect(JSON.parse(response.body).length).to eq(1)
-      end
-    end
-
-    describe "restore" do
-      it "should restore inactive campaign" do
-        inactive_campaign = create(:power, :account => account, :active => false)
-        put :restore, id: inactive_campaign.id, :api_key=> account.api_key, :format => "json"
-        expect(response.body).to eq("{\"message\":\"Campaign restored\"}")
       end
     end
   end
