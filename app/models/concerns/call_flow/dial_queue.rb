@@ -118,6 +118,7 @@ module CallFlow
         keys: [available.keys[:presented], completed.keys[:failed], Twillio::InflightStats.key(campaign)],
         argv: [phone, update_presented_count]
       })
+      presented_households.remove_house(phone)
     end
 
     def size(queue)
