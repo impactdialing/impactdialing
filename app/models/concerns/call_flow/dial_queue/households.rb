@@ -1,12 +1,45 @@
 ##
-# Maintains a set of hashes where the redis-key & hash-key are components of 
-# a phone number and the values are JSON strings of an array of leads.
+# Maintains sets of hashes defining household objects along with bitmaps
+# defining call related flags.
 #
-# For example, given a phone number 5554443321, member id of 42
-# and a campaign id of 4323, the corresponding redis key will be
+## Key/Hash key schema
+#
+# Given a phone number 5554443321 and a campaign id of 42,
+# the corresponding redis key will be
 # `dial_queue:42:households:5554443` which accesses a redis hash.
 # The corresponding hash key will be `321` which will return
-# a JSON string of an array of leads.
+# a JSON string of a household object, which includes a collection of leads as JSON.
+#
+# Keys using this schema:
+#
+# - :active
+# - :presented
+# - :inactive
+#
+## JSON schema
+#
+# {
+#   sequence: int,
+#   score: int, # the zset score to use initially or when enabling an inactive or completed house
+#   blocked: int,
+#   uuid: string, # not necessary with use of sequence but currently used in twiml, etc to track records
+#   sql_id: int, # this is set after data is persisted to sql
+#   leads: [
+#     {
+#       sequence: int,
+#       uuid: string, # not necessary with use of sequence but currently used in twiml, etc 
+#                     # to track records
+#       sql_id: int, # this is set after data is persisted to sql
+#       custom_id: string, # this is set only if mapped during upload
+#       phone: string,
+#       first_name: string,
+#       last_name: string,
+#       ...all Voter columns relevant for displaying info to callers...,
+#       some_custom_field: string,
+#       ...all fields mapped during upload that are not Voter columns...
+#     }
+#   ]
+# }
 #
 # The key partitioning scheme uses the first 5 digits of the number
 # as a component to the redis key and the remaining digits of the number
@@ -15,6 +48,11 @@
 # to normalize phone numbers across country codes. For example if the number
 # `5554443321` is added and then `15554443321` is added, they will define
 # different households.
+#
+## Bitmap schema
+#
+# Household bitmaps are used to track whether specific leads have been completed or dispositioned
+# and whether specific households have had messages dropped.
 #
 class CallFlow::DialQueue::Households
   attr_reader :campaign, :type
