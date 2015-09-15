@@ -17,7 +17,7 @@ module Archival::Jobs
           inactive_campaigns.each do |campaign|
             campaign.active = false
 
-            unless campaign.save
+            unless campaign.save(validate: false)
               extra = "ac-#{campaign.account_id}.ca-#{campaign.id}"
               ImpactPlatform::Metrics.count('job_status.invalid_record', 1, source(extra))
             end
