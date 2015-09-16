@@ -125,12 +125,12 @@ class MigrateRedis
           lead[c] = voter[c] if whitelist.include?(c)
         end
         voter.custom_voter_field_values.includes(:custom_voter_field).each do |field_value|
-          lead[field_value.custom_field.name] = field_value.value
+          lead[field_value.custom_voter_field.name] = field_value.value
         end
         house[:leads] << lead
       end
 
-      Wolverine.migrate.inactive_household({
+      Wolverine.migrate.household({
         keys: [],
         argv: [
           house.to_json,
