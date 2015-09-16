@@ -1,4 +1,8 @@
 FactoryGirl.define do
+  sequence :custom_id do |n|
+    n
+  end
+
   factory :bare_voter, class: 'Voter' do
     first_name { Forgery(:name).first_name }
     # phone { Forgery(:address).phone }
@@ -132,6 +136,11 @@ FactoryGirl.define do
         status Voter::Status::RETRY
       end
 
+      trait :custom_id do
+        custom_id { generate :custom_id }
+      end
+
+      factory :voter_with_custom_id, traits: [:custom_id]
       factory :abandoned_voter, traits: [:abandoned]
       factory :busy_voter, traits: [:busy]
       factory :no_answer_voter, traits: [:no_answer]
