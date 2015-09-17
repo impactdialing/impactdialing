@@ -14,6 +14,7 @@ local blocked_key            = ARGV[12]
 local completed_key          = ARGV[13]
 local failed_key             = ARGV[14]
 local inactive_redis_key     = ARGV[15]
+local voter_list_stats_key   = ARGV[16]
 local old_leads              = household.leads
 local new_leads              = {} -- new 'active' leads
 local inactive_leads         = {}
@@ -69,6 +70,8 @@ for _,old_lead in pairs(old_leads) do
     end
   end
 
+  redis.call('HINCRBY', voter_list_stats_key, 'total_leads', 1)
+  redis.call('HINCRBY', stats_key, 'total_leads', 1)
   if tonumber(new_lead.enabled) == 1 then
     table.insert(new_leads, new_lead)
   else
@@ -120,3 +123,5 @@ if #inactive_leads > 0 then
   redis.call('HSET', inactive_redis_key, hash_key, cjson.encode(inactive_household))
 end
 
+redis.call('HINCRBY', voter_list_stats_key, 'total_numbers', 1)
+redis.call('HINCRBY', stats_key, 'total_numbers', 1)

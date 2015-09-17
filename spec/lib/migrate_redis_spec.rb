@@ -95,6 +95,20 @@ describe 'MigrateRedis' do
       score = redis.zscore key, household.phone
       expect(score).to be_present
     end
+    it 'updates voter list stats: total_numbers, total_leads' do
+      subject.import(household)
+      key = "list:voter_list:#{household.voters.first.voter_list_id}:stats"
+      stats = redis.hgetall key
+      expect(stats['total_numbers']).to eq "1"
+      expect(stats['total_leads']).to eq household.voters.count.to_s
+    end
+    it 'updates campaign stats: total_numbers, total_leads' do
+      subject.import(household)
+      key = "list:campaign:#{household.voters.first.voter_list_id}:stats"
+      stats = redis.hgetall key
+      expect(stats['total_numbers']).to eq "1"
+      expect(stats['total_leads']).to eq household.voters.count.to_s
+    end
   end
 
   context 'enabled but inactive households (completed, failed or blocked)' do
