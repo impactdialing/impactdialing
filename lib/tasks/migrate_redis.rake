@@ -71,9 +71,11 @@ namespace :migrate_redis do
       hh = _hh.blank? ? {'leads' => [{}]} : JSON.parse(_hh)
       assert_no_empty_leads(hh)
 
-      hhactive = campaign.dial_queue.households.find voter.household.phone
+      k = key.gsub('inactive','active')
+      _hhactive = redis.hget(k, hkey)
+      hhactive = _hhactive.blank? ? {'leads' => [{}]} : JSON.parse(_hhactive)
       inactive_lead_ids = hh['leads'].map{|l| l['sql_id']}
-      disabled_not_in_active = hh['leads'].detect?{|l| inactive_lead_ids.include?(l['sql_id'])}
+      disabled_not_in_active = hhactive['leads'].detect{|l| inactive_lead_ids.include?(l['sql_id'])}
       assert disabled_not_in_active.nil?, "DisabledInActive[#{disabled_not_in_active}] Household[#{voter.household.phone}] Campaign[#{campaign.id}]"
     end
   end

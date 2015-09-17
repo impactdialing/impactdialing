@@ -110,7 +110,7 @@ class MigrateRedis
       inactive_base = redis_keys(campaign)[:households][:inactive]
       inactive_redis_key = "#{inactive_base}:#{household.phone[0..-4]}"
       house[:leads] = []
-      whitelist = %w(custom_id first_name last_name enabled
+      whitelist = %w(custom_id first_name last_name 
                     middle_name suffix email campaign_id
                     account_id address city state zip_code country)
       household.voters.each do |voter|
@@ -124,6 +124,7 @@ class MigrateRedis
         Voter.column_names.each do |c|
           lead[c] = voter[c] if whitelist.include?(c)
         end
+        lead['enabled'] = voter.enabled_before_type_cast
         voter.custom_voter_field_values.includes(:custom_voter_field).each do |field_value|
           lead[field_value.custom_voter_field.name] = field_value.value
         end

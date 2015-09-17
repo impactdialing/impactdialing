@@ -44,7 +44,7 @@ local register_custom_id = function(custom_id, phone)
 end
 
 for property,value in pairs(household) do
-  if property ~= 'message_dropped' and property ~= 'dialed' and property ~= 'completed' and property ~= 'failed' then
+  if property ~= 'message_dropped' and property ~= 'dialed' and property ~= 'completed' and property ~= 'failed' and property ~= 'leads' then
     new_household[property] = value
   end
 end
@@ -72,6 +72,7 @@ for _,old_lead in pairs(old_leads) do
 
   redis.call('HINCRBY', voter_list_stats_key, 'total_leads', 1)
   redis.call('HINCRBY', stats_key, 'total_leads', 1)
+
   if tonumber(new_lead.enabled) == 1 then
     table.insert(new_leads, new_lead)
   else
@@ -81,7 +82,9 @@ end
 
 new_household.sequence = redis.call('HINCRBY', stats_key, 'number_sequence', 1)
 if #inactive_leads > 0 then
-  inactive_household     = new_household
+  for prop,val in pairs(new_household) do
+    inactive_household[prop] = val
+  end
   inactive_household.leads = inactive_leads
 end
 if #new_leads > 0 then
@@ -125,3 +128,4 @@ end
 
 redis.call('HINCRBY', voter_list_stats_key, 'total_numbers', 1)
 redis.call('HINCRBY', stats_key, 'total_numbers', 1)
+
