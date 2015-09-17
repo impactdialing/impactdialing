@@ -44,7 +44,7 @@ local register_custom_id = function(custom_id, phone)
 end
 
 for property,value in pairs(household) do
-  if property ~= 'message_dropped' and property ~= 'dialed' and property ~= 'completed' and property ~= 'failed' and property ~= 'leads' then
+  if property ~= 'message_dropped' and property ~= 'dialed' and property ~= 'completed' and property ~= 'failed' and property ~= 'leads' and property ~= 'has_leads_enabled' then
     new_household[property] = value
   end
 end
@@ -106,7 +106,7 @@ if tonumber(household.dialed) == 0 then
   end
 end
 
-if tonumber(household.blocked) ~= 0 then
+if tonumber(household.blocked) ~= 0 and tonumber(household.has_leads_enabled) == 1 then
   redis.call('ZADD', blocked_key, household.blocked, household.phone)
 elseif tonumber(household.dialed) == 0 and tonumber(household.failed) == 0 and tonumber(household.completed) == 0 then
   local available_score = redis.call('ZSCORE', available_active_key, household.phone)

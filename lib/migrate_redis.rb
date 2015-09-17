@@ -3,21 +3,6 @@ require 'uuid'
 class MigrateRedis
   attr_reader :campaign, :household, :uuid
 
-  def self.go
-    Campaign.active.find_in_batches(batch_size: 10) do |campaigns|
-      campaigns.each do |campaign|
-        migration_instance = self.new(campaign)
-        campaign.households.includes({
-          :voters => :voter_list
-        }).find_in_batches(batch_size: 500) do |households|
-          households.each do |household|
-            migration_instance.do(household)
-          end
-        end
-      end
-    end
-  end
-
   def redis_keys(record)
     {
       available: {
@@ -78,11 +63,23 @@ class MigrateRedis
     base_key        = redis_keys(campaign)[:households][:active]
     house_redis_key = "#{base_key}:#{household.phone[0..-4]}"
     house_hash_key  = household.phone[-3..-1]
+    completed_bit   = 0
+    failed_bit      = 0
+    leads_enabled_bit = 0
+    if household.voters.with_enabled(:list).count > 0
+      leads_enabled_bit = 1
+      if household.failed?
+        failed_bit = 1
+      elsif household.complete? 
+        completed_bit = 1
+      end
+    end
     house = {
       message_dropped: household.voicemail_delivered? ? 1 : 0,
       dialed: household.call_attempts.count.zero? ? 0 : 1,
-      completed: household.complete? ? 1 : 0,
-      failed: household.failed? ? 1 : 0,
+      completed: completed_bit,
+      failed: failed_bit,
+      has_leads_enabled: leads_enabled_bit,
       blocked: household.blocked_before_type_cast,
       phone: household.phone,
       uuid: uuid.generate,

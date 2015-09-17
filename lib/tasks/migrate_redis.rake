@@ -47,7 +47,9 @@ namespace :migrate_redis do
     blocked = campaign.blocked_numbers.size == dial_queue_blocked
     assert blocked, "BlockedNumbers[#{campaign.blocked_numbers.size}] BlockedZset[#{dial_queue_blocked}]"
 
-    completed_sql = campaign.households.where(status: CallAttempt::Status::SUCCESS).to_a.select{|h| h.complete?}
+    completed_sql = campaign.households.where(status: CallAttempt::Status::SUCCESS).to_a.select do |h|
+      h.complete? and h.voters.with_enabled(:list).count > 0
+    end
     dial_queue_completed = redis.zcard("dial_queue:#{campaign.id}:completed")
     completed     = completed_sql.size == dial_queue_completed
     assert completed, "CompletedSQL[#{completed_sql.size}] CompletedZset[#{dial_queue_completed}]"
@@ -58,8 +60,15 @@ namespace :migrate_redis do
     assert failed, "FailedSQL[#{failed_sql}] FailedZset[#{dial_queue_failed}]"
 
     completed_sql.each do |household|
-      hh = dial_queue.households.find household.phone
-      assert_no_empty_leads(hh)
+      if household.voters.any?{|v| v.enabled?(:list)}
+        hh = dial_queue.households.find household.phone
+        assert_no_empty_leads(hh)
+      end
+      if household.voters.any?{|v| not v.enabled?(:list)}
+        _hh = redis.hget("dial_queue:#{campaign.id}:households:inactive:#{household.phone[0..-4]}", household.phone[-3..-1])
+        hh = _hh.present? ? JSON.parse(_hh) : {'leads' => []}
+        assert_no_empty_leads(hh)
+      end
     end
 
     disabled_voters = VoterList.where(campaign_id: campaign.id).where(enabled: false).map(&:voters).flatten
@@ -75,7 +84,11 @@ namespace :migrate_redis do
       _hhactive = redis.hget(k, hkey)
       hhactive = _hhactive.blank? ? {'leads' => [{}]} : JSON.parse(_hhactive)
       inactive_lead_ids = hh['leads'].map{|l| l['sql_id']}
-      disabled_not_in_active = hhactive['leads'].detect{|l| inactive_lead_ids.include?(l['sql_id'])}
+      if hhactive.empty?
+        disabled_not_in_active = nil
+      else
+        disabled_not_in_active = hhactive['leads'].detect{|l| inactive_lead_ids.include?(l['sql_id'])}
+      end
       assert disabled_not_in_active.nil?, "DisabledInActive[#{disabled_not_in_active}] Household[#{voter.household.phone}] Campaign[#{campaign.id}]"
     end
   end
