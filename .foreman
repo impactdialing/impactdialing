@@ -1,9 +1,11 @@
 # start-up everything
-concurrency: web=1,app_health=1,dialer_loop=1,simulator_loop=1,dialer_worker=1,simulator_worker=1,call_flow=1,persist_worker=1,twilio_stats=1,clock=1,reports=1,general=1,dial_queue=1,billing=1
+# concurrency: web=1,app_health=1,dialer_loop=1,simulator_loop=1,dialer_worker=1,simulator_worker=1,call_flow=1,persist_worker=1,twilio_stats=1,clock=1,reports=1,general=1,dial_queue=1,billing=1
 # web only
 # concurrency: web=1
 # admin app
 # concurrency: web=1,app_health=1,reports=1,general=1,dial_queue=1,billing=1,clock=1
 # # caller app (enough to make calls)
 # concurrency: web=1,dialer_loop=1,simulator_loop=1,dialer_worker=1,simulator_worker=1,call_flow=1,persist_worker=1,twilio_stats=1,clock=1
+# migrations
+concurrency: web=1,migrations=3
 port: 5000

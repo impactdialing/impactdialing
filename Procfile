@@ -25,3 +25,5 @@ general: rake environment resque:work QUEUE=general TERM_CHILD=1 RESQUE_TERM_TIM
 dial_queue: rake environment resque:work QUEUE=dial_queue TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10
 
 billing: rake environment resque:work QUEUE=billing TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10
+
+migrations: bundle exec sidekiq -c 8 -q migrations LIBRATO_AUTORUN=1

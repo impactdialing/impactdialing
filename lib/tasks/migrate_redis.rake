@@ -1,7 +1,14 @@
 namespace :migrate_redis do
   def queue_redis_migration_jobs(account_ids)
-    account_ids.each do |account_id|
-      SomeJob.enqueue(account_id)
+    accounts = Account.where(id: account_ids)
+    accounts.each do |account|
+      account.campaigns.each do |campaign|
+        campaign.households.select(:id).find_in_batches do |households|
+          households.each do |household|
+            MigrateRedisData.perform_async(account.id, campaign.id, household.id)
+          end
+        end
+      end
     end
   end
 
@@ -22,13 +29,19 @@ namespace :migrate_redis do
     assert o.size == hh['leads'].size, "EmptyLeads[#{hh['leads'].size - o.size}] Leads[#{hh['leads'].size}]"
   end
 
+  task :all_accounts => [:environment] do
+    account_ids = Campaign.active.pluck(:account_id)
+    queue_redis_migration_jobs(account_ids)
+  end
+
   task :priority_accounts => [:environment] do
-    account_ids = []
+    account_ids = [1427, 1353, 1418, 1424, 1430]
     queue_redis_migration_jobs(account_ids)
   end
 
   task :other_accounts => [:environment] do
-    account_ids = [1318]
+    account_ids = Campaign.active.pluck(:account_id) - [1318]
+    account_ids += [1318]
     queue_redis_migration_jobs(account_ids)
   end
 
@@ -36,10 +49,6 @@ namespace :migrate_redis do
     require 'migrate_redis'
     redis = Redis.new
     campaign = Campaign.find args[:campaign_id]
-    migration = MigrateRedis.new(campaign)
-    campaign.households.each do |household|
-      migration.import(household)
-    end
 
     dial_queue = campaign.dial_queue
     
