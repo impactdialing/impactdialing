@@ -261,27 +261,27 @@ describe 'MigrateRedis' do
       subject.import(household)
       expect(hh['score'].to_f).to be_within(0.1).of hh['sequence'].to_f
     end
-    it 'adds blocked phones to blocked zset' do
+    it 'does not add blocked phones to blocked zset' do
       household.update_attributes!(blocked: :dnc)
       subject.import(household)
       key = "dial_queue:#{campaign.id}:blocked"
       score = redis.zscore key, household.phone
-      expect(score).to be_present
+      expect(score).to be_nil
     end
-    it 'adds completed phones to completed zset' do
+    it 'does not add completed phones to completed zset' do
       allow(household).to receive(:complete?){ true }
       subject.import(household)
       key = "dial_queue:#{campaign.id}:completed"
       score = redis.zscore key, household.phone
-      expect(score).to be_present
+      expect(score).to be_nil
     end
-    it 'adds failed phones to failed zset' do
+    it 'does not add failed phones to failed zset' do
       allow(household).to receive(:complete?){ false }
       allow(household).to receive(:failed?){ true }
       subject.import(household)
       key = "dial_queue:#{campaign.id}:failed"
       score = redis.zscore key, household.phone
-      expect(score).to be_present
+      expect(score).to be_nil
     end
   end
 end

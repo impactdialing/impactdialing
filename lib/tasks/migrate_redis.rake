@@ -51,26 +51,33 @@ namespace :migrate_redis do
     campaign = Campaign.find args[:campaign_id]
 
     dial_queue = campaign.dial_queue
+
+    err_msg = "CampaignID[#{campaign.id}] Campaign[#{campaign.name}]"
     
     dial_queue_blocked = redis.zcard("dial_queue:#{campaign.id}:blocked")
     blocked = campaign.blocked_numbers.size == dial_queue_blocked
-    assert blocked, "BlockedNumbers[#{campaign.blocked_numbers.size}] BlockedZset[#{dial_queue_blocked}]"
+    if campaign.all_voters.with_enabled(:list).count.zero?
+      # no active leads, so no numbers should be in zset
+      blocked = true
+    end
+    assert blocked, "#{err_msg} BlockedNumbers[#{campaign.blocked_numbers.size}] BlockedZset[#{dial_queue_blocked}]"
 
-    completed_sql = campaign.households.where(status: CallAttempt::Status::SUCCESS).to_a.select do |h|
+    completed_sql = campaign.households.where('status != "not called"').to_a.select do |h|
       h.complete? and h.voters.with_enabled(:list).count > 0
     end
     dial_queue_completed = redis.zcard("dial_queue:#{campaign.id}:completed")
     completed     = completed_sql.size == dial_queue_completed
-    assert completed, "CompletedSQL[#{completed_sql.size}] CompletedZset[#{dial_queue_completed}]"
+    assert completed, "#{err_msg} CompletedSQL[#{completed_sql.size}] CompletedZset[#{dial_queue_completed}]"
 
     failed_sql = campaign.households.failed.count
     dial_queue_failed = redis.zcard("dial_queue:#{campaign.id}:failed")
     failed     = failed_sql == dial_queue_failed
-    assert failed, "FailedSQL[#{failed_sql}] FailedZset[#{dial_queue_failed}]"
+    assert failed, "#{err_msg} FailedSQL[#{failed_sql}] FailedZset[#{dial_queue_failed}]"
 
     completed_sql.each do |household|
       if household.voters.any?{|v| v.enabled?(:list)}
-        hh = dial_queue.households.find household.phone
+        _hh = redis.hget("dial_queue:#{campaign.id}:households:active:#{household.phone[0..-4]}", household.phone[-3..-1])
+        hh = _hh.present? ? JSON.parse(_hh) : {'leads' => []}
         assert_no_empty_leads(hh)
       end
       if household.voters.any?{|v| not v.enabled?(:list)}
@@ -98,7 +105,7 @@ namespace :migrate_redis do
       else
         disabled_not_in_active = hhactive['leads'].detect{|l| inactive_lead_ids.include?(l['sql_id'])}
       end
-      assert disabled_not_in_active.nil?, "DisabledInActive[#{disabled_not_in_active}] Household[#{voter.household.phone}] Campaign[#{campaign.id}]"
+      assert disabled_not_in_active.nil?, "#{err_msg} DisabledInActive[#{disabled_not_in_active}] Household[#{voter.household.phone}] Campaign[#{campaign.id}]"
     end
   end
 end
