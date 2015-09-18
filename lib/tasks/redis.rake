@@ -15,7 +15,6 @@ namespace :redis do
     Campaign.archived.find_in_batches(batch_size: 500) do |campaigns|
       keys = []
       campaigns.each do |campaign|
-        campaign.dial_queue.purge
         redis.del(RedisStatus.redis_key(campaign.id))
         redis.scan_each(match: "campaign_id:#{campaign.id}*") do |key|
           keys << key
