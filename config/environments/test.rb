@@ -1,6 +1,6 @@
 #require 'simplecov'
 #SimpleCov.start 'rails'
-#SimpleCov.coverage_dir("#{Rails.env}/coverage")
+#SimpleCov.coverage_dir("coverage")
 
 require 'shoulda'
 require 'factory_girl'
