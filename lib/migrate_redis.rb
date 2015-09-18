@@ -96,7 +96,7 @@ class MigrateRedis
       lead_id_map[voter.id][:uuid]          = uuid.generate
       lead_id_map[voter.id][:voter_list_id] = voter.voter_list_id
       lead_id_map[voter.id][:dispositioned] = voter.answers.count > 0 ? 1 : 0
-      lead_id_map[voter.id][:completed]     = voter.answers.any?{|a| a.possible_response.retry?} ? 0 : 1
+      lead_id_map[voter.id][:completed]     = voter.answers.any?{|a| a.possible_response.try(:retry?)} ? 0 : 1
     end
 
     yield house, lead_id_map, house_redis_key, house_hash_key
