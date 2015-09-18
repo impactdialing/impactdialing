@@ -55,12 +55,14 @@ namespace :migrate_redis do
     err_msg = "CampaignID[#{campaign.id}] Campaign[#{campaign.name}]"
     
     dial_queue_blocked = redis.zcard("dial_queue:#{campaign.id}:blocked")
-    blocked = campaign.blocked_numbers.size == dial_queue_blocked
+    dnc = campaign.households.with_blocked(:dnc).count
+    cell = campaign.households.with_blocked(:cell).count
+    blocked = (cell + dnc) == dial_queue_blocked
     if campaign.all_voters.with_enabled(:list).count.zero?
       # no active leads, so no numbers should be in zset
       blocked = true
     end
-    assert blocked, "#{err_msg} BlockedNumbers[#{campaign.blocked_numbers.size}] BlockedZset[#{dial_queue_blocked}]"
+    assert blocked, "#{err_msg} BlockedNumbers[#{dnc + cell}] BlockedZset[#{dial_queue_blocked}]"
 
     completed_sql = campaign.households.where('status != "not called"').to_a.select do |h|
       h.complete? and h.voters.with_enabled(:list).count > 0
