@@ -8,6 +8,8 @@ simulator_loop: bundle exec ruby simulator/simulator_loop.rb
 
 call_flow: bundle exec sidekiq -c 8 -q call_flow LIBRATO_AUTORUN=1
 
+persistence: bundle exec sidekiq -c 8 -q persistence LIBRATO_AUTORUN=1
+
 clock: rake environment resque:scheduler
 
 persist_worker: rake environment resque:work QUEUE=persist_jobs TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10
@@ -29,4 +31,3 @@ billing: rake environment resque:work QUEUE=billing TERM_CHILD=1 RESQUE_TERM_TIM
 migrations: bundle exec sidekiq -c 3 -q migrations LIBRATO_AUTORUN=1
 
 import: rake environment resque:work QUEUE=import TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10
-
