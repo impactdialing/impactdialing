@@ -3,7 +3,7 @@ require 'migrate_redis'
 class MigrateRedisData
   include Sidekiq::Worker
 
-  sidekiq_options queue: :migrations, retry: false
+  sidekiq_options queue: :migrations, retry: true
 
   def perform(account_id, campaign_id, household_id)
     campaign = Campaign.find campaign_id
