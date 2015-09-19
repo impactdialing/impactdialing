@@ -295,10 +295,6 @@ describe 'CallFlow::Persistence::Call::Completed' do
             subject.persist_call_outcome
           end
 
-          it 'has call_back attribute set to false on sql record' do
-            expect(Voter.where(call_back: true).count).to be_zero
-          end
-
           it 'has completed bit set to "1" on redis completed leads bitmap' do
             expect(redis.getbit(completed_lead_key, dispositioned_lead['sequence'])).to eq 1
           end
@@ -401,12 +397,21 @@ describe 'CallFlow::Persistence::Call::Completed' do
         dialed_call.storage.save(dialed_call.send(:params_for_update, completed_params))
         dialed_call.storage['lead_uuid'] = dispositioned_lead_two[:uuid]
         dialed_call.state.visited(:caller_and_lead_connected)
+        Voter.where({
+          first_name: dispositioned_lead_two[:first_name],
+          last_name: dispositioned_lead_two[:last_name],
+        }).first.update_attributes!({call_back: true})
         subject_two.persist_call_outcome
       end
 
       it 'each Voter record not associated w/ dialed call are left untouched' do
         expect(Voter.where(status: Voter::Status::NOTCALLED).count).to eq Voter.count - 2
       end
+
+      it 'the dispositioned Voter record has its call_back attribute set to false on sql record' do
+        expect(Voter.where(call_back: true).count).to be_zero
+      end
+
 
       it 'the Voter record associated w/ dialed call inherits Household status' do
         expect(Voter.where(status: CallAttempt::Status::SUCCESS).count).to eq 2

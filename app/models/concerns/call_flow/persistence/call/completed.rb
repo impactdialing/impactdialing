@@ -22,6 +22,9 @@ class CallFlow::Persistence::Call::Completed
 
       if survey_responses.complete_lead?
         campaign.dial_queue.households.mark_lead_completed(lead_sequence)
+        leads.dispositioned_voter.update_attributes({
+          call_back: false
+        })
       else
         leads.dispositioned_voter.update_attributes({
           call_back: true
