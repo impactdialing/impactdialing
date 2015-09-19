@@ -152,6 +152,10 @@ public
     @dispositioned_voter
   end
 
+  def del_household_from_presented(phone)
+    presented_households.remove_house(phone)
+  end
+
   def target_lead
     active_redis_leads.detect{|ld| ld['uuid'] == call_data[:lead_uuid]}
   end

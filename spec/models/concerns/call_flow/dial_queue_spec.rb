@@ -185,11 +185,6 @@ describe 'CallFlow::DialQueue' do
         subject.failed!(phone)
         expect(phone).to be_in_dial_queue_zset(campaign.id, 'failed')
       end
-
-      it 'removes the presented household copy' do
-        expect(subject.presented_households).to receive(:remove_house).with(phone)
-        subject.failed!(phone)
-      end
     end
 
     context 'when Preview or Power campaigns' do

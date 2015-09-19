@@ -13,6 +13,7 @@ class CallFlow::Persistence::Call::Failed
 
     leads.import_records
     call_attempt_record = call_persistence.create_call_attempt
+    leads.del_household_from_presented(phone)
   end
 
   def call_persistence

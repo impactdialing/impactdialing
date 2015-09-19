@@ -7,6 +7,11 @@
      it 'creates CallAttempt record w/ status of Failed' do
        expect{ subject.persist_call_outcome }.to change { CallAttempt.count }.by 1
      end
+
+     it 'removes the presented household copy' do
+       subject.persist_call_outcome
+       expect(subject.leads.send(:presented_households).find(phone)).to be_empty
+     end
    end
 
    let(:campaign){ create(:power) }
