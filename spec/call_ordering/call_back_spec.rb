@@ -2,8 +2,12 @@ require 'rails_helper'
 
 context 'Message Drops', data_heavy: true do
   include FakeCallData
+  include ListHelpers
   let(:admin){ create(:user) }
   let(:account){ admin.account }
+  let(:voter_list) do
+    create(:voter_list, campaign: campaign)
+  end
 
   
   def call_and_leave_messages(dial_queue, voter_count, autodropped=0)
@@ -27,15 +31,16 @@ context 'Message Drops', data_heavy: true do
         caller_can_drop_message_manually: true
       }).last
     end
-    let(:voters){ add_voters(campaign, :voter, 5) }
+    let(:households) do
+      build_household_hashes(5, voter_list)
+    end
     let(:dial_queue) do
-      voters
       CallFlow::DialQueue.new(campaign)
     end
 
     before do
       add_callers(campaign, 1)
-      cache_available_voters(campaign)
+      import_list(voter_list, households)
     end
 
     it 'When all contacts have received a message automatically' do
@@ -79,15 +84,16 @@ context 'Message Drops', data_heavy: true do
         caller_can_drop_message_manually: true
       }).last
     end
-    let(:voters){ add_voters(campaign, :voter, 5) }
+    let(:households) do
+      build_household_hashes(5, voter_list)
+    end
     let(:dial_queue) do
-      voters
       CallFlow::DialQueue.new(campaign)
     end
 
     before do
       add_callers(campaign, 1)
-      cache_available_voters(campaign)
+      import_list(voter_list, households)
     end
 
     it 'When all contacts have received a message automatically' do
@@ -137,10 +143,14 @@ context 'Message Drops', data_heavy: true do
   end
 end
 
-context 'Machine Detection without Message Drops' do
+context 'Machine Detection without Message Drops', data_heavy: true do
   include FakeCallData
+  include ListHelpers
   let(:admin){ create(:user) }
   let(:account){ admin.account }
+  let(:voter_list) do
+    create(:voter_list, campaign: campaign)
+  end
 
   before do
     Redis.new.flushall
@@ -157,13 +167,13 @@ context 'Machine Detection without Message Drops' do
       CallFlow::DialQueue.new(campaign)
     end
 
-    let!(:voters) do
-      create_list(:voter, 5, campaign: campaign, account: campaign.account)
+    let(:households) do
+      build_household_hashes(5, voter_list)
     end
 
     before do
       add_callers(campaign, 1)
-      cache_available_voters(campaign)
+      import_list(voter_list, households)
       @completed = []
       @retries   = []
     end
