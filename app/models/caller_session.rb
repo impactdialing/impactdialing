@@ -75,6 +75,9 @@ public
   def available?
     on_call? and available_for_call?
   end
+  def connected_to_lead?
+    caller_session_call.in_conversation?
+  end
   def minutes_used
     return 0 if self.tDuration.blank?
     self.tDuration/60.ceil

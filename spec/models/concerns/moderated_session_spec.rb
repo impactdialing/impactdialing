@@ -12,12 +12,6 @@ describe ModeratedSession do
     let(:campaign) do
       create(:power, {account: user.account})
     end
-    let(:call_attempt) do
-      create(:call_attempt, {
-        campaign: campaign,
-        status: 'Call in progress'
-      })
-    end
     let(:caller) do
       create(:caller, {
         campaign: campaign
@@ -27,7 +21,6 @@ describe ModeratedSession do
       create(:webui_caller_session, {
         campaign: campaign,
         caller: caller,
-        attempt_in_progress: call_attempt,
         session_key: 'caller_session:session_key:abc123'
       })
     end
@@ -70,11 +63,12 @@ describe ModeratedSession do
     end
     context 'status messages' do
       it 'when status of CallerSession#attempt_in_progress call attempt is not "Call in progress" returns a Status message that the caller is not on a call' do
-        call_attempt.update_attributes! status: 'Ringing'
         msg = ModeratedSession.switch_mode(moderator, caller_session, type)
         expect(msg).to eq 'Status: Caller is not connected to a lead.'
       end
-      it 'when status of CallerSession#attempt_in_progress is "Call in progress" returns a Status message w/ the caller identity and monitor mode' do
+
+      it 'when caller is talking with lead: returns a Status message w/ the caller identity and monitor mode' do
+        allow(caller_session).to receive(:connected_to_lead?){ true }
         msg = ModeratedSession.switch_mode(moderator, caller_session, type)
         expect(msg).to eq "Status: Monitoring in breakin mode on #{caller_session.caller.identity_name}."
       end
@@ -91,3 +85,4 @@ describe ModeratedSession do
     end
   end
 end
+
