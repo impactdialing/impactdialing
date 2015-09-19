@@ -16,10 +16,8 @@ private
 
 public
   def save(voter_record, call_attempt_record)
-    if dialed_call.completed? and dialed_call.answered_by_human?
-      save_answers(voter_record, call_attempt_record)
-      save_notes(voter_record, call_attempt_record)
-    end
+    save_answers(voter_record, call_attempt_record)
+    save_notes(voter_record, call_attempt_record)
   end
 
   def complete_lead?
@@ -28,6 +26,7 @@ public
 
   def save_answers(voter_record, call_attempt_record)
     questions.each do |question_id, possible_response_id|
+      next unless question_id.present? and possible_response_id.present?
       Answer.create!({
         voter_id: voter_record.id,
         caller_id: caller_session.caller_id,
@@ -41,6 +40,7 @@ public
 
   def save_notes(voter_record, call_attempt_record)
     notes.each do |note_id, note_text|
+      next unless note_id.present? and note_text.present?
       NoteResponse.create!({
         voter_id: voter_record.id,
         call_attempt_id: call_attempt_record.id,
