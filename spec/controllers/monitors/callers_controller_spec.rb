@@ -1,8 +1,6 @@
 require 'rails_helper'
 
 describe Monitors::CallersController, :type => :controller do
-  # include TwilioRequestStubs
-
   let(:account){ create(:account) }
   let(:admin){ create(:user, account: account) }
   let(:campaign){ create(:power, {account: account}) }
@@ -89,3 +87,4 @@ describe Monitors::CallersController, :type => :controller do
     end
   end
 end
+

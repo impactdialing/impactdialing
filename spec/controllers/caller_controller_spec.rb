@@ -100,6 +100,9 @@ describe CallerController, :type => :controller do
         before do
           allow(caller_session).to receive(:fit_to_dial?){ false }
           allow(CallerSession).to receive_message_chain(:includes, :where, :first){ caller_session }
+          allow(caller).to receive(:campaign){ campaign }
+          allow(Caller).to receive(:find){ caller }
+          allow(campaign).to receive(:time_period_exceeded?){ true }
         end
 
         it 'queues RedirectCallerJob, relying on calculated redirect url to return :dialing_prohibited' do
@@ -108,10 +111,6 @@ describe CallerController, :type => :controller do
         end
 
         it 'renders abort json' do
-          allow(campaign).to receive(:time_period_exceeded?){ true }
-          allow(caller).to receive(:campaign){ campaign }
-          allow(Caller).to receive(:find){ caller }
-
           expected_json = {
             message: I18n.t('dialer.campaign.time_period_exceeded', {
               start_time: "#{campaign.start_time.strftime('%l %p').strip}",
