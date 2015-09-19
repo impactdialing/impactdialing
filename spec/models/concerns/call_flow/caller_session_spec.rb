@@ -81,8 +81,27 @@ describe 'CallFlow::CallerSession' do
     # Monitors::CallersController#start
     # TransferController#disconnect (attempt_in_progress != nil)
     # ModeratedSession#call_in_progress?
-    it 'returns true when the caller is connected to another party'
-    it 'returns false when the caller is not connected to another party'
+    let(:dialed_call) do
+      CallFlow::Call::Dialed.new(account_sid, dialed_call_sid)
+    end
+    let!(:caller_session_record) do
+      create(:caller_session, sid: caller_session_sid)
+    end
+    it 'returns true when the caller is connected to another party' do
+      dialed_call.storage[:status] = 'in-progress'
+      subject.connect_to_lead(Forgery(:address).clean_phone, dialed_call_sid)
+
+      expect(subject.in_conversation?).to be_truthy
+    end
+    it 'returns false when the caller is in a state other than On call' do
+      subject.redirect_to_hold
+      expect(subject.in_conversation?).to be_falsey
+    end
+    it 'returns false when the lead has disconnected' do
+      dialed_call.storage[:status] = 'completed'
+      subject.connect_to_lead(Forgery(:address).clean_phone, dialed_call_sid)
+      expect(subject.in_conversation?).to be_falsey
+    end
   end
 
   describe '#current_conversation_line_is?(questionable_call)' do

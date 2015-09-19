@@ -21,6 +21,10 @@ protected
     parsed_params
   end
 
+  def in_state?(state)
+    RedisStatus.state_time(caller_session_record.campaign_id, caller_session_record.id).include?(state)
+  end
+
 public
   def self.namespace
     'caller_sessions'
@@ -52,7 +56,11 @@ public
   end
 
   def on_hold?
-    RedisStatus.state_time(caller_session_record.campaign_id, caller_session_record.id).include?('On hold')
+    in_state?('On hold')
+  end
+
+  def in_conversation?
+    dialed_call.try(:in_progress?) and in_state?('On call')
   end
 
   def caller_session_record
