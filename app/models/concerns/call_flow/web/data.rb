@@ -7,7 +7,8 @@ private
   end
 
   def fields(data)
-    clean = util.filter(whitelist, data)
+    hard_whitelist = whitelist.select{|val| VoterList::VOTER_DATA_COLUMNS.values.include?(val)}
+    clean = util.filter(hard_whitelist, data)
     if clean.empty? or clean.keys == [:id]
       if data[:first_name].present?
         clean[:first_name] = data[:first_name]
@@ -27,7 +28,8 @@ private
   end
 
   def custom_fields(data)
-    util.filter(whitelist, data)
+    custom_whitelist = whitelist - VoterList::VOTER_DATA_COLUMNS.values
+    util.filter(custom_whitelist, data)
   end
 
   def contact_fields
@@ -63,3 +65,4 @@ public
     data
   end
 end
+
