@@ -36,9 +36,18 @@ class CallFlow::Persistence::Call < CallFlow::Persistence
     })
   end
 
-  ##
-  # Build & create a new CallAttempt record.
   def create_call_attempt(dispositioned_voter=nil)
+    call_attempt_attrs    = build_call_attempt(dispositioned_voter)
+    existing_call_attempt = household_record.call_attempts.where(sid: call_data[:sid]).first
+
+    if existing_call_attempt.nil?
+      ::CallAttempt.create(call_attempt_attrs)
+    else
+      existing_call_attempt.update_attributes!(call_attempt_attrs)
+    end
+  end
+
+  def build_call_attempt(dispositioned_voter=nil)
     call_attempt_attrs = {
       household_id: household_record.id,
       campaign_id: campaign.id,
@@ -64,7 +73,7 @@ class CallFlow::Persistence::Call < CallFlow::Persistence
 
     call_attempt_attrs[:voter_id] = dispositioned_voter.id unless dispositioned_voter.nil?
 
-    ::CallAttempt.create(call_attempt_attrs)
+    return call_attempt_attrs
   end
 end
 

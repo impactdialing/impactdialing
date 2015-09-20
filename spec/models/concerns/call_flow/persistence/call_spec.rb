@@ -16,8 +16,16 @@ describe 'CallFlow::Persistence::Call' do
         type: 'Predictive'
       })
     end
+    let(:empty_association_double) do
+      double('Association', {
+        where: []
+      })
+    end
     let(:household_record) do
-      instance_double('Household', {id: 42})
+      instance_double('Household', {
+        id: 42,
+        call_attempts: empty_association_double
+      })
     end
     let(:caller_session){ nil }
     let(:dispositioned_voter_record){ nil }
@@ -72,7 +80,12 @@ describe 'CallFlow::Persistence::Call' do
 
     context 'dispositioned_voter_record is not nil' do
       let(:dispositioned_voter_record){ instance_double('Voter', {id: 42}) }
-      let(:household_record){ instance_double('Household', {id: 42}) }
+      let(:household_record) do
+        instance_double('Household', {
+          id: 42,
+          call_attempts: empty_association_double
+        })
+      end
 
       before do
         allow(dialed_call_storage).to receive(:attributes).and_return({
@@ -87,6 +100,31 @@ describe 'CallFlow::Persistence::Call' do
       it 'associates w/ proper Voter record' do
         subject.create_call_attempt(dispositioned_voter_record)
         expect(call_attempt_record.voter_id).to eq dispositioned_voter_record.id
+      end
+
+      context 'responses was just submitted but previous persistence attempt created CallAttempt record' do
+        let(:call_attempt_double) do
+          instance_double('CallAttempt', {
+            update_attributes!: nil
+          })
+        end
+        let(:non_empty_association_double) do
+          double('Association', {
+            where: [call_attempt_double]
+          })
+        end
+        let(:household_record) do
+          instance_double('Household', {
+            id: 42,
+            call_attempts: non_empty_association_double
+          })
+        end
+        subject{ CallFlow::Persistence::Call.new(dialed_call, campaign, household_record) }
+        it 'updates existing CallAttempt with matching SID' do
+          expect{
+            subject.create_call_attempt(dispositioned_voter_record)
+          }.to change{ CallAttempt.count }.by(0)
+        end
       end
     end
 
