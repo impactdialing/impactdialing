@@ -35,8 +35,8 @@ describe 'Upload', js: true, type: :feature do
         create(:voter_list, {
           campaign: campaign,
           csv_to_system_map: {
-            custom_id: 'ID',
-            phone: 'Phone'
+            'ID' => 'custom_id',
+            'Phone' => 'phone'
           }
         })
       end
