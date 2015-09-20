@@ -34927,8 +34927,8 @@ to fix it.');
         },
         voterConnected: function(data) {
           var p;
-          CallCache.put('id', data.call_id);
-          $window.idDebugData.call_id = data.call_id;
+          CallCache.put('id', data.call_sid);
+          $window.idDebugData.call_sid = data.call_sid;
           p = $state.go('dialer.active');
           return p["catch"](idTransitionPrevented);
         },
@@ -34937,9 +34937,9 @@ to fix it.');
           transitionSuccess = function() {
             HouseholdCache.put('data', data.household);
             $rootScope.$broadcast('household:changed');
-            CallCache.put('id', data.call_id);
+            CallCache.put('id', data.call_sid);
             $window.idDebugData.household = data.household;
-            return $window.idDebugData.call_id = data.call_id;
+            return $window.idDebugData.call_sid = data.call_sid;
           };
           p = $state.go('dialer.active');
           return p.then(transitionSuccess, idTransitionPrevented);
@@ -35279,14 +35279,16 @@ to fix it.');
         return dialer.kick(caller, 'transfer');
       };
       dialer.hangup = function(call_id, hangupMethod, caller) {
-        var url;
+        var params, url;
         dialer.retry = false;
         if ((hangupMethod != null) && hangupMethod === 'kick') {
           return dialer.kick(caller, 'caller');
         } else {
-          TwilioCache.put('disconnect_pending', 1);
-          url = "/call_center/api/" + call_id + "/hangup";
-          return $http.post(url);
+          url = "/call_center/api/hangup";
+          params = {
+            sid: call_id
+          };
+          return $http.post(url, params);
         }
       };
       dialer.dropMessage = function(call_id) {
@@ -35699,39 +35701,36 @@ to fix it.');
         return normalized;
       };
       callAndVoter = function() {
-        var call_id, voter_id;
-        call_id = CallCache.get('id');
-        voter_id = (HouseholdCache.get('selected') || {}).id;
-        console.log('survey callAndVoter is returning call_id & voter_id of', call_id, voter_id);
-        if (call_id == null) {
-          ErrorCache.put('survey.save.failed', "Call had no ID: Call[" + call_id + "].");
+        var call_sid, lead;
+        call_sid = CallCache.get('id');
+        lead = HouseholdCache.get('selected');
+        if (call_sid == null) {
+          ErrorCache.put('survey.save.failed', "Call had no ID: Call[" + call_sid + "].");
           idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.');
           return false;
         }
-        if (voter_id == null) {
+        if (lead == null) {
           idFlashFactory.now('warning', 'Select a contact before saving.');
           return false;
         }
         return {
-          call_id: call_id,
-          voter_id: voter_id
+          call_sid: call_sid,
+          lead: lead
         };
       };
       requestInProgress = false;
       survey.save = function($event, andContinue) {
-        var action, always, error, ids, success, successRan;
+        var always, cachedParams, error, params, success, successRan, url;
         if (requestInProgress) {
           console.log('survey.requestInProgress, returning');
           return;
         }
         usSpinnerService.spin('global-spinner');
-        ids = callAndVoter();
-        if (!((ids.call_id != null) && (ids.voter_id != null))) {
+        cachedParams = callAndVoter();
+        if (!((cachedParams.call_sid != null) && (cachedParams.lead != null))) {
           return;
         }
-        action = 'submit_result';
         if (!andContinue) {
-          action += '_and_stop';
           TwilioCache.put('disconnect_pending', 1);
         }
         successRan = false;
@@ -35779,24 +35778,30 @@ to fix it.');
         };
         requestInProgress = true;
         $rootScope.transitionInProgress = true;
-        return $http.post("/call_center/api/" + ids.call_id + "/" + action, {
-          voter_id: ids.voter_id,
+        url = "/call_center/api/disposition";
+        params = {
+          lead: cachedParams.lead,
+          sid: cachedParams.call_sid,
           notes: survey.responses.notes,
-          question: normalizeQuestion()
-        }).then(success, error)["finally"](always);
+          question: normalizeQuestion(),
+          stop_calling: !andContinue
+        };
+        return $http.post(url, params).then(success, error)["finally"](always);
       };
       survey.autoSubmitConfig = function() {
-        var ids;
-        ids = callAndVoter();
-        if (!((ids.call_id != null) && (ids.voter_id != null))) {
+        var cachedParams;
+        cachedParams = callAndVoter();
+        if (!((cachedParams.call_sid != null) && (cachedParams.lead != null))) {
           return;
         }
         return {
-          url: "/call_center/api/" + ids.call_id + "/submit_result_and_stop",
+          url: "/call_center/api/disposition",
           data: {
-            voter_id: ids.voter_id,
+            lead: cachedParams.lead,
+            sid: cachedParams.call_sid,
             notes: survey.responses.notes,
-            question: normalizeQuestion()
+            question: normalizeQuestion(),
+            stop_calling: true
           }
         };
       };
