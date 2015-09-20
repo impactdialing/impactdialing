@@ -145,8 +145,7 @@ class MigrateRedis
           redis_keys(campaign)[:blocked],
           redis_keys(campaign)[:completed],
           redis_keys(campaign)[:failed],
-          inactive_redis_key,
-          redis_keys(campaign)[:stats][:voter_list]
+          inactive_redis_key
         ]
       })
     end

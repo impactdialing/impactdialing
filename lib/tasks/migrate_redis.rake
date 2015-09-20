@@ -45,6 +45,18 @@ namespace :migrate_redis do
     queue_redis_migration_jobs(account_ids)
   end
 
+  task :voter_list_stats => [:environment] do
+    campaign_ids = Campaign.active.pluck(:id)
+    redis = Redis.new
+    VoterList.where(campaign_id: campaign_ids).find_in_batches do |voter_lists|
+      voter_lists.each do |voter_list|
+        stats_key = "list:voter_list:#{voter_list.id}:stats"
+        redis.hset stats_key, 'total_leads', voter_list.voters_count
+        redis.hset stats_key, 'total_numbers', voter_list.households_count
+      end
+    end
+  end
+
   task :verify, [:account_id] => [:environment] do |t,args|
     require 'migrate_redis'
     redis = Redis.new
