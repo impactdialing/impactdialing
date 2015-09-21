@@ -29,14 +29,14 @@ octopus:
   heroku_staging: &heroku_staging
     read_slave1:
       adapter: mysql2
-      host: redis-upload-migration-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      host: impact-prod-stage-copy.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       database: heroku_production
       username: root
       password: pfsdh37sl203jq
 
     read_slave2:
       adapter: mysql2
-      host: redis-upload-migration-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      host: impact-prod-stage-copy.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       #host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       #database: staging
       database: heroku_production
@@ -46,7 +46,7 @@ octopus:
 
     simulator_slave:
       adapter: mysql2
-      host: redis-upload-migration-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      host: impact-prod-stage-copy.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       #host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       #database: staging
       database: heroku_production
