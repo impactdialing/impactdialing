@@ -41,7 +41,7 @@ class CallFlow::Persistence::Call < CallFlow::Persistence
     existing_call_attempt = household_record.call_attempts.where(sid: call_data[:sid]).first
 
     if existing_call_attempt.nil?
-      ::CallAttempt.create(call_attempt_attrs)
+      existing_call_attempt = ::CallAttempt.create(call_attempt_attrs)
     else
       existing_call_attempt.update_attributes!(call_attempt_attrs)
     end
