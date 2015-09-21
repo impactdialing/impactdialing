@@ -237,10 +237,14 @@ for phone,household in pairs(households) do
     new_leads = new_lead_id_set
   end
 
+  if _current_hh then
+    current_hh = cjson.decode(_current_hh)
+  end
+
   -- enable/disable support
   -- if uploaded hh is inactive
   -- then copy hh attrs from there
-  if not _current_hh then
+  if not _current_hh or not current_hh.sequence then
     local i_key_parts     = i_household_key_parts(phone)
     local i_household_key = i_key_parts[1]
     local i_phone_key     = i_key_parts[2]
@@ -258,12 +262,9 @@ for phone,household in pairs(households) do
     end
   end
 
-  if _current_hh or current_hh.uuid then
+  if current_hh.uuid then
     -- this household has been saved so merge
     -- current_hh = cmsgpack.unpack(_current_hh)
-    if _current_hh then
-      current_hh = cjson.decode(_current_hh)
-    end
 
     -- hh attributes
     uuid     = current_hh.uuid

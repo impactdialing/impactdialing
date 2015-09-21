@@ -41,6 +41,10 @@ for phone,_ in pairs(households) do
   end
 
   if _active_household then
+    active_household = cjson.decode(_active_household)
+  end
+
+  if active_household and active_household.leads ~= nil and next(active_household.leads) ~= nil then
     -- source household exists, begin moving leads
     active_household     = cjson.decode(_active_household)
     current_active_leads = active_household.leads
