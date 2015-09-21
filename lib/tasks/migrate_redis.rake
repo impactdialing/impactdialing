@@ -61,7 +61,7 @@ namespace :migrate_redis do
     Campaign.active.each do |campaign|
       p "Updating: #{campaign.account_id}: #{campaign.name}"
       p "Current total_numbers = #{campaign.call_list.stats['total_numbers']}"
-      households_count = campaign.all_voters.with_enabled(:list).group(:household_id).count.values.sum
+      households_count = campaign.all_voters.with_enabled(:list).group(:household_id).count.keys.size
       p "Fixed total_numbers = #{households_count}"
       campaign.call_list.stats.reset('total_numbers', households_count)
     end
