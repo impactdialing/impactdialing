@@ -45,6 +45,8 @@ class CallFlow::Persistence::Call < CallFlow::Persistence
     else
       existing_call_attempt.update_attributes!(call_attempt_attrs)
     end
+
+    return existing_call_attempt
   end
 
   def build_call_attempt(dispositioned_voter=nil)

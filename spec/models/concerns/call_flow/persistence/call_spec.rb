@@ -132,6 +132,10 @@ describe 'CallFlow::Persistence::Call' do
             subject.create_call_attempt(dispositioned_voter_record)
           }.to change{ CallAttempt.count }.by(0)
         end
+        it 'returns the created CallAttempt record' do
+          expect(subject.create_call_attempt(dispositioned_voter_record)).to be_present
+        end
+
       end
     end
 
