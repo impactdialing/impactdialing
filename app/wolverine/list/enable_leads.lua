@@ -59,7 +59,7 @@ local add_to_set = function(leads_added, household, phone)
     end
   else
     -- add to blocked set
-    redis.call('ZADD', blocked_set_key, blocked, phone)
+    redis.call('ZADD', blocked_set_key, household.blocked, phone)
     redis.call('ZREM', available_set_key, phone)
     redis.call('ZREM', recycle_bin_set_key, phone)
   end
