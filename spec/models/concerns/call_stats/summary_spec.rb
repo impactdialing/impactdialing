@@ -93,9 +93,8 @@ describe CallStats::Summary do
       let(:retrying){ 3 }
       let(:available){ not_dialed + retrying }
       let(:pending_retry){ 2 }
-      let(:completed) do
-        3
-      end
+      let(:completed){ 3 }
+      let(:failed){ 2 }
       let!(:other_households) do
         create_list(:voter, available + pending_retry, campaign: campaign, account: account).map(&:household)
       end
@@ -104,6 +103,7 @@ describe CallStats::Summary do
         allow(dial_queue.available).to receive(:count).with(:active, '-inf', campaign.household_sequence + 1){ not_dialed }
         allow(dial_queue.available).to receive(:count).with(:active, "(#{campaign.household_sequence + 1}", '+inf'){ retrying }
         allow(dial_queue.completed).to receive(:count).with(:completed, '-inf', '+inf'){ completed }
+        allow(dial_queue.completed).to receive(:count).with(:failed, '-inf', '+inf'){ failed }
         allow(dial_queue.available).to receive(:size).with(:active){ available }
         allow(dial_queue.available).to receive(:size).with(:presented){ 0 }
         allow(dial_queue.recycle_bin).to receive(:size){ pending_retry }
@@ -121,7 +121,7 @@ describe CallStats::Summary do
 
       it 'completed' do
         summary = CallStats::Summary.new(campaign)
-        expect(summary.completed).to eq(completed)
+        expect(summary.completed).to eq(completed + failed)
       end
     end
   end

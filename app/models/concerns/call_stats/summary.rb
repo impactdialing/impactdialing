@@ -36,7 +36,7 @@ public
   end
 
   def completed
-    @completed ||= dial_queue.completed.count(:completed, '-inf', '+inf')
+    @completed ||= dial_queue.completed.count(:completed, '-inf', '+inf') + dial_queue.completed.count(:failed, '-inf', '+inf')
   end
 
   def retrying
