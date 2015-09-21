@@ -53,7 +53,8 @@ class CallFlow::Persistence::Call < CallFlow::Persistence
       campaign_id: campaign.id,
       status: household_status,
       sid: call_data[:sid],
-      dialer_mode: call_data[:campaign_type]
+      dialer_mode: call_data[:campaign_type],
+      connecttime: dialed_call.state.time_visited(:caller_and_lead_connected)
     }
 
     if call_data[:recording_id].present?

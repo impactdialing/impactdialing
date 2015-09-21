@@ -90,7 +90,7 @@ public
   end
 
   def time_dialed(call_attempt)
-    call_attempt['call_start'].try(:in_time_zone, @campaign.time_zone)
+    call_attempt['tStartTime'].try(:in_time_zone, @campaign.time_zone)
   end
 
   def time_answered(call_attempt)
@@ -98,7 +98,7 @@ public
   end
 
   def time_ended(call_attempt)
-    call_attempt['call_end'].try(:in_time_zone, @campaign.time_zone)
+    call_attempt['tEndTime'].try(:in_time_zone, @campaign.time_zone)
   end
 
   def call_time_duration(call_attempt)

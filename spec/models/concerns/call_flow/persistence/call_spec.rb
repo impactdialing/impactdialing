@@ -5,9 +5,15 @@ describe 'CallFlow::Persistence::Call' do
     let(:dialed_call_storage) do
       instance_double('CallFlow::Call::Storage')
     end
+    let(:dialed_call_state) do
+      instance_double('CallFlow::Call::State', {
+        time_visited: nil
+      })
+    end
     let(:dialed_call) do
       instance_double('CallFlow::Call::Dialed', {
-        storage: dialed_call_storage
+        storage: dialed_call_storage,
+        state: dialed_call_state
       })
     end
     let(:campaign) do
@@ -88,6 +94,7 @@ describe 'CallFlow::Persistence::Call' do
       end
 
       before do
+        allow(dialed_call_state).to receive(:time_visited).and_return(2.minutes.ago.utc)
         allow(dialed_call_storage).to receive(:attributes).and_return({
           mapped_status: CallAttempt::Status::BUSY,
           sid: 'dialed-call-sid',

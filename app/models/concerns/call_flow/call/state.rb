@@ -36,5 +36,9 @@ public
   def not_visited?(state)
     not visited?(state)
   end
+
+  def time_visited(state)
+    redis.hget(key, state)
+  end
 end
 

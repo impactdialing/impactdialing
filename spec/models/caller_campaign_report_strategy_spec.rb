@@ -71,9 +71,9 @@ describe CallerCampaignReportStrategy, :type => :model do
         voter: voter,
         household: voter.household,
         status: CallAttempt::Status::SUCCESS,
-        call_start: Time.at(1338292076),
+        tStartTime: Time.at(1338292076),
         connecttime: Time.at(1338292476),
-        call_end: Time.at(1338293196),
+        tEndTime: Time.at(1338293196),
         recording_url: "xyz",
         caller: caller,
         recording_delivered_manually: false,
@@ -118,9 +118,9 @@ describe CallerCampaignReportStrategy, :type => :model do
         voter: voter,
         household: voter.household,
         status: CallAttempt::Status::SUCCESS,
-        call_start: Time.at(1338292076),
+        tStartTime: Time.at(1338292076),
         connecttime: Time.at(1338292476),
-        call_end: Time.at(1338293196),
+        tEndTime: Time.at(1338293196),
         recording_url: "xyz",
         caller: caller
       })
@@ -189,9 +189,9 @@ describe CallerCampaignReportStrategy, :type => :model do
                 voter: voter,
                 household: voter.household,
                 status: CallAttempt::Status::SUCCESS,
-                call_start: Time.at(1338292076),
+                tStartTime: Time.at(1338292076),
                 connecttime: Time.at(1338292476),
-                call_end: Time.at(1338293196),
+                tEndTime: Time.at(1338293196),
                 recording_url: "xyz",
                 caller: @caller
                )
@@ -279,9 +279,9 @@ describe CallerCampaignReportStrategy, :type => :model do
         voter: voter,
         household: voter.household,
         status: CallAttempt::Status::SUCCESS,
-        call_start: Time.at(1338292076),
+        tStartTime: Time.at(1338292076),
         connecttime: Time.at(1338292476),
-        call_end: Time.at(1338293196),
+        tEndTime: Time.at(1338293196),
         recording_url: "xyz",
         caller: caller
       })
@@ -412,7 +412,7 @@ describe CallerCampaignReportStrategy, :type => :model do
        value1 = create(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
        value2 = create(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
 
-       call_attempt = create(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), connecttime: Time.at(1338292476), call_end: Time.at(1338293196), recording_url: "xyz")
+       call_attempt = create(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, tStartTime: Time.at(1338292076), connecttime: Time.at(1338292476), tEndTime: Time.at(1338293196), recording_url: "xyz")
        question1 = create(:question, text: "Q1", script: @script)
        question2 = create(:question, text: "Q12", script: @script)
        answer1 = create(:answer, campaign: @campaign, question_id: question1.id , voter: voter, possible_response: create(:possible_response, question_id: question1.id, value: "Hey"), call_attempt: call_attempt)
@@ -456,9 +456,9 @@ describe CallerCampaignReportStrategy, :type => :model do
           voter: voter,
           household: voter.household,
           status: CallAttempt::Status::SUCCESS,
-          call_start: Time.at(1338292076),
+          tStartTime: Time.at(1338292076),
           connecttime: Time.at(1338292476),
-          call_end: Time.at(1338293196),
+          tEndTime: Time.at(1338293196),
           recording_url: "xyz",
           campaign: @campaign,
           caller: caller,
@@ -549,9 +549,9 @@ describe CallerCampaignReportStrategy, :type => :model do
           voter: voter,
           household: voter.household,
           status: CallAttempt::Status::SUCCESS,
-          call_start: Time.at(1338292076),
+          tStartTime: Time.at(1338292076),
           connecttime: Time.at(1338292476),
-          call_end: Time.at(1338293196),
+          tEndTime: Time.at(1338293196),
           recording_url: "xyz",
           campaign: @campaign,
           caller: caller,
