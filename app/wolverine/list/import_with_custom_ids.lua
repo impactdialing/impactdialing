@@ -155,7 +155,7 @@ local build_custom_id_set = function (leads)
   local lead_id_set       = {}
   local seq = nil
 
-  if leads[1] and leads[1].custom_id ~= nil then
+  if leads ~= nil and leads[1] and leads[1].custom_id ~= nil then
     -- handle updates, merge leads
     for _,lead in pairs(leads) do
       local custom_id = tostring(lead.custom_id)
