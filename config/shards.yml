@@ -29,30 +29,24 @@ octopus:
   heroku_staging: &heroku_staging
     read_slave1:
       adapter: mysql2
-      host: impact-prod-stage-copy.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
+      host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      database: staging
       username: root
-      password: pfsdh37sl203jq
+      password: VeYx42NVRVsJMuG
 
     read_slave2:
       adapter: mysql2
-      host: impact-prod-stage-copy.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      #host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      #database: staging
-      database: heroku_production
+      host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      database: staging
       username: root
-      password: pfsdh37sl203jq
-      #password: VeYx42NVRVsJMuG
+      password: VeYx42NVRVsJMuG
 
     simulator_slave:
       adapter: mysql2
-      host: impact-prod-stage-copy.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      #host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      #database: staging
-      database: heroku_production
+      host: impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      database: staging
       username: root
-      password: pfsdh37sl203jq
-      #password: VeYx42NVRVsJMuG
+      password: VeYx42NVRVsJMuG
       # mysql2://root:VeYx42NVRVsJMuG@impactdialing-staging.cjo94dhm4pos.us-east-1.rds.amazonaws.com/staging?reconnect=true
 
   aws_staging:
