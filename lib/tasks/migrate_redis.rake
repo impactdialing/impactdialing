@@ -57,6 +57,16 @@ namespace :migrate_redis do
     end
   end
 
+  task :campaign_total_number_stats => [:environment] do
+    Campaign.active.each do |campaign|
+      p "Updating: #{campaign.account_id}: #{campaign.name}"
+      p "Current total_numbers = #{campaign.call_list.stats['total_numbers']}"
+      households_count = campaign.all_voters.with_enabled(:list).group(:household_id).count.values.sum
+      p "Fixed total_numbers = #{households_count}"
+      campaign.call_list.stats.reset('total_numbers', households_count)
+    end
+  end
+
   task :verify, [:account_id] => [:environment] do |t,args|
     require 'migrate_redis'
     redis = Redis.new
