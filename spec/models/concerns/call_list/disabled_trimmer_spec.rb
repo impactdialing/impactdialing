@@ -63,7 +63,7 @@ describe 'CallList::DisabledTrimmer' do
         end
 
         it 'stores current score (recycle bin zscore) of phone number' do
-          house = Redis.new.hget inactive_redis_key.gsub('111', phone[0..-4]), phone[-3..-1]
+          house = redis.hget inactive_redis_key.gsub('111', phone[0..-4]), phone[-3..-1]
           house = JSON.parse house
           expect(house['score'].to_f).to be_within(0.0000001).of score
         end
@@ -75,7 +75,7 @@ describe 'CallList::DisabledTrimmer' do
         end
 
         it 'stores current score (available zscore) of phone number' do
-          house = Redis.new.hget inactive_redis_key.gsub('111', phone[0..-4]), phone[-3..-1]
+          house = redis.hget inactive_redis_key.gsub('111', phone[0..-4]), phone[-3..-1]
           house = JSON.parse house
           expect(house['score'].to_f).to be_within(0.0000001).of score
         end
