@@ -11,13 +11,5 @@ window.ImpactDialing = {
   Channel: {},
   Services: {},
   Utilities: {},
-  initialize: function() {
-  }
 };
-
-
-
-$(document).ready(function(){
-  ImpactDialing.initialize();
-});
 
