@@ -27,17 +27,19 @@
   </div>
 <% end %>
 
-<script>
-  function hideCampaignsIfCallerGroup() {
-    if ($('#caller_caller_group_id').val() != '' && $('#caller_caller_group_id').is(':visible')) {
-      $('#campaigns').hide();
-    }
-    else {
-      $('#campaigns').show();
-    }
-  };
+<%= content_for(:javascripts) do %>
+  <script>
+    function hideCampaignsIfCallerGroup() {
+      if ($('#caller_caller_group_id').val() != '' && $('#caller_caller_group_id').is(':visible')) {
+        $('#campaigns').hide();
+      }
+      else {
+        $('#campaigns').show();
+      }
+    };
 
-  $(document).ready(function() {
-    hideCampaignsIfCallerGroup();
-  });
-</script>
+    $(document).ready(function() {
+      hideCampaignsIfCallerGroup();
+    });
+  </script>
+<% end %>
