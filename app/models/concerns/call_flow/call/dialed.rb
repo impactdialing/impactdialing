@@ -89,8 +89,14 @@ private
   def answered_by_machine?(params)
     params[:AnsweredBy] == 'machine'
   end
+  def call_status_matches?(status, params)
+    params[:CallStatus] == status
+  end
   def call_in_progress?(params)
-    params[:CallStatus] == 'in-progress'
+    call_status_matches?('in-progress', params)
+  end
+  def call_failed?(params)
+    call_status_matches?('failed', params)
   end
 
 public
@@ -184,16 +190,20 @@ public
 
     caller_session.try(:emit, 'publish_call_ended', params)
 
-    if state_missed?(:answered)
-      campaign.number_not_ringing
+    if call_failed?(params)
+      CallFlow::Call::Failed.create(campaign, params[:phone], params)
+    else
+      if state_missed?(:answered)
+        campaign.number_not_ringing
 
-      unless campaign.predictive?
-        caller_session.redirect_to_hold
+        unless campaign.predictive?
+          caller_session.redirect_to_hold
+        end
       end
-    end
 
-    if state_missed?(:caller_and_lead_connected)
-      CallFlow::Jobs::Persistence.perform_async('Completed', account_sid, sid)
+      if state_missed?(:caller_and_lead_connected)
+        CallFlow::Jobs::Persistence.perform_async('Completed', account_sid, sid)
+      end
     end
   end
 
