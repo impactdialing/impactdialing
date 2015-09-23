@@ -269,38 +269,51 @@ describe 'CallList::DisabledTrimmer' do
       end
     end
 
-    #context 'phone was completed via dispositioned leads but newly enabled list adds incomplete leads' do
-    #  let(:completed_leads_key){ campaign.dial_queue.households.keys[:completed_leads] }
-    #  let(:score){ 142 }
-    #  let(:phone_two){ households_two.keys.first }
-    #  let(:leads_two) do
-    #    k = "#{campaign.dial_queue.households.keys[:active]}:#{phone_two[0..-4]}"
-    #    JSON.parse( redis.hget(k, phone_two[-3..-1]) )
-    #  end
-    #  before do
-    #    leads_two.each do |lead|
-    #      redis.setbit(completed_leads_key, lead['sequence'], 1)
-    #    end
-    #    redis.zrem available_key, phone
-    #    redis.zadd completed_key, score, phone
-    #  end
+    context 'phone was completed via dispositioned leads but newly enabled list adds incomplete leads' do
+      let(:completed_leads_key){ campaign.dial_queue.households.keys[:completed_leads] }
+      let(:score){ households_one[phone][:score] }
+      let(:leads) do
+        k = "#{campaign.dial_queue.households.keys[:inactive]}:#{phone[0..-4]}"
+        JSON.parse( redis.hget(k, phone[-3..-1]) )
+      end
 
-    #  it 'is removed from completed set' do
-    #    byebug
-    #    subject.enable_leads
-    #    expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'completed')
-    #  end
-    #  
-    #  it 'is added to recycle bin set' do
-    #    subject.enable_leads
-    #    expect(phone).to be_in_dial_queue_zset(campaign.id, 'bin')
-    #  end
+      before do
+        leads['leads'].each do |lead|
+          redis.setbit(completed_leads_key, lead['sequence'], 1)
+        end
+      end
 
-    #  it 'keeps the completed zscore' do
-    #    subject.enable_leads
-    #    expect(phone).to have_zscore(score).in_dial_queue_zset(campaign.id, 'bin') 
-    #  end
-    #end
+      context 'and newly enabled list adds incomplete leads' do
+        before do
+          lead = build_lead_hash(list_one, phone) 
+          households_one[phone][:leads] << lead
+          add_leads(list_one, phone, [lead], 'inactive')
+        end
+
+        it 'is removed from completed set' do
+          redis.zadd completed_key, score, phone
+          subject.enable_leads
+          expect(phone).to_not be_in_dial_queue_zset(campaign.id, 'completed')
+        end
+        
+        it 'is added to recycle bin set' do
+          subject.enable_leads
+          expect(phone).to be_in_dial_queue_zset(campaign.id, 'bin')
+        end
+
+        it 'uses the current household.score' do
+          subject.enable_leads
+          expect(phone).to have_zscore(score).in_dial_queue_zset(campaign.id, 'bin') 
+        end
+      end
+
+      context 'phone was completed via dispositioned leads and no incomplete leads are added from enabled list' do
+        it 'is added to completed zset' do
+          subject.enable_leads
+          expect(phone).to be_in_dial_queue_zset(campaign.id, 'completed')
+        end
+      end
+    end
   end
 end
 

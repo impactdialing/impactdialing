@@ -120,7 +120,7 @@ end
 RSpec::Matchers.define :have_zscore do |score|
   match do |phone|
     redis = Redis.new
-    redis.zscore(@key, phone).to_s == score.to_s
+    redis.zscore(@key, phone).to_i == score.to_i
   end
 
   chain :in_dial_queue_zset do |campaign_id, namespace|
