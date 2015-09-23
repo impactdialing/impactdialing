@@ -32,5 +32,4 @@ end
 # **`acceptable_abandon_rate`**             | `float`            |
 # **`call_back_after_voicemail_delivery`**  | `boolean`          | `default(FALSE)`
 # **`caller_can_drop_message_manually`**    | `boolean`          | `default(FALSE)`
-# **`households_count`**                    | `integer`          | `default(0)`
 #

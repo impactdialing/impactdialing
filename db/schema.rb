@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150605023140) do
+ActiveRecord::Schema.define(version: 20150923090429) do
 
   create_table "accounts", force: true do |t|
     t.datetime "created_at"
@@ -282,7 +282,6 @@ ActiveRecord::Schema.define(version: 20150605023140) do
     t.float    "acceptable_abandon_rate"
     t.boolean  "call_back_after_voicemail_delivery", default: false
     t.boolean  "caller_can_drop_message_manually",   default: false
-    t.integer  "households_count",                   default: 0
   end
 
   create_table "custom_voter_field_values", force: true do |t|

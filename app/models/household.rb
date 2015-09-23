@@ -3,7 +3,7 @@ class Household < ActiveRecord::Base
 
   belongs_to :account
   
-  belongs_to :campaign, counter_cache: true
+  belongs_to :campaign
   delegate :dial_queue, to: :campaign
   delegate :call_back_after_voicemail_delivery?, to: :campaign
 
