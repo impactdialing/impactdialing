@@ -12,7 +12,6 @@ class Voter < ActiveRecord::Base
   extend ImportProxy
   include Rails.application.routes.url_helpers
   include CallAttempt::Status
-  include ERB::Util
 
   acts_as_reportable
 
@@ -66,27 +65,6 @@ class Voter < ActiveRecord::Base
 
   cattr_reader :per_page
   @@per_page = 25
-
-private
-  def autolink(text)
-    domain_regex = /[\w]+[\w\.\-]?(\.[a-z]){1,2}/i
-    email_regex  = /[\w\-\.]+[\w\-\+\.]?@/i
-    proto_regex  = /\bhttp(s)?:\/\//i
-    space_regex  = /\s+/
-    stripped_text = text.kind_of?(String) ? text.strip : text
-
-    if stripped_text =~ domain_regex and stripped_text !~ space_regex
-      # it looks like a domain, is it an email?
-      if stripped_text =~ email_regex
-        return "<a target=\"_blank\" href=\"mailto:#{html_escape(text)}\">#{html_escape(text)}</a>"
-      else
-        proto = text =~ proto_regex ? '' : 'http://'
-        return "<a target=\"_blank\" href=\"#{proto}#{html_escape(text)}\">#{html_escape(text)}</a>"
-      end
-    end
-
-    html_escape(text)
-  end
 
 public
   # make activerecord-import work with bitmask_attributes
@@ -167,25 +145,6 @@ public
   def selected_custom_voter_field_values
     select_custom_fields = campaign.script.try(:selected_custom_fields)
     custom_voter_field_values.try(:select) { |cvf| select_custom_fields.include?(cvf.custom_voter_field.name) } if select_custom_fields.present?
-  end
-
-  def cache_data
-    system_fields = UPLOAD_FIELDS + ['id']
-    data = {
-      id: self.id,
-      fields: {},
-      custom_fields: {}
-    }
-    self.attributes.each do |field, value|
-      next unless system_fields.include?(field)
-      data[:fields][field] = autolink(value)
-    end
-
-    custom_voter_field_values.each do |custom_value|
-      data[:custom_fields][custom_value.custom_voter_field.name] = autolink(custom_value.value)
-    end
-
-    data
   end
 
   def unanswered_questions

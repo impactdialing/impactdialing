@@ -33,7 +33,7 @@ describe 'CallFlow::Web::Data' do
           uuid: 44,
           first_name: Forgery(:name).first_name,
           last_name: Forgery(:name).last_name,
-          email: Forgery(:email).address,
+          email: '<a href="mailto:'+Forgery(:email).address+'">'+Forgery(:email).address+'</a>',
           'MoreInfo' => 'Call xxx-yyy-zzzz',
           'PreviousContribution' => '123'
         }
@@ -84,7 +84,7 @@ describe 'CallFlow::Web::Data' do
             fields: {
               'first_name' => house[:leads][0][:first_name],
               'last_name' =>  house[:leads][0][:last_name],
-              'email' =>  house[:leads][0][:email]
+              'email' => '<a target="_blank" href="mailto:'+house[:leads][0][:email]+'">'+house[:leads][0][:email]+'</a>'
             },
             custom_fields: {
               'MoreInfo' => 'Call xxx-yyy-zzzz',
@@ -96,7 +96,7 @@ describe 'CallFlow::Web::Data' do
             fields: {
               'first_name' => house[:leads][1][:first_name],
               'last_name' =>  house[:leads][1][:last_name],
-              'email' =>  house[:leads][1][:email]
+              'email' => '<a target="_blank" href="mailto:'+house[:leads][1][:email]+'">'+house[:leads][1][:email]+'</a>'
             },
             custom_fields: {
               'MoreInfo' => 'Call xxx-yyy-zzzz',
@@ -108,7 +108,7 @@ describe 'CallFlow::Web::Data' do
             fields: {
               'first_name' => house[:leads][2][:first_name],
               'last_name' =>  house[:leads][2][:last_name],
-              'email' =>  house[:leads][2][:email]
+              'email' => house[:leads][2][:email]
             },
             custom_fields: {
               'MoreInfo' => 'Call xxx-yyy-zzzz',
@@ -126,7 +126,7 @@ describe 'CallFlow::Web::Data' do
           {
             id:     nameless_house[:leads][0][:uuid],
             fields: {
-              'use_id' => '1'
+              :use_id => '1'
             },
             custom_fields: {
               'MoreInfo' => 'Call xxx-yyy-zzzz',
@@ -136,7 +136,7 @@ describe 'CallFlow::Web::Data' do
           {
             id:     nameless_house[:leads][1][:uuid],
             fields: {
-              'use_id' => '1'
+              :use_id => '1'
             },
             custom_fields: {
               'MoreInfo' => 'Call xxx-yyy-zzzz',
@@ -146,7 +146,7 @@ describe 'CallFlow::Web::Data' do
           {
             id:     nameless_house[:leads][2][:uuid],
             fields: {
-              'use_id' => '1'
+              :use_id => '1'
             },
             custom_fields: {
               'MoreInfo' => 'Call xxx-yyy-zzzz',
