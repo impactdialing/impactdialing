@@ -14,16 +14,17 @@
     </tr>
     <% @csv_validator.csv_column_headers.each_with_index do |csv_header, index| %>
       <% selected = selected_system_or_custom_header_for(csv_header, @campaign.account, @use_custom_ids) %>
+      <% css_id = "csv_to_system_map_#{csv_header.gsub(/[^\w]/, '').underscore.strip}" %>
       <tr>
         <td>
-          <label for="csv_to_system_map_<%= csv_header.gsub(/\s/, '').underscore.strip %>">
+          <label for="<%= css_id %>">
             <%= csv_header %>
           </label>
         </td>
         <td>
           <%= select_tag "voter_list[csv_to_system_map[#{csv_header}]]",
               options_for_select(system_column_headers(csv_header, @campaign.account, @use_custom_ids), selected),
-              class: "select-column-mapping", id: "csv_to_system_map_#{csv_header.gsub(/\s/, '').underscore.strip}" %>
+              class: "select-column-mapping", id: css_id %>
         </td>
         <td><%= @csv_validator.first_row[index] %></td>
       </tr>
