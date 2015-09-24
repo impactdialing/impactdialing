@@ -186,17 +186,17 @@ public
 
     caller_session_call.try(:emit, 'publish_call_ended', params)
 
+    if state_missed?(:answered)
+      campaign.number_not_ringing
+
+      unless campaign.predictive?
+        caller_session_call.redirect_to_hold
+      end
+    end
+
     if call_failed?(params)
       CallFlow::Call::Failed.create(campaign, params[:phone], params)
     else
-      if state_missed?(:answered)
-        campaign.number_not_ringing
-
-        unless campaign.predictive?
-          caller_session_call.redirect_to_hold
-        end
-      end
-
       if state_missed?(:caller_and_lead_connected)
         CallFlow::Jobs::Persistence.perform_async('Completed', account_sid, sid)
       end

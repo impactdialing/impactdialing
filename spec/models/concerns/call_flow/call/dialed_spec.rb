@@ -192,38 +192,49 @@ describe 'CallFlow::Call::Dialed' do
       end
     end
 
+    shared_examples_for 'calls not answered' do
+      it 'tells campaign :number_not_ringing' do
+        expect(campaign).to receive(:number_not_ringing)
+        subject.completed(campaign, status_callback_params)
+      end
+
+      context 'dial mode is Preview' do
+        let(:campaign){ create(:preview) }
+        it 'redirects the caller to the next call' do
+          subject.completed(campaign, status_callback_params)
+          expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session.id)
+        end
+      end
+
+      context 'dial mode is Power' do
+        let(:campaign){ create(:power) }
+        it 'redirects the caller to the next call' do
+          subject.completed(campaign, status_callback_params)
+          expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session.id)
+        end
+      end
+
+      context 'dial mode is Predictive' do
+        it 'does not redirect the caller' do
+          subject.completed(campaign, status_callback_params)
+          expect([:sidekiq, :call_flow]).to_not have_queued(RedirectCallerJob)
+        end
+      end
+    end
+
     context 'CallStatus is completed' do
       before do
         status_callback_params['CallStatus'] = 'completed'
       end
 
-      context '#answered never processed this call' do
-        it 'tells campaign :number_not_ringing' do
-          expect(campaign).to receive(:number_not_ringing)
+      context 'and not answered' do
+        it_behaves_like 'calls not answered'
+      end
+
+      context 'and answered but not connected' do
+        it 'queues persistence job' do
           subject.completed(campaign, status_callback_params)
-        end
-
-        context 'dial mode is Preview' do
-          let(:campaign){ create(:preview) }
-          it 'redirects the caller to the next call' do
-            subject.completed(campaign, status_callback_params)
-            expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session.id)
-          end
-        end
-
-        context 'dial mode is Power' do
-          let(:campaign){ create(:power) }
-          it 'redirects the caller to the next call' do
-            subject.completed(campaign, status_callback_params)
-            expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session.id)
-          end
-        end
-
-        context 'dial mode is Predictive' do
-          it 'does not redirect the caller' do
-            subject.completed(campaign, status_callback_params)
-            expect([:sidekiq, :call_flow]).to_not have_queued(RedirectCallerJob)
-          end
+          expect([:sidekiq, :persistence]).to have_queued(CallFlow::Jobs::Persistence).with('Completed', twilio_params[:AccountSid], twilio_params[:CallSid])
         end
       end
     end
@@ -232,6 +243,8 @@ describe 'CallFlow::Call::Dialed' do
       before do
         status_callback_params['CallStatus'] = 'failed'
       end
+
+      it_behaves_like 'calls not answered'
 
       it 'tells CallFlow::Call::Failed to create an entry' do
         expect(CallFlow::Call::Failed).to receive(:create).with(campaign, status_callback_params['phone'], status_callback_params)
