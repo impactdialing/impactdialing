@@ -252,6 +252,7 @@ public
     @caller_session = @caller.caller_sessions.find(params[:caller_session_id])
     transfer_attempt = @caller_session.transfer_attempts.last
     participant_type = params[:participant_type]
+    
     case participant_type
     when 'transfer'
       Providers::Phone::Conference.kick(transfer_attempt, {retry_up_to: ENV["TWILIO_RETRIES"]})
@@ -259,7 +260,7 @@ public
     when 'caller'
       Providers::Phone::Conference.kick(@caller_session, {retry_up_to: ENV["TWILIO_RETRIES"]})
 
-      if transfer_attempt.warm_transfer?
+      if transfer_attempt.try(:warm_transfer?)
         if RedisCallerSession.party_count(transfer_attempt.session_key) == 3
           RedisCallerSession.remove_party(transfer_attempt.session_key) # Lead
           RedisCallerSession.remove_party(transfer_attempt.session_key) # Transfer
@@ -272,7 +273,6 @@ public
       # this redirect is only necessary in order to update the Call
       # and trigger the Dial:action from the caller conference twiml
       # in transfers#caller
-      # todo: file ticket w/ twilio asking why Dial:action isn't followed after kicking participant
       Providers::Phone::Call.redirect_for(@caller_session, :pause)
       @caller_session.publish('caller_kicked_off', {})
     end

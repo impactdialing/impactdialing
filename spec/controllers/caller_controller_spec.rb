@@ -195,15 +195,7 @@ describe CallerController, :type => :controller do
       session[:caller] = caller.id
       stub_twilio_conference_by_name_request
     end
-    context 'participant_type: "caller"' do
-      let(:call_sid){ caller_session.sid }
-      before do
-        stub_twilio_kick_participant_request
-        post_body = pause_caller_url(caller, url_opts)
-        stub_twilio_redirect_request(post_body)
-        post :kick, valid_params.merge(participant_type: 'caller')
-      end
-
+    shared_examples_for 'caller kicks self from transfer conference' do
       it 'kicks caller off conference' do
         expect(@kick_request).to have_been_made
       end
@@ -215,7 +207,19 @@ describe CallerController, :type => :controller do
       end
     end
 
-    context 'participant_type: "transfer"' do
+    context 'caller' do
+      let(:call_sid){ caller_session.sid }
+      before do
+        stub_twilio_kick_participant_request
+        post_body = pause_caller_url(caller, url_opts)
+        stub_twilio_redirect_request(post_body)
+        post :kick, valid_params.merge(participant_type: 'caller')
+      end
+
+      it_behaves_like 'caller kicks self from transfer conference'
+    end
+
+    context 'transfer' do
       let(:call_sid){ transfer_attempt.sid }
       before do
         stub_twilio_kick_participant_request
@@ -228,6 +232,21 @@ describe CallerController, :type => :controller do
       it 'renders nothing' do
         expect(response.body).to be_blank
       end
+    end
+
+    context 'caller but transfer_attempt is nil' do
+      # this is a purely to help out clients who get out of sync
+      # eg hanging on to previous transfer states.
+      let(:call_sid){ caller_session.sid }
+      before do
+        TransferAttempt.destroy_all
+        stub_twilio_kick_participant_request
+        post_body = pause_caller_url(caller, url_opts)
+        stub_twilio_redirect_request(post_body)
+        post :kick, valid_params.merge(participant_type: 'caller')
+      end
+
+      it_behaves_like 'caller kicks self from transfer conference'
     end
   end
 
