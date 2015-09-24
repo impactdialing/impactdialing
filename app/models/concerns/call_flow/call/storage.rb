@@ -56,6 +56,7 @@ public
 
   def save(hash)
     redis.mapped_hmset(key, hash)
+    expire(key, CallFlow::Call.redis_expiry)
   end
 
   def multi(&block)
