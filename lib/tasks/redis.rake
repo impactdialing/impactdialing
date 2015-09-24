@@ -27,19 +27,16 @@ namespace :redis do
     print "\ndone\n"
   end
 
-  desc "Purge call outcome lists"
-  task :purge_call_outcome_lists => [:environment] do
+  desc "Purge deprecated redis keys"
+  task :purge_deprecated_keys => [:environment] do
     lists = %w(not_answered_call_list abandoned_call_list
                end_answered_by_machine disconnected_call_list
               wrapped_up_call_list processing_by_machine_call_list)
     lists.each do |list|
-      redis.ltrim list, 0, 0
+      redis.del list, 0, 0
     end
-  end
 
-  desc "Purge call flow hashes"
-  task :purge_call_hashes => [:environment] do
-    hashes = %w(message_dropped call_flow)
+    hashes = %w(message_dropped call_flow data_centre)
     hashes.each do |hash|
       keys = []
       redis.scan_each(match: "#{hash}*") do |key|
