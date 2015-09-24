@@ -98,7 +98,6 @@ public
   def ready_to_call
     # render abort 'dial' twiml here and 'start_calling' twiml at Callin#identify
     render_abort_twiml_unless_fit_to(:dial, @caller_session) do
-      RedisDataCentre.set_datacentres_used(@caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
       render xml: @caller_session.ready_to_call
     end
   end

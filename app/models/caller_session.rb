@@ -177,7 +177,6 @@ public
     RedisStatus.delete_state(campaign_id, self.id)
     RedisCallerSession.delete(self.id)
     RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, data_centre)
-    RedisDataCentre.remove_data_centre(campaign_id, data_centre)
     RedisCallerSession.remove_datacentre(self.id)
     RedisCallerSession.deactivate_transfer(session_key)
   end
@@ -226,12 +225,10 @@ public
       new_campaign_id = RedisReassignedCallerSession.campaign_id(self.id)
       new_campaign =  Campaign.find(new_campaign_id)
       RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
-      RedisDataCentre.remove_data_centre(campaign.id, callerdc)
       self.update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign: new_campaign)
       RedisPredictiveCampaign.add(new_campaign.id, new_campaign.type)
       RedisReassignedCallerSession.delete(self.id)
       RedisStatus.set_state_changed_time(new_campaign.id, "On hold", self.id)
-      RedisDataCentre.set_datacentres_used(new_campaign.id, callerdc)
     end
   end
 
