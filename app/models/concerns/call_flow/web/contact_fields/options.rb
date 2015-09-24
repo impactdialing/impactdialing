@@ -10,7 +10,7 @@ private
 
   def validate_object!
     unless object.kind_of?(Account) and (not object.new_record?)
-      raise ArgumentError, "#{self.class} must be isntantiated with a saved Account instance."
+      raise ArgumentError, "#{self.class} must be instantiated with a saved Account instance."
     end
   end
 
