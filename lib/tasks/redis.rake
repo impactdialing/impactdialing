@@ -36,7 +36,7 @@ namespace :redis do
       redis.del list, 0, 0
     end
 
-    hashes = %w(message_dropped call_flow data_centre)
+    hashes = %w(message_dropped call_flow data_centre monitor)
     hashes.each do |hash|
       keys = []
       redis.scan_each(match: "#{hash}*") do |key|
