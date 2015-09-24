@@ -122,10 +122,10 @@ describe 'CallFlow::Call::Dialed' do
 
     context 'caller is phones only' do
       before do
-        allow(caller_session).to receive(:is_phones_only?){ true }
+        allow(call_flow_caller_session).to receive(:is_phones_only?){ true }
         allow(subject).to receive(:caller_session){ caller_session }
-        expect(caller_session).to_not receive(:redirect_to_hold)
-        expect(caller_session).to_not receive(:stop_calling)
+        expect(call_flow_caller_session).to_not receive(:redirect_to_hold)
+        expect(call_flow_caller_session).to_not receive(:stop_calling)
       end
 
       it 'does not redirect_to_hold' do
@@ -324,10 +324,10 @@ describe 'CallFlow::Call::Dialed' do
         expect(subject.storage['status']).to eq twilio_params['CallStatus']
       end
 
-      it 'sets :dialed_call_sid on caller_session' do
+      it 'sets :dialed_call_sid on caller_session_call' do
         RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
         subject.answered(campaign, twilio_params)
-        expect(subject.caller_session.dialed_call_sid).to eq rest_response['sid']
+        expect(subject.caller_session_call.dialed_call_sid).to eq rest_response['sid']
       end
 
       context 'when call is answered by human and CallStatus == "in-progress"' do

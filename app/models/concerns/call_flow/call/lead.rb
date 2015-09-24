@@ -18,7 +18,7 @@ class CallFlow::Call::Lead < CallFlow::Call
       @caller_session_sid = value
       storage.multi do
         storage[:caller_session_sid]   = value
-        caller_session.dialed_call_sid = sid
+        caller_session_call.dialed_call_sid = sid
       end
     end
   end
@@ -27,9 +27,9 @@ class CallFlow::Call::Lead < CallFlow::Call
     @caller_session_sid ||= storage[:caller_session_sid]
   end
 
-  def caller_session
+  def caller_session_call
     if caller_session_sid.present?
-      CallFlow::CallerSession.new(account_sid, @caller_session_sid)
+      CallFlow::CallerSession.new(account_sid, caller_session_sid)
     end
   end
 end

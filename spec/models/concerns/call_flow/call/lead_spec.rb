@@ -14,17 +14,17 @@ describe 'CallFlow::Call::Lead' do
       expect(subject.storage[:caller_session_sid]).to eq caller_session_sid
     end
     it 'sends sid to #caller_session' do
-      expect(subject.caller_session.dialed_call_sid).to eq call_sid
+      expect(subject.caller_session_call.dialed_call_sid).to eq call_sid
     end
   end
 
   describe '#caller_session' do
     it 'returns nil if @caller_session_sid is blank' do
-      expect(subject.caller_session).to be_nil
+      expect(subject.caller_session_call).to be_nil
     end
     it 'returns instance of CallFlow::CallerSession if @caller_session_sid is not blank' do
       subject.caller_session_sid = caller_session_sid
-      expect(subject.caller_session).to be_kind_of CallFlow::CallerSession
+      expect(subject.caller_session_call).to be_kind_of CallFlow::CallerSession
     end
   end
 end

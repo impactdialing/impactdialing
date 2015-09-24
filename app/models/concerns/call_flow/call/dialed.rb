@@ -138,10 +138,6 @@ public
                         end
   end
 
-  def caller_session_call
-    @caller_session_call ||= CallFlow::CallerSession.new(account_sid, caller_session_sid)
-  end
-  
   def completed?
     storage[:status] == 'completed'
   end
@@ -182,13 +178,13 @@ public
     if caller_session_from_sid.present?
       RedisStatus.set_state_changed_time(caller_session_from_sid.campaign_id, "Wrap up", caller_session_from_sid.id)
     end
-    caller_session.emit('publish_voter_disconnected')
+    caller_session_call.emit('publish_voter_disconnected')
   end
 
   def completed(campaign, params)
     storage.save(params_for_update(params))
 
-    caller_session.try(:emit, 'publish_call_ended', params)
+    caller_session_call.try(:emit, 'publish_call_ended', params)
 
     if call_failed?(params)
       CallFlow::Call::Failed.create(campaign, params[:phone], params)
@@ -197,7 +193,7 @@ public
         campaign.number_not_ringing
 
         unless campaign.predictive?
-          caller_session.redirect_to_hold
+          caller_session_call.redirect_to_hold
         end
       end
 
@@ -218,7 +214,7 @@ public
       recording_id: recording.id,
       recording_delivered_manually: 1
     })
-    caller_session.emit('publish_message_drop_success')
+    caller_session_call.emit('publish_message_drop_success')
   end
 
   def dispositioned(params)
@@ -228,11 +224,11 @@ public
       lead_uuid: params[:lead][:id]
     })
 
-    unless caller_session.is_phones_only?
+    unless caller_session_call.is_phones_only?
       unless params[:stop_calling]
-        caller_session.redirect_to_hold
+        caller_session_call.redirect_to_hold
       else
-        caller_session.stop_calling
+        caller_session_call.stop_calling
       end
     end
 
