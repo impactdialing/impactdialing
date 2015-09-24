@@ -21,10 +21,10 @@ class CampaignOutOfNumbersJob
 
   def perform(caller_session_id)
     caller_session = CallerSession.find(caller_session_id)
-    if caller_session.available?
-      Providers::Phone::Call.redirect_for(caller_session, :out_of_numbers)
-    elsif caller_session.on_call?
+    if caller_session.connected_to_lead?
       CampaignOutOfNumbersJob.perform_in(1.minute, caller_session_id)
+    elsif caller_session.on_call?
+      Providers::Phone::Call.redirect_for(caller_session, :out_of_numbers)
     end
   end
 end
