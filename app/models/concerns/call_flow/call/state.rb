@@ -24,9 +24,7 @@ public
   def visited(state)
     redis.hset(key, state, Time.now.utc)
 
-    if redis.ttl(key) < 0
-      redis.expire(key, 1.day)
-    end
+    expire(key, CallFlow::Call.redis_expiry)
   end
 
   def visited?(state)

@@ -43,6 +43,10 @@ module CallFlow
       validate!
     end
 
+    def self.redis_expiry
+      1.day
+    end
+
     def self.create(raw_params)
       account_sid = (raw_params['AccountSid'] || raw_params['account_sid'])
       sid         = (raw_params['CallSid'] || raw_params['sid'])
