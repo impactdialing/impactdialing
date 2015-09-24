@@ -208,7 +208,8 @@ public
   end
 
   def dispositioned?
-    completed? and answered_by_human? and state.visited?(:caller_and_lead_connected)
+    call_data = storage.attributes
+    (call_data[:questions].present? or call_data[:notes].present?) and call_data[:lead_uuid].present?
   end
 
   def manual_message_dropped(recording)

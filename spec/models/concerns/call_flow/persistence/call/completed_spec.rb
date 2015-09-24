@@ -219,8 +219,10 @@ describe 'CallFlow::Persistence::Call::Completed' do
       before do
         dialed_call                      = CallFlow::Call::Dialed.new(account_sid, call_sid)
         dialed_call.storage.save(dialed_call.send(:params_for_update, completed_params))
-        dialed_call.storage['lead_uuid'] = dispositioned_lead[:uuid]
-        dialed_call.state.visited(:caller_and_lead_connected)
+        dialed_call.storage.save({
+          questions: {'42' => 'Yes'}.to_json,
+          lead_uuid: dispositioned_lead[:uuid]
+        })
       end
 
       it_behaves_like 'persistence of any call outcome'
@@ -337,8 +339,10 @@ describe 'CallFlow::Persistence::Call::Completed' do
       dialed_call = CallFlow::Call::Dialed.create(campaign, create_params, {caller_session_sid: caller_session.sid})
       dialed_call.storage.save(dialed_call.send(:params_for_update, callback_params))
       dialed_call.storage.save(dialed_call.send(:params_for_update, completed_params))
-      dialed_call.storage['lead_uuid'] = dispositioned_lead[:uuid]
-      dialed_call.state.visited(:caller_and_lead_connected)
+      dialed_call.storage.save({
+        questions: {'42' => 'Yes'}.to_json,
+        lead_uuid: dispositioned_lead[:uuid]
+      })
       subject.persist_call_outcome # first call persistence (answered & lead dispositioned)
     end
 
