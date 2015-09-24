@@ -7,12 +7,6 @@ class CallFlow::Web::ContactFields
   attr_reader :script, :account
 
 private
-  def keys
-    {
-      active: "contact_fields"
-    }
-  end
-
   def redis
     Redis.new
   end
