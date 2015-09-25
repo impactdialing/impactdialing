@@ -35623,7 +35623,7 @@ to fix it.');
   ]);
 
   surveyForm.controller('SurveyFormCtrl', [
-    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'HouseholdCache', function($rootScope, $scope, $filter, $state, $http, $window, $timeout, TransferCache, CallCache, TwilioCache, usSpinnerService, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache, idJanitor, HouseholdCache) {
+    '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'HouseholdCache', 'CallStationCache', function($rootScope, $scope, $filter, $state, $http, $window, $timeout, TransferCache, CallCache, TwilioCache, usSpinnerService, SurveyFormFieldsFactory, idFlashFactory, SurveyCache, ErrorCache, idJanitor, HouseholdCache, CallStationCache) {
       var cacheTransferList, callAndVoter, fetchErr, handleStateChange, loadForm, normalizeQuestion, prepForm, requestInProgress, reset, selectDefaults, survey;
       survey = {
         hideButtons: true,
@@ -35701,21 +35701,18 @@ to fix it.');
         return normalized;
       };
       callAndVoter = function() {
-        var call_sid, lead;
+        var call_sid, caller_session_id, lead;
         call_sid = CallCache.get('id');
+        caller_session_id = CallStationCache.get('caller').session_id;
         lead = HouseholdCache.get('selected');
-        if (call_sid == null) {
-          ErrorCache.put('survey.save.failed', "Call had no ID: Call[" + call_sid + "].");
-          idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.');
-          return false;
-        }
         if (lead == null) {
           idFlashFactory.now('warning', 'Select a contact before saving.');
           return false;
         }
         return {
           call_sid: call_sid,
-          lead: lead
+          lead: lead,
+          caller_session_id: caller_session_id
         };
       };
       requestInProgress = false;
@@ -35727,7 +35724,7 @@ to fix it.');
         }
         usSpinnerService.spin('global-spinner');
         cachedParams = callAndVoter();
-        if (!((cachedParams.call_sid != null) && (cachedParams.lead != null))) {
+        if (cachedParams.lead == null) {
           return;
         }
         if (!andContinue) {
@@ -35782,6 +35779,7 @@ to fix it.');
         params = {
           lead: cachedParams.lead,
           sid: cachedParams.call_sid,
+          caller_session_id: cachedParams.caller_session_id,
           notes: survey.responses.notes,
           question: normalizeQuestion(),
           stop_calling: !andContinue
@@ -35791,7 +35789,7 @@ to fix it.');
       survey.autoSubmitConfig = function() {
         var cachedParams;
         cachedParams = callAndVoter();
-        if (!((cachedParams.call_sid != null) && (cachedParams.lead != null))) {
+        if (cachedParams.lead == null) {
           return;
         }
         return {
@@ -35799,6 +35797,7 @@ to fix it.');
           data: {
             lead: cachedParams.lead,
             sid: cachedParams.call_sid,
+            caller_session_id: cachedParams.caller_session_id,
             notes: survey.responses.notes,
             question: normalizeQuestion(),
             stop_calling: true
