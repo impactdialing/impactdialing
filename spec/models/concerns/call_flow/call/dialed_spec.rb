@@ -88,6 +88,11 @@ describe 'CallFlow::Call::Dialed' do
       allow(CallFlow::CallerSession).to receive(:new).with(caller_record.telephony_provider_account_id, caller_session.sid){ call_flow_caller_session }
     end
 
+    it 'saves :mapped_status as CallAttempt::Status::SUCCESS' do
+      subject.dispositioned(browser_params)
+      expect(subject.storage[:mapped_status]).to eq CallAttempt::Status::SUCCESS
+    end
+
     it 'saves params[:question] as JSON eg {question_id: selected_response_id,...}' do
       subject.dispositioned(browser_params)
       expect(subject.storage['questions']).to eq browser_params['question'].to_json

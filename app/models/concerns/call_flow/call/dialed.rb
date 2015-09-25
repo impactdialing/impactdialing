@@ -221,7 +221,8 @@ public
     storage.save({
       questions: params[:question].try(:to_json),
       notes: params[:notes].try(:to_json),
-      lead_uuid: params[:lead][:id]
+      lead_uuid: params[:lead][:id],
+      mapped_status: CallAttempt::Status::SUCCESS # avoids persisting 'in-progress' status when transfers are still active on lead-line
     })
 
     unless caller_session_call.is_phones_only?
