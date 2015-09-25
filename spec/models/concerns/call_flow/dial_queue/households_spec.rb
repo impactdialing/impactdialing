@@ -182,10 +182,10 @@ describe 'CallFlow::DialQueue::Households' do
       end
 
       context 'the redis-key & hash-key of the phone number do not exist' do
-        it 'return []' do
+        it 'return {}' do
           actual = subject.find('1234567890')
 
-          expect(actual).to eq []
+          expect(actual).to eq({})
         end
       end
     end

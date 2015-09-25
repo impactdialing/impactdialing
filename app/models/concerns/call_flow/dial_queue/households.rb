@@ -118,7 +118,7 @@ class CallFlow::DialQueue::Households
     result = redis.hget *hkey(phone)
     if result.blank?
       # todo: raise or log exception here since this should never be the case
-      result = []
+      result = {}
     else
       result = HashWithIndifferentAccess.new(JSON.parse(result))
     end
