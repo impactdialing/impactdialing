@@ -48,7 +48,7 @@ module AppHealth
       def self.count_violators_sql
         %Q{
           SELECT COUNT(DISTINCT(id)) count FROM call_attempts
-          WHERE created_at >= UTC_TIMESTAMP() - INTERVAL 1 HOUR
+          WHERE tStartTime >= UTC_TIMESTAMP() - INTERVAL 1 HOUR
           GROUP BY household_id
           HAVING COUNT(id) > 1
         }

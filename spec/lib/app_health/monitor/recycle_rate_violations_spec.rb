@@ -8,8 +8,8 @@ describe AppHealth::Monitor::RecycleRateViolations do
   let(:voter){ create(:voter, account: account, campaign: campaign) }
 
   def create_attempts(voter, time_a, time_b=Time.now)
-    create(:bare_call_attempt, :machine_answered, household: voter.household, created_at: time_a, campaign: campaign)
-    create(:bare_call_attempt, :machine_answered, household: voter.household, created_at: time_b, campaign: campaign) # created_at => Time.now by def
+    create(:bare_call_attempt, :machine_answered, household: voter.household, created_at: time_a, tStartTime: time_a, campaign: campaign)
+    create(:bare_call_attempt, :machine_answered, household: voter.household, created_at: time_b, tStartTime: time_b, campaign: campaign) # created_at => Time.now by def
   end
 
   describe '.ok?' do
