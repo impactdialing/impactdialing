@@ -9,6 +9,8 @@ local available_leads     = {}
 
 if _household then
   household = cjson.decode(_household)
+else
+  redis.call('RPUSH', 'debug.log', '_household was false at '..tostring(active_key)..' => '..tostring(hkey))
 end
 
 if household.leads then
