@@ -129,7 +129,6 @@ private
 
 public
   def import_records
-    leads               = active_redis_leads
     @dispositioned_voter = nil
     uuid_to_id_map      = {}
 
