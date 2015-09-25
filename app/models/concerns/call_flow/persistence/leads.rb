@@ -2,36 +2,35 @@ class CallFlow::Persistence::Leads < CallFlow::Persistence
   attr_reader :dispositioned_voter
 
 private
-  def redis_household
+  def presented_household
     presented_households.find(phone)
   end
 
-  def active_redis_household
+  def active_household
     active_households.find(phone)
   end
 
-  def active_redis_leads
-    redis_household['leads']
+  def leads
+    if (_leads = presented_household['leads']).blank?
+      _leads = active_household['leads']
+    end
+    return _leads
   end
 
-  def active_new_redis_leads
-    redis_household['leads'].select{|lead| lead['sql_id'].blank?}
+  def new_leads
+    leads.select{|lead| lead['sql_id'].blank?}
   end
 
-  def active_persisted_redis_leads
-    active_redis_household['leads'].select{|lead| lead['sql_id'].present?}
+  def persisted_leads
+    active_household['leads'].select{|lead| lead['sql_id'].present?}
   end
 
   def any_leads_persisted?
-    active_persisted_redis_leads.any?
-  end
-
-  def any_leads_not_persisted?
-    active_new_redis_leads.any?
+    persisted_leads.any?
   end
 
   def leads_without_target
-    active_redis_leads.select{|ld| ld['uuid'] != call_data[:lead_uuid]}
+    leads.select{|ld| ld['uuid'] != call_data[:lead_uuid]}
   end
 
   def new_leads_without_target
@@ -137,7 +136,7 @@ public
     uuid_to_id_map      = {}
 
     if campaign.using_custom_ids? and any_leads_persisted?
-      update_all_voter_records_and_custom_field_values(active_persisted_redis_leads)
+      update_all_voter_records_and_custom_field_values(persisted_leads)
     end
 
     if dialed_call.dispositioned?
@@ -147,7 +146,7 @@ public
 
     not_called_uuid_to_id_map = create_voter_records(new_leads_without_target)
 
-    if active_new_redis_leads.any?
+    if new_leads.any?
       uuid_to_id_map.merge!(not_called_uuid_to_id_map)
       active_households.update_leads_with_sql_ids(phone, uuid_to_id_map)
     end
@@ -160,7 +159,7 @@ public
   end
 
   def target_lead
-    active_redis_leads.detect{|ld| ld['uuid'] == call_data[:lead_uuid]}
+    leads.detect{|ld| ld['uuid'] == call_data[:lead_uuid]}
   end
 
   def create_voter_records(leads)
