@@ -4,8 +4,12 @@ local completed_leads_key = KEYS[4]
 local phone               = ARGV[1]
 local hkey                = ARGV[2]
 local _household          = redis.call('HGET', active_key, hkey)
-local household           = cjson.decode(_household)
+local household           = {}
 local available_leads     = {}
+
+if _household then
+  household = cjson.decode(_household)
+end
 
 if household.leads then
   for _,lead in pairs(household.leads) do

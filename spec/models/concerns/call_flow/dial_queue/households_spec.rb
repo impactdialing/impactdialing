@@ -56,6 +56,12 @@ describe 'CallFlow::DialQueue::Households' do
       redis.setbit(completed_lead_key, households[phone][:leads].first['sequence'], 1)
       expect(subject.find_presentable(phone).first[:leads]).to_not include households[phone][:leads].first
     end
+
+    it 'returns empty result if nothing is in redis for active_key/hkey' do
+      hkey = subject.send(:hkey, phone)
+      redis.hdel *hkey
+      expect(subject.find_presentable(phone)).to be_blank
+    end
   end
 
   describe 'auto selecting best available lead for disposition from target household' do

@@ -77,9 +77,6 @@ module CallFlow
       if houses.empty? and available.size > 0
         raise EmptyHousehold, "CallFlow::DialQueue#next(#{n}) found only empty households for #{phones}"
       end
-      houses.each do |house|
-        presented_households.save(house[:leads].first[:phone], house)
-      end
 
       return houses
     end
