@@ -72,8 +72,8 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 # - survey:reload - triggers re-fetch/load of survey form data & transfer list
 #
 surveyForm.controller('SurveyFormCtrl', [
-  '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'HouseholdCache',
-  ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   $timeout,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache,   idJanitor,   HouseholdCache) ->
+  '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'HouseholdCache', 'CallStationCache',
+  ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   $timeout,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache,   idJanitor,   HouseholdCache, CallStationCache) ->
     # Public 
     survey = {
       hideButtons: true
@@ -157,19 +157,15 @@ surveyForm.controller('SurveyFormCtrl', [
 
 
     callAndVoter = ->
-      call_sid = CallCache.get('id')
-      lead     = HouseholdCache.get('selected')
-
-      unless call_sid?
-        ErrorCache.put('survey.save.failed', "Call had no ID: Call[#{call_sid}].")
-        idFlashFactory.now('danger', 'You found a bug! Please report problem and we will have you up and running ASAP.')
-        return false
+      call_sid          = CallCache.get('id')
+      caller_session_id = CallStationCache.get('caller').session_id
+      lead              = HouseholdCache.get('selected')
 
       unless lead?
         idFlashFactory.now('warning', 'Select a contact before saving.')
         return false
 
-      return {call_sid, lead}
+      return {call_sid, lead, caller_session_id}
 
     requestInProgress = false
     survey.save = ($event, andContinue) ->
@@ -180,7 +176,7 @@ surveyForm.controller('SurveyFormCtrl', [
       usSpinnerService.spin('global-spinner')
 
       cachedParams = callAndVoter()
-      return unless cachedParams.call_sid? and cachedParams.lead?
+      return unless cachedParams.lead?
 
       unless andContinue
         TwilioCache.put('disconnect_pending', 1)
@@ -227,6 +223,7 @@ surveyForm.controller('SurveyFormCtrl', [
       params = {
         lead: cachedParams.lead
         sid: cachedParams.call_sid
+        caller_session_id: cachedParams.caller_session_id
         notes: survey.responses.notes
         question: normalizeQuestion()
         stop_calling: !andContinue
@@ -235,12 +232,13 @@ surveyForm.controller('SurveyFormCtrl', [
 
     survey.autoSubmitConfig = ->
       cachedParams = callAndVoter()
-      return unless cachedParams.call_sid? and cachedParams.lead?
+      return unless cachedParams.lead?
       {
         url: "/call_center/api/disposition"
         data: {
           lead: cachedParams.lead
           sid: cachedParams.call_sid
+          caller_session_id: cachedParams.caller_session_id
           notes: survey.responses.notes
           question: normalizeQuestion()
           stop_calling: true
