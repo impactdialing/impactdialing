@@ -63,19 +63,46 @@ describe Callers::StationController do
       allow(CallFlow::Call::Dialed).to receive(:new){ dialed_call }
     end
 
-    it 'tells CallFlow::Call::Dialed instance :dispositioned' do
-      expected_params = browser_params.merge({
-        'action' => 'disposition',
-        'controller' => 'callers/station'
-      })
-      expect(dialed_call).to receive(:dispositioned).with(expected_params)
+    shared_examples_for 'all dispositions' do
+      it 'tells CallFlow::Call::Dialed instance :dispositioned' do
+        expected_params = browser_params.merge({
+          'action' => 'disposition',
+          'controller' => 'callers/station'
+        })
+        expect(dialed_call).to receive(:dispositioned).with(expected_params)
 
-      post :disposition, browser_params
+        post :disposition, browser_params
+      end
+
+      it 'renders nothing' do
+        post :disposition, browser_params
+        expect(response.body).to be_blank
+      end
     end
 
-    it 'renders nothing' do
-      post :disposition, browser_params
-      expect(response.body).to be_blank
+    it_behaves_like 'all dispositions'
+
+    context ':sid param is not present' do
+      let(:caller_session) do
+        create(:webui_caller_session, {
+          sid: dialed_call.caller_session_sid,
+          campaign: @campaign
+        })
+      end
+
+      before do
+        browser_params.delete 'sid'
+        browser_params.merge!(caller_session_id: caller_session.id.to_s)
+        allow(caller_session).to receive(:dialed_call){ dialed_call }
+        expect(CallerSession).to receive(:find){ caller_session }
+      end
+
+      it 'loads dialed_call via CallerSession' do
+        expect(caller_session).to receive(:dialed_call){ dialed_call }
+        post :disposition, browser_params
+      end
+
+      it_behaves_like 'all dispositions'
     end
   end
 

@@ -162,7 +162,12 @@ contact your account administrator.")
     # - calls#submit_result_and_stop
     def disposition
       account_sid = @caller.telephony_provider_account_id
-      dialed_call = CallFlow::Call::Dialed.new(account_sid, params[:sid])
+      if params[:sid].present?
+        dialed_call = CallFlow::Call::Dialed.new(account_sid, params[:sid])
+      else
+        caller_session = CallerSession.find(params[:caller_session_id])
+        dialed_call = caller_session.dialed_call
+      end
       dialed_call.dispositioned(params)
       render nothing: true
     end
