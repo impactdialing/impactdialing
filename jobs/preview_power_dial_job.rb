@@ -25,6 +25,20 @@ class PreviewPowerDialJob
 
   def perform(caller_session_id, phone)
     caller_session = CallerSession.includes(:campaign).find_by_id(caller_session_id)
-    Twillio.dial(phone, caller_session)
+    unless already_dialed?(caller_session, phone)
+      Twillio.dial(phone, caller_session)
+    else
+      source = [
+        "ac-#{caller_session.campaign.account_id}",
+        "ca-#{caller_session.campaign_id}",
+        "cs-#{caller_session.id}",
+        "dm-#{caller_session.campaign.type}"
+      ].join('.')
+      ImpactPlatform::Metrics.count('dialer.duplicate_dial', 1, source)
+    end
+  end
+
+  def already_dialed?(caller_session, phone)
+    caller_session.dialed_call.present? and caller_session.dialed_call.storage[:phone] == phone
   end
 end
