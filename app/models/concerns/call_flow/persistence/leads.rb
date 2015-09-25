@@ -6,6 +6,10 @@ private
     presented_households.find(phone)
   end
 
+  def active_redis_household
+    active_households.find(phone)
+  end
+
   def active_redis_leads
     redis_household['leads']
   end
@@ -15,7 +19,7 @@ private
   end
 
   def active_persisted_redis_leads
-    redis_household['leads'].select{|lead| lead['sql_id'].present?}
+    active_redis_household['leads'].select{|lead| lead['sql_id'].present?}
   end
 
   def any_leads_persisted?
