@@ -24,7 +24,6 @@ class Caller < ActiveRecord::Base
   before_validation { |caller| caller.username = username.downcase unless username.nil?}
   before_save :reassign_caller_campaign
 
-  validate :check_subscription_for_caller_groups
   validate :campaign_and_caller_on_same_account
 
   scope :active, -> { where(:active => true) }
@@ -69,14 +68,6 @@ public
 
   def ability
     @ability ||= Ability.new(account)
-  end
-
-  def check_subscription_for_caller_groups
-    return true if caller_group_id.blank?
-
-    unless ability.can? :manage, CallerGroup
-      errors.add(:base, 'Your subscription does not allow managing caller groups.')
-    end
   end
 
   def reassign_caller_campaign
