@@ -182,5 +182,24 @@ describe 'CachePhonesOnlyScriptQuestions' do
         end
       end
     end
+
+    context 'script is not active' do
+      before do
+        CachePhonesOnlyScriptQuestions.perform(@script.id, 'seed')
+        @script.campaigns.update_all(active: false)
+        @script.update_attributes!(active: false)
+        CachePhonesOnlyScriptQuestions.perform(@script.id, 'seed')
+      end
+
+      it 'deletes the RedisQuestion list' do
+        expect(RedisQuestion.cached?(@script.id)).to be_falsey
+      end
+
+      it 'deletes the RedisPossibleResponse lists' do
+        @script.questions.each do |question|
+          expect(RedisPossibleResponse.cached?(@script.id)).to be_falsey
+        end
+      end
+    end
   end
 end

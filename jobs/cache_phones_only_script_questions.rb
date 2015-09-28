@@ -31,6 +31,7 @@ class CachePhonesOnlyScriptQuestions
 
   def self.perform(script_id, action='update')
     script  = Script.find script_id
+    action = 'delete' if not script.active?
     send("#{action}_cache", script)
   end
 
@@ -40,6 +41,13 @@ class CachePhonesOnlyScriptQuestions
 
   def self.sum(content)
     Digest::SHA1.hexdigest(content)
+  end
+
+  def self.delete_cache(script)
+    RedisQuestion.clear_list(script.id)
+    script.questions.each do |question|
+      RedisPossibleResponse.clear_list(script.id)
+    end
   end
 
   def self.seed_cache(script, ttl=nil)

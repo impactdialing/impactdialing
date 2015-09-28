@@ -13,19 +13,29 @@ describe Script, :type => :model do
     let(:account){ admin.account }
     let(:script){ create_campaign_with_script(:bare_power, account).first }
 
-    it 'queues job to update redis cache (job will only alter cache if data already cached and does not match fresh data)' do
-      expect(CachePhonesOnlyScriptQuestions).to receive(:add_to_queue).with(script.id, 'update')
+    context 'when script is active' do
+      it 'queues job to update redis cache (job will only alter cache if data already cached and does not match fresh data)' do
+        expect(CachePhonesOnlyScriptQuestions).to receive(:add_to_queue).with(script.id, 'update')
 
-      script.update_attributes(name: 'Updated Script Name')
+        script.update_attributes(name: 'Updated Script Name')
+      end
+
+      it 'queues job to cache Script#voter_fields' do
+        script.update_attributes(name: 'Updated')
+        actual = Resque.peek :dial_queue, 0, 100
+        expect(actual).to include({
+          'class' => 'CallFlow::Web::Jobs::CacheContactFields',
+          'args' => [script.id]
+        })
+      end
     end
 
-    it 'queues job to cache Script#voter_fields' do
-      script.update_attributes(name: 'Updated')
-      actual = Resque.peek :dial_queue, 0, 100
-      expect(actual).to include({
-        'class' => 'CallFlow::Web::Jobs::CacheContactFields',
-        'args' => [script.id]
-      })
+    context 'when script is not active' do
+      it 'queues job to delete redis question cache' do
+        script.campaigns.update_all(active: false)
+        script.update_attributes!(active: false)
+        expect([:resque, :dial_queue]).to have_queued(CachePhonesOnlyScriptQuestions).with(script.id, 'update')
+      end
     end
 
     it 'publishes save notification via ActiveSupport::Notifications' do
