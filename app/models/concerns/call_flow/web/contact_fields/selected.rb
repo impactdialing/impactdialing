@@ -40,4 +40,8 @@ public
     fields = redis.hget(keys[:active], object.id)
     fields.blank? ? [] : JSON.parse(fields)
   end
+
+  def delete
+    redis.hdel keys[:active], object.id
+  end
 end
