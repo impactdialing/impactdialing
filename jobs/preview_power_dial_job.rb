@@ -1,8 +1,7 @@
 ##
 # Attempt to dial a +Household+ identified by given `phone` & `caller_session_id` and connect them to the
 # +Caller+ of the +CallerSession+ identified by given `caller_session_id`.
-# This job is queued from +Caller#calling_voter_preview_power+,
-# +PhonesOnlyCallerSession#conference_started_phones_only_power+
+# This job is queued from +PhonesOnlyCallerSession#conference_started_phones_only_power+
 # & +PhonesOnlyCallerSession#conference_started_phones_only_preview+.
 #
 # ### Metrics

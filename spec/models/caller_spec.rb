@@ -218,32 +218,6 @@ describe Caller, :type => :model do
 
 
   end
-
-  describe "started calling" do
-
-    it "should  push campaign and caller to redis " do
-      campaign = create(:predictive)
-      caller  = create(:caller, campaign: campaign)
-      caller_session = create(:caller_session, caller: caller)
-      expect(RedisPredictiveCampaign).to receive(:add).with(campaign.id, campaign.type)
-      expect(RedisStatus).to receive(:set_state_changed_time).with(campaign.id, "On hold", caller_session.id)
-      caller.started_calling(caller_session)
-    end
-
-  end
-
-  describe "calling_voter_preview_power" do
-    it "should call pusher and enqueue dial " do
-      campaign = create(:predictive)
-      caller  = create(:caller, campaign: campaign)
-      caller_session = create(:caller_session, caller: caller)
-      voter = create(:voter)
-      expect(caller).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_calling_voter"])
-      expect(caller).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, voter.id])
-      caller.calling_voter_preview_power(caller_session, voter.id)
-    end
-
-  end
 end
 
 # ## Schema Information

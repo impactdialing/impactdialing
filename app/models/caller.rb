@@ -121,18 +121,6 @@ public
     caller_session
   end
 
-  def started_calling(session)
-    RedisPredictiveCampaign.add(campaign.id, campaign.type)
-    RedisStatus.set_state_changed_time(campaign.id, "On hold", session.id)
-  end
-  deprecate :started_calling # moved to Twiml::CallerSessionsController#create
-
-  def calling_voter_preview_power(session, voter_id)
-    enqueue_call_flow(CallerPusherJob, [session.id, "publish_calling_voter"])
-    enqueue_call_flow(PreviewPowerDialJob, [session.id, voter_id])
-  end
-  deprecate :calling_voter_preview_power
-
   def create_caller_identity(session_key)
     caller_identities.create(session_key: session_key, pin: CallerIdentity.create_uniq_pin)
   end
