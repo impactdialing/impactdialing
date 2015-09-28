@@ -366,12 +366,6 @@ public
     call_attempts.from("call_attempts use index (index_call_attempts_on_campaign_id)").last.try(:created_at)
   end
 
-  def voters_called
-    Rails.logger.info "Deprecated ImpactDialing Method: Campaign#voters_called"
-    Voter.find_all_by_campaign_id(self.id, :select=>"id", :conditions=>"status <> 'not called'")
-  end
-
-
   def voters_count(status=nil, include_call_retries=true)
     Rails.logger.info "Deprecated ImpactDialing Method: Campaign#voters_count"
 
