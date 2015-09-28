@@ -73,8 +73,8 @@ class Script < ActiveRecord::Base
   end
 
   def questions_and_responses
-    questions.all(:include => [:possible_responses]).inject({}) do |acc, question|
-      acc[question.text] = question.possible_responses.map(&:value)
+    questions.includes(:possible_responses).to_a.inject({}) do |acc, question|
+      acc[question.text] = question.possible_responses.pluck(:value)
       acc
     end
   end
