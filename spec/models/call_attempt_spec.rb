@@ -189,9 +189,9 @@ describe CallAttempt, :type => :model do
       create(:call_attempt, caller_id: another_caller.id)
       create(:call_attempt, caller_id: caller.id)
       create(:call_attempt, wrapup_time: Time.now-2.hours,caller_id: caller.id)
-      expect(CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length).to eq(2)
+      expect(CallAttempt.not_wrapped_up.where(caller_id: caller.id).count).to eq(2)
       CallAttempt.wrapup_calls(caller.id)
-      expect(CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length).to eq(0)
+      expect(CallAttempt.not_wrapped_up.where(caller_id: caller.id).count).to eq(0)
     end
   end
 end
