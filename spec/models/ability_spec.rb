@@ -300,8 +300,8 @@ describe Ability, :type => :model do
       it 'cannot add transfers' do
         expect(ability).not_to be_able_to :add_transfer, Script
       end
-      it 'cannot manage caller groups' do
-        expect(ability).not_to be_able_to :manage, CallerGroup
+      it 'can manage caller groups' do
+        expect(ability).to be_able_to :manage, CallerGroup
       end
       it 'can view campaign reports' do
         expect(ability).to be_able_to :view_reports, Account

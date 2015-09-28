@@ -72,17 +72,16 @@ class Ability
 
   def apply_feature_permissions
     can :view_reports, Account
+    can :manage, CallerGroup
 
     case plan
     when 'enterprise', 'per_minute', 'business', 'trial'
       can :add_transfer, Script
-      can :manage, CallerGroup
       can :view_dashboard, Account
       can :record_calls, Account
       can :manage, [Preview, Power, Predictive]
     when 'pro'
       can :add_transfer, Script
-      can :manage, CallerGroup
       can :view_dashboard, Account
       can :manage, [Preview, Power, Predictive]
     when 'basic'
