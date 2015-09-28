@@ -40,7 +40,7 @@ describe 'CallFlow::Persistence::Leads' do
       create(:household, campaign: campaign, account: account, phone: phone)
     end
     let(:dispositioned_voter_record){ nil }
-    let(:voter_records){ Voter.all }
+    let(:voter_records){ Voter.where(1).to_a }
 
     subject{ CallFlow::Persistence::Leads.new(dialed_call, campaign, household_record) }
 

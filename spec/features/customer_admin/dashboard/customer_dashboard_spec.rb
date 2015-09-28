@@ -74,7 +74,7 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
           account: account,
           campaign: power_campaign
         })
-        Caller.all
+        Caller.where(1).to_a
       end
 
       let(:extra_callers) do

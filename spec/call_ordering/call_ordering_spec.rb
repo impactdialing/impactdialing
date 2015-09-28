@@ -32,7 +32,7 @@ describe 'Voters (Contacts) are called in the order they are uploaded', data_hea
 
       if outer_pass > 1
         campaign.reload
-        voters = Voter.all
+        voters = Voter.where(1).to_a
         v = voters.first
         expect(v.status).to eq 'Call failed'
         expect(campaign.call_attempts).to include(v.last_call_attempt)

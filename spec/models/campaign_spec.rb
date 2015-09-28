@@ -423,8 +423,8 @@ describe Campaign, :type => :model do
        older_campaign = create(:power).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
        newer_campaign = create(:power).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
        Campaign.record_timestamps = true
-       expect(Campaign.by_updated.all).to include (newer_campaign)
-       expect(Campaign.by_updated.all).to include (older_campaign)
+       expect(Campaign.by_updated.to_a).to include (newer_campaign)
+       expect(Campaign.by_updated.to_a).to include (older_campaign)
 
      end
 

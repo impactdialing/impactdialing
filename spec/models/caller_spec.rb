@@ -88,7 +88,7 @@ describe Caller, :type => :model do
     older_caller = create(:caller).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
     newer_caller = create(:caller).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
     Caller.record_timestamps = true
-    expect(Caller.by_updated.all).to include(newer_caller, older_caller)
+    expect(Caller.by_updated.to_a).to include(newer_caller, older_caller)
   end
 
   it "lists active callers" do

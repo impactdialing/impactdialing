@@ -63,7 +63,7 @@ describe Predictive do
       twilio_redirect = :account_has_no_funds
       
       campaign.abort_available_callers_with(twilio_redirect)
-      actual = CallerSession.all.map(&:available_for_call)
+      actual = CallerSession.where(1).pluck(:available_for_call)
       expect(actual.uniq).to eq [false]
     end
 

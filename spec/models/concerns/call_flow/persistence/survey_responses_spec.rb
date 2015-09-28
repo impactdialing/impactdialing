@@ -102,7 +102,7 @@ describe 'CallFlow::Persistence::SurveyResponses' do
 
       it 'sets proper associations for all Answer records' do
         subject.save_answers(dispositioned_voter_record, call_attempt_record)
-        Answer.all.each do |answer|
+        Answer.where(1).to_a.each do |answer|
           expect(answer.campaign_id).to eq campaign.id
           expect(answer.voter_id).to eq dispositioned_voter_record.id
           expect(answer.caller_id).to eq caller_session.caller_id

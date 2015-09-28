@@ -72,7 +72,7 @@ describe 'ImportProxy' do
 
       let(:existing_valid_testers) do
         a = []
-        Tester.all.each do |tester|
+        Tester.where(1).to_a.each do |tester|
           hash = tester.attributes
           hash['name'] = "#{hash['name']} #{tester.id}"
           a << hash

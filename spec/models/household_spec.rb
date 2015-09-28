@@ -38,7 +38,7 @@ RSpec.describe Household, :type => :model do
         households.update_all(presented_at: time)
         recently_presented.update_all(presented_at: 5.minutes.ago)
 
-        expect(Household.presentable(campaign).all).to eq households.all
+        expect(Household.presentable(campaign).to_a).to eq households.to_a
       end
     end
   end

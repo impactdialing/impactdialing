@@ -23,7 +23,7 @@ module FactoryGirlImportHelpers
     # items = lists.flatten
     klass = list.first.class
     # klass.import items
-    klass.all
+    klass.where(1).to_a
   end
 
   # Useful when building a list where each item should receive

@@ -13,17 +13,17 @@ describe CallStats::Velocity do
     })
     create_list(:webui_caller_session, rand(10) + 1, {
       campaign: @campaign_for_all,
-      caller: Caller.all.sample,
+      caller: Caller.where(1).to_a.sample,
       tDuration: rand(60*20) + 1200 # <= at least 5 minutes each session
     })
     create_list(:phones_only_caller_session, rand(10) + 1, {
       campaign: @campaign_for_all,
-      caller: Caller.all.sample,
+      caller: Caller.where(1).to_a.sample,
       tDuration: rand(60*20) + 1200 # <= at least 5 minutes each session
     })
     create_list(:call_attempt, rand(100) + 20, {
       campaign: @campaign_for_all,
-      caller_session: CallerSession.all.sample,
+      caller_session: CallerSession.where(1).to_a.sample,
       tDuration: rand(60*20) + 60 # <= at least 1 minute each session
     })
   end

@@ -71,7 +71,7 @@ describe 'Archival::Jobs::CampaignSweeper' do
     subject.perform
 
     expect(Campaign.active.count).to eq 2
-    expect(Campaign.active.all).to include inactive_campaign
+    expect(Campaign.active.to_a).to include inactive_campaign
     expect(resque_jobs(:general)).to_not include({
       'class' => 'CallFlow::DialQueue::Jobs::Purge',
       'args' => [inactive_campaign.id]

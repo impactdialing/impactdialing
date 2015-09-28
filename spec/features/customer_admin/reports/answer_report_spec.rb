@@ -3,7 +3,7 @@ require 'rails_helper'
 feature 'Full Campaign Answer Report' do
   include FakeCallData
 
-  before(:all) do
+  before do
     @admin    = create(:user)
     @account  = @admin.account
     @campaign = create_campaign_with_transfer_attempts(:bare_preview, @account)[:campaign]
@@ -18,9 +18,8 @@ feature 'Full Campaign Answer Report' do
     visit answer_client_reports_path(campaign_id: campaign.id)
     expect(page).to have_content "#{campaign.name} Answered Calls Report"
 
-    question_ids = Answer.select('question_id').all.map(&:question_id)
+    question_ids = Answer.select('question_id').pluck(:question_id)
     i            = 1
-    save_and_open_page
     Question.where(id: question_ids).includes(:possible_responses).each do |question|
       expect(page).to have_content("Script: #{question.script.name}")
       expect(page).to have_content("Question #{i}: #{question.text}")
@@ -70,23 +69,23 @@ feature 'Full Campaign Answer Report' do
     expect(i > 1).to be_truthy
   end
 
-  scenario 'View stats on the number & percentage of messages left by callers' do
+  scenario 'View stats on the number & percentage of messages left automatically' do
     recording     = create(:bare_recording)
     call_attempts = campaign.call_attempts
     call_attempts.limit(3).update_all({
       recording_id: recording.id,
-      recording_delivered_manually: true
+      recording_delivered_manually: false
     })
 
     web_login_as(admin)
     visit answer_client_reports_path(campaign_id: campaign.id)
 
-    drops   = campaign.call_attempts.where('recording_id is not null').where(recording_delivered_manually: true)
+    drops   = campaign.call_attempts.where('recording_id is not null').where(recording_delivered_manually: false)
     numbers = drops.group('recording_id').count
     total   = campaign.answers.count
 
     i = 1
-    Recording.all.each do |recording|
+    Recording.where(1).to_a.each do |recording|
       number = numbers[recording.id] || 0
       perc   = (number * 100) / total
       within("#recording_#{i}") do

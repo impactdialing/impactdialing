@@ -4,7 +4,7 @@ describe 'CachePhonesOnlyScriptQuestions' do
   include FakeCallData
 
   def update_script(script)
-    questions = script.questions.order('id').all
+    questions = script.questions.order('id').to_a
 
     script.update_attributes!({
       questions_attributes: [
@@ -126,7 +126,7 @@ describe 'CachePhonesOnlyScriptQuestions' do
         CachePhonesOnlyScriptQuestions.perform(@script.id, 'update')
       end
 
-      let(:questions){ Question.all }
+      let(:questions){ Question.where(1).to_a }
 
       it 'updates questions cache' do
         question = RedisQuestion.get_question_to_read(@script.id, 0)

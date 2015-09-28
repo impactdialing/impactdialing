@@ -76,7 +76,7 @@ describe Script, :type => :model do
     older_script = create(:script).tap{|c| c.update_attribute(:updated_at, 2.days.ago)}
     newer_script = create(:script).tap{|c| c.update_attribute(:updated_at, 1.day.ago)}
     Script.record_timestamps = true
-    expect(Script.by_updated.all).to eq([newer_script, older_script])
+    expect(Script.by_updated.to_a).to eq([newer_script, older_script])
   end
 
   it "lists active scripts" do
