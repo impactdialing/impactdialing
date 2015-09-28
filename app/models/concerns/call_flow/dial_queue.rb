@@ -153,6 +153,7 @@ module CallFlow
 
       campaign.timing("dial_queue.purge.time") do
         CallList::Stats.purge(campaign)
+        campaign.send(:inflight_stats).delete
 
         purged_count = Wolverine.dial_queue.purge({
           keys: set_keys,

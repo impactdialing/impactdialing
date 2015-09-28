@@ -35,6 +35,10 @@ class Twillio
       def get(status)
         (redis.hget(base_key, status) || 0).to_i
       end
+
+      def delete
+        redis.del base_key
+      end
   end
 
   def self.error_response_codes
