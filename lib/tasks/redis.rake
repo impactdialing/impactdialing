@@ -15,6 +15,7 @@ namespace :redis do
     Campaign.archived.find_in_batches(batch_size: 500) do |campaigns|
       keys = []
       campaigns.each do |campaign|
+        campaign.send(:inflight_stats).delete
         redis.del(RedisStatus.redis_key(campaign.id))
         redis.scan_each(match: "campaign_id:#{campaign.id}*") do |key|
           keys << key
@@ -44,6 +45,18 @@ namespace :redis do
       end
       keys.uniq.each do |key|
         redis.del(key)
+      end
+    end
+  end
+
+  desc "Delete cached Contact Fields for archived Scripts"
+  task :delete_archived_script_caches => [:environment] do
+    Script.where(active: false).each do |script|
+      cache = CallFlow::Web::ContactFields::Selected.new(script)
+      cache.delete
+      RedisQuestion.clear_list(script.id)
+      script.questions.each do |question|
+        RedisPossibleResponse.clear_list(script_id)
       end
     end
   end
