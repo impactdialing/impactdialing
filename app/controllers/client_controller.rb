@@ -19,6 +19,13 @@ private
     end
   end
 
+  def check_admin_only
+    unless current_user.administrator?
+      flash[:error] = [I18n.t('admin_access')]
+      redirect_to client_root_path and return
+    end
+  end
+
   def validate_account_presence!(account)
     if account.nil?
       logger.error("ClientController#validate_account_presence! - Account Not Found.")

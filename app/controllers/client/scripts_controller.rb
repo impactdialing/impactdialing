@@ -2,6 +2,7 @@ module Client
   class ScriptsController < ClientController
     before_filter :load_and_verify_script, :except => [:index, :new, :create, :archived]
     before_filter :load_voter_fields, :only => [ :show, :edit]
+    before_filter :check_admin_only
 
     respond_to :html, :json
 

@@ -1,5 +1,6 @@
 module Client
   class CampaignsController < ClientController
+    before_filter :check_admin_only
     before_filter :load_and_verify_campaign, :except => [:index, :new, :create, :archived]
     respond_to :html, :json
 
