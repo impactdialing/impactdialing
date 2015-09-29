@@ -96,7 +96,6 @@ gem 'mandrill-api', '~>1.0.37'
 gem 'librato-rails'
 group :production, :heroku, :heroku_staging do
   gem 'rack-timing'
-  gem 'rack-queue-metrics', git: "https://github.com/heroku/rack-queue-metrics.git", branch: "cb-logging"
 end
 
 # redis lua scripts
