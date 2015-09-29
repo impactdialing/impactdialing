@@ -6,6 +6,7 @@ class ClientController < ApplicationController
   before_filter :check_tos_accepted, :except => [:login, :forgot]
   before_filter :check_access_flags, :except => [:login, :user_add, :forgot, :policies]
 
+private
   def check_access_flags
     return true if account.nil?
 
@@ -91,6 +92,11 @@ class ClientController < ApplicationController
     current_user.try(:account)
   end
 
+  def recording_params
+    params.require(:recording).permit(:file, :name)
+  end
+
+public
   def forgot
     if request.post?
       user = User.find_by_email(params[:email])
@@ -160,10 +166,5 @@ class ClientController < ApplicationController
   end
   def policies
     render 'client/tos/policies'
-  end
-
-private
-  def recording_params
-    params.require(:recording).permit(:file, :name)
   end
 end

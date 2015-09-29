@@ -2,6 +2,7 @@ module Api
   class ApiController < ApplicationController
     before_filter :authenticate_account
 
+protected
     def authenticate_account
       if params[:api_key] != '1mp@ctd1@l1ng'
         render_json_response({status: 'error', code: "401", message: "UnauthorizedAccess"})
@@ -87,8 +88,5 @@ module Api
         !!value
       end
     end
-    
   end
-  
-  
 end

@@ -76,6 +76,17 @@ private
     params['CallStatus'] == 'completed'
   end
 
+  def find_session
+    @caller_session = CallerSession.find_by_sid_cached(params[:CallSid])
+  end
+
+  def find_caller_session
+    @caller_session = CallerSession.find_by_id_cached(params[:session_id]) || CallerSession.find_by_sid_cached(params[:CallSid])
+    optiions = {digit: params[:Digits], question_id: params[:question_id]}
+    optiions.merge!(question_number: params[:question_number]) if params[:question_number]
+    RedisCallerSession.set_request_params(@caller_session.id, optiions)
+    @caller_session
+  end
 public
 
   def logout
@@ -277,17 +288,4 @@ public
     end
     render nothing: true
   end
-
-  def find_session
-    @caller_session = CallerSession.find_by_sid_cached(params[:CallSid])
-  end
-
-  def find_caller_session
-    @caller_session = CallerSession.find_by_id_cached(params[:session_id]) || CallerSession.find_by_sid_cached(params[:CallSid])
-    optiions = {digit: params[:Digits], question_id: params[:question_id]}
-    optiions.merge!(question_number: params[:question_number]) if params[:question_number]
-    RedisCallerSession.set_request_params(@caller_session.id, optiions)
-    @caller_session
-  end
-
 end

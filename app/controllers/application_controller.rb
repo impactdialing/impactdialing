@@ -12,6 +12,7 @@ class ApplicationController < ActionController::Base
     redirect_to root_url, :alert => exception.message
   end
 
+protected
   def current_ability
     @current_ability ||= Ability.new(account)
   end
