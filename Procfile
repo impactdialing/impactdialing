@@ -1,4 +1,4 @@
-web: bundle exec unicorn -p $PORT -c ./config/unicorn.rb
+web: bundle exec puma -C config/puma.rb
 
 app_health: rake environment monitor_app_health APP_HEALTH_RUN_INTERVAL=90
 
