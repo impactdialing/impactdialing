@@ -31,12 +31,12 @@ en:
     successes:
         models:
           caller:
-            reassigned: "Caller has been reassigned to a different campaign. The change has been submitted and it might take a few minutes to update."
+            reassigned: "Caller has been reassigned. It will take a few minutes to update online callers."
             saved: "Caller saved."
             archived: "Caller archived."
             restored: "Caller restored."
           caller_group:
-            reassigned: "Caller Group has been reassigned to a different campaign. The change has been submitted and it might take a few minutes to update."
+            reassigned: "Caller Group has been reassigned. It will take a few minutes to update online callers."
             saved: "Caller Group saved."
             deleted: "Caller Group deleted."
     attributes:
