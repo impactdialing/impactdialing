@@ -4,7 +4,7 @@ require 'em-http'
 require 'em-hiredis'
 require 'em-http-request'
 
-STDOUT.puts "Connecting to redis using ENV provided REDIS_URL"
+STDOUT.puts "Connecting to redis using #{ENV['REDIS_URL']}"
 # open 8 connections per app instance
 $redis_call_flow_connection          = Redis.new
 $redis_call_end_connection           = Redis.new

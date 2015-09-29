@@ -1,9 +1,4 @@
-unless ENV['REDIS_URL'].nil? || ENV['REDIS_URL'].size.zero?
-  url = ENV['REDIS_URL']
-else
-  redis_config = YAML.load_file(File.join(Rails.root, "/config/redis.yml"))
-  url          = redis_config[Rails.env]['sidekiq']
-end
+url = ENV['REDIS_URL']
 
 STDOUT.puts "Sidekiq is connecting to #{url}. REDIS_URL is #{ENV['REDIS_URL']}"
 
