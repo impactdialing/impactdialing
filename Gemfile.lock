@@ -225,6 +225,7 @@ GEM
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
+    rack-timeout (0.3.2)
     rack-timing (0.0.2)
     rails (4.0.13)
       actionmailer (= 4.0.13)
@@ -433,6 +434,7 @@ DEPENDENCIES
   puma
   pusher (~> 0.11.3)
   rack-queue-metrics!
+  rack-timeout
   rack-timing
   rails (~> 4.0.0)
   rails_12factor
