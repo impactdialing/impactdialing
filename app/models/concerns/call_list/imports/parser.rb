@@ -174,6 +174,8 @@ public
     lead = {}
     # populate lead w/ mapped csv data
     csv_mapping.mapping.each do |header,attr|
+      next if header == VoterList::BLANK_HEADER
+
       value = row[ @header_index_map[header] ]
 
       if value.blank? or attr.blank?

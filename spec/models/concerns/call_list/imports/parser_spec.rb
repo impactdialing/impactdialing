@@ -326,5 +326,21 @@ describe 'CallList::Imports::Parser' do
         }
       end
     end
+
+    context 'bug: one or more headers are blank' do
+      subject{ CallList::Imports::Parser.new(voter_list, 0, results, 5) }
+      before do
+        voter_list.update_attributes!({
+          csv_to_system_map: voter_list.csv_to_system_map.merge({
+            VoterList::BLANK_HEADER => 'address'
+          })
+        })
+      end
+      it 'skips that column' do
+        expect{
+          subject.parse_lines(data_lines.join)
+        }.to_not raise_error
+      end
+    end
   end
 end
