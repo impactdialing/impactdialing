@@ -55,6 +55,13 @@ private
     invalid_row!(csv_row)
   end
 
+  def invalid_line!(line)
+    results[:invalid_formats] += 1
+    # store unparsable lines separate from rows with invalid data
+    # so that a simple file can be generated w/out triggering csv exceptions
+    results[:invalid_lines] << "#{line}\n"
+  end
+
   def phone_valid?(phone, csv_row)
     unless PhoneNumber.valid?(phone)
       invalid_phone!(phone, csv_row)
@@ -214,24 +221,38 @@ public
     line_count = lines.size
     uuid       = UUID.new
     rows       = CSV.new(lines, csv_options)
-    rows.each_with_index do |row, i|
-      raw_phone             = row[@phone_index]
-      phone                 = PhoneNumber.sanitize(raw_phone)
+    lines_arr  = if lines.include?("\r\n")
+                   lines.split("\r\n")
+                 else
+                   lines.split("\n")
+                 end
+    next_line  = lines_arr.first
 
-      next unless phone_valid?(phone, row)
+    begin
+      rows.each_with_index do |row, i|
+        next_line = lines_arr[i+1] # capture next line in case #each raises MalformedCSVError
+        raw_phone = row[@phone_index]
+        phone     = PhoneNumber.sanitize(raw_phone)
 
-      # aggregate leads by phone
-      households[phone] ||= build_household(uuid, phone)
-      lead                = build_lead(uuid, phone, row, i, line_count)
+        next unless phone_valid?(phone, row)
 
-      households[phone]['leads'] << lead
-      # build keys here to maintain cluster support
-      keys                       << redis_key(phone)
 
-      if voter_list.maps_custom_id? and lead['custom_id'].present?
-        # key order doesn't matter, lua script should re-assemble keys as needed
-        keys << redis_custom_id_register_key(lead['custom_id']) 
+        # aggregate leads by phone
+        households[phone] ||= build_household(uuid, phone)
+        lead                = build_lead(uuid, phone, row, i, line_count)
+
+        households[phone]['leads'] << lead
+        # build keys here to maintain cluster support
+        keys                       << redis_key(phone)
+
+        if voter_list.maps_custom_id? and lead['custom_id'].present?
+          # key order doesn't matter, lua script should re-assemble keys as needed
+          keys << redis_custom_id_register_key(lead['custom_id']) 
+        end
       end
+    rescue CSV::MalformedCSVError => e
+      invalid_line!(next_line)
+      retry
     end
 
     [keys.uniq, households]

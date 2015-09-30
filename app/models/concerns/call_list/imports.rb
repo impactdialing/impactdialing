@@ -21,7 +21,9 @@ private
       cell_numbers:         Set.new,
       invalid_numbers:      [],
       invalid_custom_ids:   0,
-      invalid_rows:         []
+      invalid_formats:      0,
+      invalid_rows:         [],
+      invalid_lines:        []
     })
   end
 

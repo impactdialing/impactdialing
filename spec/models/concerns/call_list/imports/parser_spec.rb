@@ -48,6 +48,8 @@ describe 'CallList::Imports::Parser' do
       cell_numbers:       Set.new,
       dnc_numbers:        Set.new,
       invalid_numbers:    Set.new,
+      invalid_formats:    0,
+      invalid_lines:      [],
       invalid_rows:       []
     }
   end
@@ -173,6 +175,24 @@ describe 'CallList::Imports::Parser' do
 
       it 'adds the invalid row to results[:invalid_rows]' do
         expect(subject.results[:invalid_rows]).to eq [invalid_row + "\n"]
+      end
+    end
+
+    context 'when row data is malformed' do
+      let(:invalid_row) do
+        %Q{"2341235325","Jonathan "Johnny"", "Openheimer","","johnny@test.com",623,21,"Female"}
+      end
+      before do
+        lines_with_invalid = data_lines + [invalid_row]
+        subject.parse_lines(lines_with_invalid.join)
+      end
+
+      it 'increments results[:invalid_row_formats]' do
+        expect(subject.results[:invalid_formats]).to eq 1
+      end
+
+      it 'adds the invalid row to results[:invalid_lines]' do
+        expect(subject.results[:invalid_lines]).to eq [invalid_row + "\n"]
       end
     end
   end
@@ -344,3 +364,4 @@ describe 'CallList::Imports::Parser' do
     end
   end
 end
+

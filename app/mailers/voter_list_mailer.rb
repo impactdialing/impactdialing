@@ -9,11 +9,12 @@ private
     t.in_time_zone(campaign.time_zone).strftime("%b%e %Y")
   end
 
-  def build_attachment(invalid_rows)
+  def build_attachment(invalid_rows, invalid_lines)
+    invalid = invalid_rows + invalid_lines
     [{
       type:    'text/plain',
       name:    "InvalidRows #{voter_list.name}.csv",
-      content: Base64.encode64(invalid_rows.join)
+      content: Base64.encode64(invalid.join)
     }]
   end
 
@@ -35,7 +36,7 @@ public
     attachment = []
     
     if upload_stats[:invalid_numbers] > 0
-      attachment = build_attachment(upload_stats[:invalid_rows])
+      attachment = build_attachment(upload_stats[:invalid_rows], upload_stats[:invalid_lines])
     end
 
     send_voter_list_email(to, subject, text, html, attachment)
