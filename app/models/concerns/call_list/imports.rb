@@ -103,7 +103,7 @@ public
 
   def save(redis_keys, households)
     campaign = voter_list.campaign
-    key_base = redis_keys.first.split(':')[0..-2].join(':')
+    key_base = campaign.dial_queue.households.keys[:active]
 
     message_drop_completes = 0
     if campaign.use_recordings? and (not campaign.call_back_after_voicemail_delivery?)

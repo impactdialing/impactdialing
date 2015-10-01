@@ -177,7 +177,7 @@ describe 'CallList::Imports' do
     def fetch_saved_household(voter_list, phone)
       redis            = Redis.new
       stop_index       = ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i
-      key              = "key:#{voter_list.campaign_id}:#{phone[0..stop_index]}"
+      key              = "#{voter_list.campaign.dial_queue.households.keys[:active]}:#{phone[0..stop_index]}"
       hkey             = phone[stop_index+1..-1]
       saved_households = redis.hgetall(key)
       JSON.parse(saved_households[hkey])

@@ -8,6 +8,7 @@ class CallList::DisabledTrimmer < CallList::Imports
   def enable_leads
     parser = CallList::Imports::Parser.new(voter_list, 0, default_results, batch_size)
     campaign = voter_list.campaign
+    base_key = campaign.dial_queue.households.keys[:active].gsub(':active', '')
 
     message_drop_completes = 0
     if campaign.use_recordings? and (not campaign.call_back_after_voicemail_delivery?)
@@ -15,8 +16,6 @@ class CallList::DisabledTrimmer < CallList::Imports
     end
 
     parser.parse_file do |keys, households, _, _|
-      base_key = keys.first.split(':')[0..-3].join(':')
-
       Wolverine.list.enable_leads({
         keys: common_redis_keys + keys,
         argv: [base_key, voter_list.id, message_drop_completes, households.to_json]
@@ -26,8 +25,8 @@ class CallList::DisabledTrimmer < CallList::Imports
 
   def disable_leads
     parser = CallList::Imports::Parser.new(voter_list, 0, default_results, batch_size)
+    base_key = voter_list.campaign.dial_queue.households.keys[:active].gsub(':active', '')
     parser.parse_file do |keys, households, _, _|
-      base_key = keys.first.split(':')[0..-3].join(':')
       Wolverine.list.disable_leads({
         keys: common_redis_keys + keys,
         argv: [base_key, voter_list.id, households.to_json]
