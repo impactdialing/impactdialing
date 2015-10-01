@@ -98,7 +98,7 @@ public
     # todo: refactor workflow to queue call redirects and return TwiML faster
 
     # Publish transfer_type
-    caller_session.publish('transfer_connected', {type: transfer_attempt.transfer_type})
+    caller_session.pushit('transfer_connected', {type: transfer_attempt.transfer_type})
     # Update current callee call with Twilio to transfers#callee, which renders conference xml
     params = Providers::Phone::Call::Params::Transfer.new(transfer, :callee, transfer_attempt, lead_call)
     callee_redirect_response = Providers::Phone::Call.redirect(params.call_sid, params.url, Providers::Phone.default_options)
@@ -110,14 +110,14 @@ public
         params = Providers::Phone::Call::Params::Transfer.new(transfer, :caller, transfer_attempt, lead_call)
         resp = Providers::Phone::Call.redirect(params.call_sid, params.url, Providers::Phone.default_options)
         # todo: handle failures of above redirect
-        caller_session.publish("warm_transfer",{})
+        caller_session.pushit("warm_transfer",{})
       else
         ##
         # This redirect is needed in case the caller is/was in a transfer conference.
         # todo: fix double pause requests. The Dial:action for Transfer#caller is pause_caller_url so this results in 2 req to /pause.
         Providers::Phone::Call.redirect_for(caller_session, :pause)
         # todo: handle failures of above redirect
-        caller_session.publish("cold_transfer",{})
+        caller_session.pushit("cold_transfer",{})
       end
 
       phone_params = Providers::Phone::Call::Params::Transfer.new(transfer_attempt.transfer, :disconnect, transfer_attempt, lead_call)

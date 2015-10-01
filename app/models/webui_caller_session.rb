@@ -34,10 +34,6 @@ class WebuiCallerSession < CallerSession
     attempt_in_progress.try(:connecttime) != nil &&  attempt_in_progress.try(:not_wrapped_up?)
   end
 
-  def publish_sync(event, data)
-    Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
-  end
-
   def handleReassignedCampaign
     super
   end

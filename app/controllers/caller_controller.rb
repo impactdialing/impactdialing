@@ -133,7 +133,7 @@ public
     logger.debug "DoublePause: Caller#pause - #{params}"
     if RedisCallerSession.pause?(@caller_session.session_key, params[:transfer_session_key])
 
-      @caller_session.publish('caller_wrapup_voice_hit', {})
+      @caller_session.pushit('caller_wrapup_voice_hit', {})
 
       logger.debug "DoublePause: Caller#pause - pausing for results"
 
@@ -284,7 +284,7 @@ public
       # and trigger the Dial:action from the caller conference twiml
       # in transfers#caller
       Providers::Phone::Call.redirect_for(@caller_session, :pause)
-      @caller_session.publish('caller_kicked_off', {})
+      @caller_session.pushit('caller_kicked_off', {})
     end
     render nothing: true
   end

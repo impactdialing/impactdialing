@@ -4,14 +4,14 @@ module CallerEvents
   end
 
   module InstanceMethods
-  private
+  public
     def pushit(event_name, event_data={})
       RescueRetryNotify.on(Pusher::HTTPError, 1) do
         Pusher[session_key].trigger(event_name, event_data)
       end
+      self.last_event = event_name
     end
 
-  public
     def publish_start_calling
       pushit('start_calling', {caller_session_id: id, dialer: campaign.type})
     end

@@ -236,10 +236,6 @@ public
     on_call == false
   end
 
-  def publish(event, data)
-    Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
-  end
-
   def self.time_logged_in(caller, campaign, from, to)
     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('tDuration').to_i
   end

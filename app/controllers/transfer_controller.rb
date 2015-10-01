@@ -21,7 +21,7 @@ class TransferController < ApplicationController
     transfer_attempt.update_attribute(:status, CallAttempt::Status::SUCCESS)
     dialed_call = transfer_attempt.caller_session.dialed_call
     if dialed_call.try(:transferred?, transfer_attempt.id)
-      transfer_attempt.caller_session.publish('transfer_conference_ended', {})
+      transfer_attempt.caller_session.pushit('transfer_conference_ended', {})
     end
     render xml: Twilio::TwiML::Response.new { |r| r.Hangup }.text
   end
@@ -37,7 +37,7 @@ class TransferController < ApplicationController
 
     case params[:CallStatus] #using the 2010 api
     when "no-answer", "busy", "failed"
-      transfer_attempt.caller_session.publish('transfer_busy', {status: params[:CallStatus], label: transfer_attempt.transfer.label})
+      transfer_attempt.caller_session.pushit('transfer_busy', {status: params[:CallStatus], label: transfer_attempt.transfer.label})
     end
 
     render nothing: true
@@ -68,7 +68,7 @@ class TransferController < ApplicationController
       RedisCallerSession.add_party(params[:session_key])
     end
 
-    caller_session.publish("contact_joined_transfer_conference",{})
+    caller_session.pushit("contact_joined_transfer_conference",{})
     render xml: response
   end
 
@@ -82,7 +82,7 @@ class TransferController < ApplicationController
       end
     end.response
     RedisCallerSession.add_party(params[:session_key])
-    caller_session.publish("caller_joined_transfer_conference",{})
+    caller_session.pushit("caller_joined_transfer_conference",{})
     render xml: response
   end
 end
