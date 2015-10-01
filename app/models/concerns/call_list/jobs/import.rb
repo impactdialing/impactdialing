@@ -28,7 +28,16 @@ class CallList::Jobs::Import
       imports.create_new_custom_voter_fields!
 
       imports.parse do |redis_keys, households|
-        imports.save(redis_keys, households)
+        # debugging nil key: #104590114
+        unless households.empty?
+          imports.save(redis_keys, households)
+        else
+          pre = "[CallList::Jobs::Import]" 
+          p "#{pre} Error saving households. Yielded households were empty."
+          p "#{pre} Redis keys: #{redis_keys}"
+          p "#{pre} Households: #{households}"
+          p "#{pre} Cursor: #{imports.cursor}"
+        end
         cursor  = imports.cursor
         results = imports.results
       end
