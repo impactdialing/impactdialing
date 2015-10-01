@@ -40,7 +40,6 @@ gem 'resque-scheduler', '~> 2.0.1', :require => 'resque_scheduler'
 gem 'resque-lock', '~> 1.1.0'
 gem 'resque-loner', '~>1.2.1'
 gem 'sidekiq', '< 3'
-gem 'sidekiq-failures'
 
 # Databases
 gem 'mysql2'
