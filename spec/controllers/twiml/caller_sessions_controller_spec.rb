@@ -78,7 +78,8 @@ describe Twiml::CallerSessionsController do
     let(:caller_session) do
       create(:bare_caller_session, :webui, :available, {
         caller: caller,
-        campaign: campaign
+        campaign: campaign,
+        sid: 'caller-session-sid'
       })
     end
 

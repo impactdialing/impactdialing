@@ -52,6 +52,8 @@ class CallerSession < ActiveRecord::Base
   delegate :time_period_exceeded?, :to => :campaign
   delegate :within_calling_hours?, :to => :campaign
   delegate :fit_to_dial?, :to => :campaign
+  delegate :last_event?, :to => :caller_session_call
+  delegate :last_event=, :to => :caller_session_call
 
 private
   def _account

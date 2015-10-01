@@ -240,7 +240,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         @campaign         = @preview
         @callers_campaign = @campaign
         @caller           = create(:caller, campaign: @campaign, account: @account)
-        @caller_session   = create(:bare_caller_session, :phones_only, :available, {caller: @caller, campaign: @campaign})
+        @caller_session   = create(:bare_caller_session, :phones_only, :available, {caller: @caller, campaign: @campaign, sid: 'caller-session-sid'})
         @voter            = create(:voter, campaign: @campaign)
       end
 

@@ -20,7 +20,8 @@ describe 'CallerEvents' do
     let(:webui_caller_session) do
       create(:bare_caller_session, :webui, :available, {
         caller: web_caller,
-        campaign: campaign
+        campaign: campaign,
+        sid: 'caller-session-sid-123'
       })
     end
     let(:phones_only_caller_session) do

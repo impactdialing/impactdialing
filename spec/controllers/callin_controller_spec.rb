@@ -95,7 +95,11 @@ describe CallinController, :type => :controller do
 
     it 'seeds redis script questions cache when caller is phones only' do
       caller = create(:caller, account: account, campaign: campaign, is_phones_only: true)
-      caller_session = create(:phones_only_caller_session, {caller: caller, campaign: campaign})
+      caller_session = create(:phones_only_caller_session, {
+        caller: caller,
+        campaign: campaign,
+        sid: 'caller-session-sid'
+      })
 
       expect(Resque).to receive(:enqueue).with(CachePhonesOnlyScriptQuestions, anything, 'seed')
       post :identify, :Digits => caller.pin, :AccountSid => 'account-sid', :CallSid => 'call-sid'
@@ -104,10 +108,13 @@ describe CallinController, :type => :controller do
     it 'renders abort twiml unless the campaign is fit to start calling' do
       account.quota.update_attributes!(minutes_allowed: 0)
       caller         = create(:caller, account: account, campaign: campaign)
-      caller_session = create(:webui_caller_session, {caller: caller, campaign: campaign})
+      caller_session = create(:webui_caller_session, {
+        caller: caller,
+        campaign: campaign
+      })
       expected_twiml = caller_session.account_has_no_funds_twiml
 
-      post :identify, :Digits => caller.pin
+      post :identify, :Digits => caller.pin, :CallSid => 'caller-session-sid'
       expect(response.body).to eq expected_twiml
     end
   end

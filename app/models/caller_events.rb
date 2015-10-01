@@ -9,7 +9,6 @@ module CallerEvents
       RescueRetryNotify.on(Pusher::HTTPError, 1) do
         Pusher[session_key].trigger(event_name, event_data)
       end
-      self.last_event = event_name
     end
 
     def publish_start_calling

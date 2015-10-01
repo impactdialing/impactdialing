@@ -43,7 +43,7 @@ describe TransferController, :type => :controller do
   end
   let(:call_flow_caller_session) do
     instance_double('CallFlow::CallerSession', {
-      dialed_call: dialed_call
+      dialed_call: dialed_call,
     })
   end
   let(:caller_session) do
