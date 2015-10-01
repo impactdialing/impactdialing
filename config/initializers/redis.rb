@@ -1,9 +1,3 @@
-require File.join(Rails.root.to_s, 'config/environment')
-require "eventmachine"
-require 'em-http'
-require 'em-hiredis'
-require 'em-http-request'
-
 STDOUT.puts "Connecting to redis using #{ENV['REDIS_URL']}"
 # open 8 connections per app instance
 $redis_call_flow_connection          = Redis.new
