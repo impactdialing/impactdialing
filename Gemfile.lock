@@ -283,7 +283,8 @@ GEM
       rspec-support (~> 3.3.0)
     rspec-support (3.3.0)
     rubyzip (1.1.0)
-    rufus-scheduler (3.1.6)
+    rufus-scheduler (2.0.24)
+      tzinfo (>= 0.3.22)
     ruport (1.6.3)
       fastercsv
       pdf-writer (= 1.1.8)
@@ -437,6 +438,7 @@ DEPENDENCIES
   rspec-its
   rspec-rails
   rubyzip
+  rufus-scheduler (~> 2.0.0)
   ruport
   selenium-webdriver
   shoulda

@@ -37,6 +37,7 @@ gem 'cancan', '~>1.6.10'
 # Background
 gem 'resque', '~> 1.24.1'
 gem 'resque-scheduler', '~> 2.0.1', :require => 'resque_scheduler'
+gem 'rufus-scheduler', '~> 2.0.0'
 gem 'resque-lock', '~> 1.1.0'
 gem 'resque-loner', '~>1.2.1'
 gem 'sidekiq', '< 3'
