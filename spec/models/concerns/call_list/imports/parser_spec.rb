@@ -5,6 +5,7 @@ describe 'CallList::Imports::Parser' do
   include_context 'voter csv import' do
     let(:csv_file_upload){ cp_tmp('valid_voters_list_redis.csv') }
     let(:windoze_csv_file_upload){ cp_tmp('windoze_voters_list.csv') }
+    let(:bom_csv_file_upload){ cp_tmp('bom_voters_list.csv') }
   end
 
   let(:voter_list) do
@@ -357,6 +358,55 @@ describe 'CallList::Imports::Parser' do
         })
       end
       it 'skips that column' do
+        expect{
+          subject.parse_lines(data_lines.join)
+        }.to_not raise_error
+      end
+    end
+
+    context 'bug: when @header_index_map returns nil' do
+      let(:csv_file) do
+        CSV.new(File.open(bom_csv_file_upload).read)
+      end
+      let(:file) do
+        File.open(bom_csv_file_upload)
+      end
+      let(:data_lines) do
+        file.rewind
+        lines = file.readlines
+        subject.parse_headers(lines[0])
+        lines[1..-1]
+      end
+
+      let(:header_line) do
+        file.rewind
+        file.readlines.first
+      end
+
+      let(:voter_list_two) do
+        create(:voter_list, {
+          campaign: voter_list.campaign,
+          account: voter_list.account,
+          csv_to_system_map: {
+            "\xEF\xBB\xBFFirst Name" => 'first_name',
+            "Last Name" => 'last_name',
+            "# Windows" => "# of Windows",
+            "Phone" => "phone",
+            "Address" => "custom_id",
+            "# Doors" => "",
+            "Amount" => "",
+            "Email" => "",
+            "City" => "",
+            "State" => "",
+            "Zip" => "",
+            "Sales Rep" => "",
+            "Installer" => ""
+          }
+        })
+      end
+      subject{ CallList::Imports::Parser.new(voter_list_two, 0, results, 5) }
+
+      it 'handles BOM characters' do
         expect{
           subject.parse_lines(data_lines.join)
         }.to_not raise_error

@@ -159,6 +159,7 @@ public
   def parse_headers(line)
     row              = CSV.parse_line(line, csv_options)
     row.each_with_index do |header,i|
+      header = Windozer::String.bom_away(header)
       @phone_index              = i if csv_mapping.mapping[header] == 'phone'
       @header_index_map[header] = i
     end
@@ -183,7 +184,12 @@ public
     csv_mapping.mapping.each do |header,attr|
       next if header == VoterList::BLANK_HEADER
 
-      value = row[ @header_index_map[header] ]
+      attri = @header_index_map[header]
+      if attri.nil?
+        raise ArgumentError, "[CallList::Imports::Parser] Unable to locate index of field. Header[#{header}] attri[#{attri}] attr[#{attr}] @header_index_map[#{@header_index_map}]"
+      end
+
+      value = row[ attri ]
 
       if value.blank? or attr.blank?
         if attr == 'custom_id'

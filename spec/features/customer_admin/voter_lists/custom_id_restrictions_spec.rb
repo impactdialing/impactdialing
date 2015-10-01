@@ -54,7 +54,7 @@ describe 'Upload', js: true, type: :feature do
         create(:voter_list, {
           campaign: campaign,
           csv_to_system_map: {
-            phone: 'Phone'
+            'Phone' => 'phone'
           }
         })
       end

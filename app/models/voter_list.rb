@@ -14,6 +14,8 @@ class VoterList < ActiveRecord::Base
   validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
   validate :validates_file_type, :on => :create
   validate :custom_id_usage, :before => :validation
+
+  before_create :transcode_csv_to_system_map
   
   after_update :enable_disable_members
 
@@ -23,6 +25,15 @@ class VoterList < ActiveRecord::Base
   BLANK_HEADER = '<Blank header>'
 
 private
+  def transcode_csv_to_system_map
+    transcoded = {}
+    csv_to_system_map.each do |header,prop|
+      header = Windozer::String.bom_away(header)
+      transcoded[header] = prop
+    end
+    self.csv_to_system_map = transcoded
+  end
+
   def custom_id_usage
     if campaign.can_use_custom_ids?
       if campaign.requires_custom_ids? and (not self.maps_custom_id?)

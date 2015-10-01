@@ -7,6 +7,16 @@ module Windozer
   end
 
   class String < ::String
+    BOM = /\xEF\xBB\xBF/
+
+    def self.bom_away(str)
+      Windozer.to_unix(str).gsub(BOM,'')
+    end
+
+    def bom_away!
+      gsub!(BOM,'')
+    end
+
     def replace_carriage_returns!
       gsub!(/\r\n?/, "\n")
     end
