@@ -245,6 +245,17 @@ public
         # build keys here to maintain cluster support
         keys                       << redis_key(phone)
 
+        # debugging nil key: #104590114
+        if keys.last.nil?
+          ImpactPlatform::Metrics.count('imports.parser.nil_redis_key')
+          pre = "[CallList::Imports::Parser]"
+          p "#{pre} Last redis key was nil."
+          p "#{pre} Phone: #{phone}"
+          p "#{pre} Current row (#{i}): #{row}"
+          p "#{pre} Households: #{households}"
+        end
+        # /debugging
+
         if voter_list.maps_custom_id? and lead['custom_id'].present?
           # key order doesn't matter, lua script should re-assemble keys as needed
           keys << redis_custom_id_register_key(lead['custom_id']) 
