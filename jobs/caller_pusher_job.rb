@@ -47,11 +47,12 @@ class CallerPusherJob
     metrics          = ImpactPlatform::Metrics::JobStatus.started(metric_name, source)
 
     if call_flow_events.completed?(event_sequence)
-      #log
-      #increment duplicate run count
+      name = "call_flow.duplicate_job_run"
+      src  = ".seq-#{event_sequence}"
+      ImpactPlatform::Metrics.count(name, 1, src)
+      Rails.logger.error "[CallerPusherJob] Duplicate job run for CallerSession[#{caller_session.id}] EventSequence[#{event_sequence}] Event[#{event}]"
       return 
     end
-
 
     begin
       if payload.empty?

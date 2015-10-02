@@ -10,7 +10,10 @@ describe 'CallFlow::Events' do
   let(:caller_session_call) do
     instance_double('CallFlow::CallerSession', {
       sid: 'caller-session-sid',
-      storage: call_storage
+      storage: call_storage,
+      redis_expiry: 1.minute,
+      expire: nil,
+      redis: redis
     })
   end
   let(:redis) do

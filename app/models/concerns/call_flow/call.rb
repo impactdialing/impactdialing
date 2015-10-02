@@ -44,7 +44,11 @@ module CallFlow
     end
 
     def self.redis_expiry
-      1.day
+      2.weeks
+    end
+
+    def redis_expiry
+      self.class.redis_expiry
     end
 
     def self.create(raw_params)

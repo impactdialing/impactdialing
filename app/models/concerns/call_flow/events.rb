@@ -2,10 +2,9 @@ class CallFlow::Events
   attr_reader :session
 
   delegate :storage, to: :session
-
-  def redis
-    $redis_call_flow_connection
-  end
+  delegate :expire, to: :session
+  delegate :redis_expiry, to: :session
+  delegate :redis, to: :session
 
   def key
     "call_flow:events:#{session.sid}"
@@ -20,10 +19,8 @@ class CallFlow::Events
   end
 
   def completed(event_sequence)
-    if redis.ttl(key) < 1
-      redis.expire(key, 2.weeks)
-    end
     redis.setbit(key, event_sequence, 1)
+    expire(key, redis_expiry)
   end
 
   def generate_sequence
