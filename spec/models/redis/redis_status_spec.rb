@@ -13,11 +13,19 @@ describe RedisStatus, :type => :model do
     expect(RedisStatus.state_time(1, 1)).to be_empty
   end
   
-  it "should return count by status" do
-    RedisStatus.set_state_changed_time(1, "On hold", 1)
-    RedisStatus.set_state_changed_time(1, "Wrap up", 2)
-    RedisStatus.set_state_changed_time(1, "On call", 3)
-    expect(RedisStatus.count_by_status(1, [1,4,3,2])).to eq([1, 1, 1])
+  describe 'count by status' do
+    before do
+      RedisStatus.set_state_changed_time(1, "On hold", 1)
+      RedisStatus.set_state_changed_time(1, "Wrap up", 2)
+      RedisStatus.set_state_changed_time(1, "On call", 3)
+    end
+    it "should return count by status" do
+      expect(RedisStatus.count_by_status(1, [1,4,3,2])).to eq([1, 1, 1])
+    end
+
+    it 'should not give bad arguments to hmget' do
+      expect(RedisStatus.count_by_status(1, [])).to eq([0,0,0])
+    end
   end
   
   describe 'on_hold_times' do

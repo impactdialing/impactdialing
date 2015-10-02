@@ -37,17 +37,26 @@ class RedisStatus
   end
 
   def self.count_by_status(campaign_id, *caller_session_ids)
-    elements = $redis_dialer_connection.hmget "campaign:#{campaign_id}:status" , *caller_session_ids.flatten
-    on_hold = 0
-    on_call = 0
-    wrap_up = 0
+    on_hold  = 0
+    on_call  = 0
+    wrap_up  = 0
+    out      = ->{ [on_hold, on_call, wrap_up] }
+    hkeys    = caller_session_ids.flatten
+
+    if hkeys.empty?
+      return out.call
+    end
+
+    elements = redis.hmget "campaign:#{campaign_id}:status", *hkeys
+
     elements.compact.each do |element|
       ele = JSON.parse(element)
       on_hold = on_hold + 1 if ele['status'] == 'On hold'
       on_call = on_call + 1 if ele['status'] == 'On call'
       wrap_up = wrap_up + 1 if ele['status'] == 'Wrap up'
     end
-    [on_hold, on_call, wrap_up]
+
+    return out.call
   end
 
   def self.on_hold_times(campaign_id, *caller_session_ids)
