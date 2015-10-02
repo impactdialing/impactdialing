@@ -40,6 +40,10 @@ public
     redis.hset(key, property, value)
   end
 
+  def incrby(property, increment)
+    redis.hincrby(key, property, increment)
+  end
+
   def add_to_collection(collection_name, items)
     return if items.blank?
     items = [*items]
