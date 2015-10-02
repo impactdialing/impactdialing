@@ -209,14 +209,14 @@ describe CallerSession, :type => :model do
 
     it "should set caller session endtime" do
       caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      expect(caller_session).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      expect(CallerPusherJob).to receive(:add_to_queue).with(caller_session, 'publish_caller_disconnected')
       caller_session.conference_ended
       expect(caller_session.endtime).not_to be_nil
     end
 
     it "should render hangup twiml" do
       caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      expect(caller_session).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      expect(CallerPusherJob).to receive(:add_to_queue).with(caller_session, 'publish_caller_disconnected')
       expect(caller_session.conference_ended).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end
   end
@@ -225,7 +225,7 @@ describe CallerSession, :type => :model do
     it "should end call" do
       caller = create(:caller)
       caller_session = create(:caller_session, caller: caller)
-      expect(caller_session).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, 'publish_caller_disconnected'])
+      expect(CallerPusherJob).to receive(:add_to_queue).with(caller_session, 'publish_caller_disconnected')
       expect(caller_session).to receive(:enqueue_call_flow).with(EndRunningCallJob, [caller_session.sid])
       caller_session.end_running_call
       expect(caller_session.endtime).not_to be_nil

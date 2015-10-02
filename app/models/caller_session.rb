@@ -159,7 +159,7 @@ public
       end_session
 
       unless caller.is_phones_only?
-        enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])
+        CallerPusherJob.add_to_queue(self, 'publish_caller_disconnected')
       end
     rescue ActiveRecord::StaleObjectError => exception
       RedisCallerSession.add_phantom_callers(self.id)

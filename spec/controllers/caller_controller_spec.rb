@@ -140,10 +140,11 @@ describe CallerController, :type => :controller do
         campaign: campaign
       })
 
-      expect(controller).to receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, 'publish_calling_voter'])
-      expect(controller).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, "#{voter.household.phone}"])
+      expect(CallerPusherJob).to receive(:add_to_queue).with(caller_session, 'publish_calling_voter')
 
       post :call_voter, id: caller.id, phone: voter.household.phone, session_id: caller_session.id
+
+      expect([:sidekiq, :call_flow]).to have_queued(PreviewPowerDialJob).with(caller_session.id, "#{voter.household.phone}")
     end
   end
 

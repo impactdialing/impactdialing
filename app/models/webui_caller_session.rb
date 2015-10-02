@@ -7,14 +7,14 @@ class WebuiCallerSession < CallerSession
   def start_conf
     start_conference
     publish_start_calling
-    enqueue_call_flow(CallerPusherJob, [self.id,  "publish_caller_conference_started"])
+    CallerPusherJob.add_to_queue(self, 'publish_caller_conference_started')
   end
 
   def continue_conf
     reassigned = reassigned_to_another_campaign?
     start_conference
     event = reassigned ? "publish_caller_reassigned" :  "publish_caller_conference_started"
-    enqueue_call_flow(CallerPusherJob, [self.id,  event])
+    CallerPusherJob.add_to_queue(self, event)
     connected_twiml
   end
 

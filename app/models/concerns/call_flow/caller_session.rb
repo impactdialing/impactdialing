@@ -89,7 +89,7 @@ public
 
   def emit(event, payload={})
     return if is_phones_only?
-    CallerPusherJob.add_to_queue(caller_session_record.id, event, payload)
+    CallerPusherJob.add_to_queue(caller_session_record, event, nil, payload)
   end
 end
 
