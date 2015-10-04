@@ -87,7 +87,20 @@ class Predictive < Campaign
     houses = dial_queue.next(n)
     return [] if houses.nil?
 
-    houses.map{|house| house[:leads].first[:phone]}
+    houses.map do |house|
+      if house.blank? or house[:leads].blank?
+        if house.blank?
+          p "[Predictive] CampaignID[#{self.id}] House was nil."
+          next
+        end
+        if house[:leads].blank?
+          p "[Predictive] CampaignID[#{self.id}] Leads were empty for House[#{house}]."
+          next
+        end
+      else
+        house[:leads].compact.first[:phone]
+      end
+    end.compact
   end
 
   def numbers_to_dial
