@@ -195,7 +195,7 @@ public
     end
 
     if call_failed?(params)
-      CallFlow::Call::Failed.create(campaign, params[:phone], params)
+      CallFlow::Call::Failed.create(campaign, params[:phone], params, false)
     else
       if state_missed?(:caller_and_lead_connected)
         CallFlow::Jobs::Persistence.perform_async('Completed', account_sid, sid)

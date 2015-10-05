@@ -142,7 +142,7 @@ class Twillio
     TwilioLogger.error(response['TwilioResponse'] || response)
     count_dial_error(campaign, caller_session)
 
-    CallFlow::Call::Failed.create(campaign, phone, response['TwilioResponse'] || response)
+    CallFlow::Call::Failed.create(campaign, phone, response['TwilioResponse'] || response, campaign.predictive?)
 
     unless caller_session.nil?
       Providers::Phone::Call.redirect_for(caller_session)

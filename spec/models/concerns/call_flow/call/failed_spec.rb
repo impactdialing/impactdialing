@@ -54,5 +54,18 @@ describe 'CallFlow::Call::Failed' do
       subject.create(campaign, phone, rest_response)
       expect([:sidekiq, :persistence]).to have_queued(CallFlow::Jobs::Persistence).with('Failed', campaign_id, phone)
     end
+
+    context 'telling CallFlow::DialQueue of the failed dial' do
+      it 'update_presented is false by default' do
+        expect(campaign.dial_queue).to receive(:failed!).with(phone, false)
+        subject.create(campaign, phone, rest_response)
+      end
+
+      it 'passes the update_presented flag to DialQueue#failed!' do
+        expect(campaign.dial_queue).to receive(:failed!).with(phone, true)
+        subject.create(campaign, phone, rest_response, true)
+      end
+    end
   end
 end
+

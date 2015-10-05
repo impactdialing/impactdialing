@@ -252,7 +252,7 @@ describe 'CallFlow::Call::Dialed' do
       it_behaves_like 'calls not answered'
 
       it 'tells CallFlow::Call::Failed to create an entry' do
-        expect(CallFlow::Call::Failed).to receive(:create).with(campaign, status_callback_params['phone'], status_callback_params)
+        expect(CallFlow::Call::Failed).to receive(:create).with(campaign, status_callback_params['phone'], status_callback_params, false)
         subject.completed(campaign, status_callback_params)
       end
     end

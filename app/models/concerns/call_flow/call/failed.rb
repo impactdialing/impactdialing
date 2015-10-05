@@ -5,7 +5,7 @@ class CallFlow::Call::Failed < CallFlow::Call::Lead
     "failed"
   end
 
-  def self.create(campaign, phone, rest_response)
+  def self.create(campaign, phone, rest_response, update_presented=false)
     phone = PhoneNumber.sanitize(phone)
 
     validate!(campaign.try(:id), phone)
@@ -18,7 +18,7 @@ class CallFlow::Call::Failed < CallFlow::Call::Lead
       campaign_id: campaign.id
     })
 
-    campaign.dial_queue.failed!(phone)
+    campaign.dial_queue.failed!(phone, update_presented)
 
     storage.save(params)
 
