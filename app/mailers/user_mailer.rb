@@ -1,21 +1,17 @@
 class UserMailer < MandrillMailer
   def notify_new_signup(user)
-    begin
-      emailText="<pre>#{user.attributes.to_yaml}</pre>"
-      subject="New user signup!"
-      response = send_email({
-              :subject => subject,
-              :html => emailText,
-              :text => emailText,
-              :from_name => 'Impact Dialing',
-              :from_email => FROM_EMAIL,
-              :to=>[{email: SALES_EMAIL},{email: TECH_EMAIL},{email: SALES_ASSISTANT_EMAIL}],
-              :track_opens => true,
-              :track_clicks => true
-              })
-      rescue Exception => e
-        logger.error(e.inspect)
-    end
+    emailText="<pre>#{user.attributes.to_yaml}</pre>"
+    subject="New user signup!"
+    response = send_email({
+      :subject => subject,
+      :html => emailText,
+      :text => emailText,
+      :from_name => 'Impact Dialing',
+      :from_email => FROM_EMAIL,
+      :to=>[{email: SALES_EMAIL},{email: TECH_EMAIL},{email: SALES_ASSISTANT_EMAIL}],
+      :track_opens => true,
+      :track_clicks => true
+    })
   end
 
   def deliver_invitation(new_user, current_user)
