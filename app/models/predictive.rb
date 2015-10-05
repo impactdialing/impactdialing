@@ -70,9 +70,14 @@ class Predictive < Campaign
   end
 
   def numbers_to_dial_count
+    deductibles = ringing_count.abs + presented_count.abs
     n = (
-      (dial_factor * available_callers_count) - ringing_count.abs - presented_count.abs
+      (dial_factor * available_callers_count) - deductibles
     ).to_i
+
+    if n > (TwilioLimit.get * available_callers_count)
+      n = available_callers_count - deductibles
+    end
 
     return n
   end
