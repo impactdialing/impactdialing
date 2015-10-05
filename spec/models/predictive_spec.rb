@@ -178,6 +178,22 @@ describe Predictive do
           simulated_values = SimulatedValues.create(best_dials: best_dials, best_conversation: 0, longest_conversation: 0)
           attach_simulated_values(campaign, simulated_values)
         end
+        context 'negative ringing count' do
+          before do
+            allow(campaign).to receive(:ringing_count){ -5 }
+          end
+          it 'uses the absolute value to avoid negating subtraction' do
+            expect(campaign.numbers_to_dial_count).to eq campaign.caller_sessions.available.count * best_dials.ceil - 5
+          end
+        end
+        context 'negative presented count' do
+          before do
+            allow(campaign).to receive(:presented_count){ -3 }
+          end
+          it 'uses the absolute value to avoid negating subtraction' do
+            expect(campaign.numbers_to_dial_count).to eq campaign.caller_sessions.available.count * best_dials.ceil - 3
+          end
+        end
         context 'no ringing/presented calls' do
           it 'returns number of available callers * dial factor' do
             expect(campaign.numbers_to_dial_count).to eq(campaign.caller_sessions.available.count * best_dials.ceil)

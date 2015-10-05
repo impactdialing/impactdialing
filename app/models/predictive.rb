@@ -71,15 +71,9 @@ class Predictive < Campaign
 
   def numbers_to_dial_count
     n = (
-      (dial_factor * available_callers_count) - ringing_count - presented_count
+      (dial_factor * available_callers_count) - ringing_count.abs - presented_count.abs
     ).to_i
 
-    if n > (dial_factor * available_callers_count)
-      n = available_callers_count - ringing_count
-      if presented_count < 0
-        inflight_stats.incby('presented', presented_count.abs)
-      end
-    end
     return n
   end
 
