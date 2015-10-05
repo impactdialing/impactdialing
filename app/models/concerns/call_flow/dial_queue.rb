@@ -108,9 +108,9 @@ module CallFlow
       presented_households.remove_house(phone)
     end
 
-    def failed!(phone)
-      phone = PhoneNumber.sanitize(phone)
-      update_presented_count = campaign.predictive? ? 1 : 0
+    def failed!(phone, update_presented_count=false)
+      phone                  = PhoneNumber.sanitize(phone)
+      update_presented_count = update_presented_count ? 1 : 0
       Wolverine.dial_queue.dial_failed({
         keys: [available.keys[:presented], completed.keys[:failed], Twillio::InflightStats.key(campaign)],
         argv: [phone, update_presented_count]

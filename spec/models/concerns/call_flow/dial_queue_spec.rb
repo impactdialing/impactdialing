@@ -210,9 +210,14 @@ describe 'CallFlow::DialQueue' do
         expect(campaign.presented_count).to eq 1
       end
 
-      it 'decrements presented count' do
-        subject.failed!(phone)
+      it 'decrements presented count when :update_presented_count is true' do
+        subject.failed!(phone, true)
         expect(campaign.presented_count).to be_zero
+      end
+
+      it 'does not decrement presented count when :update_presented_count is false' do
+        subject.failed!(phone)
+        expect(campaign.presented_count).to eq 1
       end
 
       it_behaves_like 'any failed dial'
