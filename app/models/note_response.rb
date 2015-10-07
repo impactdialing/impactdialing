@@ -8,7 +8,9 @@ class NoteResponse < ActiveRecord::Base
   scope :for_notes, lambda{|note_ids| where("note_id in (?) ", note_ids)}
 
   def self.note_ids(campaign_id)
-    NoteResponse.select('DISTINCT note_id').where(campaign_id: campaign_id).order('note_id').pluck(:note_id)
+    NoteResponse.where({
+      campaign_id: campaign_id
+    }).uniq.order('note_id').pluck(:note_id)
   end
 
   def self.response_texts(note_ids, note_responses)
