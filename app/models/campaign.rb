@@ -138,15 +138,15 @@ private
     true # make sure to not halt callback chain for any reason from here
   end
 
-  def inflight_stats
-    @inflight_stats ||= Twillio::InflightStats.new(self)
-  end
-
 public
   module Type
     PREVIEW = "Preview"
     PREDICTIVE = "Predictive"
     POWER = "Power"
+  end
+
+  def inflight_stats
+    @inflight_stats ||= Twillio::InflightStats.new(self)
   end
 
   def metric_source
