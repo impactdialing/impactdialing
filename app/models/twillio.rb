@@ -36,6 +36,18 @@ class Twillio
         (redis.hget(base_key, status) || 0).to_i
       end
 
+      def set(status, value)
+        redis.hset(base_key, status, value)
+      end
+
+      def update_last_dial_time
+        set('last_dial_time', Time.now.utc.to_i)
+      end
+
+      def last_dial_time
+        get('last_dial_time')
+      end
+
       def delete
         redis.del base_key
       end
