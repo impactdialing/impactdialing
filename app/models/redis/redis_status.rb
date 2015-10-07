@@ -60,7 +60,10 @@ class RedisStatus
   end
 
   def self.on_hold_times(campaign_id, *caller_session_ids)
-    elements = redis.hmget redis_key(campaign_id), *caller_session_ids.compact.flatten
+    hkeys = caller_session_ids.compact.flatten
+    return [] if hkeys.empty?
+
+    elements = redis.hmget redis_key(campaign_id), *hkeys
     elements.map do |element|
       next if element.nil?
       parsed_element = JSON.parse(element)
