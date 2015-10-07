@@ -96,6 +96,8 @@ class Campaign < ActiveRecord::Base
   before_save :flag_archive_changes
   after_save :publish_archival_notification
 
+  delegate :update_last_dial_time, to: :inflight_stats
+
 private
   # flag archive-related changes for use by notification after changes have persisted
   def flag_archive_changes

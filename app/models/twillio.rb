@@ -80,6 +80,8 @@ class Twillio
   end
   
   def self.handle_response(http_response, campaign, phone, caller_session=nil)
+    campaign.update_last_dial_time
+
     response = if http_response.blank?
                  {
                   'status' => 666,
