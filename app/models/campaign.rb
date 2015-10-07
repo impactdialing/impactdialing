@@ -96,6 +96,7 @@ class Campaign < ActiveRecord::Base
   before_save :flag_archive_changes
   after_save :publish_archival_notification
 
+  delegate :last_dial_time, to: :inflight_stats
   delegate :update_last_dial_time, to: :inflight_stats
 
 private

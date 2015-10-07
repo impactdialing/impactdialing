@@ -8,11 +8,11 @@ module AppHealth
       end
 
       def any_callers_exceed_on_hold_threshold?(campaign)
-        campaign.available_callers_count > 0 and on_hold_times(campaign).detect{|n| n > 0}
+        on_hold_times(campaign).detect{|n| n > 0}
       end
 
       def no_recent_dials?(campaign)
-        campaign.call_attempts.where('created_at >= ?', 1.minute.ago).count.zero?
+        (Time.now.utc.to_i - campaign.last_dial_time) > 60
       end
 
     public
@@ -73,3 +73,4 @@ module AppHealth
     end
   end
 end
+

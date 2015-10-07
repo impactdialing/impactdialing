@@ -67,17 +67,15 @@ describe 'AppHealth::Monitor::PredictiveDialRate' do
               RedisStatus.set_state_changed_time(predictiveA.id, 'On hold', on_hold_session.id)
             end
           end
-          context 'no new dials have been made in last 2 minutes' do
-            before do
-              create(:bare_call_attempt, campaign: predictiveA, created_at: 3.minutes.ago, caller_session: predictiveA.caller_sessions.sample)
-            end
+          context 'no new dials have been made in the last minute' do
             it 'returns false' do
+              predictiveA.inflight_stats.set('last_dial_time', 61.seconds.ago.to_i)
               expect(subject.ok?).to be_falsey
             end
           end
           context '1 new dial was made in last minute' do
             it 'returns true' do
-              call_attempt = create(:bare_call_attempt, campaign: predictiveA, caller_session: predictiveA.caller_sessions.sample)
+              predictiveA.update_last_dial_time
               expect(subject.ok?).to be_truthy
             end
           end
@@ -106,7 +104,7 @@ describe 'AppHealth::Monitor::PredictiveDialRate' do
           RedisStatus.set_state_changed_time(predictiveA.id, 'On hold', on_hold_session.id)
         end
 
-        create(:call_attempt, campaign: predictiveA, created_at: 3.minutes.ago, caller_session: predictiveA.caller_sessions.sample)
+        predictiveA.inflight_stats.set('last_dial_time', 2.minutes.ago.to_i)
       end
       it 'triggers an Alarm' do
         expect(AppHealth::Alarm).to receive(:trigger!).with(subject.new.alarm_key, subject.new.alarm_description, subject.new.alarm_details)
