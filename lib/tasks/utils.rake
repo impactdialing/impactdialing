@@ -13,131 +13,129 @@
 # end
 # print out
 
-desc "Migrate DialQueue::Households schema for memory optimization"
-task :migrate_dial_queue_households => [:environment] do
-  # migrate redis households
-  #
-  time_threshold                = 30.days.ago.beginning_of_day
-  recently_called_campaign_ids  = CallAttempt.where('created_at > ?', time_threshold).select('DISTINCT(campaign_id)').pluck(:campaign_id).uniq
-  recently_created_campaign_ids = Campaign.where('created_at > ?', time_threshold).where(active: true).pluck(:id).uniq
-  campaign_ids                  = recently_called_campaign_ids + recently_created_campaign_ids
-  campaigns                     = Campaign.where(id: campaign_ids.uniq)
-  redis                         = Redis.new
+desc "Count houses in deprecated format"
+task :count_deprecated_formats => :environment do
+  redis            = Redis.new
+  deprecated_house = 0
+  total_house      = 0
+  good_house       = 0
 
-  p "Updating redis config"
-  redis.config(:set, 'hash-max-ziplist-entries', 1024)
-  redis.config(:set, 'hash-max-ziplist-value', 512)
+  redis.scan_each(match: 'dial_queue:*:households:*') do |key|
+    next unless redis.type(key) == 'hash'
 
-  p "Loaded: #{campaigns.count} campaigns"
-
-  campaigns.each do |campaign|
-    next unless campaign.active? or campaign.dial_queue.exists?
-
-    p "Migrating: #{campaign.name}"
-    p "- #{campaign.households.count} households"
-    base_key = "dial_queue:#{campaign.id}:households:active"
-    phones   = campaign.households.pluck(:phone)
-
-    phones.each do |phone|
-      p "- #{phone}"
-      current_key  = "#{base_key}:#{phone[0..4]}"
-      current_hkey = "#{phone[5..-1]}"
-      new_key      = "#{base_key}:#{phone[0..-4]}"
-      new_hkey     = "#{phone[-3..-1]}"
-
-      redis.watch(current_key) do
-        household_json = redis.hget current_key, current_hkey
-
-        next if household_json.nil?
-
-        redis.multi do
-          redis.hset new_key, new_hkey, household_json
-          redis.hdel current_key, current_hkey
-        end
-      end
-    end
-  end
-end
-
-desc "Update VoterList Household Counter Caches [not the default rails-way]"
-task :update_list_household_counts => :environment do
-  quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
-  subscription_account_ids = Billing::Subscription.where(
-    'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
-    ['trial', 'per_minute', 'enterprise'],
-    ['basic', 'pro', 'business'],
-    'active'
-  ).pluck(:account_id)
-
-  account_ids = (quota_account_ids + subscription_account_ids).uniq
-  failed      = []
-  updated     = 0
-  skipped     = 0
-  VoterList.where(account_id: account_ids).find_in_batches(batch_size: 100) do |lists|
-    lists.each do |list|
-      current_count         = list.households_count
-      households_count      = list.voters.select('DISTINCT household_id').count
-      list.households_count = households_count
-
-      if current_count != households_count
-        if list.save
-          print '.'
-          updated += 1
-        else
-          print "x"
-          failed << list.id
-        end
+    hashes = redis.hgetall(key)
+    hashes.each do |phone_suffix,house|
+      house = JSON.parse(house)
+      total_house += 1
+      if house.kind_of? Array
+        deprecated_house += 1
       else
+        good_house += 1
+      end
+    end
+  end
+
+  p "Deprecated: #{deprecated_house}"
+  p "Good: #{good_house}"
+  p "Total: #{total_house}"
+end
+
+desc "Delete houses in deprecated format"
+task :delete_deprecated_formats => :environment do
+  redis            = Redis.new
+  deprecated_house = 0
+  total_house      = 0
+  good_house       = 0
+
+  redis.scan_each(match: 'dial_queue:*:households:*') do |key|
+    next unless redis.type(key) == 'hash'
+
+    hashes = redis.hgetall(key)
+    hashes.each do |phone_suffix,house|
+      house = JSON.parse(house)
+      total_house += 1
+      if house.kind_of? Array
+        deprecated_house += 1
+        redis.hdel key, phone_suffix
+      else
+        good_house += 1
+      end
+    end
+  end
+
+  p "Deprecated: #{deprecated_house}"
+  p "Good: #{good_house}"
+  p "Total: #{total_house}"
+end
+
+desc "Search all redis households & leads for given UUID"
+task :search_uuid, [:uuid] => :environment do |t,args|
+  uuid          = args[:uuid]
+  redis         = Redis.new
+  house_matches = []
+  lead_matches  = []
+  corrupt_house = []
+  corrupt_lead  = []
+  deprecated_house = 0
+
+  redis.scan_each(match: 'dial_queue:*:households:*') do |key|
+    next unless redis.type(key) == 'hash'
+
+    hashes = redis.hgetall(key)
+    hashes.each do |phone_suffix,house|
+      if house.blank?
         print '-'
-        skipped += 1
+        next
       end
-    end
-  end
-  print "\nDone!\n"
 
-  p "Skipped: #{skipped}"
-  p "Updated: #{updated}"
-  p "Failed: #{failed.size}"
-  p "Failed List IDs: #{failed.join(',')}"
-end
+      house = JSON.parse(house)
 
-desc "Patch all campaigns with corrupted caches"
-task :patch_corrupt_dial_queues => :environment do
-  corrupt_count = 0
+      if house.kind_of? Array
+        deprecated_house += 1
+        #print "@"
+        #print "#{phone_suffix} => #{house}\n"
+        next
+      end
 
-  Campaign.where('created_at > ?', 6.months.ago.beginning_of_month).each do |campaign|
-    campaign.dial_queue.available.all.each do |phone|
-      if campaign.dial_queue.households.find(phone).empty?
-        corrupt_count += 1
-        campaign.dial_queue.available.remove(phone)
-        campaign.dial_queue.recycle_bin.remove(phone)
-        unless campaign.dial_queue.households.missing?(phone)
-          campaign.dial_queue.households.remove_house(phone)
+      unless house.keys.include?('uuid')
+        corrupt_house << house
+        print "!"
+        next
+      end
+
+      if house['uuid'] == uuid
+        house_matches << house
+        print "\nHouse: #{house}\n"
+        exit
+      elsif house['leads'].any?
+        begin
+
+        house['leads'].each do |lead|
+          unless lead.keys.include?('uuid')
+            corrupt_lead << lead
+            print "#"
+            next
+          end
+          if lead['uuid'] == uuid
+            lead_matches << lead
+            print "\nLead: #{lead}\n"
+            exit
+          end
         end
-      end
+        rescue => e
+          byebug
+        end
+      end 
+      print '.'
     end
   end
-  
-  print "\n\nFound & patched #{corrupt_count} corrupted dial queues\n\n"
-end
 
-desc "Patch given campaign if cache is corrupted"
-task :patch_corrupt_dial_queue, [:campaign_id] => :environment do |t,args|
-  corrupt_count = 0
-  campaign      = Campaign.find(args[:campaign_id])
-
-  campaign.dial_queue.available.all.each do |phone|
-    if campaign.dial_queue.households.find(phone).empty?
-      corrupt_count += 1
-      campaign.dial_queue.available.remove(phone)
-      campaign.dial_queue.recycle_bin.remove(phone)
-      unless campaign.dial_queue.households.missing?(phone)
-        campaign.dial_queue.households.remove_house(phone)
-      end
-    end
-  end
-  
-  print "\n\nFound & patched #{corrupt_count} corrupted dial queues\n\n"
+  print "\n\n"
+  print "Found #{house_matches.size} House matches\n"
+  print "Found #{lead_matches.size} Lead matches\n"
+  print "Found #{corrupt_house.size} Corrupt households\n"
+  print "Found #{corrupt_lead.size} Corrupt leads\n"
+  print "Found #{deprecated_house} Houses in deprecated format\n"
 end
 
 desc "Sweep up dial queue cache of any data from campaigns inactive since :days ago"
@@ -180,58 +178,6 @@ task :sweep_dial_queue, [:days] => :environment do |t,args|
   end
 end
 
-desc "Rebuild dial queue cache"
-task :rebuild_dial_queues => :environment do |t,args|
-  VoterList.includes(:campaign).find_in_batches(batch_size: 100) do |voter_lists|
-    print 'b'
-    voter_lists.each do |voter_list|
-      next if voter_list.voters.count.zero?
-
-      lower_voter_id = voter_list.voters.order('id asc').first.id
-      upper_voter_id = voter_list.voters.order('id desc').first.id
-      Resque.enqueue(Householding::SeedDialQueue, voter_list.campaign_id, voter_list.id, lower_voter_id, upper_voter_id)
-      print 'q'
-    end
-  end
-  print "\n\nDone!!\n\n"
-end
-
-desc "Rebuild dial queue for a specific campaign"
-task :rebuild_dial_queue => :environment do |t,args|
-  campaign_id = args[:campaign_id]
-  campaign    = Campaign.find(campaign_id)
-  campaign.all_voters.with_enabled(:list).find_in_batches(batch_size: 500) do |voters|
-    campaign.dial_queue.cache_all(voters)
-  end
-end
-
-desc "Cache households to dial queue"
-task :seed_dial_queue => :environment do
-  quota_account_ids        = Quota.where(disable_access: false).pluck(:account_id)
-  subscription_account_ids = Billing::Subscription.where(
-    'plan IN (?) OR (plan IN (?) AND provider_status = ?)',
-    ['trial', 'per_minute', 'enterprise'],
-    ['basic', 'pro', 'business'],
-    'active'
-  ).pluck(:account_id)
-  account_ids = (quota_account_ids + subscription_account_ids).uniq
-  Campaign.where(account_id: account_ids).where('created_at > ?', 6.months.ago.beginning_of_month).includes(:voter_lists).find_in_batches(batch_size: 100) do |campaigns|
-    campaigns.each do |campaign|
-      p "Seeding DialQueue Account[#{campaign.account_id}] Campaign[#{campaign.name}]"
-      campaign.voter_lists.each do |voter_list|
-        if voter_list.enabled?
-          voter_list.voters.find_in_batches(batch_size: 500) do |voters|
-            Resque.enqueue(Householding::SeedDialQueue, campaign.id, voter_list.id, voters.first.id, voters.last.id)
-          end
-          print '.'
-        end
-      end
-      p "--"
-    end
-    print "\n\nDone!!\n"
-  end
-end
-
 desc "Cache selected Script fields"
 task :seed_script_fields => :environment do
   Script.find_in_batches do |scripts|
@@ -241,85 +187,10 @@ task :seed_script_fields => :environment do
   end
 end
 
-desc "sync Voters#enabled w/ VoterList#enabled"
-task :sync_all_voter_lists_to_voter => :environment do |t, args|
-  limit  = 100
-  offset = 0
-  lists  = VoterList.limit(limit).offset(offset)
-  rows   = []
-
-  until lists.empty?
-    print "#{1 + offset} - #{offset + limit}\n"
-    lists.each do |list|
-      row = []
-      row << list.id
-      if list.enabled?
-        row << list.voters.count - list.voters.enabled.count
-        row << 0
-      else
-        row << 0
-        row << list.voters.count - list.voters.disabled.count
-      end
-      bits = []
-      bits << :list if list.enabled?
-      blocked_bit     = Voter.bitmask_for_enabled(*[bits + [:blocked]].flatten)
-      not_blocked_bit = Voter.bitmask_for_enabled(*bits)
-
-      list.voters.blocked.update_all(enabled: blocked_bit)
-      list.voters.not_blocked.update_all(enabled: not_blocked_bit)
-      if list.enabled?
-        row << list.voters.enabled.count
-        row << 0
-      else
-        row << 0
-        row << list.voters.disabled.count
-      end
-
-      rows << row
-    end
-
-    offset += limit
-    lists = VoterList.limit(limit).offset(offset)
-  end
-  print "List ID, Enabling, Disabling, Total enabled, Total disabled\n"
-  print rows.map{|row| row.join(", ")}.join("\n") + "\n"
-  print "done\n"
-end
-
-desc "Inspect voter blocked ids"
-task :inspect_voter_dnc => :environment do |t,args|
-  x = Voter.with_enabled(:blocked).group(:campaign_id).count
-  y = Voter.without_enabled(:blocked).group(:campaign_id).count
-  print "Blocked: #{x}\n"
-  print "Not blocked: #{y}\n"
-end
-
-desc "Update VoterList voters_count cache"
-task :update_voter_list_voters_count_cache => :environment do |t,args|
-  VoterList.select([:id, :campaign_id]).find_in_batches do |voter_lists|
-    voter_lists.each do |voter_list|
-      VoterList.reset_counters(voter_list.id, :voters)
-    end
-  end
-end
-
 desc "Refresh Redis Wireless Block List & Wireless <-> Wired Ported Lists"
 task :refresh_wireless_ported_lists => :environment do |t,args|
   DoNotCall::Jobs::RefreshWirelessBlockList.perform('nalennd_block.csv')
   DoNotCall::Jobs::RefreshPortedLists.perform
-end
-
-desc "Fix pre-existing VoterList#skip_wireless values"
-task :fix_pre_existing_list_skip_wireless => :environment do
-  # lists that were never scrubbed => < 2014-10-29
-  # lists that were never scrubbed => > 2014-10-29 11:15am < 2014-10-29 12:00pm
-  # lists that were scrubbed => > 2014-10-29 3am < 2014-10-29 11:15am
-  # lists that were scrubbed => > 2014-10-29 12pm
-  never_scrubbed = VoterList.where('created_at <= ? OR (created_at >= ? AND created_at <= ?)',
-    '2014-10-29 07:00:00 0000',
-    '2014-10-29 18:15:00 0000',
-    '2014-10-29 19:15:00 0000')
-  never_scrubbed.update_all(skip_wireless: false)
 end
 
 desc "Read phone numbers from csv file and output as array."
