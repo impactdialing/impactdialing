@@ -3,6 +3,25 @@ require 'rails_helper'
 describe CallAttempt, :type => :model do
   include Rails.application.routes.url_helpers
 
+  describe '#report_recording_url(url)' do
+    let(:path){ 'recordings/RE-123asdf' }
+    let(:url){ "https://api.twilio.com/#{path}" }
+    let(:report_recording_url){ subject.report_recording_url(url) }
+    subject{ CallAttempt }
+
+    it 'replaces api.twilio.com with recordings.impactdialing.com' do
+      expect(report_recording_url).to match /.*recordings.impactdialing.com.*/
+    end
+
+    it 'forces http://' do
+      expect(report_recording_url).to match /\Ahttp:\/\//
+    end
+
+    it 'adds .mps extension' do
+      expect(report_recording_url).to match /\.mp3\Z/
+    end
+  end
+
   describe '#update_recording!(delivered_manually=false)' do
     let(:recording){ create(:recording) }
     let(:campaign){ create(:power, {recording: recording}) }

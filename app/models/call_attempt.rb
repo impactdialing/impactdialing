@@ -47,7 +47,7 @@ class CallAttempt < ActiveRecord::Base
   scope :not_ringing, -> { where('status <> ?', Status::RINGING) }
 
   def self.report_recording_url(url)
-    "#{url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if url
+    "#{url.gsub("https://api.twilio.com", "http://recordings.impactdialing.com")}.mp3" if url
   end
 
   def report_recording_url
