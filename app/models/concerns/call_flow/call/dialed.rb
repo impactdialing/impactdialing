@@ -190,7 +190,7 @@ public
       campaign.number_not_ringing
 
       unless campaign.predictive?
-        caller_session_call.redirect_to_hold
+        caller_session_call.try(:redirect_to_hold)
       end
     end
 

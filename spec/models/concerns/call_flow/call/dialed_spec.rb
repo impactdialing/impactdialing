@@ -227,6 +227,19 @@ describe 'CallFlow::Call::Dialed' do
       end
     end
 
+    context '#caller_session_call is nil' do
+      # can be the case when caller & lead disconnect at same time
+      before do
+        allow(CallFlow::CallerSession).to receive(:new){ nil }
+      end
+
+      it 'does not raise exception' do
+        expect{
+          subject.completed(campaign, status_callback_params)
+        }.to_not raise_error
+      end
+    end
+
     context 'CallStatus is completed' do
       before do
         status_callback_params['CallStatus'] = 'completed'
