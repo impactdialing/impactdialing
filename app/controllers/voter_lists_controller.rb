@@ -58,7 +58,6 @@ public
         flash_message(:notice, I18n.t(:voter_list_upload_scheduled, url: url).html_safe)
         format.json { render :json => voter_list.to_json(:only => ["id", "name", "enabled", "skip_wireless", "campaign_id"]) }
       else
-        p "list errors: #{voter_list.errors.full_messages.join}"
         format.html {
           flash_message(:error, voter_list.errors.full_messages.join)
           redirect_to edit_client_campaign_path(@campaign.id)
