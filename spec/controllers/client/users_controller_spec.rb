@@ -62,14 +62,55 @@ describe Client::UsersController, :type => :controller do
     expect(flash[:error]).not_to be_blank
   end
 
-  it "invites a new user to the current user's account" do
-    user = create(:user).tap{|u| login_as u}
-    expect(Resque).to receive(:enqueue)
-    expect {
-      post :invite, :email => 'foo@bar.com', user: {role: "admin"}
-    }.to change(user.account.users.reload, :count).by(1)
-    expect(user.account.users.reload.last.email).to eq('foo@bar.com')
-    expect(response).to redirect_to(:back)
+  describe 'invite' do
+    let(:admin){ create(:user) }
+    let(:account){ admin.account }
+    let(:email){ 'foo@test.com' }
+    let(:new_user){ account.users.last }
+    let(:std_params) do
+      {
+        user: {
+          role: 'admin'
+        }
+      }
+    end
+    before do
+      login_as(admin)
+    end
+    context 'with valid params' do
+      it 'creates a new user' do
+        expect {
+          post :invite, std_params.merge(email: email)
+        }.to change(account.users.reload, :count).by(1)
+        expect(account.users.reload.last.email).to eq(email)
+      end
+      it 'sends the new user an invitation email' do
+        post :invite, std_params.merge(email: email)
+        expect([:resque, :general]).to have_queued(DeliverInvitationEmailJob).with(new_user.id, admin.id)
+      end
+      it 'redirects to :back' do
+        post :invite, std_params.merge(email: email)
+        expect(response).to redirect_to(:back)
+      end
+    end
+    context 'with invalid params' do
+      it 'user already invited for this account' do
+        create(:user, account: account, email: email)
+        post :invite, std_params.merge(email: email)
+        expect(flash[:error]).to eq ["#{email} has already been invited."]
+      end
+      it 'user already exists in another account' do
+        create(:user, email: email)
+        post :invite, std_params.merge(email: email)
+        expect(flash[:error]).to eq ["#{email} is already part of a different account."]
+      end
+      it 'user is just invalid' do
+        invalid_user = User.new(email: '', new_password: 'k34jkk32j4k', role: 'admin')
+        invalid_user.valid?
+        post :invite, std_params.merge(email: '')
+        expect(flash[:error]).to eq invalid_user.errors.full_messages
+      end
+    end
   end
 
   describe 'destroy' do

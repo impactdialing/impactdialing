@@ -70,10 +70,19 @@ module Client
         flash_message(:error, "#{params[:email]} is already part of a different account.")
       else
         random_password = rand(Time.now.to_i)
-        new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s, role: user_params[:role])
-        new_user.create_reset_code!
-        Resque.enqueue(DeliverInvitationEmailJob, new_user.id, current_user.id)
-        flash_message(:notice, "#{params[:email]} has been invited.")
+        new_user = account.users.new({
+          email: params[:email],
+          new_password: random_password.to_s,
+          role: user_params[:role]
+        })
+        if new_user.save
+          new_user.create_reset_code!
+          Resque.enqueue(DeliverInvitationEmailJob, new_user.id, current_user.id)
+          flash_message(:notice, "#{params[:email]} has been invited.")
+        else
+          flash_message(:error, new_user.errors.full_messages)
+          flash[:error].flatten!
+        end
       end
       redirect_to :back
     end

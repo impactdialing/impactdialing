@@ -39,7 +39,7 @@
   <fieldset>
     <legend>Invite a new user</legend>
     <%= form_tag client_user_invite_path do %>
-      <p><label for="">Email</label>
+      <p><label for="email">Email</label>
       <br>
       <%= text_field_tag :email %></p>
       <p><%= select( "user", "role", { "Administrator" => "admin", "Supervisor" => "supervisor"}) %></p>
