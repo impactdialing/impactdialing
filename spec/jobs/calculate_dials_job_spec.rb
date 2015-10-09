@@ -129,9 +129,9 @@ describe 'CalculateDialsJob' do
 
         it 'returns early' do
           CalculateDialsJob.perform(campaign.id)
-          resque_actual = Resque.peek :dialer_worker
-          resque_expected = nil
-          sidekiq_actual = Sidekiq::Queue.new 'call_flow'
+          resque_actual    = Resque.peek :dialer_worker
+          resque_expected  = nil
+          sidekiq_actual   = Sidekiq::Queue.new 'call_flow'
           sidekiq_expected = 0
 
           expect(resque_actual).to eq resque_expected
