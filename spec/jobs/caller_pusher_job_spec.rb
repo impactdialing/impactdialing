@@ -40,11 +40,17 @@ describe CallerPusherJob do
       subject.perform(caller_session.id, event, sequence)
     end
 
-    it 're-queues itself when CallFlow::DialQueue::Available::EmptyHousehold is raised' do
+    it 're-queues itself when CallFlow::DialQueue::EmptyHousehold is raised' do
       expect(caller_session).to receive(:publish_caller_conference_started).and_raise(CallFlow::DialQueue::EmptyHousehold)
 
       subject.perform(caller_session.id, event, sequence)
       
+      expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, event, sequence, {})
+    end
+
+    it 're-queues itself when CallFlow::DialQueue::MismatchedHousehold is raised' do
+      expect(caller_session).to receive(:publish_caller_conference_started).and_raise(CallFlow::DialQueue::MismatchedHousehold)
+      subject.perform(caller_session.id, event, sequence)
       expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, event, sequence, {})
     end
   end

@@ -6,7 +6,9 @@ module CallFlow
     attr_reader :campaign
     delegate :phone_key_index_stop, to: :households
 
-    class EmptyHousehold < ArgumentError; end
+    class InvalidHousehold < ArgumentError; end
+    class EmptyHousehold < InvalidHousehold; end
+    class MismatchedHousehold < InvalidHousehold; end
     
   private
     def self.validate_campaign!(campaign)
@@ -76,6 +78,13 @@ module CallFlow
       houses = households.find_presentable(phones)
       if houses.empty? and available.size > 0
         raise EmptyHousehold, "CallFlow::DialQueue#next(#{n}) found only empty households for #{phones}"
+      end
+
+      houses.each do |house|
+        mismatched = house['leads'].detect{|lead| lead['phone'] != house['phone']} 
+        if mismatched
+          raise MismatchedHousehold, "CallFlow::DialQueue#next(#{n}) returned House[#{house}]"
+        end
       end
 
       return houses

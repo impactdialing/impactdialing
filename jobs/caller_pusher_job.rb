@@ -47,9 +47,9 @@ class CallerPusherJob
     metrics          = ImpactPlatform::Metrics::JobStatus.started(metric_name, source)
 
     if call_flow_events.completed?(event_sequence)
-      name = "call_flow.duplicate_job_run"
-      src  = ".seq-#{event_sequence}"
-      ImpactPlatform::Metrics.count(name, 1, src)
+      name    = "call_flow.duplicate_job_run"
+      source += ".seq-#{event_sequence}"
+      ImpactPlatform::Metrics.count(name, 1, source)
       Rails.logger.error "[CallerPusherJob] Duplicate job run for CallerSession[#{caller_session.id}] EventSequence[#{event_sequence}] Event[#{event}]"
       return 
     end
@@ -63,11 +63,11 @@ class CallerPusherJob
 
       call_flow_events.completed(event_sequence)
 
-    rescue CallFlow::DialQueue::EmptyHousehold => e
+    rescue CallFlow::DialQueue::InvalidHousehold => e
       # can be raised when event == publish_caller_conference_started
       self.class.add_to_queue(caller_session, event, event_sequence, payload)
-      Rails.logger.error "#{e.class}: #{e.message}"
-      name   = "#{event}.dial_queue.empty_household"
+      Rails.logger.error "[#{e.class}] #{e.message}"
+      name   = "#{event}.dial_queue.#{e.class.to_s.split('::').last.underscore}"
       ImpactPlatform::Metrics.count(name, 1, source)
     end
     
