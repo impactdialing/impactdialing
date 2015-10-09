@@ -111,7 +111,8 @@ module ListHelpers
         leads: leads,
         blocked: 0,
         uuid: "hh-uuid-#{phone}",
-        score: Time.now.to_f
+        score: Time.now.to_f,
+        phone: phone
       }
     }
   end
