@@ -23,18 +23,23 @@ class RedirectCallerJob
   sidekiq_options :retry => false
   sidekiq_options :failures => true
 
-  def perform(caller_session_id)
+  def perform(caller_session_id, location=:default)
     caller_session = CallerSession.find_by_id_cached(caller_session_id)
-    # Providers::Phone::Call.redirect_for(caller_session)
 
-    twilio = Twilio::REST::Client.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    call   = twilio.account.calls.get(caller_session.sid)
-
-    if call.status == 'in-progress'
-      params = Providers::Phone::Call::Params::CallerSession.new(caller_session)
-      call.redirect_to(params.url)
+    if call_in_progress?(caller_session.sid)
+      Providers::Phone::Call.redirect_for(caller_session, location)
+      
+    #  params = Providers::Phone::Call::Params::CallerSession.new(caller_session, location)
+    #  call.redirect_to(params.url)
     else
-      Rails.logger.error("RedirectCallerJob attempted to redirect Call[#{call.sid}] Status[#{call.status}]")
+      Rails.logger.error("RedirectCallerJob attempted to redirect Call[#{caller_session.sid}]")
     end
   end
+
+  def call_in_progress?(sid)
+    twilio = Twilio::REST::Client.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    call   = twilio.account.calls.get(sid)
+    call.status == 'in-progress'
+  end
 end
+
