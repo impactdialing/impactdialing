@@ -130,27 +130,22 @@ public
     end
     # ^^ Work around; this url can be removed from some Dial:actions
     # todo: remove pause_url from unnecessary TwiML responses
-    logger.debug "DoublePause: Caller#pause - #{params}"
-    if RedisCallerSession.pause?(@caller_session.session_key, params[:transfer_session_key])
+    unless @caller_session.skip_pause?
 
       @caller_session.pushit('caller_wrapup_voice_hit', {})
-
-      logger.debug "DoublePause: Caller#pause - pausing for results"
 
       xml = Twilio::TwiML::Response.new do |r|
         r.Say("Please enter your call results.")
         r.Pause("length" => 600)
       end.text
     else
-      logger.debug "DoublePause: Caller#pause - waiting 0.5 seconds"
-      # Caller on warm transfer (RedisCallerSession.active_transfer?).
       xml = Twilio::TwiML::Response.new do |r|
         # Wait quietly for .5 seconds
         # while caller joins transfer conference.
         r.Play("digits" => "www")
       end.text
+      @caller_session.skip_pause = false
     end
-    RedisCallerSession.after_pause(@caller_session.session_key, params[:transfer_session_key])
     render xml: xml
   end
 
@@ -266,20 +261,9 @@ public
     case participant_type
     when 'transfer'
       Providers::Phone::Conference.kick(transfer_attempt, {retry_up_to: ENV["TWILIO_RETRIES"]})
-      RedisCallerSession.remove_party(transfer_attempt.session_key)
     when 'caller'
       Providers::Phone::Conference.kick(@caller_session, {retry_up_to: ENV["TWILIO_RETRIES"]})
-
-      if transfer_attempt.try(:warm_transfer?)
-        if RedisCallerSession.party_count(transfer_attempt.session_key) == 3
-          RedisCallerSession.remove_party(transfer_attempt.session_key) # Lead
-          RedisCallerSession.remove_party(transfer_attempt.session_key) # Transfer
-        end
-        if RedisCallerSession.party_count(transfer_attempt.session_key) == 2
-          RedisCallerSession.remove_party(transfer_attempt.session_key) # Lead
-        end
-      end
-      # this redirect probably isn't necessary since the Dial:action url is set to the pause_url in TransfersController#caller
+      @caller_session.skip_pause = false
       # this redirect is only necessary in order to update the Call
       # and trigger the Dial:action from the caller conference twiml
       # in transfers#caller

@@ -94,6 +94,7 @@ public
     @caller_session = transfer_attempt.caller_session
 
     transfer_attempt_connected
+    caller_session.skip_pause = true
 
     # todo: refactor workflow to queue call redirects and return TwiML faster
 

@@ -41,6 +41,31 @@ describe 'CallFlow::CallerSession' do
     end
   end
 
+  describe '#skip_pause=(bool)' do
+    it 'sets :skip_pause on storage to one when bool is true' do
+      subject.skip_pause = true
+      expect(subject.storage[:skip_pause]).to eq '1'
+    end
+    it 'sets :skip_pause on storage to zero when bool is false' do
+      subject.skip_pause = false
+      expect(subject.storage[:skip_pause]).to eq '0'
+    end 
+  end
+
+  describe '#skip_pause?' do
+    it 'returns true when storage[:skip_pause] > 0' do
+      subject.skip_pause = true
+      expect(subject.skip_pause?).to be_truthy
+    end
+    it 'returns false when storage[:skip_pause] < 1' do
+      subject.skip_pause = false
+      expect(subject.skip_pause?).to be_falsey
+    end
+    it 'returns false when storage[:skip_pause] is not set' do
+      expect(subject.skip_pause?).to be_falsey
+    end
+  end
+
   describe '#dialed_call_sid=(dialed_call_sid)' do
     # Call#incoming_call (Twillio.set_attempt_in_progress)
     # Twillio.set_attempt_in_progress

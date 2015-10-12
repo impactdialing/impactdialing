@@ -43,7 +43,8 @@ describe TransferController, :type => :controller do
   end
   let(:call_flow_caller_session) do
     instance_double('CallFlow::CallerSession', {
-      dialed_call: dialed_call,
+      :dialed_call => dialed_call,
+      :skip_pause= => nil
     })
   end
   let(:caller_session) do
@@ -125,9 +126,10 @@ describe TransferController, :type => :controller do
       :protocol => "http://"
     }
     twilio_response = double('Providers::Phone::Twilio::Response', {error?: false})
+
     expect(Providers::Phone::Call).to receive(:redirect).with(call_sid, callee_transfer_index_url(url_opts.merge(transfer_type: transfer_attempt.transfer_type)), {retry_up_to: ENV["TWILIO_RETRIES"]}){ twilio_response }
-    allow(RedisCallerSession).to receive(:any_active_transfers?).with(caller_session.session_key){ true }
     expect(Providers::Phone::Call).to receive(:redirect).with(caller_session.sid, pause_caller_url(caller_record, url_opts.merge(session_id: caller_session.id)), {retry_up_to: ENV["TWILIO_RETRIES"]})
+    expect(call_flow_caller_session).to receive(:skip_pause=).with(true)
 
     post :connect, id: transfer_attempt.id
     transfer_attempt.reload

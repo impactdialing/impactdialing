@@ -265,9 +265,8 @@ describe CallerController, :type => :controller do
     let(:transfer_session_key){ 'transfer-attempt-session-key' }
     let(:session_id){ caller_session.id }
 
-    context 'caller arrives here after disconnecting from the lead' do
+    context 'caller arrives here and #skip_pause? => false' do
       before do
-        expect(RedisCallerSession.party_count(transfer_session_key)).to eq 0
         post :pause, id: caller.id, session_id: session_id
       end
       it 'Says: "Please enter your call results."' do
@@ -275,32 +274,13 @@ describe CallerController, :type => :controller do
       end
     end
 
-    context 'caller arrives here after dialing a warm transfer' do
+    context 'caller arrives here and #skip_pause? => true' do
       before do
-        RedisCallerSession.activate_transfer(caller_session_key, transfer_session_key)
-        expect(RedisCallerSession.party_count(transfer_session_key)).to eq -1
+        caller_session.skip_pause = true
         post :pause, id: caller.id, session_id: session_id
-      end
-      after do
-        RedisCallerSession.deactivate_transfer(caller_session_key)
       end
       it 'Plays silence for 0.5 seconds' do
         expect(response.body).to include '<Play digits="www"/>'
-      end
-    end
-
-    context 'caller arrives here after leaving a warm transfer' do
-      before do
-        RedisCallerSession.activate_transfer(caller_session_key, transfer_session_key)
-        RedisCallerSession.add_party(transfer_session_key)
-        expect(RedisCallerSession.party_count(transfer_session_key)).to eq 0
-        post :pause, id: caller.id, session_id: session_id, clear_active_transfer: true
-      end
-      after do
-        RedisCallerSession.deactivate_transfer(caller_session_key)
-      end
-      it 'Says: "Please enter your call results."' do
-        expect(response.body).to have_content 'Please enter your call results.'
       end
     end
   end

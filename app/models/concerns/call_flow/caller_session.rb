@@ -55,6 +55,14 @@ public
     end
   end
 
+  def skip_pause=(flag)
+    storage[:skip_pause] = flag ? 1 : 0
+  end
+
+  def skip_pause?
+    storage[:skip_pause].to_i > 0
+  end
+
   def on_hold?
     in_state?('On hold')
   end
