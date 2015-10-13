@@ -201,17 +201,17 @@ public
   end
 
   def hold
-    Twilio::Verb.new { |v| v.play "#{DataCentre.call_back_host(data_centre)}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
+    Twilio::TwiML::Response.new { |v| v.Play "#{DataCentre.call_back_host(data_centre)}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.Redirect(:method => 'GET'); }.text
   end
+  deprecate :hold
 
   def join_conference(mute_type)
     # below crap should move to poro, see Monitors::CallersController#start <- only place this method is called
-    response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true) do
-        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod =>"GET", :muted => mute_type)
+    Twilio::TwiML::Response.new do |v|
+      v.Dial(:hangupOnStar => true) do
+        v.Conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod =>"GET", :muted => mute_type)
       end
-    end.response
-    response
+    end.text
   end
 
   def reassign_to_another_campaign(new_campaign_id)

@@ -51,11 +51,11 @@ class TransferController < ApplicationController
     transfer_attempt = TransferAttempt.includes(:caller_session).find_by_session_key params[:session_key]
     caller_session   = transfer_attempt.caller_session
 
-    response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true) do
-        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
+    response = Twilio::TwiML::Response.new do |v|
+      v.Dial(:hangupOnStar => true) do
+        v.Conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
       end
-    end.response
+    end.text
 
     caller_session.pushit("contact_joined_transfer_conference",{})
     render xml: response
@@ -64,11 +64,11 @@ class TransferController < ApplicationController
   def caller
     caller_session = CallerSession.find(params[:caller_session])
     caller = Caller.find(caller_session.caller_id)
-    response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, action: pause_caller_url(caller, session_id:  caller_session.id, transfer_session_key: params[:session_key], host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port, protocol: "http://")) do
-        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
+    response = Twilio::TwiML::Response.new do |v|
+      v.Dial(:hangupOnStar => true, action: pause_caller_url(caller, session_id:  caller_session.id, transfer_session_key: params[:session_key], host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port, protocol: "http://")) do
+        v.Conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
       end
-    end.response
+    end.text
     caller_session.pushit("caller_joined_transfer_conference",{})
     render xml: response
   end

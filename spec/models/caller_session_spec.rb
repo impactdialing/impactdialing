@@ -65,7 +65,7 @@ describe CallerSession, :type => :model do
   describe "Calling in" do
     it "puts the caller on hold" do
       session = create(:caller_session)
-      expect(session.hold).to eq(Twilio::Verb.new { |v| v.play "#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response)
+      expect(session.hold).to eq(Twilio::TwiML::Response.new { |v| v.Play "#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.Redirect(:method => 'GET'); }.text)
     end
   end
 
@@ -114,22 +114,22 @@ describe CallerSession, :type => :model do
     it "should join the moderator into conference and update moderator call_sid" do
       moderator = create(:moderator, :session => "monitorsession12")
       session = create(:caller_session, :moderator => create(:moderator, :call_sid => "123"), :session_key => "gjgdfdkg232hl")
-      expect(session.join_conference(true)).to eq(Twilio::Verb.new do |v|
-        v.dial(:hangupOnStar => true) do
-          v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "hold_music", :waitMethod =>"GET", :muted => true)
+      expect(session.join_conference(true)).to eq(Twilio::TwiML::Response.new do |v|
+        v.Dial(:hangupOnStar => true) do
+          v.Conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "hold_music", :waitMethod =>"GET", :muted => true)
         end
-      end.response)
+      end.text)
       expect(session.moderator.call_sid).to eq("123")
     end
 
     it "should join the moderator into conference and create a moderator with call_sid" do
       moderator = create(:moderator, :session => "monitorsession12")
       session = create(:caller_session, :session_key => "gjgdfdkg232hl")
-      expect(session.join_conference(true)).to eq(Twilio::Verb.new do |v|
-        v.dial(:hangupOnStar => true) do
-          v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "hold_music", :waitMethod =>"GET", :muted => true)
+      expect(session.join_conference(true)).to eq(Twilio::TwiML::Response.new do |v|
+        v.Dial(:hangupOnStar => true) do
+          v.Conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "hold_music", :waitMethod =>"GET", :muted => true)
         end
-      end.response)
+      end.text)
     end
   end
 

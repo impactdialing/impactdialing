@@ -223,7 +223,9 @@ public
     unless @caller_session.nil?
       render xml: @caller_session.conference_ended
     else
-      render xml: Twilio::Verb.hangup
+      render xml: Twilio::TwiML::Response.new do |r|
+        r.Hangup
+      end.text
     end
   end
 

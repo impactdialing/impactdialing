@@ -5,15 +5,15 @@ class CallinController < TwimlController
 private
   def ask_for_pin_twiml
     attempt = params[:attempt].to_i
-    xml     = Twilio::Verb.new do |twiml|
+    Twilio::TwiML::Response.new do |twiml|
       if attempt > 0
-        twiml.say 'Incorrect pin.'
+        twiml.Say 'Incorrect pin.'
       end
 
       if attempt > 2
-        twiml.hangup
+        twiml.Hangup
       else
-        twiml.gather({
+        twiml.Gather({
           finishOnKey: '*',
           timeout:     10,
           method:      'POST',
@@ -24,11 +24,10 @@ private
             attempt:  attempt + 1
           })
         }) do
-          twiml.say 'Please enter your pin and then press star.'
+          twiml.Say 'Please enter your pin and then press star.'
         end
       end
-    end
-    xml.response
+    end.text
   end
 
 public
