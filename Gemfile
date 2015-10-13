@@ -87,7 +87,7 @@ gem 'platform-api'
 gem 'pusher', '~> 0.11.3'
 gem 'stripe', '~>1.8.4'
 gem 'twilio', '~> 3.1.1'
-gem 'twilio-ruby', '~> 3.10.0'
+gem 'twilio-ruby', '~> 3.16.0'
 
 # SMTP
 gem 'mandrill-api', '~>1.0.37'
