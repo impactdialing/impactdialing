@@ -14,7 +14,11 @@ public
   # which TwiML response to provide Twilio.
   # See twiml/lead/answered.xml.erb for possible responses.
   def answered
-    dialed_call.answered(campaign, params)
+    if process_request?
+      dialed_call.answered(campaign, params)
+    else
+      dialed_call.abandon 
+    end
   end
 
   ##

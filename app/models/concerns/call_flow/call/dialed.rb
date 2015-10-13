@@ -31,19 +31,7 @@ private
     end
     whitelist
   end
-
-  def handle_failed_dial(campaign, params)
-    source      = [
-      "ac-#{campaign.account_id}",
-      "ca-#{campaign.id}",
-      "sid-#{params[:CallSid]}",
-      "code-#{params['ErrorCode']}"
-    ]
-    metric_name = "twiml.http_error"
-    ImpactPlatform::Metrics.count(metric_name, 1, source.join('.'))
-    @twiml_flag = :hangup
-  end
-  def handle_successful_dial(campaign, caller_session_record, params)
+  def handle_answered_dial(campaign, caller_session_record, params)
     if campaign.predictive? and answered_by_human?(params) and caller_session_record.present?
       Twillio.predictive_dial_answered(caller_session_record, params)
     end
@@ -62,8 +50,8 @@ private
       @twiml_flag      = :connect
       @record_calls    = campaign.account.record_calls.to_s
     else
-      storage[:mapped_status] = CallAttempt::Status::ABANDONED
-      @twiml_flag = :hangup
+      
+      abandon
     end
   end
   def call_answered_by_machine(campaign, caller_session_record, params)
@@ -83,7 +71,7 @@ private
         recording_delivered_manually: 0
       })
     else
-      @twiml_flag = :hangup
+      hangup
     end
   end
   def answered_by_machine?(params)
@@ -122,6 +110,16 @@ public
     self.class.namespace
   end
 
+  def abandon
+    storage[:mapped_status] = CallAttempt::Status::ABANDONED
+    @twiml_flag = :hangup
+  end
+
+  def hangup
+    storage[:mapped_status] = CallAttempt::Status::HANGUP
+    @twiml_flag = :hangup
+  end
+
   def answered_by_human?(params={})
     params = params.empty? ? storage : params
     not answered_by_machine?(params)
@@ -158,6 +156,9 @@ public
     transfer_attempt_ids.include?(transfer_attempt_id)
   end
 
+  ##
+  # Handle call flow for any dialed Twilio call that is answered.
+  # Supports requests to Twilio FallbackUrls and Urls.
   def answered(campaign, params)
     # todo: make following writes atomic
     update_history(:answered)
@@ -166,13 +167,12 @@ public
 
     caller_session_record = caller_session_from_id(campaign, params) || caller_session_from_sid
 
-    unless params['ErrorCode'] and params['ErrorUrl']
-      handle_successful_dial(campaign, caller_session_record, params)
-    else
-      handle_failed_dial(campaign, params)
-    end
+    handle_answered_dial(campaign, caller_session_record, params)
   end
 
+  ##
+  # Handle call flow for any dialed Twilio call that is disconnected.
+  # Supports requests to Twilio FallbackUrls and Urls.
   def disconnected(params)
     storage.save(params_for_update(params))
     if caller_session_from_sid.present?
