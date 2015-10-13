@@ -12,7 +12,7 @@ public
   ##
   # Update stats, save required data & populate flags to determine
   # which TwiML response to provide Twilio.
-  # See twiml/lead/answered.xml.erb for possible responses.
+  # See twiml/lead/answered.html.erb for possible responses.
   def answered
     if process_request?
       dialed_call.answered(campaign, params)
@@ -23,7 +23,7 @@ public
 
   ##
   # Update stats & save required data.
-  # See twiml/lead/disconnected.xml.erb for possible responses.
+  # See twiml/lead/disconnected.html.erb for possible responses.
   def disconnected
     dialed_call.disconnected(params)
   end
@@ -39,7 +39,7 @@ public
   ##
   # Save required data and play a recorded message to the dialed party.
   # This end-point is requested by Twilio when a Caller clicks to drop message.
-  # See twiml/lead/play_message.xml.erb.
+  # See twiml/lead/play_message.html.erb.
   def play_message
     _campaign  = Campaign.find dialed_call.storage[:campaign_id]
     @recording = _campaign.recording
