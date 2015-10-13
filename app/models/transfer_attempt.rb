@@ -18,28 +18,8 @@ class TransferAttempt < ActiveRecord::Base
   })
   scope :debit_pending, -> { undebited.successful_call.with_time_and_duration }
 
-  def conference
-    Twilio::TwiML::Response.new do |r|
-      r.Dial :hangupOnStar => 'false', :action => disconnect_transfer_path(self, :host => Settings.twilio_callback_host, :protocol => "http://"), :record=>caller_session.campaign.account.record_calls do |d|
-        d.Conference session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => false
-      end
-    end.text
-  end
-
   def warm_transfer?
     transfer_type == Transfer::Type::WARM
-  end
-
-  def fail
-     xml = Twilio::Verb.new do |v|
-       v.say "The transfered call was not answered "
-       v.hangup
-    end
-    xml.response
-  end
-
-  def hangup
-    Twilio::TwiML::Response.new { |r| r.Hangup }.text
   end
 
   def self.aggregate(attempts)

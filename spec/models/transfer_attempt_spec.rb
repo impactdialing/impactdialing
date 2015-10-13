@@ -1,36 +1,6 @@
 require 'rails_helper'
 
 describe TransferAttempt do
-  describe "conference" do
-    it "should return the conference twiml" do
-      caller_session = create(:caller_session)
-      call_attempt = create(:call_attempt)
-      transfer = create(:transfer, phone_number: "1234567890")
-      transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-      expect(transfer_attempt.conference).not_to be_nil
-    end
-  end
-
-  describe "fail" do
-    it "should return correct twiml" do
-      caller_session = create(:caller_session)
-      call_attempt = create(:call_attempt)
-      transfer = create(:transfer, phone_number: "1234567890")
-      transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-      expect(transfer_attempt.fail).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say voice=\"man\" language=\"en\" loop=\"1\">The transfered call was not answered </Say><Hangup/></Response>")
-    end
-  end
-
-  describe "hangup" do
-    it "should return correct twiml" do
-      caller_session = create(:caller_session)
-      call_attempt = create(:call_attempt)
-      transfer = create(:transfer, phone_number: "1234567890")
-      transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-      expect(transfer_attempt.hangup).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
-    end
-  end
-
   describe "attempts within" do
     it "should return attempts within a date range" do
       caller_session = create(:caller_session, sid: "SID")
