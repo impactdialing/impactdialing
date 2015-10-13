@@ -182,7 +182,6 @@ public
     RedisCallerSession.delete(self.id)
     RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, data_centre)
     RedisCallerSession.remove_datacentre(self.id)
-    RedisCallerSession.deactivate_transfer(session_key)
   end
 
   def account_not_activated?

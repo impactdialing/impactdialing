@@ -75,11 +75,6 @@ describe TransferDialer do
       transfer_dialer.dial(caller_session)
     end
 
-    it 'activates the transfer' do
-      transfer_dialer.dial(caller_session)
-      expect(RedisCallerSession.party_count(transfer.transfer_attempts.first.session_key)).to eq -1
-    end
-
     it 'makes the call to connect the transfer' do
       expect(Providers::Phone::Call).to(
         receive(:make).with(
@@ -111,11 +106,6 @@ describe TransferDialer do
     context 'the transfer fails' do
       before do
         allow(Providers::Phone::Call).to receive(:make){ error_response }
-      end
-
-      it 'deactivates the transfer' do
-        expect(RedisCallerSession).not_to receive(:activate_transfer)
-        transfer_dialer.dial(caller_session)
       end
 
       it 'updates the transfer_attempt status with "Call failed"' do

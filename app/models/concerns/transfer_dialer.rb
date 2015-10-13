@@ -16,15 +16,8 @@ private
       attempt_attrs = {status: CallAttempt::Status::FAILED}
     else
       attempt_attrs = {sid: response.call_sid}
-      activate_transfer
     end
     transfer_attempt.update_attributes(attempt_attrs)
-  end
-
-  def activate_transfer
-    if warm_transfer?
-      RedisCallerSession.activate_transfer(caller_session.session_key, transfer_attempt.session_key)
-    end
   end
 
   def transfer_attempt_connected
@@ -63,17 +56,12 @@ public
     @transfer = transfer
   end
 
-  def deactivate_transfer(session_key)
-    RedisCallerSession.deactivate_transfer(session_key)
-  end
-
   def dial(caller_session)
     @caller_session   = caller_session
     @transfer_attempt = create_transfer_attempt
 
     lead_call.transfer_attempted @transfer_attempt.id
 
-    deactivate_transfer(caller_session.session_key)
     # twilio makes synchronous callback requests so redis flag must be set
     # before calls are made if the flags are to handle callback requests
     params   = Providers::Phone::Call::Params::Transfer.new(transfer, :connect, transfer_attempt, lead_call)
@@ -131,7 +119,6 @@ public
       end
     else
       # no point in transferring if the lead cannot join
-      deactivate_transfer(caller_session.session_key)
       Providers::Phone::Call.redirect_for(caller_session, :pause)
 
       xml = Twilio::TwiML::Response.new do |twiml|

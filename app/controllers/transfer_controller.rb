@@ -8,15 +8,10 @@ class TransferController < ApplicationController
     transfer_dialer = TransferDialer.new(transfer_attempt.transfer)
     xml = transfer_dialer.connect(transfer_attempt)
 
-    logger.debug "DoublePause: Transfer#connect SessionKey: #{transfer_attempt.session_key}"
-    if transfer_attempt.warm_transfer?
-      RedisCallerSession.add_party(transfer_attempt.session_key)
-    end
     render xml: xml
   end
 
   def disconnect
-    logger.debug "DoublePause: Transfer#disconnect - #{params}"
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_attempt.update_attribute(:status, CallAttempt::Status::SUCCESS)
     dialed_call = transfer_attempt.caller_session.dialed_call
@@ -30,8 +25,6 @@ class TransferController < ApplicationController
     # Twilio StatusCallback (async after call has completed)
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_dialer  = TransferDialer.new(transfer_attempt.transfer)
-
-    transfer_dialer.deactivate_transfer(transfer_attempt.caller_session.session_key)
 
     transfer_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
 
@@ -55,7 +48,6 @@ class TransferController < ApplicationController
   end
 
   def callee
-    logger.debug "DoublePause: Transfer#callee SessionKey: #{params[:session_key]}"
     transfer_attempt = TransferAttempt.includes(:caller_session).find_by_session_key params[:session_key]
     caller_session   = transfer_attempt.caller_session
 
@@ -64,16 +56,12 @@ class TransferController < ApplicationController
         v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
       end
     end.response
-    if params[:transfer_type] == 'warm'
-      RedisCallerSession.add_party(params[:session_key])
-    end
 
     caller_session.pushit("contact_joined_transfer_conference",{})
     render xml: response
   end
 
   def caller
-    logger.debug "DoublePause: Transfer#caller SessionKey: #{params[:session_key]}"
     caller_session = CallerSession.find(params[:caller_session])
     caller = Caller.find(caller_session.caller_id)
     response = Twilio::Verb.new do |v|
@@ -81,7 +69,6 @@ class TransferController < ApplicationController
         v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
       end
     end.response
-    RedisCallerSession.add_party(params[:session_key])
     caller_session.pushit("caller_joined_transfer_conference",{})
     render xml: response
   end
