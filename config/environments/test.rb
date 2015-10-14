@@ -51,5 +51,4 @@ ImpactDialing::Application.configure do
   PORT = 3000
 
   ENV['PAGER_DUTY_SERVICE'] ||= '5ee2a001bc0b41e48bb587a66d63f4a6'
-  Twilio.default_options[:ssl_ca_file] = ENV['SSL_CERT_FILE']
 end

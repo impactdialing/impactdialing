@@ -86,7 +86,6 @@ gem 'aws-sdk', '~> 1.6'
 gem 'platform-api'
 gem 'pusher', '~> 0.11.3'
 gem 'stripe', '~>1.8.4'
-gem 'twilio', '~> 3.1.1'
 gem 'twilio-ruby', '~> 4.4.0'
 
 # SMTP

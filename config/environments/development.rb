@@ -32,9 +32,6 @@ ImpactDialing::Application.configure do
 
   HOLD_MUSIC_URL   = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
 
-  # http://rdoc.info/github/jnunemaker/httparty/HTTParty/ClassMethods#ssl_ca_file-instance_method
-  Twilio.default_options[:ssl_ca_file] = ENV['SSL_CERT_FILE']
-  
   config.after_initialize do
     Bullet.enable = true
     Bullet.alert = true

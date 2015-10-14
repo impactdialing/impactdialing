@@ -144,9 +144,6 @@ GEM
     http-cookie (1.0.2)
       domain_name (~> 0.5)
     http_parser.rb (0.6.0.beta.2)
-    httparty (0.11.0)
-      multi_json (~> 1.0)
-      multi_xml (>= 0.5.2)
     i18n (0.7.0)
     jquery-rails (3.1.2)
       railties (>= 3.0, < 5.0)
@@ -184,7 +181,6 @@ GEM
     moneta (0.8.0)
     mono_logger (1.1.0)
     multi_json (1.11.2)
-    multi_xml (0.5.5)
     multipart-post (2.0.0)
     mysql2 (0.3.18)
     netrc (0.7.7)
@@ -343,9 +339,6 @@ GEM
     timecop (0.7.1)
     timers (1.1.0)
     transaction-simple (1.4.0.2)
-    twilio (3.1.1)
-      builder (>= 2.1.2)
-      httparty (>= 0.8)
     twilio-ruby (4.4.0)
       builder (>= 2.1.2)
       jwt (~> 1.0)
@@ -450,7 +443,6 @@ DEPENDENCIES
   spring-commands-rspec
   stripe (~> 1.8.4)
   timecop
-  twilio (~> 3.1.1)
   twilio-ruby (~> 4.4.0)
   upsert
   uuid (~> 2.3.7)
