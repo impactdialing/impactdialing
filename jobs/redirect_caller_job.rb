@@ -37,9 +37,12 @@ class RedirectCallerJob
   end
 
   def call_in_progress?(sid)
-    twilio = Twilio::REST::Client.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    call   = twilio.account.calls.get(sid)
-    call.status == 'in-progress'
+    result = false
+    Providers::Phone::Twilio.connect do |client|
+      call   = client.calls.get(sid)
+      result = call.status == 'in-progress'
+    end
+    return result
   end
 end
 
