@@ -15,7 +15,10 @@ module Providers::Phone::Twilio
   def self.redirect(call_sid, url)
     connect do |client|
       call = client.calls.get(call_sid)
-      call.redirect_to(url)
+      call.update({
+        url: url,
+        fallback_url: url
+      })
     end
   end
 
