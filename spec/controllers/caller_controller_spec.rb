@@ -7,17 +7,31 @@ describe CallerController, :type => :controller do
 
   before do
     WebMock.disable_net_connect!
-  #  silence_warnings{
-  #    TWILIO_ACCOUNT = 'blahblahblah'
-  #    TWILIO_AUTH    = 'blahblahblah'
-  #  }
   end
-  #after do
-  #  silence_warnings{
-  #    TWILIO_ACCOUNT = ENV['TWILIO_ACCOUNT']
-  #    TWILIO_AUTH    = ENV['TWILIO_AUTH']
-  #  }
-  #end
+
+  shared_examples_for 'all twilio fallback url requests' do
+    before do
+      ENV['TWILIO_PROCESS_FALLBACK_URLS'] = '1'
+      params.merge!({
+        ErrorUrl: 'http://test.com/blah'
+      })
+    end
+    context 'params[:ErrorCode] can be retried' do
+      [11200, 11205, 11210, 12400].each do |error_code|
+        it "ErrorCode[#{error_code}] is processed" do
+          post action, params.merge(ErrorCode: error_code)
+          expect(response.body).to processed_response_body_expectation.call
+        end
+      end
+    end
+    context 'params[:ErrorCode] cannot be retried' do
+      it 'hangs up' do
+        post action, params.merge(ErrorCode: 11100)
+        expect(response.body).to hangup
+      end
+    end
+  end
+
 
   describe "authentication" do
     let(:campaign) do
@@ -252,7 +266,7 @@ describe CallerController, :type => :controller do
     end
   end
 
-  describe '#pause id:, session_id:, CallSid:, clear_active_transfer:' do
+  describe 'Caller TwiML' do
     let(:campaign){ create(:power) }
     let(:caller){ create(:caller, campaign: campaign) }
     let(:caller_session) do
@@ -265,24 +279,66 @@ describe CallerController, :type => :controller do
     let(:caller_session_key){ caller_session.session_key }
     let(:transfer_session_key){ 'transfer-attempt-session-key' }
     let(:session_id){ caller_session.id }
+    let(:params) do
+      {
+        id: caller.id,
+        session_id: session_id
+      }
+    end
 
-    context 'caller arrives here and #skip_pause? => false' do
-      before do
-        post :pause, id: caller.id, session_id: session_id
+    describe '#pause id:, session_id:, CallSid:, clear_active_transfer:' do
+      let(:action){ :pause }
+      let(:processed_response_body_expectation) do
+        Proc.new{ say('Please enter your call results.').and_pause(length: 600) }
       end
-      it 'Says: "Please enter your call results."' do
-        expect(response.body).to have_content 'Please enter your call results.'
+
+      it_behaves_like 'all twilio fallback url requests'
+
+      context 'caller arrives here and #skip_pause? => false' do
+        before do
+          post :pause, id: caller.id, session_id: session_id
+        end
+        it 'Says: "Please enter your call results."' do
+          expect(response.body).to say('Please enter your call results.').
+            and_pause(length: 600)
+        end
+      end
+
+      context 'caller arrives here and #skip_pause? => true' do
+        before do
+          caller_session.skip_pause = true
+          post :pause, id: caller.id, session_id: session_id
+        end
+        it 'Plays silence for 0.5 seconds' do
+          expect(response.body).to include '<Play digits="www"/>'
+        end
       end
     end
 
-    context 'caller arrives here and #skip_pause? => true' do
-      before do
-        caller_session.skip_pause = true
-        post :pause, id: caller.id, session_id: session_id
+    describe '#continue_conf' do
+      let(:dial_options) do
+        {
+          hangupOnStar: true,
+          action: pause_caller_url(caller.id, caller_session.default_twiml_url_params)
+        }
       end
-      it 'Plays silence for 0.5 seconds' do
-        expect(response.body).to include '<Play digits="www"/>'
+      let(:conference_options) do
+        {
+          name: caller_session_key,
+          startConferenceOnEnter: false,
+          endConferenceOnExit: true,
+          beep: true,
+          waitUrl: HOLD_MUSIC_URL,
+          waitMethod: 'GET'
+        }
       end
+      let(:action){ :continue_conf }
+      let(:processed_response_body_expectation) do
+        Proc.new{ dial_conference(dial_options, conference_options) }
+      end
+
+      it_behaves_like 'all twilio fallback url requests'
     end
   end
 end
+

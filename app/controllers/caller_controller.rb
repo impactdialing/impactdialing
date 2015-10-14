@@ -122,7 +122,7 @@ public
   # This is the Dial:action for most caller TwiML
   # so expect Caller to hit here for >1 state changes
   def pause
-    if caller_line_completed?
+    if abort_request? or caller_line_completed?
       # CallStatus == 'completed' ie caller is no longer on the phone
       @caller_session.end_session
       xml = Twilio::TwiML::Response.new{|response| response.Hangup}.text

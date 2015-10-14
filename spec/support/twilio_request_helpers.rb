@@ -50,6 +50,7 @@ module TwilioRequestHelpers
     "Muted=false"
   end
   def request_body(url)
-    "Url=#{encode_uri(url)}"
+    uri = encode_uri(url)
+    "Url=#{uri}&FallbackUrl=#{uri}"
   end
 end

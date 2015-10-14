@@ -9,11 +9,17 @@ private
       raise ArgumentError, "A block is required because that is all that will run when rendering abort twiml."
     end
 
-    if caller_session.fit_to_dial?
+    if caller_session.fit_to_dial? and process_request?
       yield
     else
+      if abort_request?
+        xml = Twilio::TwiML::Response.new{|response| response.Hangup}.text
+      else
+        xml = caller_session.send("abort_#{point_in_call_flow}_twiml")
+      end
+
       caller_session.end_caller_session
-      render xml: caller_session.send("abort_#{point_in_call_flow}_twiml") and return
+      render({xml: xml}) and return
     end
   end
 
@@ -35,8 +41,35 @@ private
     ImpactPlatform::Metrics.count(metric_name, 1, source.join('.'))
   end
 
+  ##
+  # ENV config accessor. Used to toggle processing of fallback urls
+  # regardless of error code.
+  def process_fallback_urls
+    ENV['TWILIO_PROCESS_FALLBACK_URLS'].to_i
+  end
+
+  ##
+  # Twilio error codes that can safely be retried.
+  #
+  # Currently limited to errors that indicate Twilio's
+  # request never reached our servers. These are the
+  # most common failures and can always be safely retried.
+  #
+  # See: https://www.twilio.com/docs/errors/reference
+  #
+  # Updated: Oct 14 2015
+  def retry_error_codes
+    [
+      11200, # HTTP retrieval failure
+      11205, # HTTP connection failure
+      11210, # HTTP bad host name
+      12400  # Internal failure (internal to Twilio)
+    ]
+  end
+
   def process_fallback_urls?
-    ENV['TWILIO_FULFILL_FALLBACK_URLS'].to_i > 0
+    process_fallback_urls > 0 and
+    retry_error_codes.include?(params[:ErrorCode].to_i)
   end
 
   def fallback_url_requested?
@@ -44,8 +77,11 @@ private
   end
 
   def process_request?
-    (not fallback_url_requested?) or
-    (fallback_url_requested? and process_fallback_urls?)
+    (not fallback_url_requested?) or process_fallback_urls?
+  end
+
+  def abort_request?
+    not process_request?
   end
 end
 
