@@ -1,14 +1,23 @@
 require 'rails_helper'
-require 'transfer_attempt'
 
 describe CallerController, :type => :controller do
 
-  before do
-    WebMock.disable_net_connect!
-  end
-
   let(:account) { create(:account) }
   let(:user) { create(:user, :account => account) }
+
+  before do
+    WebMock.disable_net_connect!
+  #  silence_warnings{
+  #    TWILIO_ACCOUNT = 'blahblahblah'
+  #    TWILIO_AUTH    = 'blahblahblah'
+  #  }
+  end
+  #after do
+  #  silence_warnings{
+  #    TWILIO_ACCOUNT = ENV['TWILIO_ACCOUNT']
+  #    TWILIO_AUTH    = ENV['TWILIO_AUTH']
+  #  }
+  #end
 
   describe "authentication" do
     let(:campaign) do
@@ -178,14 +187,6 @@ describe CallerController, :type => :controller do
     end
     let(:conference_sid){ 'CFww834eJSKDJFjs328JF92JSDFwe' }
     let(:conference_name){ caller_session.session_key }
-    let(:valid_response) do
-      double('TwilioResponseObject', {
-        :[] => {
-          'TwilioResponse' => {}
-        },
-        :conference_sid => conference_sid
-      })
-    end
     let(:valid_params) do
       {
         id: caller.id,
@@ -211,7 +212,7 @@ describe CallerController, :type => :controller do
     context 'caller' do
       let(:call_sid){ caller_session.sid }
       before do
-        stub_twilio_kick_participant_request
+        stub_twilio_kick_participant_request(conference_sid, call_sid)
         post_body = pause_caller_url(caller, url_opts)
         stub_twilio_redirect_request(post_body)
         post :kick, valid_params.merge(participant_type: 'caller')
@@ -223,7 +224,7 @@ describe CallerController, :type => :controller do
     context 'transfer' do
       let(:call_sid){ transfer_attempt.sid }
       before do
-        stub_twilio_kick_participant_request
+        stub_twilio_kick_participant_request(conference_sid, call_sid)
         post :kick, valid_params.merge(participant_type: 'transfer')
       end
 
@@ -241,7 +242,7 @@ describe CallerController, :type => :controller do
       let(:call_sid){ caller_session.sid }
       before do
         TransferAttempt.destroy_all
-        stub_twilio_kick_participant_request
+        stub_twilio_kick_participant_request(conference_sid, call_sid)
         post_body = pause_caller_url(caller, url_opts)
         stub_twilio_redirect_request(post_body)
         post :kick, valid_params.merge(participant_type: 'caller')

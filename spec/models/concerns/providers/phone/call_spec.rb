@@ -6,9 +6,7 @@ describe Providers::Phone::Call do
   let(:call_sid){ '123123' }
   let(:url){ 'http://test.local/somewhere' }
   let(:valid_response) do
-    double('Response', {
-      validate_content!: nil
-    })
+    double('Response').as_null_object
   end
 
   before do
@@ -28,10 +26,9 @@ describe Providers::Phone::Call do
                   to_raise(SocketError).times(4).then.
                   to_return({
                     :status => 200,
-                    :body => "",
+                    :body => "{}",
                     :headers => {}
                   })
-      allow(Providers::Phone::Twilio::Response).to receive(:new){ valid_response }
       Providers::Phone::Call.redirect(call_sid, url, {retry_up_to: 5})
       expect(request).to have_been_made.times(5)
     end

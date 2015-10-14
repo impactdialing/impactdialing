@@ -2,12 +2,6 @@ require 'rails_helper'
 
 describe TransferController, :type => :controller do
   include Rails.application.routes.url_helpers
-  def encode(str)
-    URI.encode_www_form_component(str)
-  end
-  def request_body(from, to, url, fallback_url, status_callback)
-    "From=#{from}&To=#{to}&Url=#{encode(url)}&StatusCallback=#{encode(status_callback)}&Timeout=15"
-  end
 
   let(:script){ create(:script) }
   let(:campaign) do
@@ -53,38 +47,12 @@ describe TransferController, :type => :controller do
   let(:phone){ twilio_valid_to }
 
   before do
-    silence_warnings{
-      TWILIO_ACCOUNT                = 'AC211da899fe0c76480ff2fc4ad2bbdc79'
-      TWILIO_AUTH                   = '09e459bfca8da9baeead9f9537735bbf'
-      ENV['TWILIO_CALLBACK_HOST']   = 'test.com'
-      ENV['CALL_END_CALLBACK_HOST'] = 'test.com'
-      ENV['INCOMING_CALLBACK_HOST'] = 'test.com'
-    }
-
     allow(dialed_call_storage).to receive(:[]).with(:phone){ phone }
     allow(caller_session).to receive(:caller_session_call){ call_flow_caller_session }
     allow(CallerSession).to receive(:find){ caller_session }
   end
 
-  after do
-    silence_warnings{
-      TWILIO_ACCOUNT                = "blahblahblah"
-      TWILIO_AUTH                   = "blahblahblah"
-      ENV['TWILIO_CALLBACK_HOST']   = 'test.com'
-      ENV['CALL_END_CALLBACK_HOST'] = 'test.com'
-      ENV['INCOMING_CALLBACK_HOST'] = 'test.com'
-    }
-  end
-
   describe '#dial' do
-    let(:twilio_url) do
-      "api.twilio.com/2010-04-01/Accounts/#{TWILIO_ACCOUNT}/Calls"
-    end
-    let(:twilio_auth_url) do
-      "https://#{TWILIO_ACCOUNT}:#{TWILIO_AUTH}@#{twilio_url}"
-    end
-    let(:fallback_url){ "blah" }
-
     before do
       throw_away      = TransferAttempt.create!
       url_opts        = {

@@ -8,24 +8,6 @@ describe Twillio do
 
   before do
     Redis.new.flushall
-
-    silence_warnings{
-      TWILIO_ACCOUNT                = 'AC211da899fe0c76480ff2fc4ad2bbdc79'
-      TWILIO_AUTH                   = '09e459bfca8da9baeead9f9537735bbf'
-      ENV['TWILIO_CALLBACK_HOST']   = 'test.com'
-      ENV['CALL_END_CALLBACK_HOST'] = 'test.com'
-      ENV['INCOMING_CALLBACK_HOST'] = 'test.com'
-    }
-  end
-
-  after do
-    silence_warnings{
-      TWILIO_ACCOUNT                = "blahblahblah"
-      TWILIO_AUTH                   = "blahblahblah"
-      ENV['TWILIO_CALLBACK_HOST']   = 'test.com'
-      ENV['CALL_END_CALLBACK_HOST'] = 'test.com'
-      ENV['INCOMING_CALLBACK_HOST'] = 'test.com'
-    }
   end
 
   shared_examples 'all success Twillio.dials' do
@@ -65,7 +47,7 @@ describe Twillio do
       create(:caller, campaign: campaign, account: account)
     end
     let(:caller_session) do
-      create(:bare_caller_session, :webui, :available, campaign: campaign, caller: caller)
+      create(:bare_caller_session, :webui, :available, campaign: campaign, caller: caller, sid: 'caller-session-sid')
     end
     let(:phone){ twilio_valid_to }
   end

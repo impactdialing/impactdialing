@@ -21,7 +21,7 @@ describe ModeratedSession do
       create(:webui_caller_session, {
         campaign: campaign,
         caller: caller,
-        session_key: 'caller_session:session_key:abc123'
+        session_key: 'caller-session-key-abc123'
       })
     end
     let(:call_sid){ 'callsid:zyx987' }
