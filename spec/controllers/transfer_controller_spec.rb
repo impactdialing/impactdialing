@@ -93,7 +93,7 @@ describe TransferController, :type => :controller do
       :port => Settings.twilio_callback_port,
       :protocol => "http://"
     }
-    twilio_response = double('Providers::Phone::Twilio::Response', {error?: false})
+    twilio_response = instance_double('Providers::Phone::Twilio::Response', {error?: false})
 
     expect(Providers::Phone::Call).to receive(:redirect).with(call_sid, callee_transfer_index_url(url_opts.merge(transfer_type: transfer_attempt.transfer_type)), {retry_up_to: ENV["TWILIO_RETRIES"]}){ twilio_response }
     expect(Providers::Phone::Call).to receive(:redirect).with(caller_session.sid, pause_caller_url(caller_record, url_opts.merge(session_id: caller_session.id)), {retry_up_to: ENV["TWILIO_RETRIES"]})

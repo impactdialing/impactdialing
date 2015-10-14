@@ -1,6 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
-class TransferController < ApplicationController
+class TransferController < TwimlController
   skip_before_filter :verify_authenticity_token
+  before_filter :abort_if_unprocessable_fallback_url
 
   def connect
     transfer_attempt = TransferAttempt.includes(:transfer).find(params[:id])
