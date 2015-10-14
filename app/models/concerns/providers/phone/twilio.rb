@@ -1,6 +1,14 @@
 module Providers::Phone::Twilio
+  def self.retry_limit
+    limit = ENV['TWILIO_RETRIES'].to_i 
+    limit > 0 ? limit : 1
+  end
+
   def self.connect(&block)
-    client   = Twilio::REST::Client.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    client   = Twilio::REST::Client.new(TWILIO_ACCOUNT, TWILIO_AUTH, {
+      ssl_ca_file: ENV['SSL_CERT_FILE'],
+      retry_limit: retry_limit
+    })
     return Response.new{ block.call(client) }
   end
 
