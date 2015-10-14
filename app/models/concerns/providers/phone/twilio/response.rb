@@ -1,54 +1,32 @@
 ##
-# This provides a thin convenience wrapper to Twilio
-# responses returned from the Twilio gem by webficient:
-# https://github.com/webficient/twilio.
+# Provides a thin wrapper around Twilio REST responses to provide
+# a central location for rescuing exceptions raised during REST request.
 #
-# The Twilio gem returns a HTTParty::Response instance
-# from requests:
-# https://github.com/jnunemaker/httparty/blob/master/lib/httparty/response.rb
+# twilio-ruby will raise one of Twilio::REST::RequestError or
+# Twilio::REST::ServerError when a REST request fails.
 #
+# This class will rescue & log these errors then set @error to true.
 class Providers::Phone::Twilio::Response
-  attr_reader :content, :response
+  attr_reader :resource
 
 public
-  def initialize(response)
-    @response = response
-    if response.parsed_response.nil?
-      @content = response.parsed_response
-    else
-      @content = response.parsed_response['TwilioResponse']
-    end
+  def initialize(&block)
+    @error = false
 
-    if error?
-      TwilioLogger.error(content)
+    begin
+      @resource = yield if block_given?
+    rescue Twilio::REST::RequestError, Twilio::REST::ServerError => e
+      @resource = nil
+      @error    = true
+      TwilioLogger.log("Code[#{e.code}] Message[#{e.message}]")
     end
   end
 
   def success?
-    (200 <= status &&
-         status < 400) ||
-    (content.kind_of?(Hash) &&
-     content['RestException'].nil?)
+    not error?
   end
 
   def error?
-    not success?
-  end
-
-  def status
-    response.code.to_i
-  end
-
-  def call_sid
-    content['Call']['Sid']
-  end
-
-  def conference
-    content['Conferences']['Conference']
-  end
-
-  def conference_sid
-    return nil if conference.nil?
-    conference.class == Array ? conference.last['Sid'] : conference['Sid']
+    @error
   end
 end
