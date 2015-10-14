@@ -1,0 +1,21 @@
+{
+  "first_page_uri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences.json?Page=0&amp;PageSize=50",
+  "last_page_uri": "2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences.json?Page=9&amp;PageSize=50",
+  "next_page_uri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences.json?Page=1&amp;PageSize=50",
+  "uri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences.json",
+  "page": 0,
+  "page_size": 50,
+  "previous_page_uri": "",
+  "conferences": [
+    {
+      "api_version": "2010-04-01",
+      "account_sid": "ASD23JKJDSK23jfdksvv23HDEW",
+      "friendly_name": "Waiting room",
+      "sid": "CFww834eJSKDJFjs328JF92JSDFwe",
+      "subresource_uris": {
+        "participants": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences/CFww834eJSKDJFjs328JF92JSDFwe/Participants.json"
+      },
+      "uri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences/CFww834eJSKDJFjs328JF92JSDFwe.json"
+    }
+  ]
+}

@@ -1,31 +1,51 @@
 module Providers::Phone::Twilio
   def self.connect(&block)
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    xml = yield
-    return Response.new(xml)
+    client   = Twilio::REST::Client.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    return Response.new{ block.call(client) }
   end
 
   def self.redirect(call_sid, url)
-    connect{ Twilio::Call.redirect(call_sid, url) }
+    connect do |client|
+      call = client.calls.get(call_sid)
+      call.redirect_to(url)
+    end
   end
 
   def self.make(from, to, url, params)
-    connect{ Twilio::Call.make(from, to, url, params) }
+    connect do |client|
+      client.calls.create(params.merge({
+        from: from,
+        to: to,
+        url: url
+      }))
+    end
   end
 
   def self.conference_list(search_options={})
-    connect{ Twilio::Conference.list(search_options) }
+    connect do |client|
+      client.conferences.list(search_options)
+    end
   end
 
   def self.kick(conference_sid, call_sid)
-    connect{ Twilio::Conference.kick_participant(conference_sid, call_sid) }
+    connect do |client|
+      participant = client.conferences.get(conference_sid).participants.get(call_sid)
+      participant.kick
+    end
   end
 
   def self.mute_participant(conference_sid, call_sid)
-    connect{ Twilio::Conference.mute_participant(conference_sid, call_sid) }
+    connect do |client|
+      participant = client.conferences.get(conference_sid).participants.get(call_sid)
+      participant.mute
+    end
   end
 
   def self.unmute_participant(conference_sid, call_sid)
-    connect{ Twilio::Conference.unmute_participant(conference_sid, call_sid) }
+    connect do |client|
+      participant = client.conferences.get(conference_sid).participants.get(call_sid)
+      participant.unmute
+    end
   end
 end
+

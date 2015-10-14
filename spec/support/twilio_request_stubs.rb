@@ -11,11 +11,11 @@ module TwilioRequestStubs
 
   def stub_twilio_redirect_request(post_body, success=true)
     @redirect_request = stub_request(:post, twilio_call_url(call_sid)).
-      with(:body => request_body(post_body)).
+      #with(:body => request_body(post_body)).
       to_return(twilio_updated_call_response)
   end
 
-  def stub_twilio_kick_participant_request(success=true)
+  def stub_twilio_kick_participant_request(conference_name, call_sid, success=true)
     @kick_request = stub_request(:delete, twilio_conference_kick_participant_url(conference_sid, call_sid)).
       to_return({
         :status => 204

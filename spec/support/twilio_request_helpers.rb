@@ -14,19 +14,19 @@ module TwilioRequestHelpers
     "#{twilio_credentials}api.twilio.com/2010-04-01/Accounts/#{TWILIO_ACCOUNT}"
   end
   def twilio_call_url(sid)
-    "#{twilio_calls_url}/#{sid}"
+    "#{twilio_calls_url.gsub('.json','')}/#{sid}.json"
   end
   def twilio_calls_url
-    "#{twilio_root_url}/Calls"
+    "#{twilio_root_url}/Calls.json"
   end
   def twilio_conferences_url
-    "#{twilio_root_url}/Conferences"
+    "#{twilio_root_url}/Conferences.json"
   end
   def twilio_participants_url(conference_sid)
     "#{twilio_conference_url(conference_sid)}/Participants"
   end
   def twilio_participant_url(conference_sid, call_sid)
-    "#{twilio_participants_url(conference_sid)}/#{call_sid}"
+    "#{twilio_participants_url(conference_sid).gsub('.json','')}/#{call_sid}.json"
   end
   def twilio_conference_url(conference_sid)
     "#{twilio_conferences_url}/#{conference_sid}"
@@ -50,6 +50,6 @@ module TwilioRequestHelpers
     "Muted=false"
   end
   def request_body(url)
-    "CurrentUrl=#{encode_uri(url)}&CurrentMethod=POST"
+    "Url=#{encode_uri(url)}"
   end
 end

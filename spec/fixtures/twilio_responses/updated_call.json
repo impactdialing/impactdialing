@@ -1,0 +1,25 @@
+{
+  "sid": "CFww834eJSKDJFjs328JF92JSDFwe",
+  "date_created": "Tue, 10 Aug 2010 08:02:17 +0000",
+  "date_updated": "Tue, 10 Aug 2010 08:02:47 +0000",
+  "parent_call_sid": "",
+  "account_sid": "ASD23JKJDSK23jfdksvv23HDEW",
+  "to": "+14153855708",
+  "from": "+14158141819",
+  "phone_number_sid": "",
+  "status": "in-progress",
+  "start_time": "Tue, 10 Aug 2010 08:02:31 +0000",
+  "end_time": "Tue, 10 Aug 2010 08:02:47 +0000",
+  "duration": "16",
+  "price": "-0.03000",
+  "direction": "outbound-api",
+  "answered_by": "",
+  "api_version": "2010-04-01",
+  "forwarded_from": "",
+  "caller_name": "",
+  "uri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Calls/CFww834eJSKDJFjs328JF92JSDFwe",
+  "subresource_uris": {
+      "notifications": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Calls/CFww834eJSKDJFjs328JF92JSDFwe/Notifications",
+      "recordings": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Calls/CFww834eJSKDJFjs328JF92JSDFwe/Recordings"
+  }
+}

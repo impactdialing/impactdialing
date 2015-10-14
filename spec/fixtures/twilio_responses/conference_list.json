@@ -1,0 +1,38 @@
+{
+  "page": 0,
+  "firstpageuri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences?Page=0&amp;PageSize=50",
+  "nextpageuri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences?Page=1&amp;PageSize=50",
+  "uri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences",
+  "conferences": [
+    {
+      "sid": "CFww834eJSKDJFjs328JF92JSDFwe",
+      "account_sid": "ASD23JKJDSK23jfdksvv23HDEW",
+      "friendly_name": "Loquacious",
+      "status": "completed",
+      "date_created": "Wed, 18 Aug 2010 20:20:06 +0000",
+      "date_updated": "Wed, 18 Aug 2010 20:24:32 +0000",
+      "api_version": "2010-04-01",
+      "uri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences/CFww834eJSKDJFjs328JF92JSDFwe",
+      "subresource_uris": {
+        "participants": [
+          "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences/CFww834eJSKDJFjs328JF92JSDFwe/Participants"
+        ]
+      }
+    },
+    {
+      "sid": "CFww834eJSKDJFjs328JF92JSDFwe",
+      "account_sid": "ASD23JKJDSK23jfdksvv23HDEW",
+      "friendly_name": "Scuttlebutt",
+      "status": "completed",
+      "date_created": "Wed, 18 Aug 2010 20:20:06 +0000",
+      "date_updated": "Wed, 18 Aug 2010 20:24:32 +0000",
+      "api_version": "2010-04-01",
+      "uri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences/KWii283jFJSE823ejsjJFNEjwje2dfs",
+      "subresource_uris": {
+        "participants": [
+          "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Conferences/KWii283jFJSE823ejsjJFNEjwje2dfs/Participants"
+        ]
+      }
+    }
+  ]
+}

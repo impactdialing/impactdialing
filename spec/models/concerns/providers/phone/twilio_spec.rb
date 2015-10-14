@@ -80,7 +80,7 @@ describe Providers::Phone::Twilio do
     let(:call_sid){ 'callsid-123-abc' }
 
     before do
-      stub_twilio_kick_participant_request
+      stub_twilio_kick_participant_request(conference_sid, call_sid)
       @response = Providers::Phone::Twilio.kick(conference_sid, call_sid)
     end
 

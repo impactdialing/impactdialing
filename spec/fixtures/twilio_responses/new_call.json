@@ -1,0 +1,27 @@
+{
+  "sid": "CFww834eJSKDJFjs328JF92JSDFwe",
+  "date_created": "Thu, 19 Aug 2010 00:25:48 +0000",
+  "date_updated": "Thu, 19 Aug 2010 00:25:48 +0000",
+  "parent_call_sid": "",
+  "account_sid": "ASD23JKJDSK23jfdksvv23HDEW",
+  "to": "+14155551212",
+  "formatted_to": "(415) 555-1212",
+  "from": "+14158675309",
+  "formatted_from": "(415) 867-5309",
+  "phone_number_sid": "",
+  "status": "queued",
+  "start_time": "",
+  "end_time": "",
+  "duration": "",
+  "price": "",
+  "direction": "outbound-api",
+  "answered_by": "",
+  "api_version": "2010-04-01",
+  "forwarded_from": "",
+  "caller_name": "",
+  "uri": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Calls/CFww834eJSKDJFjs328JF92JSDFwe",
+  "subresource_uris": {
+      "notifications": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Calls/CFww834eJSKDJFjs328JF92JSDFwe/Notifications",
+      "recordings": "/2010-04-01/Accounts/ASD23JKJDSK23jfdksvv23HDEW/Calls/CFww834eJSKDJFjs328JF92JSDFwe/Recordings"
+  }
+}
