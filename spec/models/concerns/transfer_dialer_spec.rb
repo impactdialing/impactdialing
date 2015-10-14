@@ -21,7 +21,8 @@ describe TransferDialer do
   end
   let(:transfer) do
     create(:transfer, {
-      transfer_type: 'Warm'
+      transfer_type: 'Warm',
+      phone_number: twilio_valid_to
     })
   end
   describe '#dial' do
@@ -36,21 +37,6 @@ describe TransferDialer do
         caller_session_id: caller_session.id,
         transfer_type: transfer.transfer_type
       }
-    end
-    let(:success_response) do
-      double('Response', {
-        error?: false,
-        call_sid: '123',
-        content: {},
-        success?: true
-      })
-    end
-    let(:error_response) do
-      double('Response', {
-        error?: true,
-        content: {},
-        success?: false
-      })
     end
     let(:dialed_call_storage) do
       instance_double('CallFlow::Call::Storage', {
@@ -67,12 +53,13 @@ describe TransferDialer do
     before do
       allow(dialed_call_storage).to receive(:[]).with(:phone){ twilio_valid_to }
       allow(caller_session).to receive(:dialed_call){ dialed_call }
-      allow(Providers::Phone::Call).to receive(:make){ success_response }
     end
 
     it 'creates a transfer_attempt' do
       expect(transfer.transfer_attempts).to receive(:create).with(expected_transfer_attempt_attrs){ transfer_attempt }
-      transfer_dialer.dial(caller_session)
+      VCR.use_cassette('TransferDialerSuccessfulDial') do
+        transfer_dialer.dial(caller_session)
+      end
     end
 
     it 'makes the call to connect the transfer' do
@@ -88,28 +75,38 @@ describe TransferDialer do
           {
             retry_up_to: ENV['TWILIO_RETRIES']
           })
-      ){ success_response }
-      transfer_dialer.dial(caller_session)
+      ).and_call_original
+      VCR.use_cassette('TransferDialerSuccessfulDial') do
+        transfer_dialer.dial(caller_session)
+      end
     end
 
     it 'returns a hash {type: transfer_type, status: ''}' do
-      expect(transfer_dialer.dial(caller_session)).to eq({type: transfer.transfer_type, status: 'Ringing'})
+      VCR.use_cassette('TransferDialerSuccessfulDial') do
+        expect(transfer_dialer.dial(caller_session)).to eq({type: transfer.transfer_type, status: 'Ringing'})
+      end
     end
 
     context 'the transfer succeeds' do
       it 'updates the transfer_attempt sid with the call_sid from the response' do
-        transfer_dialer.dial(caller_session)
-        expect(transfer.transfer_attempts.last.sid).to eq success_response.call_sid
+        VCR.use_cassette('TransferDialerSuccessfulDial') do
+          transfer_dialer.dial(caller_session)
+        end
+        expect(transfer.transfer_attempts.last.sid).to match /\ACA\w+\Z/
       end
     end
 
     context 'the transfer fails' do
       before do
-        allow(Providers::Phone::Call).to receive(:make){ error_response }
+        transfer.update_attributes!({
+          phone_number: twilio_invalid_to
+        })
       end
 
       it 'updates the transfer_attempt status with "Call failed"' do
-        transfer_dialer.dial(caller_session)
+        VCR.use_cassette('TransferDialerFailedDial') do
+          transfer_dialer.dial(caller_session)
+        end
         expect(transfer.transfer_attempts.last.status).to eq 'Call failed'
       end
     end

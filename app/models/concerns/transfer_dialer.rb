@@ -15,7 +15,7 @@ private
     if response.error?
       attempt_attrs = {status: CallAttempt::Status::FAILED}
     else
-      attempt_attrs = {sid: response.call_sid}
+      attempt_attrs = {sid: response.resource.sid}
     end
     transfer_attempt.update_attributes(attempt_attrs)
   end
@@ -62,8 +62,6 @@ public
 
     lead_call.transfer_attempted @transfer_attempt.id
 
-    # twilio makes synchronous callback requests so redis flag must be set
-    # before calls are made if the flags are to handle callback requests
     params   = Providers::Phone::Call::Params::Transfer.new(transfer, :connect, transfer_attempt, lead_call)
     response = Providers::Phone::Call.make(params.from, params.to, params.url, params.params, Providers::Phone.default_options)
     transfer_attempt_dialed(response)

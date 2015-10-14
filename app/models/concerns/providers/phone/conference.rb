@@ -4,13 +4,13 @@ module Providers::Phone::Conference
   end
 
   def self.by_name(name, opts={})
-    response = list({'FriendlyName' => name}, Providers::Phone.options(opts))
-    return response
+    response = list({friendly_name: name}, Providers::Phone.options(opts))
+    return response.resource.first
   end
 
   def self.sid_for(name, opts={})
-    response = by_name(name, Providers::Phone.options(opts))
-    return response.conference_sid
+    conference = by_name(name, Providers::Phone.options(opts))
+    return conference.sid
   end
 
   def self.toggle_mute_for(name, call_sid, opts={})
