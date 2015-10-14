@@ -83,5 +83,12 @@ private
   def abort_request?
     not process_request?
   end
+
+  def abort_if_unprocessable_fallback_url
+    if abort_request?
+      render xml: Twilio::TwiML::Response.new{|response| response.Hangup}.text and return
+    end
+    true
+  end
 end
 
