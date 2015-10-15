@@ -381,7 +381,7 @@ module.exports = function (grunt) {
           collapseBooleanAttributes:      true,
           collapseWhitespace:             true
         },
-        usemin: '<%= yeoman.dist %>/callveyor/scripts/scripts.js'
+        usemin: '<%= yeoman.dist %>/callveyor/scripts/app.js'
       },
       'callveyor.dialer': {
         module: 'callveyor.dialer',
@@ -547,11 +547,11 @@ module.exports = function (grunt) {
     'autoprefixer',
     'ngtemplates',
     'concat',
-    // 'ngmin',
+    'ngmin',
     'copy:dist',
     // 'cdnify',
     'cssmin',
-    // 'uglify',
+    'uglify',
     'rev',
     'usemin',
     'htmlmin'
