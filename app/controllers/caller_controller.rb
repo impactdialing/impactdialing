@@ -1,7 +1,7 @@
 class CallerController < TwimlController
   include SidekiqEvents
   layout "caller"
-  skip_before_filter :verify_authenticity_token, :only =>[
+  skip_before_filter :verify_authenticity_token, only: [ 
     :call_voter, :stop_calling, :token,
     :end_session, :skip_voter, :ready_to_call,
     :continue_conf, :pause, :run_out_of_numbers,
@@ -15,7 +15,7 @@ class CallerController < TwimlController
     :play_message_error
   ]
 
-  before_filter :check_login, :except=>[
+  before_filter :check_login, except: [
     :login, :end_session,
     :phones_only, :call_voter, :stop_calling,
     :ready_to_call, :continue_conf, :pause, :run_out_of_numbers,
@@ -29,7 +29,7 @@ class CallerController < TwimlController
     :play_message_error
   ]
 
-  before_filter :find_caller_session , :only => [
+  before_filter :find_caller_session, only: [
     :pause, :stop_calling, :ready_to_call,
     :continue_conf, :pause, :run_out_of_numbers,
     :callin_choice, :read_instruction_options,
@@ -41,7 +41,15 @@ class CallerController < TwimlController
     :account_out_of_funds
   ]
 
-  before_filter :find_session, :only => [:end_session]
+  before_filter :find_session, only: [:end_session]
+
+  before_filter :abort_caller_if_unprocessable_fallback_url, only: [
+    :continue_conf, :ready_to_call, :callin_choice,
+    :gather_response, :submit_response, :next_question, :next_call,
+    :conference_started_phones_only_preview,
+    :conference_started_phones_only_power,
+    :conference_started_phones_only_predictive
+  ]
 
 private
   def current_ability

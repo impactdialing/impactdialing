@@ -12,13 +12,8 @@ private
     if caller_session.fit_to_dial? and process_request?
       yield
     else
-      if abort_request?
-        xml = Twilio::TwiML::Response.new{|response| response.Hangup}.text
-      else
-        xml = caller_session.send("abort_#{point_in_call_flow}_twiml")
-      end
-
       caller_session.end_caller_session
+      xml = caller_session.send("abort_#{point_in_call_flow}_twiml")
       render({xml: xml}) and return
     end
   end
@@ -84,9 +79,18 @@ private
     not process_request?
   end
 
-  def abort_if_unprocessable_fallback_url
+  def abort_caller_if_unprocessable_fallback_url
     if abort_request?
-      render xml: Twilio::TwiML::Response.new{|response| response.Hangup}.text and return
+      render 'twiml/caller_sessions/unprocessable_fallback_url' and return
+      return false
+    end
+    true
+  end
+
+  def abort_lead_if_unprocessable_fallback_url
+    if abort_request?
+      render 'twiml/lead/unprocessable_fallback_url' and return
+      return false
     end
     true
   end

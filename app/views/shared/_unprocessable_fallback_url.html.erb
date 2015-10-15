@@ -1,0 +1,4 @@
+<%= Twilio::TwiML::Response.new do |twiml|
+  twiml.Say spoken_text if defined?(spoken_text)
+  twiml.Hangup
+end.text.html_safe -%>

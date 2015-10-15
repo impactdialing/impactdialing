@@ -105,6 +105,9 @@ en:
   csv_duplicate_headers: "The uploaded file contained the following duplicate headers: %{duplicate_headers}. Please verify all header names are unique."
   csv_is_invalid: "Invalid CSV file. Could not import."
   dialer:
+    twiml:
+      caller:
+        unprocessable_fallback_url: "We are unable to complete your call at this time. Please hangup and try again."
     access:
       denied: "Calling is disabled. Please contact your admin."
     account:

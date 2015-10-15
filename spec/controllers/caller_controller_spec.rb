@@ -9,30 +9,6 @@ describe CallerController, :type => :controller do
     WebMock.disable_net_connect!
   end
 
-  shared_examples_for 'all twilio fallback url requests' do
-    before do
-      ENV['TWILIO_PROCESS_FALLBACK_URLS'] = '1'
-      params.merge!({
-        ErrorUrl: 'http://test.com/blah'
-      })
-    end
-    context 'params[:ErrorCode] can be retried' do
-      [11200, 11205, 11210, 12400].each do |error_code|
-        it "ErrorCode[#{error_code}] is processed" do
-          post action, params.merge(ErrorCode: error_code)
-          expect(response.body).to processed_response_body_expectation.call
-        end
-      end
-    end
-    context 'params[:ErrorCode] cannot be retried' do
-      it 'hangs up' do
-        post action, params.merge(ErrorCode: 11100)
-        expect(response.body).to hangup
-      end
-    end
-  end
-
-
   describe "authentication" do
     let(:campaign) do
       create(:campaign, {
@@ -292,7 +268,7 @@ describe CallerController, :type => :controller do
         Proc.new{ say('Please enter your call results.').and_pause(length: 600) }
       end
 
-      it_behaves_like 'all twilio fallback url requests'
+      it_behaves_like 'processable twilio fallback url requests'
 
       context 'caller arrives here and #skip_pause? => false' do
         before do
@@ -337,7 +313,8 @@ describe CallerController, :type => :controller do
         Proc.new{ dial_conference(dial_options, conference_options) }
       end
 
-      it_behaves_like 'all twilio fallback url requests'
+      it_behaves_like 'processable twilio fallback url requests'
+      it_behaves_like 'unprocessable caller twilio fallback url requests'
     end
   end
 end
