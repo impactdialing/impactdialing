@@ -172,14 +172,14 @@ describe 'callveyor.call_flow', ->
 
     describe 'voterConnected(data)', ->
       callCache = ''
-      data = {call_id: 41}
+      data = {call_sid: 'CA-123abc'}
       beforeEach ->
         callCache = $cacheFactory.get('Call')
 
       it 'updates "id" on the "call" cache with data.call_id', ->
         service.voterConnected(data)
         $rootScope.$apply()
-        expect(callCache.get('id')).toEqual(data.call_id)
+        expect(callCache.get('id')).toEqual(data.call_sid)
 
       it 'transitions to dialer.active', ->
         service.voterConnected(data)
@@ -205,7 +205,7 @@ describe 'callveyor.call_flow', ->
         service.voterConnectedDialer(data)
         $rootScope.$apply()
         cache = $cacheFactory.get('Call')
-        expect(cache.get('id')).toEqual(data.call_id)
+        expect(cache.get('id')).toEqual(data.call_sid)
 
       it 'transitions to dialer.active', ->
         service.voterConnectedDialer(data)

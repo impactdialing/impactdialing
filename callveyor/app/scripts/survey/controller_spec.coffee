@@ -11,10 +11,11 @@ describe 'survey controller', ->
 
   call = {id: 3}
   voter = {id: 42}
+  caller = {id: 24, session_id: 'caller-session-id'}
 
   beforeEach(module('survey'))
 
-  beforeEach(inject((_$rootScope_, _$controller_, _$httpBackend_, _$cacheFactory_, _usSpinnerService_, _SurveyFormFieldsFactory_, _idFlashFactory_, _ErrorCache_, _CallCache_, _HouseholdCache_) ->
+  beforeEach(inject((_$rootScope_, _$controller_, _$httpBackend_, _$cacheFactory_, _usSpinnerService_, _SurveyFormFieldsFactory_, _idFlashFactory_, _ErrorCache_, _CallCache_, _HouseholdCache_, _CallStationCache_) ->
     $rootScope              = _$rootScope_
     $controller             = _$controller_
     $scope                  = $rootScope
@@ -22,12 +23,14 @@ describe 'survey controller', ->
     $cacheFactory           = _$cacheFactory_
     idFlashFactory          = _idFlashFactory_
     CallCache               = _CallCache_
+    CallStationCache        = _CallStationCache_
     HouseholdCache          = _HouseholdCache_
     ErrorCache              = _ErrorCache_
     usSpinnerService        = _usSpinnerService_
     SurveyFormFieldsFactory = _SurveyFormFieldsFactory_
 
     CallCache.put('id', call.id)
+    CallStationCache.put('caller', caller)
     HouseholdCache.put('selected', {id: voter.id})
     $httpBackend.whenGET('/call_center/api/survey_fields.json').respond({})
     $controller('SurveyFormCtrl', {$scope})
@@ -51,7 +54,7 @@ describe 'survey controller', ->
 
   describe 'survey.save($event, andContinue=true|false) request completes UNsuccessfully', ->
     beforeEach ->
-      $httpBackend.whenPOST("/call_center/api/#{call.id}/submit_result").respond(400, {})
+      $httpBackend.whenPOST("/call_center/api/disposition").respond(400, {})
       usSpinnerService.spin = jasmine.createSpy('-usSpinnerService.spin Spy-')
       usSpinnerService.stop = jasmine.createSpy('-usSpinnerService.stop Spy-')
       @notes = {"42": "some notes"}
@@ -76,8 +79,7 @@ describe 'survey controller', ->
 
   describe 'survey.save($event, andContinue=true|false)', ->
     beforeEach ->
-      $httpBackend.whenPOST("/call_center/api/#{call.id}/submit_result").respond(200, {})
-      $httpBackend.whenPOST("/call_center/api/#{call.id}/submit_result_and_stop").respond(200, {})
+      $httpBackend.whenPOST("/call_center/api/disposition").respond(200, {})
       usSpinnerService.spin = jasmine.createSpy('-usSpinnerService.spin Spy-')
       usSpinnerService.stop = jasmine.createSpy('-usSpinnerService.stop Spy-')
       @notes = {"42": "some notes"}
@@ -127,7 +129,7 @@ describe 'survey controller', ->
         $httpBackend.flush()
 
       it 'preserves survey.responses', ->
-        $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(444, {})
+        $httpBackend.expectPOST("/call_center/api/disposition").respond(444, {})
         $scope.survey.responses.notes = @notes
         $scope.survey.responses.question = @question
         $scope.survey.save({}, true)
@@ -136,21 +138,21 @@ describe 'survey controller', ->
         expect($scope.survey.responses.question).toEqual(@question)
 
       it 'displays a message to the user', ->
-        $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(444, {})
+        $httpBackend.expectPOST("/call_center/api/disposition").respond(444, {})
         idFlashFactory.now = jasmine.createSpy('-idFlashFactory.now spy-')
         $scope.survey.save({}, true)
         $httpBackend.flush()
         expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
 
       it 'sets survey.disable to false', ->
-        $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(444, {})
+        $httpBackend.expectPOST("/call_center/api/disposition").respond(444, {})
         $scope.survey.save({}, true)
         $httpBackend.flush()
         expect($scope.survey.disable).toBeFalsy()
 
       describe 'error is 400', ->
         it 'displays bad request message', ->
-          $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(400, {})
+          $httpBackend.expectPOST("/call_center/api/disposition").respond(400, {})
           $scope.survey.save({}, true)
           $httpBackend.flush()
           expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
@@ -159,7 +161,7 @@ describe 'survey controller', ->
 
         it 'displays timeout message', ->
           angular.forEach([408, 504], (errorCode) ->
-            $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(errorCode, {})
+            $httpBackend.expectPOST("/call_center/api/disposition").respond(errorCode, {})
             $scope.survey.save({}, true)
             $httpBackend.flush()
             expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
@@ -167,14 +169,14 @@ describe 'survey controller', ->
 
       describe 'error is 500', ->
         it 'displays server error message', ->
-          $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(500, {})
+          $httpBackend.expectPOST("/call_center/api/disposition").respond(500, {})
           $scope.survey.save({}, true)
           $httpBackend.flush()
           expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
 
       describe 'error is 503', ->
         it 'displays maintenance message', ->
-          $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result").respond(503, {})
+          $httpBackend.expectPOST("/call_center/api/disposition").respond(503, {})
           $scope.survey.save({}, true)
           $httpBackend.flush()
           expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
@@ -184,18 +186,24 @@ describe 'survey controller', ->
       afterEach ->
         $httpBackend.verifyNoOutstandingExpectation()
 
-      it 'POSTs survey.responses to /call_center/api/:call_id/submit_result', ->
+      it 'POSTs survey.responses to /call_center/api/disposition', ->
         responses = {
           question: {"1": {id: 321, value: 'Yes'}},
           notes: {"1": "Some text"}
         }
         expectedData = {
-          voter_id: voter.id
+          lead: {
+            id: 42
+          },
+          sid: 3,
+          caller_session_id: "caller-session-id",
+          stop_calling: false,
           question: {"1": responses.question["1"].id},
           notes: responses.notes
         }
+
         $scope.survey.responses = responses
-        $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result", expectedData).respond(200, {})
+        $httpBackend.expectPOST("/call_center/api/disposition", expectedData).respond(200, {})
         $scope.survey.save({}, true)
 
     describe 'andContinue=false', ->
@@ -203,6 +211,7 @@ describe 'survey controller', ->
         afterEach ->
           $httpBackend.verifyNoOutstandingExpectation()
 
-      it 'POSTs survey.responses to /call_center/api/:call_id/submit_result_and_stop', ->
-        $httpBackend.expectPOST("/call_center/api/#{call.id}/submit_result_and_stop").respond({})
+      it 'POSTs survey.responses to /call_center/api/disposition', ->
+        $httpBackend.expectPOST("/call_center/api/disposition").respond({})
         $scope.survey.save({}, false)
+
