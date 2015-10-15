@@ -1,5 +1,5 @@
-<div class="btn-group dropdown" data-ng-hide="transfer.list.length == 0">
-  <button type="button" class="btn btn-default navbar-btn dropdown-toggle">Transfer <b class="caret"></b></button>
+<div class="btn-group" data-dropdown data-ng-hide="transfer.list.length == 0">
+  <button type="button" data-dropdown-toggle class="btn btn-default navbar-btn">Transfer <b class="caret"></b></button>
   <ul class="dropdown-menu" role="menu">
     <li data-ng-repeat="target in transfer.list">
       <a href="#" data-ng-click="transfer.select(target.id)">
