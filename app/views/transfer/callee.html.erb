@@ -1,0 +1,11 @@
+<%= Twilio::TwiML::Response.new do |twiml|
+  twiml.Dial(:hangupOnStar => true) do
+    twiml.Conference(@session_key, {
+      startConferenceOnEnter: true,
+      endConferenceOnExit: false,
+      beep: false,
+      waitUrl: HOLD_MUSIC_URL,
+      waitMethod: 'GET'
+    })
+  end
+end.text.html_safe -%>

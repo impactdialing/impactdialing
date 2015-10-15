@@ -1,0 +1,17 @@
+<%= Twilio::TwiML::Response.new do |twiml|
+  twiml.Dial({
+    hangupOnStar: true,
+    action: disconnect_transfer_url(@transfer_attempt, {
+      host: Settings.twilio_callback_host,
+      port:  Settings.twilio_callback_port,
+      protocol: "http://"
+    })
+  }) do
+    twiml.Conference(@transfer_attempt.session_key, {
+      endConferenceOnExit: false,
+      beep: false,
+      waitUrl: HOLD_MUSIC_URL,
+      waitMethod: 'GET'
+    })
+  end
+end.text.html_safe -%>

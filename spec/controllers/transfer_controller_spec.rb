@@ -41,8 +41,11 @@ describe TransferController, :type => :controller do
       :skip_pause= => nil
     })
   end
+  let(:caller_record) do
+    create(:caller)
+  end
   let(:caller_session) do
-    create(:caller_session)
+    create(:caller_session, caller: caller_record)
   end
   let(:phone){ twilio_valid_to }
 
@@ -71,37 +74,155 @@ describe TransferController, :type => :controller do
     end
   end
 
-  it "should disconnect and set attempt status as success" do
-    transfer_attempt = create(:transfer_attempt, caller_session: caller_session)
+  describe '#disconnect' do
+    let(:params) do
+      {
+        id: transfer_attempt.id
+      }
+    end
+    let(:action){ :disconnect }
+    let(:processed_response_body_expectation) do
+      Proc.new{ hangup }
+    end
 
-    post :disconnect, id: transfer_attempt.id
-    expect(response.body).to eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
-    transfer_attempt.reload
-    expect(transfer_attempt.status).to eq(CallAttempt::Status::SUCCESS)
+    it_behaves_like 'processable twilio fallback url requests'
+    it_behaves_like 'unprocessable lead twilio fallback url requests'
+
+    it 'hangs up the transfer' do
+      post :disconnect, params
+
+      expect(response.body).to hangup
+    end
+
+    it 'updates TransferAttempt#status to SUCCESS' do
+      post :disconnect, params
+
+      transfer_attempt.reload
+      expect(transfer_attempt.status).to eq(CallAttempt::Status::SUCCESS)
+    end
   end
 
-  it "should connect a call to a conference" do
-    transfer.update_attributes(transfer_type: Transfer::Type::COLD)
-    allow(transfer_attempt).to receive(:transfer_type){ Transfer::Type::COLD }
-    allow(transfer_attempt).to receive(:caller_session){ caller_session }
-    allow(TransferAttempt).to receive_message_chain(:includes, :find){ transfer_attempt }
-    caller_record = create(:caller)
-    caller_record.caller_sessions << caller_session
-    caller_record.save!
-    url_opts = {
-      :host => Settings.twilio_callback_host,
-      :port => Settings.twilio_callback_port,
-      :protocol => "http://"
-    }
-    twilio_response = instance_double('Providers::Phone::Twilio::Response', {error?: false})
+  describe '#caller' do
+    let(:params) do
+      {
+        id: transfer_attempt.id,
+        caller_session: caller_session.id,
+        session_key: transfer_attempt.session_key
+      }
+    end
+    let(:action){ :caller }
+    let(:processed_response_template) do
+      'transfer/caller'
+    end
 
-    expect(Providers::Phone::Call).to receive(:redirect).with(call_sid, callee_transfer_index_url(url_opts.merge(transfer_type: transfer_attempt.transfer_type)), {retry_up_to: ENV["TWILIO_RETRIES"]}){ twilio_response }
-    expect(Providers::Phone::Call).to receive(:redirect).with(caller_session.sid, pause_caller_url(caller_record, url_opts.merge(session_id: caller_session.id)), {retry_up_to: ENV["TWILIO_RETRIES"]})
-    expect(call_flow_caller_session).to receive(:skip_pause=).with(true)
+    it_behaves_like 'processable twilio fallback url requests'
+    it_behaves_like 'unprocessable caller twilio fallback url requests'
 
-    post :connect, id: transfer_attempt.id
-    transfer_attempt.reload
-    expect(transfer_attempt.connecttime).not_to be_nil
+    it 'renders transfer/caller' do
+      post action, params
+      expect(response).to render_template processed_response_template
+    end
+  end
+
+  describe '#callee' do
+    let(:params) do
+      {
+        id: transfer_attempt.id,
+        caller_session: caller_session.id,
+        session_key: transfer_attempt.session_key
+      }
+    end
+    let(:action){ :callee }
+    let(:processed_response_template) do
+      'transfer/callee'
+    end
+
+    it_behaves_like 'processable twilio fallback url requests'
+    it_behaves_like 'unprocessable lead twilio fallback url requests'
+
+    it 'renders transfer/callee' do
+      post action, params
+      expect(response).to render_template processed_response_template
+    end
+  end
+
+  describe '#connect' do
+    let(:caller_record){ create(:caller) }
+    let(:twilio_response) do
+      instance_double('Providers::Phone::Twilio::Response', {error?: false})
+    end
+    let(:url_opts) do
+      {
+        :host => Settings.twilio_callback_host,
+        :port => Settings.twilio_callback_port,
+        :protocol => "http://"
+      }
+    end
+    let(:action){ :connect }
+    let(:params) do
+      {
+        id: transfer_attempt.id
+      }
+    end
+    let(:conference_options) do
+      {
+        name: transfer_attempt.session_key,
+        waitUrl: HOLD_MUSIC_URL,
+        waitMethod: 'GET',
+        beep: false,
+        endConferenceOnExit: false
+      }
+    end
+    let(:dial_options) do
+      {
+        hangupOnStar: 'false',
+        action: disconnect_transfer_url(transfer_attempt, url_opts),
+        record: caller_session.campaign.account.record_calls
+      }
+    end
+    let(:processed_response_template) do
+      'transfer/connect'
+    end
+    before do
+      transfer.update_attributes(transfer_type: Transfer::Type::COLD)
+      allow(transfer_attempt).to receive(:transfer_type){ Transfer::Type::COLD }
+      allow(transfer_attempt).to receive(:caller_session){ caller_session }
+      allow(TransferAttempt).to receive_message_chain(:includes, :find){ transfer_attempt }
+      caller_record.caller_sessions << caller_session
+      caller_record.save!
+      allow(Providers::Phone::Call).to receive(:redirect).with(call_sid, callee_transfer_index_url(url_opts.merge(transfer_type: transfer_attempt.transfer_type)), {retry_up_to: ENV["TWILIO_RETRIES"]}){ twilio_response }
+      allow(Providers::Phone::Call).to receive(:redirect).with(caller_session.sid, pause_caller_url(caller_record, url_opts.merge(session_id: caller_session.id)), {retry_up_to: ENV["TWILIO_RETRIES"]})
+    end
+
+    it_behaves_like 'processable twilio fallback url requests'
+    it_behaves_like 'unprocessable lead twilio fallback url requests'
+
+    it 'redirects the lead to the transfer conference' do
+      expect(Providers::Phone::Call).to receive(:redirect).with(call_sid, callee_transfer_index_url(url_opts.merge(transfer_type: transfer_attempt.transfer_type)), {retry_up_to: ENV["TWILIO_RETRIES"]}){ twilio_response }
+
+      post :connect, params
+    end
+    it 'redirects the caller to the transfer conference' do
+      expect(Providers::Phone::Call).to receive(:redirect).with(caller_session.sid, pause_caller_url(caller_record, url_opts.merge(session_id: caller_session.id)), {retry_up_to: ENV["TWILIO_RETRIES"]})
+
+      post :connect, params
+    end
+    it 'sets TransferAttempt#connecttime' do
+      post :connect, params
+      transfer_attempt.reload
+
+      expect(transfer_attempt.connecttime).not_to be_nil
+    end
+    it 'tells caller to skip /pause' do
+      expect(call_flow_caller_session).to receive(:skip_pause=).with(true)
+
+      post :connect, params
+    end
+
+    it 'renders transfer/connect' do
+      post :connect, params
+      expect(response).to render_template processed_response_template
+    end
   end
 
   it "should end a successful call" do
@@ -144,7 +265,4 @@ describe TransferController, :type => :controller do
     expect(transfer_attempt.status).to eq('Call failed')
     expect(transfer_attempt.call_end).not_to be_nil
   end
-
-
-
 end

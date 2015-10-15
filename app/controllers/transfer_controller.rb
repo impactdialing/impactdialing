@@ -1,15 +1,15 @@
 require Rails.root.join("lib/twilio_lib")
 class TransferController < TwimlController
   skip_before_filter :verify_authenticity_token
-  before_filter :abort_if_unprocessable_fallback_url
+  before_filter :abort_caller_if_unprocessable_fallback_url, only: [:caller]
+  before_filter :abort_lead_if_unprocessable_fallback_url, only: [
+    :connect, :callee, :disconnect
+  ]
 
   def connect
-    transfer_attempt = TransferAttempt.includes(:transfer).find(params[:id])
-
-    transfer_dialer = TransferDialer.new(transfer_attempt.transfer)
-    xml = transfer_dialer.connect(transfer_attempt)
-
-    render xml: xml
+    @transfer_attempt = TransferAttempt.includes(:transfer).find(params[:id])
+    transfer_dialer   = TransferDialer.new(@transfer_attempt.transfer)
+    transfer_dialer.connect(@transfer_attempt)
   end
 
   def disconnect
@@ -51,26 +51,16 @@ class TransferController < TwimlController
   def callee
     transfer_attempt = TransferAttempt.includes(:caller_session).find_by_session_key params[:session_key]
     caller_session   = transfer_attempt.caller_session
-
-    response = Twilio::TwiML::Response.new do |v|
-      v.Dial(:hangupOnStar => true) do
-        v.Conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
-      end
-    end.text
-
     caller_session.pushit("contact_joined_transfer_conference",{})
-    render xml: response
+
+    @session_key = transfer_attempt.session_key
   end
 
   def caller
-    caller_session = CallerSession.find(params[:caller_session])
-    caller = Caller.find(caller_session.caller_id)
-    response = Twilio::TwiML::Response.new do |v|
-      v.Dial(:hangupOnStar => true, action: pause_caller_url(caller, session_id:  caller_session.id, transfer_session_key: params[:session_key], host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port, protocol: "http://")) do
-        v.Conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
-      end
-    end.text
-    caller_session.pushit("caller_joined_transfer_conference",{})
-    render xml: response
+    @caller_session = CallerSession.find(params[:caller_session])
+    @caller = Caller.find(@caller_session.caller_id)
+    @session_key = params[:session_key]
+    
+    @caller_session.pushit("caller_joined_transfer_conference",{})
   end
 end

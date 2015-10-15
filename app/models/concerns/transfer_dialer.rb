@@ -108,22 +108,9 @@ public
       end
 
       phone_params = Providers::Phone::Call::Params::Transfer.new(transfer_attempt.transfer, :disconnect, transfer_attempt, lead_call)
-
-      xml = Twilio::TwiML::Response.new do |twiml|
-        # The action url for Dial will be called by Twilio when the dialed party hangs up
-        twiml.Dial :hangupOnStar => 'false', :action => phone_params.url, :record => caller_session.campaign.account.record_calls do |dial|
-          dial.Conference transfer_attempt.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => false
-        end
-      end
     else
       # no point in transferring if the lead cannot join
       Providers::Phone::Call.redirect_for(caller_session, :pause)
-
-      xml = Twilio::TwiML::Response.new do |twiml|
-        twiml.Hangup
-      end
     end
-
-    return xml.text
   end
 end

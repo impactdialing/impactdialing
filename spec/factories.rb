@@ -233,6 +233,10 @@ FactoryGirl.define do
   end
   factory :transfer_attempt do
     transfer
+
+    trait :with_session_key do
+      session_key { Forgery(:name).first_name }
+    end
   end
 
   factory :call do
