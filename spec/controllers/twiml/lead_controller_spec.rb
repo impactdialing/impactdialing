@@ -27,12 +27,20 @@ describe Twiml::LeadController do
     let(:campaign){ create(:predictive) }
     let(:recording){ create(:recording, account: campaign.account) }
     let(:dialed_call){ CallFlow::Call::Dialed.new(twilio_params[:AccountSid], twilio_params[:CallSid]) }
+    let(:params) do
+      twilio_params
+    end
+    let(:action){ :play_message }
+    let(:processed_response_template){ 'twiml/lead/play_message' }
 
     before do
       dialed_call.storage[:campaign_id] = campaign.id
       dialed_call.caller_session_sid = caller_session.sid
       campaign.update_attribute(:recording_id, recording.id)
     end
+
+    it_behaves_like 'processable twilio fallback url requests'
+    it_behaves_like 'unprocessable lead twilio fallback url requests'
 
     it 'tells @dialed_call :manual_message_dropped' do
       allow(CallFlow::Call::Dialed).to receive(:new){ dialed_call }
@@ -65,10 +73,18 @@ describe Twiml::LeadController do
     let(:dialed_call) do
       CallFlow::Call::Dialed.new(twilio_params['AccountSid'], twilio_params['CallSid'])
     end
+    let(:params) do
+      twilio_params
+    end
+    let(:action){ :completed }
+    let(:processed_response_template){ '' }
 
     before do
       dialed_call.caller_session_sid = caller_session.sid
     end
+
+    it_behaves_like 'processable twilio fallback url requests'
+    it_behaves_like 'unprocessable lead twilio fallback url requests'
 
     it 'tells @dialed_call :completed' do
       dialed_call = double('CallFlow::Call::Dialed', {completed: nil})
@@ -94,14 +110,31 @@ describe Twiml::LeadController do
         'To' => '+13829583828'
       }))
     end
+    let(:dialed_call) do
+      double('CallFlow::Call::Dialed', {disconnected: nil})
+    end
+    let(:params) do
+      disconnected_params
+    end
+    let(:action){ :disconnected }
+    let(:processed_response_template){ 'twiml/lead/disconnected' }
 
-    it 'tells @dialed_call :disconnected' do
-      dialed_call = double('CallFlow::Call::Dialed', {disconnected: nil})
-      expect(dialed_call).to receive(:disconnected).with(disconnected_params.merge({
+    before do
+      allow(dialed_call).to receive(:disconnected).with(disconnected_params.merge({
         'action' => 'disconnected',
         'controller' => 'twiml/lead'
       }))
       allow(CallFlow::Call::Dialed).to receive(:new){ dialed_call }
+    end
+
+    it_behaves_like 'processable twilio fallback url requests'
+    it_behaves_like 'unprocessable lead twilio fallback url requests'
+
+    it 'tells @dialed_call :disconnected' do
+      expect(dialed_call).to receive(:disconnected).with(disconnected_params.merge({
+        'action' => 'disconnected',
+        'controller' => 'twiml/lead'
+      }))
       post :disconnected, disconnected_params
     end
   end
@@ -121,6 +154,11 @@ describe Twiml::LeadController do
         protocol: 'http://'
       }
     end
+    let(:params) do
+      twilio_params
+    end
+    let(:action){ :answered }
+    let(:processed_response_template){ 'twiml/lead/answered' }
 
     shared_examples_for 'answered call of any dialing mode' do
       it 'loads @dialed_call' do
@@ -153,6 +191,8 @@ describe Twiml::LeadController do
       end
 
       it_behaves_like 'answered call of any dialing mode'
+      it_behaves_like 'processable twilio fallback url requests'
+      it_behaves_like 'unprocessable lead twilio fallback url requests'
     end
 
     context 'Power dial mode' do
@@ -162,6 +202,8 @@ describe Twiml::LeadController do
       end
       
       it_behaves_like 'answered call of any dialing mode'
+      it_behaves_like 'processable twilio fallback url requests'
+      it_behaves_like 'unprocessable lead twilio fallback url requests'
     end
 
     context 'Predictive dial mode' do
@@ -174,6 +216,8 @@ describe Twiml::LeadController do
       end
 
       it_behaves_like 'answered call of any dialing mode'
+      it_behaves_like 'processable twilio fallback url requests'
+      it_behaves_like 'unprocessable lead twilio fallback url requests'
     end
   end
 end

@@ -16,7 +16,11 @@ shared_examples_for 'processable twilio fallback url requests' do
         if defined?(processed_response_body_expectation)
           expect(response.body).to processed_response_body_expectation.call
         elsif defined?(processed_response_template)
-          expect(response).to render_template processed_response_template
+          if processed_response_template.blank?
+            expect(response.body).to be_blank
+          else
+            expect(response).to render_template processed_response_template
+          end
         else
           raise "No processed response body or template expectation was set."
         end
