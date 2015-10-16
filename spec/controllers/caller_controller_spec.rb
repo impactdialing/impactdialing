@@ -316,6 +316,22 @@ describe CallerController, :type => :controller do
       it_behaves_like 'processable twilio fallback url requests'
       it_behaves_like 'unprocessable caller twilio fallback url requests'
     end
+
+    describe '#end_session' do
+      let(:caller_session){ create(:caller_session) }
+      context '@caller_session is nil' do
+        it 'hangs up' do
+          post :end_session
+          expect(response.body).to hangup
+        end
+      end
+      context '@caller_session is not nil' do
+        it 'hangs up' do
+          post :end_session, caller_session_id: caller_session.id
+          expect(response.body).to hangup
+        end
+      end
+    end
   end
 end
 

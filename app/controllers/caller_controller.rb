@@ -229,12 +229,13 @@ public
 
   def end_session
     unless @caller_session.nil?
-      render xml: @caller_session.conference_ended
+      xml = @caller_session.conference_ended
     else
-      render xml: Twilio::TwiML::Response.new do |r|
-        r.Hangup
+      xml = Twilio::TwiML::Response.new do |twiml|
+        twiml.Hangup
       end.text
     end
+    render xml: xml
   end
 
   def skip_voter
