@@ -55,8 +55,8 @@ describe 'dialer.active', ->
         CallStationCache = _CallStationCache_
         $state.go        = jasmine.createSpy('-$state.go spy-').andReturn($state)
         $state.catch     = jasmine.createSpy('-$statePromise spy-')
-        $window._errs    = {
-          push: jasmine.createSpy('-errorception _errs.push spy-')
+        $window.Bugsnag  = {
+          notifyException: jasmine.createSpy('-Bugsnag.notifyException spy-')
         }
 
         transfers[0].wasDialed = true
@@ -119,7 +119,7 @@ describe 'dialer.active', ->
 
           it 'sets an outcome timeout of 10 seconds -- when reached, submit error, display warning & set transitionInProgress to false', ->
             $timeout.flush()
-            expect($window._errs.push).toHaveBeenCalled()
+            expect($window.Bugsnag.notifyException).toHaveBeenCalled()
             expect(flashFake.nowAndDismiss).toHaveBeenCalledWith('warning', jasmine.any(String), jasmine.any(Number))
             expect($scope.transitionInProgress).toBeFalsy()
 
@@ -130,7 +130,7 @@ describe 'dialer.active', ->
 
               it 'cancels the timeout', ->
                 $timeout.verifyNoPendingTasks()
-                expect($window._errs.push).not.toHaveBeenCalled()
+                expect($window.Bugsnag.notifyException).not.toHaveBeenCalled()
                 expect(flashFake.nowAndDismiss).not.toHaveBeenCalledWith('warning', jasmine.any(String), jasmine.any(Number))
                 expect($scope.transitionInProgress).toBeTruthy()
 
@@ -150,7 +150,7 @@ describe 'dialer.active', ->
             expect(flashFake.now).toHaveBeenCalledWith('danger', jasmine.any(String))
 
           it 'submits error to errorception', ->
-            expect($window._errs.push).toHaveBeenCalled()
+            expect($window.Bugsnag.notifyException).toHaveBeenCalled()
 
           it 'sets transitionInProgress to false', ->
             expect($scope.transitionInProgress).toBeFalsy()

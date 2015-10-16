@@ -53,7 +53,7 @@ mod.factory('idTwilioConnectionFactory', [
         # ignore expired token errors... (new token is fetched when calling initiated)
         return if parseInt(error.code) == 31205
         err = new Error("Twilio Error. [#{error.code}] #{error.message} (#{error.info})")
-        $window._errs.push(err)
+        $window.Bugsnag.notifyException(err)
 
       resolved: (twilio) ->
         if factory.boundEventsMissing('connect')

@@ -19,7 +19,7 @@ twilio.factory('idTwilioConfig', [
           if successCallback?
             successCallback(resp)
         e = (err) ->
-          $window._errs.push(err)
+          $window.Bugsnag.notifyException(err)
           if errorCallback?
             errorCallback(err)
         p.then(s, e)
@@ -76,7 +76,7 @@ twilio.provider('idTwilioService', ->
 
       tokensFetchError = (e) ->
         error = new Error("Error fetching tokens from idTwilioService. #{e.message}")
-        $window._errs.push(error)
+        $window.Bugsnag.notifyException(error)
 
       idTwilioConfig.fetchToken(tokensFetched, tokensFetchError)
 

@@ -20,15 +20,12 @@
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
 
-    <!-- errorception -->
-    <script>
-      (function(_,e,rr,s){_errs=[s];var c=_.onerror;_.onerror=function(){var a=arguments;_errs.push(a);
-      c&&c.apply(this,a)};var b=function(){var c=e.createElement(rr),b=e.getElementsByTagName(rr)[0];
-      c.src="//beacon.errorception.com/"+s+".js";c.async=!0;b.parentNode.insertBefore(c,b)};
-      _.addEventListener?_.addEventListener("load",b,!1):_.attachEvent("onload",b)})
-      (window,document,"script","4fdd1d30eee3a7a4200000bf");
+    <!-- bugsnag -->
+    <script
+      src="//d2wy8f7a9ursnm.cloudfront.net/bugsnag-2.min.js"
+      data-apikey="aa2f044deb63547b4d9e0cfe142b1703">
     </script>
-    <!-- /errorception -->
+    <!-- /bugsnag -->
 
     <!-- UserSnap -->
     <script>

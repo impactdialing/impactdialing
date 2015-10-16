@@ -476,19 +476,15 @@ mod.factory('idCallFlow', [
             hold.reset()
           # /in case end_call event is missed, tmp until pusher events are confirmed
 
-          console.log 'caller:wrapup:start'
           p = $state.go('dialer.wrap')
           p.catch(idTransitionPrevented)
 
         messageDropError: (data) ->
-          console.log 'messageDropError', data
           idFlashFactory.now('danger', data.message, 7000)
 
         messageDropSuccess: ->
-          console.log 'messageDropSuccess'
-
           statePromise = $state.go('dialer.wrap')
-          statePromise.catch($window._errs.push)
+          statePromise.catch($window.Bugsnag.notifyException)
       }
 
       handlers

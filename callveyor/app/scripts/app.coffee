@@ -31,10 +31,7 @@ angular.module('exceptionOverride', []).factory('$exceptionHandler', [
   '$window'
   ($window) ->
     (exception, cause) ->
-      err = new Error("#{exception.message} (caused by #{cause})")
-      # console.log 'Sending to pusher', err
-      # console.log err.stack
-      $window._errs.push(err)
+      Bugsnag.notifyException(exception, {diagnostics: {cause: cause}})
 ])
 
 angular.module('HttpErrors', []).factory('idHttpError', [
@@ -43,14 +40,14 @@ angular.module('HttpErrors', []).factory('idHttpError', [
     httpError = (resp) ->
       if resp.status? and /^5\d\d/.test(resp.status)
         err = new Error("Survey fields failed to load")
-        $window._errs.meta = {
-          'Status': resp.status,
-          'StatusText': resp.statusText,
-          'Data': resp.data
-        }
-        # console.log 'Sending to pusher', err
-        # console.log err.stack
-        $window._errs.push(err)
+        Bugsnag.notifyException(err, {
+          diagnostics: {
+            status: resp.status,
+            status_text: resp.statusText,
+            data: resp.data
+            cause: cause
+          }
+        })
       else if resp.message?
         console.log 'Error', resp.message
         FlashCache.put('error', resp.message)
@@ -160,21 +157,21 @@ callveyor.controller('AppCtrl', [
       $rootScope.transitionInProgress = false
       usSpinnerService.stop('global-spinner')
     transitionError = (event, unfoundState, fromState, fromParams) ->
-      console.error 'Error transitioning $state', event #, unfoundState, fromState, fromParams
       phone = getPhone()
       meta  = getMeta()
       
       err = new Error("$state change failed to transition")
-      $window._errs.meta = {
-        'To': unfoundState.name,
-        'From': fromState.name,
-        'ErrorCache': angular.toJson(ErrorCache, true),
-        'Phone': phone,
-        'Meta': angular.toJson(meta, true)
-      }
-      # console.log 'Sending to pusher', err
-      # console.log err.stack
-      $window._errs.push(err)
+      Bugsnag.notifyException(err, {
+        diagnostics: {
+          cause: cause,
+          to: unfoundState.name,
+          from: fromState.name,
+          error_cache: angular.toJson(ErrorCache, true),
+          phone: phone,
+          meta: angular.toJson(meta, true)
+        }
+      })
+
       # hmm: $stateChangeError seems to not be thrown when preventDefault is called
       # if e.message == 'transition prevented'
       #   # something called .preventDefault, probably the transitionGateway

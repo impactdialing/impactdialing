@@ -35,8 +35,8 @@ describe 'idTwilioConnectionHandlers', ->
     factory        = $injector.get('idTwilioConnectionFactory')
     idFlashFactory = $injector.get('idFlashFactory')
     idTwilioConfig = $injector.get('idTwilioConfig')
-    $window._errs  = {
-      push: jasmine.createSpy('-$window._errs.push spy-')
+    $window.Bugsnag  = {
+      notifyException: jasmine.createSpy('-$window.Bugsnag.notifyException spy-')
     }
     idFlashFactory.now = jasmine.createSpy('-idFlashFactory.now spy-')
     $state             = jasmine.createSpyObj('$state', ['go', 'catch'])
@@ -57,7 +57,7 @@ describe 'idTwilioConnectionHandlers', ->
   describe 'error(error)', ->
     it 'returns early when error.code == 31205 (Twilio Token Expired), we ignore this error because it happens frequently and we generate tokens each time calling is initiated', ->
       factory.error({message: 'Token Expired', code: 31205, stack: {}})
-      expect($window._errs.push).not.toHaveBeenCalled()
+      expect($window.Bugsnag.notifyException).not.toHaveBeenCalled()
 
   describe 'resolved(twilio)', ->
     twilio = {}

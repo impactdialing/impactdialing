@@ -120,12 +120,13 @@ surveyForm.controller('SurveyFormCtrl', [
 
     fetchErr = (e) ->
       err = new Error("Survey fields failed to load")
-      $window._errs.meta = {
-        'Status': e.status,
-        'StatusText': e.statusText,
-        'Data': e.data
-      }
-      $window._errs.push(err)
+      $window.Bugsnag.notifyException(err, {
+        diagnostics: {
+          'Status': e.status,
+          'StatusText': e.statusText,
+          'Data': e.data
+        }
+      })
       idFlashFactory.now('danger', 'Survey failed to load. Please refresh the page to try again.')
     prepForm = (payload) ->
       SurveyFormFieldsFactory.prepareSurveyForm(payload)

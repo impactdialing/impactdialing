@@ -48,12 +48,14 @@ active.controller('ActiveCtrl.buttons', [
       success = ->
         statePromise = $state.go('dialer.wrap')
         TransferCache.remove('hangup_method')
-        statePromise.catch($window._errs.push)
 
       error = (resp) ->
-        console.log 'error trying to stop calling', resp
         idFlashFactory.now('danger', 'Error hanging up. Try again.')
-        $window._errs.push(resp)
+        $window.Bugsnag.notifyException("Error hanging up.", {
+          diagnostics: {
+            response: resp
+          }
+        })
 
       promise.then(success, error)
 
@@ -66,8 +68,6 @@ active.controller('ActiveCtrl.buttons', [
       promise     = idHttpDialerFactory.dropMessage(call_id)
 
       success = (resp) ->
-        console.log 'success requesting to drop message', resp
-
         boundEvents = []
         caller      = CallStationCache.get('caller')
 
@@ -77,7 +77,8 @@ active.controller('ActiveCtrl.buttons', [
         # will not be cleared despite message_drop_error|success having fired.
         timeoutReached = ->
           obj = new Error("Client timeout reached. Message drop queued successfully. Completion message not received.")
-          $window._errs.push(obj)
+          console.log 'timeoutReached'
+          $window.Bugsnag.notifyException(obj)
           idFlashFactory.nowAndDismiss('warning', 'Message drop outcome unclear.', 3000)
           $scope.transitionInProgress = false
 
@@ -95,9 +96,12 @@ active.controller('ActiveCtrl.buttons', [
         boundEvents.push($rootScope.$on("#{caller.session_key}:message_drop_success", cancel))
 
       error = (resp) ->
-        console.log 'error dropping message', resp
+        $window.Bugsnag.notifyException("Error preparing message drop.", {
+          diagnostics: {
+            response: resp
+          }
+        })
         idFlashFactory.now('danger', 'Error preparing message drop. Try again.')
-        $window._errs.push(resp)
         $scope.transitionInProgress = false
 
       promise.then(success, error)
@@ -122,7 +126,7 @@ active.controller('TransferCtrl.list', [
     else
       transfer.list = []
       err = new Error("TransferCtrl.list running but TransferCache is undefined.")
-      $window._errs.push(err)
+      Bugsnag.notifyException(err)
 
     transfer.select = (id) ->
       previousSelection = transfer.cache.get('selected')
@@ -138,8 +142,7 @@ active.controller('TransferCtrl.list', [
           p = $state.go('dialer.active.transfer.reselect')
         else
           p = $state.go('dialer.active.transfer.selected')
-        s = (r) -> console.log 'success', r.stack, r.message
-        p.then(s,$window._errs.push)
+        p.catch(Bugsnag.notifyException)
       else
         idFlashFactory.now('danger', 'Error loading selected transfer. Please try again and report problem if error continues.')
 
