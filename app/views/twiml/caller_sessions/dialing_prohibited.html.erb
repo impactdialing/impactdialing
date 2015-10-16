@@ -1,4 +1,4 @@
 <%= Twilio::TwiML::Response.new do |twiml|
   twiml.Say(I18n.t("twiml.dialing_prohibited.#{@reason}"))
   twiml.Hangup
-end.text %>
+end.text.html_safe -%>
