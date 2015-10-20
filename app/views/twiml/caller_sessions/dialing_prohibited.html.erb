@@ -1,4 +1,3 @@
-<%= Twilio::TwiML::Response.new do |twiml|
-  twiml.Say(I18n.t("twiml.dialing_prohibited.#{@reason}"))
-  twiml.Hangup
-end.text.html_safe -%>
+<%= render('shared/say_and_hangup', {
+  spoken_text: I18n.t("dialer.twiml.caller.#{@reason}")
+}) -%>
