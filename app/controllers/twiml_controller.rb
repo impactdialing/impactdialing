@@ -80,19 +80,22 @@ private
   end
 
   def abort_caller_if_unprocessable_fallback_url
+    abort_for 'caller_sessions'
+  end
+
+  def abort_lead_if_unprocessable_fallback_url
+    abort_for 'lead'
+  end
+
+  def abort_for(namespace)
     if abort_request?
-      render 'twiml/caller_sessions/unprocessable_fallback_url' and return
-      return false
+      render_twiml namespace, 'unprocessable_fallback_url' and return
     end
     true
   end
 
-  def abort_lead_if_unprocessable_fallback_url
-    if abort_request?
-      render 'twiml/lead/unprocessable_fallback_url' and return
-      return false
-    end
-    true
+  def render_twiml(namespace, template)
+    render "twiml/#{namespace}/#{template}"
   end
 end
 
