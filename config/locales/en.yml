@@ -108,6 +108,8 @@ en:
         time_period_exceeded: "You can only call this campaign between %{start_time} and %{end_time}."
         subscription_limit: "The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account."
         unprocessable_fallback_url: "We are unable to complete your call at this time. Please hangup and try again."
+        campaign_missing: "You have entered the correct pin but your account is not assigned to an active campaign. Please contact your account administrator."
+        instruction_choice: "Press star to begin dialing or pound for instructions."
     access:
       denied: "Calling is disabled. Please contact your admin."
     account:

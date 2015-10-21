@@ -1,0 +1,5 @@
+<% if @caller_record.is_phones_only? -%>
+<%= @caller_session.callin_choice.html_safe -%>
+<% else -%>
+<%= @caller_session.connected_twiml.html_safe -%>
+<% end -%>

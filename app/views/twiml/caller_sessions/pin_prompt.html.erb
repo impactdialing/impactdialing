@@ -1,0 +1,23 @@
+<%= Twilio::TwiML::Response.new do |twiml|
+  if @current_attempt > 0
+    twiml.Say I18n.t('dialer.twiml.caller.pin_invalid')
+  end
+
+  if @current_attempt > 2
+    twiml.Hangup 
+  else
+    twiml.Gather({
+      finishOnKey: '*',
+      timeout:      10,
+      method:      'POST',
+      action:      identify_caller_url({
+        protocol: 'http://',
+        host:     Settings.twilio_callback_host,
+        port:     Settings.twilio_callback_port,
+        attempt:  @next_attempt
+      })
+    }) do
+      twiml.Say I18n.t('dialer.twiml.caller.pin_prompt')
+    end
+  end
+end.text.html_safe -%>
