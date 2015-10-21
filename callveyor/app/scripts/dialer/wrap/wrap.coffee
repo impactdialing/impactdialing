@@ -15,8 +15,8 @@ wrap.config(['$stateProvider', ($stateProvider) ->
 ])
 
 wrap.controller('WrapCtrl.status', [
-  '$rootScope', '$scope',
-  ($rootScope,   $scope) ->
+  '$rootScope', '$scope', '$state', 'TwilioCache',
+  ($rootScope,   $scope,   $state,   TwilioCache) ->
     wrap        = {}
     wrap.status = 'Waiting for call results.'
     saveSuccess = false
@@ -26,7 +26,11 @@ wrap.controller('WrapCtrl.status', [
       wrap.status = 'Results saved.'
     doneStatus = ->
       if saveSuccess
-        wrap.status = "Results saved. Waiting for next contact from server."
+        unless TwilioCache.get('connection')?
+          wrap.status = "Results saved."
+          $state.go('dialer.ready')
+        else
+          wrap.status = "Results saved. Waiting for next contact from server."
       else
         wrap.status = "Results failed to save."
 

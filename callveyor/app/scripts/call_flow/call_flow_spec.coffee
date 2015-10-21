@@ -233,6 +233,17 @@ describe 'callveyor.call_flow', ->
           $rootScope.$apply()
           expect($state.is('dialer.wrap')).toBeTruthy()
 
+      describe 'when $state is dialer.wrap', ->
+        beforeEach ->
+          $state.go('dialer.wrap')
+          $rootScope.$apply()
+
+        it 'does not transition $state', ->
+          expect($state.is('dialer.wrap')).toBeTruthy()
+          service.callerDisconnected()
+          $rootScope.$apply()
+          expect($state.is('dialer.wrap')).toBeTruthy()
+
       describe 'when $state is NOT dialer.active', ->
         it 'transitions to dialer.ready', ->
           expect($state.is('dialer.active')).toBeFalsy()
