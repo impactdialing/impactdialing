@@ -165,16 +165,12 @@ public
     end
   end
 
-  def secure_digest(*args)
-    Digest::SHA1.hexdigest(args.flatten.join('--'))
-  end
-
   def assign_api_key
     self.api_key = generate_api_key
   end
 
   def generate_api_key
-    secure_digest(Time.now, (1..10).map{ rand.to_s })
+    CallFlow.generate_token
   end
 end
 

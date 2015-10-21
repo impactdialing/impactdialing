@@ -1,6 +1,4 @@
 module CallFlow
-  class CallFlow::BaseArgumentError < ArgumentError; end
-
   class Call
     class InvalidParams < CallFlow::BaseArgumentError; end
     class InvalidBaseKey < CallFlow::BaseArgumentError; end
