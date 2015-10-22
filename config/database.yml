@@ -13,10 +13,3 @@ test:
   database: impactdialing_test
   username: root
   password:
-
-e2e:
-  adapter: mysql2
-  host: localhost
-  database: impactdialing_e2e
-  username: root
-  password:
