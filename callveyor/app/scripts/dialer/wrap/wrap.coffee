@@ -24,15 +24,15 @@ wrap.controller('WrapCtrl.status', [
     successStatus = ->
       saveSuccess = true
       wrap.status = 'Results saved.'
-    doneStatus = ->
+    doneStatus = (event, payload) ->
       if saveSuccess
-        unless TwilioCache.get('connection')?
-          wrap.status = "Results saved."
-          $state.go('dialer.ready')
+        if payload.andContinue
+          wrap.status = 'Results saved. Waiting for next contact from server...'
         else
-          wrap.status = "Results saved. Waiting for next contact from server."
+          wrap.status = 'Results saved. Hanging up...'
+          $state.go('dialer.ready')
       else
-        wrap.status = "Results failed to save."
+        wrap.status = 'Results failed to save.'
 
       saveSuccess = false
 
