@@ -11,10 +11,17 @@ private
   end
 
   def leads
-    if (_leads = presented_household['leads']).blank?
-      _leads = active_household['leads']
+    _leads = presented_household['leads'] || []
+
+    if active_household['leads']
+      active_household['leads'].each do |lead|
+        unless _leads.detect{|ld| ld['uuid'] == lead['uuid']}
+          _leads << lead
+        end
+      end
     end
-    return _leads
+
+    _leads
   end
 
   def new_leads
@@ -22,7 +29,7 @@ private
   end
 
   def persisted_leads
-    active_household['leads'].select{|lead| lead['sql_id'].present?}
+    leads.select{|lead| lead['sql_id'].present?}
   end
 
   def any_leads_persisted?
@@ -95,12 +102,12 @@ private
     CustomVoterFieldValue.import_hashes(custom_field_values)
   end
 
-  def build_custom_voter_field_values(leads)
-    voter_record_ids    = leads.map{|lead| lead['sql_id']}
+  def build_custom_voter_field_values(_leads)
+    voter_record_ids    = _leads.map{|lead| lead['sql_id']}
     voter_records       = Voter.where(id: voter_record_ids).includes(:custom_voter_field_values)
     custom_field_values = []
     voter_records.each do |voter_record|
-      lead = leads.detect{|lead| lead['sql_id'].to_i == voter_record.id}
+      lead = _leads.detect{|lead| lead['sql_id'].to_i == voter_record.id}
       voter_record.custom_voter_field_values.each do |custom_voter_field_value|
         target_field = custom_voter_fields_by_id[custom_voter_field_value.custom_voter_field_id]
         custom_field_values << {
@@ -114,10 +121,10 @@ private
     custom_field_values
   end
 
-  def update_all_voter_records_and_custom_field_values(leads)
+  def update_all_voter_records_and_custom_field_values(_leads)
     updated_voter_attributes = []
-    updated_custom_values    = build_custom_voter_field_values(leads)
-    leads.each do |lead|
+    updated_custom_values    = build_custom_voter_field_values(_leads)
+    _leads.each do |lead|
       new_voter_attrs = build_voter_attributes(lead)
       new_voter_attrs.merge!({
         id: lead['sql_id'],
@@ -162,12 +169,12 @@ public
     leads.detect{|ld| ld['uuid'] == call_data[:lead_uuid]}
   end
 
-  def create_voter_records(leads)
+  def create_voter_records(_leads)
     uuid_to_id_map = {}
     
-    return uuid_to_id_map if leads.empty?
+    return uuid_to_id_map if _leads.empty?
 
-    leads.each do |lead|
+    _leads.each do |lead|
       voter_record = create_voter_record(build_voter_attributes(lead))
       create_custom_voter_field_value_records(voter_record, lead)
       uuid_to_id_map[lead[:uuid]] = voter_record.id

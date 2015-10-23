@@ -241,6 +241,26 @@ describe 'CallFlow::Persistence::Leads' do
             expect(Voter.order('id desc').limit(leads_two.size).pluck(:status).first).to eq Voter::Status::NOTCALLED
           end
         end
+
+        context 'dispositioned lead is removed from active household prior to persistence' do
+          before do
+            allow(dialed_call_storage).to receive(:attributes).and_return({
+              mapped_status: 'answered',
+              sid: 'dialed-call-sid-answered',
+              campaign_type: campaign.type,
+              phone: phone,
+              lead_uuid: households[phone][:leads].last[:uuid]
+            })
+            allow(dialed_call).to receive(:storage){ dialed_call_storage }
+            redis.hdel("dial_queue:#{campaign.id}:households:active:#{phone[0..-4]}", phone[-3..-1])
+          end
+          let(:subject_two){ CallFlow::Persistence::Leads.new(dialed_call, campaign, household_record) }
+
+          it 'persists leads from presented households' do
+            subject_two.import_records
+            expect(Voter.where(campaign_id: campaign.id, status: 'answered').count).to eq 1
+          end
+        end
       end
     end
   end
