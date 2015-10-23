@@ -306,7 +306,10 @@ describe 'CallFlow::DialQueue' do
       before do
         redis = Redis.new
         phone = redis.zrange(dial_queue.available.keys[:active], 0, 0).first
-        redis.hset *dial_queue.households.hkey(phone), [].to_json
+        hkey  = dial_queue.households.hkey(phone)
+        house = JSON.parse(redis.hget(*hkey))
+        house['leads'] = []
+        redis.hset *hkey, house.to_json
       end
 
       it 'raises CallFlow::DialQueue::EmptyHousehold' do

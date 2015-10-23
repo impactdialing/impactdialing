@@ -21,10 +21,14 @@ if household.leads then
     end
   end
 
-  household.leads = available_leads
-  _household = cjson.encode(household)
+  if #available_leads > 0 then
+    household.leads = available_leads
+    _household = cjson.encode(household)
 
-  redis.call('HSET', presented_key, hkey, _household)
+    redis.call('HSET', presented_key, hkey, _household)
+  else
+    _household = ''
+  end
 else
   _household = ''
 end

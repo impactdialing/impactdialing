@@ -62,6 +62,16 @@ describe 'CallFlow::DialQueue::Households' do
       redis.hdel *hkey
       expect(subject.find_presentable(phone)).to be_blank
     end
+
+    it 'returns empty result if no available (ie incomplete) leads are in household' do
+      hkey  = subject.send(:hkey, phone)
+      house = JSON.parse redis.hget(*hkey)
+      house['leads'].each do |lead|
+        subject.mark_lead_completed(lead['sequence'])
+      end
+      redis.hset(*hkey, house.to_json)
+      expect(subject.find_presentable(phone)).to be_blank
+    end
   end
 
   describe 'auto selecting best available lead for disposition from target household' do
