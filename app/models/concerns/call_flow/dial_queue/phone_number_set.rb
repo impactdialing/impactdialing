@@ -69,4 +69,8 @@ public
   def all(key_name=nil, options={})
     redis.zrange find_key(key_name), 0, -1, options
   end
+
+  def each(key_name=nil, options={}, &block)
+    redis.zscan_each find_key(key_name), options, &block
+  end
 end
