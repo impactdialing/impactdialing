@@ -3,18 +3,20 @@ namespace :dial_queue do
     redis    = Redis.new
     base_key = "inflight_stats"
     keys     = redis.keys "#{base_key}:*"
-    ids      = keys.map{|str| str.split(':')[1].to_i}
+    stats    = []
 
-    stats = ids.map do |id|
-      key    = [base_key, id].join(':')
+    redis.scan_each(match: "#{base_key}:*") do |key|
+      id = key.split(':')[1].to_i
       dqakey = ['dial_queue', id, 'active'].join(':')
       dqpkey = ['dial_queue', id, 'presented'].join(':')
       dqrkey = ['dial_queue', id, 'bin'].join(':')
-      [
+      stats << [
         id, redis.hget(key, 'ringing'), redis.hget(key, 'presented'),
         redis.zcard(dqakey), redis.zcard(dqpkey), redis.zcard(dqrkey)
       ]
     end
+
+    return stats
   end
 
   def print_inflight_stats
@@ -22,12 +24,12 @@ namespace :dial_queue do
     print inflight_stats.map{|row| row.join(',')}.join("\n") + "\n"
   end
 
-  desc "[DANGER uses KEYS!!] Generate CSV report of current inflight_stats"
+  desc "Generate CSV report of current inflight_stats"
   task :report_inflight_stats => [:environment] do
     print_inflight_stats
   end
 
-  desc "[DANGER uses KEYS!!] Reset all inflight stats to zero"
+  desc "Reset all inflight stats to zero"
   task :reset_inflight_stats,[:campaign_id] => [:environment] do |t,args|
     print "BEFORE\n"
     print_inflight_stats
