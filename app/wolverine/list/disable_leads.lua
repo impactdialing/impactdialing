@@ -3,6 +3,8 @@ local available_set_key      = KEYS[4]
 local recycle_bin_set_key    = KEYS[5]
 local blocked_set_key        = KEYS[6]
 local completed_set_key      = KEYS[7]
+local completed_lead_key     = KEYS[8]
+local presented_set_key      = KEYS[11]
 local base_key               = ARGV[1]
 local list_id                = tonumber(ARGV[2])
 local households             = cjson.decode(ARGV[3])
@@ -20,6 +22,19 @@ local copy_household_primitives = function(source_hh, dest_hh)
   end
 end
 
+local zscorerem = function(set_key, entry)
+  local score = redis.call('ZSCORE', set_key, entry)
+  if score then
+    redis.call('ZREM', set_key, entry)
+  end
+  return score
+end
+
+local lead_is_not_completed = function(lead)
+  local bit = redis.call('GETBIT', completed_lead_key, lead.sequence)
+  return bit == 0
+end
+
 for phone,_ in pairs(households) do
   local phone_prefix           = string.sub(phone, 0, -4)
   local hkey                   = string.sub(phone, -3, -1)
@@ -33,6 +48,7 @@ for phone,_ in pairs(households) do
   local current_inactive_leads = {}
   local new_active_leads       = {}
   local current_active_leads   = {}
+  local available_lead_count   = 0
 
   if _inactive_household then
     -- destination household exists, prepare to merge/append leads
@@ -69,6 +85,9 @@ for phone,_ in pairs(households) do
         redis.call('HINCRBY', campaign_stats_key, 'total_leads', -1)
         table.insert(new_inactive_leads, lead)
       else
+        if lead_is_not_completed(lead) then
+          available_lead_count = available_lead_count + 1
+        end
         -- lead does not belong to target list, so leave in active
         table.insert(new_active_leads, lead)
       end
@@ -78,6 +97,19 @@ for phone,_ in pairs(households) do
     if #new_active_leads ~= 0 then
       active_household.leads = new_active_leads
       redis.call('HSET', active_key, hkey, cjson.encode(active_household))
+
+      if available_lead_count == 0 then
+        score = zscorerem(available_set_key, phone)
+        if not score then
+          score = zscorerem(recycle_bin_set_key, phone)
+        end
+        if not score then
+          score = zscorerem(presented_set_key, phone)
+        end
+        if score then
+          redis.call('ZADD', completed_set_key, score, phone)
+        end
+      end
     else
       -- household has no active leads from other lists
       -- record the score to use when enabling

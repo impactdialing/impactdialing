@@ -56,19 +56,20 @@ private
     @dial_queue ||= voter_list.campaign.dial_queue
   end
 
-  # warning: if the ordering here is changed then wolverine/list/import.lua script must be updated
+  # warning: if the ordering here is changed then several lua scripts must be updated
   def common_redis_keys
     [
-      "imports:#{voter_list.id}:pending",
-      voter_list.stats.key,
-      voter_list.campaign.call_list.stats.key,
-      dial_queue.available.keys[:active],
-      dial_queue.recycle_bin.keys[:bin],
-      dial_queue.blocked.keys[:blocked],
-      dial_queue.completed.keys[:completed],
-      dial_queue.households.keys[:completed_leads],
-      dial_queue.households.keys[:message_drops],
-      voter_list.campaign.custom_id_register_key_base
+      "imports:#{voter_list.id}:pending",               # 1
+      voter_list.stats.key,                             # 2
+      voter_list.campaign.call_list.stats.key,          # 3
+      dial_queue.available.keys[:active],               # 4
+      dial_queue.recycle_bin.keys[:bin],                # 5
+      dial_queue.blocked.keys[:blocked],                # 6
+      dial_queue.completed.keys[:completed],            # 7
+      dial_queue.households.keys[:completed_leads],     # 8
+      dial_queue.households.keys[:message_drops],       # 9
+      voter_list.campaign.custom_id_register_key_base,  # 10
+      dial_queue.available.keys[:presented]             # 11
     ]
   end
 
