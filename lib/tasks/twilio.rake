@@ -55,7 +55,8 @@ namespace :calls do
       #results.each do |status, calls|
         call_list.list(opts).each do |call|
           summary = []
-          summary << number
+          summary << call.to
+          summary << call.from
           summary << call.status
           summary << call.sid
           summary << call.start_time
@@ -66,7 +67,7 @@ namespace :calls do
         end
       #end
     end
-    print "Number,Status,Calls,SID,Start time,End time,Duration,Price\n"
+    print "To,From,Status,Calls,SID,Start time,End time,Duration,Price\n"
     print report.map{|row| row.join(',')}.join("\n") + "\n"
   end
 
