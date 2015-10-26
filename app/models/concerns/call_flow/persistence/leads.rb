@@ -6,12 +6,23 @@ private
     presented_households.find(phone)
   end
 
+  def presented_leads
+    # tmp self-correction due to leads returning as {}
+    # when presented households w/ no available leads
+    # were processed as though there were available leads
+    # todo: remove type-check by end of December
+    if (_leads = presented_household['leads']).kind_of? Hash
+      _leads = []
+    end
+    _leads || []
+  end
+
   def active_household
     active_households.find(phone)
   end
 
   def leads
-    _leads = presented_household['leads'] || []
+    _leads = presented_leads
 
     if active_household['leads']
       active_household['leads'].each do |lead|
