@@ -109,9 +109,9 @@ class CallFlow::DialQueue::Households
     results.any?
   end
 
-  def save(phone, members)
+  def save(phone, house)
     return nil if phone.blank?
-    redis.hset( *hkey(phone), members.to_json )
+    redis.hset( *hkey(phone), house.to_json )
   end
 
   def find(phone)
