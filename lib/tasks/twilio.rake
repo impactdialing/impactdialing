@@ -42,18 +42,18 @@ namespace :calls do
     start_time  = args[:start_time]
     end_time    = args[:end_time]
     call_list   = twilio_client.accounts.get(account_sid).calls
-    report = []
-    numbers.each do |number|
-        #results.keys.each do |status|
-        #opts = {direction => number, 'status' => status}
-        opts = {direction => number}
-        opts.merge!({'start_time>' => start_time}) if start_time.present?
-        opts.merge!({'end_time<' => end_time}) if end_time.present?
-        #results[status] = call_list.list(opts)
-        #print "Found #{results[status].size} calls, from #{opts}\n"
-      #end
-      #results.each do |status, calls|
-        call_list.list(opts).each do |call|
+    report      = []
+    opts        = {
+      page_size: 1000
+    }
+    opts.merge!({'start_time>' => start_time}) if start_time.present?
+    opts.merge!({'end_time<' => end_time}) if end_time.present?
+
+    print "To,From,Status,Calls,SID,Start time,End time,Duration,Price\n"
+    summarize = Proc.new{|opts| 
+      calls = call_list.list(opts)
+      while calls.any?
+        calls.each do |call|
           summary = []
           summary << call.to
           summary << call.from
@@ -65,10 +65,78 @@ namespace :calls do
           summary << call.price
           report << summary
         end
-      #end
+        print report.map{|row| row.join(',')}.join("\n") + "\n"
+        calls = calls.next_page
+        report = []
+      end
+    }
+    if numbers.empty?
+      summarize.call(opts)
+    else
+      numbers.each do |number|
+        opts.merge!({direction => number}) if direction.present? and number.present?
+        summarize.call(opts)
+      end
     end
-    print "To,From,Status,Calls,SID,Start time,End time,Duration,Price\n"
-    print report.map{|row| row.join(',')}.join("\n") + "\n"
+  end
+
+  desc "Search Twilio Call Log for Recycle Rate Violators"
+  task :list_recycle_violations, [:from, :start_time, :end_time] => [:environment] do |t,args|
+    from       = args[:from]
+    start_time = args[:start_time]
+    end_time   = args[:end_time]
+    call_list  = twilio_client.accounts.get(account_sid).calls
+    opts       = {
+      page_size: 1000,
+      status: 'completed'
+    }
+    opts.merge!({'from' => from}) if from.present?
+    opts.merge!({'start_time>' => start_time}) if start_time.present?
+    opts.merge!({'end_time<' => end_time}) if end_time.present?
+
+    phones = {}
+    violators = {}
+
+
+    collect_violators = Proc.new{|call|
+      phone = call.to
+      time  = Time.parse(call.start_time)
+      phones[phone] ||= []
+      phones[phone] << time
+
+      if phones[phone].size > 1 and phones[phone].any?{|t| (time - t).abs < 1.hour and time != t}
+        violators[phone] ||= []
+        violators[phone] << [
+          call.from,
+          call.sid,
+          call.status,
+          call.start_time,
+          call.end_time
+        ]
+      end
+    }
+    a = b = 0
+    a += 1
+    calls = call_list.list(opts)
+    ph    = '+14849248071'
+
+    while calls.any?
+      b += calls.size
+      p "#{a}-#{b}"
+      a += calls.size
+      calls.each do |call|
+        collect_violators.call(call)
+      end
+      p "- #{violators.keys.size} violators" if violators.keys.size > 0
+      calls = calls.next_page
+    end
+
+    #byebug if phones[ph].present?
+    print "To,# of Violations,From,SID,Status,Start,End\n"
+    violators.each do |phone, violations|
+      print "#{phone},#{violations.size},#{violations.first.join(",")}\n"
+    end
+    print "\n"
   end
 
   desc "Pull CallerSession call details for given SIDs"

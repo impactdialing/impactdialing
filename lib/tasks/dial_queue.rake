@@ -112,5 +112,28 @@ namespace :dial_queue do
       completed = collect_completed_from(dial_queue.recycle_bin, dial_queue.households, :bin)
       p "Found #{completed.size} phones from RecycleBin:bin."
     end
+
+    desc "Locate campaigns with available & completed numbers"
+    task :report_campaigns_with_completed_and_available => [:environment] do |t,args|
+      borked = []
+      reports = []
+      Campaign.active.find_in_batches do |campaigns|
+        campaigns.each do |campaign|
+          dial_queue = campaign.dial_queue
+          completed = collect_completed_from(dial_queue.available, dial_queue.households, :active)
+          completed += collect_completed_from(dial_queue.available, dial_queue.households, :presented)
+          completed += collect_completed_from(dial_queue.recycle_bin, dial_queue.households, :bin)
+          if completed.flatten.any?
+            borked << campaign.id
+            reports << completed.flatten
+          end
+        end
+      end
+      p "Found #{borked.size} borked campaigns."
+      borked.each_with_index do |campaign_id, i|
+        p "Campaign #{campaign_id}"
+        p "Report #{i}: #{reports[i].size}"
+      end
+    end
   end
 end
