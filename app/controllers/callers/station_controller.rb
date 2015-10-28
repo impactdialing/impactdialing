@@ -105,9 +105,8 @@ contact your account administrator.")
 
     # draft new api - eventually moving to grape abstraction
     def create
-      abort = abort_json
-      unless abort.empty?
-        render abort and return
+      unless (_abort = abort_json).empty?
+        render _abort and return
       end
 
       campaign = @caller.campaign
