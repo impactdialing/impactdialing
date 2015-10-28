@@ -6,12 +6,6 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
     Capybara.javascript_driver = :selenium # force selenium to start before first test
   end
 
-  def upload_recording(file)
-    fill_in 'Name', with: 'Ner Wecording'
-    attach_file 'recording_file', Rails.root.join('spec/fixtures/files/' + file)
-    click_on 'Upload'
-  end
-
   let(:user){ create(:user) }
   let(:account){ user.account }
   let!(:campaign) do

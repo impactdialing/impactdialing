@@ -1,9 +1,7 @@
 require 'rails_helper'
 
 describe 'Upload', js: true, type: :feature do
-  def upload_list(file)
-    attach_file 'upload_datafile', Rails.root.join('spec/fixtures/files/' + file)
-  end
+  include_context 'voter csv import'
 
   let(:user){ create(:user) }
   let(:account){ user.account }
