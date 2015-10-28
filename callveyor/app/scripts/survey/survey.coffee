@@ -270,6 +270,15 @@ surveyForm.controller('SurveyFormCtrl', [
             params.session_id = caller.session_id
             url               = "/call_center/api/#{caller_id}/stop_calling"
             idJanitor.makeRequest(url, params)
+          else
+            Bugsnag.notifyException('CallStationCache had no caller', {
+              user: caller
+              campaign: CallStationCache.get('campaign')
+              station: CallStationCache.get('call_station')
+              angular: {
+                state: $state.current
+              }
+            })
       )
 
       SurveyCache.put('eventsBound', true)
