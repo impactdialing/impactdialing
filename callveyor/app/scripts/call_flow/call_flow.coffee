@@ -80,10 +80,6 @@ mod.factory('idCallFlow', [
 
           $window.idDebugData.caller = caller
 
-          unless beforeunloadBeenBound
-            idJanitor.confirmUnload(true)
-            beforeunloadBeenBound = true
-
         ##
         # conference_started
         #
@@ -282,8 +278,6 @@ mod.factory('idCallFlow', [
         # This event is published when the caller hangs up or is otherwise
         # disconnected from the call in preview, power or predictive modes.
         #
-        # TODO: If caller was on a call they will have a chance to save any results.
-        #
         # Purpose: notify the client that the caller is no longer connected.
         #
         # No parameters.
@@ -295,8 +289,6 @@ mod.factory('idCallFlow', [
             p = $state.go('dialer.wrap')
             p.catch(idTransitionPrevented)
           else if (not $state.is('dialer.wrap'))
-            # console.log '$state is NOT dialer.active'
-            idJanitor.confirmUnload(false)
             p = $state.go('dialer.ready')
             p.catch(idTransitionPrevented)
 
@@ -314,18 +306,10 @@ mod.factory('idCallFlow', [
             console.log 'reloading dialer.hold $state'
             msg = "#{number} #{status}"
             idFlashFactory.nowAndDismiss('info', msg, 3000)
-            # idFlashFactory.now('info', msg)
             holdCache = $cacheFactory.get('hold')
             hold = holdCache.get('sharedScope')
             hold.reset()
 
-        ##
-        # transfer_busy
-        #
-        # This event is (currently) published from what seems to be an async Twilio
-        # callback, indicating that it won't actually fire until the call has ended.
-        #
-        # TODO: Confirm above behavior and fix in back-end.
         ##
         # This event is published when a transfer has been dialed but the call was
         # not answered, busy or failed for some unknown reason.

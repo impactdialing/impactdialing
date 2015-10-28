@@ -161,6 +161,7 @@ surveyForm.controller('SurveyFormCtrl', [
       call_sid          = CallCache.get('id')
       caller_session_id = CallStationCache.get('caller').session_id
       lead              = HouseholdCache.get('selected')
+      lead              = {id: lead.id}
 
       unless lead?
         idFlashFactory.now('warning', 'Select a contact before saving.')
@@ -233,7 +234,7 @@ surveyForm.controller('SurveyFormCtrl', [
 
     survey.autoSubmitConfig = ->
       cachedParams = callAndVoter()
-      return unless cachedParams.lead?
+      return undefined unless cachedParams.lead?
       {
         url: "/call_center/api/disposition"
         data: {
@@ -249,7 +250,28 @@ surveyForm.controller('SurveyFormCtrl', [
     unless SurveyCache.get('eventsBound')
       $rootScope.$on('survey:save:click', survey.save)
       $rootScope.$on('survey:reload', loadForm)
-      idJanitor.cleanUpUnload(true, survey.autoSubmitConfig)
+
+      $rootScope.$on('window:onbeforeunload', (event, confirmation) ->
+        if $state.is('dialer.wrap') || $state.includes('dialer.active')
+          confirmation.message = 'Danger! You have unsaved changes. Please save before closing or refreshing the page.'
+          event.preventDefault()
+      )
+      $rootScope.$on('window:onunload', () ->
+        if $state.is('dialer.wrap') || $state.includes('dialer.active')
+          cachedParams = callAndVoter()
+          opts = survey.autoSubmitConfig()
+          if opts?
+            idJanitor.makeRequest(opts.url, opts.data)
+        else if !$state.is('') && !$state.is('dialer.ready') && !$state.is('abort') && !$state.is('dialer.stop')
+          caller            = CallStationCache.get('caller')
+          if caller.id? and caller.session_id?
+            caller_id         = caller.id
+            params            = {}
+            params.session_id = caller.session_id
+            url               = "/call_center/api/#{caller_id}/stop_calling"
+            idJanitor.makeRequest(url, params)
+      )
+
       SurveyCache.put('eventsBound', true)
 
     loadForm()

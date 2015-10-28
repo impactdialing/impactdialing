@@ -18,9 +18,8 @@ household.controller('HouseholdCtrl', [
 
     updateFromCache = ->
       data    = angular.copy(HouseholdCache.get('data'))
-      console.log 'updating household from cache', data
       members = []
-      angular.forEach(data.members, (member) ->      
+      angular.forEach(data.members, (member) ->
         trustedFields = {}
         angular.forEach(member.fields, (value, key) ->
           trustedFields[key] = $sce.trustAsHtml(value)
