@@ -219,6 +219,16 @@ public
     CallerPusherJob.add_to_queue(session, 'publish_calling_voter')
     enqueue_call_flow(PreviewPowerDialJob, [session.id, params[:phone]])
 
+    source = [
+      "ac-#{session.campaign.account_id}",
+      "ca-#{session.campaign_id}",
+      "dm-#{session.campaign.type}",
+      "cl-#{session.caller_id}",
+      "cs-#{session.id}",
+      "phone-#{params[:phone]}"
+    ].join('.')
+    ImpactPlatform::Metrics.count('dialer.call_voter', 1, source)
+
     render :nothing => true
   end
 
