@@ -28,24 +28,40 @@ idTransition.factory('idTransitionPrevented', [
 ])
 
 angular.module('exceptionOverride', []).factory('$exceptionHandler', [
-  '$window'
-  ($window) ->
+  '$window', 'CallStationCache',
+  ($window,   CallStationCache) ->
     (exception, cause) ->
-      Bugsnag.notifyException(exception, {diagnostics: {cause: cause}})
+      caller = CallStationCache.get('caller')
+      campaign = CallStationCache.get('campaign')
+      station = CallStationCache.get('call_station')
+      Bugsnag.notifyException(exception, {
+        user: CallStationCache.get('caller')
+        campaign: CallStationCache.get('campaign')
+        station: CallStationCache.get('call_station')
+        angular: {
+          cause: cause
+        }
+      })
 ])
 
 angular.module('HttpErrors', []).factory('idHttpError', [
-  '$window', '$state', 'FlashCache',
-  ($window,   $state,   FlashCache) ->
+  '$window', '$state', 'FlashCache', 'CallStationCache',
+  ($window,   $state,   FlashCache,   CallStationCache) ->
     httpError = (resp) ->
       if resp.status? and /^5\d\d/.test(resp.status)
         err = new Error("Survey fields failed to load")
         Bugsnag.notifyException(err, {
-          diagnostics: {
+          user: CallStationCache.get('caller')
+          campaign: CallStationCache.get('campaign')
+          station: CallStationCache.get('call_station')
+          http_response: {
             status: resp.status,
             status_text: resp.statusText,
             data: resp.data
+          },
+          angular: {
             cause: cause
+            state: $state.current
           }
         })
       else if resp.message?
