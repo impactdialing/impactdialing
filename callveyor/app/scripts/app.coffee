@@ -28,16 +28,21 @@ idTransition.factory('idTransitionPrevented', [
 ])
 
 angular.module('exceptionOverride', []).factory('$exceptionHandler', [
-  '$window', 'CallStationCache',
-  ($window,   CallStationCache) ->
+  '$window', 'CallStationCache', 'appMeta',
+  ($window,   CallStationCache,   appMeta) ->
+    Bugsnag.notifyReleaseStages = ['development', 'production']
+    Bugsnag.releaseStage        = appMeta.stage
+    Bugsnag.appVersion          = appMeta.version
     (exception, cause) ->
-      caller = CallStationCache.get('caller')
-      campaign = CallStationCache.get('campaign')
-      station = CallStationCache.get('call_station')
+      caller           = CallStationCache.get('caller')
+      campaign         = CallStationCache.get('campaign')
+      station          = CallStationCache.get('call_station')
+      Bugsnag.user     = caller
+      Bugsnag.metaData = {
+        campaign
+        station
+      }
       Bugsnag.notifyException(exception, {
-        user: CallStationCache.get('caller')
-        campaign: CallStationCache.get('campaign')
-        station: CallStationCache.get('call_station')
         angular: {
           cause: cause
         }
@@ -51,9 +56,9 @@ angular.module('HttpErrors', []).factory('idHttpError', [
       if resp.status? and /^5\d\d/.test(resp.status)
         err = new Error("Survey fields failed to load")
         Bugsnag.notifyException(err, {
-          user: CallStationCache.get('caller')
           campaign: CallStationCache.get('campaign')
           station: CallStationCache.get('call_station')
+          user: CallStationCache.get('caller')
           http_response: {
             status: resp.status,
             status_text: resp.statusText,
@@ -172,13 +177,14 @@ callveyor.controller('AppCtrl', [
     transitionComplete = (event, toState, toParams, fromState, fromParams) ->
       $rootScope.transitionInProgress = false
       usSpinnerService.stop('global-spinner')
+      Bugsnag.context = toState.name
     transitionError = (event, unfoundState, fromState, fromParams) ->
       phone = getPhone()
       meta  = getMeta()
       
       err = new Error("$state change failed to transition")
       Bugsnag.notifyException(err, {
-        diagnostics: {
+        angular: {
           cause: cause,
           to: unfoundState.name,
           from: fromState.name,
