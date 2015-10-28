@@ -19,6 +19,9 @@ module.exports = function (grunt) {
   // Time how long tasks take. Can help when optimizing build times
   require('time-grunt')(grunt);
 
+  // Load bower.json for appMeta info
+  var appMeta = grunt.file.readJSON('./bower.json')
+
   // Define the configuration for all the tasks
   grunt.initConfig({
 
@@ -44,6 +47,10 @@ module.exports = function (grunt) {
           serviceTokens: {
             pusher: '1e93714ff1e5907aa618'
           },
+          appMeta: {
+            version: appMeta.version,
+            stage: 'development'
+          },
           debug: true
         }
       },
@@ -51,6 +58,10 @@ module.exports = function (grunt) {
         constants: {
           serviceTokens: {
             pusher: '6f37f3288a3762e60f94'
+          },
+          appMeta: {
+            version: appMeta.version,
+            stage: 'production'
           }
         }
       },
@@ -58,6 +69,10 @@ module.exports = function (grunt) {
         constants: {
           serviceTokens: {
             pusher: 'blah'
+          },
+          appMeta: {
+            version: appMeta.version,
+            stage: 'test'
           },
           debug: true
         }
