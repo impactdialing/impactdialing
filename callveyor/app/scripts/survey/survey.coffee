@@ -272,14 +272,14 @@ surveyForm.controller('SurveyFormCtrl', [
             url               = "/call_center/api/#{caller_id}/stop_calling"
             idJanitor.makeRequest(url, params)
           else
-            Bugsnag.notifyException('CallStationCache had no caller', {
-              user: caller
+            Bugsnag.notify('CallerUndefined', 'CallStationCache had no caller', {
+              caller: caller
               campaign: CallStationCache.get('campaign')
               station: CallStationCache.get('call_station')
               angular: {
                 state: $state.current
               }
-            })
+            }, 'warning')
       )
 
       SurveyCache.put('eventsBound', true)
