@@ -161,9 +161,18 @@ contact your account administrator.")
     # - calls#submit_result_and_stop
     def disposition
       account_sid = @caller.telephony_provider_account_id
+      campaign    = @caller.campaign
+      source = [
+        "ac-#{campaign.account_id}",
+        "ca-#{campaign.id}",
+        "dm-#{campaign.type}",
+        "cl-#{@caller.id}"
+      ].join('.')
       if params[:sid].present?
+        ImpactPlatform::Metrics.count('dialer.disposition.by_sid', 1, source)
         dialed_call = CallFlow::Call::Dialed.new(account_sid, params[:sid])
       else
+        ImpactPlatform::Metrics.count('dialer.disposition.by_id', 1, source)
         caller_session = CallerSession.find(params[:caller_session_id])
         dialed_call = caller_session.dialed_call
       end
