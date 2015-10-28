@@ -161,9 +161,10 @@ surveyForm.controller('SurveyFormCtrl', [
       call_sid          = CallCache.get('id')
       caller_session_id = CallStationCache.get('caller').session_id
       lead              = HouseholdCache.get('selected')
-      lead              = {id: lead.id}
 
-      unless lead?
+      if lead?
+        lead = {id: lead.id}
+      else
         idFlashFactory.now('warning', 'Select a contact before saving.')
         return false
 
