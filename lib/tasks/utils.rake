@@ -69,16 +69,22 @@ task :delete_deprecated_formats => :environment do
 end
 
 desc "Search all redis households & leads for given UUID"
-task :search_uuid, [:uuid] => :environment do |t,args|
-  uuid          = args[:uuid]
-  redis         = Redis.new
-  house_matches = []
-  lead_matches  = []
-  corrupt_house = []
-  corrupt_lead  = []
+task :search_uuid, [:campaign_id, :uuid] => :environment do |t,args|
+  uuid             = args[:uuid]
+  campaign_id      = args[:campaign_id]
+  redis            = Redis.new
+  house_matches    = []
+  lead_matches     = []
+  corrupt_house    = []
+  corrupt_lead     = []
   deprecated_house = 0
+  matcher          = 'dial_queue:*:households:*'
 
-  redis.scan_each(match: 'dial_queue:*:households:*') do |key|
+  if campaign_id.present?
+    matcher = "dial_queue:#{campaign_id}:households:*"
+  end
+
+  redis.scan_each(match: matcher) do |key|
     next unless redis.type(key) == 'hash'
 
     hashes = redis.hgetall(key)
