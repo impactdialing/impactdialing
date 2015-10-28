@@ -1,6 +1,6 @@
 {
   "name": "callveyor",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "dependencies": {
     "angular": "~1.4.0",
     "json3": "~3.2.6",
