@@ -264,7 +264,7 @@ surveyForm.controller('SurveyFormCtrl', [
             idJanitor.makeRequest(opts.url, opts.data)
         else if !$state.is('') && !$state.is('dialer.ready') && !$state.is('abort') && !$state.is('dialer.stop')
           caller            = CallStationCache.get('caller')
-          if caller.id? and caller.session_id?
+          if caller? and caller.id? and caller.session_id?
             caller_id         = caller.id
             params            = {}
             params.session_id = caller.session_id
