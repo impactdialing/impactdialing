@@ -1,26 +1,56 @@
-<fieldset>
-  <legend>Add a list</legend>
   <%= form_tag("",  :method => :post, :multipart => true, id: "voter_list_upload") do %>
-  <p>Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use "Save As" to change it to one of these formats.</p>
+<fieldset class="module loose">
+  <legend>Upload</legend>
     <div class="form">
-      <%= hidden_field_tag 'voter_list[separator]' %>
-      <p>
-        <label for="voter_list_skip_wireless">
-          <input type="hidden" name="voter_list[skip_wireless]" value="0">
-          <input type="checkbox" name="voter_list[skip_wireless]" id="voter_list_skip_wireless" checked="checked" value="1"> Do not import cell phone records
-        </label>
-      </p>
-      <p>
-        <%= file_field_tag 'upload[datafile]' %>
-      </p>
-      <p style="display: none;" id='list_name'>
-        <label for="voter_list_name">List name</label>
-          <%= text_field_tag "name", nil, :id => "voter_list_name", name: "voter_list[name]", :size => '10'  %>
-      </p>
-      <div id="column_headers"></div>
+      <fieldset class="module">
+        <legend>Settings</legend>
+        <p>
+          Please upload a comma-separated value (CSV) or tab-delimited
+          text (TXT) file.
+        </p>
+        <%= hidden_field_tag 'voter_list[separator]' %>
+        <p>
+          <label for="upload_datafile">List</label>
+          <%= file_field_tag 'upload[datafile]' %><br>
+        </p>
+        <p id='list_name'>
+          <label for="voter_list_name">List name</label>
+            <%= text_field_tag "name", nil, :id => "voter_list_name", name: "voter_list[name]", :size => '10'  %>
+        </p>
+        <ul>
+          <li>
+            <label for="voter_list_purpose_add">
+              <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_add" value="add">
+              Add to call list
+            </label>
+            <ul>
+              <li>
+                <label for="voter_list_skip_wireless">
+                  <input type="hidden" name="voter_list[skip_wireless]" value="0">
+                  <input type="checkbox" name="voter_list[skip_wireless]" id="voter_list_skip_wireless" checked="checked" value="1"> Do not import cell phone records
+                </label>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <label for="voter_list_purpose_remove_numbers">
+              <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_remove_numbers" value="remove_numbers"> Remove phone numbers from call list
+            </label>
+          </li>
+          <li>
+            <label for="voter_list_purpose_remove_leads">
+              <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_remove_leads" value="remove_leads"> Remove leads from call list
+            </label>
+          </li>
+        </ul>
+      </fieldset>
+      <fieldset class="module loose" id="column_mapping_container" style="display: none;">
+        <legend>Mapping</legend>
+        <div id="column_headers"></div>
+      </fieldset>
     </div>
-  <div id= "voter_upload" class="buttons" style="display:none">
-    <button id="file_upload_submit">Save &#38; upload</button>
-  </div>
-  <% end %>
+    <div id= "voter_upload" class="buttons" style="display:none">
+      <button id="file_upload_submit">Save &#38; upload</button>
+    </div>
 </fieldset>
+  <% end %>

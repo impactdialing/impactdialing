@@ -69,6 +69,7 @@ VoterLists.prototype.validate_csv_file = function(evt){
   $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists/column_mapping");
   $('#voter_list_upload').submit(function() {
     $('#column_headers').html("<p>Please wait while your file is being uploaded...</p>");
+    $('#column_mapping_container').show();
     $(this).ajaxSubmit(options);
     return false;
   });

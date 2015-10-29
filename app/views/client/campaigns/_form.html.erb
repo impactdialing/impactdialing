@@ -10,8 +10,14 @@
   fieldset.module {
     width: 300px;
   }
+  fieldset.loose.module {
+    width: auto;
+  }
   div.module {
     text-align: left;
+  }
+  .tight {
+    max-width: 300px;
   }
 </style>
 <%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}" do |f| %>

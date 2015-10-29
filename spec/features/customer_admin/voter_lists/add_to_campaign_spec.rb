@@ -8,6 +8,21 @@ describe 'Add entries to Campaign', js: true, type: :feature, file_uploads: true
 
   include_context 'voter csv import' do
     let(:csv_file_upload){ cp_tmp('valid_voters_list_redis.csv') }
+
+    def choose_and_upload_list
+      choose_list(csv_file_upload)
+      fill_in 'List name', with: 'Munsters cast'
+      select 'Phone', from: 'Phone'
+      select 'FirstName', from: 'FIRSTName'
+      select 'LastName', from: 'LAST'
+      select 'Email', from: 'Email'
+      #save_and_open_page
+      choose upload_option
+      click_on 'Save & upload'
+
+      process_pending_import_jobs
+      visit edit_client_campaign_path(campaign)
+    end
   end
 
   let(:user){ create(:user) }
@@ -23,19 +38,12 @@ describe 'Add entries to Campaign', js: true, type: :feature, file_uploads: true
     visit edit_client_campaign_path(campaign)
   end
 
-  it 'adds uploaded entries to the Campaign call list' do
-    choose_list(csv_file_upload)
-    fill_in 'List name', with: 'Munster cast'
-    select 'Phone', from: 'Phone'
-    select 'FirstName', from: 'FIRSTName'
-    select 'LastName', from: 'LAST'
-    select 'Email', from: 'Email'
-    click_on 'Save & upload'
-
-    process_pending_import_jobs
-    visit edit_client_campaign_path(campaign)
-
-    expect(page).to have_content 'Available to dial 2 100%'
-    expect(page).to have_content 'Not dialed 2 100%'
+  context 'when "Add to call list" is selected' do
+    let(:upload_option){ "Add to call list" }
+    it 'adds uploaded entries to the Campaign call list' do
+      choose_and_upload_list
+      expect(page).to have_content 'Available to dial 2 100%'
+      expect(page).to have_content 'Not dialed 2 100%'
+    end
   end
 end
