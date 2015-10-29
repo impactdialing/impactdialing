@@ -149,6 +149,12 @@ public
     POWER = "Power"
   end
 
+  def new_voter_list(attrs={})
+    voter_lists.new(attrs.merge({
+      account_id: account_id
+    }))
+  end
+
   def inflight_stats
     @inflight_stats ||= Twillio::InflightStats.new(self)
   end

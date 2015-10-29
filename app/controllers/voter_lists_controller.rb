@@ -48,12 +48,11 @@ public
   end
 
   def create
-    upload = params[:upload].try(:[], "datafile")
-    s3path = VoterList.upload_clean_file_to_s3(upload.try('read'), VoterList.csv_file_name(params[:voter_list][:name]))
-    params[:voter_list][:s3path] = s3path
-    params[:voter_list][:uploaded_file_name] = upload.try('original_filename')
-    params[:voter_list].merge!({account_id: account.id})
-    voter_list = @campaign.voter_lists.new(voter_list_params)
+    call_list = CallList::Upload.new(@campaign, :voter_list,
+                                      params[:upload], voter_list_params)
+    call_list.save
+
+    voter_list = call_list.child_instance
 
     respond_with(voter_list, location: edit_client_campaign_path(@campaign.id)) do |format|
       if voter_list.save

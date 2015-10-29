@@ -9,8 +9,8 @@ describe 'Add entries to Campaign', js: true, type: :feature, file_uploads: true
   include_context 'voter csv import' do
     let(:csv_file_upload){ cp_tmp('valid_voters_list_redis.csv') }
 
-    def choose_and_upload_list(option=nil)
-      choose_list(csv_file_upload)
+    def choose_and_upload_list(file, option=nil)
+      choose_list(file)
       fill_in 'List name', with: 'Munsters cast'
       select 'Phone', from: 'Phone'
       select 'FirstName', from: 'FIRSTName'
@@ -40,10 +40,12 @@ describe 'Add entries to Campaign', js: true, type: :feature, file_uploads: true
 
   context 'when "Add to call list" is selected' do
     let(:upload_option){ "Add to call list" }
-    it 'adds uploaded entries to the Campaign call list' do
+    let(:datetime) do
       # hm, this will probably fail sporadically...
-      datetime = Time.now.in_time_zone(campaign.time_zone).strftime('%b %e, %Y at %l:%M%P')
-      choose_and_upload_list
+      Time.now.in_time_zone(campaign.time_zone).strftime('%b %e, %Y at %l:%M%P')
+    end
+    it 'adds uploaded entries to the Campaign call list' do
+      choose_and_upload_list(csv_file_upload)
 
       expect(page).to have_content 'Available to dial 2 100%'
       expect(page).to have_content 'Not dialed 2 100%'
