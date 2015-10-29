@@ -1,7 +1,12 @@
-var VoterLists = function(){
-    $('#upload_datafile').change(this.validate_csv_file);
+var VoterLists = function(form){
+  var self  = this;
+  this.form = form;
 
-    $("#file_upload_submit").click(function(){
+  $('#upload_datafile').change(function(e){
+    self.validate_csv_file(e, self);
+  });
+
+  $("#file_upload_submit").click(function(){
     if ($("#voter_list_name").val().trim() == ""){
       alert("Please enter a name for the list to be uploaded.");
       return false;
@@ -15,18 +20,17 @@ var VoterLists = function(){
       selected_mapping.push($(this).val());
     });
 
-    if($.inArray("phone", selected_mapping) == -1){
-      alert("Please choose map a column to the Phone field before uploading.");
+    var mapping_errors = form.validateMapping(selected_mapping);
+    if( mapping_errors.length > 0 ) {
+      alert(mapping_errors[0]);
       return false;
     }
 
     return true
-
   });
 }
 
-
-VoterLists.prototype.validate_csv_file = function(evt){
+VoterLists.prototype.validate_csv_file = function(evt, list){
   $("#column_headers").empty();
   $("#voter_upload").hide();
   var file = evt.target.files[0];
@@ -34,8 +38,8 @@ VoterLists.prototype.validate_csv_file = function(evt){
   var extension = file_name.split(".").pop().toLowerCase();
   var separator = extension == "csv" ? "," : "\t";
   if ($.inArray(extension, ["csv", "txt"]) == -1){
-     alert("Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.");
-   return false;
+    alert("Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file.");
+    return false;
   }
 
   var options = {
@@ -48,13 +52,17 @@ VoterLists.prototype.validate_csv_file = function(evt){
       $('#column_headers select').each(function(i, el) {
         GroupedSelects.toggleOptions('#column_headers select', el);
       });
-      $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists");
+
+      list.form.update_action();
 
       $("#column_headers select").change(function(eventObj) {
         var selectedValue = $(this).val();
-        /**
-          Create a new custom field.
-        */
+        // No need to create new custom field when removing.
+        if( self.form.removalList() ) {
+          GroupedSelects.toggleOptions('#column_headers select', this);
+          return true;
+        }
+        //  Create a new custom field.
         if( selectedValue == 'custom') {
           var newField = prompt('Enter the name of field to create:');
           if (newField) {
@@ -66,13 +74,20 @@ VoterLists.prototype.validate_csv_file = function(evt){
       });
     }
   };
-  $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists/column_mapping");
+
+  // Reset form action to /column_mapping
+  list.form.update_action(true);
+
+  // Display please wait message & submit upload
   $('#voter_list_upload').submit(function() {
     $('#column_headers').html("<p>Please wait while your file is being uploaded...</p>");
     $('#column_mapping_container').show();
     $(this).ajaxSubmit(options);
     return false;
   });
+
+  // Fire & reset
   $("#voter_list_upload").trigger("submit");
   $("#voter_list_upload").unbind("submit");
-}
+};
+

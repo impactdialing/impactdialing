@@ -1,10 +1,11 @@
 <% content_for :javascripts do %>
 
-    <%= javascript_include_tag "campaign/campaign", "campaign/voter_lists", "jquery.form.js", "form_helpers/grouped_selects" %>
+    <%= javascript_include_tag "campaign/campaign", "campaign/voter_lists", "jquery.form.js", "form_helpers/grouped_selects", "campaigns/list_upload_form" %>
     <script type ="text/javascript">
       $(document).ready(function() {
-        campaign = new Campaign();
-        voter_list = new VoterLists();
+        campaign         = new Campaign();
+        list_upload_form = new ListUploadForm();
+        voter_list       = new VoterLists(list_upload_form);
       });
     </script>
 
@@ -17,7 +18,7 @@
   <%= render 'voter_lists_upload_form' %>  
 
   <fieldset class="module loose">
-    <legend>Upload log</legend>
+    <legend>Upload history</legend>
     <% if @campaign.new_record? %>
       <p>After saving this campaign, you can edit it again to upload lists.</p>
     <% elsif @campaign.voter_lists.count.zero? %>

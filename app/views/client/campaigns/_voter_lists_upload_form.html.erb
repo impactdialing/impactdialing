@@ -11,7 +11,7 @@
       <%= hidden_field_tag 'voter_list[separator]' %>
       <p>
         <label for="upload_datafile">List</label>
-        <%= file_field_tag 'upload[datafile]' %><br>
+        <%= file_field_tag 'upload[datafile]' %>
       </p>
       <p id='list_name'>
         <label for="voter_list_name">List name</label>
@@ -20,17 +20,15 @@
       <ul>
         <li>
           <label for="voter_list_purpose_add">
-            <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_add" value="add">
+            <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_add" value="add" checked="checked">
             Add to call list
           </label>
-          <ul>
-            <li>
-              <label for="voter_list_skip_wireless">
-                <input type="hidden" name="voter_list[skip_wireless]" value="0">
-                <input type="checkbox" name="voter_list[skip_wireless]" id="voter_list_skip_wireless" checked="checked" value="1"> Do not import cell phone records
-              </label>
-            </li>
-          </ul>
+        </li>
+        <li class="js_list_upload_add_option">
+          <label for="voter_list_skip_wireless">
+            <input type="hidden" name="voter_list[skip_wireless]" value="0">
+            <input type="checkbox" name="voter_list[skip_wireless]" id="voter_list_skip_wireless" checked="checked" value="1"> Do not call cell phones
+          </label>
         </li>
         <li>
           <label for="voter_list_purpose_remove_numbers">

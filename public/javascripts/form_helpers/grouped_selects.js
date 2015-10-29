@@ -9,7 +9,6 @@ GroupedSelects = {
       Disable selected option from other select menus.
     */
     selectedValue = selectedValue.replace(/\\/, '\\\\');
-      console.log('selectedValue', selectedValue)
     $(selector).not('#'+selectedID).each(function() {
       if( selectedValue.length > 0 ) {
         selectedValue = selectedValue.replace(/\\/, '\\');
