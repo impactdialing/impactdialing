@@ -96,6 +96,21 @@ public
     AmazonS3.new.delete(file_name)
   end
 
+  def upload_processors
+    HashWithIndifferentAccess.new({
+      import: [CallList::Jobs::Import, id],
+      prune_numbers: [CallList::Jobs::Prune, id, 'numbers'],
+      prune_leads: [CallList::Jobs::Prune, id, 'leads']
+    })
+  end
+
+  def queue_upload_processor(email)
+    return if new_record?
+
+    job = upload_processors[purpose]
+    Resque.enqueue(job.shift, *job, email) if job
+  end
+
   def stats
     @stats ||= CallList::Stats.new(self)
   end

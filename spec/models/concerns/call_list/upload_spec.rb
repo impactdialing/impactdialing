@@ -22,7 +22,7 @@ describe CallList::Upload do
   let(:s3filename){ 'pseudo-random-file-name' }
   let(:s3path){ "#{Rails.env}/uploads/voter_list/#{s3filename}" }
   describe '.new(campaign, params)' do
-    subject{ CallList::Upload.new(campaign, :voter_list, params) }
+    subject{ CallList::Upload.new(campaign, :voter_list, params[:upload], params[:voter_list]) }
 
     it 'sets @file = params[:upload][:datafile]' do
       expect(subject.file).to eq params[:upload][:datafile]
@@ -36,7 +36,7 @@ describe CallList::Upload do
   end
 
   describe '#save' do
-    subject{ CallList::Upload.new(campaign, :voter_list, params) }
+    subject{ CallList::Upload.new(campaign, :voter_list, params[:upload], params[:voter_list]) }
 
     before do
       allow(amazon_s3).to receive(:write).with(s3path, csv_file_upload_data)

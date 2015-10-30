@@ -51,12 +51,11 @@ public
     call_list = CallList::Upload.new(@campaign, :voter_list,
                                       params[:upload], voter_list_params)
     call_list.save
-
     voter_list = call_list.child_instance
 
     respond_with(voter_list, location: edit_client_campaign_path(@campaign.id)) do |format|
       if voter_list.save
-        Resque.enqueue(CallList::Jobs::Import, voter_list.id, current_user.email)
+        voter_list.queue_upload_processor(current_user.email)
 
         url = edit_client_script_path(@campaign.script_id)
         flash_message(:notice, I18n.t(:voter_list_upload_scheduled, url: url).html_safe)
@@ -83,7 +82,7 @@ private
   def voter_list_params
     params.require(:voter_list).
       permit(
-        :name, :s3path, :uploaded_file_name, :account_id,
+        :name, :s3path, :uploaded_file_name, :account_id, :purpose,
         :upload, :campaign_id, :headers, :separator, :skip_wireless,
         csv_to_system_map: params[:voter_list][:csv_to_system_map].try(:keys)
       )

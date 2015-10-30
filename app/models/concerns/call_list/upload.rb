@@ -21,7 +21,7 @@ public
     new_child_method = "new_#{namespace}"
     @namespace       = namespace
     @parent_instance = parent_instance
-    @file            = upload_params[:datafile]
+    @file            = upload_params.try(:[], :datafile)
     @child_instance  = parent_instance.send(new_child_method, child_instance_params)
   end
 
