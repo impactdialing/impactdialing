@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150923090429) do
+ActiveRecord::Schema.define(version: 20151030001601) do
 
   create_table "accounts", force: true do |t|
     t.datetime "created_at"
@@ -500,6 +500,7 @@ ActiveRecord::Schema.define(version: 20150923090429) do
     t.integer  "voters_count",       default: 0
     t.boolean  "skip_wireless",      default: true
     t.integer  "households_count"
+    t.string   "purpose",            default: "import"
   end
 
   add_index "voter_lists", ["account_id", "name"], name: "index_voter_lists_on_user_id_and_name", unique: true, using: :btree

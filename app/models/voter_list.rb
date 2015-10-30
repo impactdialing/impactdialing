@@ -153,6 +153,7 @@ end
 # **`voters_count`**        | `integer`          | `default(0)`
 # **`skip_wireless`**       | `boolean`          | `default(TRUE)`
 # **`households_count`**    | `integer`          |
+# **`purpose`**             | `string(255)`      | `default("import")`
 #
 # ### Indexes
 #
