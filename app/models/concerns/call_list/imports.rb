@@ -95,7 +95,7 @@ public
 
   def parse(&block)
     parser = CallList::Imports::Parser.new(voter_list, cursor, results, batch_size)
-    parser.parse_file do |keys, households, _cursor, _results|
+    parser.each_batch do |keys, households, _cursor, _results|
       yield keys, households
 
       update_results(_cursor, _results)

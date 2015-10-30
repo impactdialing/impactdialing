@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe 'CallList::Imports::Parser' do
-
   include_context 'voter csv import' do
     let(:csv_file_upload){ cp_tmp('valid_voters_list_redis.csv') }
     let(:windoze_csv_file_upload){ cp_tmp('windoze_voters_list.csv') }
@@ -71,8 +70,8 @@ describe 'CallList::Imports::Parser' do
   let(:expected_redis_keys) do
     [
       "dial_queue:#{voter_list.campaign_id}:households:active:1234567",
-      "list:#{voter_list.campaign_id}:custom_ids",
-      "dial_queue:#{voter_list.campaign_id}:households:active:4567123"
+      "dial_queue:#{voter_list.campaign_id}:households:active:4567123",
+      "list:#{voter_list.campaign_id}:custom_ids"
     ]
   end
 
@@ -84,163 +83,11 @@ describe 'CallList::Imports::Parser' do
 
   subject{ CallList::Imports::Parser.new(voter_list, cursor, results, batch_size) }
 
-  describe 'initialize' do
-    it 'exposes csv_mapping instance' do
-      expect(subject.csv_mapping).to be_kind_of CsvMapping
-    end
-    it 'exposes batch_size' do
-      expect(subject.batch_size).to eq ENV['VOTER_BATCH_SIZE'].to_i
-    end
-    it 'exposes voter_list instance' do
-      expect(subject.voter_list).to eq voter_list
-    end
-    it 'exposes results hash' do
-      expect(subject.results).to be_kind_of Hash
-    end
-  end
-
-  describe 'parse_headers' do
-    it 'sets @phone_index to mark the location of phone data in csv file' do
-      subject.parse_headers(header_line)
-      expect(subject.instance_variable_get('@phone_index')).to eq 0
-    end
-
-    it 'populates @header_index_map to mark location of all column data in csv file' do
-      subject.parse_headers(header_line)
-      expect(subject.instance_variable_get('@header_index_map')).to eq({
-        'Phone'      => 0,
-        'FIRSTName'  => 1,
-        'LAST'       => 2,
-        'MiddleName' => 3,
-        'Suffix'     => 4,
-        'Email'      => 5,
-        'ID'         => 6,
-        'Age'        => 7,
-        'Gender'     => 8
-      })
-    end
-  end
-
-  describe 'parse_lines' do
-    describe 'returns a 2-element array where' do
-      context 'the first element' do
-        it 'is an array of redis keys' do
-          redis_keys = subject.parse_lines(data_lines.join).first
-
-          expect(redis_keys).to eq(expected_redis_keys)
-        end
-      end
-
-      context 'the second element' do
-        it 'is a hash of parsed households' do
-          parsed_households = subject.parse_lines(data_lines.join).last
-
-          expect(parsed_households.keys).to eq ['1234567895', '4567123895']
-        end
-      end
-    end
-
-    context 'when a phone number is invalid' do
-      let(:invalid_phone) do
-        "98723"
-      end
-      let(:invalid_row) do
-        %Q{#{invalid_phone},Sam,Iam,8th Old Man named Henry,,henry@test.com,193,42,Male}
-      end
-      before do
-        lines_with_invalid = data_lines + [invalid_row]
-        subject.parse_lines(lines_with_invalid.join)
-      end
-
-      it 'adds the invalid phone to results[:invalid_numbers]' do
-        expect(subject.results[:invalid_numbers].to_a).to eq [invalid_phone]
-      end
-
-      it 'adds the invalid row to results[:invalid_rows]' do
-        expect(subject.results[:invalid_rows]).to eq [invalid_row + "\n"]
-      end
-    end
-
-    context 'when a custom id is invalid (eg blank)' do
-      let(:invalid_row) do
-        %Q{3927485021,Sam,Iam,8th Old Man named Henry,,henry@test.com,,42,Male}
-      end
-      before do
-        lines_with_invalid = data_lines + [invalid_row]
-        subject.parse_lines(lines_with_invalid.join)
-      end
-
-      it 'increments results[:invalid_custom_ids]' do
-        expect(subject.results[:invalid_custom_ids]).to eq 1
-      end
-
-      it 'adds the invalid row to results[:invalid_rows]' do
-        expect(subject.results[:invalid_rows]).to eq [invalid_row + "\n"]
-      end
-    end
-
-    context 'when row data is malformed' do
-      let(:invalid_row) do
-        %Q{"2341235325","Jonathan "Johnny"", "Openheimer","","johnny@test.com",623,21,"Female"}
-      end
-      before do
-        lines_with_invalid = data_lines + [invalid_row]
-        subject.parse_lines(lines_with_invalid.join)
-      end
-
-      it 'increments results[:invalid_row_formats]' do
-        expect(subject.results[:invalid_formats]).to eq 1
-      end
-
-      it 'adds the invalid row to results[:invalid_lines]' do
-        expect(subject.results[:invalid_lines]).to eq [invalid_row + "\n"]
-      end
-    end
-  end
-
-  describe 'parse_file' do
-    it 'parses headers from the first line' do
-      expect(subject).to receive(:parse_headers).with(header_line).and_call_original
-      subject.parse_file{ nil }
-    end
-    it 'parses data from subsequent lines' do
-      expect(subject).to receive(:parse_lines).with(data_lines.join)
-      subject.parse_file{ nil }
-    end
+  describe 'each_batch' do
     it 'yields keys, households, cursor, results' do
       expected_cursor = cursor + 1 + data_lines.size # 1 => header line
-      expect{|b| subject.parse_file(&b) }.to yield_with_args(expected_redis_keys, Hash, expected_cursor, Hash)
+      expect{|b| subject.each_batch(&b) }.to yield_with_args(expected_redis_keys, Hash, expected_cursor, Hash)
     end
-
-    context 'cursor > 0' do
-      let(:cursor){ 2 }
-      subject{ CallList::Imports::Parser.new(voter_list, cursor, results, batch_size) }
-
-      it 'parses headers from the first line' do
-        expect(subject).to receive(:parse_headers).with(header_line).and_call_original
-        subject.parse_file{ nil }
-      end
-
-      context 'only last line needs processing' do
-        let(:cursor){ 3 } # valid_voters_list_redis has 1 header & 3 data rows
-        subject{ CallList::Imports::Parser.new(voter_list, cursor, results, 1) }
-
-        it 'parses the last line only' do
-          expect(subject).to receive(:parse_lines).with(data_lines[-1..-1].join)
-          subject.parse_file{ nil }
-        end
-      end
-
-      context 'only first line has been processed' do
-        let(:cursor){ 2 }
-        subject{ CallList::Imports::Parser.new(voter_list, cursor, results, 1) }
-
-        it 'parses all but the first line' do
-          expect(subject).to receive(:parse_lines).with(data_lines[1..-1].join) # 0=header,1=first row
-          subject.parse_file{ nil }
-        end
-      end
-    end 
   end
 
   describe 'building business objects' do
@@ -259,23 +106,36 @@ describe 'CallList::Imports::Parser' do
     end
 
     before do
-      expect(uuid).to receive(:generate).and_return(household_uuid).ordered
-      expect(uuid).to receive(:generate).and_return(lead_uuid).ordered
       allow(UUID).to receive(:new){ uuid }
     end
 
     describe 'build_household' do
-      it 'returns a hash w/ values for: leads, uuid, account_id, campaign_id, phone & blocked' do
-        expected_household = {
-          'uuid'        => household_uuid,
-          'account_id'  => voter_list.account_id,
-          'campaign_id' => voter_list.campaign_id,
-          'phone'       => phone,
-          'blocked'     => 0
-        }
+      before do
+        expect(uuid).to receive(:generate).and_return(household_uuid).ordered
+      end
+      it 'returns a hash' do 
+        expect(subject.build_household(uuid, phone)).to be_kind_of Hash
+      end
 
-        expected_household.each do |k,v|
-          expect(parsed_households[phone][k]).to eq v
+      context 'the returned hash' do
+        let(:the_hash){ subject.build_household(uuid, phone) }
+        it '"leads" => []' do
+          expect(the_hash['leads']).to eq []
+        end
+        it '"uuid" => UUID.new.generate' do
+          expect(the_hash['uuid']).to eq household_uuid
+        end
+        it '"account_id" => voter_list.account_id' do
+          expect(the_hash['account_id']).to eq voter_list.account_id
+        end
+        it '"campaign_id" => voter_list.campaign_id' do
+          expect(the_hash['campaign_id']).to eq voter_list.campaign_id
+        end
+        it '"phone" => phone' do
+          expect(the_hash['phone']).to eq phone
+        end
+        it '"blocked" => Integer' do
+          expect(the_hash['blocked']).to eq 0
         end
       end
 
@@ -286,13 +146,15 @@ describe 'CallList::Imports::Parser' do
           })
         end
 
+        let(:the_hash){ subject.build_household(uuid, phone) }
+
         before do
           allow(voter_list).to receive(:skip_wireless?){ true }
           allow(DoNotCall::WirelessList).to receive(:new){ dnc_wireless_list }
         end
 
         it 'sets "blocked" value to 1' do
-          expect(parsed_households[phone]['blocked']).to eq 1
+          expect(the_hash['blocked']).to eq 1
         end
 
         context 'phone is in customer DNC' do
@@ -300,31 +162,40 @@ describe 'CallList::Imports::Parser' do
             allow(voter_list.campaign).to receive(:blocked_numbers){ [phone] }
           end
           it 'sets "blocked" value to 3' do
-            expect(parsed_households[phone]['blocked']).to eq 3
+            expect(the_hash['blocked']).to eq 3
           end
         end
       end
 
       context 'phone is in customer DNC but not a cellular device' do
+        let(:the_hash){ subject.build_household(uuid, phone) }
         before do
           allow(voter_list.campaign).to receive(:blocked_numbers){ [phone] }
         end
         it 'sets "blocked" value to 2' do
-          expect(parsed_households[phone]['blocked']).to eq 2
+          expect(the_hash['blocked']).to eq 2
         end
       end
     end
 
     describe 'build_lead' do
-      after do
-        @expected_first_lead.each do |k,v|
-          expect(@first_lead[k]).to eq v
+      let(:row) do
+        %w{123-456-7895 Foo Bar FuBur Sr foo@bar.com 987 23 Male}
+      end
+      let(:the_hash){ subject.build_lead(uuid, phone, row, 0) }
+      before do
+        subject.parse_headers(header_line)
+        expect(uuid).to receive(:generate).and_return(lead_uuid).ordered
+      end
+
+      def assert_the_hash(expected_hash)
+        expected_hash.each do |prop,val|
+          expect(the_hash[prop]).to eq val
         end
       end
 
       it 'returns a hash that includes values for every non-nil, mapped value from the csv' do
-        @first_lead          = parsed_households[phone]['leads'].first
-        @expected_first_lead = {
+        assert_the_hash({
           'first_name'    => 'Foo',
           'last_name'     => 'Bar',
           'middle_name'   => 'FuBur',
@@ -332,84 +203,36 @@ describe 'CallList::Imports::Parser' do
           'custom_id'     => '987',
           'Age'           => '23',
           'Gender'        => 'Male'
-        }
+        })
       end
 
       it 'returns a hash that includes values for: uuid, voter_list_id, account_id, campaign_id, phone & enabled' do
-        @first_lead = parsed_households[phone]['leads'].first
-        @expected_first_lead = { 
+        assert_the_hash({ 
           'account_id'    => voter_list.account_id,
           'campaign_id'   => voter_list.campaign_id,
           'voter_list_id' => voter_list.id,
           'enabled'       => Voter.bitmask_for_enabled(:list),
           'uuid'          => lead_uuid,
           'phone'         => '1234567895',
-        }
-      end
-    end
-
-    context 'bug: one or more headers are blank' do
-      subject{ CallList::Imports::Parser.new(voter_list, 0, results, 5) }
-      before do
-        voter_list.update_attributes!({
-          csv_to_system_map: voter_list.csv_to_system_map.merge({
-            VoterList::BLANK_HEADER => 'address'
-          })
         })
       end
-      it 'skips that column' do
-        expect{
-          subject.parse_lines(data_lines.join)
-        }.to_not raise_error
-      end
-    end
 
-    context 'bug: when @header_index_map returns nil' do
-      let(:csv_file) do
-        CSV.new(File.open(bom_csv_file_upload).read)
-      end
-      let(:file) do
-        File.open(bom_csv_file_upload)
-      end
-      let(:data_lines) do
-        file.rewind
-        lines = file.readlines
-        subject.parse_headers(lines[0])
-        lines[1..-1]
-      end
+      context 'when a custom id is invalid (eg blank)' do
+        let(:invalid_row) do
+          %Q{3927485021,Sam,Iam,8th Old Man named Henry,"",henry@test.com,"",42,Male}
+        end
+        before do
+          subject.build_lead(uuid, phone, CSV.new(invalid_row).first, 0)
+        end
 
-      let(:header_line) do
-        file.rewind
-        file.readlines.first
-      end
+        it 'increments results[:invalid_custom_ids]' do
+          expect(subject.results[:invalid_custom_ids]).to eq 1
+        end
 
-      let(:voter_list_two) do
-        create(:voter_list, {
-          campaign: voter_list.campaign,
-          account: voter_list.account,
-          csv_to_system_map: {
-            "\xEF\xBB\xBFFirst Name" => 'first_name',
-            "Last Name" => 'last_name',
-            "# Windows" => "# of Windows",
-            "Phone" => "phone",
-            "Address" => "custom_id",
-            "# Doors" => "",
-            "Amount" => "",
-            "Email" => "",
-            "City" => "",
-            "State" => "",
-            "Zip" => "",
-            "Sales Rep" => "",
-            "Installer" => ""
-          }
-        })
-      end
-      subject{ CallList::Imports::Parser.new(voter_list_two, 0, results, 5) }
+        it 'adds the invalid row to results[:invalid_rows]' do
 
-      it 'handles BOM characters' do
-        expect{
-          subject.parse_lines(data_lines.join)
-        }.to_not raise_error
+          expect(subject.results[:invalid_rows]).to eq [invalid_row + "\n"]
+        end
       end
     end
   end

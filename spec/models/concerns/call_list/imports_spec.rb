@@ -141,7 +141,7 @@ describe 'CallList::Imports' do
     subject{ CallList::Imports.new(voter_list) }
     let(:parser) do
       double('CallList::Imports::Parser', {
-        parse_file: nil
+        each_batch: nil
       })
     end
     let(:cursor){ 0 }
@@ -150,7 +150,7 @@ describe 'CallList::Imports' do
     end
 
     before do
-      allow(parser).to receive(:parse_file).and_yield(redis_keys, parsed_households, cursor+3, results)
+      allow(parser).to receive(:each_batch).and_yield(redis_keys, parsed_households, cursor+3, results)
       allow(CallList::Imports::Parser).to receive(:new){ parser }
     end
 
