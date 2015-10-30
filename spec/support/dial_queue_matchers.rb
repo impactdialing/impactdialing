@@ -108,12 +108,19 @@ RSpec::Matchers.define :be_in_dial_queue_zset do |campaign_id, namespace|
   redis = Redis.new
   key   = "dial_queue:#{campaign_id}:#{namespace}"
 
-  match do |phone|
-    redis.zscore(key, phone).present?
+  match do |phones|
+    phones = [*phones]
+    phones.select do |phone|
+      redis.zscore(key, phone).present?
+    end.any?
   end
 
   failure_message do |phone|
     "expected #{phone} to be in dial queue zset #{key}\ngot #{redis.zrange(key, 0, -1)}"
+  end
+
+  failure_message_when_negated do |phones|
+    "expected #{phones} to not be in dial queue zset #{key}\ngot #{redis.zrange(key, 0, -1)}"
   end
 end
 
