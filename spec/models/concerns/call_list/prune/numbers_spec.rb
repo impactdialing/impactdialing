@@ -72,7 +72,51 @@ describe CallList::Prune::Numbers do
       end
     end
 
+    it 'returns count of numbers removed' do
+      expect(subject.delete(numbers_to_delete)).to eq numbers_to_delete.size
+    end
+
     it 'removes phone number & associated lead data from hash' do
+      subject.delete(numbers_to_delete)
+      houses = {}
+      numbers_to_delete.each do |number|
+        houses.merge!({number => households[number]})
+      end
+      expect(houses).to_not be_in_redis_households campaign.id, 'active'
+    end
+
+    it 'does not remove other phone numbers or leads' do
+      subject.delete(numbers_to_delete)
+      houses = {}
+      numbers_to_keep.each do |phone|
+        houses.merge!({phone => households[phone]})
+      end
+      expect(houses).to be_in_redis_households campaign.id, 'active'
+    end
+
+    context 'stats' do
+      context 'campaign' do
+        it 'decrements total_numbers' do
+          subject.delete(numbers_to_delete)
+          key = campaign.call_list.stats.key
+          expect(redis.hget(key, 'total_numbers').to_i).to eq numbers_to_keep.size
+        end
+      end
+
+      context 'list' do
+        it 'increments total_numbers' do
+          subject.delete(numbers_to_delete)
+          key = voter_list.stats.key
+          expect(redis.hget(key, 'total_numbers').to_i).to eq numbers_to_delete.size
+        end
+
+        it 'increments removed_numbers' do
+          subject.delete(numbers_to_delete)
+          key = voter_list.stats.key
+          expect(redis.hget(key, 'removed_numbers').to_i).to eq numbers_to_delete.size
+        end
+      end
     end
   end
 end
+

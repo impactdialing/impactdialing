@@ -22,15 +22,40 @@ class CallList::Prune::Numbers
     ]
   end
 
+  def household_hash_keys(numbers)
+    redis_keys = []
+    hash_keys  = []
+    numbers.map do |phone|
+      keys = dial_queue.households.hkey(phone)
+      redis_keys << keys.first
+      hash_keys << keys.last
+    end
+    [redis_keys, hash_keys]
+  end
+
   def delete(numbers)
+    removed_count = 0
+    numbers.each_slice(50) do |batch|
+      removed_count += delete_from_sets(batch)
+      delete_from_hashes(batch)
+    end
+
+    return removed_count
+  end
+
+  def delete_from_sets(numbers)
     Wolverine.list.delete_numbers({
       keys: phone_number_set_keys,
       argv: [numbers.to_json]
     })
+  end
 
-    #Wolverine.list.delete_households({
-    #  keys: [],
-    #  argv: []
-    #})
+  def delete_from_hashes(numbers)
+    redis_keys, hash_keys = *household_hash_keys(numbers)
+    Wolverine.list.delete_households({
+      keys: redis_keys,
+      argv: [hash_keys.to_json]
+    })
   end
 end
+

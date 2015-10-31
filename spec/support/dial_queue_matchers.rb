@@ -93,6 +93,7 @@ RSpec::Matchers.define :be_in_redis_households do |campaign_id, namespace|
     if !attrs_match
       "expected household to have attributes matching: #{expected_attrs}\ngot: #{attrs_in_redis}"
     end
+    "expected to find #{households} in #{campaign_id}:households:#{namespace}\nfound only #{attrs_in_redis} and #{leads_in_redis}"
   end
   failure_message_when_negated do |households|
     if !leads_match
@@ -101,6 +102,7 @@ RSpec::Matchers.define :be_in_redis_households do |campaign_id, namespace|
     if !attrs_match
       "expected household to not have attributes matching: #{expected_attrs}\ngot: #{attrs_in_redis}"
     end
+    "expected to not find #{households} in #{campaign_id}:households:#{namespace}\nfound\nHousehold:\n#{attrs_in_redis}\nLeads:\n#{leads_in_redis}"
   end
 end
 

@@ -21,6 +21,7 @@ module ListHelpers
       household[:leads] = leads
       key = "#{base_key}:#{phone[0..ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i]}"
       hkey = phone[ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i + 1..-1]
+      redis.hincrby list.campaign.call_list.stats.key, 'total_numbers', 1
       redis.hset key, hkey, household.to_json
       redis.zadd "dial_queue:#{list.campaign_id}:#{zset_namespace}", zscore(sequence), phone 
       sequence += 1
