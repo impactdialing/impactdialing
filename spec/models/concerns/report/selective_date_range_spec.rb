@@ -3,7 +3,7 @@ require 'rails_helper'
 describe Report::SelectiveDateRange do
   let(:from_pool){ [nil, 10.days.ago, nil, 2.days.ago] }
   let(:to_pool){ [nil,4.days.ago,nil,1.day.ago] }
-  let(:default_time_zone){ ActiveSupport::TimeZone.new("Pacific Time (US & Canada)") }
+  let(:default_time_zone){ ActiveSupport::TimeZone.new('Pacific Time (US & Canada)') }
 
   describe '.new(from_date_pool, to_date_pool)' do
     it 'uses the first non-nil element from each pool' do
@@ -33,13 +33,15 @@ describe Report::SelectiveDateRange do
         Report::SelectiveDateRange.new(from_pool, to_pool)
       end
       it '#from("9/22/2014") => 9/22/2014 0700 UTC' do
-        expected = "2014-09-22 07:00:00 UTC"
+        hour = Time.now.dst? ? 7 : 8
+        expected = "2014-09-22 0#{hour}:00:00 UTC"
         expect(date_range.from).to eq expected
       end
 
       it '#to("9/22/2014") => 9/23/2014 0659 UTC' do
-        expected = "2014-09-23 06:59:59 UTC"
-        expect(date_range.to.to_s).to eq expected.to_s
+        hour = Time.now.dst? ? 6 : 7
+        expected = "2014-09-23 0#{hour}:59:59 UTC"
+        expect(date_range.to.to_s).to eq expected
       end
     end
   end
