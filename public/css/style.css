@@ -677,6 +677,13 @@ height : 60px;
 background : transparent url(../img/activistcentral-lfpd-h1.png) no-repeat 0 0;
 text-indent : -9999px; }
 
+header[role="banner"] h1.callspex {
+margin-bottom : .5em;
+width : 300px;
+height : 60px;
+background : transparent url(../img/callspex-h1.png) no-repeat 0 0;
+text-indent : -9999px; }
+
 header[role="banner"] a.action {
 display : block;
 text-align : center; }

@@ -158,6 +158,12 @@ en:
       add_to_balance_link: "/client/add_to_balance"
       configure_auto_recharge_link: "/client/recharge"
 
+    callspex:
+      title: "CallSpex"
+      full_title: "CallSpex"
+      phone: "267-974-6326"
+      email: "howard@moseleyllc.com"
+      billing_link: ""
     dclondon-dialer:
       title: "dc-London"
       full_title: "dc-London, Inc."
