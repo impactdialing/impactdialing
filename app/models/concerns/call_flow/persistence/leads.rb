@@ -99,6 +99,12 @@ private
     end
   end
 
+  # tmp until varchar changes to text column
+  # bug: #106999070
+  def truncate_varchar_value(val)
+    val[0..254]
+  end
+
   def create_custom_voter_field_value_records(voter_record, lead)
     custom_field_values = []
     custom_lead_attrs(lead) do |field, custom_voter_field_id|
@@ -106,7 +112,7 @@ private
       custom_field_values << {
         custom_voter_field_id: custom_voter_field_id,
         voter_id: voter_record.id,
-        value: lead[field]
+        value: truncate_varchar_value( lead[field] )
       }
     end
 
@@ -125,7 +131,7 @@ private
           id: custom_voter_field_value.id,
           voter_id: voter_record.id,
           custom_voter_field_id: custom_voter_field_value.custom_voter_field_id,
-          value: lead[target_field]
+          value: truncate_varchar_value( lead[target_field] )
         }
       end
     end

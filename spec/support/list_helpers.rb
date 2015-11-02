@@ -82,18 +82,18 @@ module ListHelpers
     allow(CallList::Imports::Parser).to receive(:new){ parser_double }
   end
 
-  def build_household_hashes(n, list, with_custom_id=false, two_lead_min=false)
+  def build_household_hashes(n, list, with_custom_id=false, two_lead_min=false, with_very_long_values=false)
     h = {}
     n.times do
-      h.merge!(build_household_hash(list, with_custom_id, two_lead_min))
+      h.merge!(build_household_hash(list, with_custom_id, two_lead_min, with_very_long_values))
     end
     h
   end
 
-  def build_household_hash(list, with_custom_id=false, two_lead_min=false)
+  def build_household_hash(list, with_custom_id=false, two_lead_min=false, with_very_long_values=false)
     phone = Forgery(:address).clean_phone
     min   = two_lead_min ? 2 : 1
-    leads = build_leads_array( (min..5).to_a.sample, list, phone, with_custom_id )
+    leads = build_leads_array( (min..5).to_a.sample, list, phone, with_custom_id, with_very_long_values )
     if with_custom_id
       # de-dup
       ids = []
@@ -126,16 +126,16 @@ module ListHelpers
     updated_leads
   end
 
-  def build_leads_array(n, list, phone, with_custom_id=false)
+  def build_leads_array(n, list, phone, with_custom_id=false, with_very_long_values=false)
     a = []
     n.times do |i|
       id = with_custom_id ? i : false
-      a << build_lead_hash(list, phone, id)
+      a << build_lead_hash(list, phone, id, with_very_long_values)
     end
     a
   end
 
-  def build_lead_hash(list, phone, with_custom_id=false)
+  def build_lead_hash(list, phone, id=nil, with_very_long_value=false)
     @uuid ||= UUID.new
     h = {
       voter_list_id: list.id.to_s,
@@ -146,8 +146,15 @@ module ListHelpers
       'Polling location' => 'Kansas City',
       'Party affil.' => 'I'
     }
-    if with_custom_id
-      custom_id = with_custom_id.kind_of?(Integer) ? with_custom_id : Forgery(:basic).number
+    if with_very_long_value
+      val = ''
+      260.times{ val << 'abc' }
+      h.merge!({
+        'Very Long Value' => val
+      })
+    end
+    if id
+      custom_id = id.kind_of?(Integer) ? id : Forgery(:basic).number
       h.merge!(custom_id: custom_id)
     end
     h

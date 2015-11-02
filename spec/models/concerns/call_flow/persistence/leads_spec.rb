@@ -9,7 +9,7 @@ describe 'CallFlow::Persistence::Leads' do
   let(:voter_list){ create(:voter_list, campaign: campaign) }
   let(:caller_session){ create(:webui_caller_session, campaign: campaign, sid: 'caller-session-sid') }
   let(:households) do
-    build_household_hashes(1, voter_list)
+    build_household_hashes(1, voter_list, false, false, true)
   end
   let(:phone) do
     households.keys.first
@@ -71,6 +71,18 @@ describe 'CallFlow::Persistence::Leads' do
           custom_field_name  = custom_field_value.first.custom_voter_field.name
           expect(custom_field_name).to eq field
         end
+      end
+
+      it 'truncates values longer than 255 characters' do
+        field = 'Very Long Value'
+        campaign.account.custom_voter_fields.create(name: field)
+        subject.import_records
+        lead = households[phone][:leads].last
+        custom_field_value = voter_records.last.custom_voter_field_values.where(value: lead[field][0..254])
+
+        expect(custom_field_value.count).to eq 1
+        custom_field_name  = custom_field_value.first.custom_voter_field.name
+        expect(custom_field_name).to eq field
       end
     end
 
