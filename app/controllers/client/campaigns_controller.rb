@@ -4,6 +4,9 @@ module Client
     before_filter :load_and_verify_campaign, :except => [:index, :new, :create, :archived]
     respond_to :html, :json
 
+    if instrument_actions?
+      instrument_action :index, :new, :edit, :create, :update, :destroy, :archived, :can_change_script
+    end
 
     def index
       @campaigns     = account.campaigns.active.paginate :page => params[:page]

@@ -1,6 +1,11 @@
 class MonitorsController < ClientController
   skip_before_filter :check_login, :only => [:start, :stop, :switch_mode, :deactivate_session]
-      respond_to :json, :html
+  respond_to :json, :html
+
+  if instrument_actions?
+    instrument_action :index, :stop, :deactivate_session, :monitor_session,
+                      :toggle_call_recording
+  end
 
   def index
     authorize! :view_dashboard, @account

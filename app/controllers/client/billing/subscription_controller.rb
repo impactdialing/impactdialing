@@ -8,6 +8,10 @@ class Client::Billing::SubscriptionController < ClientController
   rescue_from ::Billing::Plans::InvalidPlanTransition, with: :flash_render_edit
   rescue_from Stripe::CardError, with: :flash_render_edit
 
+  if instrument_actions?
+    instrument_action :show, :update, :cancel
+  end
+
 private
   def flash_i18n_now(flash_key, i18n_key)
     flash.now[flash_key] = [I18n.t(i18n_key)]

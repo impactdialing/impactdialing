@@ -3,6 +3,10 @@ module Client
     skip_before_filter :check_login, :only => :create
     skip_before_filter :check_tos_accepted, :only => [:create, :destroy]
 
+    if instrument_actions?
+      instrument_action :create, :destroy
+    end
+
     def create
       user = User.authenticate(params[:email], params[:password])
       if user

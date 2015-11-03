@@ -3,6 +3,10 @@ class Client::AccountUsagesController < ClientController
 
   before_filter :validate_create_params, only: [:create]
 
+  if instrument_actions?
+    instrument_action :create, :show
+  end
+
 private
   def required_create_params
     [:report_type, :from_date, :to_date]

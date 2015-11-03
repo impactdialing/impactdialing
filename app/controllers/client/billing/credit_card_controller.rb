@@ -5,6 +5,10 @@ class Client::Billing::CreditCardController < ClientController
 
   rescue_from Stripe::CardError, with: :flash_error_and_render_show
 
+  if instrument_actions?
+    instrument_action :create, :show, :update
+  end
+
 private
   def flash_error_and_render_show(exception)
     flash.now[:error] = [exception.message]

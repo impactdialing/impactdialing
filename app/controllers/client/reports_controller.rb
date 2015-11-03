@@ -11,6 +11,11 @@ module Client
 
     rescue_from Report::SelectiveDateRange::InvalidDateFormat, with: :rescue_invalid_date
 
+    if instrument_actions?
+      instrument_action :index, :performance, :dials_summary, :dials, :answer, :usage,
+                        :download_report, :download_reports, :download
+    end
+
   private
     def rescue_invalid_date(exception)
       flash[:error] = [exception.message]

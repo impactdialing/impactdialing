@@ -6,6 +6,10 @@ module Client
 
     respond_to :html, :json
 
+    if instrument_actions?
+      instrument_action :archived, :restore, :questions_answered, :possible_responses_answered
+    end
+
     def index
       @scripts = account.scripts.active.paginate(:page => params[:page])
       respond_with @scripts

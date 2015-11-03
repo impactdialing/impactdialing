@@ -5,6 +5,10 @@ module Monitors
     skip_before_filter :check_tos_accepted, :only => [:kick_off, :start, :switch_mode, :reassignable_campaigns, :reassign_campaign]
     respond_to :json
 
+    if instrument_actions?
+      instrument_action :kick_off, :switch_mode, :start, :reassign_campaign, :reassignable_campaigns
+    end
+
   private
     def moderator_params
       params.permit('CallSid')

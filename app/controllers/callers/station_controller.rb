@@ -15,6 +15,11 @@ module Callers
 
     before_filter :logout_if_floating_caller, except: [:logout, :login]
 
+    if instrument_actions?
+      instrument_action :login, :logout, :create, :script, :twilio_token, :disposition,
+                        :hangup_lead, :drop_message
+    end
+
 private
     def logout_if_floating_caller
       check_login

@@ -6,6 +6,10 @@ module Client
     before_filter :check_admin_only, :except => [:reassign_to_campaign, :usage, :call_details]
     before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :archived]
 
+    if instrument_actions?
+      instrument_action :index, :new, :edit, :update, :create, :destroy, :reassign_to_campaign, :usage, :call_details, :archived, :restore
+    end
+
     respond_to :html, :json
 
     def index

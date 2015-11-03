@@ -1,6 +1,10 @@
 class Twiml::LeadController < TwimlController
   before_filter :abort_lead_if_unprocessable_fallback_url
 
+  if instrument_actions?
+    instrument_action :answered, :disconnected, :completed, :play_message
+  end
+
 private
   def dialed_call
     @dialed_call ||= CallFlow::Call::Dialed.new(params[:AccountSid], params[:CallSid])

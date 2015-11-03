@@ -6,6 +6,10 @@ class CallinController < TwimlController
   before_filter :authenticate_by_pin
   before_filter :verify_campaign_assigned
 
+  if instrument_actions?
+    instrument_action :identify, :create
+  end
+
 private
   def pin
     params[:Digits]

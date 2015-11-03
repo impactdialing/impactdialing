@@ -6,6 +6,10 @@ class TransferController < TwimlController
     :connect, :callee, :disconnect
   ]
 
+  if instrument_actions?
+    instrument_action :connect, :disconnect, :callee, :caller, :end, :dial
+  end
+
   def connect
     @transfer_attempt = TransferAttempt.includes(:transfer).find(params[:id])
     transfer_dialer   = TransferDialer.new(@transfer_attempt.transfer)

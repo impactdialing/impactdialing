@@ -4,6 +4,10 @@ module Client
 
     respond_to :html, :json
 
+    if instrument_actions?
+      instrument_action :index, :create, :show, :update, :destroy
+    end
+
     def index
       @caller_groups = account.caller_groups.paginate(:page => params[:page])
       respond_with @caller_groups

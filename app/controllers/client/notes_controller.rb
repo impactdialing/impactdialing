@@ -4,6 +4,10 @@ module Client
     before_filter :load_note, only: [:show, :destroy, :update]
     respond_to :json
 
+    if instrument_actions?
+      instrument_action :index, :create, :show, :update, :destroy
+    end
+
     def index
       respond_with(@script.notes)
     end

@@ -11,6 +11,10 @@ class AdminController < ApplicationController
 
   rescue_from Report::SelectiveDateRange::InvalidDateFormat, with: :rescue_invalid_date
 
+  if instrument_actions?
+    instrument_action :state, :twilio_limit, :caller_sessions, :users, :campaign_stats, :report
+  end
+
 private
   def rescue_invalid_date(exception)
     flash[:error] = [exception.message]

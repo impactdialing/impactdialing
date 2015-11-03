@@ -11,6 +11,10 @@
 class Client::Billing::EventsController < ApplicationController
   skip_before_filter :verify_authenticity_token
 
+  if instrument_actions?
+    instrument_action :stripe
+  end
+
 private
   def stripe_livemode?
     # Rails normalizes this to True or False class.

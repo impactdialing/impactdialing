@@ -13,6 +13,10 @@ class ApplicationController < ActionController::Base
   end
 
 protected
+  def self.instrument_actions?
+    ENV['INSTRUMENT_ACTIONS'].to_i > 0
+  end
+
   def current_ability
     @current_ability ||= Ability.new(account)
   end
@@ -27,7 +31,6 @@ protected
   end
 
 private
-
   def generate_session_key
     CallFlow.generate_token
   end

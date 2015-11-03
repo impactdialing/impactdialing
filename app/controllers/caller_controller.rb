@@ -51,6 +51,17 @@ class CallerController < TwimlController
     :conference_started_phones_only_predictive
   ]
 
+  if instrument_actions?
+    instrument_action :login, :logout, :ready_to_call, :continue_conf, :pause, :stop_calling,
+                      :run_out_of_numbers, :callin_choice, :read_instruction_options,
+                      :conference_started_phones_only_preview,
+                      :conference_started_phones_only_power,
+                      :conference_started_phones_only_predictive,
+                      :gather_response, :submit_response, :next_question,
+                      :next_call, :time_period_exceeded, :account_out_of_funds, :skip_voter,
+                      :end_session, :call_voter, :play_message_error
+  end
+
 private
   def current_ability
     @current_ability ||= Ability.new(@caller.account)

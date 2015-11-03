@@ -1,4 +1,8 @@
 class BlockedNumbersController < ClientController
+  if instrument_actions?
+    instrument_action :index, :create, :destroy
+  end
+
 private
   def level_for_flash(blocked_number)
     if blocked_number.campaign_id.nil?

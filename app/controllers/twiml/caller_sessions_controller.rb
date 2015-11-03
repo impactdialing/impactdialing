@@ -1,4 +1,9 @@
 class Twiml::CallerSessionsController < TwimlController
+
+  if instrument_actions?
+    instrument_action :dialing_prohibited, :create
+  end
+
   def dialing_prohibited
     caller_session = CallerSession.find params[:caller_session_id]
     caller_session.end_caller_session

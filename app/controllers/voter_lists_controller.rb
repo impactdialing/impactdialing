@@ -6,6 +6,11 @@ class VoterListsController < ClientController
   respond_to :html
   respond_to :json, :only => [:index, :create, :show, :update, :destroy]
 
+  if instrument_actions?
+    instrument_action :index, :show, :enable, :disable, :update, :create,
+                      :destroy, :column_mapping
+  end
+
 public
   def index
     respond_with(@campaign.voter_lists, :only => [:id, :name, :enabled])

@@ -3,6 +3,10 @@ module Callers
     before_filter :check_login, :only=> [:report, :usage, :call_details]
     include TimeZoneHelper
 
+    if instrument_actions?
+      instrument_action :login, :logout, :usage, :call_details, :report
+    end
+
     def check_login
        redirect_to :action =>"index" and return if session[:phones_only_caller].blank?
        begin

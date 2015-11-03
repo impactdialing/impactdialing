@@ -6,6 +6,10 @@ class ClientController < ApplicationController
   before_filter :check_tos_accepted, :except => [:login, :forgot]
   before_filter :check_access_flags, :except => [:login, :user_add, :forgot, :policies]
 
+  if instrument_actions?
+    instrument_action :index, :edit, :new, :create, :update, :destroy, :show, :forgot, :recording_add
+  end
+
 private
   def check_access_flags
     return true if account.nil?
