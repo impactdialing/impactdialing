@@ -43,5 +43,14 @@ module CallList::Upload::Results
     def lua_results
       redis.hgetall lua_results_key
     end
+
+    def final_results
+      _final_results = results.dup
+      list_results   = lua_results
+
+      _final_results[:total_rows] = cursor - 1 # don't count header
+      
+      return _final_results
+    end
   end
 end

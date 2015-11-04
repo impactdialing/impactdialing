@@ -124,19 +124,18 @@ public
   end
 
   def final_results
-    final_results = results.dup
+    list_results   = lua_results
+    _final_results = super
     [
       :dnc_numbers, :cell_numbers, :invalid_numbers
     ].each do |collection_name|
-      final_results[collection_name] = final_results[collection_name].size
+      _final_results[collection_name] = _final_results[collection_name].size
     end
-    list_results = lua_results
 
-    final_results[:total_rows]    = @cursor - 1 # don't count header
-    final_results[:saved_numbers] = list_results['total_numbers'].to_i
-    final_results[:saved_leads]   = list_results['total_leads'].to_i
+    _final_results[:saved_numbers] = list_results['total_numbers'].to_i
+    _final_results[:saved_leads]   = list_results['total_leads'].to_i
 
-    return final_results
+    return _final_results
   end
 
   def move_pending_to_available
