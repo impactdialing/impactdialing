@@ -4,6 +4,8 @@
 class CallList::Imports
   attr_reader :voter_list, :cursor, :results
 
+  include CallList::Upload::Results
+
 private
   def default_results
     HashWithIndifferentAccess.new({
@@ -39,21 +41,8 @@ private
     return _results
   end
 
-  def lua_results
-    redis.hgetall common_redis_keys[1]
-  end
-
-  def update_results(_cursor, _results)
-    @cursor  = _cursor
-    @results = _results
-
-    lua_results.each do |key,count|
-      @results[key] = count.to_i
-    end
-  end
-
-  def dial_queue
-    @dial_queue ||= voter_list.campaign.dial_queue
+  def lua_results_key
+    common_redis_keys[1]
   end
 
   # warning: if the ordering here is changed then several lua scripts must be updated
@@ -74,14 +63,6 @@ private
   end
 
 public
-  def self.redis
-    @redis ||= Redis.new
-  end
-
-  def redis
-    self.class.redis
-  end
-
   def initialize(voter_list, cursor=0, results=nil)
     @voter_list                  = voter_list
     @cursor                      = cursor
