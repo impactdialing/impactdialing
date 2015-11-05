@@ -162,6 +162,7 @@ for phone,household in pairs(households) do
 
     new_number_count = new_number_count + 1
     sequence         = redis.call('HINCRBY', campaign_stats_key, 'number_sequence', 1)
+    score            = sequence
   end
 
   updated_hh['leads']    = updated_leads

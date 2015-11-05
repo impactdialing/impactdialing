@@ -297,11 +297,13 @@ for phone,household in pairs(households) do
     new_number_count = new_number_count + 1
 
     sequence = redis.call('HINCRBY', campaign_stats_key, 'number_sequence', 1)
+    score    = sequence
   end
 
   updated_hh['leads']    = updated_leads
   updated_hh['uuid']     = uuid
   updated_hh['sequence'] = sequence
+  updated_hh['score']    = score
 
   add_to_set(leads_added, updated_hh['blocked'], score, sequence, phone, inactive_hh)
 

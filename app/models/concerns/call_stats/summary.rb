@@ -32,7 +32,7 @@ public
   end
 
   def not_dialed
-    @not_dialed ||= dial_queue.available.count(:active, '-inf', lead_sequence + 1)
+    @not_dialed ||= dial_queue.available.count(:active, '-inf', household_sequence + 1)
   end
 
   def completed
@@ -40,7 +40,7 @@ public
   end
 
   def retrying
-    @retrying ||= dial_queue.available.count(:active, "(#{lead_sequence + 1}", '+inf')
+    @retrying ||= dial_queue.available.count(:active, "(#{household_sequence + 1}", '+inf')
   end
 
   def pending_retry
