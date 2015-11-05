@@ -28,6 +28,18 @@ public
   end
 
   def pruned_numbers(upload_stats)
+    renderer   = VoterListRender.new
+    html       = renderer.pruned_numbers(:html, upload_stats)
+    text       = renderer.pruned_numbers(:text, upload_stats)
+    subject    = "Upload complete: #{voter_list.name}"
+    to         = [{email: email}]
+    attachment = []
+
+    if upload_stats[:invalid_numbers] > 0
+      attachment = build_attachment(upload_stats[:invalid_rows], upload_stats[:invalid_lines])
+    end
+
+    send_voter_list_email(to, subject, text, html, attachment)
   end
 
   def completed(upload_stats)

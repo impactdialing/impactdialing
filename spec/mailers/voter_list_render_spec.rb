@@ -1,57 +1,100 @@
 require 'spec_helper'
 
-RSpec::Matchers.define :render_completed_email_content do |gather_options|
+RSpec::Matchers.define :render_email_content do |content|
   match do |actual|
-    actual =~ /^Your list contained:/ &&
-    actual =~ /#{stats[:total_rows]} rows of data/ &&
-    actual =~ /#{stats[:saved_numbers]} valid unique phone numbers/ &&
-    actual =~ /#{stats[:saved_leads]} valid leads/ &&
-    actual =~ /#{stats[:saved_numbers] - stats[:dnc_numbers] - stats[:cell_numbers]} of #{stats[:saved_numbers]} unique phone numbers are available for dials./ &&
-    actual =~ /Of #{stats[:saved_numbers]} valid unique phone numbers:/ &&
-    actual =~ /#{stats[:new_numbers]} are new numbers/ &&
-    actual =~ /#{stats[:pre_existing_numbers]} numbers had leads added or updated/ &&
-    actual =~ /#{stats[:dnc_numbers]} matched numbers in the DNC/ &&
-    actual =~ /#{stats[:cell_numbers]} were cell phone numbers/ &&
-    actual =~ /#{stats[:saved_leads]} of #{stats[:total_rows]} leads imported successfully./ &&
-    actual =~ /Of #{stats[:saved_leads]} leads:/ &&
-    actual =~ /#{stats[:new_leads]} are new leads/ &&
-    actual =~ /#{stats[:updated_leads]} leads were updated/
+    content.map do |regex|
+      actual =~ regex
+    end.all?{|bool| bool}
   end
 
-  chain :with_nested_say do |say_text|
-    @say_texts = [*say_text]
+  failure_message do |actual|
+    "expected:\n#{content}\n" +
+    "got:\n#{actual}\n"
   end
 end
 
 describe 'VoterListRender (views/voter_list_mailer/completed)', type: :mailer do
-  let(:stats) do
-    {
-      saved_numbers: 5,
-      total_numbers: 7,
-      saved_leads: 3,
-      total_leads: 5,
-      new_numbers: 3,
-      pre_existing_numbers: 2,
-      dnc_numbers: 1,
-      cell_numbers: 1,
-      new_leads: 3,
-      updated_leads: 0,
-      invalid_rows: [],
-      use_custom_id: true
-    }
-  end
   let(:renderer){ VoterListRender.new }
-  let(:template){ renderer.completed(:text, stats) }
 
-  context 'text' do
-    it 'renders the text template to a string' do
-      expect(template.to_s).to render_completed_email_content
+  describe '#completed' do
+    let(:stats) do
+      {
+        total_rows: 7,
+        saved_numbers: 5,
+        total_numbers: 7,
+        saved_leads: 3,
+        total_leads: 5,
+        new_numbers: 3,
+        pre_existing_numbers: 2,
+        dnc_numbers: 1,
+        cell_numbers: 1,
+        new_leads: 3,
+        updated_leads: 0,
+        invalid_rows: [],
+        use_custom_id: true
+      }
+    end
+    let(:content) do 
+      [
+        /Your list contained:/,
+        /#{stats[:total_rows]} rows of data/,
+        /#{stats[:saved_numbers]} valid unique phone numbers/,
+        /#{stats[:saved_leads]} valid leads/,
+        /#{stats[:saved_numbers] - stats[:dnc_numbers] - stats[:cell_numbers]} of #{stats[:saved_numbers]} unique phone numbers are available for dials./,
+        /Of #{stats[:saved_numbers]} valid unique phone numbers:/,
+        /#{stats[:new_numbers]} are new numbers/,
+        /#{stats[:pre_existing_numbers]} numbers had leads added or updated/,
+        /#{stats[:dnc_numbers]} matched numbers in the DNC/,
+        /#{stats[:cell_numbers]} were cell phone numbers/,
+        /#{stats[:saved_leads]} of #{stats[:total_rows]} leads imported successfully./,
+        /Of #{stats[:saved_leads]} leads:/,
+        /#{stats[:new_leads]} are new leads/,
+        /#{stats[:updated_leads]} leads were updated/
+      ]
+    end
+    context 'text' do
+      let(:template){ renderer.completed(:text, stats) }
+      it 'renders the text template to a string' do
+        expect(template.to_s).to render_email_content(content)
+      end
+    end
+
+    context 'html' do
+      let(:template){ renderer.completed(:html, stats) }
+      it 'renders the html template to a string' do
+        expect(template.to_s).to render_email_content(content)
+      end
     end
   end
 
-  context 'html' do
-    it 'renders the html template to a string' do
-      expect(template.to_s).to render_completed_email_content
+  describe '#pruned_numbers' do
+    let(:stats) do
+      {
+        total_rows: 12,
+        total_numbers: 12,
+        removed_numbers: 10,
+        invalid_rows: []
+      }
+    end
+    let(:content) do
+      [
+        /#{stats[:removed_numbers]} of #{stats[:total_numbers]} phone numbers were removed from your campaign./,
+        /Your list contained:/,
+        /#{stats[:total_rows]} rows of data/,
+        /#{stats[:total_numbers]} valid phone numbers/
+      ]
+    end
+    context 'text' do
+      let(:template){ renderer.pruned_numbers(:text, stats) }
+      it 'renders the text template to a string' do
+        expect(template.to_s).to render_email_content(content)
+      end
+    end
+    context 'html' do
+      let(:template){ renderer.pruned_numbers(:html, stats) }
+      it 'renders the html template to a string' do
+        expect(template.to_s).to render_email_content(content)
+      end
     end
   end
 end
