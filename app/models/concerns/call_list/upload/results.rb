@@ -46,7 +46,6 @@ module CallList::Upload::Results
 
     def final_results
       _final_results = results.dup
-      list_results   = lua_results
 
       _final_results[:total_rows] = cursor - 1 # don't count header
       
