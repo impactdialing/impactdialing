@@ -53,14 +53,6 @@ class CallList::Jobs::Import < CallList::Jobs::Upload
     # until all related leads from same list have been collected
     imports.move_pending_to_available
 
-    # tmp enable/disable support: disable any leads enabled during import
-    # when using custom ids.
-    if voter_list.campaign.using_custom_ids?
-      voter_list.campaign.voter_lists.where('id < ?', voter_list_id).pluck(:id).each do |list_id|
-        CallList::Jobs::ToggleActive.perform(list_id)
-      end
-    end
-
     final_results = imports.final_results
 
     mailer(voter_list, email).try(:completed, final_results)
