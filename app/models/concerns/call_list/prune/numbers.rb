@@ -78,7 +78,8 @@ public
     list_results = lua_results
     super.merge({
       removed_numbers: list_results['removed_numbers'].to_i,
-      total_numbers:   list_results['total_numbers'].to_i
+      total_numbers:   list_results['total_numbers'].to_i,
+      invalid_numbers: results[:invalid_numbers].size
     })
   end
 
