@@ -27,6 +27,9 @@ public
     @account    = voter_list.account
   end
 
+  def pruned_numbers(upload_stats)
+  end
+
   def completed(upload_stats)
     renderer   = VoterListRender.new
     html       = renderer.completed(:html, upload_stats)
