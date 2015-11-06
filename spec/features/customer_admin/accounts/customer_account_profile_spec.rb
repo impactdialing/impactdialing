@@ -44,7 +44,7 @@ describe 'Account profile', type: :feature, admin: true do
     fill_in 'Card number', with: StripeFakes.valid_cards[:visa].first
     fill_in 'CVC', with: 123
     fill_in_expiration
-    click_on 'Update payment information'
+    click_on 'Update'
     retry_assertion do
       expect(page).to have_content I18n.t('subscriptions.update_billing.success')
     end
@@ -55,7 +55,7 @@ describe 'Account profile', type: :feature, admin: true do
     fill_in 'Card number', with: StripeFakes.not_chargeable
     fill_in 'CVC', with: 123
     fill_in_expiration
-    click_on 'Update payment information'
+    click_on 'Update'
     retry_assertion do
       expect(page).to have_content I18n.t('subscriptions.update_billing.success')
     end
@@ -107,7 +107,7 @@ describe 'Account profile', type: :feature, admin: true do
     it 'with valid information' do
       click_link 'Account'
       fill_in 'Email address', :with => 'new@email.com'
-      click_button 'Update info'
+      click_button 'Update'
       expect(page).to have_content 'Your information has been updated.'
     end
 
@@ -145,7 +145,7 @@ describe 'Account profile', type: :feature, admin: true do
         fill_in 'Card number', with: StripeFakes.valid_cards[:visa].first
         fill_in 'CVC', with: 123
         fill_in_expiration
-        click_on 'Update payment information'
+        click_on 'Update'
         expect(page).to have_content I18n.t('subscriptions.update_billing.success')
       end
     end
@@ -160,7 +160,7 @@ describe 'Account profile', type: :feature, admin: true do
         fill_in 'CVC', with: 123
         fill_in 'Zipcode', with: 12345
         fill_in_expiration
-        click_on 'Update payment information'
+        click_on 'Update'
         expect(page).to have_content 'The zip code you supplied failed validation.'
       end
 
@@ -169,7 +169,7 @@ describe 'Account profile', type: :feature, admin: true do
         fill_in 'CVC', with: 123
         fill_in 'Zipcode', with: 12345
         fill_in_expiration
-        click_on 'Update payment information'
+        click_on 'Update'
         retry_assertion do
           expect(page).to have_content "Your card's security code is incorrect."
         end
@@ -180,7 +180,7 @@ describe 'Account profile', type: :feature, admin: true do
         fill_in 'CVC', with: 123
         fill_in 'Zipcode', with: 12345
         fill_in_expiration
-        click_on 'Update payment information'
+        click_on 'Update'
         retry_assertion do
           expect(page).to have_content 'Your card has expired.'
         end
@@ -236,7 +236,7 @@ describe 'Account profile', type: :feature, admin: true do
           select user.email, from: 'Who should we send invoices to?'
         end
         retry_assertion do
-          click_on 'Update payment information'
+          click_on 'Update'
         end
         retry_assertion do
           expect(page).to have_content I18n.t('subscriptions.update_billing.success')

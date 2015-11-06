@@ -121,7 +121,7 @@ describe 'Customer Reports', type: :feature, admin: true do
     end
 
     before do
-      within 'nav' do
+      within 'body > nav' do
         click_on 'Reports'
       end
       within 'tr:last-of-type' do

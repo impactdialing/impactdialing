@@ -11,7 +11,7 @@ describe 'Inviting users', type: :feature, admin: true do
   context 'valid data submitted' do
     it 'displays success message' do
       fill_in 'Email', with: 'joe@test.com'
-      click_on 'Send invitation'
+      click_on 'Invite'
       expect(page).to have_content 'joe@test.com has been invited.'
     end
   end
@@ -19,7 +19,7 @@ describe 'Inviting users', type: :feature, admin: true do
   context 'invalid data submitted for invite' do
     it 'displays error message' do
       fill_in 'Email', with: 'nonsense'
-      click_on 'Send invitation'
+      click_on 'Invite'
       expect(page).to have_content "Email is invalid"
     end
   end
