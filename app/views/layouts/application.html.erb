@@ -17,7 +17,7 @@
               <% end %>
               <%= link_to('Log out', client_session_path, {
                 :method => :delete,
-                :class => 'action'
+                :class => 'action secondary'
               }) %>
             </li>
           </ul>
@@ -28,7 +28,7 @@
     <% if logged_in_as_client? %>
       <nav role="navigation" class="clearfix">
       <ul class="clearfix">
-        <li><a href="/client/monitors" <%= content_for :monitor_data %> class="<%= controller_name =~ /monitors/ ? 'active' : '' %>">Dashboard</a></li>
+        <li><a href="/client/monitors" <%= content_for :monitor_data %> class="<%= controller_name =~ /(monitors|client)/ ? 'active' : '' %>">Dashboard</a></li>
         <% if @user.administrator? %>
           <li><a href="/client/scripts" <%= content_for :scripts_data %> class="<%= controller_name =~ /scripts/ ? 'active' : '' %>">Scripts</a></li>
           <li><a href="/client/campaigns" <%= content_for :campaigns_data %> class="<%= controller_name =~ /campaigns/ ? 'active' : '' %>">Campaigns</a></li>

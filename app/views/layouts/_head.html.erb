@@ -17,7 +17,7 @@
 <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1">
 
 <!-- For all browsers -->
-<%= stylesheet_link_tag 'style', media: 'all' %>
+<%= stylesheet_link_tag 'application', media: 'all' %>
 <%= stylesheet_link_tag 'print', media: 'print' %>
 <!-- For progressively larger displays -->
 <% ['480', '768', '992', '1382'].each do |screen_size| %>
@@ -33,7 +33,7 @@
 <![endif]-->
 
 <%= yield :stylesheets %>
-<%= stylesheet_link_tag "application", "caller", "jquery-ui-1.8.14.custom", 'intro.min' %>
+<%= stylesheet_link_tag "caller", "jquery-ui-1.8.14.custom", 'intro.min' %>
 <%= csrf_meta_tag %>
 <%= yield :meta %>
 

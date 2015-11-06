@@ -1,6 +1,5 @@
 /*
- *= require_self
- *= require_tree .
+*= require style
 */
 
 .inline {
@@ -87,40 +86,40 @@ header[role="banner"] h1.impactdialing {
   margin-bottom : .5em;
   width : 300px;
   height : 57px;
-  background : transparent url(<%= asset_path('logos/impactdialing-h1.png') %>) no-repeat 0 0;
+  background : transparent image-url('logos/impactdialing-h1.png') no-repeat 0 0;
   text-indent : -9999px; }
 
 header[role="banner"] h1.stonesphonesdialer {
   margin-bottom : .5em;
   width : 300px;
   height : 57px;
-  background : transparent url(<%= asset_path('logos/stonesphonesdialer-h1.png') %>) no-repeat 0 0;
+  background : transparent image-url('logos/stonesphonesdialer-h1.png') no-repeat 0 0;
   text-indent : -9999px; }
 
 header[role="banner"] h1.afpdialer {
   margin-bottom : .5em;
   width : 300px;
   height : 57px;
-  background : transparent url(<%= asset_path('logos/afpdialer-h1.png') %>) no-repeat 0 0;
+  background : transparent image-url('logos/afpdialer-h1.png') no-repeat 0 0;
   text-indent : -9999px; }
 
 header[role="banner"] h1.gettangent {
   margin-bottom : .5em;
   width : 300px;
   height : 57px;
-  background : transparent url(<%= asset_path('logos/gettangent-h1.png') %>) no-repeat 0 0;
+  background : transparent image-url('logos/gettangent-h1.png') no-repeat 0 0;
   text-indent : -9999px; }
 
 header[role="banner"] h1.activistcentral-lfpd {
   margin-bottom : .5em;
   width : 300px;
   height : 60px;
-  background : transparent url(<%= asset_path('logos/activistcentral-lfpd-h1.png') %>) no-repeat 0 0;
+  background : transparent image-url('logos/activistcentral-lfpd-h1.png') no-repeat 0 0;
   text-indent : -9999px; }
 
 header[role="banner"] h1.callspex {
   margin-bottom : .5em;
   width : 300px;
   height : 60px;
-  background : transparent url(<%= asset_path('logos/callspex-h1.png') %>) no-repeat 0 0;
+  background : transparent image-url('logos/callspex-h1.png') no-repeat 0 0;
   text-indent : -9999px; }

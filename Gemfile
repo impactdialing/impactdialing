@@ -5,6 +5,7 @@ ruby '2.0.0'
 gem 'rails', '~> 4.0.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
+gem 'sass-rails'
 gem 'puma'
 gem 'rack-timeout'
 
