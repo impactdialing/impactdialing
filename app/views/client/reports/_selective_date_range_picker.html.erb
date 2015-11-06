@@ -28,6 +28,6 @@
   <%= form_tag(datepicker_path, :method => :get) do %>
     <%= yield :datepicker_fields %>
 
-    <div class="buttons"><button type="submit">Update date range</button></div>
+    <div class="actions"><button class="action primary" type="submit">Update date range</button></div>
   <% end %>
 <% end %>
