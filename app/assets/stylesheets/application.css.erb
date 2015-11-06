@@ -41,8 +41,31 @@ fieldset li {
   padding: .2em .6em .3em;
 }
 
+fieldset .actions .action.secondary {
+  background: #fff;
+}
+
+fieldset tr:nth-child(odd) th,
+fieldset tr:nth-child(odd) td {
+  background: #f2f2f2;
+}
+
 .admin nav[role="navigation"] > ul > li > a.active {
   background: #456587;
   color: #fff;
   text-shadow: none;
 }
+
+ul.actions li {
+  list-style: none;
+}
+
+/**
+ * Whitelabels
+ */
+header[role="banner"] h1.impactdialing {
+  margin-bottom : .5em;
+  width : 300px;
+  height : 57px;
+  background : transparent url(<%= asset_path('/assets/logos/impactdialing-h1.png') %>) no-repeat 0 0;
+  text-indent : -9999px; }

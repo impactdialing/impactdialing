@@ -32,11 +32,6 @@
 <link rel="stylesheet" media="screen" href="css/992.css">
 <![endif]-->
 
-<%= render :partial => "layouts/errorception" unless Rails.env.test? %>
-<% if logged_in_as_client? and not Rails.env.test? and not Rails.env.development? and not Rails.env.e2e? %>
-  <%= render :partial => "layouts/olark" %>
-<% end %>
-
 <%= yield :stylesheets %>
 <%= stylesheet_link_tag "application", "caller", "jquery-ui-1.8.14.custom", 'intro.min' %>
 <%= csrf_meta_tag %>
@@ -44,6 +39,11 @@
 
 <!-- JavaScript at bottom except for Modernizr -->
 <%= javascript_include_tag 'modernizr-custom' %>
+
+<%= render :partial => "layouts/errorception" unless Rails.env.test? %>
+<% if logged_in_as_client? and not Rails.env.test? and not Rails.env.development? and not Rails.env.e2e? %>
+  <%= render :partial => "layouts/olark" %>
+<% end %>
 
 <!--[if (lt IE 9) & (!IEMobile)]>
 <script src="js/libs/jquery-extended-selectors.js"></script>
