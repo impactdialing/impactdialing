@@ -535,6 +535,24 @@ margin-bottom : 1.5em; }
 display : block;
 margin-bottom : .75em; }
 
+/* jquery-ui tabs */
+ul.ui-widget-header {
+  border: none;
+  border-bottom: 1px;
+  background: none;
+  color: inherit;
+}
+
+ul.ui-helper-reset {
+  font-size: .875em;
+}
+
+ul.ui-widget-content {
+  border: none;
+  background: none;
+  color: inherit;
+}
+
 /* 8.BANNER */
 
 header[role="banner"] {

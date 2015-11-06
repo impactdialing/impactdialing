@@ -1,0 +1,31 @@
+<%= content_for :javascripts do %>
+  <script type="text/javascript">
+    $(function(){
+      $('#campaign-tabs').tabs();
+    });
+  </script>
+<% end %>
+
+<div id="campaign-tabs">
+  <ul>
+    <li><a href="#settings">Settings</a></li>
+    <li><a href="#info">Info</a></li>
+    <li><a href="#upload">Upload</a></li>
+  </ul>
+
+  <div id="settings">
+    <%= render 'tabbed_form' %>
+  </div>
+
+  <div id="info">
+    <% if dials_summary.present? %>
+      <%= dials_summary %>
+    <% else %>
+      <p>This will display once the campaign is saved.</p>
+    <% end %>
+  </div>
+
+  <div id="upload">
+    <%= render 'tabbed_upload_form' %>
+  </div>
+</div>
