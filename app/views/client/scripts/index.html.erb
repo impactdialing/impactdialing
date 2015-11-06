@@ -35,13 +35,25 @@
 
 <p><strong>Phones-only users: </strong>The "Phones-only keypad" values refer to the buttons that your callers press on their phones to enter results after each call. Callers can press * to hang up the current call, then enter their results on their keypad and press * again to submit each result.</p>
 
-<p class="actions"><%= link_to 'Add new script',
-                               new_client_script_path,
-                               :class => 'action primary',
-                               :data => {"intro" => "Click here to create a new script.",
-                                         "step" => "1"} %></p>
-<p class="actions"><%= link_to 'View archived scripts',
-                               client_archived_scripts_path,
-                               :class => 'action secondary',
-                               :data => {"intro" => "Click here to view and restore your archived scripts.",
-                                         "step" => "3"} %></p>
+<nav role="navigation" class="actions clearfix">
+  <ul class="clearfix">
+    <li>
+      <%= link_to('Add new script', new_client_script_path, {
+            :class => 'action primary',
+            :data => {
+              "intro" => "Click here to create a new script.",
+              "step" => "1"
+            }
+      }) %>
+    </li>
+    <li>
+      <%= link_to('View archived scripts', client_archived_scripts_path, {
+            :class => 'action secondary',
+            :data => {
+              "intro" => "Click here to view and restore your archived scripts.",
+              "step" => "3"
+            }
+      }) %>
+    </li>
+  </ul>
+</nav>

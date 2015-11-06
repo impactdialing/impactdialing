@@ -56,8 +56,23 @@ fieldset tr:nth-child(odd) td {
   text-shadow: none;
 }
 
-ul.actions li {
-  list-style: none;
+nav[role="navigation"] .action.primary {
+  color: #fff;
+}
+nav[role="navigation"] a.action.primary:hover {
+  box-shadow: none;
+}
+header[role="banner"] nav[role="navigation"] a.action {
+  position: inherit;
+}
+
+nav.actions ul {
+  background-color: transparent;
+  border: none;
+}
+.admin nav.actions li:last-child a {
+  background-color: #f2f2f2;
+  color: inherit;
 }
 
 /**

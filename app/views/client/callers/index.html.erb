@@ -59,25 +59,51 @@
   <p><%= page_entries_info @callers, model: 'caller' %> <%= will_paginate @callers %></p>
 <% end %>
 
-<p class="actions"><%= link_to 'Add new caller',
-                               new_client_caller_path,
-                               :class => 'action primary',
-                               :data => {"intro" => "Click here to create a new caller.",
-                                         "step" => "1"} %></p>
-<p class="actions"><%= link_to 'Add phones-only caller',
-                               new_client_caller_path(:is_phones_only => true),
-                               :class => 'action primary',
-                               :data => {"intro" => "If you're a political campaign using the phones-only system without the web interface, click here to create a new phones-only caller.",
-                                         "step" => "2"} %></p>
-<p class="actions"><%= link_to 'View archived callers',
-                               client_archived_callers_path,
-                               :class => 'action secondary',
-                               :data => {"intro" => "Click here to view and restore your archived callers.",
-                                         "step" => "5"} %></p>
-<% if can? :manage, CallerGroup %>
-  <p class="actions"><%= link_to 'Manage caller groups',
-                                 client_caller_groups_path,
-                                 :class => 'action secondary',
-                                 :data => {"intro" => "If you have a large number of callers that call the same campaigns, you can group them together so that they can all be re-assigned to a new campaign at once.",
-                                           "step" => "4"} %></p>
-<% end %>
+<nav role="navigation" class="actions clearfix">
+  <ul class="clearfix">
+    <li>
+      <%= link_to('Add new caller', new_client_caller_path, {
+            :class => 'action primary',
+            :data => {
+              "intro" => "Click here to create a new caller.",
+              "step" => "1"
+            }
+      }) %>
+    </li>
+    <li>
+      <%= link_to('Add phones-only caller', new_client_caller_path({
+        :is_phones_only => true
+      }), {
+        :class => 'action primary',
+        :data => {
+          "intro" => "If you're a political campaign using the phones-only"+
+                    " system without the web interface, click here to create"+
+                    " a new phones-only caller.",
+          "step" => "2"
+        }
+      }) %>
+    </li>
+    <li>
+      <%= link_to('View archived callers', client_archived_callers_path, {
+            :class => 'action secondary',
+            :data => {
+              "intro" => "Click here to view and restore your archived callers.",
+              "step" => "5"
+            }
+      }) %>
+    </li>
+    <% if can? :manage, CallerGroup %>
+    <li>
+      <%= link_to('Manage caller groups', client_caller_groups_path, {
+            :class => 'action secondary',
+            :data => {
+              "intro" => "If you have a large number of callers that call the"+
+              " same campaigns, you can group them together so that they"+
+              " can all be re-assigned to a new campaign at once.",
+              "step" => "4"
+            }
+      }) %>
+    </li>
+    <% end %>
+  </ul>
+</nav>

@@ -42,18 +42,34 @@
   <p><%= page_entries_info @campaigns, model: 'campaign' %> <%= will_paginate @campaigns %></p>
 <% end %>
 
-<p class="actions"><%= link_to 'Add new campaign',
-                               new_client_campaign_path,
-                               :class => 'action primary',
-                               :data => {"intro" => "Click here to create a new campaign.",
-                                         "step" => "1"} %></p>
-<p class="actions"><%= link_to 'View archived campaigns',
-                               client_archived_campaigns_path,
-                               :class => 'action secondary',
-                               :data => {"intro" => "Click here to view and restore your archived campaigns.",
-                                         "step" => "3"} %></p>
-<p class="actions"><%= link_to 'Manage Do Not Call list',
-                               blocked_numbers_path,
-                               :class => 'action secondary',
-                               :data => {"intro" => "Click here to manage your Do Not Call list.",
-                                         "step" => "4"} %></p>
+<nav role="navigation" class="actions clearfix">
+  <ul class="clearfix">
+    <li>
+      <%= link_to('Add new campaign', new_client_campaign_path, {
+            :class => 'action primary',
+            :data => {
+              "intro" => "Click here to create a new campaign.",
+              "step" => "1"
+            }
+      }) %>
+    </li>
+    <li>
+      <%= link_to('View archived campaigns', client_archived_campaigns_path, {
+            :class => 'action secondary',
+            :data => {
+              "intro" => "Click here to view and restore your archived campaigns.",
+              "step" => "3"
+            }
+      }) %>
+    </li>
+    <li>
+      <%= link_to('Manage Do Not Call list', blocked_numbers_path, {
+            :class => 'action secondary',
+            :data => {
+              "intro" => "Click here to manage your Do Not Call list.",
+              "step" => "4"
+            }
+      }) %>
+    </li>
+  </ul>
+</nav>

@@ -1,14 +1,26 @@
-<p>
-  <% if !logged_in_as_client? || @user.administrator? %>
-    <% if !white_labeled_billing_link(domain).empty? %>
-      <a href="<%= white_labeled_billing_link(request.domain) %>">Billing</a><br>
+<nav role="navigation" class="actions clearfix">
+  <ul class="clearfix">
+    <li>
+      <a class="action primary" href="#administrators">Add users</a>
+    </li>
+    <li>
+      <a class="action secondary" href="#caller_password">Set caller report password</a>
+    </li>
+    <li>
+      <a class="action secondary" href="#api_key">Generate API key</a>
+    </li>
+    <% if !logged_in_as_client? || @user.administrator? %>
+      <% if !white_labeled_billing_link(domain).empty? %>
+    <li>
+      <a class="action secondary" href="<%= white_labeled_billing_link(request.domain) %>">Billing</a>
+    </li>
+      <% end %>
     <% end %>
-    <a href="#administrators">Add users</a><br>
-    <a href="#caller_password">Set caller report password</a><br>
-    <a href="#api_key">Generate API key</a>
-  <% end %>
-</p>
+  </ul>
+</nav>
+
 <%= render :partial => 'client/users/edit' %>
+
 <% unless @user.new_record? %>
   <%= render :partial => 'client/users/show' %>
   <%= render :partial => 'client/accounts/caller_password' %>
