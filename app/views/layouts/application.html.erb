@@ -35,7 +35,7 @@
           <li><a href="/client/callers" <%= content_for :callers_data %> class="<%= controller_name =~ /caller/ ? 'active' : '' %>">Callers</a></li>
         <% end %>
         <li><a href="/client/reports" <%= content_for :reports_data %> class="<%= controller_name =~ /reports/ ? 'active' : '' %>">Reports</a></li>
-        <li><a href="/client/account" <%= content_for :account_data %> class="<%= controller_name !~ /(monitors|scripts|campaigns|caller|reports)/ ? 'active' : '' %>">Account</a></li>
+        <li><a href="/client/account" <%= content_for :account_data %> class="<%= controller_name !~ /(client|monitors|scripts|campaigns|caller|reports)/ ? 'active' : '' %>">Account</a></li>
       </ul>
       </nav>
     <% end %>
