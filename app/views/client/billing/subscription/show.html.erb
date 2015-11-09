@@ -38,13 +38,13 @@
     </p>
   <% end %>
 
-  <ul class="actions" style="list-style: none;">
-    <% subscription_buttons(@subscription).each do |button| %>
-    <li><%= link_to(*button) %></li>
-    <% end %>
-  </ul>
-
-  <hr>
+  <nav role="navigation">
+    <ul class="actions" style="list-style: none;">
+      <% subscription_buttons(@subscription).each do |button| %>
+      <li><%= link_to(*button) %></li>
+      <% end %>
+    </ul>
+  </nav>
 
   <% if can? :add_minutes, @subscription %>
     <div>

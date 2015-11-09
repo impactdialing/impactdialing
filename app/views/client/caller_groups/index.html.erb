@@ -29,5 +29,18 @@
   <p><%= page_entries_info @caller_groups %> <%= will_paginate @caller_groups %></p>
 <% end %>
 
-<p class="actions"><%= link_to 'Add new caller group', new_client_caller_group_path, :class => 'action primary' %></p>
-<p class="actions"><%= link_to 'Return to Callers', client_callers_path, :class => 'action secondary' %></p>
+<nav role="navigation">
+  <ul class="actions">
+    <li>
+      <%= link_to('Add new caller group', new_client_caller_group_path, {
+        class: 'action primary'
+      }) %>
+    </li>
+    <li>
+      <%= link_to('Return to callers', client_callers_path, {
+        class: 'action secondary'
+      }) %>
+    </li>
+  </ul>
+</nav>
+
