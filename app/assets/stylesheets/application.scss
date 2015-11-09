@@ -28,11 +28,11 @@
   vertical-align: baseline;
   border-radius: .25em;
 }
-.label-danger{
+.label-danger {
   background-color: #999;
   color: rgb(194,54,52);
 }
-.label-danger[href]:focus, .label-danger[href]:hover{
+.label-danger[href]:focus, .label-danger[href]:hover {
   background-color: #999;
   color: rgb(194,54,52);
 }
@@ -45,8 +45,12 @@ fieldset li {
   padding: .2em .6em .3em;
 }
 
-fieldset .actions .action.secondary {
+fieldset .actions .action {
   background: #fff;
+  color: #000;
+}
+fieldset .actions a.action:hover {
+  background: #e2e2e2;
 }
 
 fieldset tr:nth-child(odd) th,
@@ -54,47 +58,111 @@ fieldset tr:nth-child(odd) td {
   background: #f2f2f2;
 }
 
-.admin nav[role="navigation"] > ul > li > a.active {
-  background: #456587;
-  color: #fff;
-  text-shadow: none;
+.admin nav[role="navigation"] {
+  ul {
+    border: none;
+    li:last-child {
+      a {
+        background-color: #456587;
+        color: #000;
+      }
+      a.action.primary:hover {
+        background-color: #e2e2e2;
+        color: #000;
+        box-shadow: none;
+      }
+      a.action.secondary:hover {
+        color: #000;
+      }
+    }
+    li {
+      a {
+        color: #000;
+      }
+      a.action.primary {
+        color: #fff;
+      }
+      a.action.primary:hover {
+        background-color: #e2e2e2;
+        color: #000;
+        box-shadow: none;
+      }
+      a.action.secondary {
+        background-color: #fff;
+        color: #000;
+      }
+      a.action.secondary:hover {
+        background-color: #e2e2e2;
+      }
+    }
+  }
 }
 
-nav[role="navigation"] .action.primary {
-  color: #fff;
-}
-nav[role="navigation"] a.action.primary:hover {
-  box-shadow: none;
-}
-header[role="banner"] nav[role="navigation"] a.action {
-  position: inherit;
+.admin > nav[role="navigation"] {
+  ul {
+    border: 1px solid #e6e6e6;
+    li:last-child {
+      a {
+        background-color: #fff;
+      }
+      a:hover {
+        background-color: #456587;
+        color: #fff;
+      }
+    }
+    li {
+      a.active {
+        background-color: #9a2b29;
+        color: #fff;
+      }
+      a:hover {
+        background-color: #456587;
+        color: #fff;
+      }
+    }
+  }
 }
 
-nav.actions ul {
-  background-color: transparent;
-  border: none;
+header[role="banner"] {
+  nav[role="navigation"] {
+    a.action {
+      position: inherit;
+    }
+  }
 }
+
+nav.actions {
+  ul {
+    background-color: transparent;
+    border: none;
+  }
+}
+/**
 .admin nav.actions li:last-child a {
   background-color: #f2f2f2;
   color: inherit;
 }
+*/
 
 /**
  * Whitelabels
  */
-header[role="banner"] h1.impactdialing {
-  margin-bottom : .5em;
-  width : 300px;
-  height : 57px;
-  background : transparent image-url('logos/impactdialing-h1.png') no-repeat 0 0;
-  text-indent : -9999px; }
-
-header[role="banner"] h1.stonesphonesdialer {
-  margin-bottom : .5em;
-  width : 300px;
-  height : 57px;
-  background : transparent image-url('logos/stonesphonesdialer-h1.png') no-repeat 0 0;
-  text-indent : -9999px; }
+header[role="banner"] {
+  h1.impactdialing {
+    margin-bottom : .5em;
+    width : 300px;
+    height : 57px;
+    background : transparent image-url('logos/impactdialing-h1.png') no-repeat 0 0;
+    text-indent : -9999px;
+  }
+  h1.stonesphonesdialer {
+    margin-bottom : .5em;
+    width : 300px;
+    height : 57px;
+    background : transparent image-url('logos/stonesphonesdialer-h1.png') no-repeat 0 0;
+    text-indent : -9999px;
+  }
+}
 
 header[role="banner"] h1.afpdialer {
   margin-bottom : .5em;
