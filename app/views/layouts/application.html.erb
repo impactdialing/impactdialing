@@ -49,7 +49,7 @@
     <footer role="contentinfo" class="clearfix">
 
     <% if logged_in_as_client? %>
-      <ul>
+      <ul class="inline">
         <li><a href="/client/monitors">Dashboard</a></li>
         <% if @user.administrator? %>
           <li><a href="/client/scripts">Scripts</a></li>
@@ -59,7 +59,7 @@
         <li><a href="/client/reports">Reports</a></li>
       </ul>
 
-      <div>
+      <div class="inline align-right">
         <p class="vcard">
           Need help? <span class="tel"><%= phone %></span>
           <a href="mailto:<%= email %>"><%= email %></a>
