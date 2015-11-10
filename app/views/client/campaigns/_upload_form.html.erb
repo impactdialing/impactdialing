@@ -30,6 +30,7 @@
             <input type="checkbox" name="voter_list[skip_wireless]" id="voter_list_skip_wireless" checked="checked" value="1"> Do not call cell phones
           </label>
         </li>
+      <% if @campaign.voter_lists.count > 0 %>
         <li>
           <label for="voter_list_purpose_remove_numbers">
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_remove_numbers" value="prune_numbers"> Remove phone numbers from call list
@@ -40,6 +41,7 @@
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_remove_leads" value="prune_leads"> Remove leads from call list
           </label>
           </li> -->
+      <% end %>
       </ul>
     </fieldset>
     <fieldset class="module loose" id="column_mapping_container" style="display: none;">
