@@ -35,6 +35,8 @@ private
   end
 
   def custom_id_usage
+    return true unless importing?
+
     if campaign.can_use_custom_ids?
       if campaign.requires_custom_ids? and (not self.maps_custom_id?)
         errors.add(:csv_to_system_map, I18n.t('activerecord.errors.models.voter_list.custom_id_map_required'))
@@ -134,6 +136,10 @@ public
     else
       errors.add(:base, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
     end
+  end
+
+  def importing?
+    purpose == 'import'
   end
 end
 

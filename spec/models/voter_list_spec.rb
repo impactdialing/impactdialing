@@ -28,13 +28,7 @@ describe VoterList, :type => :model do
         csv_to_system_map: custom_id_mapping
       })
     end
-
-    context 'when this is the first list for the campaign' do
-      it 'can map custom_id' do
-        expect(voter_list).to be_valid
-      end
-    end
-    context 'when first list for campaign did map custom id' do
+    shared_context 'first list mapped custom id' do
       let(:second_voter_list) do
         build(:voter_list, {
           campaign: campaign,
@@ -52,16 +46,8 @@ describe VoterList, :type => :model do
       before do
         voter_list.save!
       end
-      it 'can map custom_id' do
-        expect(second_voter_list).to be_valid
-      end
-      it 'is invalid if no custom id is mapped' do
-        second_voter_list.save!
-        third_voter_list.valid?
-        expect(third_voter_list.errors[:csv_to_system_map]).to include I18n.t('activerecord.errors.models.voter_list.custom_id_map_required')
-      end
     end
-    context 'when first list for campaign did not map custom id' do
+    shared_context 'first list did not map custom id' do
       let(:second_voter_list) do
         build(:voter_list, {
           campaign: campaign,
@@ -74,9 +60,55 @@ describe VoterList, :type => :model do
         }
         voter_list.save!
       end
-      it 'cannot map custom_id' do
-        second_voter_list.valid?
-        expect(second_voter_list.errors[:csv_to_system_map]).to include I18n.t('activerecord.errors.models.voter_list.custom_id_map_prohibited')
+    end
+
+    context 'when purpose == "import"' do
+      context 'when this is the first list for the campaign' do
+        it 'can map custom_id' do
+          expect(voter_list).to be_valid
+        end
+      end
+      context 'when first list for campaign did map custom id' do
+        include_context 'first list mapped custom id'
+        it 'can map custom_id' do
+          expect(second_voter_list).to be_valid
+        end
+        it 'is invalid if no custom id is mapped' do
+          second_voter_list.save!
+          third_voter_list.valid?
+          expect(third_voter_list.errors[:csv_to_system_map]).to include I18n.t('activerecord.errors.models.voter_list.custom_id_map_required')
+        end
+      end
+      context 'when first list for campaign did not map custom id' do
+        include_context 'first list did not map custom id'
+        it 'cannot map custom_id' do
+          second_voter_list.valid?
+          expect(second_voter_list.errors[:csv_to_system_map]).to include I18n.t('activerecord.errors.models.voter_list.custom_id_map_prohibited')
+        end
+      end
+    end
+
+    context 'when purpose == "prune_numbers"' do
+      let(:purpose){ 'prune_numbers' }
+
+      context 'the first list mapped custom id' do
+        before do
+          third_voter_list.purpose = purpose
+        end
+        include_context 'first list mapped custom id'
+        it 'mapped custom id is ignored' do
+          expect(third_voter_list).to be_valid
+        end
+      end
+
+      context 'the first list did not map custom id' do
+        include_context 'first list did not map custom id'
+        before do
+          second_voter_list.purpose = purpose
+        end
+        it 'unmapped custom id is ignored' do
+          expect(second_voter_list).to be_valid
+        end
       end
     end
   end
