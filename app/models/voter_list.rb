@@ -6,8 +6,10 @@ class VoterList < ActiveRecord::Base
   
   belongs_to :campaign
   belongs_to :account
-  has_many :voters, -> { where active: true}
+  has_many :voters, -> { where active: true }
   has_many :households
+
+  scope :disabled, -> { where enabled: false }
   
   validates_presence_of :name, :s3path, :csv_to_system_map, :uploaded_file_name
   validates_length_of :name, :minimum => 3

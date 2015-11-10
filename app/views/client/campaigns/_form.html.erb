@@ -33,6 +33,9 @@
       <li><a href="#settings">Settings</a></li>
       <li><a href="#upload">Upload</a></li>
       <li><a href="#upload-history">Upload history</a></li>
+    <% if @campaign.lists.disabled.count > 0 %>
+      <li><a href="#disabled-lists">Disabled lists</a></li>
+    <% end %>
     </ul>
 
     <div id="settings" style="display: none;">
@@ -54,5 +57,11 @@
         <p>A record of uploaded lists will display here.</p>
       <% end %>
     </div>
+
+  <% if @campaign.lists.disabled.count > 0 %>
+    <div id="disabled-lists" style="display: none;">
+      <%= render 'disabled_lists' %>
+    </div>
+  <% end %>
   </div>
 </div>

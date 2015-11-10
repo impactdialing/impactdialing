@@ -1,0 +1,44 @@
+<p>
+  The way lists are managed is changing. To ease the transition, you can enable any lists that are currently disabled. Once a list is enabled you will not be able to disable it again.
+</p>
+
+<p>
+To remove numbers from the campaign call list, select that option from the Upload tab.
+</p>
+
+<%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}" do |f| %>
+  <fieldset>
+    <legend>Lists</legend>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Total households</th>
+        <th>Total leads</th>
+      </tr>
+      <% i = 0 %>
+      <% @campaign.lists.disabled.each do |list| %>
+        <% next if list.new_record? %>
+        <tr>
+          <td valign="top" style="max-width: 100px;">
+            <label for="campaign_voter_lists_attributes_<%= i %>">
+            <%= f.fields_for :voter_lists, list do |list_fields| %>
+              <%= list_fields.hidden_field :id, {name: "campaign[voter_lists_attributes][#{i}][id]"} %>
+              <%= list_fields.check_box :enabled, {
+                name: "campaign[voter_lists_attributes][#{i}][enabled]",
+                id: "campaign_voter_lists_attributes_#{i}"
+              } %>
+            <% end %>
+            <%= list.name %>
+            </label>
+            <% i += 1 %>
+          </td>
+          <td valign="top"><%= list.stats[:total_numbers] %></td>
+          <td valign="top"><%= list.stats[:total_leads] %></td>
+        </tr>
+      <% end %>
+    </table>
+  </fieldset>
+  <div class="buttons">
+    <button type="submit">Save</button>
+  </div>
+<% end %>
