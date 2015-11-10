@@ -1,0 +1,44 @@
+<h4>Upload history</h4>
+<% if @campaign.new_record? %>
+  <p>After saving this campaign, you can edit it again to upload lists.</p>
+<% elsif @campaign.voter_lists.count.zero? %>
+  <p>You haven't uploaded any lists yet.</p>
+<% else %>
+  <p>
+    All times display in <%= @campaign.time_zone %>.
+  </p>
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Activity</th>
+      <th>Date</th>
+    </tr>
+    <% @campaign.list_activities.each do |list| %>
+      <% next if list.new_record? %>
+      <tr title="List contained
+<%= list.stats[:total_numbers] %> valid Households
+<%= list.stats[:total_leads] %> valid Leads
+<% if list.stats[:pre_existing_numbers] > 0 -%>
+<%= list.stats[:pre_existing_numbers] %> Households had leads added<%= ' or updated' if @campaign.using_custom_ids? %> 
+<% end -%>
+<%- if @campaign.using_custom_ids? -%>
+<%= list.stats[:updated_leads] %> Leads were updated
+<% end -%>">
+        <td valign="top" class="tight">
+          <%= list.name %>
+        </td>
+        <td valign="top" class="tight">
+          <% if list.purpose == 'import' %>
+            Added <%= list.stats[:new_numbers] %> households
+            and <%= list.stats[:new_leads] %> leads
+          <% elsif list.purpose == 'prune_numbers' %>
+            Removed <%= list.stats[:removed_numbers] %> households
+          <% end %>
+        </td>
+        <td valign="top">
+          <%= list.created_at.in_time_zone(@campaign.time_zone).strftime('%b %e, %Y at %l:%M%P') %>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+<% end %>

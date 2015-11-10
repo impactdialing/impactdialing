@@ -8,16 +8,14 @@
 
 <div id="campaign-tabs">
   <ul>
+    <li><a href="#dial-info">Dial info</a></li>
     <li><a href="#settings">Settings</a></li>
-    <li><a href="#info">Info</a></li>
     <li><a href="#upload">Upload</a></li>
+    <li><a href="#upload-history">Upload history</a></li>
   </ul>
 
-  <div id="settings">
-    <%= render 'tabbed_form' %>
-  </div>
-
-  <div id="info">
+  <div id="dial-info" style="display: none;">
+    <h4>Dial info</h4>
     <% if dials_summary.present? %>
       <%= dials_summary %>
     <% else %>
@@ -25,7 +23,16 @@
     <% end %>
   </div>
 
-  <div id="upload">
+  <div id="settings" style="display: none;">
+    <h4>Settings</h4>
+    <%= render 'tabbed_form' %>
+  </div>
+
+  <div id="upload" style="display: none;">
     <%= render 'tabbed_upload_form' %>
+  </div>
+
+  <div id="upload-history" style="display: none;">
+    <%= render 'upload_history' %>
   </div>
 </div>

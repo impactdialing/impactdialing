@@ -1,0 +1,75 @@
+div.ui-widget {
+  font-size: inherit;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  line-height: 1.4;
+  button {
+    padding: 11px;
+    overflow: visible;
+    background-color: #456587;
+    border-width: 0;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: bold;
+    font-size: inherit;
+    text-align: center;
+    line-height: 1;
+    color: #fff;
+  }
+  form, input, label, select, option {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 1;
+    color: #000;
+    font-size: .975em;
+  }
+}
+div.ui-widget-content {
+  border: none;
+  background: transparent;
+}
+.ui-tabs {
+  border: none;
+  background: none;
+  color: inherit;
+  margin: 0 auto 1.5em;
+
+  .ui-helper-reset {
+    font-size: .875em;
+  }
+  .ui-tabs-nav {
+    //border: 1px solid #e6e6e6;
+    //background: #f2f2f2;
+    background: transparent;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid #e2e2e2;
+    color: inherit;
+
+    li:last-child {
+      border-bottom: 1px #e2e2e2;
+    }
+    li {
+      float: left;
+      margin-bottom: 0;
+      padding: 0;
+      border-width: 0;
+      border-right: 1px solid #e6e6e6;
+      background-color: #fff;
+      border: 1px solid #e6e6e6;
+      text-align: center;
+
+      a {
+        background-color: #fff;
+        color: #000;
+      }
+      a:hover {
+        background-color: #456587;
+        color: #fff;
+      }
+    }
+    li.ui-state-active a {
+      background-color: #9a2b29;
+      color: #fff;
+    }
+
+  }
+}
