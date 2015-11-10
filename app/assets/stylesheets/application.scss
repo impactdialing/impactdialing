@@ -3,13 +3,27 @@
 *= require ui-tabs-impactdialing
 */
 
-.inline {
+.inline, .module {
   vertical-align: top;
   display: inline-block;
 }
-
 .align-right {
   text-align: right;
+}
+.module-container {
+  text-align: left;
+}
+fieldset.module {
+  width: 300px;
+}
+fieldset.loose.module {
+  width: auto;
+}
+div.module {
+  text-align: left;
+}
+.tight {
+  max-width: 300px;
 }
 .main-content {
   max-width: 70%;

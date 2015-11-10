@@ -1,103 +1,48 @@
-<%= render "shared/error_messages", :target => @campaign %>
-<style type="text/css">
-  .module-container {
-    text-align: left;
-  }
-  .module {
-    display: inline-block;
-    vertical-align: top;
-  }
-  fieldset.module {
-    width: 300px;
-  }
-  fieldset.loose.module {
-    width: auto;
-  }
-  div.module {
-    text-align: left;
-  }
-  .tight {
-    max-width: 300px;
-  }
-</style>
-<%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}" do |f| %>
-  <div class="module-container">
-    <div class="module">
-      <fieldset class="module">
-        <legend>General settings</legend>
-        <%= f.hidden_field :id, {name: "campaign[id]", id: "campaign_id"} %>
-        <p data-intro="Give your campaign a name." data-step="1">
-          <%= f.label :name %>
-          <%= f.text_field :name, name: "campaign[name]" %>
-        </p>
-        <p data-intro="Choose the Caller ID to be displayed on outgoing calls. The law requires that this be a real number associated with your business or organization." data-step="2">
-          <label>Caller ID</label>
-          <%= f.text_field :caller_id, name: "campaign[caller_id]" %>
-        </p>
-        <p data-intro="Choose which script your callers should use." data-step="3">
-          <%= f.label :script %>
-          <%= f.collection_select(:script_id, @scripts, :id, :name, {prompt: true}, name: "campaign[script_id]",
-          id: "campaign_script") %>
-        </p>
-        <p data-intro="There are three dialing modes. Preview mode shows the name of the lead and lets your caller choose to dial or skip it. Power mode dials a new lead immediately after the previous one is finished. Predictive mode will dial more lines than you have callers, intelligently adapting to the answer rate and conversation length; occasionally, however, a call will be answered when no caller is available. Predictive should generally only be used when several callers are calling at the same time." data-step="4">
-          <%= f.label :dialing_mode %>
-          <select class="field" id="campaign_type" name="campaign[type]">
-            <%= options_for_select_campaign_type(@campaign) %>
-          </select>
-        </p>
-        <div id="abandon_rate_edit" style="display: none">
-          <p>
-            <label for="campaign_acceptable_abandon_rate">Compliance abandonment rate</label>
-            <select class="field" id="campaign_acceptable_abandon_rate" name="campaign[acceptable_abandon_rate]">
-              <% if @campaign.account.variable_abandonment? %>
-                <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03], ["4%", 0.04], ["5%", 0.05],
-                                        ["6%", 0.06], ["7%", 0.07], ["8%", 0.08], ["9%", 0.09],["10%", 0.1]],
-                                       @campaign.acceptable_abandon_rate %>
-              <% else %>
-                <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate %>
-              <% end %>
-            </select>
-          </p>
-        </div>
+<%= content_for :javascripts do %>
+  <%= javascript_include_tag 'campaign/campaign', 'campaign/voter_lists', 'form_helpers/grouped_selects' %>
+  <%= javascript_include_tag 'campaigns/list_upload_form' %>
 
-        <p data-intro="Choose what time zone you're calling so that the correct time is used for the dialing hours and reports." data-step="5">
-          <label>Time zone</label>
-          <%= time_zone_select("campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => @campaign.time_zone) %>
-        </p>
-
-        <p data-intro="Outside of the dialing hours, the dialer won't make calls." data-step="6">
-          <label for="">Dialing hours</label>
-          <select class="field" id="campaign_start_time" name="campaign[start_time]">
-            <%= options_for_select hours, @campaign.start_time.try(:hour) %>
-          </select>
-          to
-          <select class="field" id="campaign_end_time" name="campaign[end_time]">
-            <%= options_for_select hours, @campaign.end_time.try(:hour) %>
-          </select>
-        </p>
-
-        <p data-intro="The time between call attempts sets the minimum amount of time before calling somebody back." data-step="7">
-          <label for="campaign_recycle_rate">Time (in hours) between call attempts</label>
-          <input id="campaign_recycle_rate" type="text" name="campaign[recycle_rate]" value="<%= @campaign.recycle_rate %>">
-        </p>
-      </fieldset>
-
-      <%= render :partial => 'voicemail', :locals => {:form => f} %>
-    </div>
-
-    <div class="module">
-      <fieldset class="module">
-        <legend>Info</legend>
-        <% if dials_summary.present? %>
-          <%= dials_summary %>
-        <% else %>
-          <p>This will display once the campaign is saved.</p>
-        <% end %>
-      </fieldset>
-    </div>
-  </div>
-  
-  <div class="buttons">
-    <button type="submit">Save</button>
-  </div>
+  <script type="text/javascript">
+    $(function(){
+      campaign = new Campaign();
+      $('#campaign-tabs').tabs();
+      $('#campaign-tabs').show();
+    });
+  </script>
 <% end %>
+
+<div id="dial-info" class="sidebar-right">
+  <h3>Info</h3>
+  <div>
+    <% if dials_summary.present? %>
+      <%= dials_summary %>
+    <% else %>
+      <p>This will display once the campaign is saved.</p>
+    <% end %>
+  </div>
+</div>
+
+<div class="main-content">
+  <%= render "shared/error_messages", :target => @campaign %>
+
+  <div id="campaign-tabs" style="display: none;">
+    <ul>
+      <li><a href="#settings">Settings</a></li>
+      <li><a href="#upload">Upload</a></li>
+      <li><a href="#upload-history">Upload history</a></li>
+    </ul>
+
+    <div id="settings" style="display: none;">
+      <h4>Settings</h4>
+      <%= render 'settings' %>
+    </div>
+
+    <div id="upload" style="display: none;">
+      <%= render 'upload_form' %>
+    </div>
+
+    <div id="upload-history" style="display: none;">
+      <%= render 'upload_history' %>
+    </div>
+  </div>
+</div>

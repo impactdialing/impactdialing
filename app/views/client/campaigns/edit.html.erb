@@ -1,8 +1,6 @@
 <% content_for :javascripts do %>
-    <%= javascript_include_tag "campaign/campaign", "campaign/voter_lists", "jquery.form.js", "form_helpers/grouped_selects", "campaigns/list_upload_form" %>
     <script type ="text/javascript">
-      $(document).ready(function() {
-        campaign         = new Campaign();
+      $(function() {
         list_upload_form = new ListUploadForm();
         voter_list       = new VoterLists(list_upload_form);
       });
@@ -11,8 +9,4 @@
 
 <h1><%= @campaign.name %></h1>
 
-<% if params[:t] == 'tabbed' %>
-  <%= render 'tabbed' %>
-<% else %>
-  <%= render 'original' %>
-<% end %>
+<%= render 'form_new' %>
