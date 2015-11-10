@@ -1,5 +1,6 @@
 <%= content_for :javascripts do %>
-  <%= javascript_include_tag 'campaign/campaign', 'campaign/voter_lists', 'form_helpers/grouped_selects' %>
+  <%= javascript_include_tag 'campaign/campaign', 'campaign/voter_lists',
+                             'form_helpers/grouped_selects', 'jquery.form' %>
   <%= javascript_include_tag 'campaigns/list_upload_form' %>
 
   <script type="text/javascript">
