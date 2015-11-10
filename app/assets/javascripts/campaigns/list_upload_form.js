@@ -10,12 +10,12 @@ var ListUploadForm = function() {
   });
 };
 
-ListUploadForm.prototype.purposes = ['add', 'remove_numbers', 'remove_leads'];
+ListUploadForm.prototype.purposes = ['import', 'prune_numbers', 'prune_leads'];
 
 ListUploadForm.prototype.selectors = {
-  'add': '.js_list_upload_add_option',
-  'remove_numbers': '.js_list_upload_remove_numbers_option',
-  'remove_leads': '.js_list_upload_remove_leads_option'
+  'import': '.js_list_upload_add_option',
+  'prune_numbers': '.js_list_upload_remove_numbers_option',
+  'prune_leads': '.js_list_upload_remove_leads_option'
 };
 
 ListUploadForm.prototype.toggle = function(val) {
