@@ -265,6 +265,8 @@ ImpactDialing::Application.routes.draw do
         get :usage
         get :answer
         get :dials
+        get :dials_by_dial
+        get :dials_by_lead
         get :dials_summary
         get :account_campaigns_usage
         get :account_callers_usage

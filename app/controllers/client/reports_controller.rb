@@ -5,6 +5,9 @@ module Client
     include TimeZoneHelper
     before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage, :performance]
     before_filter :campaigns_and_callers_exist?
+    before_filter :report_preflight, :only => [
+      :dials, :dials_by_dial, :dials_by_lead
+    ]
 
     around_filter :select_shard
     respond_to :html, :json
@@ -52,6 +55,16 @@ module Client
         date_pool << record.created_at
       end
       date_pool
+    end
+
+    def report_preflight
+      authorize! :view_reports, @account
+      load_campaign
+
+      from_date_pool = build_date_pool(:from_date, [@campaign])
+      to_date_pool   = build_date_pool(:to_date)
+
+      @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
     end
 
   public
@@ -103,39 +116,29 @@ module Client
     end
 
     def dials
-      authorize! :view_reports, @account
-      load_campaign
+      @report = Report::Dials::ByStatusController.render(:html, {
+        campaign: @campaign,
+        scoped_to: :all_voters,
+        from_date: @date_range.from,
+        to_date: @date_range.to,
+        description: "The data in the per lead table includes only the most recent status for each lead."
+      })
+    end
 
-      params[:dials_view] ||= 'by_lead'
+    def dials_by_lead
+      dials
+      render text: @report.html_safe
+    end
 
-      from_date_pool = build_date_pool(:from_date, [@campaign])
-      to_date_pool   = build_date_pool(:to_date)
-
-      @date_range = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
-
-      if params[:dials_view] == 'by_lead'
-        @report = Report::Dials::ByStatusController.render(:html, {
-          campaign: @campaign,
-          scoped_to: :all_voters,
-          from_date: @date_range.from,
-          to_date: @date_range.to,
-          heading: "Per lead",
-          description: "The data in the per lead table includes only the most recent status for each lead."
-        })
-        @report_link_text = 'Per dial'
-        @report_link_view = 'by_dial'
-      else
-        @report = Report::Dials::ByStatusController.render(:html, {
-          campaign: @campaign,
-          scoped_to: :call_attempts,
-          from_date: @date_range.from,
-          to_date: @date_range.to,
-          heading: "Per dial",
-          description: "The data in the per dial table includes every status for each lead."
-        })
-        @report_link_text = 'Per lead'
-        @report_link_view = 'by_lead'
-      end
+    def dials_by_dial
+      @report = Report::Dials::ByStatusController.render(:html, {
+        campaign: @campaign,
+        scoped_to: :call_attempts,
+        from_date: @date_range.from,
+        to_date: @date_range.to,
+        description: "The data in the per dial table includes every status for each lead."
+      })
+      render text: @report.html_safe
     end
 
     def answer

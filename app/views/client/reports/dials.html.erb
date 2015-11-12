@@ -1,17 +1,60 @@
-<div role="main">
-  <p>
-    <%= link_to @report_link_text, dials_client_reports_path({
-          campaign_id: params[:campaign_id],
-          dials_view: @report_link_view,
-          from_date: date_as_slashes(@date_range.from, @campaign.time_zone),
-          to_date: date_as_slashes(@date_range.to, @campaign.time_zone)
-    }) %>
-  </p>
+<%= content_for :javascripts do %>
+  <script type="text/javascript">
+    var spinner, spinnerOpts, tabTarget;
+    spinnerOpts = {
+      lines: 5,
+      length: 0,
+      width: 6,
+      radius: 9,
+      scale: 1.00,
+      corners: 1.0,
+      opacity: 0.25,
+      rotate: 54,
+      direction: 1,
+      speed: 1.0,
+      trail: 60,
+      top: '5%',
+      left: '98%'
+    };
+    tabTarget = document.getElementById('dials-report-tabs');
+    spinner   = new Spinner(spinnerOpts).spin(tabTarget);
 
+    $(function(){
+      $('#dials-report-tabs').tabs({
+        beforeLoad: function(event, ui){
+          console.log('spinning');
+          spinner.spin(tabTarget);
+        },
+        load: function(event, ui){
+          console.log('stopping');
+          spinner.stop();
+        }
+      });
+      $('#dials-report-tabs').show();
+      spinner.stop();
+    });
+  </script>
+<% end %>
+<div role="main">
   <h1><%= @campaign.name %> Dials</h1>
   <h4><%= nice_date(@date_range.from, @campaign.time_zone) %> - <%= nice_date(@date_range.to, @campaign.time_zone) %> <%= @date_range.time_zone.name %></h4>
 
-  <%= @report.html_safe %>
+  <div id="dials-report-tabs" style="display: none;">
+    <ul>
+      <li><a href="#per-lead">Per lead</a></li>
+      <li>
+        <%= link_to 'Per dial', dials_by_dial_client_reports_path({
+          campaign_id: params[:campaign_id],
+          from_date: date_as_slashes(@date_range.from, @campaign.time_zone),
+          to_date: date_as_slashes(@date_range.to, @campaign.time_zone)
+        }) %>
+      </li>
+    </ul>
+
+    <div id="per-lead">
+      <%= @report.html_safe %>
+    </div>
+  </div>
 
   <%= render('selective_date_range_picker', {
     datepicker_path: dials_client_reports_path,
@@ -22,3 +65,4 @@
     to_date: @date_range.to
   }) %>
 </div>
+
