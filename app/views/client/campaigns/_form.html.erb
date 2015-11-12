@@ -30,6 +30,7 @@
   <div id="campaign-tabs" style="display: none;">
     <ul>
       <li><a href="#settings">Settings</a></li>
+      <li><a href="#messages">Messages</a></li>
       <li><a href="#upload">Upload</a></li>
       <li><a href="#upload-history">Upload history</a></li>
     <% if @campaign.lists.disabled.count > 0 %>
@@ -39,6 +40,10 @@
 
     <div id="settings" style="display: none;">
       <%= render 'settings' %>
+    </div>
+
+    <div id="messages" style="display: none;">
+      <%= render 'messages' %>
     </div>
 
     <div id="upload" style="display: none;">
