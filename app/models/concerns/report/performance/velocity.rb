@@ -4,8 +4,8 @@ class Report::Performance::Velocity
 private
   def rows
     [
-      {heading: '<b>Dials /caller /hour</b>', number: :dial_rate},
-      {heading: '<b>Answers /caller /hour</b>', number: :answer_rate},
+      {heading: '<b>Dials per caller per hour</b>', number: :dial_rate},
+      {heading: '<b>Answers per caller per hour</b>', number: :answer_rate},
       {heading: '<b>Average call length</b>', number: :average_call_length}
     ]
   end
