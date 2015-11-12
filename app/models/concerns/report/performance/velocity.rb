@@ -29,7 +29,7 @@ private
 
   def caller_transformations
     [
-      {column: '&nbsp;', rows_matcher: [1,:heading], value: '<b>Answers /hour</b>'}
+      {column: '&nbsp;', rows_matcher: [1,:heading], value: '<b>Answers per hour</b>'}
     ]
   end
 
