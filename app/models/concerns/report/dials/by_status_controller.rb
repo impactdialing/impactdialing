@@ -5,7 +5,7 @@ class Report::Dials::ByStatusController < Ruport::Controller
 
   stage :heading, :description, :table
 
-  required_option :campaign, :heading, :description, :scoped_to
+  required_option :campaign, :description, :scoped_to
 
 public
   def setup
