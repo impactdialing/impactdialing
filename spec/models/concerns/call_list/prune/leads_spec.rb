@@ -48,7 +48,7 @@ describe CallList::Prune::Leads do
     subject{ CallList::Prune::Leads.new(prune_voter_list) }
     let(:key_id_pairs) do
       ids_to_delete.map do |id|
-        [voter_list.campaign.call_list.custom_id_register_key(id), id]
+        [id, voter_list.campaign.call_list.custom_id_register_key(id)]
       end
     end
     it 'removes leads w/ matching ids' do

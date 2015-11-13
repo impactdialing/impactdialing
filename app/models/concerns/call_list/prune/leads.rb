@@ -62,7 +62,7 @@ public
     removed_leads   = 0
     removed_numbers = 0
     key_id_pairs.each_slice(batch_size) do |batch|
-      _, phones_to_delete = *delete_leads(batch)
+      _count, phones_to_delete = *delete_leads(batch)
       delete_phone_numbers(phones_to_delete)
     end
   end
@@ -90,7 +90,7 @@ public
     removed_lead_count = 0
     numbers_to_delete = []
     key_id_pairs.each do |key_id_pair|
-      register_key, id = *key_id_pair
+      id, register_key = *key_id_pair
       register_hkey    = voter_list.campaign.call_list.custom_id_register_hash_key(id)
       phone   = redis.hget(register_key, register_hkey)
       next if phone.blank?
