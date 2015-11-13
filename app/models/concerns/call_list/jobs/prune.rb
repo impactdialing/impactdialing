@@ -12,8 +12,8 @@ class CallList::Jobs::Prune
     pruner_klass = namespace.constantize
     pruner       = pruner_klass.new(voter_list, cursor, results)
 
-    pruner.parse do |numbers|
-      pruner.delete(numbers)
+    pruner.parse do |data|
+      pruner.delete(data)
       cursor  = pruner.cursor
       results = pruner.results
     end

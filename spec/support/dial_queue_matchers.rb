@@ -1,3 +1,52 @@
+RSpec::Matchers.define :be_registered_as_custom_ids do
+  redis = Redis.new
+  registered_ids = []
+
+  match do |ids|
+    redis.scan_each(match: 'list*custom_ids*') do |key|
+      key_parts = key.split(':')
+      if key_parts[-1] =~ /\A\d+\Z/
+        _id  = key_parts[-1]
+        _reg = redis.hgetall(key)
+        registered_ids += _reg.keys.map{|k| "#{_id}#{k}"}
+      else
+        registered = redis.hgetall(key)
+        registered_ids += registered.keys
+      end
+      registered_ids.uniq!
+    end
+
+    ids.all?{|id| registered_ids.include?(id)}
+  end
+end
+
+# expect(ids).to belong_to_active_leads
+RSpec::Matchers.define :belong_to_active_leads do
+  redis          = Redis.new
+  found_leads    = {}
+  houses_in_redis = []
+  lead_ids = []
+
+  match do |ids|
+    redis.scan_each(match: 'dial_queue:*:households:active:*') do |key|
+      houses = redis.hgetall(key)
+      houses.each do |phone_suffix, house_json|
+        house = JSON.parse(house_json)
+        house['leads'].each{|lead| lead_ids << lead['custom_id']}
+
+        found = lead_ids.detect{|id| ids.include?(id)}
+        if found
+          found_leads[house['phone']] ||= []
+          found_leads[house['phone']] << found['custom_id']
+        end
+        houses_in_redis << house
+      end
+    end
+
+    ids.all?{|id| lead_ids.include?(id)}
+  end
+end
+
 RSpec::Matchers.define :have_leads_from do |voter_list|
   redis          = Redis.new
   expected_leads = []

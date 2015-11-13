@@ -15,6 +15,16 @@ module ListHelpers
       leads = []
       household[:leads].each do |lead|
         lead['sequence'] = lead_sequence
+
+        if lead[:custom_id].present?
+          lead[:custom_id] = lead_sequence.to_s
+          key = list.campaign.call_list.custom_id_register_key(lead[:custom_id])
+          hkey = lead[:custom_id].size > 3 ? lead[:custom_id][-4..-1] : lead[:custom_id]
+          redis.hset(key, hkey, phone)
+        end
+
+        redis.hincrby list.campaign.call_list.stats.key, 'total_leads', 1
+        redis.hincrby list.stats.key, 'total_leads', 1
         leads << lead
         lead_sequence += 1
       end
@@ -22,6 +32,7 @@ module ListHelpers
       key = "#{base_key}:#{phone[0..ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i]}"
       hkey = phone[ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i + 1..-1]
       redis.hincrby list.campaign.call_list.stats.key, 'total_numbers', 1
+      redis.hincrby list.stats.key, 'total_numbers', 1
       redis.hset key, hkey, household.to_json
       redis.zadd "dial_queue:#{list.campaign_id}:#{zset_namespace}", zscore(sequence), phone 
       sequence += 1
@@ -130,8 +141,7 @@ module ListHelpers
   def build_leads_array(n, list, phone, with_custom_id=false, with_very_long_values=false)
     a = []
     n.times do |i|
-      id = with_custom_id ? i : false
-      a << build_lead_hash(list, phone, id, with_very_long_values)
+      a << build_lead_hash(list, phone, with_custom_id, with_very_long_values)
     end
     a
   end
@@ -155,7 +165,7 @@ module ListHelpers
       })
     end
     if id
-      custom_id = id.kind_of?(Integer) ? id : Forgery(:basic).number
+      custom_id = id.kind_of?(Integer) ? id : Forgery(:basic).number.to_s
       h.merge!(custom_id: custom_id)
     end
     h

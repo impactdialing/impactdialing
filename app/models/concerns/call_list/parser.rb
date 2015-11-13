@@ -50,6 +50,10 @@ private
     voter_list.campaign.call_list.custom_id_register_key(custom_id)
   end
 
+  def hash_custom_id_register_key(custom_id)
+    voter_list.campaign.call_list.custom_id_register_hash_key(custom_id)
+  end
+
   def invalid_row!(csv_row)
     results[:invalid_rows] << CSV.generate_line(csv_row.to_a)
   end
@@ -103,7 +107,7 @@ public
     @phone_index      = nil
   end
 
-  def parse_file(&block)
+  def parse_file(opts={}, &block)
     i = 0
     start_at = nil
 
@@ -130,7 +134,7 @@ public
         end
       end
 
-      keys, data = parse_lines(lines.join)
+      keys, data = parse_lines(lines.join, opts)
 
       @cursor += lines.size
 
@@ -148,7 +152,8 @@ public
     end
   end
 
-  def parse_lines(lines, &block)
+  def parse_lines(lines, opts={}, &block)
+    with_phone = opts[:with_phone] || true
     line_count = lines.size
     rows       = CSV.new(lines, csv_options)
     keys       = []
@@ -163,24 +168,12 @@ public
     begin
       rows.each_with_index do |row, i|
         next_line = lines_arr[i+1] # capture next line in case #each raises MalformedCSVError
-        raw_phone = row[@phone_index]
-        phone     = PhoneNumber.sanitize(raw_phone)
 
-        next unless phone_valid?(phone, row)
-
-        # build keys here to maintain cluster support
-        keys << redis_key(phone)
-        data << [phone, row, i]
-
-        # debugging nil key: #104590114
-        if keys.last.nil?
-          ImpactPlatform::Metrics.count('imports.parser.nil_redis_key')
-          pre = "[CallList::Imports::Parser]"
-          p "#{pre} Last redis key was nil."
-          p "#{pre} Phone: #{phone}"
-          p "#{pre} Current row (#{i}): #{row}"
+        if with_phone
+          parse_phone(row, i, keys, data)
+        else
+          parse_custom_id(row, i, keys, data)
         end
-        # /debugging
       end
     rescue CSV::MalformedCSVError => e
       invalid_line!(next_line)
@@ -188,6 +181,37 @@ public
     end
 
     [keys.uniq, data]
+  end
+
+  def parse_phone(row, i, keys, data)
+    raw_phone = row[@phone_index]
+    phone     = PhoneNumber.sanitize(raw_phone)
+
+    return unless phone_valid?(phone, row)
+
+    # build keys here to maintain cluster support
+    keys << redis_key(phone)
+    data << [phone, row, i]
+
+    # debugging nil key: #104590114
+    if keys.last.nil?
+      ImpactPlatform::Metrics.count('imports.parser.nil_redis_key')
+      pre = "[CallList::Imports::Parser]"
+      p "#{pre} Last redis key was nil."
+      p "#{pre} Phone: #{phone}"
+      p "#{pre} Current row (#{i}): #{row}"
+    end
+    # /debugging
+  end
+
+  def parse_custom_id(row, i, keys, data)
+    # parsing w/out phone can only mean parsing w/ custom id
+    id    = row[@custom_id_index]
+
+    return unless custom_id_valid?(id)
+
+    keys << redis_custom_id_register_key(id)
+    data << [id, row, i]
   end
 end
 
