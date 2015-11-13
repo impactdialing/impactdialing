@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Add entries to Campaign', js: true, type: :feature, file_uploads: true do
+describe 'Manage Campaign call list', js: true, type: :feature, file_uploads: true do
 
   def pall
     re = Redis.new
@@ -25,8 +25,11 @@ describe 'Add entries to Campaign', js: true, type: :feature, file_uploads: true
     let(:csv_file_remove_numbers_upload) do
       cp_tmp('valid_list_remove_numbers.csv')
     end
+    let(:csv_file_remove_leads_upload) do
+      cp_tmp('valid_list_remove_leads.csv')
+    end
 
-    def choose_and_upload_list(file, list_name, option=nil, phone_only=false)
+    def choose_and_upload_list(file, list_name, option=nil, phone_only=false, map_id=false)
       choose_list(file)
       fill_in 'List name', with: list_name
       select 'Phone', from: 'Phone'
@@ -36,9 +39,12 @@ describe 'Add entries to Campaign', js: true, type: :feature, file_uploads: true
         select 'LastName', from: 'LAST'
         select 'Email', from: 'Email'
       end
+      if map_id
+        select 'ID', from: 'ID'
+      end
       #save_and_open_page
       choose option || upload_option
-      click_on 'Upload'
+      click_button 'Upload'
 
       process_pending_import_jobs
       visit edit_client_campaign_path(campaign)
@@ -57,11 +63,16 @@ describe 'Add entries to Campaign', js: true, type: :feature, file_uploads: true
     Time.now.in_time_zone(campaign.time_zone).strftime('%b %e, %Y at %l:%M%P')
   end
 
+  def login_and_visit_uploads
+    web_login_as(user)
+    visit edit_client_campaign_path(campaign)
+    click_link 'Upload'
+  end
+
   context 'when "Add to call list" is selected' do
     let(:upload_option){ "Add to call list" }
     before do
-      web_login_as(user)
-      visit edit_client_campaign_path(campaign)
+      login_and_visit_uploads
       expect(page).to have_content "Available to dial 0 0%"
     end
     it 'adds uploaded entries to the Campaign call list' do
@@ -75,16 +86,34 @@ describe 'Add entries to Campaign', js: true, type: :feature, file_uploads: true
   context 'when "Remove phone numbers from call list"' do
     let(:upload_option){ 'Remove phone numbers from call list' }
     before do
-      web_login_as(user)
-      visit edit_client_campaign_path(campaign)
+      login_and_visit_uploads
       choose_and_upload_list(csv_file_upload, 'Munsters cast', 'Add to call list')
       expect(page).to have_content 'Available to dial 2 100%'
+      click_link 'Upload'
     end
     it 'removes uploaded entries from the Campaign call list' do
       choose_and_upload_list(csv_file_remove_numbers_upload, 'Munsters retired cast', nil, true)
       expect(page).to have_content 'Available to dial 0'
       expect(page).to have_content 'Not available to dial 0'
+      click_link 'Upload history'
       expect(page).to have_content "Munsters retired cast Removed 2 households #{datetime}"
+    end
+  end
+
+  context 'when "Remove leads from call list"' do
+    let(:upload_option){ 'Remove leads from call list' }
+    before do
+      login_and_visit_uploads
+      choose_and_upload_list(csv_file_upload, 'Munsters cast', 'Add to call list', nil, true)
+      expect(page).to have_content 'Available to dial 2 100%'
+      click_link 'Upload'
+    end
+    it 'removes uploaded leads from Campaign call list' do
+      choose_and_upload_list(csv_file_remove_leads_upload, 'Munsters extras', nil, true)
+      expect(page).to have_content 'Available to dial 1'
+      expect(page).to have_content 'Not available to dial 0'
+      click_link 'Upload history'
+      expect(page).to have_content "Munsters extras Removed 1 household and 2 leads #{datetime}"
     end
   end
 end

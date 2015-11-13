@@ -24,10 +24,12 @@
       </td>
       <td valign="top" class="tight">
         <% if list.purpose == 'import' %>
-          Added <%= list.stats[:new_numbers] %> households
-          and <%= list.stats[:new_leads] %> leads
+          Added <%= pluralize(list.stats[:new_numbers], 'household') %>
+          and <%= pluralize(list.stats[:new_leads], 'lead') %>
         <% elsif list.purpose == 'prune_numbers' %>
-          Removed <%= list.stats[:removed_numbers] %> households
+          Removed <%= pluralize(list.stats[:removed_numbers], 'household') %>
+        <% elsif list.purpose == 'prune_leads' %>
+          Removed <%= pluralize(list.stats[:removed_numbers], 'household') %> and <%= pluralize(list.stats[:removed_leads], 'leads') %>
         <% end %>
       </td>
       <td valign="top">
