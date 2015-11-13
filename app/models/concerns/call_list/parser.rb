@@ -152,8 +152,8 @@ public
     end
   end
 
-  def parse_lines(lines, opts={}, &block)
-    with_phone = opts[:with_phone] || true
+  def parse_lines(lines, opts={})
+    with_phone = opts.key?(:with_phone) ? opts[:with_phone] : true
     line_count = lines.size
     rows       = CSV.new(lines, csv_options)
     keys       = []
