@@ -25,13 +25,15 @@
     <% end %>
     </ul>
 
-    <div id="settings" style="display: none;">
-      <%= render 'settings' %>
-    </div>
+    <%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}" do |form| %>
+      <div id="settings" style="display: none;">
+        <%= render 'settings', form: form %>
+      </div>
 
-    <div id="messages" style="display: none;">
-      <%= render 'messages' %>
-    </div>
+      <div id="messages" style="display: none;">
+        <%= render 'messages', form: form %>
+      </div>
+    <% end %>
 
     <div id="upload" style="display: none;">
       <% unless @campaign.new_record? %>
