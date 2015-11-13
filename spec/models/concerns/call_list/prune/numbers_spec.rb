@@ -5,7 +5,14 @@ describe CallList::Prune::Numbers do
   let(:campaign){ create(:predictive) }
   let(:voter_list) do
     create(:voter_list, {
-      campaign: campaign
+      campaign: campaign,
+      purpose: 'import'
+    })
+  end
+  let(:prune_voter_list) do
+    create(:voter_list, {
+      campaign: campaign,
+      purpose: 'prune_numbers'
     })
   end
   let(:households) do
@@ -23,7 +30,7 @@ describe CallList::Prune::Numbers do
   end
 
   describe '#delete(numbers)' do
-    subject{ CallList::Prune::Numbers.new(voter_list) }
+    subject{ CallList::Prune::Numbers.new(prune_voter_list) }
     let(:first_number){ numbers_to_delete.first }
     let(:last_number){ numbers_to_delete.last }
 
@@ -106,13 +113,13 @@ describe CallList::Prune::Numbers do
       context 'list' do
         it 'increments total_numbers' do
           subject.delete(numbers_to_delete)
-          key = voter_list.stats.key
+          key = prune_voter_list.stats.key
           expect(redis.hget(key, 'total_numbers').to_i).to eq numbers_to_delete.size
         end
 
         it 'increments removed_numbers' do
           subject.delete(numbers_to_delete)
-          key = voter_list.stats.key
+          key = prune_voter_list.stats.key
           expect(redis.hget(key, 'removed_numbers').to_i).to eq numbers_to_delete.size
         end
       end

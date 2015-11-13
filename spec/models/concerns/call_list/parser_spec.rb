@@ -191,7 +191,7 @@ describe CallList::Parser do
       subject.parse_file{ nil }
     end
     it 'parses data from subsequent lines' do
-      expect(subject).to receive(:parse_lines).with(data_lines.join)
+      expect(subject).to receive(:parse_lines).with(data_lines.join, {})
       subject.parse_file{ nil }
     end
     it 'yields keys, data, cursor, results' do
@@ -213,7 +213,7 @@ describe CallList::Parser do
         subject{ CallList::Parser.new(voter_list, cursor, results, 1) }
 
         it 'parses the last line only' do
-          expect(subject).to receive(:parse_lines).with(data_lines[-1..-1].join)
+          expect(subject).to receive(:parse_lines).with(data_lines[-1..-1].join, {})
           subject.parse_file{ nil }
         end
       end
@@ -223,7 +223,7 @@ describe CallList::Parser do
         subject{ CallList::Parser.new(voter_list, cursor, results, 1) }
 
         it 'parses all but the first line' do
-          expect(subject).to receive(:parse_lines).with(data_lines[1..-1].join) # 0=header,1=first row
+          expect(subject).to receive(:parse_lines).with(data_lines[1..-1].join, {}) # 0=header,1=first row
           subject.parse_file{ nil }
         end
       end

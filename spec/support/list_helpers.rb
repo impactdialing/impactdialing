@@ -66,7 +66,7 @@ module ListHelpers
     black_keys        = %w(custom_id uuid sequence sql_id)
     lds               = []
     current_household['leads'].each do |cur_lead|
-      updated_lead = updated_leads.detect{|ld| ld[:custom_id] == cur_lead['custom_id'].to_i}
+      updated_lead = updated_leads.detect{|ld| ld[:custom_id] == cur_lead['custom_id']}
 
       updated_lead.keys.each do |key|
         cur_lead[key] = updated_lead[key] unless black_keys.include?(key.to_s)
