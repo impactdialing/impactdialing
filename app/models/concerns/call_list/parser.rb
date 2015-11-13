@@ -180,7 +180,7 @@ public
       retry
     end
 
-    [keys.uniq, data]
+    [keys, data]
   end
 
   def parse_phone(row, i, keys, data)
