@@ -11,19 +11,6 @@
   </script>
 <% end %>
 
-<% unless @campaign.new_record? %>
-<div id="dial-info" class="sidebar-right">
-  <h3>Info</h3>
-  <div>
-    <% if dials_summary.present? %>
-      <%= dials_summary %>
-    <% else %>
-      <p>This will display once the campaign is saved.</p>
-    <% end %>
-  </div>
-</div>
-<% end %>
-
 <div class="main-content">
   <%= render "shared/error_messages", :target => @campaign %>
 
@@ -32,7 +19,7 @@
       <li><a href="#settings">Settings</a></li>
       <li><a href="#messages">Messages</a></li>
       <li><a href="#upload">Upload</a></li>
-      <li><a href="#upload-history">Upload history</a></li>
+      <li><a href="#info">Info</a></li>
     <% if @campaign.lists.disabled.count > 0 %>
       <li><a href="#disabled-lists">Disabled lists</a></li>
     <% end %>
@@ -49,16 +36,20 @@
     <div id="upload" style="display: none;">
       <% unless @campaign.new_record? %>
         <%= render 'upload_form' %>
+
+        <div class="clearfix">
+          <%= render 'upload_history' if @campaign.voter_lists.count > 0 %>
+        </div>
       <% else %>
         <p>Lists can be uploaded once the campaign has been saved.</p>
       <% end %>
     </div>
 
-    <div id="upload-history" style="display: none;">
-      <% unless @campaign.new_record? or @campaign.voter_lists.count.zero? %>
-        <%= render 'upload_history' %>
+    <div id="info" style="display: none;">
+      <% if dials_summary.present? %>
+        <%= dials_summary %>
       <% else %>
-        <p>A record of uploaded lists will display here.</p>
+        <p>This will display once the campaign is saved.</p>
       <% end %>
     </div>
 

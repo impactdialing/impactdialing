@@ -1,6 +1,7 @@
 require 'rails_helper'
 
 describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
+  include_context 'voter csv import'
 
   before(:all) do
     Capybara.javascript_driver = :selenium # force selenium to start before first test
@@ -19,6 +20,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
   before do
     web_login_as(user)
     visit edit_client_campaign_path(campaign)
+    click_link 'Messages'
     click_on 'Add recording'
   end
 
@@ -35,6 +37,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
   context 'mp3 success' do
     before do
       upload_recording('recording.mp3')
+      click_on 'Messages'
     end
 
     it_behaves_like 'all successful recording uploads'
@@ -43,6 +46,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
   context 'wav success' do
     before do
       upload_recording('recording.wav')
+      click_on 'Messages'
     end
 
     it_behaves_like 'all successful recording uploads'
@@ -51,6 +55,7 @@ describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
   context 'aiff success' do
     before do
       upload_recording('recording.aiff')
+      click_on 'Messages'
     end
 
     it_behaves_like 'all successful recording uploads'

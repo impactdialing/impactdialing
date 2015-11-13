@@ -17,6 +17,7 @@ RSpec.shared_context 'voter csv import' do
   end
 
   def upload_list(file)
+    click_link 'Upload'
     choose_list Rails.root.join('spec/fixtures/files/' + file)
   end
 

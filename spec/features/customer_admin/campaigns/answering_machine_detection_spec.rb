@@ -4,6 +4,7 @@ describe 'Answering Machine Detection', type: :feature, js: true, admin: true do
   def save_campaign(campaign, field, value)
     click_button 'Save'
     visit edit_client_campaign_path(campaign)
+    click_link 'Messages'
     el = page.find("##{field}")
     if value == '1' or value == '0'
       if value == '1'
@@ -29,12 +30,11 @@ describe 'Answering Machine Detection', type: :feature, js: true, admin: true do
   end
   before do
     a = admin.account
-    # recording.account_id = a.id
-    # recording.save!
     a.recordings << recording
     a.save!
     web_login_as(admin)
     visit edit_client_campaign_path(campaign)
+    click_link 'Messages'
   end
 
   it 'is enabled by checking "Auto-detect whether human or machine answers a call"' do
