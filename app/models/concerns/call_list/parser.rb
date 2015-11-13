@@ -208,7 +208,7 @@ public
     # parsing w/out phone can only mean parsing w/ custom id
     id    = row[@custom_id_index]
 
-    return unless custom_id_valid?(id)
+    return unless custom_id_valid?(id, row)
 
     keys << redis_custom_id_register_key(id)
     data << [id, row, i]
