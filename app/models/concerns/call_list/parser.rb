@@ -59,6 +59,11 @@ private
     invalid_row!(csv_row)
   end
 
+  def invalid_custom_id!(csv_row)
+    results[:invalid_custom_ids] += 1
+    invalid_row!(csv_row)
+  end
+
   def invalid_line!(line)
     results[:invalid_formats] += 1
     # store unparsable lines separate from rows with invalid data
@@ -69,6 +74,15 @@ private
   def phone_valid?(phone, csv_row)
     unless PhoneNumber.valid?(phone)
       invalid_phone!(phone, csv_row)
+      return false
+    end
+
+    true
+  end
+
+  def custom_id_valid?(custom_id, csv_row)
+    unless custom_id.present?
+      invalid_custom_id!(csv_row)
       return false
     end
 
@@ -129,6 +143,7 @@ public
     row.each_with_index do |header,i|
       header = Windozer::String.bom_away(header)
       @phone_index              = i if csv_mapping.mapping[header] == 'phone'
+      @custom_id_index          = i if csv_mapping.mapping[header] == 'custom_id'
       @header_index_map[header] = i
     end
   end

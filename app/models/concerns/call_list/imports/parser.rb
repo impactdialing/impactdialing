@@ -27,11 +27,6 @@ private
     blocked
   end
 
-  def invalid_custom_id!(csv_row)
-    results[:invalid_custom_ids] += 1
-    invalid_row!(csv_row)
-  end
-
 public
   def build_household(uuid, phone)
     {
