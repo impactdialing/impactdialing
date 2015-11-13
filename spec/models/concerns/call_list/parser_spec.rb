@@ -70,6 +70,7 @@ describe CallList::Parser do
   let(:expected_redis_keys) do
     [
       "dial_queue:#{voter_list.campaign_id}:households:active:1234567",
+      "dial_queue:#{voter_list.campaign_id}:households:active:1234567",
       "dial_queue:#{voter_list.campaign_id}:households:active:4567123"
     ]
   end
