@@ -78,7 +78,7 @@ describe 'VoterListRender (views/voter_list_mailer/completed)', type: :mailer do
     end
     let(:content) do
       [
-        /#{stats[:removed_numbers]} of #{stats[:total_numbers]} phone numbers were removed from your campaign./,
+        /#{stats[:removed_numbers]} phone numbers were removed from your campaign./,
         /Your list contained:/,
         /#{stats[:total_rows]} rows of data/,
         /#{stats[:total_numbers]} valid phone numbers/
