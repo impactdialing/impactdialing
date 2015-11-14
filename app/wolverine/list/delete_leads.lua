@@ -38,9 +38,10 @@ if _house then
 
     redis.call('HINCRBY', campaign_stats_key, 'total_leads', -(removed_count))
     redis.call('HINCRBY', list_stats_key, 'removed_leads', 1)
-    redis.call('HINCRBY', list_stats_key, 'total_leads', 1)
   end
 end
+
+redis.call('HINCRBY', list_stats_key, 'total_leads', 1)
 
 table.insert(output, removed_count)
 table.insert(output, deleted_houses)
