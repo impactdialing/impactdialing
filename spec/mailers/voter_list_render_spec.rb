@@ -97,4 +97,38 @@ describe 'VoterListRender (views/voter_list_mailer/completed)', type: :mailer do
       end
     end
   end
+
+  describe '#pruned_leads' do
+    let(:stats) do
+      {
+        total_rows: 12,
+        total_leads: 12,
+        removed_numbers: 3,
+        removed_leads: 8,
+        invalid_rows: [],
+        invalid_custom_ids: 0
+      }
+    end
+    let(:content) do
+      [
+        /#{stats[:removed_leads]} leads and #{stats[:removed_numbers]} phone numbers were removed from your campaign./,
+        /Your list contained:/,
+        /#{stats[:total_rows]} rows of data/,
+        /#{stats[:total_leads]} valid lead IDs/
+      ]
+    end
+
+    context 'text' do
+      let(:template){ renderer.pruned_leads(:text, stats) }
+      it 'renders the text template to string' do
+        expect(template.to_s).to render_email_content(content)
+      end
+    end
+    context 'html' do
+      let(:template){ renderer.pruned_leads(:html, stats) }
+      it 'renders the text template to string' do
+        expect(template.to_s).to render_email_content(content)
+      end
+    end
+  end
 end

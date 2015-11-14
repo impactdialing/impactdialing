@@ -1,0 +1,22 @@
+<p>
+  <%= pluralize(@results[:removed_leads], 'lead') %> and <%= pluralize(@results[:removed_numbers], 'phone number') %> were removed from your campaign.
+</p>
+
+<p>
+  Your list contained:
+  <ul>
+    <li><%= @results[:total_rows] %> rows of data</li>
+    <li><%= @results[:total_leads] %> valid lead IDs</li>
+  </ul>
+</p>
+
+<% if @results[:invalid_rows].size > 0 -%>
+<p>
+  Of <%= @results[:total_rows] %> data rows, <%= @results[:invalid_rows].size %> contained invalid data.
+  Any rows from your upload that could not be processed are attached. Things to look for:
+  <ul>
+    <li>incomplete or blank phone number fields</li>
+    <li>very long rows (indicates an editing error prior to upload where multiple rows were combined into 1)</li>
+  </ul>
+</p>
+<% end -%>
