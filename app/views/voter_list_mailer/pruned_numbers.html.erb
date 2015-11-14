@@ -1,5 +1,5 @@
 <p>
-  <%= @results[:removed_numbers] %> of <%= @results[:total_numbers] %> phone numbers were removed from your campaign.
+  <%= pluralize(@results[:removed_numbers], 'phone number') %> were removed from your campaign.
 </p>
 
 <p>
