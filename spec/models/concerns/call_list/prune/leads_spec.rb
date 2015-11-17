@@ -16,7 +16,7 @@ describe CallList::Prune::Leads do
     })
   end
   let(:households) do
-    build_household_hashes(5, voter_list, true)
+    build_household_hashes(5, voter_list, true, true)
   end
   let(:first_ids) do
     households.keys.map do |k|
