@@ -40,7 +40,7 @@
 <!-- JavaScript at bottom except for Modernizr -->
 <%= javascript_include_tag 'modernizr-custom' %>
 
-<%= render :partial => "layouts/errorception" unless Rails.env.test? %>
+<%= render :partial => "layouts/javascript_error_reporting" %>
 <% if logged_in_as_client? and not Rails.env.test? and not Rails.env.development? and not Rails.env.e2e? %>
   <%= render :partial => "layouts/olark" %>
 <% end %>

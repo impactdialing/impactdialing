@@ -44,6 +44,28 @@ shared_examples 'collection and dependency issue' do
 end
 
 describe ApplicationHelper do
+  describe '#standard_env_name' do
+    context 'Rails.env =~ /(development|test)/' do
+      it 'returns Rails.env' do
+        expect(helper.standard_env_name).to eq 'test'
+        allow(helper).to receive(:rails_env){ 'development' }
+        expect(helper.standard_env_name).to eq 'development'
+      end
+    end
+
+    context 'Rails.env == "heroku"' do
+      it 'returns "production"' do
+        allow(helper).to receive(:rails_env){ 'heroku' }
+        expect(helper.standard_env_name).to eq 'production'
+      end
+    end
+    context 'Rails.env == "heroku_staging"' do
+      it 'returns "staging"' do
+        allow(helper).to receive(:rails_env){ 'heroku_staging' }
+        expect(helper.standard_env_name).to eq 'staging'
+      end
+    end
+  end
   describe '#missing_data_text' do
     let(:collection) { 0 }
     let(:dependency) { 0 }

@@ -53,6 +53,7 @@ RSpec.configure do |config|
       Capybara.page.driver.allow_url("d3dy5gmtp8yhk7.cloudfront.net")
       Capybara.page.driver.allow_url("beacon.errorception.com")
       Capybara.page.driver.allow_url("stats.pusher.com")
+      Capybara.page.driver.allow_url("d2wy8f7a9ursnm.cloudfront.net")
     end
   end
   capybara_switch_to_webkit

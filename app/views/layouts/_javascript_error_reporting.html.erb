@@ -1,0 +1,20 @@
+<script
+  src="//d2wy8f7a9ursnm.cloudfront.net/bugsnag-2.min.js"
+  data-apikey="34744848641f9750d203b168f49601b5">
+</script>
+
+<% if logged_in_as_client? %>
+  <script type="text/javascript">
+    Bugsnag.user = {
+      id: "<%= @user.id %>",
+      email: "<%= @user.email %>",
+      account_id: "<%= @user.account_id %>"
+    };
+    Bugsnag.releaseStage = "<%= standard_env_name %>"
+  </script>
+  <%= content_for :javascripts do %>
+    $(document).ajaxError(function(event, jqhxr, settings, thrownError){
+      Bugsnag.notify("Ajax Error", thrownError);
+    });
+  <% end %>
+<% end %>

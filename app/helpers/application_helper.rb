@@ -2,6 +2,21 @@
 module ApplicationHelper
   include WhiteLabeling
 
+  def rails_env
+    Rails.env
+  end
+
+  def standard_env_name
+    case rails_env
+    when 'development', 'test'
+      rails_env
+    when 'heroku'
+      'production'
+    when 'heroku_staging'
+      'staging'
+    end
+  end
+
   def flash_message(where, error_message)
     if flash[where] and flash[where].class == Array
       flash[where] = flash[where].concat [error_message]  # should not use <<. rails flash does not 'keep' them.
