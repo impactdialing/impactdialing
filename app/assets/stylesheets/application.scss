@@ -130,46 +130,51 @@ fieldset tr:nth-child(odd) td {
   background: #f2f2f2;
 }
 
+// All navigation elements
 .admin nav[role="navigation"] {
   ul {
     border: none;
     li:last-child {
       a {
-        background-color: #456587;
-        color: #000;
+        //background-color: #456587;
+        //color: #000;
       }
       a.action.primary:hover {
-        background-color: #e2e2e2;
-        color: #000;
-        box-shadow: none;
+        //background-color: #e2e2e2;
+        //color: #000;
+        //box-shadow: none;
       }
       a.action.secondary:hover {
-        color: #000;
+        //color: #000;
       }
     }
     li {
       a {
-        color: #000;
+        //color: #000;
+      }
+      a.secondary {
+        border: none;
       }
       a.action.primary {
         color: #fff;
-      }
-      a.action.primary:hover {
-        background-color: #e2e2e2;
-        color: #000;
-        box-shadow: none;
+        background-color: #9a2b29;
+        @include box-shadow(0 1px 1px rgba(0,0,0,0.5),inset 0 1px 2px #ba1613,inset 0 -2px 2px #872e2d);
       }
       a.action.secondary {
-        background-color: #fff;
-        color: #000;
+        background-color: #456587;
+        color: #fff;
+        @include box-shadow(0 1px 1px rgba(0, 0, 0, 0.5), inset 0 1px 2px #7898ba, inset 0 -2px 2px #344c65);
       }
-      a.action.secondary:hover {
+      a.action.primary:hover, a.action.secondary:hover {
         background-color: #e2e2e2;
+        color: #404040;
+        @include box-shadow(0 1px 1px rgba(0,0,0,0.5),inset 0 1px 2px #ebebeb,inset 0 -2px 2px #cfcfcf);
       }
     }
   }
 }
 
+// Main navigation header
 .admin > nav[role="navigation"] {
   ul {
     border: 1px solid #e6e6e6;
@@ -195,6 +200,25 @@ fieldset tr:nth-child(odd) td {
   }
 }
 
+// Per page navigation overrides
+nav.actions {
+  ul {
+    background-color: transparent;
+    border: none;
+
+    li {
+      button {
+        font-weight: normal;
+      }
+      button:hover {
+        background-color: #e2e2e2;
+        color: #404040;
+        @include box-shadow(0 1px 1px rgba(0,0,0,0.5),inset 0 1px 2px #ebebeb,inset 0 -2px 2px #cfcfcf);
+      }
+    }
+  }
+}
+
 header[role="banner"] {
   nav[role="navigation"] {
     a.action {
@@ -203,12 +227,6 @@ header[role="banner"] {
   }
 }
 
-nav.actions {
-  ul {
-    background-color: transparent;
-    border: none;
-  }
-}
 /**
 .admin nav.actions li:last-child a {
   background-color: #f2f2f2;
