@@ -6,6 +6,7 @@ gem 'rails', '~> 4.0.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'sass-rails'
+gem 'compass-rails'
 gem 'puma'
 gem 'rack-timeout'
 
@@ -120,7 +121,6 @@ group :development, :test, :e2e do
   gem 'hirb'
   gem 'pry'
   gem 'byebug'
-  gem 'compass'
 end
 
 group :test, :e2e do

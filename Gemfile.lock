@@ -72,7 +72,7 @@ GEM
       timers (~> 1.1.0)
     childprocess (0.5.5)
       ffi (~> 1.0, >= 1.0.11)
-    chunky_png (1.3.0)
+    chunky_png (1.3.5)
     climate_control (0.0.3)
       activesupport (>= 3.0)
     cocaine (0.5.7)
@@ -81,10 +81,22 @@ GEM
     coderay (1.1.0)
     color (1.7)
     columnize (0.9.0)
-    compass (0.12.2)
+    compass (1.0.3)
       chunky_png (~> 1.2)
-      fssm (>= 0.2.7)
-      sass (~> 3.1)
+      compass-core (~> 1.0.2)
+      compass-import-once (~> 1.0.5)
+      rb-fsevent (>= 0.9.3)
+      rb-inotify (>= 0.9)
+      sass (>= 3.3.13, < 3.5)
+    compass-core (1.0.3)
+      multi_json (~> 1.0)
+      sass (>= 3.3.0, < 3.5)
+    compass-import-once (1.0.5)
+      sass (>= 3.2, < 3.5)
+    compass-rails (2.0.5)
+      compass (~> 1.0.0)
+      sass-rails (< 5.1)
+      sprockets (< 2.13)
     connection_pool (2.2.0)
     cookiejar (0.3.0)
     crack (0.4.2)
@@ -130,7 +142,6 @@ GEM
     forgery (0.6.0)
     formtastic (2.2.1)
       actionpack (>= 3.0)
-    fssm (0.2.10)
     heroics (0.0.10)
       erubis (~> 2.7.0)
       excon
@@ -234,6 +245,8 @@ GEM
       thor (>= 0.18.1, < 2.0)
     rake (10.4.2)
     rb-fsevent (0.9.4)
+    rb-inotify (0.9.5)
+      ffi (>= 0.5.0)
     redcarpet (3.1.2)
     redis (3.1.0)
     redis-namespace (1.5.2)
@@ -284,7 +297,7 @@ GEM
       fastercsv
       pdf-writer (= 1.1.8)
     safe_yaml (1.0.3)
-    sass (3.2.14)
+    sass (3.4.19)
     sass-rails (5.0.4)
       railties (>= 4.0.0, < 5.0)
       sass (~> 3.1)
@@ -389,7 +402,7 @@ DEPENDENCIES
   capybara
   capybara-webkit
   cocoon (~> 1.2.0)
-  compass
+  compass-rails
   database_cleaner
   deep_cloneable
   dynamic_form (~> 1.1.4)
