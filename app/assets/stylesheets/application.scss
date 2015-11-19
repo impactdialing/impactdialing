@@ -207,10 +207,8 @@ nav.actions {
     border: none;
 
     li {
-      button {
-        font-weight: normal;
-      }
-      button:hover {
+      a:hover {
+        cursor: pointer;
         background-color: #e2e2e2;
         color: #404040;
         @include box-shadow(0 1px 1px rgba(0,0,0,0.5),inset 0 1px 2px #ebebeb,inset 0 -2px 2px #cfcfcf);
