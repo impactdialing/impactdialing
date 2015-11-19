@@ -13,8 +13,13 @@
     Bugsnag.releaseStage = "<%= standard_env_name %>"
   </script>
   <%= content_for :javascripts do %>
-    $(document).ajaxError(function(event, jqhxr, settings, thrownError){
-      Bugsnag.notify("Ajax Error", thrownError);
-    });
+    <script type="text/javascript">
+      $(document).ajaxError(function(event, jqxhr, settings, thrownError){
+        Bugsnag.metaData = {
+          xhrSettings: settings
+        };
+        Bugsnag.notify("Ajax Error", thrownError);
+      });
+    </script>
   <% end %>
 <% end %>
