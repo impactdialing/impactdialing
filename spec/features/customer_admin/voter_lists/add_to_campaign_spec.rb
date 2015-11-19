@@ -44,7 +44,7 @@ describe 'Manage Campaign call list', js: true, type: :feature, file_uploads: tr
         select 'ID', from: 'ID'
       end
       #save_and_open_page
-      choose option || upload_option
+      choose option || upload_option if campaign.voter_lists.count > 0
       click_button 'Upload'
 
       process_pending_import_jobs

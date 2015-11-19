@@ -17,12 +17,14 @@
           <%= text_field_tag "name", nil, :id => "voter_list_name", name: "voter_list[name]", :size => '10'  %>
       </p>
       <ul>
+      <% if @campaign.voter_lists.count > 0 %>
         <li>
           <label for="voter_list_purpose_add">
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_add" value="import" checked="checked">
             Add to call list
           </label>
         </li>
+      <% end %>
         <li class="js_list_upload_add_option">
           <label for="voter_list_skip_wireless">
             <input type="hidden" name="voter_list[skip_wireless]" value="0">
