@@ -33,6 +33,7 @@ var VoterLists = function(form){
 VoterLists.prototype.validate_csv_file = function(evt, list){
   $("#column_headers").empty();
   $("#voter_upload").hide();
+  var self = this;
   var file = evt.target.files[0];
   var file_name = file.name;
   var extension = file_name.split(".").pop().toLowerCase();
