@@ -76,10 +76,12 @@ module Client
 
     def reassign_to_campaign
       caller = Caller.includes(:campaign).find(params[:id])
-      caller.update_attributes(:campaign_id => params[:campaign_id])
-      campaign_name = caller.campaign.name
-      flash_message(:notice, I18n.t('re_assign_caller_to_another_campaign', campaign_name: campaign_name))
-      render :json => {message: 'Campaign Reassigned'}, :status => :ok
+      if caller.update_attributes(:campaign_id => params[:campaign_id])
+        campaign_name = caller.campaign.name
+        message = I18n.t('re_assign_caller_to_another_campaign', campaign_name: campaign_name)
+        render :json => {message: message}
+      end
+      # render :json => {message: 'Campaign Reassigned'}, :status => :ok
     end
 
     def usage

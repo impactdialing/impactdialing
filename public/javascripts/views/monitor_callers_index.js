@@ -86,8 +86,8 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
           request.setRequestHeader("X-CSRF-Token", token);
         },
       success: function() {
-          console.log(arguments)
-          $("#campaignReassign").text("Success!")
+          console.log(arguments);
+          alert("Caller Reassigned!");
         },
     });
   },
