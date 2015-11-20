@@ -5,9 +5,79 @@
   <script type="text/javascript">
     $(function(){
       campaign = new Campaign();
-      $('#campaign-tabs').tabs();
+      tabInst = $('#campaign-tabs').tabs();
       $('#campaign-tabs').show();
+      introJsSteps = [
+        {
+          step: 1,
+          intro: "Give your campaign a name.",
+          element: '#campaign_name_container'
+        },
+        {
+          step: 2,
+          intro: "Choose the Caller ID to be displayed on outgoing calls. The law requires that this be a real number associated with your business or organization.",
+          element: '#campaign_caller_id_container'
+        },
+        {
+          step: 3,
+          intro: "Choose which script your callers should use.",
+          element: '#campaign_script_container'
+        },
+        {
+          step: 4,
+          intro: "There are three dialing modes. Preview mode shows the name of"+
+                 " the lead and lets your caller choose to dial or skip"+
+                 " it. Power mode dials a new lead immediately after the"+
+                 " previous one is finished. Predictive mode will dial more"+
+                 " lines than you have callers, intelligently adapting to the"+
+                 " answer rate and conversation length; occasionally, however,"+
+                 " a call will be answered when no caller is available."+
+                 " Predictive should generally only be used when at least five"+
+                 " callers are calling at the same time.",
+          element: '#campaign_dial_mode_container'
+        },
+        {
+          step: 5,
+          intro: "Choose what time zone you're calling so that the correct time"+
+                 " is used for the dialing hours and reports.",
+          element: '#campaign_time_zone_container'
+
+        },
+        {
+          step: 6,
+          intro: "Outside of the dialing hours, the dialer won't make calls.",
+          element: '#campaign_dialing_hours_container'
+        },
+        {
+          step: 7,
+          intro: "The time between call attempts sets the minimum amount of"+
+                 " time before calling somebody back.",
+          element: '#campaign_recycle_rate_container'
+        },
+        /*
+        {
+          step: 8,
+          intro: "If answering machine detection is off, any calls answered"+
+                 " before 15 seconds of ringing will be immediately connected to a caller."+
+                 "After 15 seconds, the call will be hung up. If answering machine detection"+
+                 "is on, the call will ring for up to 30 seconds. If it is answered,"+
+                 " the detection system will listen to the call for about two"+
+                 " seconds, and connect it to a caller if it is a human. If it"+
+                 " is a machine, it will play a message if you have chosen to do"+
+                 "so, or hang up.",
+          element: '#campaign_answering_machine_detect_container'
+        }
+        */
+      ];
+      introJsBeforeChange = function(targetEl){
+        if( $(targetEl).attr('id') == 'campaign_answering_machine_detect_container' ) {
+          console.log('introJsBeforeChange exec', $(targetEl).attr('id'));
+          //$('#campaign-tabs').tabs('load', '#messages');
+          tabInst.load('#messages');
+        }
+      };
     });
+
   </script>
 <% end %>
 

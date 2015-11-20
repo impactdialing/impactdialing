@@ -1,13 +1,7 @@
   <fieldset>
     <legend>Recorded message settings</legend>
     <ul>
-      <li data-intro="If answering machine detection is off, any calls answered
-      before 15 seconds of ringing will be immediately connected to a caller.
-      After 15 seconds, the call will be hung up. If answering machine detection
-      is on, the call will ring for up to 30 seconds. If it is answered, the
-      detection system will listen to the call for about two seconds, and connect
-       it to a caller if it is a human. If it is a machine, it will play a message
-       if you have chosen to do so, or hang up." data-step="8">
+      <li id="campaign_answering_machine_detect_container">
         <label for="campaign_answering_machine_detect" class="inline" style="margin-right: 8px;">
           <%= form.check_box :answering_machine_detect, {
             name: 'campaign[answering_machine_detect]',

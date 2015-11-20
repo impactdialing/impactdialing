@@ -156,6 +156,9 @@ GEM
       domain_name (~> 0.5)
     http_parser.rb (0.6.0.beta.2)
     i18n (0.7.0)
+    introjs-rails (1.0.0)
+      sass-rails (>= 3.2)
+      thor (~> 0.14)
     jquery-rails (3.1.2)
       railties (>= 3.0, < 5.0)
       thor (>= 0.14, < 2.0)
@@ -420,6 +423,7 @@ DEPENDENCIES
   hirb
   hiredis (~> 0.4.5)
   hirefire-resource
+  introjs-rails
   jquery-rails
   jquery-ui-rails
   launchy

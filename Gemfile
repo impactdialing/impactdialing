@@ -7,6 +7,7 @@ gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'sass-rails'
 gem 'compass-rails'
+gem 'introjs-rails'
 gem 'puma'
 gem 'rack-timeout'
 
@@ -19,7 +20,7 @@ gem 'sinatra'
 gem 'slim'
 
 
-gem 'uuid', '~> 2.3.7' # used to generate unique filenames for download reports - overkill much?
+gem 'uuid', '~> 2.3.7' 
 
 # 911
 gem 'pagerduty'

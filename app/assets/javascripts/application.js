@@ -1,6 +1,7 @@
 //= require jquery
 //= require jquery_ujs
 //= require jquery-ui
+//= require introjs
 //= require cocoon
 //= require helper
 //= require plugins

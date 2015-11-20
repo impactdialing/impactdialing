@@ -9,7 +9,7 @@
         <nav role="navigation" class="actions clearfix">
           <ul class="clearfix">
             <li>
-              <a class="action secondary" onclick="javascript:introJs().start();">Help</a>
+              <a class="action secondary js-help">Help</a>
             </li>
             <li>
               <% if session[:internal_admin] %>
@@ -73,6 +73,7 @@
     
     <% if logged_in_as_client? and (not Rails.env.test?) %>
     <script type="text/javascript">
+      // Usersnap setup
       var _usersnapconfig = {
         apiKey: '00d43adb-86c0-47cb-a279-9e90d8695996',
         emailBox: true,
@@ -93,11 +94,32 @@
         var x = document.getElementsByTagName('head')[0];
         x.appendChild(s);
       })();
+
     </script>
     <% end %>
     
-    <%= javascript_include_tag 'application', 'intro.min', 'spin-2.3.2.min' %>
+    <%= javascript_include_tag 'application', 'spin-2.3.2.min' %>
     <%= yield :jquery_extension_javascripts %>
     <%= yield :javascripts %>
+    <% if logged_in_as_client? %>
+      <script type="text/javascript">
+        // introJs setup
+        var introJsBeforeChange = function(){}; // override per-page
+        var introJsSteps        = undefined; // override per-page
+        $(function(){
+          var intro = introJs();
+          $('.js-help').click(function(){
+            console.log('js-help clicked', introJsBeforeChange, introJsSteps);
+            intro.onbeforechange(introJsBeforeChange);
+            if( introJsSteps !== undefined ){
+              intro.setOptions({
+                steps: introJsSteps
+              })
+            }
+            intro.start();
+          });
+        });
+      </script>
+    <% end %>
   </body>
 </html>
