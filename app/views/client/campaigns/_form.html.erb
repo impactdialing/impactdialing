@@ -76,6 +76,11 @@
           tabInst.load('#messages');
         }
       };
+
+      // Disable upload options as needed
+      <% if @campaign.voter_lists.count.zero? %>
+        $('#list_upload_options input[type="radio"]').prop('disabled', true);
+      <% end %>
     });
 
   </script>
