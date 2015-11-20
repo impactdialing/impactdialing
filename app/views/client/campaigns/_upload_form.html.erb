@@ -1,7 +1,7 @@
-<div class="module-container">
+<div>
 <%= form_tag("", method: :post, multipart: true, id: "voter_list_upload") do %>
-  <div class="module loose">
-    <fieldset class="module">
+  <div>
+    <fieldset>
       <legend>File &amp; settings</legend>
       <p>
         Please upload a comma-separated value (CSV) or tab-delimited
@@ -16,22 +16,19 @@
         <label for="voter_list_name">List name</label>
           <%= text_field_tag "name", nil, :id => "voter_list_name", name: "voter_list[name]", :size => '10'  %>
       </p>
-      <ul>
-      <% if @campaign.voter_lists.count > 0 %>
+      <ul id="list_upload_options">
         <li>
           <label for="voter_list_purpose_add">
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_add" value="import" checked="checked">
             Add to call list
           </label>
         </li>
-      <% end %>
         <li class="js_list_upload_add_option">
           <label for="voter_list_skip_wireless">
             <input type="hidden" name="voter_list[skip_wireless]" value="0">
             <input type="checkbox" name="voter_list[skip_wireless]" id="voter_list_skip_wireless" checked="checked" value="1"> Do not call cell phones
           </label>
         </li>
-      <% if @campaign.voter_lists.count > 0 %>
         <li>
           <label for="voter_list_purpose_remove_numbers">
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_remove_numbers" value="prune_numbers"> Remove phone numbers from call list
@@ -42,10 +39,9 @@
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_remove_leads" value="prune_leads"> Remove leads from call list
           </label>
         </li>
-      <% end %>
       </ul>
     </fieldset>
-    <fieldset class="module loose" id="column_mapping_container" style="display: none;">
+    <fieldset id="column_mapping_container" style="display: none;">
       <legend>Mapping</legend>
       <div id="column_headers"></div>
     </fieldset>
