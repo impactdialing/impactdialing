@@ -62,13 +62,17 @@ div.ui-widget-content {
         color: #000;
       }
       a:hover {
-        background-color: #456587;
-        color: #fff;
+        background-color: #e2e2e2;
+        color: #404040;
       }
     }
     li.ui-state-active a {
       background-color: #9a2b29;
       color: #fff;
+    }
+    li.ui-state-active a:hover {
+      background-color: #e2e2e2;
+      color: #404040;
     }
   }
 }
