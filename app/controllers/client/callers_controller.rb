@@ -80,6 +80,9 @@ module Client
         campaign_name = caller.campaign.name
         message = I18n.t('re_assign_caller_to_another_campaign', campaign_name: campaign_name)
         render :json => {message: message}
+      else
+        message = I18n.t('activerecord.errors.models.caller.reassign_campaign')
+        render :json => {message: message}
       end
       # render :json => {message: 'Campaign Reassigned'}, :status => :ok
     end
