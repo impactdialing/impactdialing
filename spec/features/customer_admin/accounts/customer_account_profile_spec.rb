@@ -100,7 +100,7 @@ describe 'Account profile', type: :feature, admin: true, sauce: ENV['USE_SAUCE']
       fill_in 'Pick a password', :with => user.new_password
       click_button 'Sign up'
       sleep(3)
-      expect(page).to have_content 'Log out'
+      click_on 'Log out'
     end
   end
 

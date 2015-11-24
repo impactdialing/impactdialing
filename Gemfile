@@ -125,6 +125,7 @@ group :development, :test, :e2e do
   gem 'rspec-rails'
   gem 'rspec-its' # its is not in rspec 3
   gem 'rspec-collection_matchers' # expect(collection).to have(1).thing is not in rspec 3
+  gem 'rspec_junit_formatter', '0.2.2'
   gem 'forgery', '0.6.0'
   gem 'hirb'
   gem 'pry'

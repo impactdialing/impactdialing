@@ -1,0 +1,16 @@
+machine:
+  ruby:
+    version:
+      2.0.0-p645
+
+dependencies:
+  post:
+    - wget https://saucelabs.com/downloads/sc-4.3.12-linux.tar.gz
+    - tar -xzf sc-4.3.12-linux.tar.gz
+
+test:
+  override:
+    - SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/units/tests.xml --format progress" bundle exec rake spec:note2e
+    - cd sc-*-linux && ./bin/sc -u $SAUCE_USERNAME -k $SAUCE_ACCESS_KEY:
+        background: true
+    - USE_SAUCE=true SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/tests.xml --format progress --tag js --tag admin --pattern spec/features/**/*_spec.rb" bundle exec rake sauce:spec
