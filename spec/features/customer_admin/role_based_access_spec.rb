@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Access based on User#role value (administrator or supervisor)', type: :feature do
+describe 'Access based on User#role value (administrator or supervisor)', type: :feature, sauce: ENV['USE_SAUCE'] do
   shared_examples_for 'all roles' do
     it 'can access the dashboard' do
       visit '/client'

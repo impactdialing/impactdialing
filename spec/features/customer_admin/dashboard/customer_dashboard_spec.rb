@@ -12,7 +12,7 @@ def within_nth_caller_cell(row_n, cell_n, &block)
   end
 end
 
-describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
+describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true, sauce: ENV['USE_SAUCE'] do
   let(:auth_time){ Time.now }
   let(:user) do
     create(:user)

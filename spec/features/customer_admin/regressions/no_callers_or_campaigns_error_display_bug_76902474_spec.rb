@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Display message to create callers and campaigns before viewing reports', type: :feature do
+describe 'Display message to create callers and campaigns before viewing reports', type: :feature, sauce: ENV['USE_SAUCE'] do
   include FakeCallData
 
   let(:admin){ create(:user) }

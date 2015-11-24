@@ -31,7 +31,7 @@ RSpec::Matchers.define :have_note do |note|
   end
 end
 
-describe 'Save a copy of an existing Script under a new name', type: :feature, js: true do
+describe 'Save a copy of an existing Script under a new name', type: :feature, js: true, sauce: ENV['USE_SAUCE'] do
   def save_duplicate
     visit client_scripts_path
     click_on 'Duplicate'

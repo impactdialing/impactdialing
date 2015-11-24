@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'creating new campaigns', js: true do
+describe 'creating new campaigns', js: true, sauce: ENV['USE_SAUCE'] do
   include FakeCallData
 
   let(:admin){ create(:user) }

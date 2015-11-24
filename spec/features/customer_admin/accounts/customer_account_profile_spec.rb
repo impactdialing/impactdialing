@@ -1,7 +1,7 @@
 require 'rails_helper'
 include JSHelpers
 
-describe 'Account profile', type: :feature, admin: true do
+describe 'Account profile', type: :feature, admin: true, sauce: ENV['USE_SAUCE'] do
   before(:all) do
     capybara_switch_to_webkit
   end
@@ -99,6 +99,7 @@ describe 'Account profile', type: :feature, admin: true do
       fill_in 'Email address', :with => user.email
       fill_in 'Pick a password', :with => user.new_password
       click_button 'Sign up'
+      sleep(3)
       expect(page).to have_content 'Log out'
     end
   end
@@ -195,7 +196,9 @@ describe 'Account profile', type: :feature, admin: true do
         enter_n_callers 2
         click_on 'Upgrade'
 
-        expect(page).to have_content I18n.t('subscriptions.upgrade.success')
+        retry_assertion do
+          expect(page).to have_content I18n.t('subscriptions.upgrade.success')
+        end
       end
     end
 

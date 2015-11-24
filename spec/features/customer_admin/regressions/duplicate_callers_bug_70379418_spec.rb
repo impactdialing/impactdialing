@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Caller Management', :type => :feature do
+describe 'Caller Management', :type => :feature, sauce: ENV['USE_SAUCE'] do
   let(:admin){ create(:user) }
   let(:account){ admin.account }
   let(:campaign){ create(:power, account: account, active: true) }

@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Blocked Number management', type: :feature, rack: true do
+describe 'Blocked Number management', type: :feature, rack: true, sauce: ENV['USE_SAUCE'] do
   let(:i18n_scope){ 'activerecord.errors.models.blocked_number' }
   let(:customer){ create(:user) }
   let!(:preview){ create(:preview, account: customer.account) }
@@ -76,7 +76,11 @@ describe 'Blocked Number management', type: :feature, rack: true do
       blocked_number = create(:blocked_number, account: customer.account, number: number)
       visit blocked_numbers_path
       within("#blocked_number_#{blocked_number.id}") do
-        click_link("Remove number from DNC")
+        begin
+          click_link("Remove number from DNC")
+        rescue Selenium::WebDriver::Error::UnhandledAlertError
+          page.driver.browser.switch_to.alert.accept
+        end
       end
       expect(page).to have_content I18n.t(:blocked_number_deleted, number: number.gsub(/[^\d]/,''), level: 'System')
     end
@@ -85,7 +89,11 @@ describe 'Blocked Number management', type: :feature, rack: true do
       blocked_number = create(:blocked_number, account: customer.account, campaign: preview, number: number)
       visit blocked_numbers_path
       within("#blocked_number_#{blocked_number.id}") do
-        click_link("Remove number from DNC")
+        begin
+          click_link("Remove number from DNC")
+        rescue Selenium::WebDriver::Error::UnhandledAlertError
+          page.driver.browser.switch_to.alert.accept
+        end
       end
       expect(page).to have_content I18n.t(:blocked_number_deleted, number: number.gsub(/[^\d]/,''), level: preview.name)
     end

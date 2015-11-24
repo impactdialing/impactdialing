@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Create a new Script', type: :feature, js: true do
+describe 'Create a new Script', type: :feature, js: true, sauce: ENV['USE_SAUCE'] do
   before(:all) do
     capybara_switch_to_webkit
   end
