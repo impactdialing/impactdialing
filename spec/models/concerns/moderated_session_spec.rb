@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe ModeratedSession do
   before do
-    WebMock.disable_net_connect!
+    webmock_disable_net!
   end
 
   describe '.switch_mode(moderator, caller_session, type)' do

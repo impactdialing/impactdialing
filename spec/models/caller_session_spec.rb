@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe CallerSession, :type => :model do
   before do
-    WebMock.disable_net_connect!
+    webmock_disable_net!
   end
   include Rails.application.routes.url_helpers
   it "lists available caller sessions" do

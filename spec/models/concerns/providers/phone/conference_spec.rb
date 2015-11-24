@@ -7,7 +7,7 @@ describe Providers::Phone::Conference do
   end
 
   before do
-    WebMock.disable_net_connect!
+    webmock_disable_net!
     stub_twilio_conference_by_name_request
   end
 

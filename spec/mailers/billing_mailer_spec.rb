@@ -7,7 +7,7 @@ describe BillingMailer, :type => :mailer do
 
   before do
     allow(subject).to receive(:invoice_recipient){ invoice_recipient }
-    WebMock.disable_net_connect!
+    webmock_disable_net!
   end
 
   describe '#autorecharge_failed' do

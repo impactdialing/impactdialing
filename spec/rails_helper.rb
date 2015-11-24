@@ -60,6 +60,14 @@ RSpec.configure do |config|
   end
   capybara_switch_to_webkit
 
+  def webmock_disable_net!
+    WebMock.disable_net_connect!
+    #WebMock.disable_net_connect!({
+    #  allow_localhost: true,
+    #  allow: [/saucelabs.com/]
+    #})
+  end
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
@@ -147,5 +155,4 @@ RSpec.configure do |config|
   end
 end
 
-require "sauce_helper"
-
+require 'sauce_helper'

@@ -6,7 +6,7 @@ describe CallerController, :type => :controller do
   let(:user) { create(:user, :account => account) }
 
   before do
-    WebMock.disable_net_connect!
+    webmock_disable_net!
   end
 
   describe "authentication" do

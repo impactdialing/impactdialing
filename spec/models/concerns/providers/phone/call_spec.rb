@@ -10,7 +10,7 @@ describe Providers::Phone::Call do
   end
 
   before do
-    WebMock.disable_net_connect!
+    webmock_disable_net!
   end
 
   describe '.redirect(call_sid, url)' do

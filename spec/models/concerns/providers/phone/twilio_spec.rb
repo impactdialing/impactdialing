@@ -3,7 +3,7 @@ require 'rails_helper'
 describe Providers::Phone::Twilio do
 
   before do
-    WebMock.disable_net_connect!
+    webmock_disable_net!
   end
 
   let(:call_sid){ '123123' }

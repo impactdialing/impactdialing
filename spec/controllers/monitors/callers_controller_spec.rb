@@ -7,7 +7,7 @@ describe Monitors::CallersController, :type => :controller do
   let(:caller){ create(:caller, campaign: campaign) }
 
   before do
-    WebMock.disable_net_connect!
+    webmock_disable_net!
     login_as(admin)
   end
 

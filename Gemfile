@@ -140,7 +140,7 @@ group :test, :e2e do
   gem 'capybara'
   gem 'launchy'
   gem 'timecop'
-  gem 'webmock'
+  gem 'webmock', require: false
   gem 'vcr'
   gem 'selenium-webdriver'
   gem 'capybara-webkit'

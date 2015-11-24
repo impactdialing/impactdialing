@@ -4,7 +4,7 @@ describe TransferDialer do
   include Rails.application.routes.url_helpers
 
   before do
-    WebMock.disable_net_connect!
+    webmock_disable_net!
   end
   let(:session_key){ 'caller.session_key-abc123' }
   let(:caller_session) do
