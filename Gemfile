@@ -114,6 +114,13 @@ group :development do
   gem 'bullet'
 end
 
+gem 'sauce', group: :development
+gem 'sauce_whisk', group: :development
+gem 'sauce-connect', group: :development
+gem 'sauce', group: :test
+gem 'sauce_whisk', group: :test
+gem 'sauce-connect', group: :test
+
 group :development, :test, :e2e do
   gem 'rspec-rails'
   gem 'rspec-its' # its is not in rspec 3

@@ -43,17 +43,19 @@ end
 
 RSpec.configure do |config|
   def capybara_switch_to_webkit
-    Capybara.javascript_driver = :webkit
-    if Capybara.page.driver.respond_to? :allow_url
-      Capybara.page.driver.allow_url("js.stripe.com")
-      Capybara.page.driver.allow_url("static.twilio.com")
-      Capybara.page.driver.allow_url("api.stripe.com")
-      Capybara.page.driver.allow_url("api.usersnap.com")
-      Capybara.page.driver.allow_url("d3mvnvhjmkxpjz.cloudfront.net")
-      Capybara.page.driver.allow_url("d3dy5gmtp8yhk7.cloudfront.net")
-      Capybara.page.driver.allow_url("beacon.errorception.com")
-      Capybara.page.driver.allow_url("stats.pusher.com")
-      Capybara.page.driver.allow_url("d2wy8f7a9ursnm.cloudfront.net")
+    unless ENV['USE_SAUCE']
+      Capybara.javascript_driver = :webkit
+      if Capybara.page.driver.respond_to? :allow_url
+        Capybara.page.driver.allow_url("js.stripe.com")
+        Capybara.page.driver.allow_url("static.twilio.com")
+        Capybara.page.driver.allow_url("api.stripe.com")
+        Capybara.page.driver.allow_url("api.usersnap.com")
+        Capybara.page.driver.allow_url("d3mvnvhjmkxpjz.cloudfront.net")
+        Capybara.page.driver.allow_url("d3dy5gmtp8yhk7.cloudfront.net")
+        Capybara.page.driver.allow_url("beacon.errorception.com")
+        Capybara.page.driver.allow_url("stats.pusher.com")
+        Capybara.page.driver.allow_url("d2wy8f7a9ursnm.cloudfront.net")
+      end
     end
   end
   capybara_switch_to_webkit
@@ -125,4 +127,25 @@ RSpec.configure do |config|
     Redis.new.flushall
     DatabaseCleaner.clean
   end
+
+  # for sauce
+  config.around(:example) do |example|
+    example.run
+    if ENV['USE_SAUCE']
+      retried = 0
+      begin
+        ::Capybara.current_session.driver.quit
+      rescue => e
+        #p "Capybara driver failed to quit current session..."
+        #p "Error: #{e.class} => #{e.message}"
+        if retried < 3
+          retried += 1
+          retry
+        end
+      end
+    end
+  end
 end
+
+require "sauce_helper"
+

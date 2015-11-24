@@ -1,3 +1,14 @@
+if ENV['DATABASE_URL'].present? and ENV['TEST_ENV_NUMBER'].present?
+  new_url = "#{ENV['DATABASE_URL']}#{ENV['TEST_ENV_NUMBER']}"
+  new_url = ENV['DATABASE_URL']
+
+  p "Using: #{new_url}"
+
+  ENV['DATABASE_URL']                 = new_url
+  ENV['DATABASE_READ_SLAVE1_URL']     = new_url
+  ENV['DATABASE_READ_SLAVE2_URL']     = new_url
+  ENV['DATABASE_SIMULATOR_SLAVE_URL'] = new_url
+end
 #require 'simplecov'
 #SimpleCov.start 'rails'
 #SimpleCov.coverage_dir("coverage")

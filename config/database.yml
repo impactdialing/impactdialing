@@ -10,6 +10,6 @@ development:
 test:
   adapter: mysql2
   host: localhost
-  database: impactdialing_test
+  database: impactdialing_test<%= ENV['TEST_ENV_NUMBER'] %>
   username: root
   password:
