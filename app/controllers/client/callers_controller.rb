@@ -75,15 +75,14 @@ module Client
     end
 
     def reassign_to_campaign
-      caller = Caller.includes(:campaign).find(params[:id])
-      if caller.update_attributes(:campaign_id => params[:campaign_id])
-        campaign_name = caller.campaign.name
-        message = I18n.t('re_assign_caller_to_another_campaign', campaign_name: campaign_name)
-        render :json => {message: message}
+      caller_record = Caller.includes(:campaign).find(params[:id])
+      if caller_record.update_attributes(campaign_id: params[:campaign_id])
+        campaign_name = caller_record.campaign.name
+        message = I18n.t('activerecord.successes.models.caller.new_campaign', campaign_name: campaign_name)
       else
         message = I18n.t('activerecord.errors.models.caller.reassign_campaign')
-        render :json => {message: message}
       end
+      render json: {message: message}
     end
 
     def usage

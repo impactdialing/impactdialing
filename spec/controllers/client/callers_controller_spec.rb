@@ -103,37 +103,39 @@ describe Client::CallersController, :type => :controller do
     let(:campaign) {create(:power, account: @user.account)}
     let(:other_campaign) {create(:power, account: @user.account)}
     let(:caller_record) {create(:caller, campaign_id: campaign.id)}
-    let(:success_message) {I18n.t('re_assign_caller_to_another_campaign', campaign_name: other_campaign.name)}
-    let(:failure_message) {I18n.t('activerecord.errors.models.caller.reassign_campaign')}
-    let(:params) do
-      {
-        campaign_id: other_campaign.id,
-        id: caller_record.id,
-        format: :json
-      }
+    let(:json_params) do
+      {format: :json}
     end
-    let(:params_bad) do
-      {
-        campaign_id: "abc",
-        id: caller_record.id,
-        format: :json
-      }
+    context 'when successful' do
+      let(:message) {I18n.t('activerecord.successes.models.caller.new_campaign', campaign_name: other_campaign.name)}
+      let(:params) do
+        json_params.merge({
+          campaign_id: other_campaign.id,
+          id: caller_record.id
+        })
+      end
+      it "should change caller campaign" do
+        post :reassign_to_campaign, params
+        expect(caller_record.reload.campaign_id).to eq(other_campaign.id)
+      end
+      it "renders a json success message when caller is reassigned" do
+        post :reassign_to_campaign, params
+        expect(response.body).to eq({message: message}.to_json)
+      end
     end
-    it "should change caller campaign" do
-      post :reassign_to_campaign, params
-      expect(caller_record.reload.campaign_id).to eq(other_campaign.id)
-    end
-    it "renders a json success message when caller is reassigned" do
-      post :reassign_to_campaign, params
-      expect(response.body).to eq({message: success_message}.to_json)
-    end
-    it "renders a json failure message when the reassign campaign fails" do
-      post :reassign_to_campaign, id: caller_record.id, campaign_id: 10000
-      expect(response.body).to eq({message: failure_message}.to_json)
-    end
-    it "renders a json failure message when the params given are not expected data types" do
-      post :reassign_to_campaign, params_bad
-      expect(response.body).to eq({message: failure_message}.to_json)
+    context 'when unsuccessful' do
+      let(:message) {I18n.t('activerecord.errors.models.caller.reassign_campaign')}
+      let(:params_bad) do
+        json_params.merge({
+          campaign_id: 'abc',
+          id: caller_record.id
+        })
+      end
+      it "renders a json failure message when the reassign campaign fails" do
+        post :reassign_to_campaign, id: caller_record.id, campaign_id: 10000
+        expect(response.body).to eq({message: message}.to_json)
+      end
+      it "renders a json failure message when the params given are not expected data types"
     end
   end
 
