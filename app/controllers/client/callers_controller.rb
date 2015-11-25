@@ -45,7 +45,7 @@ module Client
         @caller_groups = account.caller_groups
       else
         if @caller.previous_changes.keys.include?('campaign_id')
-          flash_message(:notice, I18n.t('activerecord.successes.models.caller.reassigned'))
+          flash_message(:notice, I18n.t('activerecord.successes.models.caller.campaign_change'))
         else
           flash_message(:notice, I18n.t('activerecord.successes.models.caller.saved'))
         end
@@ -77,9 +77,9 @@ module Client
     def reassign_to_campaign
       caller_record = Caller.includes(:campaign).find(params[:id])
       if caller_record.update_attributes(campaign_id: params[:campaign_id])
-        message = I18n.t('activerecord.successes.models.caller.reassigned')
+        message = I18n.t('activerecord.successes.models.caller.campaign_change')
       else
-        message = I18n.t('activerecord.errors.models.caller.reassign_campaign')
+        message = I18n.t('activerecord.errors.models.caller.campaign_change')
       end
       render json: {message: message}
     end

@@ -31,7 +31,7 @@ en:
     successes:
         models:
           caller:
-            reassigned: "Caller has been reassigned. It will take a few minutes to update online callers."
+            campaign_change: "Caller has been reassigned. It will take a few minutes to update online callers."
             saved: "Caller saved."
             archived: "Caller archived."
             restored: "Caller restored."
@@ -50,7 +50,7 @@ en:
           not_a_number: "Number must contain only digits, - (hyphens), () (paranthesis) or + (plus signs)"
           taken: "%{value} is already in the specified Do Not Call list"
         caller:
-          reassign_campaign: "Caller failed to be reassigned."
+          campaign_change: "Caller failed to be reassigned."
         voter_list:
           general_error: "An error occurred while processing your uploaded list. You may have fields that contain large amounts of data. Try uploading again and select Discard for columns that contain more than 2 or 3 sentences."
           custom_id_map_prohibited: "Lists for this campaign cannot map to the system ID field because the first list did not."
