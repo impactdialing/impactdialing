@@ -84,7 +84,6 @@ module Client
         message = I18n.t('activerecord.errors.models.caller.reassign_campaign')
         render :json => {message: message}
       end
-      # render :json => {message: 'Campaign Reassigned'}, :status => :ok
     end
 
     def usage

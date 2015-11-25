@@ -154,7 +154,7 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true, js
             expect(page).to have_content callers.first.username
           end
         end
-        it 'displays success message when campaign is reassigned' do
+        it 'displays success message when campaign is reassigned', smoke: true do
           within_nth_caller_cell 2, 2 do
             select(power_extra.name)
             expect(page.driver.browser.switch_to.alert.text).to have_content 'You have been re-assigned to power campaign 2.'
