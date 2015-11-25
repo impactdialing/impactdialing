@@ -77,8 +77,7 @@ module Client
     def reassign_to_campaign
       caller_record = Caller.includes(:campaign).find(params[:id])
       if caller_record.update_attributes(campaign_id: params[:campaign_id])
-        campaign_name = caller_record.campaign.name
-        message = I18n.t('activerecord.successes.models.caller.new_campaign', campaign_name: campaign_name)
+        message = I18n.t('activerecord.successes.models.caller.reassigned')
       else
         message = I18n.t('activerecord.errors.models.caller.reassign_campaign')
       end

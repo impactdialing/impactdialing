@@ -32,7 +32,6 @@ en:
         models:
           caller:
             reassigned: "Caller has been reassigned. It will take a few minutes to update online callers."
-            new_campaign: "Caller has been reassigned to %{campaign_name}. It will take a few minutes to update online callers."
             saved: "Caller saved."
             archived: "Caller archived."
             restored: "Caller restored."

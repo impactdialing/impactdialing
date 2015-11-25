@@ -107,7 +107,7 @@ describe Client::CallersController, :type => :controller do
       {format: :json}
     end
     context 'when successful' do
-      let(:message) {I18n.t('activerecord.successes.models.caller.new_campaign', campaign_name: other_campaign.name)}
+      let(:message) {I18n.t('activerecord.successes.models.caller.reassigned')}
       let(:params) do
         json_params.merge({
           campaign_id: other_campaign.id,
