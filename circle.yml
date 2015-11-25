@@ -10,7 +10,8 @@ dependencies:
 
 test:
   override:
-    - SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/units/tests.xml --format progress" bundle exec rake spec:note2e
-    - cd sc-*-linux && ./bin/sc -u $SAUCE_USERNAME -k $SAUCE_ACCESS_KEY:
+    - DISABLE_SPRING=1 SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/units/tests.xml --format progress" bundle exec rake spec:note2e
+    - cd sc-*-linux && ./bin/sc --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/sauce-is-hot:
         background: true
-    - USE_SAUCE=true SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/tests.xml --format progress --tag js --tag admin --pattern spec/features/**/*_spec.rb" bundle exec rake sauce:spec
+    - while [ ! -e ~/sauce-is-hot ]; do sleep 1; done
+    - DISABLE_SPRING=1 USE_SAUCE=true SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/tests.xml --format progress --tag js --tag admin --pattern spec/features/**/*_spec.rb" bundle exec rake sauce:spec
