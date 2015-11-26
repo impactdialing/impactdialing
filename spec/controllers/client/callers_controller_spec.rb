@@ -100,14 +100,14 @@ describe Client::CallersController, :type => :controller do
   end
 
   describe "reassign caller campaign" do
-    let(:campaign) {create(:power, account: @user.account)}
-    let(:other_campaign) {create(:power, account: @user.account)}
-    let(:caller_record) {create(:caller, campaign_id: campaign.id)}
+    let(:campaign){ create(:power, account: @user.account) }
+    let(:other_campaign){ create(:power, account: @user.account) }
+    let(:caller_record){ create(:caller, campaign_id: campaign.id) }
     let(:json_params) do
       {format: :json}
     end
     context 'when successful' do
-      let(:message) {I18n.t('activerecord.successes.models.caller.campaign_change')}
+      let(:message){ I18n.t('activerecord.successes.models.caller.campaign_change') }
       let(:params) do
         json_params.merge({
           campaign_id: other_campaign.id,
@@ -124,7 +124,7 @@ describe Client::CallersController, :type => :controller do
       end
     end
     context 'when unsuccessful' do
-      let(:message) {I18n.t('activerecord.errors.models.caller.campaign_change')}
+      let(:message){ I18n.t('activerecord.errors.models.caller.campaign_change') }
       let(:params_bad) do
         json_params.merge({
           campaign_id: 'abc',
