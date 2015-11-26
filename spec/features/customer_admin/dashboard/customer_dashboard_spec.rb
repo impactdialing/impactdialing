@@ -12,7 +12,7 @@ def within_nth_caller_cell(row_n, cell_n, &block)
   end
 end
 
-describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
+describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true, js: true, file_uploads: true do
   let(:auth_time){ Time.now }
   let(:user) do
     create(:user)
@@ -145,16 +145,22 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
       end
 
       context 'Active Callers' do
+        before do
+          Capybara.javascript_driver = :selenium
+        end
+
         it 'lists the caller email address' do
           within_nth_caller_cell 2, 1 do
             expect(page).to have_content callers.first.username
           end
         end
-        it 'displays the campaign the caller is logged in for in a drop down menu' do          
+        it 'displays success message when campaign is reassigned', smoke: true do
           within_nth_caller_cell 2, 2 do
-            expect(page.find("select.reassign-campaign option[value='#{power_campaign.id}']")).to be_selected
+            select(power_extra.name)
+            expect(page.driver.browser.switch_to.alert.text).to have_content 'You have been re-assigned to power campaign 2.'
           end
         end
+
         it 'lists the calls status e.g. on hold' do
           within_nth_caller_cell 2, 3 do
             expect(page).to have_content 'On call'

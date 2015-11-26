@@ -80,16 +80,17 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
       url : "/client/callers/"+self.model.get("caller_id")+"/reassign_to_campaign",
       data : {campaign_id :$(e.target).val() },
       dataType: "json",
-      beforeSend: function (request)
-        {
-          var token = $("meta[name='csrf-token']").attr("content");
-          request.setRequestHeader("X-CSRF-Token", token);
-        },
+      beforeSend: function (request) {
+        var token = $("meta[name='csrf-token']").attr("content");
+        request.setRequestHeader("X-CSRF-Token", token);
+      },
+      success: function(json, responseText, jqXHR) {
+        console.log(arguments);
+        alert(json.message);
+      },
     });
   },
-
 });
-
 
 ImpactDialing.Views.MonitorCallersIndex = Backbone.View.extend({
   tagName: 'tbody',
@@ -120,7 +121,6 @@ ImpactDialing.Views.MonitorCallersIndex = Backbone.View.extend({
         });
       }
     });
-
     return this;
   }
 });
