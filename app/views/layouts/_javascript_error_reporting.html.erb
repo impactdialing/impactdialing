@@ -14,11 +14,13 @@
   </script>
   <%= content_for :javascripts do %>
     <script type="text/javascript">
-      $(document).ajaxError(function(event, jqxhr, settings, thrownError){
-        Bugsnag.metaData = {
-          xhrSettings: settings
-        };
-        Bugsnag.notify("Ajax Error", thrownError);
+      $(function(){
+        $(document).ajaxError(function(event, jqxhr, settings, thrownError){
+          Bugsnag.metaData = {
+            xhrSettings: settings
+          };
+          Bugsnag.notify("Ajax Error", thrownError);
+        });
       });
     </script>
   <% end %>
