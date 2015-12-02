@@ -14,7 +14,7 @@ class RedisStatus
     }).to_json
     ActiveSupport::Notifications.instrument('call_flow.caller.state_changed', payload.merge({
       campaign_id: campaign_id,
-      caller_session_id: caller_session_id,
+      caller_session_id: caller_session_id
     }))
   end
 

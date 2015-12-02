@@ -8,15 +8,22 @@ describe RedisStatus, :type => :model do
   end
 
   it "sends payload via ActiveSupport:subscriber" do
-    recieved_payload = nil
-    ActiveSupport::Notifications.subscribe('call_flow.caller.state_changed') do |name, start, finish, id, payload|
-      recieved_payload = payload
-    end
     campaign_id = 1
     status = "on hold"
     caller_session_id = 4
-    RedisStatus.set_state_changed_time(campaign_id, status, caller_session_id)
-    expect(recieved_payload).to eq({campaign_id: campaign_id, caller_session_id: caller_session_id, status: status})
+    payload = {
+      campaign_id: campaign_id,
+      caller_session_id: caller_session_id,
+      status: status
+    }
+
+    expect([
+      RedisStatus,
+      :set_state_changed_time,
+      campaign_id,
+      status,
+      caller_session_id
+    ]).to instrument('call_flow.caller.state_changed').with(payload)
   end
 
   it "should delete state" do
