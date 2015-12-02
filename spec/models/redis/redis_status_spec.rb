@@ -1,18 +1,30 @@
 require 'rails_helper'
 
 describe RedisStatus, :type => :model do
-  
+
   it "should return back state and time" do
     RedisStatus.set_state_changed_time(1, "On hold", 1)
     expect(RedisStatus.state_time(1, 1)).to eq(["On hold", "00:00:00"])
   end
-  
+
+  it "sends payload via ActiveSupport:subscriber" do
+    recieved_payload = nil
+    ActiveSupport::Notifications.subscribe('call_flow.caller.state_changed') do |name, start, finish, id, payload|
+      recieved_payload = payload
+    end
+    campaign_id = 1
+    status = "on hold"
+    caller_session_id = 4
+    RedisStatus.set_state_changed_time(campaign_id, status, caller_session_id)
+    expect(recieved_payload).to eq({campaign_id: campaign_id, caller_session_id: caller_session_id, status: status})
+  end
+
   it "should delete state" do
     RedisStatus.set_state_changed_time(1, "On hold", 1)
     RedisStatus.delete_state(1,1)
     expect(RedisStatus.state_time(1, 1)).to be_empty
   end
-  
+
   describe 'count by status' do
     before do
       RedisStatus.set_state_changed_time(1, "On hold", 1)
@@ -27,7 +39,7 @@ describe RedisStatus, :type => :model do
       expect(RedisStatus.count_by_status(1, [])).to eq([0,0,0])
     end
   end
-  
+
   describe 'on_hold_times' do
     def set_state(caller_session_id, state='On hold')
       RedisStatus.set_state_changed_time(1, state, caller_session_id)

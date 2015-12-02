@@ -8,7 +8,14 @@ class RedisStatus
   end
 
   def self.set_state_changed_time(campaign_id, status, caller_session_id)
-    $redis_dialer_connection.hset "campaign:#{campaign_id}:status", caller_session_id, {status: status, time: Time.now.to_s}.to_json
+    payload = {status: status}
+    $redis_dialer_connection.hset "campaign:#{campaign_id}:status", caller_session_id, payload.merge({
+      time: Time.now.to_s
+    }).to_json
+    ActiveSupport::Notifications.instrument('call_flow.caller.state_changed', payload.merge({
+      campaign_id: campaign_id,
+      caller_session_id: caller_session_id,
+    }))
   end
 
   def self.state_time(campaign_id, caller_session_id)
