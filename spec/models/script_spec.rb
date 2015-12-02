@@ -39,16 +39,11 @@ describe Script, :type => :model do
     end
 
     it 'publishes save notification via ActiveSupport::Notifications' do
-      actual_payload = nil
-      ActiveSupport::Notifications.subscribe('scripts.saved') do |name, start, finish, id, payload|
-        actual_payload = payload
-      end
-
-      script.update_attributes(name: "Updated")
-      expect(actual_payload[:script]).to eq script
-
-      new_script = create(:script)
-      expect(actual_payload[:script]).to eq new_script
+      expect([
+        script,
+        :update_attributes,
+        {name: 'Updated'}
+      ]).to instrument('scripts.saved').with({script: script})
     end
   end
 
