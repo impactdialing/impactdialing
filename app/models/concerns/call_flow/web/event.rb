@@ -15,6 +15,12 @@ class CallFlow::Web::Event
     end
 
   public
+    def self.publish(channel_name, event, payload)
+      RescueRetryNotify.on(Pusher::HTTPError, 1) do
+        Pusher.trigger(channel_name, event, payload)
+      end
+    end
+
     def initialize(account_id)
       if account_id.blank?
         raise CallFlow::BaseArgumentError, "Account ID is required"
