@@ -2,10 +2,8 @@ require 'rails_helper'
 
 describe 'CallerEvents' do
   describe 'caller reassigned event' do
-    let(:pusher_instance) do
-      double('Pusher', {
-        trigger: nil
-      })
+    let(:event_class) do
+      CallFlow::Web::Event
     end
     let(:campaign){ create(:power) }
     let(:web_caller) do
@@ -31,18 +29,14 @@ describe 'CallerEvents' do
       })
     end
 
-    before do
-      allow(Pusher).to receive(:[]){ pusher_instance }
-    end
-
     it 'returns immediately if caller is phones only' do
-      expect(Pusher).to_not receive(:[])
+      expect(event_class).to_not receive(:publish)
       phones_only_caller_session.publish_caller_reassigned
     end
 
     describe 'the event' do
       it 'is named "caller_reassigned"' do
-        expect(pusher_instance).to receive(:trigger).with('caller_reassigned', anything)
+        expect(event_class).to receive(:publish).with(webui_caller_session.session_key, 'caller_reassigned', anything)
         webui_caller_session.publish_caller_reassigned
       end
     end

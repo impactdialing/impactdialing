@@ -6,9 +6,7 @@ module CallerEvents
   module InstanceMethods
   public
     def pushit(event_name, event_data={})
-      RescueRetryNotify.on(Pusher::HTTPError, 1) do
-        Pusher[session_key].trigger(event_name, event_data)
-      end
+      CallFlow::Web::Event.publish(session_key, event_name, event_data)
     end
 
     def publish_start_calling
@@ -24,7 +22,7 @@ module CallerEvents
 
         dialed_call.storage[:lead_uuid] = lead['uuid']
 
-        return 
+        return
       end
 
       event_hash = campaign.voter_connected_event(call_sid, phone)
