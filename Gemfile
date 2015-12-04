@@ -20,7 +20,7 @@ gem 'sinatra'
 gem 'slim'
 
 
-gem 'uuid', '~> 2.3.7' 
+gem 'uuid', '~> 2.3.7'
 
 # 911
 gem 'pagerduty'
@@ -122,6 +122,7 @@ group :development, :test, :e2e do
   gem 'hirb'
   gem 'pry'
   gem 'byebug'
+  gem 'jasmine'
 end
 
 group :test, :e2e do
