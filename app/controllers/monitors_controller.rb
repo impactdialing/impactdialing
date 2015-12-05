@@ -12,6 +12,7 @@ class MonitorsController < ClientController
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
     @token = twilio_capability.generate
+    @channel = CallFlow::Web::Event::Channel.new(@account.id)
   end
 
   def stop

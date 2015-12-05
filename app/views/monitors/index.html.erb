@@ -6,9 +6,15 @@
   <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js"></script>
   <%= javascript_include_tag "flash_detect_min.js", "browser_detect.js", "underscore-min", "mustache", "backbone", "impactdialing", "models/monitor_campaign.js", "models/monitor_caller.js", "collections/monitor_callers.js", "views/monitor_callers_index.js", "collections/monitor_campaigns.js","routers/monitors.js", "views/monitor_campaigns_index.js" %>
 
+  <script src="/javascripts/pusher/dist/pusher.min.js"></script>
+
+  <script>
+
+  </script>
+
   <script type="text/javascript">
     $(function() {
-      new ImpactDialing.Routers.Monitors();
+      var monitorRouter = new ImpactDialing.Routers.Monitors();
       Backbone.history.start();
       Twilio.Device.setup("<%= @token %>", {'debug':true});
       Twilio.Device.connect(function (conn) {});
@@ -21,6 +27,23 @@
         $(this).hide();
         return false;
       });
+
+      var pusher = new Pusher("<%= PUSHER_KEY %>");
+      var my_channel = pusher.subscribe("<%= @channel.name %>");
+      var stopWatch = new ImpactDialing.Utilities.StopWatch(function(){
+        monitorRouter.active_callers.fetch();
+        monitorRouter.active_campaigns.fetch();
+      });
+      my_channel.bind_all(function(){
+        console.log("bind_all")
+        stopWatch.restart()
+      });
+      my_channel.bind('caller.state_change', function(data) {
+        var callerObj = monitorRouter.active_callers.get(data.caller_session_id);
+        console.log(callerObj)
+        callerObj.set('status', data.status)
+      });
+
     });
   </script>
 <% end %>

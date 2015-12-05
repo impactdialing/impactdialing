@@ -10,8 +10,14 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
   },
 
   render: function () {
-    $(this.el).html(Mustache.to_html($('#caller-monitor-template').html(), _.extend(this.model.toJSON(),
-      {reassignable_campaigns: this.options.reassignable_campaigns})));
+    $(this.el).html(
+      Mustache.to_html(
+        $('#caller-monitor-template').html(),
+        _.extend(this.model.toJSON(),{
+          reassignable_campaigns: this.options.reassignable_campaigns
+        })
+      )
+    );
     return this;
   },
 
@@ -99,6 +105,7 @@ ImpactDialing.Views.MonitorCallersIndex = Backbone.View.extend({
     this.collection.on('reset', this.render);
     this.collection.on('add', this.render);
     this.collection.on('remove', this.render);
+    this.collection.on('change', this.render);
   },
 
   render: function () {
