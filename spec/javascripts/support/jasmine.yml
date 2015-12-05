@@ -20,6 +20,8 @@ src_files:
   - public/javascripts/form_helpers/grouped_selects.js
   - public/javascripts/services/pusher.js
   - public/javascripts/utilities/period_stats.js
+  - public/javascripts/utilities/stop_watch.js
+
 
 # stylesheets
 #
