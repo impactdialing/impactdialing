@@ -1,10 +1,10 @@
-# ActiveSupport::Notifications.subscribe('call_flow.caller.state_changed') do |name, start, finish, id, payload|
-#   # current initialize
-#
-#   channel = CallFlow::Web::Event::Channel.new(account_id)
-#
-#   CallFlow::Web::Event.publish(channel.name, 'caller.state_change', payload)
-# end
+ActiveSupport::Notifications.subscribe('call_flow.caller.state_changed') do |name, start, finish, id, payload|
+  # current initialize
+
+  channel = CallFlow::Web::Event::Channel.new(payload[:account_id])
+
+  CallFlow::Web::Event.publish(channel.name, 'caller.state_change', payload)
+end
 
 # class CallFlow::Web::Event::Channel
 #   def generate

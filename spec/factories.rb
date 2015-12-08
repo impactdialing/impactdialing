@@ -157,6 +157,7 @@ FactoryGirl.define do
   end
 
   factory :webui_caller_session do
+    campaign
     caller
     sid { generate(:sid) }
     state 'initial'
@@ -165,6 +166,7 @@ FactoryGirl.define do
   end
 
   factory :phones_only_caller_session do
+    campaign
     state 'initial'
     sid { generate(:sid) }
     created_at Time.now
