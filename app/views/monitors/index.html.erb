@@ -4,13 +4,13 @@
 
 <% content_for :javascripts do %>
   <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js"></script>
-  <%= javascript_include_tag "flash_detect_min.js", "browser_detect.js", "underscore-min", "mustache", "backbone", "impactdialing", "models/monitor_campaign.js", "models/monitor_caller.js", "collections/monitor_callers.js", "views/monitor_callers_index.js", "collections/monitor_campaigns.js","routers/monitors.js", "views/monitor_campaigns_index.js" %>
+  <%= javascript_include_tag("jquery.countdown/dist/jquery.countdown.js", "flash_detect_min.js", "browser_detect.js",
+   "underscore-min.js", "mustache.js", "backbone.js", "impactdialing.js", "models/monitor_campaign.js",
+   "models/monitor_caller.js", "collections/monitor_callers.js",
+   "views/monitor_callers_index.js", "collections/monitor_campaigns.js",
+   "routers/monitors.js", "views/monitor_campaigns_index.js", "utilities/stop_watch.js") %>
 
   <script src="/javascripts/pusher/dist/pusher.min.js"></script>
-
-  <script>
-
-  </script>
 
   <script type="text/javascript">
     $(function() {
@@ -100,7 +100,7 @@
       </select>
     </td>
     <td>{{status}}</td>
-    <td>{{time_in_status}}</td>
+    <td id="caller_time_in_status_{{id}}"></td>
     <td>
       <a class ="action secondary eaves_drop" href="#" data-action="eavesdrop">
         Eavesdrop

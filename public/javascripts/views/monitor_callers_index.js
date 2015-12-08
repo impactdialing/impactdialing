@@ -18,6 +18,14 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
         })
       )
     );
+
+
+    var time = new Date().getTime();
+    $(this.el).children('#caller_time_in_status_' + this.model.get('id')).countdown(time, {elapse: true}).on('update.countdown', function(event) {
+      $(this).html(event.strftime('<span>%H:%M:%S</span>'));
+    });
+
+
     return this;
   },
 
