@@ -106,7 +106,7 @@ describe CallerController, :type => :controller do
 
         it 'queues RedirectCallerJob, relying on calculated redirect url to return :dialing_prohibited' do
           post :skip_voter, valid_params
-          expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session.id) 
+          expect([:sidekiq, :call_flow]).to have_queued(RedirectCallerJob).with(caller_session.id)
         end
 
         it 'renders abort json' do
@@ -184,44 +184,57 @@ describe CallerController, :type => :controller do
       }
     end
     before do
+      allow(caller_session).to receive(:pushit)
+      allow(caller).to receive_message_chain(:caller_sessions, :find){ caller_session }
+      allow(Caller).to receive(:find).with(caller.id){ caller }
       session[:caller] = caller.id
       stub_twilio_conference_by_name_request
     end
     shared_examples_for 'caller kicks self from transfer conference' do
       it 'kicks caller off conference' do
+        post :kick, valid_params.merge(participant_type: participant_type)
         expect(@kick_request).to have_been_made
       end
       it 'redirects caller to pause url' do
+        post :kick, valid_params.merge(participant_type: participant_type)
         expect(@redirect_request).to have_been_made
       end
       it 'renders nothing' do
+        post :kick, valid_params.merge(participant_type: participant_type)
         expect(response.body).to be_blank
       end
     end
 
     context 'caller' do
       let(:call_sid){ caller_session.sid }
+      let(:participant_type){ 'caller' }
       before do
         stub_twilio_kick_participant_request(conference_sid, call_sid)
         post_body = pause_caller_url(caller, url_opts)
         stub_twilio_redirect_request(post_body)
-        post :kick, valid_params.merge(participant_type: 'caller')
       end
 
       it_behaves_like 'caller kicks self from transfer conference'
+
+      it 'publishes a pusher event "caller_kicked_off"' do
+        expect(caller_session).to receive(:pushit).with('caller_kicked_off', {})
+        post :kick, valid_params.merge(participant_type: participant_type)
+      end
     end
 
     context 'transfer' do
       let(:call_sid){ transfer_attempt.sid }
+      let(:participant_type){ 'transfer' }
       before do
         stub_twilio_kick_participant_request(conference_sid, call_sid)
-        post :kick, valid_params.merge(participant_type: 'transfer')
       end
 
       it 'kicks transfer off conference' do
+        post :kick, valid_params.merge(participant_type: participant_type)
         expect(@kick_request).to have_been_made
       end
       it 'renders nothing' do
+        post :kick, valid_params.merge(participant_type: participant_type)
         expect(response.body).to be_blank
       end
     end
@@ -230,12 +243,12 @@ describe CallerController, :type => :controller do
       # this is a purely to help out clients who get out of sync
       # eg hanging on to previous transfer states.
       let(:call_sid){ caller_session.sid }
+      let(:participant_type){ 'caller' }
       before do
         TransferAttempt.destroy_all
         stub_twilio_kick_participant_request(conference_sid, call_sid)
         post_body = pause_caller_url(caller, url_opts)
         stub_twilio_redirect_request(post_body)
-        post :kick, valid_params.merge(participant_type: 'caller')
       end
 
       it_behaves_like 'caller kicks self from transfer conference'
@@ -334,4 +347,3 @@ describe CallerController, :type => :controller do
     end
   end
 end
-

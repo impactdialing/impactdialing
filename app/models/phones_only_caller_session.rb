@@ -85,7 +85,7 @@ class PhonesOnlyCallerSession < CallerSession
 
   def submit_response(params)
     selected_response = redis_survey_response_from_digits(params)
-    dialed_call.collect_response(params, selected_response) 
+    dialed_call.collect_response(params, selected_response)
 
     return disconnected_twiml if disconnected?
     return wrapup_call(params) if skip_all_questions?(params)
@@ -128,7 +128,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
 
   def wrapup_call_attempt
-    RedisStatus.set_state_changed_time(campaign_id, "On hold", self.id)
+    RedisStatus.set_state_changed_time(campaign, "On hold", self)
   end
 
   def more_questions_to_be_answered?(params)

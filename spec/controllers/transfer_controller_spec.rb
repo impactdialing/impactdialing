@@ -9,6 +9,7 @@ describe TransferController, :type => :controller do
       script: script
     })
   end
+  let(:call_attempt){ create(:call_attempt) }
   let(:transfer) do
     create(:transfer, {
       script: script,
@@ -45,11 +46,17 @@ describe TransferController, :type => :controller do
     create(:caller)
   end
   let(:caller_session) do
-    create(:caller_session, caller: caller_record)
+    create(:caller_session, {
+      campaign: campaign,
+      caller: caller_record
+    })
   end
   let(:phone){ twilio_valid_to }
 
   before do
+    allow(caller_session).to receive(:pushit)
+    allow(transfer_attempt).to receive(:caller_session){ caller_session }
+    allow(TransferAttempt).to receive(:find).with(transfer_attempt.id.to_s){ transfer_attempt }
     allow(dialed_call_storage).to receive(:[]).with(:phone){ phone }
     allow(caller_session).to receive(:caller_session_call){ call_flow_caller_session }
     allow(CallerSession).to receive(:find){ caller_session }
@@ -95,10 +102,8 @@ describe TransferController, :type => :controller do
     end
 
     it 'updates TransferAttempt#status to SUCCESS' do
+      expect(transfer_attempt).to receive(:update_attribute).with(:status, CallAttempt::Status::SUCCESS)
       post :disconnect, params
-
-      transfer_attempt.reload
-      expect(transfer_attempt.status).to eq(CallAttempt::Status::SUCCESS)
     end
   end
 
@@ -135,6 +140,14 @@ describe TransferController, :type => :controller do
     let(:action){ :callee }
     let(:processed_response_template) do
       'transfer/callee'
+    end
+
+    before do
+      allow(TransferAttempt).to(
+        receive_message_chain(:includes, :find_by_session_key).with(
+          params[:session_key]
+        ).and_return(transfer_attempt)
+      )
     end
 
     it_behaves_like 'processable twilio fallback url requests'
@@ -209,7 +222,7 @@ describe TransferController, :type => :controller do
     end
     it 'sets TransferAttempt#connecttime' do
       post :connect, params
-      transfer_attempt.reload
+      transfer_attempt = TransferAttempt.where(id: params[:id]).first
 
       expect(transfer_attempt.connecttime).not_to be_nil
     end
@@ -225,44 +238,40 @@ describe TransferController, :type => :controller do
     end
   end
 
-  it "should end a successful call" do
-    campaign =  create(:predictive)
-    call_attempt = create(:call_attempt)
-    caller_session = create(:caller_session, campaign: campaign, attempt_in_progress: call_attempt)
-    transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
-    post :end, id: transfer_attempt.id, :CallStatus => 'completed'
-    transfer_attempt.reload
-    expect(transfer_attempt.status).to eq('Call completed with success.')
-    expect(transfer_attempt.call_end).not_to be_nil
-  end
+  describe '#end' do
+    before do
+      transfer_attempt.update_attributes(call_attempt: call_attempt)
+      caller_session.update_attributes(attempt_in_progress: call_attempt)
+    end
 
-  it "should end a no-answer call" do
-    campaign =  create(:preview)
-    caller_session = create(:caller_session, campaign: campaign)
-    transfer_attempt = create(:transfer_attempt, caller_session: caller_session)
-    post :end, id: transfer_attempt.id, :CallStatus => 'no-answer'
-    transfer_attempt.reload
-    expect(transfer_attempt.status).to eq('No answer')
-    expect(transfer_attempt.call_end).not_to be_nil
-  end
+    {
+      'completed' => 'Call completed with success.',
+      'no-answer' => 'No answer',
+      'busy' => 'No answer busy signal',
+      'failed' => 'Call failed'
+    }.each do |twilio_status, transfer_attempt_status|
 
-  it "should end a busy call" do
-    campaign =  create(:predictive)
-    caller_session = create(:caller_session, campaign: campaign)
-    transfer_attempt = create(:transfer_attempt, caller_session: caller_session)
-    post :end, id: transfer_attempt.id, :CallStatus => 'busy'
-    transfer_attempt.reload
-    expect(transfer_attempt.status).to eq('No answer busy signal')
-    expect(transfer_attempt.call_end).not_to be_nil
-  end
+      it 'updates TransferAttempt :status & :call_end' do
+        Timecop.freeze do
+          expect(transfer_attempt).to receive(:update_attributes).with({
+            status: transfer_attempt_status,
+            call_end: Time.now
+          })
+          post :end, id: transfer_attempt.id, CallStatus: twilio_status
+        end
+      end
 
-  it "should end a failed call" do
-    campaign =  create(:power)
-    caller_session = create(:caller_session, campaign: campaign)
-    transfer_attempt = create(:transfer_attempt, caller_session: caller_session)
-    post :end, id: transfer_attempt.id, :CallStatus => 'failed'
-    transfer_attempt.reload
-    expect(transfer_attempt.status).to eq('Call failed')
-    expect(transfer_attempt.call_end).not_to be_nil
+      next if twilio_status == 'completed'
+
+      context 'params[:CallStatus] is not "completed"' do
+        it 'publishes a "transfer_busy" event' do
+          expect(caller_session).to receive(:pushit).with('transfer_busy', {
+            status: twilio_status,
+            label: transfer_attempt.transfer.label
+          })
+          post :end, id: transfer_attempt.id, CallStatus: twilio_status
+        end
+      end
+    end
   end
 end

@@ -485,18 +485,18 @@ describe Campaign, :type => :model do
       c9= create(:phones_only_caller_session, on_call: true, available_for_call: false, campaign: campaign, attempt_in_progress: create(:call_attempt, connecttime: Time.now), state: "conference_started_phones_only_predictive")
 
       c10= create(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: create(:call_attempt, connecttime: Time.now), campaign: campaign)
-      RedisStatus.set_state_changed_time(campaign.id, "On hold", c2.id)
-      RedisStatus.set_state_changed_time(campaign.id, "On hold", c5.id)
-      RedisStatus.set_state_changed_time(campaign.id, "On hold", c6.id)
-      RedisStatus.set_state_changed_time(campaign.id, "On hold", c7.id)
+      redis_status_set_state(campaign, "On hold", c2)
+      redis_status_set_state(campaign, "On hold", c5)
+      redis_status_set_state(campaign, "On hold", c6)
+      redis_status_set_state(campaign, "On hold", c7)
 
-      RedisStatus.set_state_changed_time(campaign.id, "On call", c8.id)
-      RedisStatus.set_state_changed_time(campaign.id, "On call", c9.id)
+      redis_status_set_state(campaign, "On call", c8)
+      redis_status_set_state(campaign, "On call", c9)
 
-      RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c3.id)
-      RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c4.id)
-      RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c10.id)
-      
+      redis_status_set_state(campaign, "Wrap up", c3)
+      redis_status_set_state(campaign, "Wrap up", c4)
+      redis_status_set_state(campaign, "Wrap up", c10)
+
       2.times{ campaign.send(:inflight_stats).inc('ringing') }
 
       expect(campaign.current_status).to eq ({callers_logged_in: 9, on_call: 2, wrap_up: 3, on_hold: 4, ringing_lines: 2, available: 0})

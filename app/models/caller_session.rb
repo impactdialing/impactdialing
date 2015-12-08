@@ -231,7 +231,7 @@ public
       self.update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign: new_campaign)
       RedisPredictiveCampaign.add(new_campaign.id, new_campaign.type)
       RedisReassignedCallerSession.delete(self.id)
-      RedisStatus.set_state_changed_time(new_campaign.id, "On hold", self.id)
+      RedisStatus.set_state_changed_time(new_campaign, "On hold", self)
     end
   end
 

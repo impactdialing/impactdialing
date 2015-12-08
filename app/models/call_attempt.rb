@@ -5,7 +5,7 @@ require Rails.root.join("lib/twilio_lib")
 # - connecttime: record the time that the dialed party line was first served TwiML; call could be abandoned or success
 # - call_end: record the time that the /call_end endpoint was requested by Twilio; this is an asynchronous request made after the dialed party disconnects
 # - wrapup_time: record the time that the caller submitted disposition results
-# - 
+# -
 #
 class CallAttempt < ActiveRecord::Base
   extend ImportProxy
@@ -34,7 +34,7 @@ class CallAttempt < ActiveRecord::Base
 
   scope :undebited, -> { where(debited: false) }
   scope :successful_call, -> { where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')") }
-  scope(:with_time_and_duration, -> { 
+  scope(:with_time_and_duration, -> {
     where('tStartTime IS NOT NULL').
     where('tEndTime IS NOT NULL').
     where('tDuration IS NOT NULL')
@@ -143,10 +143,12 @@ class CallAttempt < ActiveRecord::Base
     end
   end
 
+  # todo: remove cruft: CallAttempt#connect_call
   def connect_call
     self.update_attributes(connecttime: Time.now)
-    RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session_id)
+    RedisStatus.set_state_changed_time(campaign, "On call", caller_session)
   end
+  deprecate :connect_call
 
   def not_wrapped_up?
     wrapup_time.nil?

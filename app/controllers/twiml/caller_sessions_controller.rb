@@ -19,10 +19,9 @@ class Twiml::CallerSessionsController < TwimlController
     render_abort_twiml_unless_fit_to(:start_calling, @caller_session) do
       CallFlow::CallerSession.create(params)
       RedisPredictiveCampaign.add(campaign.id, campaign.type)
-      RedisStatus.set_state_changed_time(campaign.id, "On hold", @caller_session.id)
+      RedisStatus.set_state_changed_time(campaign, "On hold", @caller_session)
 
       @caller_session.start_conf
     end
   end
 end
-

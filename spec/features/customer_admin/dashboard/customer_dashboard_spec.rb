@@ -95,7 +95,7 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
           })
 
           c = power_campaign
-          RedisStatus.set_state_changed_time(c.id, redis_states[i], session.id)
+          redis_status_set_state(c, redis_states[i], session)
         end
 
         2.times do |i|
@@ -107,7 +107,7 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
           })
 
           c = power_extra
-          RedisStatus.set_state_changed_time(c.id, 'On hold', session.id)
+          redis_status_set_state(c, 'On hold', session)
         end
 
         visit client_root_path
@@ -150,7 +150,7 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
             expect(page).to have_content callers.first.username
           end
         end
-        it 'displays the campaign the caller is logged in for in a drop down menu' do          
+        it 'displays the campaign the caller is logged in for in a drop down menu' do
           within_nth_caller_cell 2, 2 do
             expect(page.find("select.reassign-campaign option[value='#{power_campaign.id}']")).to be_selected
           end

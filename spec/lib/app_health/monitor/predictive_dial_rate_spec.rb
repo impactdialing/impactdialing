@@ -55,7 +55,7 @@ describe 'AppHealth::Monitor::PredictiveDialRate' do
 
         context 'caller has been on-hold less than 1 minute' do
           before do
-            RedisStatus.set_state_changed_time(predictiveA.id, 'On hold', on_hold_session.id)
+            redis_status_set_state(predictiveA, 'On hold', on_hold_session)
           end
           it 'returns true' do
             expect(subject.ok?).to be_truthy
@@ -64,7 +64,7 @@ describe 'AppHealth::Monitor::PredictiveDialRate' do
         context 'caller has been on-hold more than 1 minute' do
           before do
             Timecop.travel(2.minutes.ago) do
-              RedisStatus.set_state_changed_time(predictiveA.id, 'On hold', on_hold_session.id)
+              redis_status_set_state(predictiveA, 'On hold', on_hold_session)
             end
           end
           context 'no new dials have been made in the last minute' do
@@ -86,7 +86,7 @@ describe 'AppHealth::Monitor::PredictiveDialRate' do
 
   describe '.alert_if_not_ok' do
     subject{ AppHealth::Monitor::PredictiveDialRate }
-    
+
     before do
       create_list(:webui_caller_session, 3, available_for_call: false, on_call: true, campaign: predictiveA)
       create_list(:webui_caller_session, 3, available_for_call: false, on_call: true, campaign: predictiveB)
@@ -101,7 +101,7 @@ describe 'AppHealth::Monitor::PredictiveDialRate' do
         })
 
         Timecop.travel(2.minutes.ago) do
-          RedisStatus.set_state_changed_time(predictiveA.id, 'On hold', on_hold_session.id)
+          redis_status_set_state(predictiveA, 'On hold', on_hold_session)
         end
 
         predictiveA.inflight_stats.set('last_dial_time', 2.minutes.ago.to_i)

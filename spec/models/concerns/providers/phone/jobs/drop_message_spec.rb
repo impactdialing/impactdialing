@@ -11,6 +11,7 @@ describe Providers::Phone::Jobs::DropMessage do
   subject{ Providers::Phone::Jobs::DropMessage.new }
 
   before do
+    allow(subject).to receive(:notify_client_of_error)
     allow(Providers::Phone::Call).to receive(:play_message_for){ response }
     allow(Providers::Phone::Call).to receive(:redirect_for){ response }
   end

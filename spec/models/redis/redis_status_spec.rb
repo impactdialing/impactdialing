@@ -16,7 +16,7 @@ describe RedisStatus, :type => :model do
 
   it "should return back state and time" do
     Timecop.freeze do
-      RedisStatus.set_state_changed_time(campaign, status, caller_session)
+      redis_status_set_state(campaign, status, caller_session)
       expect(RedisStatus.state_time(campaign.id, caller_session.id)).to eq([status, "00:00:00"])
     end
   end
@@ -38,16 +38,16 @@ describe RedisStatus, :type => :model do
   end
 
   it "should delete state" do
-    RedisStatus.set_state_changed_time(campaign, status, caller_session)
+    redis_status_set_state(campaign, status, caller_session)
     RedisStatus.delete_state(campaign.id,caller_session.id)
     expect(RedisStatus.state_time(campaign.id, caller_session.id)).to be_empty
   end
 
   describe 'count by status' do
     before do
-      RedisStatus.set_state_changed_time(campaign, status, caller_session)
-      RedisStatus.set_state_changed_time(campaign, "Wrap up", caller_sessions.first)
-      RedisStatus.set_state_changed_time(campaign, "On call", caller_sessions.second)
+      redis_status_set_state(campaign, status, caller_session)
+      redis_status_set_state(campaign, "Wrap up", caller_sessions.first)
+      redis_status_set_state(campaign, "On call", caller_sessions.second)
     end
     it "should return count by status" do
       caller_count_by_status = [1, 1, 1]
@@ -66,7 +66,7 @@ describe RedisStatus, :type => :model do
 
   describe 'on_hold_times' do
     def set_state(caller_session, state='On hold')
-      RedisStatus.set_state_changed_time(campaign, state, caller_session)
+      redis_status_set_state(campaign, state, caller_session)
     end
 
     before do

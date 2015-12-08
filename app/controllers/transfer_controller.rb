@@ -35,7 +35,10 @@ class TransferController < TwimlController
 
     case params[:CallStatus] #using the 2010 api
     when "no-answer", "busy", "failed"
-      transfer_attempt.caller_session.pushit('transfer_busy', {status: params[:CallStatus], label: transfer_attempt.transfer.label})
+      transfer_attempt.caller_session.pushit('transfer_busy', {
+        status: params[:CallStatus],
+        label: transfer_attempt.transfer.label
+      })
     end
 
     render nothing: true
@@ -64,7 +67,7 @@ class TransferController < TwimlController
     @caller_session = CallerSession.find(params[:caller_session])
     @caller = Caller.find(@caller_session.caller_id)
     @session_key = params[:session_key]
-    
+
     @caller_session.pushit("caller_joined_transfer_conference",{})
   end
 end

@@ -50,7 +50,7 @@ private
       @twiml_flag      = :connect
       @record_calls    = campaign.account.record_calls.to_s
     else
-      
+
       abandon
     end
   end
@@ -176,7 +176,7 @@ public
   def disconnected(params)
     storage.save(params_for_update(params))
     if caller_session_from_sid.present?
-      RedisStatus.set_state_changed_time(caller_session_from_sid.campaign_id, "Wrap up", caller_session_from_sid.id)
+      RedisStatus.set_state_changed_time(caller_session_from_sid.campaign, "Wrap up", caller_session_from_sid)
     end
     caller_session_call.emit('publish_voter_disconnected')
   end
@@ -250,4 +250,3 @@ public
     Providers::Phone::Jobs::DropMessage.add_to_queue(caller_session_sid, sid)
   end
 end
-

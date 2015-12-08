@@ -335,19 +335,19 @@ describe 'CallFlow::Call::Dialed' do
 
     shared_examples_for 'answered call of any dialing mode' do
       it 'updates state history to record that :answered was visited' do
-        RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
+        redis_status_set_state(campaign, 'On hold', caller_session)
         subject.answered(campaign, twilio_params)
         expect(subject.state_visited?(:answered)).to be_truthy
       end
 
       it 'tells campaign :number_not_ringing' do
-        RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
+        redis_status_set_state(campaign, 'On hold', caller_session)
         expect(campaign).to receive(:number_not_ringing)
         subject.answered(campaign, twilio_params)
       end
 
       it 'updates storage with twilio params' do
-        RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
+        redis_status_set_state(campaign, 'On hold', caller_session)
         subject.answered(campaign, twilio_params)
 
         expect(subject.storage['campaign_id'].to_i).to eq campaign.id
@@ -356,7 +356,7 @@ describe 'CallFlow::Call::Dialed' do
       end
 
       it 'sets :dialed_call_sid on caller_session_call' do
-        RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
+        redis_status_set_state(campaign, 'On hold', caller_session)
         subject.answered(campaign, twilio_params)
         expect(subject.caller_session_call.dialed_call_sid).to eq rest_response['sid']
       end
@@ -364,7 +364,7 @@ describe 'CallFlow::Call::Dialed' do
       context 'when call is answered by human and CallStatus == "in-progress"' do
         context 'when caller is still connected' do
           before do
-            RedisStatus.set_state_changed_time(campaign.id, 'On hold', caller_session.id)
+            redis_status_set_state(campaign, 'On hold', caller_session)
             campaign.account.update_attributes(record_calls: true)
           end
 
@@ -397,7 +397,7 @@ describe 'CallFlow::Call::Dialed' do
         end
         context 'caller is already talking to a lead' do
           before do
-            RedisStatus.set_state_changed_time(campaign.id, 'On call', caller_session.id)
+            redis_status_set_state(campaign, 'On call', caller_session)
           end
 
           it 'sets @twiml_flag = :hangup' do
@@ -464,7 +464,7 @@ describe 'CallFlow::Call::Dialed' do
     context 'Power dial mode' do
       let(:campaign){ create(:power) }
       let(:phone){ Forgery(:address).clean_phone }
-      
+
       it_behaves_like 'answered call of any dialing mode'
       it_behaves_like 'Preview or Power dial modes'
     end
@@ -560,4 +560,3 @@ describe 'CallFlow::Call::Dialed' do
     end
   end
 end
-

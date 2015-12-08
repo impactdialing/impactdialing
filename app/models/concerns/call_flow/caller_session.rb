@@ -3,10 +3,10 @@
 #
 # Data lifetime:
 # - starts: when caller establishes voice connection
-# - pends persistence: when caller voice connection ends 
+# - pends persistence: when caller voice connection ends
 # - ends: when persisted to sql store
 # - expires: in 24 hours (can be configured via ENV['CALL_FLOW_CALLER_SESSION_EXPIRY']
-# 
+#
 # Impetus is to encapsulate & better define behaviors of CallerSession#attempt_in_progress.
 #
 class CallFlow::CallerSession < CallFlow::Call
@@ -41,7 +41,7 @@ public
   def dialed_call_sid=(value)
     if value.present?
       @dialed_call_sid = value
-      storage[:dialed_call_sid] = value 
+      storage[:dialed_call_sid] = value
     end
   end
 
@@ -80,14 +80,14 @@ public
   end
 
   def connect_to_lead(phone, call_sid)
-    RedisStatus.set_state_changed_time(caller_session_record.campaign_id, "On call", caller_session_record.id)
+    RedisStatus.set_state_changed_time(caller_session_record.campaign, "On call", caller_session_record)
     VoterConnectedPusherJob.add_to_queue(caller_session_record.id, call_sid, phone)
     self.dialed_call_sid = call_sid
   end
 
   def redirect_to_hold
     RedirectCallerJob.add_to_queue(caller_session_record.id)
-    RedisStatus.set_state_changed_time(caller_session_record.campaign_id, "On hold", caller_session_record.id)
+    RedisStatus.set_state_changed_time(caller_session_record.campaign, "On hold", caller_session_record)
   end
 
   def stop_calling
@@ -100,4 +100,3 @@ public
     CallerPusherJob.add_to_queue(caller_session_record, event, nil, payload)
   end
 end
-

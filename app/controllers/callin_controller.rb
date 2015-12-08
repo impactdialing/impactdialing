@@ -66,7 +66,7 @@ public
     render_abort_twiml_unless_fit_to(:start_calling, @caller_session) do
       CallFlow::CallerSession.create(params)
       RedisPredictiveCampaign.add(campaign.id, caller_record.campaign.type)
-      RedisStatus.set_state_changed_time(caller_record.campaign.id, "On hold", @caller_session.id)
+      RedisStatus.set_state_changed_time(caller_record.campaign, "On hold", @caller_session)
 
       if caller_record.is_phones_only?
         CachePhonesOnlyScriptQuestions.add_to_queue caller_record.campaign.script_id, 'seed'
@@ -78,4 +78,3 @@ public
     end
   end
 end
-

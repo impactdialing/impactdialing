@@ -34,7 +34,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         storage: dialed_call_storage
       })
     end
-    let(:params) do 
+    let(:params) do
       {
         Digits: '1',
         question_number: 0,
@@ -177,7 +177,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         @campaign.account.quota.update_attributes!(minutes_allowed: 0)
 
         caller_session = CallerSession.find @caller_session.id
-        
+
         actual   = caller_session.ready_to_call
         expected = caller_session.account_has_no_funds_twiml
 
@@ -272,7 +272,7 @@ describe PhonesOnlyCallerSession, :type => :model do
       it "should render twiml for preview when no voters present" do
         call_attempt   = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt, script_id: @script.id)
-        
+
         expect(@campaign).to receive(:next_in_dial_queue).and_return(nil)
         expect(caller_session.ready_to_call).to say("This campaign has run out of phone numbers.").and_hangup
       end
@@ -378,7 +378,7 @@ describe PhonesOnlyCallerSession, :type => :model do
       it "should render correct twiml if pound selected" do
         voter          = create(:voter, first_name:"first", last_name:"last")
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, script_id: @script.id)
-        
+
         params = {
           Digits: '#',
           question_number: 0,
@@ -408,7 +408,7 @@ describe PhonesOnlyCallerSession, :type => :model do
           question_number: 0,
           phone: @voter.household.phone,
           voter_id: 'lead-uuid'
-        } 
+        }
 
         expect(caller_session).to receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.household.phone])
 
@@ -521,7 +521,7 @@ describe PhonesOnlyCallerSession, :type => :model do
         expect(RedisQuestion).to receive(:get_question_to_read).with(@script.id, 0).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
 
         expect(RedisPossibleResponse).to receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])
-        
+
         gather_options = {
           timeout: 60,
           finishOnKey: '*',
@@ -723,7 +723,7 @@ describe PhonesOnlyCallerSession, :type => :model do
           question_id: question.id,
           voter_id: 'lead-uuid'
         }
-        
+
         expect(caller_session).to receive(:disconnected?).and_return(false)
         url = gather_response_caller_url(caller_record, question_number: question.id, session_id: caller_session.id, voter_id: 'lead-uuid')
         expect(caller_session.submit_response(params)).to redirect(url)
@@ -747,7 +747,7 @@ describe PhonesOnlyCallerSession, :type => :model do
           "question_text"=> "How do you like Impactdialing"
         })
         allow(RedisPossibleResponse).to receive(:possible_responses).and_return([{
-            "id"=>question.id, 
+            "id"=>question.id,
             "keypad"=> 1,
             "value"=>"Great"
           }, {
@@ -795,7 +795,7 @@ describe PhonesOnlyCallerSession, :type => :model do
       end
 
       it "redirects caller to next call" do
-        expect(RedisStatus).to receive(:set_state_changed_time).with(campaign.id, "On hold",caller_session.id)
+        expect(RedisStatus).to receive(:set_state_changed_time).with(campaign, "On hold",caller_session)
         url = next_call_caller_url(caller_record, session_id: caller_session.id)
         expect(caller_session.gather_response(params)).to redirect(url)
       end
