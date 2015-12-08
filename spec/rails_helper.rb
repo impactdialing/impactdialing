@@ -84,6 +84,7 @@ RSpec.configure do |config|
   config.include WebLoginHelpers
   config.include ResqueHelpers
   config.include DialQueueHelpers
+  config.include RedisFactories
 
   config.mock_with :rspec
   config.use_transactional_fixtures = false
