@@ -6,6 +6,20 @@ ActiveSupport::Notifications.subscribe('call_flow.caller.state_changed') do |nam
   CallFlow::Web::Event.publish(channel.name, 'caller.state_change', payload)
 end
 
+ActiveSupport::Notifications.subscribe('campaigns.created') do |name, start, finish, id, payload|
+  campaign = payload[:campaign]
+  channel = CallFlow::Web::Event::Channel.new(campaign.account_id)
+
+  CallFlow::Web::Event.publish(channel.name, 'campaigns.created', payload)
+end
+
+ActiveSupport::Notifications.subscribe('campaigns.archived') do |name, start, finish, id, payload|
+  campaign = payload[:campaign]
+  channel = CallFlow::Web::Event::Channel.new(campaign.account_id)
+
+  CallFlow::Web::Event.publish(channel.name, 'campaigns.archived', payload)
+end
+
 # class CallFlow::Web::Event::Channel
 #   def generate
 #     raise "not implemented"
