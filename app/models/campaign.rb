@@ -96,6 +96,7 @@ class Campaign < ActiveRecord::Base
   before_save :sanitize_message_service_settings
   before_save :flag_archive_changes
   after_save :publish_archival_notification
+  after_save :publish_notification, { on: :create }
 
   delegate :last_dial_time, to: :inflight_stats
   delegate :update_last_dial_time, to: :inflight_stats
@@ -119,6 +120,10 @@ private
     end
 
     return true
+  end
+
+  def publish_notification
+    ActiveSupport::Notifications.instrument('campaigns.created', campaign:self)
   end
 
   def skip_caller_id_validation?
@@ -202,7 +207,7 @@ public
       inflight_stats.dec('ringing')
     end
   end
-  
+
   def number_presented(n)
     raise "NotImplemented"
   end

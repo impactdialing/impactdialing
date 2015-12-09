@@ -10,7 +10,11 @@ RSpec::Matchers.define :instrument do |event|
     args = actual[2..-1]
     klass.send(method_name, *args)
 
-    @payload.keys.all?{ |key| received_payload[key] == @payload[key] }
+    if @payload.kind_of? Hash
+      @payload.keys.all?{ |key| received_payload[key] == @payload[key] }
+    else
+      received_payload[@payload].present?
+    end
   end
 
   chain :with do |payload|

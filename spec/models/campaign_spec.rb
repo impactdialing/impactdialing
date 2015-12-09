@@ -33,6 +33,21 @@ describe Campaign, :type => :model do
   describe 'callbacks' do
     let(:campaign){ create(:campaign) }
 
+    describe 'instrumenting campaign creation' do
+      it 'publishes campaigns.created' do
+        target = [Preview, :create, {
+          name: 'Timbers',
+          caller_id: "5034445555",
+          script: create(:script),
+          account: create(:account),
+          end_time: 5.hours.ago,
+          start_time: 7.hours.ago,
+          time_zone: 'Pacific Time (US & Canada)',
+        }]
+        expect(target).to instrument('campaigns.created').with(:campaign)
+      end
+    end
+
     describe 'sanitizing message service settings' do
       before do
         campaign.call_back_after_voicemail_delivery = true
