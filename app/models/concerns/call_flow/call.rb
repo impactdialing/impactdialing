@@ -50,14 +50,7 @@ module CallFlow
     end
 
     def self.create(raw_params)
-      account_sid = (raw_params['AccountSid'] || raw_params['account_sid'])
-      sid         = (raw_params['CallSid'] || raw_params['sid'])
-      validate!(account_sid, sid)
-
-      storage = CallFlow::Call::Storage.new(account_sid, sid, namespace)
-
-      storage.save(params_for_create(raw_params))
-      self.new(account_sid, sid)
+      raise "Not implemented"
     end
 
     def storage
@@ -81,4 +74,3 @@ module CallFlow
     end
   end
 end
-

@@ -8,6 +8,33 @@ describe 'CallFlow::CallerSession' do
 
   it 'tracks the current state of a caller session'
 
+  describe '.create' do
+    subject{ CallFlow::CallerSession }
+    let(:storage_double) do
+      instance_double("CallFlow::Call::Storage", { save: nil })
+    end
+    let(:twilio_params) do
+      {
+        "account_sid" => 34,
+        "sid" => 44,
+      }
+    end
+    before do
+      allow(CallFlow::Call::Storage).to receive(:new){ storage_double }
+    end
+    it 'instantiates new storage object' do
+      expect(CallFlow::Call::Storage).to receive(:new){ storage_double }
+      subject.create(twilio_params)
+    end
+    it 'tells storage object to save' do
+      expect(storage_double).to receive(:save)
+      subject.create(twilio_params)
+    end
+    it 'returns an instance of CallFlow::CallerSession' do
+      expect(subject.create(twilio_params)).to be_instance_of CallFlow::CallerSession
+    end
+  end
+
   describe '#redirect_to_hold' do
     let(:caller_session_record){ create(:caller_session, sid: caller_session_sid) }
     before do
@@ -49,7 +76,7 @@ describe 'CallFlow::CallerSession' do
     it 'sets :skip_pause on storage to zero when bool is false' do
       subject.skip_pause = false
       expect(subject.storage[:skip_pause]).to eq '0'
-    end 
+    end
   end
 
   describe '#skip_pause?' do
@@ -135,4 +162,3 @@ describe 'CallFlow::CallerSession' do
     it 'returns false when questionable_call does not have the same SID as the call the caller is currently connected to'
   end
 end
-
