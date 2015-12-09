@@ -1,8 +1,13 @@
 require 'rails_helper'
 
 describe CallFlow::Web::Event do
+  subject{ CallFlow::Web::Event }
+
+  before do
+    allow(subject).to receive(:enabled?){ true }
+  end
+
   describe '.publish' do
-    subject{ CallFlow::Web::Event }
     it "submits a request to Pusher API" do
       response = nil
       VCR.use_cassette('Pusher success request', {
