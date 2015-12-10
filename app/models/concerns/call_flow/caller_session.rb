@@ -38,7 +38,15 @@ public
     storage = CallFlow::Call::Storage.new(account_sid, sid, namespace)
 
     storage.save(params_for_create(raw_params))
-    self.new(account_sid, sid)
+    instance = self.new(account_sid, sid)
+    ActiveSupport::Notifications.instrument('call_flow.caller_session.created', {
+      caller_id: instance.caller_session_record.caller.id,
+      caller_name: instance.caller_session_record.caller.identity_name,
+      caller_session_id: instance.caller_session_record.id,
+      campaign_id: instance.caller_session_record.campaign_id,
+      account_id: instance.caller_session_record.caller.account_id,
+    })
+    instance
   end
 
   def namespace

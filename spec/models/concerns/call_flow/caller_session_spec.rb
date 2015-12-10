@@ -10,17 +10,24 @@ describe 'CallFlow::CallerSession' do
 
   describe '.create' do
     subject{ CallFlow::CallerSession }
+    let!(:caller_session_record) do
+      create(:caller_session, {
+        sid: caller_session_sid,
+        caller: create(:caller),
+      })
+    end
     let(:storage_double) do
       instance_double("CallFlow::Call::Storage", { save: nil })
     end
     let(:twilio_params) do
       {
-        "account_sid" => 34,
-        "sid" => 44,
+        "account_sid" => account_sid,
+        "sid" => caller_session_sid,
       }
     end
     before do
       allow(CallFlow::Call::Storage).to receive(:new){ storage_double }
+      allow(storage_double).to receive(:[]).with(:sid){ caller_session_sid }
     end
     it 'instantiates new storage object' do
       expect(CallFlow::Call::Storage).to receive(:new){ storage_double }
@@ -32,6 +39,16 @@ describe 'CallFlow::CallerSession' do
     end
     it 'returns an instance of CallFlow::CallerSession' do
       expect(subject.create(twilio_params)).to be_instance_of CallFlow::CallerSession
+    end
+    it 'publishes call_flow.caller_session.created event' do
+      target = [subject, :create, twilio_params]
+      expect(target).to instrument('call_flow.caller_session.created').with({
+        caller_id: caller_session_record.caller.id,
+        caller_name: caller_session_record.caller.identity_name,
+        caller_session_id: caller_session_record.id,
+        campaign_id: caller_session_record.campaign_id,
+        account_id: caller_session_record.caller.account_id,
+      })
     end
   end
 
