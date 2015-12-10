@@ -14,7 +14,10 @@
 
   <script type="text/javascript">
     $(function() {
-      var monitorRouter = new ImpactDialing.Routers.Monitors();
+      window.campaignsJSON = <%= raw json_escape_41 @campaigns.to_json %>;
+      var monitorRouter = new ImpactDialing.Routers.Monitors({
+        campaigns:campaignsJSON
+      });
       Backbone.history.start();
       Twilio.Device.setup("<%= @token %>", {'debug':true});
       Twilio.Device.connect(function (conn) {});
@@ -43,7 +46,10 @@
         console.log(callerObj)
         callerObj.set('status', data.status)
       });
-
+      my_channel.bind('caller_session.created', function(data) {
+        // monitorRouter.active_callers.add()
+        console.log(data);
+      });
     });
   </script>
 <% end %>

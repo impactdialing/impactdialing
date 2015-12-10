@@ -147,6 +147,7 @@ public
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
     @token = twilio_capability.generate
     @channel = CallFlow::Web::Event::Channel.new(@account.id)
+    @campaigns = @account.campaigns.active
   end
 
   def login
