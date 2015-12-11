@@ -1,5 +1,10 @@
+//=require models/campaign
 //=require collections/campaigns
 //=require dashboard/models/caller_session
+//=require dashboard/models/campaign
 //=require dashboard/collections/caller_sessions
+//=require dashboard/collections/campaigns
 //=require dashboard/views/caller_sessions/table
 //=require dashboard/views/caller_sessions/row
+//=require dashboard/views/campaigns/table
+//=require dashboard/views/campaigns/row
