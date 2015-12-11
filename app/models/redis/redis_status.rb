@@ -32,8 +32,13 @@ class RedisStatus
     return result
   end
 
-  def self.delete_state(campaign_id, caller_session_id)
-    $redis_dialer_connection.hdel "campaign:#{campaign_id}:status", caller_session_id
+  def self.delete_state(campaign, caller_session)
+    $redis_dialer_connection.hdel "campaign:#{campaign.id}:status", caller_session.id
+    ActiveSupport::Notifications.instrument('call_flow.caller.state_deleted', {
+      campaign_id: campaign.id,
+      caller_session_id: caller_session.id,
+      account_id: campaign.account_id,
+    })
   end
 
   def self.seconds_fraction_to_time(time_difference)

@@ -13,34 +13,50 @@ describe RedisStatus, :type => :model do
       campaign: campaign
     })
   end
+  describe '#set_state_changed_time' do
+    it "should return back state and time" do
+      Timecop.freeze do
+        redis_status_set_state(campaign, status, caller_session)
+        expect(RedisStatus.state_time(campaign.id, caller_session.id)).to eq([status, "00:00:00"])
+      end
+    end
 
-  it "should return back state and time" do
-    Timecop.freeze do
-      redis_status_set_state(campaign, status, caller_session)
-      expect(RedisStatus.state_time(campaign.id, caller_session.id)).to eq([status, "00:00:00"])
+    it "sends payload via ActiveSupport:subscriber" do
+      payload = {
+        campaign_id: campaign.id,
+        caller_session_id: caller_session.id,
+        status: status,
+      }
+
+      expect([
+        RedisStatus,
+        :set_state_changed_time,
+        campaign,
+        status,
+        caller_session,
+      ]).to instrument('call_flow.caller.state_changed').with(payload)
     end
   end
 
-  it "sends payload via ActiveSupport:subscriber" do
-    payload = {
-      campaign_id: campaign.id,
-      caller_session_id: caller_session.id,
-      status: status,
-    }
+  describe '#delete_state' do
+    it "should delete state" do
+      redis_status_set_state(campaign, status, caller_session)
+      RedisStatus.delete_state(campaign,caller_session)
+      expect(RedisStatus.state_time(campaign.id, caller_session.id)).to be_empty
+    end
 
-    expect([
-      RedisStatus,
-      :set_state_changed_time,
-      campaign,
-      status,
-      caller_session,
-    ]).to instrument('call_flow.caller.state_changed').with(payload)
-  end
-
-  it "should delete state" do
-    redis_status_set_state(campaign, status, caller_session)
-    RedisStatus.delete_state(campaign.id,caller_session.id)
-    expect(RedisStatus.state_time(campaign.id, caller_session.id)).to be_empty
+    it 'should publish call_flow.caller.state_deleted' do
+      payload = {
+        campaign_id: campaign.id,
+        caller_session_id: caller_session.id,
+      }
+      expect([
+        RedisStatus,
+        :delete_state,
+        campaign,
+        caller_session,
+        ]).to instrument('call_flow.caller.state_deleted').with(payload)
+    end
   end
 
   describe 'count by status' do
@@ -82,7 +98,7 @@ describe RedisStatus, :type => :model do
 
     after do
       caller_sessions.each do |caller_session|
-        RedisStatus.delete_state(caller_session.campaign.id, caller_session.id)
+        RedisStatus.delete_state(caller_session.campaign, caller_session)
       end
       Timecop.return
     end
