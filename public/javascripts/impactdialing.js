@@ -11,5 +11,9 @@ window.ImpactDialing = {
   Channel: {},
   Services: {},
   Utilities: {},
+  Dashboard: {
+    Models: {},
+    Collections: {},
+    Views: {},
+  },
 };
-

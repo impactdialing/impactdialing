@@ -1,4 +1,8 @@
-ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
+if(ImpactDialing.Dashboard.Views.CallerSessions === undefined ||
+   ImpactDialing.Dashboard.Views.CallerSessions === null){
+     ImpactDialing.Dashboard.Views.CallerSessions = {}
+}
+ImpactDialing.Dashboard.Views.CallerSessions.Row = Backbone.View.extend({
   tagName: 'tr',
   template: '#caller-monitor-template',
 
@@ -9,7 +13,15 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
     "change .reassign-campaign" : "reassignCampaign"
   },
 
+  initialize: function () {
+    console.log(this.collection)
+    _.bindAll(this, 'render');
+    // this.collection.on('remove', this.render);
+    this.model.on('change', this.render);
+  },
+
   render: function () {
+    console.log("Row Render Started", this.options.reassignable_campaigns)
     $(this.el).html(
       Mustache.to_html(
         $('#caller-monitor-template').html(),
@@ -18,6 +30,8 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
         })
       )
     );
+    this.$('#reassign_caller_' + this.model.get('id')).val(this.model.get('campaign_id'));
+    console.log("Render Finished")
 
 
     var time = new Date().getTime();
@@ -102,40 +116,4 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
     });
   },
 
-});
-
-
-ImpactDialing.Views.MonitorCallersIndex = Backbone.View.extend({
-  tagName: 'tbody',
-
-  initialize: function(){
-    _.bindAll(this, 'render');
-    this.collection.on('reset', this.render);
-    this.collection.on('add', this.render);
-    this.collection.on('remove', this.render);
-    this.collection.on('change', this.render);
-  },
-
-  render: function () {
-    var self = this;
-    $.getJSON("/client/monitors/callers/reassignable_campaigns", function(data){
-      self.$el.empty();
-      if (!_.isEmpty(self.collection.models)){
-        $(self.el).append("<tr></tr>")
-        self.collection.map(function (m) {
-          var monitor = (
-                         new ImpactDialing.Views.MonitorCaller({
-                          model: m,
-                          collection: self.collection,
-                          reassignable_campaigns: data
-                         })
-                        ).render().el;
-          $(self.el).append(monitor);
-          self.$('#reassign_caller_' + m.get('id')).val(m.get('campaign_id'));
-        });
-      }
-    });
-
-    return this;
-  }
 });
