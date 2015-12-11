@@ -9,8 +9,11 @@ module Client
     end
 
     def index
-      @campaigns     = account.campaigns.active.paginate :page => params[:page]
-      @caller_counts = account.callers.active.where(campaign_id: @campaigns.pluck(:id)).group(:campaign_id).count
+      @campaigns = account.campaigns.active
+      unless params[:page] == "all"
+        @campaigns  = @campaigns.paginate :page => params[:page]
+        @caller_counts = account.callers.active.where(campaign_id: @campaigns.pluck(:id)).group(:campaign_id).count
+      end
       respond_with @campaigns
     end
 
