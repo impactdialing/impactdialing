@@ -15,8 +15,7 @@ ImpactDialing.Dashboard.Views.CallerSessions.Row = Backbone.View.extend({
 
   initialize: function () {
     console.log(this.collection)
-    _.bindAll(this, 'render');
-    // this.collection.on('remove', this.render);
+    _.bindAll(this, 'render', 'implode');
     this.model.on('change', this.render);
   },
 
@@ -41,6 +40,10 @@ ImpactDialing.Dashboard.Views.CallerSessions.Row = Backbone.View.extend({
 
 
     return this;
+  },
+
+  implode: function(){
+    $(this.el).remove();
   },
 
   kickCallerOff: function(e){

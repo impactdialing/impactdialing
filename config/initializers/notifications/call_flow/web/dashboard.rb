@@ -14,6 +14,13 @@ ActiveSupport::Notifications.subscribe('call_flow.caller.state_changed') do |nam
   CallFlow::Web::Event.publish(channel.name, 'caller.state_change', payload)
 end
 
+ActiveSupport::Notifications.subscribe('call_flow.caller.state_deleted') do |name, start, finish, id, payload|
+
+  channel = CallFlow::Web::Event::Channel.new(payload[:account_id])
+
+  CallFlow::Web::Event.publish(channel.name, 'caller.state_deleted', payload)
+end
+
 ActiveSupport::Notifications.subscribe('campaigns.created') do |name, start, finish, id, payload|
   campaign = payload[:campaign]
   channel = CallFlow::Web::Event::Channel.new(campaign.account_id)
@@ -27,6 +34,8 @@ ActiveSupport::Notifications.subscribe('campaigns.archived') do |name, start, fi
 
   CallFlow::Web::Event.publish(channel.name, 'campaigns.archived', payload)
 end
+
+
 
 # class CallFlow::Web::Event::Channel
 #   def generate

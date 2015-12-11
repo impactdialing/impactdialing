@@ -51,6 +51,11 @@
         monitorRouter.activeCallers.normalizeAdd(data);
         console.log(data);
       });
+      my_channel.bind('caller.state_deleted', function(data) {
+        console.log("caller.state_deleted", data);
+        var callerSession = monitorRouter.activeCallers.get(data.caller_session_id);
+        monitorRouter.activeCallers.remove(callerSession);
+      });
     });
   </script>
 <% end %>
