@@ -11,11 +11,7 @@ end
 Sauce.config do |config|
   config[:start_local_application] = ENV['USE_SAUCE']
   config[:start_tunnel]            = ENV['USE_SAUCE']
-
-  if ENV.fetch('CIRCLE_TEST_REPORTS', nil).blank?
-    # not running on CircleCI, assume local run
-    config[:sauce_connect_4_executable] = "#{$HOME}/bin/sc"
-  end
+  config[:sauce_connect_4_executable] = "#{ENV['HOME']}/sc-bin/bin/sc"
 
   config[:browsers]                = [
     #['Windows 8','Internet Explorer','10'],

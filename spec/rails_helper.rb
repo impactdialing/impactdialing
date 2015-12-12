@@ -127,7 +127,7 @@ RSpec.configure do |config|
       retried = 0
       begin
         #::Capybara.current_session.driver.quit
-        ::Capybara.current_session.driver.finish!
+        #::Capybara.current_session.driver.finish!
       rescue => e
         p "Capybara driver failed to finish/quit current session..."
         p "Error: #{e.class} => #{e.message}"
