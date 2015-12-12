@@ -5,12 +5,18 @@ if ENV['USE_SAUCE']
   require 'sauce/capybara'
   Capybara.default_driver    = :sauce
   Capybara.javascript_driver = :sauce
+  Capybara.run_server        = false
 end
 
 Sauce.config do |config|
-  config[:sauce_connect_4_executable] = '/Users/jh/Downloads/sc-4.3.12-osx/bin/sc'
-  config[:start_tunnel]            = ENV['USE_SAUCE']
   config[:start_local_application] = ENV['USE_SAUCE']
+  config[:start_tunnel]            = ENV['USE_SAUCE']
+
+  if ENV.fetch('CIRCLE_TEST_REPORTS', nil).blank?
+    # not running on CircleCI, assume local run
+    config[:sauce_connect_4_executable] = "#{$HOME}/bin/sc"
+  end
+
   config[:browsers]                = [
     #['Windows 8','Internet Explorer','10'],
     #['Windows 8.1','Internet Explorer','11'],
