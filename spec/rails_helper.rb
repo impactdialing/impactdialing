@@ -126,10 +126,11 @@ RSpec.configure do |config|
     if ENV['USE_SAUCE']
       retried = 0
       begin
-        ::Capybara.current_session.driver.quit
+        #::Capybara.current_session.driver.quit
+        ::Capybara.current_session.driver.finish!
       rescue => e
-        #p "Capybara driver failed to quit current session..."
-        #p "Error: #{e.class} => #{e.message}"
+        p "Capybara driver failed to finish/quit current session..."
+        p "Error: #{e.class} => #{e.message}"
         if retried < 3
           retried += 1
           retry
