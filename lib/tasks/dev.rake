@@ -10,6 +10,7 @@ require 'uuid'
     sid: params["sid"]
   })
   CallFlow::CallerSession.create(params)
+  puts caller_session.id
 end
 
 task :update_redis_status => [:environment] do
@@ -18,8 +19,8 @@ task :update_redis_status => [:environment] do
   RedisStatus.set_state_changed_time(campaign, "On call", caller_session)
 end
 
-task :delete_redis_status => [:environment] do
+task :delete_redis_status, [:caller_session_id] => [:environment] do |task, args|
   campaign = Campaign.active.last
-  caller_session = campaign.caller_sessions.last
+  caller_session = CallerSession.find(args[:caller_session_id])
   RedisStatus.delete_state(campaign, caller_session)
 end

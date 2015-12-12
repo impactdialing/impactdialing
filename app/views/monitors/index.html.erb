@@ -44,22 +44,60 @@
       my_channel.bind('caller.state_change', function(data) {
         var callerObj = monitorRouter.activeCallers.get(data.caller_session_id);
         console.log(callerObj);
+        console.log('looking for data', data);
         callerObj.set('status', data.status);
+        var onHold = monitorRouter.activeCallers.where({campaign_id: data.campaign_id, status: "On hold" }).length;
+        var onCall = monitorRouter.activeCallers.where({campaign_id: data.campaign_id, status: "On call" }).length;
+        var wrapUp = monitorRouter.activeCallers.where({campaign_id: data.campaign_id, status: "Wrap up" }).length;
+        console.log('on hold callers', onHold);
+        console.log('on call callers', onCall);
+        console.log('wrap up callers', wrapUp);
+        var campaignObj = monitorRouter.campaigns.get(data.campaign_id);
+        var activeCampaign = monitorRouter.activeCampaigns.get(campaignObj.get('id'));
+        activeCampaign.set("on_hold", onHold);
+        activeCampaign.set("on_call", onCall);
+        activeCampaign.set("wrap_up", wrapUp);
+        // var onCall = callers.where({status: data.status})
+        // console.log('onHoldCallers - SEE HERE', onCall);
       });
       my_channel.bind('caller_session.created', function(data) {
         monitorRouter.activeCallers.normalizeAdd(data);
-        console.log(data);
         var campaignObj = monitorRouter.campaigns.get(data.campaign_id);
         monitorRouter.activeCampaigns.add(campaignObj.attributes);
         var activeCampaign = monitorRouter.activeCampaigns.get(campaignObj.get('id'));
         var callerCount = activeCampaign.get("callers_logged_in") + 1;
+        var onHoldCount = activeCampaign.get("on_hold") + 1;
         activeCampaign.set("callers_logged_in", callerCount);
+        activeCampaign.set("on_hold", onHoldCount);
         console.log("campaign add to active", activeCampaign);
       });
       my_channel.bind('caller.state_deleted', function(data) {
         console.log("caller.state_deleted", data);
         var callerSession = monitorRouter.activeCallers.get(data.caller_session_id);
         monitorRouter.activeCallers.remove(callerSession);
+        console.log(callerSession, 'caller session info');
+        var campaignObj = monitorRouter.campaigns.get(data.campaign_id);
+        var activeCampaign = monitorRouter.activeCampaigns.get(campaignObj.get('id'));
+        var callerCount = activeCampaign.get("callers_logged_in");
+        if (callerCount > 0) {
+          callerCount -= 1;
+        }
+        activeCampaign.set("callers_logged_in", callerCount);
+        console.log('reduce callers logged in', activeCampaign);
+        var callerStatus = callerSession.get("status");
+        if (callerStatus == 'On hold') {
+          callerStatus = 'on_hold';
+        } else if (callerStatus == 'On call') {
+          callerStatus = 'on_call';
+        } else {
+          callerStatus = 'wrap_up';
+        };
+        var campaignCallerCount = activeCampaign.get(callerStatus);
+        console.log('campaignCallerCount', campaignCallerCount);
+        if (campaignCallerCount > 0) {
+          campaignCallerCount -= 1;
+        }
+        activeCampaign.set(callerStatus, campaignCallerCount);
       });
     });
   </script>
