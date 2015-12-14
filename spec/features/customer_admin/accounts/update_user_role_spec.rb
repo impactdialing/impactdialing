@@ -1,7 +1,7 @@
 require 'rails_helper'
 include JSHelpers
 
-describe 'updating user roles', js: true, sauce: ENV['USE_SAUCE'] do
+describe 'updating user roles', js: true do
   let(:user){ create(:user) }
 
   before do

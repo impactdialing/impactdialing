@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'add caller group', type: :feature, rack: true, sauce: ENV['USE_SAUCE'] do
+describe 'add caller group', type: :feature, rack: true do
   let(:customer) do
     create(:user)
   end

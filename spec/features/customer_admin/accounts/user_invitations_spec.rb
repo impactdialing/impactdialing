@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Inviting users', type: :feature, admin: true, sauce: ENV['USE_SAUCE'] do
+describe 'Inviting users', type: :feature, admin: true do
   let(:admin){ create(:user) }
 
   before do

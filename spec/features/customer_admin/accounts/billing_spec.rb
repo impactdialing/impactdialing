@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Subscription billing page', type: :feature, admin: true, sauce: ENV['USE_SAUCE'] do
+describe 'Subscription billing page', type: :feature, admin: true do
 
   let(:user){ create(:user) }
   let(:account){ user.account }

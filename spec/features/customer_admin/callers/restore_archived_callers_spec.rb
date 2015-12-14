@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Restore archived callers successfully', sauce: ENV['USE_SAUCE'] do
+describe 'Restore archived callers successfully' do
   let(:user){ create(:user) }
   let(:account){ user.account }
   let(:caller){ create(:caller, account: account) }

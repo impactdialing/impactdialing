@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Blocked Number management', type: :feature, rack: true, sauce: ENV['USE_SAUCE'] do
+describe 'Blocked Number management', type: :feature, rack: true do
   let(:i18n_scope){ 'activerecord.errors.models.blocked_number' }
   let(:customer){ create(:user) }
   let!(:preview){ create(:preview, account: customer.account) }

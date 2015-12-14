@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Upload a recording', js: true, type: :feature, file_uploads: true, sauce: ENV['USE_SAUCE'] do
+describe 'Upload a recording', js: true, type: :feature, file_uploads: true do
   include_context 'voter csv import'
 
   before(:all) do

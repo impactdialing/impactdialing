@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-feature 'Full Campaign Answer Report', sauce: ENV['USE_SAUCE'] do
+feature 'Full Campaign Answer Report' do
   include FakeCallData
 
   before do

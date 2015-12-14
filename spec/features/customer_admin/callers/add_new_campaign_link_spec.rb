@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-feature 'include an "add a new campaign" link', sauce: ENV['USE_SAUCE'] do
+feature 'include an "add a new campaign" link' do
 
   let(:admin) { create(:user) }
 

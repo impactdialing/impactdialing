@@ -1,7 +1,7 @@
 require 'rails_helper'
 include JSHelpers
 
-describe 'Account profile', type: :feature, admin: true, sauce: ENV['USE_SAUCE'] do
+describe 'Account profile', type: :feature, admin: true do
   before(:all) do
     capybara_switch_to_webkit
   end

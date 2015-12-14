@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-feature 'Dials report', sauce: ENV['USE_SAUCE'] do
+feature 'Dials report' do
   include FakeCallData
 
   before do

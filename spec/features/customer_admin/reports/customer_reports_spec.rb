@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Customer Reports', type: :feature, admin: true, sauce: ENV['USE_SAUCE'] do
+describe 'Customer Reports', type: :feature, admin: true do
   def caller_session_attrs(caller)
     {
       caller: caller,

@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-feature 'Report index text', sauce: ENV['USE_SAUCE'] do
+feature 'Report index text' do
   include FakeCallData
 
   before(:all) do

@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Restore archived scripts successfully', sauce: ENV['USE_SAUCE'] do
+describe 'Restore archived scripts successfully' do
   let(:user){ create(:user) }
   let(:account){ user.account }
   let(:script){ create(:script, account: account) }
