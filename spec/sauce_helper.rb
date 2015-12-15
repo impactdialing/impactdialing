@@ -1,16 +1,11 @@
 # You should edit this file with the browsers you wish to use
 # For options, check out http://saucelabs.com/docs/platforms
-if ENV['USE_SAUCE']
-  require 'sauce'
-  require 'sauce/capybara'
-  Capybara.default_driver    = :sauce
-  Capybara.javascript_driver = :sauce
-  Capybara.run_server        = false
-end
+require 'sauce'
+require 'sauce/capybara'
 
 Sauce.config do |config|
-  config[:start_local_application] = ENV['USE_SAUCE']
-  config[:start_tunnel]            = ENV['USE_SAUCE']
+  config[:start_local_application]    = false
+  config[:start_tunnel]               = true
   config[:sauce_connect_4_executable] = "#{ENV['HOME']}/sc-bin/bin/sc"
 
   config[:browsers]                = [
@@ -32,3 +27,7 @@ Sauce.config do |config|
   ]
 end
 
+Capybara.default_driver = :sauce
+Capybara.javascript_driver = :sauce
+Capybara.default_wait_time = 30
+# CapybaraConfig.register_sauce_driver

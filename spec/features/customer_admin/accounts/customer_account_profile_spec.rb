@@ -3,7 +3,7 @@ include JSHelpers
 
 describe 'Account profile', type: :feature, admin: true do
   before(:all) do
-    capybara_switch_to_webkit
+    CapybaraConfig.switch_to_webkit
   end
 
   def retry_assertion(times=1, &block)

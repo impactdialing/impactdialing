@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe 'Create a new Script', type: :feature, js: true do
   before(:all) do
-    capybara_switch_to_webkit
+    CapybaraConfig.switch_to_webkit
   end
 
   let(:user){ create(:user) }

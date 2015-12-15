@@ -20,6 +20,8 @@ require 'impact_platform'
 
 require 'paperclip/matchers'
 
+require_relative 'capybara_config'
+
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
 # run as spec files by default. This means that files in spec/support that end
@@ -42,7 +44,7 @@ VCR.configure do |c|
 end
 
 RSpec.configure do |config|
-  capybara_switch_to_webkit
+  CapybaraConfig.switch_to_webkit
 
   def webmock_disable_net!
     WebMock.disable_net_connect!
@@ -95,9 +97,11 @@ RSpec.configure do |config|
   config.before(:example) do |example|
     if example.metadata[:js]
       if example.metadata[:file_uploads]
-        Capybara.javascript_driver = :selenium
+        unless ENV['USE_SAUCE']
+          Capybara.javascript_driver = :selenium
+        end
       else
-        capybara_switch_to_webkit
+        CapybaraConfig.switch_to_webkit
       end
     end
 
@@ -119,25 +123,6 @@ RSpec.configure do |config|
     Redis.new.flushall
     DatabaseCleaner.clean
   end
-
-  # for sauce
-  config.around(:example) do |example|
-    example.run
-    if ENV['USE_SAUCE']
-      retried = 0
-      begin
-        #::Capybara.current_session.driver.quit
-        #::Capybara.current_session.driver.finish!
-      rescue => e
-        p "Capybara driver failed to finish/quit current session..."
-        p "Error: #{e.class} => #{e.message}"
-        if retried < 3
-          retried += 1
-          retry
-        end
-      end
-    end
-  end
 end
 
-require 'sauce_helper'
+require 'sauce_helper' if ENV['USE_SAUCE']
