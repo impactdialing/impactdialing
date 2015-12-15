@@ -5,10 +5,11 @@ class CallFlow::Web::Event
     end
 
   public
-    def self.publish(channel_name, event, payload)
+    def self.publish(account_id, event, payload)
       return unless enabled?
+      channel = CallFlow::Web::Event::Channel.new(account_id)
       RescueRetryNotify.on(Pusher::HTTPError, 1) do
-        Pusher.trigger(channel_name, event, payload)
+        Pusher.trigger(channel.name, event, payload)
       end
     end
 
