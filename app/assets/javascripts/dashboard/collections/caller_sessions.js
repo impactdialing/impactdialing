@@ -5,10 +5,10 @@ ImpactDialing.Dashboard.Collections.CallerSessions = Backbone.Collection.extend(
     var normalized = data;
     normalized.id = data.caller_session_id;
     normalized.name = data.caller_name;
-    this.add(normalized);
+    return this.add(normalized);
   },
 
-  callers: function(model) {
+  callerStatusCount: function(model) {
     var onHold = this.where({campaign_id: model.id, status: "On hold" }).length;
     var onCall = this.where({campaign_id: model.id, status: "On call" }).length;
     var wrapUp = this.where({campaign_id: model.id, status: "Wrap up" }).length;

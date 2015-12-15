@@ -12,10 +12,15 @@
 
   <script type="text/javascript">
     $(function() {
+      var pusherKey = "<%= PUSHER_KEY %>";
+      var channelName = "<%= @channel.name %>";
       var campaignsJSON = <%= raw json_escape_41 @campaigns.to_json(root: false) %>;
-      window.monitorRouter = new ImpactDialing.Routers.Monitors({
-        campaigns:campaignsJSON
-      });
+      var monitorOptions = {
+        campaigns:campaignsJSON,
+        pusherKey:pusherKey,
+        channelName:channelName,
+      }
+      window.monitorRouter = new ImpactDialing.Routers.Monitors(monitorOptions);
       Backbone.history.start();
       Twilio.Device.setup("<%= @token %>", {'debug':true});
       Twilio.Device.connect(function (conn) {});
@@ -27,52 +32,6 @@
         Twilio.Device.disconnectAll();
         $(this).hide();
         return false;
-      });
-
-      var pusher = new Pusher("<%= PUSHER_KEY %>");
-      var my_channel = pusher.subscribe("<%= @channel.name %>");
-      var stopWatch = new ImpactDialing.Utilities.StopWatch(function(){
-        console.log("stopWatchfetch");
-        monitorRouter.activeCallers.fetch();
-        monitorRouter.activeCampaigns.fetch();
-      });
-      // bind to all channel events.
-      my_channel.bind_all(function(){
-        console.log("bind_all")
-        stopWatch.restart() // don't fall back to polling.
-      });
-      my_channel.bind('caller.state_change', function(data) {
-        var callerObj = monitorRouter.activeCallers.get(data.caller_session_id);
-        console.log(callerObj);
-        console.log('looking for data', data);
-        callerObj.set('status', data.status);
-        var campaignObj = monitorRouter.campaigns.get(data.campaign_id);
-        var activeCampaign = monitorRouter.activeCampaigns.get(campaignObj.get('id'));
-        var callerStatusCount = monitorRouter.activeCallers.callers(activeCampaign);
-        activeCampaign.updateStatusCount(callerStatusCount);
-      });
-
-      my_channel.bind('caller_session.created', function(data) {
-        monitorRouter.activeCallers.normalizeAdd(data);
-        var campaignObj = monitorRouter.campaigns.get(data.campaign_id);
-        monitorRouter.activeCampaigns.add(campaignObj.attributes);
-        var activeCampaign = monitorRouter.activeCampaigns.get(campaignObj.get('id'));
-        activeCampaign.incrementCallerCount(); // broke down increment and decrement into separate functions in backbone model.
-        var callerStatusCount = monitorRouter.activeCallers.callers(activeCampaign);
-        activeCampaign.updateStatusCount(callerStatusCount);
-      });
-      my_channel.bind('caller.state_deleted', function(data) {
-        console.log("caller.state_deleted", data);
-        // Maybe look into refactoring code that touches callerSession?
-        var callerSession = monitorRouter.activeCallers.get(data.caller_session_id);
-        monitorRouter.activeCallers.remove(callerSession);
-        console.log(callerSession, 'caller session info');
-        var campaignObj = monitorRouter.campaigns.get(data.campaign_id);
-        var activeCampaign = monitorRouter.activeCampaigns.get(campaignObj.get('id'));
-        activeCampaign.decrementCallerCount();
-        console.log('reduce callers logged in', activeCampaign);
-        var callerStatusCount = monitorRouter.activeCallers.callers(activeCampaign);
-        activeCampaign.updateStatusCount(callerStatusCount);
       });
     });
   </script>
