@@ -1,3 +1,7 @@
+//=require dashboard/mustache
+//=require dashboard/impactdialing
+//=require dashboard/stop_watch
+//=require dashboard/monitors
 //=require models/campaign
 //=require collections/campaigns
 //=require dashboard/models/caller_session
