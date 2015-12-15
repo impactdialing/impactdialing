@@ -6,9 +6,31 @@ ImpactDialing.Dashboard.Views.Campaigns.Table = Backbone.View.extend({
   tagName: 'tbody',
 
   initialize: function(){
-    _.bindAll(this, 'render');
+    _.bindAll(this, 'render', 'renderRow');
     this.collection.on('reset', this.render);
-    this.collection.on('add', this.render);
+    this.collection.on('add', this.renderRow);
+    this.collection.on('remove', this.implodeRow);
+    this.collection.on('callerNumbers', this.callerNumbers);
+  },
+
+  renderRow: function(model) {
+    var modelView = new ImpactDialing.Dashboard.Views.Campaigns.Row({
+      model: model,
+      collection: this.collection,
+    });
+
+    model.view = modelView
+
+    var monitor = modelView.render().el;
+    $(this.el).append(monitor);
+  },
+
+  implodeRow: function(model) {
+    model.view.implode();
+  },
+
+  callerNumbers: function(model) {
+    model.view.callers(model);
   },
 
   render: function () {

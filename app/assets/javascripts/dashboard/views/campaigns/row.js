@@ -7,8 +7,12 @@ ImpactDialing.Dashboard.Views.Campaigns.Row = Backbone.View.extend({
   template: '#campaign-monitor-template',
 
   initialize: function () {
-    _.bindAll(this, 'render')
-    this.model.on('change', this.render)
+    _.bindAll(this, 'render', 'implode');
+    this.model.on('change', this.render);
+  },
+
+  implode: function() {
+    $(this.el).remove();
   },
 
   render: function () {
