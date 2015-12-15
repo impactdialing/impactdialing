@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Upload', js: true, type: :feature, sauce: ENV['USE_SAUCE'] do
+describe 'Upload', js: true, type: :feature do
   include_context 'voter csv import'
 
   let(:user){ create(:user) }

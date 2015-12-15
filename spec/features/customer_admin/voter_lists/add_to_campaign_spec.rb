@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Manage Campaign call list', js: true, type: :feature, file_uploads: true, sauce: ENV['USE_SAUCE'] do
+describe 'Manage Campaign call list', js: true, type: :feature, file_uploads: true do
 
   def pall
     re = Redis.new

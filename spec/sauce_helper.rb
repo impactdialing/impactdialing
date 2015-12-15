@@ -5,7 +5,7 @@ require 'sauce/capybara'
 
 Sauce.config do |config|
   config[:start_local_application]    = false
-  config[:start_tunnel]               = true
+  config[:start_tunnel]               = (not ENV['CIRCLE_SHA1'])
   config[:sauce_connect_4_executable] = "#{ENV['HOME']}/sc-bin/bin/sc"
 
   config[:browsers]                = [

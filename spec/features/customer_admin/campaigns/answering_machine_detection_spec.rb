@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Answering Machine Detection', type: :feature, js: true, admin: true, sauce: ENV['USE_SAUCE'] do
+describe 'Answering Machine Detection', type: :feature, js: true, admin: true do
   def save_campaign(campaign, field, value)
     click_button 'Save'
     visit edit_client_campaign_path(campaign)
