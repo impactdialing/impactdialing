@@ -1,10 +1,19 @@
+distributed_n = -> (n){
+  if ENV['TEST_ENV_NUMBER']
+    "#{n}#{ENV['TEST_ENV_NUMBER']}".to_i + rand(100)
+  else
+    n
+  end
+}
 FactoryGirl.define do
 
   sequence :email do |n|
+    n = distributed_n.call(n)
     "user#{n}@example.com"
   end
 
   sequence :username do |n|
+    n = distributed_n.call(n)
     "user#{n}@example.com"
   end
 
@@ -17,10 +26,12 @@ FactoryGirl.define do
   end
 
   sequence :campaign_name do |n|
+    n = distributed_n.call(n)
     "campaign #{n}"
   end
 
   sequence :sid do |n|
+    n = distributed_n.call(n)
     "sid#{n}"
   end
 
