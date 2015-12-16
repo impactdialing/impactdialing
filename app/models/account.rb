@@ -101,7 +101,7 @@ public
     @_campaign_ids ||= Campaign.where(account_id: id).pluck('id').uniq
   end
   def caller_seats_taken
-    return CallerSession.on_call_in_campaigns(_campaign_ids).count
+    return ::CallerSession.on_call_in_campaigns(_campaign_ids).count
   end
 
   def funds_available?
