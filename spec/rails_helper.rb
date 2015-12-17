@@ -13,7 +13,7 @@ ENV['CALLIN_PHONE'] ||= '5555551234'
 require 'spec_helper'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
-require 'webmock/rspec'
+# require 'webmock/rspec'
 require 'capybara/rails'
 
 require 'impact_platform'
@@ -38,7 +38,7 @@ VCR.configure do |c|
   c.cassette_library_dir                    = Rails.root.join 'spec/fixtures/vcr_cassettes'
   c.ignore_localhost                        = true
   c.allow_http_connections_when_no_cassette = true
-  c.hook_into :webmock
+  # c.hook_into :webmock
 end
 
 RSpec.configure do |config|
@@ -54,9 +54,10 @@ RSpec.configure do |config|
       Capybara.page.driver.allow_url("beacon.errorception.com")
       Capybara.page.driver.allow_url("stats.pusher.com")
       Capybara.page.driver.allow_url("d2wy8f7a9ursnm.cloudfront.net")
+      Capybara.page.driver.allow_url("*pusher.com")
     end
   end
-  capybara_switch_to_webkit
+  #capybara_switch_to_webkit
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
@@ -90,7 +91,7 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = false
 
   config.before(:suite) do
-    WebMock.allow_net_connect!
+    # WebMock.allow_net_connect!
     DatabaseCleaner.strategy = :truncation
     DatabaseCleaner.clean_with :truncation
   end
@@ -100,11 +101,14 @@ RSpec.configure do |config|
   end
 
   config.before(:example) do |example|
+
+      Capybara.default_driver = :selenium
+      Capybara.javascript_driver = :selenium
     if example.metadata[:js]
       if example.metadata[:file_uploads]
         Capybara.javascript_driver = :selenium
       else
-        capybara_switch_to_webkit
+        #capybara_switch_to_webkit
       end
     end
 
@@ -120,7 +124,7 @@ RSpec.configure do |config|
     if example.metadata[:js] or example.metadata[:type] == :feature
       VCR.configure do |c|
         c.cassette_library_dir = Rails.root.join 'spec/fixtures/vcr_cassettes'
-        c.hook_into :webmock
+        # c.hook_into :webmock
       end
     end
     Redis.new.flushall

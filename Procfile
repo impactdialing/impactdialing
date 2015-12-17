@@ -1,4 +1,4 @@
-web: bundle exec puma -C config/puma.rb
+web: PUSHER_FAKE=1 bundle exec puma -C config/puma.rb
 
 app_health: rake environment monitor_app_health APP_HEALTH_RUN_INTERVAL=90
 

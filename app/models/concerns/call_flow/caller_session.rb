@@ -46,6 +46,7 @@ public
       campaign_id: instance.caller_session_record.campaign_id,
       account_id: instance.caller_session_record.caller.account_id,
     })
+    puts "CallFlow::CallerSession created"
     instance
   end
 

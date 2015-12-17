@@ -11,14 +11,20 @@
 
   <script type="text/javascript">
     $(function() {
-      var pusherKey = "<%= PUSHER_KEY %>";
-      var channelName = "<%= @channel.name %>";
+      var pusherKey = "<%= PUSHER_KEY %>",
+          pusherOpts = {};
+      <% if defined?(PusherFake)%>
+        var pusherOpts = <%= raw PusherFake.configuration.to_options.to_json %>;
+      <% end %>
+
+      window.channelName = "<%= @channel.name %>";
       var campaignsJSON = <%= raw json_escape_41 @campaigns.to_json(root: false) %>;
       var monitorOptions = {
-        campaigns:campaignsJSON,
-        pusherKey:pusherKey,
-        channelName:channelName,
-      }
+        campaigns: campaignsJSON,
+        pusherKey: pusherKey,
+        pusherOpts: pusherOpts,
+        channelName: channelName,
+      };
       window.monitorRouter = new ImpactDialing.Routers.Monitors(monitorOptions);
       Backbone.history.start();
       Twilio.Device.setup("<%= @token %>", {'debug':true});

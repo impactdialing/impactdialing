@@ -57,7 +57,7 @@ gem 'em-resolv-replace' # non-blocking lookups for eventmachine
 
 # EventMachine
 gem 'eventmachine', '1.0.3'
-gem 'em-http-request', '~> 1.1.0'
+gem 'em-http-request', '~> 1.1.0', group: :production
 gem 'em-synchrony', '~> 1.0.3'
 
 # Files
@@ -87,7 +87,7 @@ gem 'redcarpet'
 # Provider clients
 gem 'aws-sdk', '~> 1.6'
 gem 'platform-api'
-gem 'pusher', '~> 0.11.3'
+gem 'pusher'
 gem 'stripe', '~>1.8.4'
 gem 'twilio-ruby', '~> 4.4.0'
 
@@ -123,6 +123,7 @@ group :development, :test, :e2e do
   gem 'pry'
   gem 'byebug'
   gem 'jasmine'
+  gem 'pusher-fake', "~> 1.4.0"
 end
 
 group :test, :e2e do
@@ -133,7 +134,7 @@ group :test, :e2e do
   gem 'capybara'
   gem 'launchy'
   gem 'timecop'
-  gem 'webmock'
+  # gem 'webmock'
   gem 'vcr'
   gem 'selenium-webdriver'
   gem 'capybara-webkit'

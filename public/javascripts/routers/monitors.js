@@ -15,7 +15,7 @@ ImpactDialing.Routers.Monitors = Backbone.Router.extend({
       monitorRouter.activeCallers.fetch();
       monitorRouter.activeCampaigns.fetch();
     });
-    var pusher = new Pusher(options.pusherKey);
+    var pusher = new Pusher(options.pusherKey, options.pusherOpts);
     var my_channel = pusher.subscribe(options.channelName);
     // bind to all channel events.
     my_channel.bind_all(this.stopWatchRestart);
