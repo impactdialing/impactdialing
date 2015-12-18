@@ -15,8 +15,9 @@ ImpactDialing.Routers.Monitors = Backbone.Router.extend({
       monitorRouter.activeCallers.fetch();
       monitorRouter.activeCampaigns.fetch();
     });
-    var pusher = new Pusher(options.pusherKey);
-    var my_channel = pusher.subscribe(options.channelName);
+    //var pusher = new Pusher(options.pusherKey);
+    //var my_channel = pusher.subscribe(options.channelName);
+    var my_channel = options.channel;
     // bind to all channel events.
     my_channel.bind_all(this.stopWatchRestart);
     my_channel.bind('caller_session.created', this.callerSessionCreated, this);
@@ -41,7 +42,7 @@ ImpactDialing.Routers.Monitors = Backbone.Router.extend({
   },
 
   callerSessionCreated: function(data) {
-    console.log(this);
+    console.log('callerSessionCreated', data, this);
     this.activeCallers.normalizeAdd(data);
     var campaignObj = this.campaigns.get(data.campaign_id);
     this.activeCampaigns.add(campaignObj.attributes);

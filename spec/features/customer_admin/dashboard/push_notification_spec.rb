@@ -104,7 +104,7 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
 
     describe 'listing active campaigns and callers', js: true do
 
-      let!(:power_campaign) do
+      let(:power_campaign) do
         create(:power, {
           account: account,
           start_time: auth_time,
@@ -113,7 +113,7 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
       end
 
       let(:params) do {
-        "account_sid" => 1,
+        "account_sid" => 'ac123',
         "sid" => UUID.new.generate,
       }
       end

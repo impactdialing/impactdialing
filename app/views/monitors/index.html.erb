@@ -12,20 +12,26 @@
   <script type="text/javascript">
     $(function() {
       var pusherKey = "<%= PUSHER_KEY %>",
-          pusherOpts = {};
+      pusherOpts = {};
+
       <% if defined?(PusherFake)%>
-        var pusherOpts = <%= raw PusherFake.configuration.to_options.to_json %>;
+        //pusherOpts = <%== PusherFake.configuration.to_options.to_json %>;
+        window.pusherInstance = <%== PusherFake.javascript %>
+      <% else %>
+        window.pusherInstance = new Pusher(pusherKey);
       <% end %>
 
-      window.channelName = "<%= @channel.name %>";
+      var channelName = "<%= @channel.name %>";
+      var channel = pusherInstance.subscribe(channelName);
       var campaignsJSON = <%= raw json_escape_41 @campaigns.to_json(root: false) %>;
       var monitorOptions = {
         campaigns: campaignsJSON,
         pusherKey: pusherKey,
         pusherOpts: pusherOpts,
         channelName: channelName,
+        channel: channel,
       };
-      window.monitorRouter = new ImpactDialing.Routers.Monitors(monitorOptions);
+      var monitorRouter = new ImpactDialing.Routers.Monitors(monitorOptions);
       Backbone.history.start();
       Twilio.Device.setup("<%= @token %>", {'debug':true});
       Twilio.Device.connect(function (conn) {});
