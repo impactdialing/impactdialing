@@ -46,15 +46,6 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
 
 
 
-
-          #
-          # let(:power_no_calls) do
-          #   create(:power, {
-          #     account: account,
-          #     start_time: auth_time,
-          #     end_time: auth_time
-          #   })
-          # end
           #
           # let(:power_extra) do
           #   create(:power, {
@@ -104,6 +95,14 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
 
     describe 'listing active campaigns and callers', js: true do
 
+
+      let(:power_no_calls) do
+        create(:power, {
+          account: account,
+          start_time: auth_time,
+          end_time: auth_time
+        })
+      end
       let(:power_campaign) do
         create(:power, {
           account: account,
@@ -126,42 +125,48 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true do
         Caller.where(1).to_a
       end
 
-      before do
-        CallFlow::Web::Event.enable!
-        session = create(:webui_caller_session, {
-          caller:callers[0],
+      let(:caller_session) do
+        create(:webui_caller_session, {
+          caller: callers[0],
           campaign: power_campaign,
           on_call: true,
           sid: params["sid"],
           # available_for_call: redis_states[i] == 'On call' ? false : true,
         })
+      end
 
-        # caller_session = power_campaign.caller_sessions.create!({
-        #   caller_id: caller[0],
-        #   on_call: true,
-        #   sid: params["sid"]
-        # })
+      before do
+        CallFlow::Web::Event.enable!
+        account
+        power_campaign
+        callers
+        caller_session
+        #visit '/client/monitors/stuff'
+        visit client_root_path
+      end
+
+      def when_pusher_connected(&block)
+        js = -> { page.evaluate_script('pusherInstance.connection.state') }
+        state = nil
+        until state == 'connected'
+          state = js.call
+          sleep(1)
+        end
+        yield
       end
 
       context 'Active Campaigns' do
+        let(:statuses){ ['On hold', 'On call', 'Wrap up'] }
         it 'only lists campaigns w/ active callers logged in' do
-          within '#campaigns-monitor' do
-            visit client_root_path
-            save_and_open_page
-            # sleep(15)
-            puts page.evaluate_script("window.Bunker=Pusher.instances[0].subscribe(channelName)")
-            puts page.evaluate_script("window.Bunker.bind('caller_session.created', function(){ alert('Bunker!')})")
-            puts page.evaluate_script
-
+          puts "Pusher.url = #{Pusher.url}"
+          when_pusher_connected do
             CallFlow::CallerSession.create(params)
+          end
+          expect(page).to have_content power_campaign.name
 
-            p "doda: #{CallFlow::Web::Event.enabled?}"
-            puts "Running assertion"
-
-
-            # sleep(15)
+          within '#campaigns-monitor' do
             expect(page).to have_content power_campaign.name
-            # expect(page).not_to have_content power_no_calls.name
+            expect(page).to_not have_content power_no_calls.name
           end
         end
         it 'lists the number of callers logged in for the specified campaign' do

@@ -57,7 +57,7 @@ RSpec.configure do |config|
       Capybara.page.driver.allow_url("*pusher.com")
     end
   end
-  #capybara_switch_to_webkit
+  capybara_switch_to_webkit
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
@@ -101,14 +101,11 @@ RSpec.configure do |config|
   end
 
   config.before(:example) do |example|
-
-      Capybara.default_driver = :selenium
-      Capybara.javascript_driver = :selenium
     if example.metadata[:js]
       if example.metadata[:file_uploads]
         Capybara.javascript_driver = :selenium
       else
-        #capybara_switch_to_webkit
+        capybara_switch_to_webkit
       end
     end
 
