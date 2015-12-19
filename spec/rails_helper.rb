@@ -80,6 +80,7 @@ RSpec.configure do |config|
   config.include WebLoginHelpers
   config.include ResqueHelpers
   config.include DialQueueHelpers
+  config.include AssertionHelpers
 
   config.mock_with :rspec
   config.use_transactional_fixtures = false

@@ -1,0 +1,11 @@
+module AssertionHelpers
+  def retry_assertion(times=1, &block)
+    retries = 0
+    begin
+      yield(block)
+    rescue
+      sleep(1)
+      retry if (retries += 1) <= times
+    end
+  end
+end

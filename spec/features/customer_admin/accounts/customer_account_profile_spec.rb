@@ -6,16 +6,6 @@ describe 'Account profile', type: :feature, admin: true do
     CapybaraConfig.switch_to_webkit
   end
 
-  def retry_assertion(times=1, &block)
-    retries = 0
-    begin
-      yield(block)
-    rescue
-      sleep(1)
-      retry if (retries += 1) <= times
-    end
-  end
-
   def select_plan(type='Basic')
     select type, from: 'Select plan:'
   end
@@ -241,7 +231,7 @@ describe 'Account profile', type: :feature, admin: true do
         retry_assertion do
           click_on 'Update'
         end
-        retry_assertion do
+        retry_assertion(3) do
           expect(page).to have_content I18n.t('subscriptions.update_billing.success')
         end
       end

@@ -24,8 +24,10 @@ describe 'creating new campaigns', js: true, sauce: ENV['USE_SAUCE'].present? do
       fill_in 'Hours between redials', with: '12'
 
       click_link 'Messages'
-      check 'Auto-detect whether human or machine answers a call'
-      check 'Callers can click to drop recorded message after a call is answered'
+      using_wait_time(60) do
+        check 'Auto-detect whether human or machine answers a call'
+        check 'Callers can click to drop recorded message after a call is answered'
+      end
 
       click_button 'Save'
 
