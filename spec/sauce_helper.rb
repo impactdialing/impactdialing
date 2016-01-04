@@ -4,25 +4,26 @@ require 'sauce'
 require 'sauce/capybara'
 
 Sauce.config do |config|
-  config[:start_local_application]    = false
+  config[:start_local_application]    = true
   config[:start_tunnel]               = (not ENV['CIRCLE_SHA1'])
   config[:sauce_connect_4_executable] = "#{ENV['HOME']}/sc-bin/bin/sc"
 
   shared_caps = {
-    build: ENV['CIRCLE_SHA1']
+    build: ENV['CIRCLE_SHA1'] || 'dev'
   }
   ie_caps = shared_caps.merge({
     'ie.ensureCleanSession' => true
   })
+
   config[:browsers]                = [
-    ['Windows 7','Internet Explorer','9', ie_caps],
-    ['Windows 7','Internet Explorer','10', ie_caps],
+    #['Windows 7','Internet Explorer','9', ie_caps],
+    #['Windows 7','Internet Explorer','10', ie_caps],
     #['Windows 8.1','Internet Explorer','11'],
     #['Windows 10','Internet Explorer','edge'],
     #['Windows 8','Firefox','40'],
     #['Windows 8','Chrome','46'],
-    #['Linux','Chrome','46'],
-    #['Linux','Firefox','40'],
+    ['Linux','Chrome','46', shared_caps],
+    ['Linux','Firefox','40', shared_caps],
     #['OS X 10.10','Firefox','40'],
     #['OS X 10.10','Chrome','46'],
     #['OS X 10.9','Safari','7'],
@@ -47,6 +48,5 @@ end
 
 Capybara.default_driver = :sauce
 Capybara.javascript_driver = :sauce
-# CapybaraConfig.register_sauce_driver
-Capybara.server_port = 9887 + ENV.fetch('TEST_ENV_NUMBER', 1).to_i
 Capybara.default_wait_time = 60
+#Capybara.server_port = 9887 + ENV['TEST_ENV_NUMBER'].to_i

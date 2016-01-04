@@ -231,7 +231,7 @@ describe 'Account profile', type: :feature, admin: true do
         retry_assertion do
           click_on 'Update'
         end
-        retry_assertion(3) do
+        retry_assertion do
           expect(page).to have_content I18n.t('subscriptions.update_billing.success')
         end
       end

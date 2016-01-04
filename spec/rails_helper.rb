@@ -89,6 +89,7 @@ RSpec.configure do |config|
     WebMock.allow_net_connect!
     DatabaseCleaner.strategy = :truncation
     DatabaseCleaner.clean_with :truncation
+    DatabaseCleaner.start
   end
 
   config.after(:suite) do
@@ -111,7 +112,7 @@ RSpec.configure do |config|
         c.allow_http_connections_when_no_cassette = true
       end
     end
-    DatabaseCleaner.start
+    DatabaseCleaner.start unless ENV['USE_SAUCE']
   end
 
   config.after(:example) do |example|
@@ -121,8 +122,10 @@ RSpec.configure do |config|
         c.hook_into :webmock
       end
     end
+    p "flushing databases"
+    p "current users: #{User.all.map(&:attributes)}"
     Redis.new.flushall
-    DatabaseCleaner.clean
+    DatabaseCleaner.clean unless ENV['USE_SAUCE']
   end
 end
 
