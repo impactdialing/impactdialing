@@ -8,13 +8,17 @@ Sauce.config do |config|
   config[:start_tunnel]               = (not ENV['CIRCLE_SHA1'])
   config[:sauce_connect_4_executable] = "#{ENV['HOME']}/sc-bin/bin/sc"
 
-  #config[:browsers]                = [
-    #['Windows 8','Internet Explorer','10'],
+  shared_caps = {
+    build: ENV['CIRCLE_SHA1']
+  }
+  ie_caps = shared_caps.merge({
+    'ie.ensureCleanSession' => true
+  })
+  config[:browsers]                = [
+    ['Windows 7','Internet Explorer','9', ie_caps],
+    ['Windows 7','Internet Explorer','10', ie_caps],
     #['Windows 8.1','Internet Explorer','11'],
-    #['Windows 7','Internet Explorer','9'],
-    #['Windows 7','Internet Explorer','10'],
-    #['Windows 7','Internet Explorer','11'],
-    #['Windows 10','Internet Explorer','11'],
+    #['Windows 10','Internet Explorer','edge'],
     #['Windows 8','Firefox','40'],
     #['Windows 8','Chrome','46'],
     #['Linux','Chrome','46'],
@@ -24,7 +28,7 @@ Sauce.config do |config|
     #['OS X 10.9','Safari','7'],
     #['OS X 10.10','Safari','8'],
     #['OS X 10.11','Safari','9']
-  #]
+  ]
   browsers = {
     'ie11' => ['Windows 8.1', 'Internet Explorer', '11'],
     'ie10' => ['Windows 7', 'Internet Explorer', '10'],
@@ -38,9 +42,11 @@ Sauce.config do |config|
   }
   browser = browsers[ENV['USE_SAUCE']]
   raise "Unknown browser: #{ENV['USE_SAUCE']}, test run aborted." if browser.nil?
+  #config[:browsers] = browser
 end
 
 Capybara.default_driver = :sauce
 Capybara.javascript_driver = :sauce
-Capybara.default_wait_time = 30
 # CapybaraConfig.register_sauce_driver
+Capybara.server_port = 9887 + ENV.fetch('TEST_ENV_NUMBER', 1).to_i
+Capybara.default_wait_time = 60

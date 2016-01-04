@@ -19,6 +19,11 @@ require 'factory_girl'
 ImpactDialing::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  if ENV['TEST_ENV_NUMBER'].present?
+    parallel_dir = Rails.root.join('tmp', 'cache', "paralleltests_#{ENV.fetch('TEST_ENV_NUMBER', 1)}")
+    config.cache_store = :file_store, File.join(parallel_dir, 'pages')
+    config.assets.cache = Sprockets::Cache::FileStore.new(File.join(parallel_dir, 'assets'))
+  end
   # The test environment is used exclusively to run your application's
   # test suite. You never need to work with it otherwise. Remember that
   # your test database is "scratch space" for the test suite and is wiped

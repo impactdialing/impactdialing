@@ -14,7 +14,20 @@ test:
     #- DISABLE_SPRING=1 SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/units/tests.xml --format progress" bundle exec rake spec:note2e
     - $HOME/sc-bin/bin/sc --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/sauce-is-hot:
         background: true
-    - while [ ! -e ~/sauce-is-hot ]; do sleep 1; done
-    - DISABLE_SPRING=1 USE_SAUCE='ie11' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/tests.xml --format progress" bundle exec rake sauce:spec
+        parallel: true
+    - while [ ! -e ~/sauce-is-hot ]; do sleep 1; done:
+        parallel: true
+    - DISABLE_SPRING=1 USE_SAUCE='ie11' bundle exec rake sauce:spec concurrency=1:
+        parallel: true
+        files:
+          - spec/features/customer_admin/campaigns/*_spec.rb
+    #- DISABLE_SPRING=1 USE_SAUCE='ie10' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/ie10.xml --format progress" bundle exec rake sauce:spec
+    #- DISABLE_SPRING=1 USE_SAUCE='ie9' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/ie9.xml --format progress" bundle exec rake sauce:spec
+    #- DISABLE_SPRING=1 USE_SAUCE='ch' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/ch.xml --format progress" bundle exec rake sauce:spec
+    #- DISABLE_SPRING=1 USE_SAUCE='ff' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/ff.xml --format progress" bundle exec rake sauce:spec
+    #- DISABLE_SPRING=1 USE_SAUCE='sa7' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/sa7.xml --format progress" bundle exec rake sauce:spec
+    #- DISABLE_SPRING=1 USE_SAUCE='sa9' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/sa9.xml --format progress" bundle exec rake sauce:spec
+    #- DISABLE_SPRING=1 USE_SAUCE='lch' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/lch.xml --format progress" bundle exec rake sauce:spec
+    #- DISABLE_SPRING=1 USE_SAUCE='lff' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/lff.xml --format progress" bundle exec rake sauce:spec
   post:
     - killall --wait sc  # wait for Sauce Connect to close the tunnel
