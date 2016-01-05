@@ -20,7 +20,7 @@ test:
     - DISABLE_SPRING=1 USE_SAUCE='ie11' bundle exec rake sauce:spec concurrency=1:
         parallel: true
         files:
-          - spec/features/customer_admin/campaigns/*_spec.rb
+          - spec/features/customer_admin/campaigns/add_new_script_spec.rb
     #- DISABLE_SPRING=1 USE_SAUCE='ie10' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/ie10.xml --format progress" bundle exec rake sauce:spec
     #- DISABLE_SPRING=1 USE_SAUCE='ie9' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/ie9.xml --format progress" bundle exec rake sauce:spec
     #- DISABLE_SPRING=1 USE_SAUCE='ch' SPEC_OPTS="--format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/web/ch.xml --format progress" bundle exec rake sauce:spec
