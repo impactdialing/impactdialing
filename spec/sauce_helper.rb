@@ -20,8 +20,8 @@ Sauce.config do |config|
 
   browsers = {
     'ie' => [
-      ['Windows 7','Internet Explorer','9', winlt10_caps],
-      ['Windows 8','Internet Explorer','10', winlt10_caps],
+      #['Windows 7','Internet Explorer','9', winlt10_caps],
+      #['Windows 8','Internet Explorer','10', winlt10_caps],
       ['Windows 8.1','Internet Explorer','11', winlt10_caps],
       # todo: support msft edge (driver errors out)
       #['Windows 10','MicrosoftEdge','20.10240', ie_caps],
