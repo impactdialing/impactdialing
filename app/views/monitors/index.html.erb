@@ -3,14 +3,20 @@
 <% end %>
 
 <% content_for :javascripts do %>
+  <% if twilio_js_enabled? %>
   <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js"></script>
+  <% end %>
+
   <%= javascript_include_tag "flash_detect_min.js", "browser_detect.js", "underscore-min", "mustache", "backbone", "impactdialing", "models/monitor_campaign.js", "models/monitor_caller.js", "collections/monitor_callers.js", "views/monitor_callers_index.js", "collections/monitor_campaigns.js","routers/monitors.js", "views/monitor_campaigns_index.js" %>
 
   <script type="text/javascript">
     $(function() {
       new ImpactDialing.Routers.Monitors();
       Backbone.history.start();
-      Twilio.Device.setup("<%= @token %>", {'debug':true});
+      <% if twilio_js_enabled? %>
+      Twilio.Device.setup("<%= @token %>", {
+        'debug': <%= debug_js? %>
+      });
       Twilio.Device.connect(function (conn) {});
       Twilio.Device.ready(function (device) {});
       Twilio.Device.error(function (error) {
@@ -21,6 +27,7 @@
         $(this).hide();
         return false;
       });
+      <% end %>
     });
   </script>
 <% end %>

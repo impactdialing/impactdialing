@@ -1,0 +1,9 @@
+#!/bin/bash
+
+FILES=""
+for i in "$@"
+do
+FILES="$i $FILES"
+done
+
+DISABLE_SPRING=1 bundle exec rake sauce:spec concurrency=1 test_files="$FILES"

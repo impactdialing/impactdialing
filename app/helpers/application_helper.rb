@@ -2,6 +2,14 @@
 module ApplicationHelper
   include WhiteLabeling
 
+  def debug_js?
+    standard_env_name != 'production'
+  end
+
+  def twilio_js_enabled?
+    Rails.env.test? && ENV['USE_SAUCE'] != 'ie'
+  end
+
   def rails_env
     Rails.env
   end
