@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Internal Admin pages', type: :feature, admin: true do
+feature 'Internal Admin pages', admin: true do
   let(:admin) do
     create(:user)
   end

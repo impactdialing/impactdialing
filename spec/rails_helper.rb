@@ -40,6 +40,8 @@ RSpec.configure do |config|
     })
   end
 
+  config.fixture_path = Rails.root.join('spec', 'fixtures')
+
   config.infer_spec_type_from_file_location!
 
   config.profile_examples = 10
@@ -57,9 +59,6 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     WebMock.allow_net_connect!
-    if config.use_transactional_fixtures?
-      raise "config.use_transactional_fixtures must be false"
-    end
     DatabaseCleaner.clean_with :truncation
   end
 
