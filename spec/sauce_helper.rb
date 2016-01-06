@@ -4,7 +4,7 @@ require 'sauce'
 require 'sauce/capybara'
 
 Sauce.config do |config|
-  config[:start_local_application]    = true
+  config[:start_local_application]    = false
   config[:start_tunnel]               = (not ENV['CIRCLE_SHA1'])
   config[:sauce_connect_4_executable] = "#{ENV['HOME']}/sc-bin/bin/sc"
 
@@ -20,14 +20,14 @@ Sauce.config do |config|
 
   browsers = {
     'ie' => [
-      #['Windows 7','Internet Explorer','9', winlt10_caps],
-      #['Windows 8','Internet Explorer','10', winlt10_caps],
+      ['Windows 7','Internet Explorer','9', winlt10_caps],
+      ['Windows 8','Internet Explorer','10', winlt10_caps],
       ['Windows 8.1','Internet Explorer','11', winlt10_caps],
       # todo: support msft edge (driver errors out)
       #['Windows 10','MicrosoftEdge','20.10240', ie_caps],
     ],
     'ch' => [
-      ['Windows 8','Chrome','46', shared_caps],
+      ['Windows 8.1','Chrome','46', shared_caps],
       ['OS X 10.10','Chrome','46', shared_caps],
       ['Linux','Chrome','46', shared_caps],
     ],

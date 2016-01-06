@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-feature 'include a "add a new script" link', sauce: ENV['USE_SAUCE'].present? do
+feature 'include a "add a new script" link' do
 
   let(:admin) { create(:user) }
 
