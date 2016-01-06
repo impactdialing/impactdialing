@@ -50,5 +50,4 @@ end
 
 Capybara.default_driver = :sauce
 Capybara.javascript_driver = :sauce
-Capybara.default_wait_time = 60
-#Capybara.server_port = 9887 + ENV['TEST_ENV_NUMBER'].to_i
+Capybara.default_wait_time = 30
