@@ -4,7 +4,7 @@ require 'sauce'
 require 'sauce/capybara'
 
 Sauce.config do |config|
-  config[:start_local_application]    = false
+  config[:start_local_application]    = true
   config[:start_tunnel]               = (not ENV['CIRCLE_SHA1'])
   config[:sauce_connect_4_executable] = "#{ENV['HOME']}/sc-bin/bin/sc"
 
@@ -19,28 +19,20 @@ Sauce.config do |config|
   })
 
   browsers = {
-    'ie' => [
-      ['Windows 7','Internet Explorer','9', winlt10_caps],
-      ['Windows 8','Internet Explorer','10', winlt10_caps],
-      ['Windows 8.1','Internet Explorer','11', winlt10_caps],
-      # todo: support msft edge (driver errors out)
-      #['Windows 10','MicrosoftEdge','20.10240', ie_caps],
-    ],
-    'ch' => [
-      ['Windows 8.1','Chrome','46', shared_caps],
-      ['OS X 10.10','Chrome','46', shared_caps],
-      ['Linux','Chrome','46', shared_caps],
-    ],
-    'ff' => [
-      ['Windows 8','Firefox','40', shared_caps],
-      ['OS X 10.10','Firefox','40', shared_caps],
-      ['Linux','Firefox','40', shared_caps],
-    ],
-    'sa' => [
-      ['OS X 10.9','Safari','7', shared_caps],
-      ['OS X 10.10','Safari','8', shared_caps],
-      ['OS X 10.11','Safari','9', shared_caps]
-    ]
+    'ie9' => ['Windows 7','Internet Explorer','9', winlt10_caps],
+    'ie10' => ['Windows 8','Internet Explorer','10', winlt10_caps],
+    'ie11' => ['Windows 8.1','Internet Explorer','11', winlt10_caps],
+    # todo: support msft edge (driver errors out)
+    # 'edge' => ['Windows 10','MicrosoftEdge','20.10240', ie_caps],
+    'wch' => ['Windows 8.1','Chrome','46', shared_caps],
+    'och' => ['OS X 10.10','Chrome','46', shared_caps],
+    'lch' => ['Linux','Chrome','46', shared_caps],
+    'wff' => ['Windows 8','Firefox','40', shared_caps],
+    'off' => ['OS X 10.10','Firefox','40', shared_caps],
+    'lff' => ['Linux','Firefox','40', shared_caps],
+    'sa7' => ['OS X 10.9','Safari','7', shared_caps],
+    'sa8' => ['OS X 10.10','Safari','8', shared_caps],
+    'sa9' => ['OS X 10.11','Safari','9', shared_caps]
   }
   browser = browsers[ENV['USE_SAUCE']]
   throw "Unknown browser: #{ENV['USE_SAUCE']}, test run aborted." if browser.nil?
@@ -48,6 +40,7 @@ Sauce.config do |config|
   config[:browsers] = browser
 end
 
-Capybara.default_driver = :sauce
+Capybara.run_server        = false
+Capybara.default_driver    = :sauce
 Capybara.javascript_driver = :sauce
 Capybara.default_wait_time = 30

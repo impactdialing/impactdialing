@@ -16,13 +16,17 @@ test:
         parallel: true
     - while [ ! -e ~/sauce-is-hot ]; do sleep 1; done:
         parallel: true
-    - USE_SAUCE='ie' bin/parallel_features:
+    - USE_SAUCE='ie9' bin/parallel_features:
         parallel: true
         files:
           - spec/features/customer_admin/campaigns/*
     - sleep(10):
         parallel: true
-    - USE_SAUCE='ch' bin/parallel_features:
+    - USE_SAUCE='ie10' bin/parallel_features:
+        parallel: true
+        files:
+          - spec/features/customer_admin/campaigns/*
+    - USE_SAUCE='ie11' bin/parallel_features:
         parallel: true
         files:
           - spec/features/customer_admin/campaigns/*
