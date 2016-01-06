@@ -29,13 +29,13 @@ module WebLoginHelpers
   end
 
   def web_login_as(user)
-    p "Logging in: #{user.email}"
+    # fail early if db was cleaned
+    expect(User.find(user.id)).to eq user
+
     visit '/client/login'
     fill_in 'Email', with: user.email
     fill_in 'Password', with: 'password'
     click_on 'Log in'
-    p "Users in db: #{User.all.map(&:email)}"
-    expect(page).to_not have_content 'Please try again.'
   end
 
   def caller_login_as(caller)

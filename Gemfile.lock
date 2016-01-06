@@ -281,6 +281,10 @@ GEM
       rufus-scheduler
     rest-client (1.6.7)
       mime-types (>= 1.16)
+    rspec (3.3.0)
+      rspec-core (~> 3.3.0)
+      rspec-expectations (~> 3.3.0)
+      rspec-mocks (~> 3.3.0)
     rspec-collection_matchers (1.0.0)
       rspec-expectations (>= 2.99.0.beta1)
     rspec-core (3.3.2)
@@ -288,9 +292,12 @@ GEM
     rspec-expectations (3.3.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.3.0)
+    rspec-instafail (0.2.4)
     rspec-its (1.0.1)
       rspec-core (>= 2.99.0.beta1)
       rspec-expectations (>= 2.99.0.beta1)
+    rspec-legacy_formatters (1.0.1)
+      rspec (~> 3.0)
     rspec-mocks (3.3.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.3.0)
@@ -481,7 +488,9 @@ DEPENDENCIES
   resque-loner (~> 1.2.1)
   resque-scheduler (~> 2.0.1)
   rspec-collection_matchers
+  rspec-instafail
   rspec-its
+  rspec-legacy_formatters
   rspec-rails
   rspec_junit_formatter (= 0.2.2)
   rubyzip
@@ -490,7 +499,6 @@ DEPENDENCIES
   sass-rails
   sauce
   sauce-connect
-  sauce_whisk
   selenium-webdriver
   shoulda
   showoff-io
@@ -511,4 +519,4 @@ DEPENDENCIES
   wolverine
 
 BUNDLED WITH
-   1.10.5
+   1.11.2

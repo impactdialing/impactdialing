@@ -114,34 +114,31 @@ group :development do
   gem 'bullet'
 end
 
-gem 'sauce', group: :development
-gem 'sauce_whisk', group: :development
-gem 'sauce-connect', group: :development
-gem 'sauce', group: :test
-gem 'sauce_whisk', group: :test
-gem 'sauce-connect', group: :test
-
-group :development, :test, :e2e do
+group :development, :test do
   gem 'rspec-rails'
   gem 'rspec-its' # its is not in rspec 3
   gem 'rspec-collection_matchers' # expect(collection).to have(1).thing is not in rspec 3
   gem 'rspec_junit_formatter', '0.2.2'
+  gem 'rspec-legacy_formatters'
+  gem 'rspec-instafail'
   gem 'forgery', '0.6.0'
   gem 'hirb'
   gem 'pry'
   gem 'byebug'
+  gem 'sauce'
+  gem 'sauce-connect'
 end
 
-group :test, :e2e do
+group :test do
   gem 'factory_girl_rails'
   gem 'shoulda'
-  gem 'simplecov', require: false
-  gem 'database_cleaner'
-  gem 'capybara'
   gem 'launchy'
   gem 'timecop'
-  gem 'webmock', require: false
   gem 'vcr'
+  gem 'capybara'
   gem 'selenium-webdriver'
   gem 'capybara-webkit'
+  gem 'database_cleaner'
+  gem 'webmock', require: false
+  gem 'simplecov', require: false
 end
