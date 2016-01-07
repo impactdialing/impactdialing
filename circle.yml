@@ -11,17 +11,17 @@ machine:
 
 test:
   override:
-    - DISABLE_SPRING=1 bundle exec rake spec:note2e:
+    - DISABLE_SPRING=1 bundle exec rspec --tag ~data_heavy:
         parallel: true
         files:
-          - spec/controllers
-          - spec/models
-          - spec/views
-          - spec/mailers
-          - spec/jobs
-          - spec/lib
-          - spec/helpers
-          - spec/requests
+          - spec/controllers/**/*_spec.rb
+          - spec/models/**/*_spec.rb
+          - spec/views/**/*_spec.rb
+          - spec/mailers/**/*_spec.rb
+          - spec/jobs/**/*_spec.rb
+          - spec/lib/**/*_spec.rb
+          - spec/helpers/**/*_spec.rb
+          - spec/requests/**/*_spec.rb
     #- sleep 2:
     #    parallel: true
     #- $HOME/sc-bin/bin/sc --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce:
