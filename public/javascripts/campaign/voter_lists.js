@@ -34,13 +34,20 @@ VoterLists.prototype.validate_csv_file = function(evt, list){
   $("#column_headers").empty();
   $("#voter_upload").hide();
   var self = this;
-  var file = evt.target.files[0];
-  var file_name = file.name;
-  var extension = file_name.split(".").pop().toLowerCase();
-  var separator = extension == "csv" ? "," : "\t";
-  if ($.inArray(extension, ["csv", "txt"]) == -1){
-    alert("Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file.");
-    return false;
+  if( Modernizr.filereader) {
+    var file = evt.target.files[0];
+    var file_name = file.name;
+    var extension = file_name.split(".").pop().toLowerCase();
+    var separator = extension == "csv" ? "," : "\t";
+    if ($.inArray(extension, ["csv", "txt"]) == -1){
+      alert("Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file.");
+      return false;
+    }
+  } else {
+    var confirmed = confirm("Please verify you are uploading a comma-separated value (CSV) or tab-delimited text (TXT) file.");
+    if( !confirmed ) {
+      return false;
+    }
   }
 
   var options = {
