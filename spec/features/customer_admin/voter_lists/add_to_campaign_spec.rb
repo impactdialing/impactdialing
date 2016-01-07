@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Manage Campaign call list', js: true, type: :feature, file_uploads: true do
+feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?, file_uploads: true do
 
   def pall
     re = Redis.new
@@ -17,7 +17,7 @@ describe 'Manage Campaign call list', js: true, type: :feature, file_uploads: tr
 
   before(:all) do
     Redis.new.flushall
-    Capybara.javascript_driver = :selenium
+    Capybara.javascript_driver = :selenium unless ENV['USE_SAUCE'].present?
   end
 
   include_context 'voter csv import' do
