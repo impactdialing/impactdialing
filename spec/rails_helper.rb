@@ -99,6 +99,7 @@ RSpec.configure do |config|
         c.hook_into :webmock
       end
     end
+    # sleep(5) # this helps tests pass on sauce
     Redis.new.flushall
     DatabaseCleaner.clean
   end
