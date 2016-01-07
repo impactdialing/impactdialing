@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source .env.test
+browsers=(och wch lch ie9 ie10 ie11 sa9)
+for browser in ${browsers[*]}; do
+  USE_SAUCE=$browser ./bin/parallel_features spec/features/customer_admin/voter_lists/ spec/features/customer_admin/campaigns/
+done
+
