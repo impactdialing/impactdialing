@@ -3,32 +3,47 @@ machine:
     version:
       2.0.0-p645
 
-dependencies:
-  post:
-    - wget https://saucelabs.com/downloads/sc-4.3.13-linux.tar.gz
-    - tar -xzf sc-4.3.13-linux.tar.gz
-    - mv ./sc-4.3.13-linux $HOME/sc-bin
+#dependencies:
+#  post:
+#    - wget https://saucelabs.com/downloads/sc-4.3.13-linux.tar.gz
+#    - tar -xzf sc-4.3.13-linux.tar.gz
+#    - mv ./sc-4.3.13-linux $HOME/sc-bin
 
 test:
   override:
-    - $HOME/sc-bin/bin/sc --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/sauce-is-hot:
-        background: true
-        parallel: true
-    - while [ ! -e ~/sauce-is-hot ]; do sleep 1; done:
-        parallel: true
-    - USE_SAUCE='ie9' bin/parallel_features:
+    - DISABLE_SPRING=1 bundle exec rake spec:note2e:
         parallel: true
         files:
-          - spec/features/customer_admin/campaigns/*
-    - sleep(10):
-        parallel: true
-    - USE_SAUCE='ie10' bin/parallel_features:
-        parallel: true
-        files:
-          - spec/features/customer_admin/campaigns/*
-    - USE_SAUCE='ie11' bin/parallel_features:
-        parallel: true
-        files:
-          - spec/features/customer_admin/campaigns/*
-  post:
-    - killall --wait sc  # wait for Sauce Connect to close the tunnel
+          - spec/controllers
+          - spec/models
+          - spec/views
+          - spec/mailers
+          - spec/jobs
+          - spec/lib
+          - spec/helpers
+          - spec/requests
+    #- sleep 2:
+    #    parallel: true
+    #- $HOME/sc-bin/bin/sc --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce:
+    #    background: true
+    #    parallel: true
+    #- while [ ! -e ~/hot-sauce ]; do sleep 1; done:
+    #    parallel: true
+    #- USE_SAUCE='ie9' bin/parallel_features:
+    #    parallel: true
+    #    files:
+    #      - spec/features/customer_admin/campaigns/*
+    #- sleep 2:
+    #    parallel: true
+    #- USE_SAUCE='ie10' bin/parallel_features:
+    #    parallel: true
+    #    files:
+    #      - spec/features/customer_admin/campaigns/*
+    #- sleep 2:
+    #    parallel: true
+    #- USE_SAUCE='ie11' bin/parallel_features:
+    #    parallel: true
+    #    files:
+    #      - spec/features/customer_admin/campaigns/*
+  #post:
+  #  - killall --wait sc  # wait for Sauce Connect to close the tunnel
