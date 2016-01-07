@@ -11,7 +11,7 @@ machine:
 
 test:
   override:
-    - DISABLE_SPRING=1 bundle exec rspec --tag ~data_heavy:
+    - DISABLE_SPRING=1 bundle exec rspec --format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/specs/results$TEST_ENV_NUMBER.xml --tag ~data_heavy:
         parallel: true
         files:
           - spec/controllers/**/*_spec.rb
