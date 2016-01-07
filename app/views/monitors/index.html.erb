@@ -4,7 +4,7 @@
 
 <% content_for :javascripts do %>
   <% if twilio_js_enabled? %>
-  <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js"></script>
+  <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.2/twilio.min.js"></script>
   <% end %>
 
   <%= javascript_include_tag "flash_detect_min.js", "browser_detect.js", "underscore-min", "mustache", "backbone", "impactdialing", "models/monitor_campaign.js", "models/monitor_caller.js", "collections/monitor_callers.js", "views/monitor_callers_index.js", "collections/monitor_campaigns.js","routers/monitors.js", "views/monitor_campaigns_index.js" %>
