@@ -63,7 +63,7 @@ RSpec.configure do |config|
   end
 
   config.before(:example) do |example|
-    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.strategy = :truncation
 
     if example.metadata[:js]
       if example.metadata[:file_uploads]
