@@ -71,8 +71,6 @@
       ];
       introJsBeforeChange = function(targetEl){
         if( $(targetEl).attr('id') == 'campaign_answering_machine_detect_container' ) {
-          console.log('introJsBeforeChange exec', $(targetEl).attr('id'));
-          //$('#campaign-tabs').tabs('load', '#messages');
           tabInst.load('#messages');
         }
       };
