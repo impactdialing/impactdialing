@@ -26,11 +26,9 @@
         try {
           var audioTag = document.createElement('audio');
           if (!(!!(audioTag) && !!(audioTag.canPlayType) && ("no" != audioTag.canPlayType(contentType)) && ("" != audioTag.canPlayType(contentType)))) {
-            console.log('audioPreview failed: ', contentType, audioTag.canPlayType(contentType));
             audioPreview = fallbackMessage;
           }
         } catch (e) {
-          console.log('Caught audio js error', e);
           audioPreview = fallbackMessage;
         }
 
