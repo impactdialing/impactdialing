@@ -1,0 +1,21 @@
+curl \
+--request POST \
+-F"api_key=$IMPACTDIALING_API_KEY" \
+-F"voter_list[purpose]=import" \
+-F"voter_list[name]=Dec Call List" \
+-F"voter_list[separator]=," \
+-F"voter_list[skip_wireless]=1" \
+-F"voter_list[csv_to_system_map][Phone]=phone" \
+-F"voter_list[csv_to_system_map][VAN ID]=custom_id" \
+-F"voter_list[csv_to_system_map][FirstName]=first_name" \
+-F"voter_list[csv_to_system_map][LastName]=last_name" \
+-F"voter_list[csv_to_system_map][Email]=email" \
+-F"voter_list[csv_to_system_map][Address]=address" \
+-F"voter_list[csv_to_system_map][State]=state" \
+-F"voter_list[csv_to_system_map][Last donation amount]=Last donation amount" \
+-F"upload[datafile]=@$IMPORT_LIST" \
+$API_END
+
+curl -X POST -F"api_key=$IMPACTDIALING_API_KEY" $API_END -F"voter_list[purpose]=prune_numbers" -F"voter_list[name]=Dec Removal Requests" -F"voter_list[separator]=," -F"voter_list[csv_to_system_map][PhoneNumber]=phone" -F "upload[datafile]=@$PRUNE_NUMBERS_LIST"
+
+curl -X POST -F"api_key=$IMPACTDIALING_API_KEY" $API_END -F"voter_list[purpose]=prune_leads" -F"voter_list[name]=Dec Bad Leads" -F"voter_list[separator]=," -F"voter_list[csv_to_system_map][VAN ID]=custom_id" -F "upload[datafile]=@$PRUNE_LEADS_LIST"
