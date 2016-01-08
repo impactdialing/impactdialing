@@ -54,7 +54,6 @@
                  " time before calling somebody back.",
           element: '#campaign_recycle_rate_container'
         },
-        /*
         {
           step: 8,
           intro: "If answering machine detection is off, any calls answered"+
@@ -66,12 +65,106 @@
                  " is a machine, it will play a message if you have chosen to do"+
                  "so, or hang up.",
           element: '#campaign_answering_machine_detect_container'
-        }
-        */
+        },
+        {
+          step: 9,
+          intro: "Hang-up or play a recorded message when an"+
+                  " answering machine is detected. Recorded messages"+
+                  " can be uploaded below.",
+          element: '#campaign_use_recordings_container',
+        },
+        {
+          step: 10,
+          intro: "Callers will see a 'Drop message' button that will play the"+
+                  " selected recording. Particularly useful if the call is"+
+                  " answered by a machine.",
+          element: '#campaign_caller_can_drop_message_manually_container',
+        },
+        {
+          step: 11,
+          intro: "Whether to dial a phone number again after dropping a message.",
+          element: '#campaign_call_back_after_voicemail_delivery_container',
+        },
+        {
+          step: 12,
+          intro: "The recorded message to play when caller drops a message"+
+                  " or an answering machine is detected.",
+          element: '#campaign_recording_id_container',
+        },
+        {
+          step: 13,
+          intro: "A list of leads to upload.",
+          element: '#upload_datafile_container',
+        },
+        {
+          step: 14,
+          intro: "This is the name that will display below when the file has uploaded.",
+          element: '#list_name',
+        },
+        {
+          step: 15,
+          intro: "Leads in the uploaded file will be added to the campaign call list.",
+          element: '#voter_list_purpose_add_container',
+        },
+        {
+          step: 16,
+          intro: "Detect any phone numbers of cellular devices and mark them not to be called.",
+          element: '#voter_list_skip_wireless_container',
+        },
+        {
+          step: 17,
+          intro: "Phone numbers in the uploaded file will be removed from the campaign call list."+
+            " This does not affect reports.",
+          element: '#voter_list_purpose_remove_numbers',
+        },
+        {
+          step: 18,
+          intro: "Leads with IDs corresponding to those in the uploaded file"+
+            " will be removed from the campaign call list. This does"+
+            " affect reports.",
+          element: '#voter_list_purpose_remove_leads',
+        },
       ];
-      introJsBeforeChange = function(targetEl){
-        if( $(targetEl).attr('id') == 'campaign_answering_machine_detect_container' ) {
-          tabInst.load('#messages');
+      var tabsHelper = {
+        show: function(id) {
+                var ids     = ['#settings', '#messages', '#upload', '#info'];
+                var classes = 'ui-tabs-active ui-state-active';
+                var cssMethod = '';
+                var visMethod = '';
+                $.each(ids, function(_, _id) {
+                    cssMethod = id == _id ? 'addClass' : 'removeClass';
+                    visMethod = id == _id ? 'show' : 'hide';
+                    console.log('tabsHelper', _id, cssMethod);
+                    $('a[href=' + _id + ']').parent()[cssMethod](classes);
+                    $(_id)[visMethod]();
+                })
+              },
+
+      };
+      var introJsBeforeChangeCallbacks = {
+        campaign_name_container: function(targetEl) {
+                                           tabsHelper.show('#settings');
+                                         },
+        campaign_recycle_rate_container: function(targetEl) {
+                                           tabsHelper.show('#settings');
+                                         },
+        campaign_answering_machine_detect_container: function(targetEl) {
+                                                       tabsHelper.show('#messages');
+                                                     },
+        campaign_recording_id_container: function(targetEl) {
+                                           tabsHelper.show('#messages');
+                                         },
+        upload_datafile_container: function(targetEl) {
+                                     tabsHelper.show('#upload');
+                                   },
+      };
+
+      introJsBeforeChange = function(targetEl) {
+        var method = $(targetEl).attr('id');
+        console.log('introJsBeforeChange', $(targetEl).attr('id'), method);
+        if( $.isFunction(introJsBeforeChangeCallbacks[method]) ){
+          console.log('calling');
+          introJsBeforeChangeCallbacks[method]( $(targetEl) );
         }
       };
 

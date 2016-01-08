@@ -11,7 +11,7 @@
         </label>
       </li>
       <% if !@campaign.account.recordings.blank? %>
-        <li>
+        <li id="campaign_use_recordings_container">
           <label for="campaign_use_recordings">
             When a machine is detected
           </label>
@@ -19,7 +19,7 @@
               ["Drop message", "true"]], {}, {id: 'campaign_use_recordings',
               name: 'campaign[use_recordings]'} %>
         </li>
-        <li>
+        <li id="campaign_caller_can_drop_message_manually_container">
           <label for="campaign_caller_can_drop_message_manually">
             <%= form.check_box :caller_can_drop_message_manually,
                 {name: 'campaign[caller_can_drop_message_manually]',
@@ -27,7 +27,7 @@
             Callers can click to drop recorded message after a call is answered
           </label>
         </li>
-        <li>
+        <li id="campaign_call_back_after_voicemail_delivery_container">
           <label for="campaign_call_back_after_voicemail_delivery">
             After a message is dropped
           </label>
@@ -36,7 +36,7 @@
               {id: 'campaign_call_back_after_voicemail_delivery',
               name: 'campaign[call_back_after_voicemail_delivery]'} %>
         </li>
-        <li>
+        <li id="campaign_recording_id_container">
           <div id="recordingsdiv">
             <p>
               <label for="campaign_recording_id">

@@ -8,7 +8,7 @@
         text (TXT) file.
       </p>
       <%= hidden_field_tag 'voter_list[separator]' %>
-      <p>
+      <p id="upload_datafile_container">
         <label for="upload_datafile">List</label>
         <%= file_field_tag 'upload[datafile]' %>
       </p>
@@ -17,24 +17,24 @@
           <%= text_field_tag "name", nil, :id => "voter_list_name", name: "voter_list[name]", :size => '10'  %>
       </p>
       <ul id="list_upload_options">
-        <li>
+        <li id="voter_list_purpose_add_container">
           <label for="voter_list_purpose_add">
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_add" value="import" checked="checked">
             Add to call list
           </label>
         </li>
-        <li class="js_list_upload_add_option">
+        <li class="js_list_upload_add_option" id="voter_list_skip_wireless_container">
           <label for="voter_list_skip_wireless">
             <input type="hidden" name="voter_list[skip_wireless]" value="0">
             <input type="checkbox" name="voter_list[skip_wireless]" id="voter_list_skip_wireless" checked="checked" value="1"> Do not call cell phones
           </label>
         </li>
-        <li>
+        <li id="voter_list_purpose_remove_numbers">
           <label for="voter_list_purpose_remove_numbers">
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_remove_numbers" value="prune_numbers"> Remove phone numbers from call list
           </label>
         </li>
-        <li>
+        <li id="voter_list_purpose_remove_leads">
           <label for="voter_list_purpose_remove_leads">
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_remove_leads" value="prune_leads"> Remove leads from call list
           </label>
