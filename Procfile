@@ -8,7 +8,7 @@ simulator_loop: bundle exec ruby simulator/simulator_loop.rb
 
 call_flow: bundle exec sidekiq -c 8 -q call_flow LIBRATO_AUTORUN=1
 
-persistence: bundle exec sidekiq -c 8 -q persistence LIBRATO_AUTORUN=1
+persistence: bundle exec sidekiq -c 4 -q persistence LIBRATO_AUTORUN=1
 
 clock: rake environment resque:scheduler
 
