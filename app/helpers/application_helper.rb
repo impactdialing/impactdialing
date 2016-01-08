@@ -7,7 +7,7 @@ module ApplicationHelper
   end
 
   def twilio_js_enabled?
-    ENV.fetch('USE_SAUCE', '') !~ /\Aie.*/
+    (not Rails.env.test?) #and ENV.fetch('USE_SAUCE', '') !~ /\Aie.*/
   end
 
   def rails_env
