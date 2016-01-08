@@ -5,3 +5,4 @@
 --require rspec/legacy_formatters
 --require rspec/instafail
 --format RSpec::Instafail
+--format progress

@@ -58,6 +58,7 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = false
 
   config.before(:suite) do
+    CapybaraConfig.switch_to_webkit
     WebMock.allow_net_connect!
     DatabaseCleaner.clean_with :truncation
   end
@@ -67,9 +68,7 @@ RSpec.configure do |config|
 
     if example.metadata[:js]
       if example.metadata[:file_uploads]
-        unless ENV['USE_SAUCE']
-          Capybara.javascript_driver = :selenium
-        end
+        CapybaraConfig.switch_to_selenium
       else
         CapybaraConfig.switch_to_webkit
       end
@@ -107,5 +106,4 @@ end
 
 require 'capybara/rails'
 require_relative 'capybara_config'
-CapybaraConfig.switch_to_webkit
 require 'sauce_helper' if ENV['USE_SAUCE']
