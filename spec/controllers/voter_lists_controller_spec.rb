@@ -145,7 +145,13 @@ describe VoterListsController, :type => :controller do
           it "renders voter_list attributes as json" do
             vcr do
               post :create, params.merge(upload: csv_upload)
-              expect(response.body).to eq VoterList.select([:id, :name, :campaign_id, :enabled, :skip_wireless]).last.to_json
+              expect(response.body).to eq VoterList.select([
+                 :id, :name,
+                 :campaign_id,
+                 :enabled,
+                 :skip_wireless,
+                 :purpose
+              ]).last.to_json
             end
           end
 
