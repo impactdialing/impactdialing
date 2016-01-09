@@ -20,7 +20,7 @@ class CallList::DisabledTrimmer < CallList::Imports
       # debugging nil key: #104590114
       unless households.empty?
         enabled_count += Wolverine.list.enable_leads({
-          keys: common_redis_keys + keys,
+          keys: common_redis_keys + [campaign.dial_queue.completed.keys[:failed]] + keys,
           argv: [base_key, voter_list.id, message_drop_completes, households.to_json]
         })
       else

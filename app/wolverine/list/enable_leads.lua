@@ -6,6 +6,7 @@ local blocked_set_key        = KEYS[6]
 local completed_set_key      = KEYS[7]
 local completed_leads_key    = KEYS[8]
 local message_drop_key       = KEYS[9]
+local failed_set_key         = KEYS[12]
 local base_key               = ARGV[1]
 local list_id                = tonumber(ARGV[2])
 local message_drop_completes = tonumber(ARGV[3])
@@ -24,10 +25,11 @@ local add_to_set = function(leads_added, household, phone)
   local score = household.score
   if tonumber(household.blocked) == 0 or household.blocked == nil then
     local completed_score = redis.call('ZSCORE', completed_set_key, phone)
+    local failed_score    = redis.call('ZSCORE', failed_set_key, phone)
     if message_drop_completes > 0 then
       local message_dropped_bit = redis.call('GETBIT', message_drop_key, household.sequence)
       if tonumber(message_dropped_bit) > 0 then
-        if not completed_score then
+        if not completed_score and not failed_score then
           redis.call('ZADD', completed_set_key, score, phone)
         end
         leads_added = false
@@ -40,7 +42,7 @@ local add_to_set = function(leads_added, household, phone)
     if leads_added then
       -- leads were added 
 
-      if (not available_score) then
+      if (not available_score) and not failed_score then
         if completed_score then
           score = completed_score
           -- household is no longer considered complete if leads were added
@@ -53,7 +55,7 @@ local add_to_set = function(leads_added, household, phone)
         redis.call('ZADD', recycle_bin_set_key, score, phone)
       end
     else
-      if not completed_score and not available_score and not recycled_score then
+      if not completed_score and not available_score and not recycled_score and not failed_score then
         redis.call('ZADD', completed_set_key, score, phone)
       end
     end
