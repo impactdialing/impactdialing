@@ -13,6 +13,31 @@
 # end
 # print out
 
+desc "Verify list enabled/disabled"
+task :verify_list_enabled_flag, [:campaign_id] => :environment do |t,args|
+  redis = Redis.new
+  campaign_id = args[:campaign_id]
+  report = -> (match) {
+    redis.scan_each(match: match) do |key|
+      houses = redis.hgetall key
+      houses.each do |ph, _house|
+        house = JSON.parse(_house)
+        house['leads'].each do |lead|
+          p "Sequence     List ID          Phone"
+          p "#{lead['sequence']}             #{lead['voter_list_id']}          #{lead['phone']}"
+        end
+      end
+    end
+  }
+  p "Inactive Leads"
+  match = "dial_queue:#{campaign_id}:households:inactive:*"
+  report.call(match)
+
+  p "Active Leads"
+  match = match.gsub(':inactive:',':active:')
+  report.call(match)
+end
+
 desc "Count houses in deprecated format"
 task :count_deprecated_formats => :environment do
   redis            = Redis.new
