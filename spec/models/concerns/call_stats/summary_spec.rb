@@ -66,6 +66,7 @@ describe CallStats::Summary do
       let(:admin){ create(:user) }
       let(:account){ admin.account }
       let(:campaign){ create(:campaign, account: account) }
+      let(:dial_queue){ campaign.dial_queue }
 
       def summary(campaign)
         CallStats::Summary.new(campaign)
@@ -73,8 +74,14 @@ describe CallStats::Summary do
 
       describe 'households' do
         let(:total_households){ 42 }
+
         before do
-          expect(campaign.call_list.stats).to receive(:[]){ total_households }
+          allow(dial_queue.available).to receive(:count).with(:active, '-inf', campaign.household_sequence + 1){ 5 }
+          allow(dial_queue.available).to receive(:count).with(:active, "(#{campaign.household_sequence + 1}", '+inf'){ 7 }
+          allow(dial_queue.blocked).to receive(:count){ 5 }
+          allow(dial_queue.completed).to receive(:count).with(:completed, '-inf', '+inf'){ 3 }
+          allow(dial_queue.completed).to receive(:count).with(:failed, '-inf', '+inf'){ 2 }
+          allow(dial_queue.recycle_bin).to receive(:count){ 20 }
         end
         it 'are loaded from redis (Campaign#call_list.stats[:total_numbers]' do
           expect(summary(campaign).total_households).to eq total_households
