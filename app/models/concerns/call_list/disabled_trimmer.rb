@@ -24,9 +24,9 @@ class CallList::DisabledTrimmer < CallList::Imports
         })
       else
         pre = "[CallList::DisabledTrimmer]" 
-        p "#{pre} Error enabling leads. Yielded households were empty."
-        p "#{pre} Redis keys: #{keys}"
-        p "#{pre} Households: #{households}"
+        log :debug, "#{pre} Error enabling leads. Yielded households were empty."
+        log :debug, "#{pre} Redis keys: #{keys}"
+        log :debug, "#{pre} Households: #{households}"
       end
     end
   end
@@ -43,9 +43,9 @@ class CallList::DisabledTrimmer < CallList::Imports
         })
       else
         pre = "[CallList::DisabledTrimmer]" 
-        p "#{pre} Error disabling leads. Yielded households were empty."
-        p "#{pre} Redis keys: #{keys}"
-        p "#{pre} Households: #{households}"
+        log :debug, "#{pre} Error disabling leads. Yielded households were empty."
+        log :debug, "#{pre} Redis keys: #{keys}"
+        log :debug, "#{pre} Households: #{households}"
       end
     end
   end

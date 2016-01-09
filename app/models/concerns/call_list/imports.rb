@@ -62,6 +62,11 @@ private
     ]
   end
 
+protected
+  def log(level, msg)
+    Rails.logger.send(level, msg)
+  end
+
 public
   def initialize(voter_list, cursor=0, results=nil)
     @voter_list                  = voter_list
