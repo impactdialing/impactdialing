@@ -28,7 +28,7 @@ describe 'CallList::Imports::Jobs::ToggleActive' do
   let(:inactive_redis_key){ 'dial_queue:1:households:inactive:111' }
   let(:parser) do
     double('CallList::Imports::Parser', {
-      parse_file: nil
+      each_batch: nil
     })
   end
 

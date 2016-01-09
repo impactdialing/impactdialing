@@ -90,7 +90,7 @@ module ListHelpers
   end
 
   def stub_list_parser(parser_double, redis_key, household)
-    allow(parser_double).to receive(:parse_file).and_yield([redis_key], household, 0, {})
+    allow(parser_double).to receive(:each_batch).and_yield([redis_key], household, 0, {})
     allow(CallList::Imports::Parser).to receive(:new){ parser_double }
   end
 

@@ -15,10 +15,11 @@ class CallList::DisabledTrimmer < CallList::Imports
       message_drop_completes = 1
     end
 
-    parser.parse_file do |keys, households, _, _|
+    enabled_count = 0
+    parser.each_batch do |keys, households, _, _|
       # debugging nil key: #104590114
       unless households.empty?
-        Wolverine.list.enable_leads({
+        enabled_count += Wolverine.list.enable_leads({
           keys: common_redis_keys + keys,
           argv: [base_key, voter_list.id, message_drop_completes, households.to_json]
         })
@@ -29,15 +30,17 @@ class CallList::DisabledTrimmer < CallList::Imports
         log :debug, "#{pre} Households: #{households}"
       end
     end
+    return enabled_count
   end
 
   def disable_leads
     parser = CallList::Imports::Parser.new(voter_list, 0, default_results, batch_size)
     base_key = voter_list.campaign.dial_queue.households.keys[:active].gsub(':active', '')
-    parser.parse_file do |keys, households, _, _|
+    disabled_count = 0
+    parser.each_batch do |keys, households, _, _|
       # debugging nil key: #104590114
       unless households.empty?
-        Wolverine.list.disable_leads({
+        disabled_count += Wolverine.list.disable_leads({
           keys: common_redis_keys + keys,
           argv: [base_key, voter_list.id, households.to_json]
         })
@@ -48,5 +51,6 @@ class CallList::DisabledTrimmer < CallList::Imports
         log :debug, "#{pre} Households: #{households}"
       end
     end
+    return disabled_count
   end
 end

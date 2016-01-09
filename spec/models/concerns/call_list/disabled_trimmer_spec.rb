@@ -21,7 +21,7 @@ describe 'CallList::DisabledTrimmer' do
   end
   let(:parser) do
     double('CallList::Imports::Parser', {
-      parse_file: nil
+      each_batch: nil
     })
   end
   let(:phone){ households_one.keys.first }

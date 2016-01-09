@@ -113,7 +113,6 @@ for phone,_ in pairs(households) do
             lead_id_set[lead.custom_id] = lead
             if lead_completed < 1 then
               leads_added = true
-              count = count + 1
             end
             -- ignore inactive leads w/ matching custom id of active lead: active lead data wins
             -- and if all is well, then there should not be matching custom id between active/inactive
@@ -124,6 +123,7 @@ for phone,_ in pairs(households) do
         else
           table.insert(new_active_leads, lead)
         end
+        count = count + 1
         redis.call('HINCRBY', campaign_stats_key, 'total_leads', 1)
       else
         -- lead does not belong to target list, so leave in inactive
