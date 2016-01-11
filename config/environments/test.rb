@@ -9,9 +9,11 @@ if ENV['DATABASE_URL'].present? and ENV['TEST_ENV_NUMBER'].present?
   ENV['DATABASE_READ_SLAVE2_URL']     = new_url
   ENV['DATABASE_SIMULATOR_SLAVE_URL'] = new_url
 end
-#require 'simplecov'
-#SimpleCov.start 'rails'
-#SimpleCov.coverage_dir("coverage")
+if ENV['SIMPLECOV'].present?
+  require 'simplecov'
+  SimpleCov.start 'rails'
+  SimpleCov.coverage_dir("coverage")
+end
 
 require 'shoulda'
 require 'factory_girl'
