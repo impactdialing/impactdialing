@@ -27,6 +27,8 @@ RSpec.shared_context 'voter csv import' do
 
   def process_pending_import_jobs
     job = Resque::Job.reserve(:import)
+    return if job.nil?
+
     klass = job.payload['class'].to_s.constantize
     klass.perform(*job.payload['args'])
   end

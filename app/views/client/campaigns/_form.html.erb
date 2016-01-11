@@ -169,7 +169,7 @@
       };
 
       // Disable upload options as needed
-      <% if @campaign.voter_lists.count.zero? %>
+      <% if voter_list_count.zero? %>
         $('#list_upload_options input[type="radio"]').prop('disabled', true);
       <% end %>
     });
@@ -203,7 +203,7 @@
 
     <div id="upload" style="display: none;">
       <% unless @campaign.new_record? %>
-        <%= render 'upload_form' %>
+        <%= render 'upload_form', campaign: campaign, voter_list_count: voter_list_count %>
 
         <div class="clearfix">
           <%= render 'upload_history' if @campaign.voter_lists.count > 0 %>

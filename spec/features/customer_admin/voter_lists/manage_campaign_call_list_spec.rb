@@ -29,7 +29,7 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
       cp_tmp('valid_list_remove_leads.csv')
     end
 
-    def choose_and_upload_list(file, list_name, option=nil, phone_only=false, map_id=false)
+    def choose_and_upload_list(file, list_name, option=nil, phone_only=false, map_id=false, reload=true)
       click_link 'Upload'
       choose_list(file)
       fill_in 'List name', with: list_name
@@ -48,8 +48,11 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
       click_button 'Upload'
 
       process_pending_import_jobs
-      visit edit_client_campaign_path(campaign)
-      click_link 'Info'
+
+      if reload
+        visit edit_client_campaign_path(campaign)
+        click_link 'Info'
+      end
     end
   end
 
@@ -59,10 +62,6 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
     create(:predictive, {
       account: account
     })
-  end
-  let(:datetime) do
-    # hm, this will probably fail sporadically...
-    Time.now.in_time_zone(campaign.time_zone).strftime('%b %e, %Y at %l:%M%P')
   end
 
   def login_and_visit_uploads
@@ -83,7 +82,7 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
       expect(page).to have_content 'Available to dial 2 100%'
       expect(page).to have_content 'Not dialed 2 100%'
       click_link 'Upload'
-      expect(page).to have_content "Munsters cast Added 2 households and 3 leads #{datetime}"
+      expect(page).to have_content "Munsters cast Added 2 households and 3 leads"
     end
   end
 
@@ -102,26 +101,46 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
       expect(page).to have_content 'Available to dial 0'
       expect(page).to have_content 'Not available to dial 0'
       click_link 'Upload'
-      expect(page).to have_content "Munsters retired cast Removed 2 households #{datetime}"
+      expect(page).to have_content "Munsters retired cast Removed 2 households"
     end
   end
 
   context 'when "Remove leads from call list"' do
     let(:upload_option){ 'Remove leads from call list' }
-    before do
-      login_and_visit_uploads
-      choose_and_upload_list(csv_file_upload, 'Munsters cast', 'Add to call list', nil, true)
-      click_link 'Info'
-      expect(page).to have_content 'Available to dial 2 100%'
-      click_link 'Upload'
+
+    context 'custom_id mapping is available' do
+      before do
+        login_and_visit_uploads
+        choose_and_upload_list(csv_file_upload, 'Munsters cast', 'Add to call list', nil, true)
+        click_link 'Info'
+        expect(page).to have_content 'Available to dial 2 100%'
+        click_link 'Upload'
+      end
+      it 'removes uploaded leads from Campaign call list' do
+        choose_and_upload_list(csv_file_remove_leads_upload, 'Munsters extras', nil, nil, true)
+        click_link 'Info'
+        expect(page).to have_content 'Available to dial 1'
+        expect(page).to have_content 'Not available to dial 0'
+        click_link 'Upload'
+        expect(page).to have_content "Munsters extras Removed 1 household and 2 leads"
+      end
+      it 'displays an error if the custom_id is not mapped' do
+        choose_and_upload_list(csv_file_remove_leads_upload, 'Munsters double extras', nil, nil, false, false)
+        expect(page).to have_content I18n.t('activerecord.errors.models.voter_list.custom_id_map_required')
+      end
     end
-    it 'removes uploaded leads from Campaign call list' do
-      choose_and_upload_list(csv_file_remove_leads_upload, 'Munsters extras', nil, true)
-      click_link 'Info'
-      expect(page).to have_content 'Available to dial 1'
-      expect(page).to have_content 'Not available to dial 0'
-      click_link 'Upload'
-      expect(page).to have_content "Munsters extras Removed 1 household and 2 leads #{datetime}"
+
+    context 'custom_id mapping is not available' do
+      before do
+        login_and_visit_uploads
+        choose_and_upload_list(csv_file_upload, 'Munsters cast', 'Add to call list', nil, false)
+        click_link 'Info'
+        expect(page).to have_content 'Available to dial 2 100%'
+      end
+      it 'the option to remove leads from list is disabled' do
+        click_link 'Upload'
+        expect(page).to_not have_field upload_option
+      end
     end
   end
 end

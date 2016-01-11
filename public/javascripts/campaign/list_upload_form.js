@@ -44,10 +44,6 @@ ListUploadForm.prototype.update_action = function(for_new_file) {
   ];
   if( for_new_file ) {
     url.push('column_mapping');
-  } else {
-    if( this.removalList() ) {
-      url.push('remove');
-    } 
   }
   $('#voter_list_upload').attr('action', url.join('/'));
 };
@@ -81,9 +77,5 @@ ListUploadForm.prototype.mappingRequiresCustomID = function(usingCustomID) {
     this.purpose == 'remove_leads' ||
     (!!usingCustomID && this.purpose != 'remove_numbers')
   );
-};
-
-ListUploadForm.prototype.removalList = function() {
-  return $.inArray(this.purpose, ['remove_leads', 'remove_numbers']) > -1;
 };
 
