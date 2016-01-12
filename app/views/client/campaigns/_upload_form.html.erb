@@ -29,13 +29,13 @@
             <input type="checkbox" name="voter_list[skip_wireless]" id="voter_list_skip_wireless" checked="checked" value="1"> Do not call cell phones
           </label>
         </li>
-        <li id="voter_list_purpose_remove_numbers">
+        <li id="voter_list_purpose_remove_numbers_container">
           <label for="voter_list_purpose_remove_numbers">
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_remove_numbers" value="prune_numbers"> Remove phone numbers from call list
           </label>
         </li>
         <% if voter_list_count > 0 and campaign.can_use_custom_ids? %>
-        <li id="voter_list_purpose_remove_leads">
+        <li id="voter_list_purpose_remove_leads_container">
           <label for="voter_list_purpose_remove_leads">
             <input type="radio" name="voter_list[purpose]" id="voter_list_purpose_remove_leads" value="prune_leads"> Remove leads from call list
           </label>
