@@ -1,5 +1,3 @@
-require 'selenium/webdriver/remote/http/persistent'
-
 module CapybaraConfig
   def self.switch_to_webkit
     switch(:webkit)

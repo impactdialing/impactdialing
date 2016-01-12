@@ -4,6 +4,9 @@ module TwilioRequestHelpers
   def twilio_invalid_to
     '+15005550001'
   end
+  def twilio_valid_from
+    '15005550006'
+  end
   def twilio_valid_to
     '15005550006'
   end
