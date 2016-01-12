@@ -60,11 +60,11 @@ RSpec.configure do |config|
   config.before(:suite) do
     CapybaraConfig.switch_to_webkit
     WebMock.allow_net_connect!
-    DatabaseCleaner.clean_with :truncation
+    DatabaseCleaner[:active_record].clean_with :truncation
   end
 
   config.before(:example) do |example|
-    DatabaseCleaner.strategy = :truncation
+    DatabaseCleaner[:active_record].strategy = :truncation
 
     if example.metadata[:js]
       if example.metadata[:file_uploads]
@@ -83,12 +83,12 @@ RSpec.configure do |config|
 
   config.before(:example, type: :feature) do |example|
     if Capybara.current_driver != :rack_test
-      DatabaseCleaner.strategy = :truncation
+      DatabaseCleaner[:active_record].strategy = :truncation
     end
   end
 
   config.before(:example) do
-    DatabaseCleaner.start 
+    DatabaseCleaner[:active_record].start 
   end
 
   config.after(:example) do |example|
@@ -100,7 +100,7 @@ RSpec.configure do |config|
     end
     # sleep(5) # this helps tests pass on sauce
     Redis.new.flushall
-    DatabaseCleaner.clean
+    DatabaseCleaner[:active_record].clean
   end
 end
 
