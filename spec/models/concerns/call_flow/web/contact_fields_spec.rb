@@ -13,10 +13,6 @@ describe 'CallFlow::Web::ContactFields' do
   end
   subject{ CallFlow::Web::ContactFields.new(valid_arg) }
 
-  before do
-    redis.flushall
-  end
-
   describe 'instantiating' do
     subject{ CallFlow::Web::ContactFields }
     it 'accepts a hash of objects: {script, account}' do

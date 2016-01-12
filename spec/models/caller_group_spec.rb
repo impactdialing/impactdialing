@@ -16,12 +16,7 @@ describe CallerGroup, :type => :model do
     let(:new_campaign){ create(:predictive, account: account) }
 
     before do
-      Redis.new.flushall
       caller_group.update_attributes(campaign_id: new_campaign.id)
-    end
-
-    after do
-      Redis.new.flushall
     end
 
     it 'queues CallerGroupJob when new campaign saved' do

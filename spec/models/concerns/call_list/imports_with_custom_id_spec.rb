@@ -62,9 +62,6 @@ describe 'CallList::Imports' do
   before do
     allow(voter_list.campaign).to receive(:using_custom_ids?){ true }
   end
-  after do
-    Redis.new.flushall
-  end
   describe 'save' do
     subject{ CallList::Imports.new(voter_list) }
     let(:phone){ parsed_households.keys.first }

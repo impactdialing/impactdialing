@@ -14,7 +14,6 @@ describe 'CallFlow::DialQueue' do
   let(:dial_queue){ campaign.dial_queue }
 
   before do
-    Redis.new.flushall
     import_list(voter_list, households)
   end
 

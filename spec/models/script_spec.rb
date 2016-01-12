@@ -5,10 +5,6 @@ describe Script, :type => :model do
   describe 'after_update' do
     include FakeCallData
 
-    before do
-      Redis.new.flushall
-    end
-
     let(:admin){ create(:user) }
     let(:account){ admin.account }
     let(:script){ create_campaign_with_script(:bare_power, account).first }

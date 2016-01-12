@@ -70,9 +70,6 @@ describe Campaign, :type => :model do
     describe 'dial queue lifecycle' do
       include ListHelpers
 
-      before do
-        Redis.new.flushall
-      end
       let(:voter_list){ create(:voter_list, campaign: campaign) }
 
       let(:purge_job) do
@@ -467,9 +464,6 @@ describe Campaign, :type => :model do
   end
 
   describe "current status" do
-    before do
-      Redis.new.flushall
-    end
     it "should return campaign details" do
       campaign = create(:predictive)
       c1= create(:phones_only_caller_session, on_call: false, available_for_call: false, campaign: campaign)

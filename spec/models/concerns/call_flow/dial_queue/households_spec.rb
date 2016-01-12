@@ -19,10 +19,6 @@ describe 'CallFlow::DialQueue::Households' do
     import_list(voter_list, households)
   end
 
-  after do
-    redis.flushall
-  end
-
   describe 'finding presentable households' do
     let(:phone) do
       households.keys.first
@@ -170,7 +166,7 @@ describe 'CallFlow::DialQueue::Households' do
     end
 
     it 'returns false otherwise' do
-      redis.flushall
+      redis.flushdb
       expect(subject.exists?).to be_falsey
     end
   end

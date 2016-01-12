@@ -88,10 +88,6 @@ describe 'CallFlow::Persistence::Call::Completed' do
     campaign.dial_queue.households.find_presentable(phone)
   end
 
-  after do
-    redis.flushall
-  end
-
   shared_context 'dialed call setup' do
     let(:call_sid){ completed_params[:CallSid] }
     let(:create_params) do

@@ -10,13 +10,8 @@ describe AdminReportJob do
   let(:to_date){ to.strftime('%m/%d/%Y') }
 
   before do
-    Redis.new.flushall
     allow(Reports::BillableMinutes).to receive(:new){ billable_minutes }
     allow(Reports::Admin::EnterpriseByAccount).to receive(:new){ report }
-  end
-
-  after do
-    Redis.new.flushall
   end
 
   it 'instantiates a Reports::BillableMinutes obj with start & end dates' do

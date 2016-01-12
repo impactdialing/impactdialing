@@ -89,6 +89,7 @@ RSpec.configure do |config|
 
   config.before(:example) do
     DatabaseCleaner[:active_record].start 
+    DatabaseCleaner[:redis].start
   end
 
   config.after(:example) do |example|
@@ -99,7 +100,7 @@ RSpec.configure do |config|
       end
     end
     # sleep(5) # this helps tests pass on sauce
-    Redis.new.flushall
+    DatabaseCleaner[:redis].clean
     DatabaseCleaner[:active_record].clean
   end
 end

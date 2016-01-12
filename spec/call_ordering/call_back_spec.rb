@@ -152,10 +152,6 @@ context 'Machine Detection without Message Drops', data_heavy: true do
     create(:voter_list, campaign: campaign)
   end
 
-  before do
-    Redis.new.flushall
-  end
-
   describe 'Call back after machine detected' do
     let(:campaign) do
       create_campaign_with_script(:power_with_recording, account, {

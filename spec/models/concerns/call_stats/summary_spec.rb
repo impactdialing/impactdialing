@@ -3,10 +3,6 @@ require 'rails_helper'
 describe CallStats::Summary do
   include ApplicationHelper::TimeUtils
 
-  before do
-    Redis.new.flushall
-  end
-
   describe "dials summary" do
     describe '#retrying' do
       let(:campaign){ create(:predictive, recycle_rate: 1) }

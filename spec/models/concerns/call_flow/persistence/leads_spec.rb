@@ -21,10 +21,6 @@ describe 'CallFlow::Persistence::Leads' do
     campaign.dial_queue.presented_households.save(phone, target_house)
   end
 
-  after do
-    redis.flushall
-  end
-
   describe '#import_records' do
     let(:dialed_call_storage) do
       instance_double('CallFlow::Call::Storage')

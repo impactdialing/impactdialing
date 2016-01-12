@@ -14,13 +14,8 @@ describe 'AppHealth::Monitor::PredictiveDialRate' do
   end
 
   before do
-    Redis.new.flushall
     RedisPredictiveCampaign.add(predictiveA.id, predictiveA.type)
     RedisPredictiveCampaign.add(predictiveB.id, predictiveB.type)
-  end
-
-  after do
-    Redis.new.flushall
   end
 
   describe 'ok?' do

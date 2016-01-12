@@ -1,10 +1,6 @@
 require 'rails_helper'
 
 describe Twiml::LeadController do
-  after do
-    Redis.new.flushall
-  end
-
   let(:twilio_params) do
     HashWithIndifferentAccess.new({
       'CallStatus'    => 'in-progress',

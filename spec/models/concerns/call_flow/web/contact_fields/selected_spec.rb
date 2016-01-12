@@ -8,10 +8,6 @@ describe 'CallFlow::Web::ContactFields::Selected' do
 
   subject{ CallFlow::Web::ContactFields::Selected.new(instance) }
 
-  before do
-    redis.flushall
-  end
-
   describe 'instantiating' do
     it 'requires a saved Script instance' do
       expect{ 

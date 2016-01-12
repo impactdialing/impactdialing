@@ -3,7 +3,6 @@ require 'rails_helper'
 describe 'Phone-only caller dials TwiML app number' do
   let(:caller){ create(:caller, is_phones_only: true) }
   before do
-    Redis.new.flushall
     caller.campaign.update_attribute(:end_time, caller.campaign.start_time)
   end
 

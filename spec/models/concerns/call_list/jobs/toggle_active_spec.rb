@@ -5,10 +5,6 @@ describe 'CallList::Imports::Jobs::ToggleActive' do
 
   subject{ CallList::Jobs::ToggleActive }
 
-  after do
-    Redis.new.flushall
-  end
-
   let(:campaign) do
     create(:power)
   end

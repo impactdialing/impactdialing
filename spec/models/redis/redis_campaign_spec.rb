@@ -1,11 +1,7 @@
 require 'rails_helper'
 
 describe RedisPredictiveCampaign, :type => :model do
-  
-  before do
-    Redis.new.flushall
-  end
-  
+
   it "should add to running campaigns" do
     account = create(:account)
     campaign = create(:predictive, name: "test123", account: account)

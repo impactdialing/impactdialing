@@ -32,8 +32,6 @@ describe 'CallFlow::DialQueue::Jobs::Purge.perform(campaign_id)' do
   let(:redis){ Redis.new }
 
   before do
-    redis.flushall
-
     import_list(voter_list, available_households.merge(recycled_households))
     set_keys_under_test.each do |key|
       redis.zadd key, [rand(10), Forgery(:address).clean_phone]

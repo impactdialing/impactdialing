@@ -16,7 +16,6 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
   end
 
   before(:all) do
-    Redis.new.flushall
     Capybara.javascript_driver = :selenium unless ENV['USE_SAUCE'].present?
   end
 

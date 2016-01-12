@@ -18,10 +18,6 @@ describe Predictive do
     })
   end
 
-  before do
-    Redis.new.flushall
-  end
-
   describe 'voter_connected_event' do
     let(:voter_list){ create(:voter_list, campaign: campaign) }
     let(:household) do

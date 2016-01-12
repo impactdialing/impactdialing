@@ -39,10 +39,6 @@ describe 'Archival::Jobs::CampaignSweeper' do
     import_list(list_of_active, active_households)
   end
 
-  after do
-    Redis.new.flushall
-  end
-
   it 'archives campaigns where the last call attempt is older than 90 days' do
     subject.perform
     expect(Campaign.archived.count).to eq 1

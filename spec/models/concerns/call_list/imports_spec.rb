@@ -30,10 +30,6 @@ describe 'CallList::Imports' do
     subject.send(:common_redis_keys)
   end
 
-  after do
-    Redis.new.flushall
-  end
-
   describe 'importing CustomVoterFields to SQL backend' do
     subject{ CallList::Imports.new(voter_list) }
 

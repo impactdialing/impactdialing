@@ -12,7 +12,6 @@ describe 'Store a new Stripe Event' do
     })
   end
   before do
-    Redis.new.flushall
     allow(Rails).to receive(:env){ fake_rails_env }
   end
   after do

@@ -6,10 +6,6 @@ describe Twillio do
   let(:account){ create(:account) }
   let(:redis){ Redis.new }
 
-  before do
-    Redis.new.flushall
-  end
-
   shared_examples 'all success Twillio.dials' do
     it 'creates a CallFlow::Call::Dialed (redis) record' do
       expect(dialed_call.sid).to eq call_sid
