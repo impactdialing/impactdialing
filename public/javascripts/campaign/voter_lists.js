@@ -65,11 +65,6 @@ VoterLists.prototype.validate_csv_file = function(evt, list){
 
       $("#column_headers select").change(function(eventObj) {
         var selectedValue = $(this).val();
-        // No need to create new custom field when removing.
-        if( self.form.removalList() ) {
-          GroupedSelects.toggleOptions('#column_headers select', this);
-          return true;
-        }
         //  Create a new custom field.
         if( selectedValue == 'custom') {
           var newField = prompt('Enter the name of field to create:');
