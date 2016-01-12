@@ -111,7 +111,7 @@ describe Twillio do
 
     def dial_em(phones, concurrency=1)
       EM.synchrony do
-        EM::Synchrony::FiberIterator.new(phones, concurrency).map do |phone,iter|
+        EM::Synchrony::FiberIterator.new(phones, concurrency).each do |phone,iter|
           @twilio_response = Twillio.dial_predictive_em(iter, campaign, phone)
         end
         EventMachine.stop

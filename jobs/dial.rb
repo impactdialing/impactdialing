@@ -17,7 +17,7 @@ class Dial
   def self.em_dial(campaign, phone_numbers)
     EM.synchrony do
       concurrency = 10
-      EM::Synchrony::FiberIterator.new(phone_numbers, concurrency).map do |phone, iter|
+      EM::Synchrony::FiberIterator.new(phone_numbers, concurrency).each do |phone, iter|
         Twillio.dial_predictive_em(iter, campaign, phone)
       end        
       EventMachine.stop
