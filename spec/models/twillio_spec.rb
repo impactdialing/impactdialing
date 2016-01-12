@@ -106,7 +106,9 @@ describe Twillio do
   end
 
   describe 'Twillio.dial_predictive_em (Predictive)' do
+    require "em-synchrony/em-http"
     require "em-synchrony/fiber_iterator"
+
     def dial_em(phones, concurrency=1)
       EM.synchrony do
         EM::Synchrony::FiberIterator.new(phones, concurrency).map do |phone,iter|
