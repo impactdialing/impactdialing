@@ -43,10 +43,21 @@ body {
 }
 
 /* Prevent 3 pieces of footer content from stacking */
-footer .container-fluid {
-    p, ul, li {
-        display: inline-block;
+footer {
+  padding-left: 0;
+  ul, li {
+    display: inline-block;
+  }
+  li {
+    list-style: none;
+
+    a, span {
+      line-height: 20px;
+      position: relative;
+      display: block;
+      padding: 10px 15px;
     }
+  }
 }
 
 /* Wrapper for .container.fluid */
@@ -160,9 +171,16 @@ ul.nav.navbar-nav.add-gutter {
         padding-top: 80px;
     }
 
-    footer .container-fluid {
+    //footer .container-fluid {
+    footer ul {
         p:first-child {
             padding-right: 25px;
+        }
+        li {
+          a, span {
+            padding-top: 4px; // @media (min-width: 768px)
+            padding-bottom: 4px; // @media (min-width: 768px)
+          }
         }
     }
     .fixed-contact-container {
@@ -182,6 +200,17 @@ ul.nav.navbar-nav.add-gutter {
 }
 
 @media (min-width: 768px) {
+    footer {
+      text-align: center;
+      margin: 0; 
+
+      li {
+        a, span {
+          padding-top: 15px;
+          padding-bottom: 15px;
+        }
+      }
+    }
     .dl-horizontal {
         dt {
             width: 35%;
