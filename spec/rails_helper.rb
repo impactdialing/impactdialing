@@ -53,7 +53,7 @@ RSpec.configure do |config|
   config.include ResqueHelpers
   config.include DialQueueHelpers
   config.include AssertionHelpers
-
+  config.include TimeHelpers
   config.mock_with :rspec
   config.use_transactional_fixtures = false
 

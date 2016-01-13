@@ -71,9 +71,7 @@ describe 'CalculateDialsJob' do
         end
 
         it 'outside calling hours' do
-          now    = Time.now
-          anchor = now.hour % 12 == 0 ? 10 : now.hour
-          campaign.update_attributes(start_time: Time.new(2015, 1, 1, anchor - 2), end_time: Time.new(2015, 1, 1, anchor - 1))
+          make_it_outside_calling_hours(campaign)
           expect(CalculateDialsJob.fit_to_dial?(campaign)).to be_falsey
         end
 
