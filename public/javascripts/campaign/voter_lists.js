@@ -34,8 +34,12 @@ VoterLists.prototype.validate_csv_file = function(evt, list){
   $("#column_headers").empty();
   $("#voter_upload").hide();
   var self = this;
-  if( Modernizr.filereader) {
+  if( Modernizr.filereader ) {
     var file = evt.target.files[0];
+    if( !file ) {
+      // file was selected then unselected
+      return false;
+    }
     var file_name = file.name;
     var extension = file_name.split(".").pop().toLowerCase();
     var separator = extension == "csv" ? "," : "\t";
