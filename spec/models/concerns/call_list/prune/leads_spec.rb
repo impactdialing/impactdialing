@@ -65,10 +65,17 @@ describe CallList::Prune::Leads do
     end
 
     context 'all households have leads remaining' do
-      it 'returns [removed_lead_count, []]' do
-        expect(subject.delete_leads(key_id_pairs)).to eq([
+      it 'returns [removed_lead_count, phone_numbers_with_all_leads_deleted]' do
+        phone_numbers_with_all_leads_deleted = []
+        households.each do |ph,h|
+          if h[:leads].all?{|lead| ids_to_delete.include?(lead[:custom_id]) }
+            phone_numbers_with_all_leads_deleted << ph
+          end
+        end
+        actual = subject.delete_leads(key_id_pairs)
+        expect(actual).to eq([
           ids_to_delete.size,
-          []
+          phone_numbers_with_all_leads_deleted
         ])
       end
     end
