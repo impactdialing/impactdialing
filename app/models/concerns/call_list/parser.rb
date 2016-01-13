@@ -145,7 +145,11 @@ public
   def parse_headers(line)
     row              = CSV.parse_line(line, csv_options)
     row.each_with_index do |header,i|
-      header = Windozer::String.bom_away(header)
+      if header.blank?
+        header = VoterList::BLANK_HEADER
+      else
+        header = Windozer::String.bom_away(header)
+      end
       @phone_index              = i if csv_mapping.mapping[header] == 'phone'
       @custom_id_index          = i if csv_mapping.mapping[header] == 'custom_id'
       @header_index_map[header] = i

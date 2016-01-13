@@ -117,6 +117,13 @@ describe CallList::Parser do
         'Gender'     => 8
       })
     end
+
+    it 'sets blank headers to VoterList::BLANK_HEADER' do
+      with_blank = "#{header_line.chomp},,Birthday\n"
+      subject.parse_headers(with_blank)
+      mapped_headers = subject.instance_variable_get('@header_index_map')
+      expect(mapped_headers[VoterList::BLANK_HEADER]).to eq mapped_headers.keys.size - 2
+    end
   end
 
   describe 'parse_lines' do
