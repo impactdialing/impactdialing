@@ -67,7 +67,7 @@ describe 'CallFlow::Persistence::Leads' do
         end
         it 'updates Voter records for leads w/ `sql_id` property' do
           campaign.all_voters.reload.each do |voter|
-            lead = households[phone][:leads].detect{|ld| ld[:last_name] == voter.last_name}
+            lead = households[phone][:leads].detect{ |ld| ld[:email] == voter.email }
             expect(voter[system_field]).to eq lead[system_field]
           end
         end
@@ -87,7 +87,7 @@ describe 'CallFlow::Persistence::Leads' do
 
         it 'updates CustomVoterFieldValues for leads w/ `sql_id` property' do
           campaign.all_voters.each do |voter|
-            lead = households[phone][:leads].detect{|ld| ld[:last_name] == voter.last_name}
+            lead = households[phone][:leads].detect{|ld| ld[:email] == voter.email}
             expect(voter.custom_voter_field_values.where(value: lead[custom_field]).count).to eq 1
           end
         end
