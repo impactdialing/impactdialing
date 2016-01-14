@@ -1,7 +1,8 @@
 <div class="col-xs-4">
   <div class="navbar-left status">
-    <span data-us-spinner="{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}" data-spinner-key="transfer-spinner"></span>
-    <span class="label label-info navbar-text">{{transferStatus}}</span>
+    <span data-us-spinner="{lines:5,width:5,radius:10,corners:1.0,trail:10,length:0,top:9,left:-7,rotate:56,color:'#30475f'}" data-spinner-key="transfer-spinner"></span>
+    <span class="navbar-text glyphicon" data-ng-class="transferIcon" aria-hidden="true"></span>
+    <span class="label label-info navbar-text hidden-xs">{{transferStatus}}</span>
   </div>
 </div>
 <div class="col-xs-4" data-ui-view="transferInfo"></div>

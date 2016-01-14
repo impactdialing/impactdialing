@@ -51,6 +51,7 @@ transfer.controller('TransferPanelCtrl', [
   '$rootScope', '$scope', '$cacheFactory',
   ($rootScope,   $scope,   $cacheFactory) ->
     $rootScope.transferStatus = 'Ready to dial...'
+    $rootScope.transferIcon = 'glyphicon-ok'
 ])
 
 transfer.controller('TransferInfoCtrl', [
@@ -67,11 +68,13 @@ transfer.factory('TransferDialerEventFactory', [
       httpSuccess: ($event, resp) ->
         console.log 'http dialer success', resp
         $rootScope.transferStatus = resp.data.status
+        $rootScope.transferIcon = 'glyphicon-ok'
       httpError: ($event, resp) ->
         console.log 'http dialer error', resp
         usSpinnerService.stop('transfer-spinner')
         $rootScope.transitionInProgress = false
         $rootScope.transferStatus = 'Dial failed.'
+        $rootScope.transferIcon = 'glyphicon-alert'
     }
 
     $rootScope.$on('http_dialer:success', handlers.httpSuccess)
@@ -99,6 +102,7 @@ transfer.controller('TransferButtonCtrl.selected', [
       params.caller_session     = caller.session_id
       params.transfer           = {id: selected.id}
       $rootScope.transferStatus = 'Preparing to dial...'
+      $rootScope.transferIcon = 'glyphicon-play'
       
       idHttpDialerFactory.dialTransfer(params)
       selected.wasDialed = true
@@ -122,11 +126,13 @@ transfer.controller('TransferButtonCtrl.conference', [
     transfer.cache = TransferCache
     usSpinnerService.stop('transfer-spinner')
     $rootScope.transferStatus = 'Transfer on call'
+    $rootScope.transferIcon = 'glyphicon-flash'
     transfer.hangup = ->
       caller  = CallStationCache.get('caller')
       promise = idHttpDialerFactory.hangupTransfer(caller)
       error   = (resp) ->
         $rootScope.transferStatus = "Transfer on call (hangup failed)"
+        $rootScope.transferIcon = 'glyphicon-alert'
       promise.catch(error)
 
     $scope.transfer = transfer

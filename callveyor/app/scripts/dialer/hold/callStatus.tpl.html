@@ -1,1 +1,3 @@
-<span class="navbar-text label label-info">{{hold.callStatusText}}</span>
+<span class="navbar-text glyphicon glyphicon-pause" data-ng-hidden="hold.callStatusWorking" aria-hidden="true"></span>
+<span class="navbar-text glyphicon glyphicon-play" data-ng-show="hold.callStatusWorking" aria-hidden="true"></span>
+<span class="navbar-text label label-info hidden-xs">{{hold.callStatusText}}</span>

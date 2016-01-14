@@ -95,11 +95,13 @@ hold.controller('HoldCtrl.status', [
       hold = {}
       holdCache.put('sharedScope', hold)
 
-    hold.callStatusText = switch callStation.campaign.type
-                            when 'Power', 'Predictive'
-                              'Dialing...'
-                            when 'Preview'
-                              'Waiting to dial...'
+    switch callStation.campaign.type
+      when 'Power', 'Predictive'
+        hold.callStatusText = 'Dialing...'
+        hold.callStatusWorking = true
+      when 'Preview'
+        hold.callStatusText = 'Waiting to dial...'
+        hold.callStatusWorking = false
 
     $scope.hold = hold
 ])

@@ -1,26 +1,25 @@
 <!-- Fixed top nav -->
 <div class="container-fluid">
   <div class="row">
-    <div class="col-xs-2">
-      <span data-us-spinner="{lines:5,width:5,radius:5,corners:1.0,trail:10,length:0,top:13,left:-6,rotate:56,color:'#30475f'}" data-spinner-key="global-spinner"></span>
+    <div class="col-xs-6 col-sm-4">
+      <span data-us-spinner="{lines:5,width:5,radius:10,corners:1.0,trail:10,length:0,top:9,left:-7,rotate:56,color:'#30475f'}" data-spinner-key="global-spinner"></span>
       <!-- callStatus ui-view -->
       <div class="navbar-left status">
         <div data-ui-view="callStatus">
-          <p class="navbar-text label label-info"></p>
         </div>
       </div>
       <!-- /callStatus ui-view -->
     </div>
 
-    <div class="col-xs-5">
+    <div class="col-xs-0 col-sm-4">
       <div data-id-user-messages></div>
     </div>
 
-    <div class="col-xs-5">
+    <div class="col-xs-6 col-sm-4">
       <div class="navbar-right pull-right">
         <ul class="nav navbar-nav add-gutter">
           <li class="dropdown" data-ui-view="callFlowDropdown"></li>
-          <li data-ui-view="callFlowButtons"></li>
+          <li class="btn-group" data-ui-view="callFlowButtons"></li>
         </ul>
       </div>
     </div>
