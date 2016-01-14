@@ -5,6 +5,7 @@ ready = angular.module('callveyor.dialer.ready', [
   'ui.bootstrap',
   'idTwilioConnectionHandlers',
   'idFlash',
+  'idDeviceDetect',
   'idCacheFactories'
 ])
 
@@ -65,7 +66,6 @@ ready.factory('BrowserPhone', [
         p = $state.go('dialer.hold')
         p.catch(idTransitionPrevented)
 
-      $scope.transitionInProgress = true
       idTwilioConnectionFactory.connect(twilioParams)
 
     factory
@@ -80,14 +80,15 @@ ready.controller('ReadyCtrl.splashModal', [
 
     ready = config || {}
     ready.startCalling = ->
+      $scope.transitionInProgress = true
       BrowserPhone.start()
 
     $scope.ready = ready
 ])
 
 ready.controller('ReadyCtrl.splash', [
-  '$scope', '$rootScope', '$modal', '$window', '$http', 'idTwilioService', 'usSpinnerService', 'ErrorCache', 'idFlashFactory', 'BrowserPhone',
-  ($scope,   $rootScope,   $modal,   $window,   $http,   idTwilioService,   usSpinnerService,   ErrorCache,   idFlashFactory,   BrowserPhone) ->
+  '$scope', '$rootScope', '$modal', '$window', '$http', 'idTwilioService', 'usSpinnerService', 'ErrorCache', 'idFlashFactory', 'BrowserPhone', 'idDeviceDetectFactory',
+  ($scope,   $rootScope,   $modal,   $window,   $http,   idTwilioService,   usSpinnerService,   ErrorCache,   idFlashFactory,   BrowserPhone,   idDeviceDetectFactory) ->
 
     done = ->
       $rootScope.transitionInProgress = false
@@ -100,7 +101,8 @@ ready.controller('ReadyCtrl.splash', [
     splash = {}
 
     splash.getStarted = ->
-      if $window.matchMedia('(max-width: 769px)').matches
+      if idDeviceDetectFactory.isMobile()
+        $scope.transitionInProgress = true
         BrowserPhone.start()
       else
         openModal = $modal.open({

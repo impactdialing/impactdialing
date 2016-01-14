@@ -80,6 +80,7 @@ angular.module('HttpErrors', []).factory('idHttpError', [
 callveyor = angular.module('callveyor', [
   'config',
   'exceptionOverride',
+  'idDeviceDetect',
   'ui.bootstrap',
   'ui.router',
   'doowb.angular-pusher',
