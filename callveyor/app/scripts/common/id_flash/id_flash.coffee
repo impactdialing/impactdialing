@@ -1,21 +1,31 @@
 'use strict'
 
-userMessages = angular.module('idFlash', [])
+userMessages = angular.module('idFlash', [
+  'idDeviceDetect'
+])
 
 userMessages.factory('idFlashFactory', [
-  '$timeout',
-  ($timeout) ->
+  '$timeout', 'idDeviceDetectFactory',
+  ($timeout,   idDeviceDetectFactory) ->
     flash = {
       alerts: []
       nowAndDismiss: (type, message, dismissIn) ->
-        obj = {type, message}
-        flash.alerts.push(obj)
-        autoDismiss = ->
-          index = flash.alerts.indexOf(obj)
-          flash.dismiss(index)
-        $timeout(autoDismiss, dismissIn)
+        console.log('idFLashFactory.nowAndDismiss', type, message)
+        if idDeviceDetectFactory.isMobile()
+          alert(message)
+        else
+          obj = {type, message}
+          flash.alerts.push(obj)
+          autoDismiss = ->
+            index = flash.alerts.indexOf(obj)
+            flash.dismiss(index)
+          $timeout(autoDismiss, dismissIn)
       now: (type, message) ->
-        flash.alerts.push({type, message})
+        console.log('idFLashFactory.now', type, message)
+        if idDeviceDetectFactory.isMobile()
+          alert(message)
+        else
+          flash.alerts.push({type, message})
       dismiss: (index) ->
         flash.alerts.splice(index, 1)
     }
