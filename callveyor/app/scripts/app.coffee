@@ -133,29 +133,6 @@ callveyor.controller('MetaCtrl', [
     $scope.currentYear = (new Date()).getFullYear()
 ])
 
-callveyor.directive('idLogout', ->
-  {
-    restrict: 'A'
-    template: '<button class="btn btn-primary navbar-btn"'+
-                      'data-ng-click="logout()">'+
-                'Logout'+
-              '</button>'
-    controller: [
-      '$scope', '$http', 'ErrorCache', 'idFlashFactory',
-      ($scope,   $http,   ErrorCache,   idFlashFactory) ->
-        $scope.logout = ->
-          promise = $http.post("/app/logout")
-          suc = ->
-            window.location.reload(true)
-          err = (e) ->
-            ErrorCache.put("logout.failed", e)
-            idFlashFactory.now('danger', "Logout failed.")
-
-          promise.then(suc,err)
-    ]
-  }
-)
-
 callveyor.controller('AppCtrl', [
   '$rootScope', '$scope', '$state', '$timeout', '$window', 'usSpinnerService', 'PusherService', 'pusherConnectionHandlerFactory', 'idFlashFactory', 'idTransitionPrevented', 'TransitionCache', 'HouseholdCache', 'CallStationCache', 'ErrorCache',
   ($rootScope,   $scope,   $state,   $timeout,   $window,   usSpinnerService,   PusherService,   pusherConnectionHandlerFactory,   idFlashFactory,   idTransitionPrevented,   TransitionCache,   HouseholdCache,   CallStationCache,   ErrorCache) ->

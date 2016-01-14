@@ -74,8 +74,8 @@ ready.controller('ReadyCtrl.splashModal', [
 ])
 
 ready.controller('ReadyCtrl.splash', [
-  '$scope', '$rootScope', '$modal', '$window', 'idTwilioService', 'usSpinnerService',
-  ($scope,   $rootScope,   $modal,   $window,   idTwilioService,   usSpinnerService) ->
+  '$scope', '$rootScope', '$modal', '$window', '$http', 'idTwilioService', 'usSpinnerService', 'ErrorCache', 'idFlashFactory',
+  ($scope,   $rootScope,   $modal,   $window,   $http,   idTwilioService,   usSpinnerService,   ErrorCache,   idFlashFactory) ->
 
     done = ->
       $rootScope.transitionInProgress = false
@@ -93,6 +93,16 @@ ready.controller('ReadyCtrl.splash', [
         controller: 'ReadyCtrl.splashModal',
         size: 'lg'
       })
+
+    splash.logout = ->
+      promise = $http.post("/app/logout")
+      suc = ->
+        window.location.reload(true)
+      err = (e) ->
+        ErrorCache.put("logout.failed", e)
+        idFlashFactory.now('danger', "Logout failed.")
+
+      promise.then(suc,err)
 
     $scope.splash = splash
 ])

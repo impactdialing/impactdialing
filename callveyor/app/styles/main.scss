@@ -165,41 +165,50 @@ ul.nav.navbar-nav.add-gutter {
     text-align: center;
     width: 175px;
 }
-
-@media (max-width: 767px) {
-    body {
-        padding-top: 80px;
+@media (max-width: 991px) {
+  .navbar-nav {
+    margin-top: 7.5px;
+    margin-bottom: 0;
+  }
+  button.navbar-btn {
+    margin: 0;
+    span.text {
+      display: none;
     }
-
-    //footer .container-fluid {
-    footer ul {
-        p:first-child {
-            padding-right: 25px;
+  }
+  footer ul {
+      p:first-child {
+          padding-right: 25px;
+      }
+      li {
+        a, span {
+          padding-top: 4px; // @media (min-width: 768px)
+          padding-bottom: 4px; // @media (min-width: 768px)
         }
-        li {
-          a, span {
-            padding-top: 4px; // @media (min-width: 768px)
-            padding-bottom: 4px; // @media (min-width: 768px)
-          }
-        }
-    }
-    .fixed-contact-container {
-        position: relative;
-        height: auto;
-        margin: 15px 0;
-        width: auto;
-        left: 0;
-    }
-    .fixed-contact {
-        position: relative;
-        width: auto;
-        margin: auto;
-        padding: auto;
-        top: 0;
-    }
+      }
+  }
+  .fixed-contact-container {
+      position: relative;
+      height: auto;
+      margin: 15px 0;
+      width: auto;
+      left: 0;
+  }
+  .fixed-contact {
+      position: relative;
+      width: auto;
+      margin: auto;
+      padding: auto;
+      top: 0;
+  }
 }
-
-@media (min-width: 768px) {
+@media (min-width: 992px) {
+    button.navbar-btn {
+      margin: 8px 0;
+      span.text {
+        display: normal;
+      }
+    }
     footer {
       text-align: center;
       margin: 0; 
@@ -221,4 +230,8 @@ ul.nav.navbar-nav.add-gutter {
             margin-left: 40%;
         }
     }
+}
+
+.glyphicon.glyphicon-ok {
+  color: green;
 }

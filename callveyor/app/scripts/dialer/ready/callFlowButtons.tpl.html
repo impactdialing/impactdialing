@@ -1,5 +1,14 @@
 <button class="btn btn-primary navbar-btn"
+        type="button"
+        aria-label="Get started"
         data-ng-click="splash.getStarted()">
-  Start
+  <span class="glyphicon glyphicon-phone-alt" aria-hidden="true"></span>
+  <span class="text">Start</span>
 </button>
-<span data-id-logout></span>
+<button class="btn btn-primary navbar-btn"
+        type="button"
+        aria-label="Log out"
+        data-ng-click="splash.logout()">
+  <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+  <span class="text">Logout</span>
+</button>
