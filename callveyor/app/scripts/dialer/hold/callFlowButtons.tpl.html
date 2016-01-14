@@ -1,17 +1,29 @@
 <button class="btn btn-primary navbar-btn"
+        type="button"
+        title="Disconnect yourself from the system."
+        aria-label="Disconnect yourself from the system."
         data-ng-click="hold.stopCalling()"
         data-ng-disabled="transitionInProgress">
-  Stop calling
+  <span class="glyphicon glyphicon-eject" aria-hidden="true"></span>
+  <span class="text">Stop calling</span>
 </button>
 <button class="btn btn-primary navbar-btn"
+        type="button"
+        title="Proceed to the next contact without dialing the current one."
+        aria-label="Proceed to the next contact without dialing the current one."
         data-ng-click="hold.skip()"
         data-ng-if="hold.campaign.type == 'Preview'"
         data-ng-disabled="transitionInProgress">
-  Skip
+  <span class="glyphicon glyphicon-forward" aria-hidden="true"></span>
+  <span class="text">Skip</span>
 </button>
 <button class="btn btn-primary navbar-btn"
+        type="button"
+        title="Dial the current contact."
+        aria-label="Dial the current contact."
         data-ng-click="hold.dial()"
         data-ng-if="hold.campaign.type == 'Preview'"
         data-ng-disabled="transitionInProgress">
-  Dial
+  <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+  <span class="text">Dial</span>
 </button>

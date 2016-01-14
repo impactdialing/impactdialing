@@ -1,4 +1,10 @@
 <button class="btn btn-primary navbar-btn"
-        data-ng-click="transfer.hangup()"
+        type="button"
         title="Disconnect the transfer from the call. You and the lead will still be connected."
-        data-ng-disabled="transitionInProgress">Disconnect transfer</button>
+        aria-label="Disconnect the transfer from the call. You and the lead will still be connected."
+        data-ng-click="transfer.hangup()"
+        data-ng-disabled="transitionInProgress">
+
+  <span class="glyphicon glyphicon-phone-alt"></span>
+  <span class="text">Disconnect transfer</span>
+</button>
