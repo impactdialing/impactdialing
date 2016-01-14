@@ -42,40 +42,52 @@ ready.controller('ReadyCtrl.status', [
     $scope.ready   = ready
 ])
 
+ready.factory('BrowserPhone', [
+  '$state', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory', 'idTransitionPrevented',
+  ($state,   CallStationCache,   idTwilioConnectionFactory,   idFlashFactory,   idTransitionPrevented) ->
+    factory = {}
+    factory.config = ->
+      {
+        caller: CallStationCache.get('caller')
+        campaign: CallStationCache.get('campaign')
+        call_station: CallStationCache.get('call_station')
+      }
+    factory.start = ->
+      config = factory.config()
+      twilioParams = {
+        'PhoneNumber': config.call_station.phone_number,
+        'campaign_id': config.campaign.id,
+        'caller_id': config.caller.id,
+        'session_key': config.caller.session_key
+      }
+
+      idTwilioConnectionFactory.afterConnected = ->
+        p = $state.go('dialer.hold')
+        p.catch(idTransitionPrevented)
+
+      $scope.transitionInProgress = true
+      idTwilioConnectionFactory.connect(twilioParams)
+
+    factory
+])
+
 ready.controller('ReadyCtrl.splashModal', [
-  '$scope', '$state', '$modalInstance', 'ReadyEventHandlers', 'CallStationCache', 'idTwilioConnectionFactory', 'idFlashFactory', 'idTransitionPrevented',
-  ($scope,   $state,   $modalInstance,   ReadyEventHandlers,   CallStationCache,   idTwilioConnectionFactory,   idFlashFactory,   idTransitionPrevented) ->
-    config = {
-      caller: CallStationCache.get('caller')
-      campaign: CallStationCache.get('campaign')
-      call_station: CallStationCache.get('call_station')
-    }
-
-    twilioParams = {
-      'PhoneNumber': config.call_station.phone_number,
-      'campaign_id': config.campaign.id,
-      'caller_id': config.caller.id,
-      'session_key': config.caller.session_key
-    }
-
+  '$scope', '$modalInstance', 'ReadyEventHandlers', 'BrowserPhone',
+  ($scope,   $modalInstance,   ReadyEventHandlers,   BrowserPhone) ->
+    config = BrowserPhone.config()
     # close modal when connected via std phone
     ReadyEventHandlers.bindCloseModal("#{config.caller.session_key}:start_calling", $modalInstance)
 
-    idTwilioConnectionFactory.afterConnected = ->
-      p = $state.go('dialer.hold')
-      p.catch(idTransitionPrevented)
-
     ready = config || {}
     ready.startCalling = ->
-      $scope.transitionInProgress = true
-      idTwilioConnectionFactory.connect(twilioParams)
+      BrowserPhone.start()
 
     $scope.ready = ready
 ])
 
 ready.controller('ReadyCtrl.splash', [
-  '$scope', '$rootScope', '$modal', '$window', '$http', 'idTwilioService', 'usSpinnerService', 'ErrorCache', 'idFlashFactory',
-  ($scope,   $rootScope,   $modal,   $window,   $http,   idTwilioService,   usSpinnerService,   ErrorCache,   idFlashFactory) ->
+  '$scope', '$rootScope', '$modal', '$window', '$http', 'idTwilioService', 'usSpinnerService', 'ErrorCache', 'idFlashFactory', 'BrowserPhone',
+  ($scope,   $rootScope,   $modal,   $window,   $http,   idTwilioService,   usSpinnerService,   ErrorCache,   idFlashFactory,   BrowserPhone) ->
 
     done = ->
       $rootScope.transitionInProgress = false
@@ -88,11 +100,14 @@ ready.controller('ReadyCtrl.splash', [
     splash = {}
 
     splash.getStarted = ->
-      openModal = $modal.open({
-        templateUrl: '/callveyor/dialer/ready/splash.tpl.html',
-        controller: 'ReadyCtrl.splashModal',
-        size: 'lg'
-      })
+      if $window.matchMedia('(max-width: 769px)').matches
+        BrowserPhone.start()
+      else
+        openModal = $modal.open({
+          templateUrl: '/callveyor/dialer/ready/splash.tpl.html',
+          controller: 'ReadyCtrl.splashModal',
+          size: 'lg'
+        })
 
     splash.logout = ->
       promise = $http.post("/app/logout")
