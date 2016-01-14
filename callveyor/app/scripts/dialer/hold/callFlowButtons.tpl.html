@@ -1,16 +1,17 @@
 <button class="btn btn-primary navbar-btn"
         type="button"
-        title="Disconnect yourself from the system."
-        aria-label="Disconnect yourself from the system."
-        data-ng-click="hold.stopCalling()"
+        title="Dial the current contact."
+        aria-label="Dial the current contact."
+        data-ng-click="hold.dial()"
+        data-ng-if="hold.campaign.type == 'Preview'"
         data-ng-disabled="transitionInProgress">
-  <span class="glyphicon glyphicon-eject" aria-hidden="true"></span>
-  <span class="text">Stop calling</span>
+  <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+  <span class="text">Dial</span>
 </button>
 <button class="btn btn-primary navbar-btn"
         type="button"
-        title="Proceed to the next contact without dialing the current one."
-        aria-label="Proceed to the next contact without dialing the current one."
+        title="Skip the current contact."
+        aria-label="Skip the current contact."
         data-ng-click="hold.skip()"
         data-ng-if="hold.campaign.type == 'Preview'"
         data-ng-disabled="transitionInProgress">
@@ -19,11 +20,10 @@
 </button>
 <button class="btn btn-primary navbar-btn"
         type="button"
-        title="Dial the current contact."
-        aria-label="Dial the current contact."
-        data-ng-click="hold.dial()"
-        data-ng-if="hold.campaign.type == 'Preview'"
+        title="Stop making calls."
+        aria-label="Stop making calls."
+        data-ng-click="hold.stopCalling()"
         data-ng-disabled="transitionInProgress">
-  <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
-  <span class="text">Dial</span>
+  <span class="glyphicon glyphicon-stop" aria-hidden="true"></span>
+  <span class="text">Stop calling</span>
 </button>

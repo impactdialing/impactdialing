@@ -130,6 +130,16 @@ ul.nav.navbar-nav.add-gutter {
         margin-left: 5px;
     }
 }
+.navbar-nav {
+  float: left;
+  margin: 0;
+}
+.navbar-nav > li {
+  float: left;
+}
+.navbar-nav.navbar-right:last-child {
+  margin-right: -15px;
+}
 
 .script {
     padding-top: 10px;

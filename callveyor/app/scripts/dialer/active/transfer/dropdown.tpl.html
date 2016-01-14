@@ -1,5 +1,13 @@
 <div class="btn-group" data-dropdown data-ng-hide="transfer.list.length == 0">
-  <button type="button" data-dropdown-toggle class="btn btn-default navbar-btn">Transfer <b class="caret"></b></button>
+  <button class="btn btn-default navbar-btn"
+          type="button"
+          title="Dial a 3rd-party and add them to the current call."
+          aria-label="Dial a 3rd-party and add them to the current call."
+          data-dropdown-toggle>
+  
+    <span class="glyphicon glyphicon-plus"></span>
+    <span class="text">Transfer <b class="caret"></b></span>
+  </button>
   <ul class="dropdown-menu" role="menu">
     <li data-ng-repeat="target in transfer.list">
       <a href="#" data-ng-click="transfer.select(target.id)">

@@ -1,5 +1,15 @@
 <button class="btn btn-primary navbar-btn"
         type="button"
+        title="Dial the selected transfer."
+        aria-label="Dial the selected transfer."
+        data-ng-click="transfer.dial()"
+        data-ng-disabled="transitionInProgress">
+        
+  <span class="glyphicon glyphicon-play"></span>
+  <span class="text">Dial</span>
+</button>
+<button class="btn btn-primary navbar-btn"
+        type="button"
         title="Close the transfer menu."
         aria-label="Close the transfer menu."
         data-ng-click="transfer.cancel()"
@@ -7,14 +17,4 @@
 
   <span class="glyphicon glyphicon-remove"></span>
   <span class="text">Cancel</span>
-</button>
-<button class="btn btn-primary navbar-btn"
-        type="button"
-        title="Dial the selected transfer."
-        aria-label="Dial the selected transfer."
-        data-ng-click="transfer.dial()"
-        data-ng-disabled="transitionInProgress">
-        
-  <span class="glyphicon glyphicon-earphone"></span>
-  <span class="text">Dial</span>
 </button>

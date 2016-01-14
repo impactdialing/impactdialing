@@ -1,14 +1,5 @@
 <button class="btn btn-primary navbar-btn"
         type="button"
-        title="Disconnect yourself from the call."
-        aria-label="Disconnect yourself from the call."
-        data-ng-click="active.hangup()"
-        data-ng-disabled="transitionInProgress">
-  <span class="glyphicon glyphicon-phone-alt" aria-hidden="true"></span>
-  <span class="text">Hangup</span>
-</button>
-<button class="btn btn-primary navbar-btn"
-        type="button"
         title="Leave a pre-recorded message. Message will begin playing right away. Wait for the beep and then click to Drop message."
         aria-label="Leave a pre-recorded message. Message will begin playing right away. Wait for the beep and then click to Drop message."
         data-ng-click="active.dropMessage()"
@@ -17,4 +8,13 @@
         >
   <span class="glyphicon glyphicon-cd" aria-hidden="true"></span>
   <span class="text">Drop message</span>
+</button>
+<button class="btn btn-primary navbar-btn"
+        type="button"
+        title="Disconnect yourself from the call."
+        aria-label="Disconnect yourself from the call."
+        data-ng-click="active.hangup()"
+        data-ng-disabled="transitionInProgress">
+  <span class="glyphicon glyphicon-phone-alt" aria-hidden="true"></span>
+  <span class="text">Hangup</span>
 </button>
