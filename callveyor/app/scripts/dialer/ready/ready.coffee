@@ -108,7 +108,7 @@ ready.controller('ReadyCtrl.splash', [
         openModal = $modal.open({
           templateUrl: '/callveyor/dialer/ready/splash.tpl.html',
           controller: 'ReadyCtrl.splashModal',
-          size: 'lg'
+          size: 'md'
         })
 
     splash.logout = ->
