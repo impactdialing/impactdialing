@@ -18,6 +18,7 @@ wrap.controller('WrapCtrl.status', [
   '$rootScope', '$scope', '$state', 'TwilioCache',
   ($rootScope,   $scope,   $state,   TwilioCache) ->
     wrap        = {}
+    wrap.icon   = 'glyphicon-pause'
     wrap.status = 'Waiting for call results.'
     saveSuccess = false
 
@@ -26,12 +27,14 @@ wrap.controller('WrapCtrl.status', [
       wrap.status = 'Results saved.'
     doneStatus = (event, payload) ->
       if saveSuccess
+        wrap.icon   = 'glyphicon-ok'
         if payload.andContinue
-          wrap.status = 'Results saved. Waiting for next contact from server...'
+          wrap.status = 'Saved. Loading contact...'
         else
-          wrap.status = 'Results saved. Hanging up...'
+          wrap.status = 'Saved. Hanging up...'
           $state.go('dialer.ready')
       else
+        wrap.icon   = 'glyphicon-exclamation-sign'
         wrap.status = 'Results failed to save.'
 
       saveSuccess = false

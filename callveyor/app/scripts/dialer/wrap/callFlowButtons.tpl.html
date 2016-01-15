@@ -1,22 +1,22 @@
-<div data-ng-hide="survey.hideButtons">
-  <button class="btn btn-primary navbar-btn"
-          type="button"
-          title="Save survey results and continue to the next call."
-          aria-label="Save survey results and continue to the next call."
-          data-ng-click="$emit('survey:save:click', true)"
-          data-ng-disabled="transitionInProgress">
+<button class="btn btn-primary navbar-btn"
+        type="button"
+        title="Save survey results and continue to the next call."
+        aria-label="Save survey results and continue to the next call."
+        data-ng-click="$emit('survey:save:click', true)"
+        data-ng-disabled="transitionInProgress"
+        data-ng-hide="survey.hideButtons">
 
-    <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
-    <span class="text">Save &amp; continue</span>
-  </button>
-  <button class="btn btn-primary navbar-btn"
-          type="button"
-          title="Save survey results and disconnect yourself from the system."
-          aria-label="Save survey results and disconnect yourself from the system."
-          data-ng-click="$emit('survey:save:click', false)"
-          data-ng-disabled="transitionInProgress">
+  <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+  <span class="text">Save &amp; continue</span>
+</button>
+<button class="btn btn-primary navbar-btn"
+        type="button"
+        title="Save survey results and disconnect yourself from the system."
+        aria-label="Save survey results and disconnect yourself from the system."
+        data-ng-click="$emit('survey:save:click', false)"
+        data-ng-disabled="transitionInProgress"
+        data-ng-hide="survey.hideButtons">
 
-    <span class="glyphicon glyphicon-stop" aria-hidden="true"></span>
-    <span class="text">Save &amp; stop calling</span>
-  </button>
-</div>
+  <span class="glyphicon glyphicon-stop" aria-hidden="true"></span>
+  <span class="text">Save &amp; stop calling</span>
+</button>
