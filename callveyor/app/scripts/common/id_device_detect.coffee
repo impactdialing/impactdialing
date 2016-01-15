@@ -12,7 +12,7 @@ detect.factory('idDeviceDetectFactory', [
       unless angular.isFunction(window.matchMedia)
         return false
       else
-        return $window.matchMedia('(max-width: 769px)').matches
+        return $window.matchMedia('(max-width: 767px)').matches
 
     factory
 ])
