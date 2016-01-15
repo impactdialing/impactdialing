@@ -245,6 +245,16 @@ ul.nav.navbar-nav.add-gutter {
     }
 }
 
-.glyphicon.glyphicon-ok {
+.glyphicon.glyphicon-play, .glyphicon.glyphicon-ok, .glyphicon.glyphicon-flash {
   color: green;
+}
+.glyphicon.glyphicon-exclamation-sign {
+  color: #c23634;
+}
+.glyphicon.glyphicon-pause {
+  color: #456587;
+}
+
+button > .glyphicon.glyphicon-play {
+  color: white;
 }
