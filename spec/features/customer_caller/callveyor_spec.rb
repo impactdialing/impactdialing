@@ -23,6 +23,7 @@ describe 'Calling leads on a Preview campaign', type: :feature, caller_ui: true,
     })
   end
   before do
+    CapybaraConfig.switch_to_selenium
     caller_login_as(caller)
   end
 
