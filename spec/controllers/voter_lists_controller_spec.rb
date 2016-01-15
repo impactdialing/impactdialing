@@ -94,7 +94,7 @@ describe VoterListsController, :type => :controller do
             separator: ",",
             headers: "[]",
             csv_to_system_map: {
-              'Phone' => 'Phone'
+              'Phone' => 'phone'
             }
           },
           api_key: account.api_key,

@@ -61,8 +61,30 @@ describe VoterList, :type => :model do
         voter_list.save!
       end
     end
+    shared_examples 'any voter list requiring a phone mapping' do
+      let(:csv_mapping) do
+        instance_double('CsvMapping', {
+          valid?: true
+        })
+      end
+      before do
+        expect(CsvMapping).to receive(:new).with(voter_list.csv_to_system_map){ csv_mapping }
+      end
+      it 'tells CsvMapping to validate' do
+        expect(csv_mapping).to receive(:valid?)
+        voter_list.valid?
+      end
+      it 'adds any CsvMapping#errors to :csv_to_system_map' do
+        allow(csv_mapping).to receive(:valid?){ false }
+        expect(csv_mapping).to receive(:errors){ ['oopsy'] }
+        voter_list.valid?
+        expect(voter_list.errors[:csv_to_system_map]).to eq ['oopsy']
+      end
+    end
 
     context 'when purpose == "import"' do
+      it_behaves_like 'any voter list requiring a phone mapping'
+
       context 'when this is the first list for the campaign' do
         it 'can map custom_id' do
           expect(voter_list).to be_valid
@@ -90,6 +112,8 @@ describe VoterList, :type => :model do
     context 'when purpose == "prune_numbers"' do
       let(:purpose){ 'prune_numbers' }
 
+      it_behaves_like 'any voter list requiring a phone mapping'
+
       context 'the first list mapped custom id' do
         before do
           third_voter_list.purpose = purpose
@@ -113,6 +137,14 @@ describe VoterList, :type => :model do
 
     context 'when purpose == "prune_leads"' do
       let(:purpose){ 'prune_leads' }
+
+      it 'does not tell CsvMapping to validate' do
+        voter_list.purpose = purpose
+        csv_mapping = instance_double('CsvMapping')
+        expect(csv_mapping).to_not receive(:valid?)
+        allow(CsvMapping).to receive(:new){ csv_mapping }
+        voter_list.valid?
+      end
 
       context 'the first list mapped custom id' do
         before do

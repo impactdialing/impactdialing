@@ -16,6 +16,7 @@ class VoterList < ActiveRecord::Base
   validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
   validate :validates_file_type, :on => :create
   validate :custom_id_usage, :before => :validation
+  validate :csv_mapping_rules, :on => :create
 
   before_create :transcode_csv_to_system_map
   
@@ -45,6 +46,10 @@ private
     send("custom_id_usage_#{purpose}")
   end
 
+  def csv_mapping_rules
+    send("csv_mapping_#{purpose}")
+  end
+
   def custom_id_usage_import
     if campaign.can_use_custom_ids?
       if campaign.requires_custom_ids? and (not self.maps_custom_id?)
@@ -64,6 +69,26 @@ private
     if (not maps_custom_id?) or campaign.cannot_use_custom_ids?
       errors.add(:csv_to_system_map, I18n.t('activerecord.errors.models.voter_list.custom_id_map_required'))
     end
+  end
+
+  def csv_mapping
+    @csv_mapping ||= CsvMapping.new(csv_to_system_map)
+  end
+
+  def csv_mapping_import
+    unless csv_mapping.valid?
+      csv_mapping.errors.each do |msg|
+        errors.add(:csv_to_system_map, msg)
+      end
+    end
+  end
+
+  def csv_mapping_prune_numbers
+    csv_mapping_import
+  end
+
+  def csv_mapping_prune_leads
+    true
   end
 
   ##
