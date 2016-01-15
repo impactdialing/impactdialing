@@ -7,12 +7,17 @@ namespace :callveyor do
     asset_dir   = File.join Rails.root, 'public', 'callveyor'
     scripts_dir = File.join asset_dir, 'scripts'
     styles_dir  = File.join asset_dir, 'styles'
+    fonts_dir   = File.join asset_dir, 'fonts'
     view_dir    = File.join Rails.root, 'app', 'views', 'callers', 'station'
     show_view   = [File.join(view_dir, 'show.html.erb')]
     scripts     = Dir.glob File.join scripts_dir, '*.js'
     styles      = Dir.glob File.join styles_dir, '*.css'
     html        = Dir.glob File.join asset_dir, '*.html'
+    fonts       = Dir.glob File.join fonts_dir, '*'
 
+    p "removing #{fonts}"
+    FileUtils.rm_f(fonts)
+    FileUtils.rmdir(fonts_dir)
     p "removing #{scripts}"
     FileUtils.rm_f(scripts)
     FileUtils.rmdir(scripts_dir)

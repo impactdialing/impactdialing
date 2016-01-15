@@ -255,11 +255,11 @@ module.exports = function (grunt) {
         generatedImagesDir: '.tmp/images/generated',
         imagesDir: '<%= yeoman.app %>/images',
         javascriptsDir: '<%= yeoman.app %>/scripts',
-        fontsDir: '<%= yeoman.app %>/styles/fonts',
+        fontsDir: '<%= yeoman.app %>/fonts',
         importPath: '<%= yeoman.app %>/bower_components',
         httpImagesPath: '/images',
         httpGeneratedImagesPath: '/images/generated',
-        httpFontsPath: '/styles/fonts',
+        httpFontsPath: '/fonts',
         relativeAssets: false,
         assetCacheBuster: false,
         raw: 'Sass::Script::Number.precision = 10\n'
@@ -284,7 +284,7 @@ module.exports = function (grunt) {
             '<%= yeoman.dist %>/callveyor/scripts/{,*/}*.js',
             '<%= yeoman.dist %>/callveyor/styles/{,*/}*.css',
             '<%= yeoman.dist %>/callveyor/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
-            '<%= yeoman.dist %>/callveyor/styles/fonts/*'
+            //'<%= yeoman.dist %>/callveyor/fonts/*.{eot,svg,ttf,woff}'
           ]
         }
       }
@@ -468,11 +468,11 @@ module.exports = function (grunt) {
           src: [
             // '*.{ico,png,txt}',
             // '.htaccess',
-            'index.html'
+            'index.html',
             // 'views/{,*/}*.html',
             // 'bower_components/**/*',
             // 'images/{,*/}*.{webp}',
-            // 'fonts/*'
+            'fonts/*.{eot,svg,ttf,woff}'
           ]
         }, {
           expand: true,
