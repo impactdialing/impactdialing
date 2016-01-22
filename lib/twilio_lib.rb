@@ -3,12 +3,11 @@ class TwilioLib
   require 'em-http'
   include Rails.application.routes.url_helpers
 
-  DEFAULT_SERVER = "api.twilio.com" unless const_defined?('DEFAULT_SERVER')
   DEFAULT_PORT = 443 unless const_defined?('DEFAULT_PORT')
   DEFAULT_ROOT= "/2010-04-01/Accounts/" unless const_defined?('DEFAULT_ROOT')
 
   def initialize(accountguid=TWILIO_ACCOUNT, authtoken=TWILIO_AUTH, options = {})
-    @server        = DEFAULT_SERVER
+    @server        = Settings.voip_api_url
     @port          = DEFAULT_PORT
     @root          = "#{DEFAULT_ROOT}#{accountguid}/"
     @http_user     = accountguid
@@ -130,7 +129,7 @@ class TwilioLib
     end
     req.basic_auth @http_user, @http_password
 
-    Rails.logger.debug "#{DEFAULT_SERVER}#{@root}#{service_method}?#{params}"
+    Rails.logger.debug "#{Settings.voip_api_url}#{@root}#{service_method}?#{params}"
 
     req.set_form_data(params)
     request = http.request(req)
