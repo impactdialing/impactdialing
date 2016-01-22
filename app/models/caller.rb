@@ -8,8 +8,8 @@ class Caller < ActiveRecord::Base
   include SidekiqEvents
   validates_format_of :username, :with => /\A[^ ]*\Z/, :message => "cannot contain blank space.",  :if => lambda {|s| !s.is_phones_only  }
   validates_presence_of :username,  :if => lambda {|s| !s.is_phones_only  }
-  validates_presence_of :name,  :if => lambda {|s| s.is_phones_only }
-  validates_uniqueness_of :username, :scope => :campaign_id, :if => lambda {|s| !s.is_phones_only and s.campaign_id.present? }, :message => 'another caller with that username is assigned to this campaign already'
+  validates_presence_of :name, :if => lambda {|s| s.is_phones_only }
+  validates_uniqueness_of :username, :if => lambda {|s| !s.is_phones_only }, :message => 'in use by another caller, it may have been archived'
   validates_presence_of :campaign, :if => lambda {|s| s.campaign_id.present?}, :message => 'invalid campaign'
   belongs_to :campaign
   belongs_to :account

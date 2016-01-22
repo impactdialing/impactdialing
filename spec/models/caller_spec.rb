@@ -1,112 +1,206 @@
 require 'rails_helper'
 
-describe Caller, :type => :model do
+describe Caller do
   include Rails.application.routes.url_helpers
 
   let(:account){ create(:account) }
+  let(:campaign){ create(:preview, account: account) }
+  let(:caller_group){ create(:caller_group, campaign: campaign) }
+
+  subject{ build(:caller, caller_group: caller_group, account: account) }
 
   it {is_expected.to belong_to :caller_group}
 
-  it 'assigns itself to the campaign of its caller group' do
-    campaign = create(:preview, account: account)
-    caller_group = create(:caller_group, campaign_id: campaign.id)
-    caller = create(:caller, caller_group_id: caller_group.id, account: account)
-    expect(caller.campaign).to eq campaign
+  describe 'before create' do
+    it 'creates a unique PIN'
   end
 
-  it 'saves successfully if it does not have a caller group' do
-    campaign     = create(:preview, account: account)
-    caller_group = create(:caller_group, account: account, campaign: campaign)
-    caller       = create(:caller, caller_group_id: caller_group.id, account: account)
-    caller.update_attributes(caller_group_id: nil, campaign: campaign)
-    expect(caller.save).to be_truthy
-  end
-
-  it "should validate name for phones only callers" do
-    caller_group = create(:caller_group)
-    caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: true, name: "", account: account)
-    expect(caller.save).to be_falsey
-    expect(caller.errors.messages[:name]).to eq(["can't be blank"])
-  end
-
-  it "should validate username for web callers" do
-    caller_group = create(:caller_group)
-    caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "", account: account)
-    expect(caller.save).to be_falsey
-    expect(caller.errors.messages[:username]).to eq(["can't be blank"])
-  end
-
-  it "should validate username does not contain spaces for web callers" do
-    caller_group = create(:caller_group)
-    caller = build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "john doe", account: account)
-    expect(caller.save).to be_falsey
-    expect(caller.errors.messages[:username]).to eq(["cannot contain blank space."])
-  end
-
-  context 'campaign_id is present' do
-    let(:campaign){ create(:campaign) }
-    let(:caller){ build(:caller, campaign: campaign) }
-
-    it 'validates username uniqueness' do
-      caller.save!
-      caller_2 = build(:caller, campaign: campaign, username: caller.username)
-      caller_2.valid?
-      expect(caller_2.errors[:username]).to eq ['another caller with that username is assigned to this campaign already']
-    end
-    it 'validates campaign.account_id == self.account_id' do
-      caller.account_id = campaign.account_id + 1
-      caller.valid?
-      expect(caller.errors[:campaign]).to eq ['invalid campaign']
-    end
-  end
-
-  context 'campaign_id is not present' do
-    let(:caller){ build(:caller) }
+  describe 'before validation' do
     before do
-      caller.campaign_id = nil
+      subject.valid?
     end
-    it 'does not validate campaign presence' do
-      caller.valid?
-      expect(caller.errors[:campaign]).to be_empty
-    end
-    it 'does not validate username uniqueness' do
-      caller.save!
-      caller_2 = build(:caller, username: caller.username, campaign_id: nil)
-      expect(caller_2.errors[:username]).to be_empty
+    it 'assigns itself to the campaign of its caller group' do
+      expect(subject.campaign).to eq campaign
     end
   end
 
-  let(:user) { create(:user) }
-  it "restoring makes it active" do
-    caller_object = create(:caller, :active => false, :account => account)
-    caller_object.restore
-    expect(caller_object.active?).to eq(true)
+  describe 'before save' do
+    context 'campaign_id_changed? => true' do
+      describe "reassign caller campaign" do
+        before do
+          subject.save!
+        end
+
+        let(:other_campaign){ create(:campaign, account: account) }
+        let(:caller_session){ create(:caller_session, caller: subject) }
+
+        shared_examples_for 'any campaign reassignment' do
+          context 'caller is making calls' do
+            before do
+              caller_session.update_attribute(:on_call, false)
+            end
+            it "does nothing when campaign_id changes" do
+              subject.update_attribute(:campaign_id, other_campaign.id)
+
+              expect(caller_session.reassign_campaign).to eq(CallerSession::ReassignCampaign::NO)
+            end
+          end
+
+          context 'caller is making calls' do
+            before do
+              caller_session.update_attribute(:on_call, true)
+            end
+            it "should set on call caller session to reassigned yes" do
+              subject.update_attribute(:campaign, other_campaign)
+              expect(caller_session.reload.reassign_campaign).to eq(CallerSession::ReassignCampaign::YES)
+            end
+
+            it "should set on RedisReassignedCallerSession campaign id" do
+              subject.update_attributes(campaign: other_campaign)
+              expect(RedisReassignedCallerSession.campaign_id(caller_session.id)).to eq(other_campaign.id.to_s)
+            end
+          end
+        end
+
+        context 'phone only caller' do
+          before do
+            subject.is_phones_only = true
+            subject.save!
+          end
+          it_behaves_like 'any campaign reassignment'
+        end
+
+        context 'web or phone caller' do
+          it_behaves_like 'any campaign reassignment'
+        end
+      end
+    end
+    context 'campaign_id_changed? => false' do
+      it 'does nothing' do
+        expect(subject.caller_sessions).to_not receive(:on_call)
+        subject.save
+      end
+    end
   end
 
-  it "sorts by the updated date" do
-    Caller.record_timestamps = false
-    older_caller = create(:caller).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
-    newer_caller = create(:caller).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
-    Caller.record_timestamps = true
-    expect(Caller.by_updated.to_a).to include(newer_caller, older_caller)
+  describe 'a valid instance' do
+    describe 'caller group' do
+      it 'is optional' do
+        subject.caller_group = nil
+        subject.campaign = campaign
+        expect(subject).to be_valid
+      end
+    end
+
+    context 'assigned callers' do
+      shared_examples_for 'an assigned caller' do
+        it 'self.account_id must match campaign.account_id' do
+          subject.account_id = campaign.account_id + 1
+          expect(subject).to have(1).error_on(:campaign)
+        end
+      end
+
+      context 'phones only' do
+        before do
+          subject.is_phones_only = true
+        end
+        it_behaves_like 'an assigned caller'
+        it "requires a name" do
+          subject.name = ''
+          expect(subject).to have(1).error_on(:name)
+        end
+      end
+
+      context 'web or phone' do
+        before do
+          subject.is_phones_only = false
+        end
+        it_behaves_like 'an assigned caller'
+        describe 'username' do
+          it "is required" do
+            subject.username = ''
+            expect(subject).to have_at_least(1).error_on :username
+          end
+
+          it "cannot have spaces" do
+            subject.username = 'john doe'
+            expect(subject).to have_at_least(1).error_on :username
+          end
+
+          it 'must be unique' do
+            subject.save!
+            caller_2 = build(:caller, campaign: campaign, username: subject.username)
+            caller_2.valid?
+            expect(caller_2.errors[:username]).to eq ['in use by another caller, it may have been archived']
+          end
+        end
+      end
+    end
+
+    context 'orphaned callers' do
+      let(:caller){ build(:caller) }
+      before do
+        subject.campaign_id = nil
+      end
+      it 'does not validate campaign presence' do
+        expect(subject).to be_valid
+      end
+      it 'require a unique username' do
+        subject.save!
+        caller_2 = build(:caller, username: subject.username, campaign_id: nil)
+        expect(caller_2).to be_invalid
+      end
+    end
   end
 
-  it "lists active callers" do
-    active_caller = create(:caller, :active => true)
-    inactive_caller = create(:caller, :active => false)
-    expect(Caller.active).to include(active_caller)
+  describe '#identity_name' do
+    context 'phone only caller' do
+      before do
+        subject.is_phones_only = true
+        subject.name = 'Happy John'
+      end
+      it 'returns #name' do
+        expect(subject.identity_name).to eq subject.name
+      end
+    end
+
+    context 'web or phone caller' do
+      it 'returns #username' do
+        expect(subject.identity_name).to eq subject.username
+      end
+    end
   end
 
-  it "returns name for phone-only-caller, email for web-caller " do
-    phones_only_caller = create(:caller, :is_phones_only => true, :name => "name", :username => "email1@gmail.com")
-    web_caller = create(:caller, :is_phones_only => false, :name => "name", :username => "email2@gmail.com")
-    expect(phones_only_caller.identity_name).to eq("name")
-    expect(web_caller.identity_name).to eq("email2@gmail.com")
+  describe '#restore' do
+    it "restoring makes it active" do
+      subject.active = false
+      subject.save
+      subject.restore
+      expect(subject.active?).to eq(true)
+    end
+  end
+
+  # todo: move Deletable unit specs deletable_spec.rb
+  describe '(Deletable)' do
+    describe '.by_updated' do
+      it "sorts by the updated date" do
+        older_caller = create(:caller).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
+        newer_caller = create(:caller).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
+        expect(Caller.by_updated.to_a).to eq [newer_caller, older_caller]
+      end
+    end
+    describe '.active' do
+      it "lists active callers" do
+        active_caller = create(:caller, :active => true)
+        inactive_caller = create(:caller, :active => false)
+        expect(Caller.active.to_a).to eq [active_caller]
+      end
+    end
   end
 
 
   describe "reports" do
-    let(:caller) { create(:caller, :account => user.account) }
+    let(:caller){ subject.save && subject }
     let!(:from_time) { 5.minutes.ago }
     let!(:time_now) { Time.now }
 
@@ -156,7 +250,7 @@ describe Caller, :type => :model do
         3.times { create(:answer, :caller => caller, :voter => @voter, :question_id => @question.id, :possible_response => response_1, :campaign => campaign) }
         2.times { create(:answer, :caller => caller, :voter => @voter, :question_id => @question.id, :possible_response => response_2, :campaign => campaign) }
         create(:answer, :caller => caller, :voter => @voter, :question => @question, :possible_response => response_1, :campaign => create(:campaign))
-        stats = caller.answered_call_stats(from_time, time_now+1.day, campaign)
+        stats = subject.answered_call_stats(from_time, time_now+1.day, campaign)
 
         expect(stats).to eq({
           "what?" => [
@@ -181,43 +275,6 @@ describe Caller, :type => :model do
     end
   end
 
-  describe "reassign caller campaign" do
-    it "should do nothing if campaign not changed" do
-      campaign = create(:campaign)
-      caller = create(:caller, campaign: campaign)
-      expect(caller).not_to receive(:is_phones_only?)
-      caller.save
-    end
-
-    it "should do nothing if campaign changed but caller not logged in" do
-      campaign = create(:campaign)
-      other_campaign = create(:campaign)
-      caller_session = create(:caller_session, on_call: false)
-      caller = create(:caller, campaign: campaign)
-      caller.update_attributes(campaign_id: other_campaign.id)
-      expect(caller_session.reassign_campaign).to eq(CallerSession::ReassignCampaign::NO)
-    end
-
-    it "should set on call caller session to reassigned yes" do
-      campaign = create(:campaign, account: account)
-      other_campaign = create(:campaign, account: account)
-      caller = create(:caller, campaign: campaign, is_phones_only: true, account: account)
-      caller_session = create(:caller_session, on_call: true, campaign: campaign, caller_id: caller.id)
-      caller.update_attributes!(campaign: other_campaign)
-      expect(caller_session.reload.reassign_campaign).to eq(CallerSession::ReassignCampaign::YES)
-    end
-
-    it "should set on ReassignedCallerSession campaign id" do
-      campaign = create(:campaign, account: account)
-      other_campaign = create(:campaign, account: account)
-      caller = create(:caller, campaign: campaign, is_phones_only: true, account: account)
-      caller_session = create(:caller_session, on_call: true, campaign: campaign, caller_id: caller.id)
-      caller.update_attributes!(campaign: other_campaign)
-      expect(RedisReassignedCallerSession.campaign_id(caller_session.id)).to eq(other_campaign.id.to_s)
-    end
-
-
-  end
 end
 
 # ## Schema Information
