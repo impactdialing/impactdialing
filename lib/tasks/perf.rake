@@ -4,7 +4,7 @@ namespace :perf do
   def rich_targets
     @rich_targets ||= Campaign.active.to_a.map do |c|
       available = c.dial_queue.available.size
-      if available >= 240
+      if available >= 250
         [c, c.account_id, c.dial_queue.available.size]
       end
     end.compact
@@ -95,7 +95,7 @@ namespace :perf do
 
       file = "phone,sid,lead_uuid,answers,notes\n"
       filename = file_template.gsub('%', "#{n}")
-      campaign.dial_queue.available.all[0..239].each_with_index do |phone,index|
+      campaign.dial_queue.available.all[0..249].each_with_index do |phone,index|
         if index > 0 and index % 20 == 0
           # save previous file
           s3.write("#{s3_path}/#{filename}", file)
