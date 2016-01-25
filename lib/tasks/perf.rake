@@ -70,6 +70,7 @@ namespace :perf do
   end
 
   def generate_dials_csv(total_threads)
+    skipped = 0
     file_template = "dials%.csv"
     last_target   = nil
     p "dials csv: rich targets: #{rich_targets.size}"
@@ -107,6 +108,17 @@ namespace :perf do
         row << "CA#{uuid.generate.gsub('-','')}"
         # get lead uuid
         house = campaign.dial_queue.households.find(phone)
+
+        if house.empty? or house[:leads].empty?
+          p "Skipping #{phone} because House[#{house}]"
+          skipped += 1
+          if skipped >= 10
+            throw "Skipped 10 or more households: Campaign[#{campaign.id}] Account[#{campaign.account_id}]"
+          else
+            next
+          end
+        end
+
         lead = house[:leads].detect do |lead|
           not campaign.dial_queue.households.lead_completed?(lead[:sequence])
         end
