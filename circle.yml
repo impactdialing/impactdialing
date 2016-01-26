@@ -47,9 +47,11 @@ test:
     #- sleep 2:
     #    parallel: true
     - USE_SAUCE='ie11' bin/parallel_features:
+        parallel: true
         files:
           - spec/features/customer_admin/campaigns/*
     - USE_SAUCE='wch' bin/parallel_features:
+        parallel: true
         files:
           - spec/features/customer_admin/campaigns/*
   post:
