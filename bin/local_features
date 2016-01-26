@@ -10,6 +10,7 @@ set +a
 browsers=(ie11 wch)
 for browser in ${browsers[*]}; do
   USE_SAUCE=$browser ./bin/parallel_features spec/features/customer_admin/voter_lists/ spec/features/customer_admin/campaigns/
+  #DISABLE_SPRING=1 bundle exec parallel_rspec spec/features/customer_admin/voter_lists/ spec/features/customer_admin/campaigns/
 done
 
 exit

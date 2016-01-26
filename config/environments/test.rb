@@ -1,6 +1,5 @@
 if ENV['DATABASE_URL'].present? and ENV['TEST_ENV_NUMBER'].present?
   new_url = "#{ENV['DATABASE_URL']}#{ENV['TEST_ENV_NUMBER']}"
-  new_url = ENV['DATABASE_URL']
 
   p "Using: #{new_url}"
 
@@ -22,7 +21,7 @@ ImpactDialing::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
   if ENV['TEST_ENV_NUMBER'].present?
-    parallel_dir = Rails.root.join('tmp', 'cache', "paralleltests_#{ENV.fetch('TEST_ENV_NUMBER', 1)}")
+    parallel_dir = Rails.root.join('tmp', 'cache', "paralleltests_#{ENV['TEST_ENV_NUMBER']}")
     config.cache_store = :file_store, File.join(parallel_dir, 'pages')
     config.assets.cache = Sprockets::Cache::FileStore.new(File.join(parallel_dir, 'assets'))
   end

@@ -43,4 +43,4 @@ end
 Capybara.run_server        = false
 Capybara.default_driver    = :sauce
 Capybara.javascript_driver = :sauce
-Capybara.default_wait_time = 30
+Capybara.default_max_wait_time = 30
