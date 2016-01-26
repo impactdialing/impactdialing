@@ -65,29 +65,31 @@ namespace :perf do
       file = "username,password\n"
       file << "#{caller_record.username},#{caller_record.password}"
       
+      p "Saving: #{s3_path}/#{filename}"
       s3.write("#{s3_path}/#{filename}", file)
     end
   end
 
   def generate_dials_csv(total_threads)
-    skipped = 0
-    file_template = "dials%.csv"
-    last_target   = nil
-    p "dials csv: rich targets: #{rich_targets.size}"
-    p "rich target[0] = #{rich_targets[0]}"
-    total_threads.times do |n|
-      p "dials thread: #{n}"
-      if n.zero?
-        target = rich_targets[n]
-        last_target = target
-      end
+    skipped          = 0
+    iteration        = 0
+    dials_per_thread = 20
+    start            = 0
+    stop             = 19
+    file_template    = "dials%.csv"
+    last_target      = rich_targets.first
 
+    total_threads.times do |n|
       n += 1
 
       if n % 12 == 0
-        target = rich_targets[n]
+        target = rich_targets[iteration]
         last_target = target
+        start  = 0
+        stop   = 19
       else
+        start  = stop + 1
+        stop   = stop + dials_per_thread
         target = last_target
       end
 
@@ -95,14 +97,10 @@ namespace :perf do
 
       file = "phone,sid,lead_uuid,answers,notes\n"
       filename = file_template.gsub('%', "#{n}")
-      campaign.dial_queue.available.all[0..249].each_with_index do |phone,index|
-        if index > 0 and index % 20 == 0
-          # save previous file
-          s3.write("#{s3_path}/#{filename}", file)
-          # new thread
-          filename = file_template.gsub('%', "#{n}")
-          file = "phone,sid,lead_uuid,answers,notes\n"
-        end
+
+      phones = campaign.dial_queue.available.all[start..stop]
+
+      phones.each_with_index do |phone,index|
         row = []
         row << phone
         row << "CA#{uuid.generate.gsub('-','')}"
@@ -127,6 +125,9 @@ namespace :perf do
           lead = house[:leads].first
         end
 
+        if lead[:uuid].blank?
+          throw "cuz lead uuid: #{lead}"
+        end
         row << lead[:uuid]
         # build answers
         answers = {}
@@ -142,14 +143,16 @@ namespace :perf do
         row << notes.to_json
         file << CSV.generate_line(row).to_s
       end
-
+      p "Saving: #{s3_path}/#{filename}"
       s3.write("#{s3_path}/#{filename}", file)
+
+      iteration += 1
     end
   end
 
   task :generate_csvs, [:total_threads] => :environment do |t,args|
     total_threads = args[:total_threads].to_i
-    #generate_caller_csv(total_threads)
+    generate_caller_csv(total_threads)
     generate_dials_csv(total_threads)
   end
 end
