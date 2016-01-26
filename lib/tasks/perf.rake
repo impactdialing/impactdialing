@@ -122,6 +122,11 @@ namespace :perf do
         lead = house[:leads].detect do |lead|
           not campaign.dial_queue.households.lead_completed?(lead[:sequence])
         end
+
+        if lead.blank?
+          lead = house[:leads].first
+        end
+
         row << lead[:id]
         # build answers
         answers = {}
