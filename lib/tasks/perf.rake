@@ -19,6 +19,8 @@ namespace :perf do
         if orphan
           orphan.campaign = campaign
           orphan.active = true
+          p "Renaming orphan: #{orphan.username} on #{campaign.id}/#{campaign.account_id}"
+          orphan.username = "#{orphan.username}#{rand(100)}"
           orphan.save!
         else
           username = ''
@@ -28,8 +30,8 @@ namespace :perf do
           12.times{ password << alpha.sample }
           orphan = campaign.account.callers.create({
             campaign_id: campaign.id,
-            username: username,
-            password: password
+            username: "#{username}#{rand(100)}",
+            password: "#{password}#{rand(100)}"
           })
         end
         orphan
