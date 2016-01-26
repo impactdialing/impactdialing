@@ -16,9 +16,22 @@ namespace :perf do
       records = campaign.callers.where(is_phones_only: false, active: true)
       if records.count.zero?
         orphan = campaign.account.callers.where(is_phones_only: false, campaign_id: nil).first
-        orphan.campaign = campaign
-        orphan.active = true
-        orphan.save!
+        if orphan
+          orphan.campaign = campaign
+          orphan.active = true
+          orphan.save!
+        else
+          username = ''
+          password = ''
+          alpha = %w(a b c d e f g h i j k l m n o p q r s t u v w x y z)
+          12.times{ username << alpha.sample }
+          12.times{ password << alpha.sample }
+          orphan = campaign.account.callers.create({
+            campaign_id: campaign.id,
+            username: username,
+            password: password
+          })
+        end
         orphan
       else
         records.first
