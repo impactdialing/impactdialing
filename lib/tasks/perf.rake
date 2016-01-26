@@ -127,7 +127,7 @@ namespace :perf do
           lead = house[:leads].first
         end
 
-        row << lead[:id]
+        row << lead[:uuid]
         # build answers
         answers = {}
         campaign.script.questions.each do |question|
