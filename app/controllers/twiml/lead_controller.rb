@@ -20,6 +20,8 @@ public
   # which TwiML response to provide Twilio.
   # See twiml/lead/answered.html.erb for possible responses.
   def answered
+    puts "twiml/lead/answered params: #{params}"
+
     if process_request?
       dialed_call.answered(campaign, params)
     else
