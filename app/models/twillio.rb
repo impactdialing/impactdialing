@@ -82,6 +82,9 @@ class Twillio
   def self.handle_response(http_response, campaign, phone, caller_session=nil)
     campaign.update_last_dial_time
 
+    puts "Twillio#handle_response http_response: #{http_response}"
+    puts "Twillio#handle_response caller_session: #{caller_session.attributes}"
+
     response = if http_response.blank?
                  {
                   'status' => 666,
