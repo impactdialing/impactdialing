@@ -25,12 +25,12 @@ describe Caller do
   end
 
   describe 'before save' do
+    before do
+      subject.save!
+    end
+
     context 'campaign_id_changed? => true' do
       describe "reassign caller campaign" do
-        before do
-          subject.save!
-        end
-
         let(:other_campaign){ create(:campaign, account: account) }
         let(:caller_session){ create(:caller_session, caller: subject) }
 
