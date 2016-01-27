@@ -144,10 +144,15 @@ class Twillio
       optional_properties[:caller_session_sid] = caller_session.sid
     end
 
+    p "Twillio.create_dialed_call caller_session: #{caller_session.sid}"
+    p "Twillio.create_dialed_call optional_properties: #{optional_properties}"
+
     CallFlow::Call::Dialed.create(campaign, response, optional_properties)
   end
 
   def self.handle_succeeded_call(phone, campaign, caller_session, response)
+    p "Twillio#handle_succeded_call caller_session: #{caller_session.sid}"
+
     count_dial_success(campaign, caller_session)
     create_dialed_call(campaign, response, phone, caller_session)
     mark_caller_unavailable(caller_session)
