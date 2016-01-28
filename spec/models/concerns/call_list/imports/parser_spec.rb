@@ -24,8 +24,8 @@ describe 'CallList::Imports::Parser' do
   end
 
   let(:s3) do
-    double('AmazonS3', {
-      stream: nil
+    instance_double('AmazonS3', {
+      read: nil
     })
   end
   let(:csv_file_name) do
@@ -77,7 +77,8 @@ describe 'CallList::Imports::Parser' do
 
   before do
     file.rewind
-    allow(s3).to receive(:stream).and_yield(file.read)
+    contents = file.read
+    allow(s3).to receive(:read){ contents }
     allow(AmazonS3).to receive(:new){ s3 }
   end
 

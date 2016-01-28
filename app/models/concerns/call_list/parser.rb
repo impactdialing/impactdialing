@@ -2,7 +2,7 @@ class CallList::Parser
   attr_reader :voter_list, :csv_mapping, :results, :batch_size, :cursor
 
 private
-  def read_file(&block)
+  def stream_file(&block)
     s3           = AmazonS3.new
     lines        = []
     partial_line = nil
@@ -28,6 +28,22 @@ private
         # last line doesn't have newline character
         partial_line = lines.pop
       end
+
+      if lines.size >= batch_size
+        yield lines
+        lines = []
+      end
+    end
+
+    yield lines if lines.size > 0
+  end
+
+  def read_file(&block)
+    s3           = AmazonS3.new
+    lines        = []
+
+    s3.read(voter_list.s3path).each_line do |line|
+      lines << line
 
       if lines.size >= batch_size
         yield lines
@@ -126,7 +142,7 @@ public
       unless start_at.nil?
         @cursor += lines.size
 
-        if start_at <= cursor
+        if start_at < cursor
           lines = lines[start_at-@cursor..-1]
           start_at = nil
         else

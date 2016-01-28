@@ -25,7 +25,7 @@ describe CallList::Parser do
 
   let(:s3) do
     double('AmazonS3', {
-      stream: nil
+      read: nil
     })
   end
   let(:csv_file_name) do
@@ -77,7 +77,8 @@ describe CallList::Parser do
 
   before do
     file.rewind
-    allow(s3).to receive(:stream).and_yield(file.read)
+    contents = file.read
+    allow(s3).to receive(:read){ contents }
     allow(AmazonS3).to receive(:new){ s3 }
   end
 
@@ -199,12 +200,19 @@ describe CallList::Parser do
       subject.parse_file{ nil }
     end
     it 'parses data from subsequent lines' do
-      expect(subject).to receive(:parse_lines).with(data_lines.join, {})
+      expect(subject).to receive(:parse_lines).with('', {}).ordered
+      data_lines.each do |line|
+        expect(subject).to receive(:parse_lines).with(line, {}).ordered
+      end
       subject.parse_file{ nil }
     end
     it 'yields keys, data, cursor, results' do
-      expected_cursor = cursor + 1 + data_lines.size # 1 => header line
-      expect{|b| subject.parse_file(&b) }.to yield_with_args(expected_redis_keys, Array, expected_cursor, Hash)
+      header     = [[], [], 1, Hash]
+      line_one   = [[expected_redis_keys[0]], Array, 2, Hash]
+      line_two   = [[expected_redis_keys[1]], Array, 3, Hash]
+      line_three = [[expected_redis_keys[2]], Array, 4, Hash]
+
+      expect{|b| subject.parse_file(&b) }.to yield_successive_args(header, line_one, line_two, line_three)
     end
 
     context 'cursor > 0' do
@@ -224,6 +232,14 @@ describe CallList::Parser do
           expect(subject).to receive(:parse_lines).with(data_lines[-1..-1].join, {})
           subject.parse_file{ nil }
         end
+
+        context 'with batch size equal to cursor position' do
+          subject{ CallList::Parser.new(voter_list, cursor, results, cursor) }
+          it 'parses the last line only' do
+            expect(subject).to receive(:parse_lines).with(data_lines[-1..-1].join, {})
+            subject.parse_file{ nil }
+          end
+        end
       end
 
       context 'only first line has been processed' do
@@ -231,7 +247,8 @@ describe CallList::Parser do
         subject{ CallList::Parser.new(voter_list, cursor, results, 1) }
 
         it 'parses all but the first line' do
-          expect(subject).to receive(:parse_lines).with(data_lines[1..-1].join, {}) # 0=header,1=first row
+          expect(subject).to receive(:parse_lines).with(data_lines[1], {}).ordered # 0=header,1=first row
+          expect(subject).to receive(:parse_lines).with(data_lines[2], {}).ordered
           subject.parse_file{ nil }
         end
       end
