@@ -85,11 +85,10 @@ public
   end
 
   def each_batch(&block)
-    keys       = []
-    households = {}
     uuid       = UUID.new
 
     parse_file do |household_keys, csv_rows, cursor, results|
+      households = {}
       csv_rows.each do |data|
         phone, csv_row, i = *data
 

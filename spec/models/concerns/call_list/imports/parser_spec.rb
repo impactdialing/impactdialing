@@ -86,8 +86,11 @@ describe 'CallList::Imports::Parser' do
 
   describe 'each_batch' do
     it 'yields keys, households, cursor, results' do
-      expected_cursor = cursor + 1 + data_lines.size # 1 => header line
-      expect{|b| subject.each_batch(&b) }.to yield_with_args(expected_redis_keys, Hash, expected_cursor, Hash)
+      header     = [[], {}, 1, results]
+      line_one   = [[expected_redis_keys[0], expected_redis_keys[2]], Hash, 2, Hash]
+      line_two   = [[expected_redis_keys[0], expected_redis_keys[2]], Hash, 3, Hash]
+      line_three = [[expected_redis_keys[1], expected_redis_keys[2]], Hash, 4, Hash]
+      expect{|b| subject.each_batch(&b) }.to yield_successive_args(header, line_one, line_two, line_three)
     end
   end
 
