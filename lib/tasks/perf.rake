@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'uuid'
 
 namespace :perf do
@@ -169,5 +171,25 @@ namespace :perf do
     total_threads = args[:total_threads].to_i
     generate_caller_csv(total_threads)
     generate_dials_csv(total_threads)
+  end
+
+  task :download_csvs => :environment do |t,args|
+    s3 = AWS::S3.new({
+      access_key_id: ENV['S3_ACCESS_KEY'],
+      secret_access_key: ENV['S3_SECRET_ACCESS_KEY']
+    })
+    bucket    = 'staging.impactdialing'
+    path_glob = 'perf_testing/'
+    local_path = Rails.root.join 'tmp', 'perf_fixtures'
+    `mkdir -p #{local_path}`
+    s3.buckets[bucket].objects.with_prefix(path_glob).each do |object|
+      p "Downloading #{object.key}..."
+      local_file = File.join local_path, object.key.split('/').last
+      File.open(local_file, "w+:ascii-8bit") do |file|
+        object.read do |chunk|
+          file.write(chunk)
+        end
+      end
+    end
   end
 end
