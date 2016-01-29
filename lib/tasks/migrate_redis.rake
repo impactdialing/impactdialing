@@ -1,17 +1,4 @@
 namespace :migrate_redis do
-  def queue_redis_migration_jobs(account_ids)
-    accounts = Account.where(id: account_ids)
-    accounts.each do |account|
-      account.campaigns.each do |campaign|
-        campaign.households.select(:id).find_in_batches do |households|
-          households.each do |household|
-            MigrateRedisData.perform_async(account.id, campaign.id, household.id)
-          end
-        end
-      end
-    end
-  end
-
   def assert(val, msg)
     if val
       print '.'
@@ -27,44 +14,6 @@ namespace :migrate_redis do
       o << lead['uuid'].present? and lead['sql_id'].present? and lead['account_id'].present? and lead['campaign_id'].present?
     end
     assert o.size == hh['leads'].size, "EmptyLeads[#{hh['leads'].size - o.size}] Leads[#{hh['leads'].size}]"
-  end
-
-  task :all_accounts => [:environment] do
-    account_ids = Campaign.active.pluck(:account_id)
-    queue_redis_migration_jobs(account_ids)
-  end
-
-  task :priority_accounts => [:environment] do
-    account_ids = [1427, 1353, 1418, 1424, 1430]
-    queue_redis_migration_jobs(account_ids)
-  end
-
-  task :other_accounts => [:environment] do
-    account_ids = Campaign.active.pluck(:account_id) - [1318]
-    account_ids += [1318]
-    queue_redis_migration_jobs(account_ids)
-  end
-
-  task :voter_list_stats => [:environment] do
-    campaign_ids = Campaign.active.pluck(:id)
-    redis = Redis.new
-    VoterList.where(campaign_id: campaign_ids).find_in_batches do |voter_lists|
-      voter_lists.each do |voter_list|
-        stats_key = "list:voter_list:#{voter_list.id}:stats"
-        redis.hset stats_key, 'total_leads', voter_list.voters_count
-        redis.hset stats_key, 'total_numbers', voter_list.households_count
-      end
-    end
-  end
-
-  task :campaign_total_number_stats => [:environment] do
-    Campaign.active.each do |campaign|
-      p "Updating: #{campaign.account_id}: #{campaign.name}"
-      p "Current total_numbers = #{campaign.call_list.stats['total_numbers']}"
-      households_count = campaign.all_voters.with_enabled(:list).group(:household_id).count.keys.size
-      p "Fixed total_numbers = #{households_count}"
-      campaign.call_list.stats.reset('total_numbers', households_count)
-    end
   end
 
   task :verify, [:account_id] => [:environment] do |t,args|
