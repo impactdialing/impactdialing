@@ -206,6 +206,28 @@ describe 'CallFlow::DialQueue::Households' do
         expect(actual).to eq expected
       end
     end
+
+    describe '#find_grouped_leads(phone, group_by)' do
+      it 'returns a hash' do
+        actual = subject.find_grouped_leads(phone_one)
+        expect(actual).to be_kind_of Hash
+      end
+
+      describe 'the hash' do
+        it 'keys are values of lead attr given by group_by (uuid by default)' do
+          household = subject.find(phone_one)
+          uuids = household[:leads].map{|l| l[:uuid]}
+          actual = subject.find_grouped_leads(phone_one)
+          expect(actual.keys).to eq uuids
+        end
+
+        it 'values are array of leads' do
+          household = subject.find(phone_one)
+          actual = subject.find_grouped_leads(phone_one)
+          expect(actual.values).to eq household[:leads].map{|l| [l]}
+        end
+      end
+    end
   end
 
   describe 'updating leads w/ persisted Voter SQL IDs' do

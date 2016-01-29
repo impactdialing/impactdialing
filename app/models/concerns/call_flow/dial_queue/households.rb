@@ -125,6 +125,12 @@ class CallFlow::DialQueue::Households
     result
   end
 
+  def find_grouped_leads(phone, group_by=:uuid)
+    house = find(phone)
+    return house if house.empty?
+    house[:leads].group_by{|lead| lead[group_by]}
+  end
+
   def find_all(phone_numbers)
     return [] if phone_numbers.empty?
 
