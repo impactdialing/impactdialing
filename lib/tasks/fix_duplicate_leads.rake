@@ -6,7 +6,7 @@ namespace :duplicate_leads do
   end
 
   def each_active_campaign(account_ids, &block)
-    Repair.each_active_campaign(account_ids, block)
+    Repair.each_active_campaign(account_ids, &block)
   end
 
   def all_phone_numbers(campaign)

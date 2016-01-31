@@ -13,7 +13,7 @@ module Repair
         end
       end
     else
-      Account.where(account_id: account_ids).each do |account|
+      Account.where(id: account_ids).each do |account|
         account.campaigns.active.each do |campaign|
           yield campaign
         end
