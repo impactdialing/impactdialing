@@ -117,22 +117,53 @@ namespace :dial_queue do
     task :report_campaigns_with_completed_and_available => [:environment] do |t,args|
       borked = []
       reports = []
-      Campaign.active.find_in_batches do |campaigns|
-        campaigns.each do |campaign|
-          dial_queue = campaign.dial_queue
-          completed = collect_completed_from(dial_queue.available, dial_queue.households, :active)
-          completed += collect_completed_from(dial_queue.available, dial_queue.households, :presented)
-          completed += collect_completed_from(dial_queue.recycle_bin, dial_queue.households, :bin)
-          if completed.flatten.any?
-            borked << campaign.id
-            reports << completed.flatten
-          end
+      Repair.each_active_campaign do |campaign|
+        dial_queue = campaign.dial_queue
+        completed = collect_completed_from(dial_queue.available, dial_queue.households, :active)
+        completed += collect_completed_from(dial_queue.available, dial_queue.households, :presented)
+        completed += collect_completed_from(dial_queue.recycle_bin, dial_queue.households, :bin)
+        if completed.flatten.any?
+          borked << campaign.id
+          reports << completed.flatten
         end
       end
       p "Found #{borked.size} borked campaigns."
       borked.each_with_index do |campaign_id, i|
         p "Campaign #{campaign_id}"
         p "Report #{i}: #{reports[i].size}"
+      end
+    end
+
+    desc "Locate empty households (households with no leads)"
+    task :report_empty => [:environment] do |t,args|
+      print "AccountID, CampaignID, Phone, Status\n"
+      Repair.each_active_campaign do |campaign|
+        report = []
+        Repair.all_phone_numbers(campaign).each do |phone|
+          repair = Repair::EmptyHouseholds.new(campaign.dial_queue, phone)
+          
+          if repair.empty?
+            report << [
+              campaign.account_id,
+              campaign.id,
+              phone,
+              "Invalid House"
+            ]
+          else
+            if repair.leads_empty?
+              report << [
+                campaign.account_id,
+                campaign.id,
+                phone,
+                "No Leads"
+              ]
+            end
+          end
+        end
+
+        unless report.empty?
+          print report.map{|row| row.join(',')}.join("\n")
+        end
       end
     end
   end

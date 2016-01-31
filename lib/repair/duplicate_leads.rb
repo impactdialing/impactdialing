@@ -1,4 +1,38 @@
 module Repair
+  class EmptyHouseholds
+    attr_reader :dial_queue, :phone
+
+    delegate :households, to: :dial_queue
+
+    def initialize(dial_queue, phone)
+      @dial_queue = dial_queue
+      @phone      = phone
+    end
+
+    def household
+      @household ||= households.find(phone)
+    end
+
+    def leads_empty?
+      empty? or household[:leads].empty?
+    end
+
+    def empty?
+      household.empty? or household[:leads].nil?
+    end
+
+    def fixit
+      if household_empty?
+        # remove number from zsets
+        # if household_record has any voters
+        #   and all voters are complete
+        #     add number to completed zset
+        # if household_record status is failed
+        #   add number to failed zset
+      end
+    end
+  end
+
   class DuplicateLeads
     attr_reader :dial_queue, :duplicates_detected, :phone
     attr_accessor :household, :leads, :grouped_leads, :survivors, :counts

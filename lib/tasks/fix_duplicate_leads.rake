@@ -2,26 +2,15 @@ require 'repair'
 
 namespace :duplicate_leads do
   def redis
-    @redis ||= Redis.new
+    Repair.redis
   end
 
   def each_active_campaign(account_ids, &block)
-    Account.where(id: account_ids).each do |account|
-      account.campaigns.active.each do |campaign|
-        yield campaign
-      end
-    end
+    Repair.each_active_campaign(account_ids, block)
   end
 
   def all_phone_numbers(campaign)
-    dial_queue = campaign.dial_queue
-    numbers = []
-    numbers.concat dial_queue.available.all(:active)
-    numbers.concat dial_queue.recycle_bin.all(:bin)
-    numbers.concat dial_queue.completed.all(:completed)
-    numbers.concat dial_queue.completed.all(:failed)
-    numbers.concat dial_queue.blocked.all(:blocked)
-    numbers
+    Repair.all_phone_numbers(campaign)
   end
 
   desc "Remove duplicate leads from redis households & duplicate Voter records from SQL"
