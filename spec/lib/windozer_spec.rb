@@ -18,7 +18,12 @@ phone,first,last,city,country,party\r
     it 'removes invalid UTF-16 characters' do
       blurged_file = File.open(windozed_file).read
 
-      expect{ blurged_file.gsub('a', 'a') }.to raise_error ArgumentError
+      expect{
+        blurged_file.
+        force_encoding('UTF-8').
+        encode!('UTF-8').
+        gsub!(/\r\n?/, "\n")
+      }.to raise_error ArgumentError
 
       cleaned = Windozer.to_unix(blurged_file)
 

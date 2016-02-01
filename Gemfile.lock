@@ -124,7 +124,7 @@ GEM
     em-synchrony (1.0.3)
       eventmachine (>= 1.0.0.beta.1)
     erubis (2.7.0)
-    eventmachine (1.0.3)
+    eventmachine (1.0.9.1)
     excon (0.45.4)
     factory_girl (4.2.0)
       activesupport (>= 3.0.0)
@@ -452,7 +452,7 @@ DEPENDENCIES
   em-http-request (~> 1.1.0)
   em-resolv-replace
   em-synchrony (~> 1.0.3)
-  eventmachine (= 1.0.3)
+  eventmachine (~> 1.0.9)
   factory_girl_rails
   faraday
   faraday-cookie_jar

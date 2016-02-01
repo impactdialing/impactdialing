@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '2.1.8'
+ruby '2.2.4'
 
 gem 'rails', '~> 4.0.0'
 gem 'jquery-rails'
@@ -56,7 +56,7 @@ gem 'em-hiredis', '~>0.2.1'
 gem 'em-resolv-replace' # non-blocking lookups for eventmachine
 
 # EventMachine
-gem 'eventmachine', '1.0.3'
+gem 'eventmachine', '~>1.0.9'
 gem 'em-http-request', '~> 1.1.0'
 gem 'em-synchrony', '~> 1.0.3'
 
