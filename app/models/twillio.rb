@@ -82,9 +82,6 @@ class Twillio
   def self.handle_response(http_response, campaign, phone, caller_session=nil)
     campaign.update_last_dial_time
 
-    puts "Twillio#handle_response http_response: #{http_response}"
-    puts "Twillio#handle_response caller_session: #{caller_session.attributes}"
-
     response = if http_response.blank?
                  {
                   'status' => 666,
@@ -144,15 +141,10 @@ class Twillio
       optional_properties[:caller_session_sid] = caller_session.sid
     end
 
-    p "Twillio.create_dialed_call caller_session: #{caller_session.sid}"
-    p "Twillio.create_dialed_call optional_properties: #{optional_properties}"
-
     CallFlow::Call::Dialed.create(campaign, response, optional_properties)
   end
 
   def self.handle_succeeded_call(phone, campaign, caller_session, response)
-    p "Twillio#handle_succeded_call caller_session: #{caller_session.sid}"
-
     count_dial_success(campaign, caller_session)
     create_dialed_call(campaign, response, phone, caller_session)
     mark_caller_unavailable(caller_session)

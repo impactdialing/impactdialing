@@ -93,19 +93,13 @@ public
     sid         = rest_response['sid']
     validate!(account_sid, sid)
 
-    p "CallFlow::Call::Dialed.create optional_properties: #{optional_properties}"
-
     opts = lua_options(campaign, rest_response, optional_properties)
     Wolverine.call_flow.dialed(opts)
     if campaign.class.to_s !~ /(Preview|Power|Predictive)/ or campaign.new_record?
       raise ArgumentError, "CallFlow::Call::Dialed received new or unknown campaign: #{campaign.class}"
     end
 
-    obj = self.new(account_sid, sid)
-
-    p "CallFlow::Call::Dialed.create caller_session_sid: #{obj.caller_session_sid}"
-    p "CallFlow::Call::Dialed.create storage.attributes: #{obj.storage.attributes}"
-    obj
+    self.new(account_sid, sid)
   end
 
   def self.namespace
