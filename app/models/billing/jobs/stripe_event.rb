@@ -90,6 +90,10 @@ class Billing::Jobs::StripeEvent
     stripe_event.save!
   end
 
+  def self.production?
+    %w(heroku production).include?(Rails.env)
+  end
+
   # def self.event_not_processed(stripe_event)
   #   if stripe_event.age < 24.hours
   #     Rails.logger.debug "Jobs::StripeEvent: requeueing"
@@ -139,6 +143,9 @@ class Billing::Jobs::StripeEvent
     customer_id     = stripe_event.data[:object][:customer]
     stripe_obj_type = stripe_event.data[:object][:object]
     account         = Account.find_by_billing_provider_customer_id(customer_id)
+
+    return if account.nil? and (not production?)
+
     quota           = account.quota
     plan_id         = account.billing_subscription.plan
     plan            = plans.find(plan_id)
@@ -209,6 +216,7 @@ class Billing::Jobs::StripeEvent
     invoice     = stripe_event.data[:object]
     type        = invoice[:lines][:data][0][:type] # subscription or invoice
 
+    return if account.nil? and (not production?)
     return unless type == 'subscription'
 
     stripe_subscription = invoice[:lines][:data][0]
