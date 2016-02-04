@@ -21,16 +21,19 @@
 <%= stylesheet_link_tag 'print', media: 'print' %>
 <!-- For progressively larger displays -->
 <% ['480', '768', '992', '1382'].each do |screen_size| %>
-  <%= stylesheet_link_tag screen_size, media: "only screen and (min-width: #{screen_size}px)" %>
+  <% screen_size = "/stylesheets/#{screen_size}" unless logged_in_as_client? %>
+  <%= stylesheet_link_tag "#{screen_size}", media: "only screen and (min-width: #{screen_size}px)" %>
 <% end %>
 <!-- For Retina displays -->
 <%= stylesheet_link_tag '2x', media: "only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-device-pixel-ratio: 1.5)" %>
 
+<% if logged_in_as_client? %>
 <!--[if (lt IE 9) & (!IEMobile)]>
 <link rel="stylesheet" media="screen" href="css/480.css">
 <link rel="stylesheet" media="screen" href="css/768.css">
 <link rel="stylesheet" media="screen" href="css/992.css">
 <![endif]-->
+<% end %>
 
 <%= yield :stylesheets %>
 <%= stylesheet_link_tag "caller", "jquery-ui-1.8.14.custom" %>
@@ -45,11 +48,13 @@
   <%= render :partial => "layouts/olark" %>
 <% end %>
 
+<% if logged_in_as_client? %>
 <!--[if (lt IE 9) & (!IEMobile)]>
 <script src="js/libs/jquery-extended-selectors.js"></script>
 <script src="js/libs/selectivizr-min.js"></script>
 <script src="js/libs/imgsizer.js"></script>
 <![endif]-->
+<% end %>
 
 <!-- For iPhone 4 -->
 <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/img/h/apple-touch-icon.png">
