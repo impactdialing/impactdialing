@@ -10,6 +10,7 @@ ENV['TWILIO_CALLBACK_PORT'] ||= '80'
 ENV['RECORDING_ENV'] = 'test'
 ENV['CALLIN_PHONE'] ||= '5555551234'
 
+require 'celluloid/test'
 require File.expand_path("../../config/environment", __FILE__)
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 
@@ -76,7 +77,6 @@ RSpec.configure do |config|
 
   config.before(:example) do |example|
     DatabaseCleaner[:active_record].strategy = :truncation
-
     if example.metadata[:js]
       if example.metadata[:file_uploads]
         CapybaraConfig.switch_to_selenium

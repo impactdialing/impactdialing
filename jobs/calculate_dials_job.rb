@@ -28,6 +28,36 @@ class CalculateDialsJob
   extend LibratoResque
 
   @queue = :dialer_worker
+  
+  def self.redis
+    Resque.redis
+  end
+
+  def self.calculation_key(campaign_id)
+    "dial_calculate:#{campaign_id}"
+  end
+
+  def self.add_to_queue(campaign_id)
+    throw ArgumentError, "Invalid campaign_id" if campaign_id.blank?
+
+    unless calculation_in_progress?(campaign_id)
+      start_calculating(campaign_id)
+      Resque.enqueue(CalculateDialsJob, campaign_id)
+    end
+  end
+
+  def self.start_calculating(campaign_id)
+    redis.set(calculation_key(campaign_id), true)
+    redis.expire(calculation_key(campaign_id), 8)
+  end
+
+  def self.stop_calculating(campaign_id)
+    redis.del(calculation_key(campaign_id))
+  end
+
+  def self.calculation_in_progress?(campaign_id)
+    redis.exists(calculation_key(campaign_id))
+  end
 
   def self.perform(campaign_id)
     campaign = Campaign.find(campaign_id)
@@ -62,10 +92,6 @@ class CalculateDialsJob
         'args' => [id]
       })
     end
-  end
-
-  def self.stop_calculating(campaign_id)
-    Resque.redis.del("dial_calculate:#{campaign_id}")
   end
 
   def self.fit_to_dial?(campaign)

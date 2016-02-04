@@ -6,52 +6,12 @@
 
 A `.env` file is used to store local environment variables which are required to configure the app environment. So it is necessary to prepend `foreman run` to any test runs. Otherwise the `.env` file will not be loaded.
 
-`foreman run rake spec:note2e` - Run all specs that do not depend on javascript.
-`foreman run rake spec:e2e:all` - Run all specs that do depend on javascript.
-`foreman run rake spec:e2e:{js,admin,caller}` - Run specs tagged with the same name.
+`foreman run rspec spec/` - Run all unit/integration specs.
+`foreman run rspec features/` - Run all acceptance specs.
 
 ### Running Dev Server
 
 Start web & worker processes: `foreman start`.
-
-## Servers & Environments
-
-#### Staging
-
-##### Heroku
-
-- impactdialing-staging
-  - web
-      - 1 unicorn
-  - workers
-      - 1 call\_flow
-      - 1 upload\_download
-- status-impactdialing
-  - web
-      - 1 unicorn
-
-#### Production
-
-##### Heroku
-
-- impactkungfupushupsclient
-  - web
-      - 2 unicorn
-  - workers
-      - 1 background\_worker
-      - 2 call\_flow
-      - 1 clock
-      - 1 dialer\_loop
-      - 1 dialer\_worker
-      - 1 persist\_worker
-      - 1 simulator\_loop
-      - 1 simulator\_worker
-      - 1 twilio\_stats
-      - 1 upload\_download
-
-- impactcallergiraffeblue
-  - web
-    - 2 unicorn
 
 ### Whitelabeling
 
@@ -119,3 +79,9 @@ Once the pull request is merged, delete the branch and carry on.
 ## Abandon Rate Spec
 
 Legally, abandon rate must be calculated as (number abandoned / (number abandoned + number connected to voter)).
+
+# Heads up
+
+## Resque
+
+The `resque-loner` gem is used for a few jobs. This gem defines `.redis_key` and uses that to track job uniqueness. Careful not to override this in implementation classes.

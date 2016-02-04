@@ -1,5 +1,5 @@
 # start-up everything
-concurrency: web=1,app_health=1,dialer_loop=1,simulator_loop=1,dialer_worker=1,simulator_worker=1,call_flow=1,persist_worker=1,twilio_stats=1,clock=1,reports=1,general=1,dial_queue=1,billing=1,import=1,persistence=1
+concurrency: web=1,app_health=1,scheduler=1,dialer_worker=1,simulator_worker=1,call_flow=1,persist_worker=1,twilio_stats=1,clock=1,reports=1,general=1,dial_queue=1,billing=1,import=1,persistence=1
 # web only
 # concurrency: web=1
 # admin app

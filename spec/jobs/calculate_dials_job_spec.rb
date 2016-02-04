@@ -13,8 +13,8 @@ describe 'CalculateDialsJob' do
     })
   end
   def campaign_is_calculating_dials!(campaign)
-    campaign.set_calculate_dialing
-    expect(campaign.calculate_dialing?).to be_truthy
+    CalculateDialsJob.start_calculating(campaign.id)
+    expect(CalculateDialsJob.calculation_in_progress?(campaign.id)).to be_truthy
   end
 
   let(:admin) do
@@ -22,6 +22,35 @@ describe 'CalculateDialsJob' do
   end
   let(:campaign) do
     create_campaign_with_script(:bare_predictive, admin.account).last
+  end
+
+  subject{ CalculateDialsJob }
+
+  describe '.add_to_queue(campaign_id)' do
+    context 'campaign is not already being calculated' do
+      it 'queues CalculateDialsJob' do
+        subject.add_to_queue(campaign.id)
+        expect([:resque, :dialer_worker]).to have_queued(CalculateDialsJob).with(campaign.id)
+      end
+    end
+
+    context 'campaign is already being calculated' do
+      before do
+        subject.add_to_queue(campaign.id)
+      end
+      it 'does not queue CalculateDialsJob' do
+        expect(subject).to_not receive(:start_calculating)
+        subject.add_to_queue(campaign.id)
+      end
+    end
+
+    context 'campaign_id is blank' do
+      it 'raises ArgumentError' do
+        expect{
+          subject.add_to_queue('')
+        }.to raise_error ArgumentError
+      end
+    end
   end
 
   describe '.perform(campaign_id)' do
@@ -45,12 +74,12 @@ describe 'CalculateDialsJob' do
     end
 
     shared_examples 'all calculate dial jobs' do
-      it 'removes "dial_calculate:#{campaign_id}" key from Redis, such that Predictive#calculate_dialing? returns false (flag exists to help prevent queueing multiple CalculateDialsJob from DialerLoop)' do
+      it 'removes "dial_calculate:#{campaign_id}" key from Redis, such that CalculateDialsJob.calculation_in_progress? returns false (flag exists to help prevent queueing multiple CalculateDialsJob from DialerLoop)' do
         campaign_is_calculating_dials!(campaign)
 
         CalculateDialsJob.perform(campaign.id)
 
-        expect(campaign.calculate_dialing?).to be_falsy
+        expect(CalculateDialsJob.calculation_in_progress?(campaign.id)).to be_falsy
       end
     end
 

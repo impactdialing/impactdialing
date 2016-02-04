@@ -2,9 +2,7 @@ web: bundle exec puma -C config/puma.rb
 
 app_health: rake environment monitor_app_health APP_HEALTH_RUN_INTERVAL=90
 
-dialer_loop: bundle exec ruby lib/dialer_loop.rb
-
-simulator_loop: bundle exec ruby simulator/simulator_loop.rb
+scheduler: bundle exec rake environment scheduler:run
 
 call_flow: bundle exec sidekiq -c 8 -q call_flow LIBRATO_AUTORUN=1
 
