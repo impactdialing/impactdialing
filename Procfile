@@ -12,8 +12,6 @@ persistence: bundle exec sidekiq -c 4 -q persistence LIBRATO_AUTORUN=1
 
 clock: rake environment resque:scheduler
 
-persist_worker: rake environment resque:work QUEUE=persist_jobs TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10
-
 twilio_stats: rake environment resque:work QUEUE=twilio_stats TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10
 
 dialer_worker: rake environment resque:work QUEUE=dialer_worker TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10
