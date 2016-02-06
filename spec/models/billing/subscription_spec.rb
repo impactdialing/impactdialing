@@ -25,7 +25,7 @@ describe Billing::Subscription, :type => :model do
     end
   end
 
-  describe ':settings' do
+  describe '#settings' do
     it 'is serialized as HashWithIndifferentAccess' do
       expect(subscription.settings).to be_kind_of HashWithIndifferentAccess
     end
@@ -45,6 +45,12 @@ describe Billing::Subscription, :type => :model do
       end
       it 'defaults to disabled' do
         expect(subscription.autorecharge_settings[:enabled]).to eq 0
+      end
+    end
+
+    describe '_contract' do
+      it 'has a :price_per_quantity key' do
+        expect(subscription._contract).to have_key :price_per_quantity
       end
     end
   end
@@ -92,6 +98,61 @@ describe Billing::Subscription, :type => :model do
     end
   end
 
+  describe '#update_contract!' do
+    let(:account){ create(:account) }
+    let(:subscription){ account.billing_subscription }
+    context 'invalid settings' do
+      before do
+        expect(subscription).to have(0).errors_on(:base)
+      end
+      describe ':price_per_quantity' do
+        it 'can be blank' do
+          subscription.update_contract! price_per_quantity: ''
+          expect(subscription).to have(0).error_on(:base)
+
+          subscription.update_contract price_per_quantity: 'abc'
+          expect(subscription).to have(1).error_on(:base)
+        end
+        it 'or a float between 0.02 and 0.10 inclusive' do
+          subscription.update_contract price_per_quantity: 0.01
+          expect(subscription).to have(1).error_on(:base)
+
+          subscription.update_contract price_per_quantity: 0.10
+          expect(subscription).to have(0).errors_on(:base)
+        end
+      end
+    end
+
+    context 'valid settings' do
+      let(:new_valid_settings) do
+        {price_per_quantity: 0.04}
+      end
+
+      it 'merges and saves new settings' do
+        merged_settings = subscription._contract.merge(new_valid_settings)
+        subscription.update_contract!(new_valid_settings)
+        expect(subscription._contract).to eq merged_settings.stringify_keys
+      end
+    end
+  end
+
+  describe 'Contract#price_per_quantity' do
+    context 'default' do
+      it 'is nil' do
+        expect(subscription.contract.price_per_quantity).to be_nil
+      end
+    end
+    context 'when set to valid Float' do
+      let(:float){ 0.055 }
+      before do
+        subscription.update_contract price_per_quantity: float
+      end
+      it 'returns the Float' do
+        expect(subscription.contract.price_per_quantity).to eq float
+      end
+    end
+  end
+
   describe '#update_autorecharge_settings!(new_settings)' do
     let(:account){ create(:account) }
     let(:subscription){ account.billing_subscription }
@@ -105,7 +166,7 @@ describe Billing::Subscription, :type => :model do
       valid_settings = {'enabled' => 1, 'amount' => 1, 'trigger' => 1}
       subscription.update_autorecharge_settings!(valid_settings)
       subscription.reload
-      expect(subscription.autorecharge_settings).to eq valid_settings
+      expect(subscription.autorecharge_settings).to eq valid_settings.merge({'pending' => 0})
     end
   end
 

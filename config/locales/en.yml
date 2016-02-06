@@ -130,6 +130,8 @@ en:
     autorecharge:
       update: "Autorecharge settings saved."
       invalid_settings: "Numbers entered must be greater than zero."
+    contract:
+      invalid_settings: "Price per quantity must be >= 0.02 or <= 0.10"
     upgrade:
       success: 'Subscription plan updated successfully.'
       payment_info_required: 'Please fill out your payment information before upgrading.'

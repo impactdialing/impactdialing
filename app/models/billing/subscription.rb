@@ -7,12 +7,15 @@ class Billing::Subscription < ActiveRecord::Base
   validates_inclusion_of :plan, in: ::Billing::Plans.list
 
   validate :sane_autorecharge_settings
+  validate :sane_contract_settings
 
-  # todo: validate inclusion of plan,
-  # must be one of 'per_minute', 'enterprise', 'business', 'basic' or 'pro'
 private
   def autorecharge_defaults
     {enabled: 0, trigger: 0, amount: 0, pending: 0}
+  end
+
+  def contract_defaults
+    {price_per_quantity: nil}
   end
 
   def sane_autorecharge_settings
@@ -20,6 +23,14 @@ private
 
     unless autorecharge_trigger > 0 && autorecharge_amount > 0
       errors.add(:base, I18n.t('subscriptions.autorecharge.invalid_settings'))
+    end
+  end
+
+  def sane_contract_settings
+    return if _contract == contract_defaults
+
+    unless contract.valid?
+      errors.add(:base, I18n.t('subscriptions.contract.invalid_settings'))
     end
   end
 
@@ -75,6 +86,36 @@ public
     return false if provider_start_period.blank? || provider_end_period.blank?
 
     provider_start_period != start_period && provider_end_period != end_period
+  end
+
+  Contract = Struct.new(:_price_per_quantity) do
+    def valid?
+      _price_per_quantity.blank? or
+      (_price_per_quantity.kind_of? Float and
+        _price_per_quantity <= 0.10 and
+        _price_per_quantity >= 0.02)
+    end
+
+    def price_per_quantity
+      _price_per_quantity.blank? ? nil : _price_per_quantity.to_f
+    end
+  end
+  def contract
+    @contract ||= Contract.new(_contract[:price_per_quantity])
+  end
+
+  def _contract
+    settings[:contract].blank? ? contract_defaults : settings[:contract]
+  end
+
+  def update_contract(new_settings)
+    @contract = nil
+    self.settings[:contract] = _contract.merge new_settings
+  end
+
+  def update_contract!(new_settings)
+    update_contract(new_settings)
+    save!
   end
 
   def autorecharge_settings
