@@ -132,7 +132,7 @@ feature 'Internal Admin pages', admin: true do
         before do
           expect_current_subscription_to_eq 'Trial', 50
           set_account_to_manual
-          Quota.last.update_column(:minutes_used, minutes_used)
+          Quota.last.update_column(:minutes_pending, minutes_used)
           expect_current_subscription_to_eq 'Enterprise', minutes_used
 
           visit_subscription_page
