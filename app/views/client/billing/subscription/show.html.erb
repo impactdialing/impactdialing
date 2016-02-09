@@ -13,7 +13,7 @@
   </p>
 
   <p>
-    Minutes left:  <b><%= @quota.minutes_available %></b> of <b><%= @quota.minutes_allowed %></b>
+    <%= subscription_quota_summary(@subscription, @quota) %>
   </p>
 
   <% if @subscription.provider_start_period && @subscription.provider_end_period %>

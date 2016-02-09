@@ -45,13 +45,7 @@
     </li>
     <% end %>
     <li>
-      <% if @subscription.current_plan.enterprise? %>
-        Minutes used: <%= @quota.minutes_used %>
-      <% else %>
-        Minutes left:
-        <b><%= @quota.minutes_available %></b> of
-        <b><%= @quota.minutes_allowed %></b>
-      <% end %>
+      <%= subscription_quota_summary(@subscription, @quota) %>
     </li>
     <li>
       Users: <b><%= @account.users.count %></b>

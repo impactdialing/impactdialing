@@ -1,4 +1,16 @@
 module Client::Billing::SubscriptionHelper
+  def subscription_quota_summary(subscription, quota)
+    if @subscription.current_plan.enterprise?
+      "Minutes used: "+
+        content_tag(:b, @quota.minutes_pending)
+    else
+      "Minutes left: "+
+        content_tag(:b, @quota.minutes_available) +
+        " of "+
+        content_tag(:b, @quota.minutes_allowed)
+    end.html_safe
+  end
+
   def subscription_type_options_for_select(subscription, minutes_available)
     ids = ::Billing::Plans.permitted_ids_for(subscription.plan, minutes_available)
     return ids.map do |type|
