@@ -188,9 +188,4 @@ class Billing::Plans::Plan
   def per_minute?
     id == 'per_minute'
   end
-
-  def calculate_purchased_minutes(amount_paid)
-    return 0 unless per_minute?
-    (amount_paid.to_i / price_per_quantity.to_f).to_i
-  end
 end

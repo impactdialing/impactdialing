@@ -137,7 +137,9 @@ public
   end
 
   def autorecharge_minutes
-    current_plan.calculate_purchased_minutes(autorecharge_amount)
+    return 0 unless current_plan.per_minute?
+
+    (autorecharge_amount.to_i / price_per_quantity.to_f).to_i
   end
 
   def autorecharge_pending!
