@@ -76,7 +76,11 @@ describe Caller do
       end
     end
     context 'campaign_id_changed? => false' do
+      before do
+        subject.save!
+      end
       it 'does nothing' do
+        subject.username = Forgery(:name).first_name
         expect(subject.caller_sessions).to_not receive(:on_call)
         subject.save
       end
