@@ -473,7 +473,7 @@ describe Campaign, :type => :model do
       c5= create(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: create(:call_attempt, campaign: campaign, status: CallAttempt::Status::RINGING, created_at: Time.now), campaign: campaign)
       c6= create(:phones_only_caller_session, on_call: true, available_for_call: true, campaign: campaign)
       c7= create(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: create(:call_attempt, campaign: campaign, status: CallAttempt::Status::RINGING, created_at: Time.now), campaign: campaign)
-      c8= create(:webui_caller_session, on_call: true, available_for_call: false, attempt_in_progress: create(:call_attempt), campaign: campaign, attempt_in_progress: create(:call_attempt, connecttime: Time.now), state: "connected")
+      c8= create(:webui_caller_session, on_call: true, available_for_call: false, campaign: campaign, attempt_in_progress: create(:call_attempt, connecttime: Time.now), state: "connected")
       c9= create(:phones_only_caller_session, on_call: true, available_for_call: false, campaign: campaign, attempt_in_progress: create(:call_attempt, connecttime: Time.now), state: "conference_started_phones_only_predictive")
 
       c10= create(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: create(:call_attempt, connecttime: Time.now), campaign: campaign)

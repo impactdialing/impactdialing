@@ -40,7 +40,7 @@ describe 'CallFlow::Persistence::SurveyResponses' do
         questions: {
           '' => 47,
           '13' => '',
-          '' => ''
+          '14' => ''
         }.to_json,
         notes: {
           '' => 'Noteworthy'
