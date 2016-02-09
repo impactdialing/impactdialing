@@ -65,8 +65,9 @@ describe 'Save a copy of an existing Script under a new name', type: :feature, j
     it 'preserves selected voter fields' do
       expected_fields = (system_fields + custom_fields.map(&:name))
 
-      expected_fields.each do |field|
-        el = page.find("input[type=\"checkbox\"][value=\"#{field}\"]")
+      expected_fields.each_with_index do |field,index|
+        el = page.find("#script_voter_field_#{index}")
+        expect(el.value).to eq field
         expect(el).to be_checked
       end
     end
