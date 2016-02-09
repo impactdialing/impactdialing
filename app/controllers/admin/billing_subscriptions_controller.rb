@@ -4,9 +4,9 @@ private
     eager_loads = [:billing_subscription]
     eager_loads << :quota unless partial
 
-    @account      ||= Account.includes(*eager_loads).find(params[:account_id])
-    @subscription ||= @account.billing_subscription
-    @quota        ||= @account.quota
+    @account      = Account.includes(*eager_loads).find(params[:account_id])
+    @subscription = @account.billing_subscription
+    @quota        = @account.quota
   end
 
   def account
@@ -32,6 +32,9 @@ private
   def update_contract
     return unless price_per_quantity.present?
 
+    # reload subscription id & obj
+    # contract persists on new subscription after upgrade or reset
+    eager_load_account(true) if plan.present?
     subscription.update_contract price_per_quantity: price_per_quantity
   end
 
@@ -80,15 +83,12 @@ public
 
     eager_load_account(true)
 
-    update_contract
+    upgrade_to_enterprise
+    reset_to_trial
 
-    if plan.blank?
-      unless subscription.save
-        msg = subscription.errors.full_messages
-      end
-    else
-      upgrade_to_enterprise
-      reset_to_trial
+    update_contract
+    unless subscription.save
+      msg = subscription.errors.full_messages
     end
 
     flash[:notice] = msg
