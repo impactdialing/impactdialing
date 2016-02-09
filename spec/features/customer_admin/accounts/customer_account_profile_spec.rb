@@ -211,7 +211,8 @@ describe 'Account profile', type: :feature, admin: true do
         user.email = 'nada.nowhere@test.com'
         user.save!
         create(:user, {account: user.account})
-        web_login_as(user) if page.current_path =~ /\A\/session/
+        go_to_billing
+        web_login_as(user) if page.current_path =~ /\A(\/session|\/client\/login)/
       end
 
       it 'allows for new invoice recipient to be selected' do
