@@ -45,9 +45,9 @@ test:
         parallel: true
         files:
           - spec/features/customer_admin/campaigns/*
-    - USE_SAUCE='wch' bin/parallel_features:
-        parallel: true
-        files:
-          - spec/features/customer_admin/campaigns/*
+    #- USE_SAUCE='wch' bin/parallel_features:
+    #    parallel: true
+    #    files:
+    #      - spec/features/customer_admin/campaigns/*
   post:
     - killall --wait sc  # wait for Sauce Connect to close the tunnel
