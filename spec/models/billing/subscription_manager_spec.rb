@@ -152,7 +152,8 @@ describe Billing::SubscriptionManager, :type => :model do
       let(:expected_opts) do
         opts.merge({
           prorate: prorate,
-          old_plan_id: subscription.plan
+          old_plan_id: subscription.plan,
+          contract: subscription.contract
         })
       end
       before do

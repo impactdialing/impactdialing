@@ -14,6 +14,15 @@
 
 
 <table>
+  <tr>
+    <th>Account ID</th>
+    <th>Users</th>
+    <th>Domain</th>
+    <th>Subscription</th>
+    <th>Access</th>
+    <th>Abandonment</th>
+    <th>Trial / Enterprise</th>
+  </tr>
   <% @accounts.each do |account| %>
     <tr>
       <td><%= account.id %></td>
@@ -26,16 +35,17 @@
           <% end %></td>
       <td><%= account.domain_name %> </td>
       <td>
-        <%= admin_switch_account_to_manual_link(account) %>
+        <%= admin_account_billing_subscription_link(account) %>
       </td>
       <td>
-        <%= admin_toggle_dialer_access_link(account) %>
-      </td>
-      <td>
+        <%= admin_toggle_dialer_access_link(account) %> /
         <%= admin_toggle_all_access_link(account) %>
       </td>
       <td><%= admin_toggle_abandonment_link(account) %></td>
       <td>
+        <%= admin_make_trial_trigger(account.billing_subscription) %>
+        <%= admin_make_enterprise_trigger(account.billing_subscription) %>
+      </td>
     </tr>
   <% end %>
   <p><%= page_entries_info @accounts %> <%= will_paginate @accounts %></p>

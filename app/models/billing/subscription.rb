@@ -90,10 +90,8 @@ public
 
   Contract = Struct.new(:_price_per_quantity) do
     def valid?
-      _price_per_quantity.blank? or
-      (_price_per_quantity.kind_of? Float and
-        _price_per_quantity <= 0.10 and
-        _price_per_quantity >= 0.02)
+      (n = _price_per_quantity).blank? or
+      (n.to_f <= 0.10 and n.to_f >= 0.02)
     end
 
     def price_per_quantity
@@ -118,6 +116,10 @@ public
     save!
   end
 
+  def price_per_quantity
+    contract.price_per_quantity || plans.find('per_minute').price_per_quantity
+  end
+
   def autorecharge_settings
     settings[:autorecharge] || autorecharge_defaults
   end
@@ -139,21 +141,19 @@ public
   end
 
   def autorecharge_pending!
-    new_settings = autorecharge_settings.merge({pending: 1})
-    update_autorecharge_settings!(new_settings)
+    update_autorecharge_settings!({pending: 1})
   end
 
   def autorecharge_paid!
-    new_settings = autorecharge_settings.merge({pending: 0})
-    update_autorecharge_settings!(new_settings)
+    update_autorecharge_settings!({pending: 0})
   end
 
   def autorecharge_disable!
-    new_settings = autorecharge_settings.merge({enabled: 0, pending: 0})
-    update_autorecharge_settings!(new_settings)
+    update_autorecharge_settings!({enabled: 0, pending: 0})
   end
 
   def update_autorecharge_settings(new_settings)
+    new_settings = autorecharge_settings.merge(new_settings)
     self.settings[:autorecharge] = new_settings
   end
 

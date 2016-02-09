@@ -32,7 +32,6 @@ private
   end
 
 public
-
   def state
     @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call = 1 )")
     @logged_in_callers_count = CallerSession.on_call.count
@@ -99,40 +98,13 @@ public
   end
 
   def users
-    if params[:query]
-      users=User.arel_table
-      account = Account.arel_table
-      @accounts = Account.includes(:users).where(users[:email].matches("%#{params[:query]}%").or(account[:id].eq(params[:query]))).paginate :page => params[:page]
+    @accounts = Account.includes(:billing_subscription)
+    if params[:query].present?
+      @accounts = @accounts.search(params[:query])
     else
-      @accounts = Account.includes(:users).paginate :page => params[:page]
+      @accounts = @accounts.includes(:users)
     end
-  end
-
-  def toggle_enterprise_trial
-    account      = Account.find(params[:id])
-    subscription = account.billing_subscription
-    quota        = account.quota
-
-    if subscription.enterprise?
-      ActiveRecord::Base.transaction do
-        subscription.destroy
-        quota.destroy
-        account.setup_trial!
-      end
-      msg = 'downgraded to Trial'
-    else
-      customer_id     = account.billing_provider_customer_id
-      payment_gateway = Billing::PaymentGateway.new(customer_id)
-
-      payment_gateway.cancel_subscription
-      ActiveRecord::Base.transaction do
-        subscription.plan_changed!('enterprise')
-        quota.plan_cancelled!
-        quota.plan_changed!('enterprise')
-      end
-      msg = 'upgraded to Enterprise'
-    end
-    redirect_to :back, notice: ["Account##{account.id} successfully #{msg}."]
+    @accounts = @accounts.paginate :page => params[:page]
   end
 
   def toggle_calling

@@ -32,6 +32,18 @@ class Account < ActiveRecord::Base
 
   delegate :minutes_available?, to: :quota
 
+  scope :search, -> (query) {
+    includes(:users).where(search_email(query).or(search_account_id(query)))
+  }
+
+  scope :search_email, -> (query) {
+    User.arel_table[:email].matches("%#{query}%")
+  }
+
+  scope :search_account_id, -> (query) {
+    arel_table[:id].eq(query)
+  }
+
 private
   def ability
     Ability.new(self)

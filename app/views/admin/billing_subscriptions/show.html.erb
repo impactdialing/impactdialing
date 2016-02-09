@@ -1,0 +1,124 @@
+<style>
+  .module-container {
+    padding: 8px;
+  }
+  .module-container div.module {
+    padding: 0 12px;
+  }
+  input.numeric {
+    width: 100px;
+  }
+  form ul li {
+    padding: 12px 0;
+  }
+  form ul li p, ul.module li {
+    max-width: 256px;
+    font-style: italic;
+  }
+  .warn {
+    background-color: #c23634;
+    color: white;
+    padding: 8px;
+  }
+  ul.module li {
+    padding: 3px;
+  }
+</style>
+
+<p><%= link_to 'All users', '/admin/users' %></p>
+
+<h4>Account #<%= @account.id %></h4>
+
+<div style="float: right; display: inline-block;">
+  <ul style="list-style: none;">
+    <% if @account.billing_provider_customer_id %>
+    <li><%= link_to 'Stripe Account', "https://dashboard.stripe.com/customers/#{@account.billing_provider_customer_id}", {target: '_blank'} %></li>
+    <% end %>
+    <li><%= mail_to @account.users.select(:email).first.email %></li>
+    <li>
+      Current plan:
+      <b><%= subscription_human_type(@subscription.plan) %></b>
+    </li>
+    <% if @subscription.current_plan.trial? or @subscription.current_plan.recurring? %>
+    <li>
+      Caller seats: <b><%= @quota.callers_allowed %></b>
+    </li>
+    <% end %>
+    <li>
+      <% if @subscription.current_plan.enterprise? %>
+        Minutes used: <%= @quota.minutes_used %>
+      <% else %>
+        Minutes left:
+        <b><%= @quota.minutes_available %></b> of
+        <b><%= @quota.minutes_allowed %></b>
+      <% end %>
+    </li>
+    <li>
+      Users: <b><%= @account.users.count %></b>
+    </li>
+    <li>
+      Active Callers: <b><%= @account.callers.active.count %></b>
+    </li>
+    <li>
+      Active Campaigns: <b><%= @account.campaigns.active.count %></b>
+
+    <% if @subscription.provider_start_period && @subscription.provider_end_period %>
+      <li>
+        Billing period: <b><%= subscription_date(@subscription.provider_start_period) %></b> to
+        <b><%= subscription_date(@subscription.provider_end_period) %></b>
+      </li>
+    <% end %>
+  </ul>
+</div>
+
+<div class="module-container">
+  <div class="module">
+    <%= form_for(@subscription, url: admin_account_billing_subscriptions_path(@account)) do |form| %>
+      <ul>
+        <li>
+          <p class="module">
+            <%= form.label :price_per_quantity, "Price per minute" %>
+            <%= form.text_field :price_per_quantity, class: 'numeric' %>
+          </p>
+          <ul class="module">
+            <li>
+              Customers not already on per minute will get this rate when
+              they upgrade to per minute.
+            </li>
+            <li>
+              Customers already on per minute
+              will get this rate the next time they add minutes.
+            </li>
+          </ul>
+          </p>
+        </li>
+        <% if @subscription.current_plan.enterprise? %>
+        <li class="warn">
+          <p>DANGER!</p>
+          <p class="module">
+            <%= label_tag 'billing_subscription[reset]' do %>
+              <%= check_box_tag 'billing_subscription[reset]' %>
+              Reset to trial
+            <% end %>
+          </p>
+          <ul class="module ">
+            <li>
+              Cancels any recurring subscriptions.
+            </li>
+            <li>
+              Resets allowed minutes to 50.
+            </li>
+            <li>
+              Resets caller seats to 5.
+            </li>
+          </ul>
+        </li>
+        <% end %>
+      </ul>
+      <div class="buttons">
+        <%= button_tag 'Save' %>
+      </div>
+    <% end %>
+  </div>
+</div>
+

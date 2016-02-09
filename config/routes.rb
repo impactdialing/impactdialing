@@ -374,6 +374,11 @@ ImpactDialing::Application.routes.draw do
   get '/client/login', :to => 'client#login', :as => :login
   get '/caller/login', :to => 'caller#login', :as => :caller_login
 
+  namespace :admin do
+    resources :accounts do
+      resource :billing_subscriptions, :only => [:show, :update]
+    end
+  end
   get 'admin/report', :to => 'admin#report'
   post 'admin/report', :to => 'admin#report'
   get 'admin/login/:id', :to => 'admin#login'

@@ -197,8 +197,10 @@ class Quota < ActiveRecord::Base
     new_plan.per_minute?
   end
 
-  def add_minutes(plan, old_plan_id, amount)
-    price                = (plan.price_per_quantity * 100) # convert dollars to cents
+  def add_minutes(plan, old_plan_id, amount, contract=nil)
+    price_per_quantity   = contract.try(:price_per_quantity) ||
+                           plan.price_per_quantity
+    price                = (price_per_quantity * 100) # convert dollars to cents
     minutes_purchased    = (amount / price).to_i
 
     self.callers_allowed = 0
@@ -242,7 +244,7 @@ class Quota < ActiveRecord::Base
       # end
       if plan.per_minute?
         amount = provider_object.amount # in cents
-        add_minutes(plan, old_plan_id, amount)
+        add_minutes(plan, old_plan_id, amount, opts[:contract])
       end
     end
 

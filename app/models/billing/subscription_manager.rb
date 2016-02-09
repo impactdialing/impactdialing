@@ -95,7 +95,8 @@ public
     if provider_object.present?
       opts.merge!({
         prorate: prorate?(new_plan, opts[:callers_allowed]),
-        old_plan_id: old_plan
+        old_plan_id: old_plan,
+        contract: record.contract
       })
 
       run_callbacks(provider_object, opts, &block)

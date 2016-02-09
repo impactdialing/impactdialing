@@ -1,6 +1,59 @@
 require 'rails_helper'
 
 feature 'Internal Admin pages', admin: true do
+  def for_last_user(&block)
+    within(main_table_css) do
+      within(last_row) do
+        yield
+      end
+    end
+  end
+
+  def visit_users_page
+    visit '/admin/users'
+  end
+
+  def visit_subscription_page
+    visit_users_page
+    account = User.last.account
+    for_last_user do
+      click_on "#{account.billing_subscription.plan.humanize.capitalize} ($#{account.billing_subscription.price_per_quantity} /min)"
+    end
+
+    expect(page).to have_content "Account ##{account.id}"
+    expect(page).to have_content "Users: #{account.users.count}"
+  end
+  def set_account_to_manual
+    visit_users_page
+
+    for_last_user do
+      click_on 'Make Enterprise'
+    end
+
+    expect(page).to have_content 'Subscription updated.'
+  end
+
+  def set_account_to_trial
+    visit_users_page
+
+    for_last_user do
+      click_on 'Make Trial'
+    end
+
+    expect(page).to have_content 'Subscription updated.'
+  end
+
+  def expect_current_subscription_to_eq type, minutes
+    visit_subscription_page
+
+    expect(page).to have_content "Current plan: #{type}"
+    if type == 'Enterprise'
+      expect(page).to have_content "Minutes used: #{minutes}"
+    else
+      expect(page).to have_content "Minutes left: #{minutes}"
+    end
+  end
+
   let(:admin) do
     create(:user)
   end
@@ -58,53 +111,7 @@ feature 'Internal Admin pages', admin: true do
       visit '/admin/users'
     end
 
-    describe 'Toggle accounts between Trial & Enterprise (Manual)' do
-      def set_account_to_manual
-        visit '/admin/users'
-        account = User.last.account
-        within(main_table_css) do
-          within(last_row) do
-            click_on 'set account to enterprise'
-          end
-        end
-
-        expect(page).to have_content "Account##{account.id} successfully upgraded to Enterprise."
-        within(main_table_css) do
-          within(last_row) do
-            expect(page).to have_content 'set account to trial'
-          end
-        end
-      end
-
-      def set_account_to_trial
-        account = User.last.account
-        set_account_to_manual
-        within(main_table_css) do
-          within(last_row) do
-            click_on 'set account to trial'
-          end
-        end
-        expect(page).to have_content "Account##{account.id} successfully downgraded to Trial."
-        within(main_table_css) do
-          within(last_row) do
-            expect(page).to have_content 'set account to enterprise'
-          end
-        end
-      end
-
-      def expect_current_subscription_to_eq type, minutes
-        within(main_table_css) do
-          within(last_row) do
-            click_on User.last.email
-          end
-        end
-        click_on 'Account'
-        click_on 'Billing'
-
-        expect(page).to have_content "Your current plan is #{type}."
-        expect(page).to have_content "Minutes left: #{minutes}"
-      end
-
+    describe 'Force change customer account subscription to Trial or Enterprise' do
       it 'click "set account to enterprise" for the desired account row' do
         expect_current_subscription_to_eq 'Trial', 50
         set_account_to_manual
@@ -112,8 +119,44 @@ feature 'Internal Admin pages', admin: true do
       end
 
       it 'click "set account to trial" for the desired account row' do
+        set_account_to_manual
+        expect_current_subscription_to_eq 'Enterprise', 0
         set_account_to_trial
         expect_current_subscription_to_eq 'Trial', 50
+      end
+    end
+
+    describe 'Update customer Per Minute rate' do
+      context 'customer is on Enterprise (manual billing)' do
+        let(:minutes_used){ 42 }
+        before do
+          expect_current_subscription_to_eq 'Trial', 50
+          set_account_to_manual
+          Quota.last.update_column(:minutes_used, minutes_used)
+          expect_current_subscription_to_eq 'Enterprise', minutes_used
+
+          visit_subscription_page
+        end
+        context '"Reset to trial" is NOT checked' do
+          it 'changes customer per minute rate and nothing else' do
+            visit_subscription_page
+            fill_in 'Price per minute', with: '.035'
+            click_on 'Save'
+            expect(page).to have_content 'Subscription updated.'
+            expect(page).to have_content "Minutes used: #{minutes_used}"
+          end
+        end
+        context '"Reset to trial" is checked' do
+          it 'changes customer per minute rate and gives caller 50 minutes & 5 caller seats' do
+            visit_subscription_page
+            fill_in 'Price per minute', with: '.075'
+            check 'Reset to trial'
+            click_on 'Save'
+            expect(page).to have_content 'Subscription updated.'
+            expect(page).to have_content 'Current plan: Trial'
+            expect(page).to have_content 'Minutes left: 50 of 50'
+          end
+        end
       end
     end
 
@@ -122,14 +165,14 @@ feature 'Internal Admin pages', admin: true do
         account = User.last.account
         within(main_table_css) do
           within(last_row) do
-            click_on "Deny Dialer Access"
+            click_on "Deny Dialer"
           end
         end
 
         expect(page).to have_content "Dialer access denied for Account##{account.id}."
         within(main_table_css) do
           within(last_row) do
-            expect(page).to have_content 'Allow Dialer Access'
+            expect(page).to have_content 'Allow Dialer'
           end
         end
       end
@@ -139,14 +182,14 @@ feature 'Internal Admin pages', admin: true do
         deny_dialer_access
         within(main_table_css) do
           within(last_row) do
-            click_on 'Allow Dialer Access'
+            click_on 'Allow Dialer'
           end
         end
 
         expect(page).to have_content "Dialer access allowed for Account##{account.id}."
         within(main_table_css) do
           within(last_row) do
-            expect(page).to have_content 'Deny Dialer Access'
+            expect(page).to have_content 'Deny Dialer'
           end
         end
       end
@@ -160,8 +203,8 @@ feature 'Internal Admin pages', admin: true do
     end
 
     describe 'Toggle Admin & Caller access for an account' do
-      let(:deny_text){ "Deny All Access" }
-      let(:allow_text){ "Allow All Access" }
+      let(:deny_text){ "Deny All" }
+      let(:allow_text){ "Allow All" }
       def deny_all_access
         account = User.last.account
         within(main_table_css) do
@@ -204,8 +247,8 @@ feature 'Internal Admin pages', admin: true do
     end
 
     describe 'Toggle Abandonment between Fixed & Variable for an account' do
-      let(:set_variable_text){ 'Set Abandonment to Variable' }
-      let(:set_fixed_text){ 'Set Abandonment to Fixed' }
+      let(:set_variable_text){ 'Set to Variable' }
+      let(:set_fixed_text){ 'Set to Fixed' }
       let(:account){ User.last.account }
 
       it 'click "Set Abandonment to Variable"' do
@@ -217,7 +260,7 @@ feature 'Internal Admin pages', admin: true do
 
         within(main_table_css) do
           within(last_row) do
-            expect(page).to have_content 'Set Abandonment to Fixed'
+            expect(page).to have_content 'Set to Fixed'
           end
         end
       end
@@ -225,7 +268,7 @@ feature 'Internal Admin pages', admin: true do
       it 'click "Set Abandonment to Fixed' do
         account.update_attributes!({abandonment: 'variable'})
 
-        visit '/admin/users'
+        visit_users_page
 
         within(main_table_css) do
           within(last_row) do
@@ -235,7 +278,7 @@ feature 'Internal Admin pages', admin: true do
 
         within(main_table_css) do
           within(last_row) do
-            expect(page).to have_content 'Set Abandonment to Variable'
+            expect(page).to have_content 'Set to Variable'
           end
         end
       end
