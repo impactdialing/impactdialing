@@ -1,8 +1,7 @@
 class Admin::BillingSubscriptionsController < AdminController
 private
-  def eager_load_account(partial=false)
-    eager_loads = [:billing_subscription]
-    eager_loads << :quota unless partial
+  def eager_load_account
+    eager_loads = [:billing_subscription, :quota]
 
     @account      = Account.includes(*eager_loads).find(params[:account_id])
     @subscription = @account.billing_subscription
@@ -30,12 +29,14 @@ private
   end
 
   def update_contract
-    return unless price_per_quantity.present?
+    return false unless price_per_quantity.present?
 
     # reload subscription id & obj
-    # contract persists on new subscription after upgrade or reset
-    eager_load_account(true) if plan.present?
+    # contract persists on new subscription after reset
+    eager_load_account if plan.present?
     subscription.update_contract price_per_quantity: price_per_quantity
+
+    true
   end
 
   def plan
@@ -81,17 +82,17 @@ public
   def update
     msg = ["Subscription updated."]
 
-    eager_load_account(true)
+    eager_load_account
 
     upgrade_to_enterprise
     reset_to_trial
 
-    update_contract
-    unless subscription.save
-      msg = subscription.errors.full_messages
+    if update_contract and (not subscription.save) # only run save if contract changes
+      flash[:error] = subscription.errors.full_messages
+    else
+      flash[:notice] = ['Subscription updated.']
     end
 
-    flash[:notice] = msg
     redirect_to :back
   end
 end
