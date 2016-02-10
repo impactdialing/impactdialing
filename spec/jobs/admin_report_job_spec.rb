@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe AdminReportJob do
+describe AdminReportJob, reports: true do
   let(:billable_minutes){ double }
   let(:report){ double({build: true}) }
   let(:from){ (Time.now.beginning_of_month).to_date }

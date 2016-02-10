@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ReportAccountUsageJob do
+describe ReportAccountUsageJob, reports: true do
   let(:from_date){ 10.days.ago }
   let(:to_date){ 1.day.ago }
   let(:campaigns) do

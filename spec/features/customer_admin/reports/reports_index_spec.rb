@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-feature 'Report index text' do
+feature 'Report index text', reports: true do
   include FakeCallData
 
   before(:all) do

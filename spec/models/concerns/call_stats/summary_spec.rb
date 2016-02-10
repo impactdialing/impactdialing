@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe CallStats::Summary do
+describe CallStats::Summary, reports: true do
   include ApplicationHelper::TimeUtils
 
   describe "dials summary" do

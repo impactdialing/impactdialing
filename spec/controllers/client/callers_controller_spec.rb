@@ -66,7 +66,7 @@ describe Client::CallersController, :type => :controller do
       expect(created_caller.password).to eq caller_params[:caller][:password]
     end
 
-    describe "call details report" do
+    describe "call details report", reports: true do
 
       let(:script) { create(:script) }
       let(:campaign) { create(:power, :script => script, :account => @user.account) }

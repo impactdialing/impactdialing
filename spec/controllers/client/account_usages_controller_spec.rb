@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe Client::AccountUsagesController, :type => :controller do
+describe Client::AccountUsagesController, type: :controller, reports: true do
   let(:account) do
     create(:account)
   end

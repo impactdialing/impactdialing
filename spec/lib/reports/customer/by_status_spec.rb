@@ -1,7 +1,7 @@
 require 'rails_helper'
 require 'reports'
 
-describe Reports::Customer::ByStatus do
+describe Reports::Customer::ByStatus, reports: true do
   describe '#build' do
     let(:from){ 2.days.ago.beginning_of_day }
     let(:to){ 0.days.ago.end_of_day }

@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ReportWebUIStrategy, :type => :model do
+describe ReportWebUIStrategy, type: :model, reports: true do
   include ExceptionMethods
 
   describe 'a new instance' do

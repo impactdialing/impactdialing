@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-feature 'Dials report' do
+feature 'Dials report', reports: true do
   include FakeCallData
 
   before do

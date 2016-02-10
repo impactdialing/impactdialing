@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Customer Reports', type: :feature, admin: true do
+describe 'Customer Reports', type: :feature, admin: true, reports: true do
   def caller_session_attrs(caller)
     {
       caller: caller,

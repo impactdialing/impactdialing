@@ -43,7 +43,7 @@ def create_calls(campaigns_or_callers, attrs={})
   obj
 end
 
-describe 'Reports::BillableMinutes' do
+describe 'Reports::BillableMinutes', reports: true do
   let(:power_campaign){ create(:power) }
   let(:preview_campaign){ create(:preview) }
   let(:from) do

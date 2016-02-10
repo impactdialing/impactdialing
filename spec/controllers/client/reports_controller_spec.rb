@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe Client::ReportsController, :type => :controller do
+describe Client::ReportsController, type: :controller, reports: true do
   let!(:account) { create(:account)}
   let!(:user) { create(:user, :account => account) }
   let(:time_zone){ ActiveSupport::TimeZone.new("Pacific Time (US & Canada)") }

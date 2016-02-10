@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe AccountUsageMailer, :type => :mailer do
+describe AccountUsageMailer, type: :mailer, reports: true do
   include ExceptionMethods
 
   let(:white_labeled_email){ 'info@stonesphones.com' }

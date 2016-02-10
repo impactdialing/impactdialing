@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe CallAttempt, :type => :model do
+describe CallAttempt, type: :model, reports: true do
   include Rails.application.routes.url_helpers
 
   describe '#report_recording_url(url)' do
