@@ -7,6 +7,10 @@ private
   def verify_date_format!(datetime)
     return true if datetime =~ /\d+\/\d+\/\d+/
 
+    invalid_date!
+  end
+
+  def invalid_date!
     raise InvalidDateFormat, "Date must be of format mm/dd/yyyy; eg 7/4/2014"
   end
 
@@ -16,7 +20,11 @@ private
 
       month, day, year = datetime.split('/')
       if month and day and year
-        datetime = Time.new(year, month, day, 12, 0, 0, time_zone.now.formatted_offset)
+        begin
+          datetime = Time.new(year, month, day, 12, 0, 0, time_zone.now.formatted_offset)
+        rescue ArgumentError => e
+          invalid_date!
+        end
       end
     else
       datetime = datetime.in_time_zone(time_zone)

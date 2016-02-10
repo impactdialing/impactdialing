@@ -70,9 +70,17 @@ describe Report::SelectiveDateRange do
     it 'raises ArgumentError'
   end
 
-  context 'given invalid date formats' do
-    it 'raises Report::InvalidDateFormat' do
+  context 'invalid date formats raise Report::InvalidDateFormat' do
+    it 'NN-NN-NNNN (hyphenated)' do
       date_range = Report::SelectiveDateRange.new(['10-1-2014'])
+
+      expect{
+        date_range.from
+      }.to raise_error Report::SelectiveDateRange::InvalidDateFormat
+    end
+
+    it '48/48/2424 (impossible dates)' do
+      date_range = Report::SelectiveDateRange.new(['48/48/2424'])
 
       expect{
         date_range.from
