@@ -11,6 +11,7 @@ class ApplicationController < ActionController::Base
   rescue_from CanCan::AccessDenied do |exception|
     redirect_to root_url, :alert => exception.message
   end
+  rescue_from Report::SelectiveDateRange::InvalidDateFormat, with: :rescue_invalid_date
 
 protected
   def self.instrument_actions?
@@ -29,6 +30,12 @@ protected
     flash_message(:error, I18n.t(:invalid_date_format))
     redirect_to :back
   end
+
+  def rescue_invalid_date(exception)
+    flash[:error] = [exception.message]
+    redirect_to :back
+  end
+
 
 private
   def generate_session_key

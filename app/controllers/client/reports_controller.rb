@@ -12,19 +12,12 @@ module Client
     around_filter :select_shard
     respond_to :html, :json
 
-    rescue_from Report::SelectiveDateRange::InvalidDateFormat, with: :rescue_invalid_date
-
     if instrument_actions?
       instrument_action :index, :performance, :dials_summary, :dials, :answer, :usage,
                         :download_report, :download_reports, :download
     end
 
   private
-    def rescue_invalid_date(exception)
-      flash[:error] = [exception.message]
-      redirect_to :back
-    end
-
     def report_response_strategy
       unless session[:internal_admin]
         return params[:strategy]
