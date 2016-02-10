@@ -1,14 +1,21 @@
 <div role="main">
   <h1><%= "Usage Report" %></h1>
   <h2>for <%= @caller.identity_name %></h2>
-  <%= form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
-    <%= select_tag 'campaign_id', options_for_select(@campaigns_data, selected: @campaign.try(:id)), prompt: 'Total' %>
-  <p style="display: inline-block;">
-    Showing <%= @archived ? 'archived' : 'active' %> campaigns. <%= link_to "Show #{@archived ? 'active' : 'archived'}.", url_for(archived: @archived ? 0 : 1) %>
-  </p>
-    <%= render :partial => 'shared/switch_campaign' %>
-    <%= render :partial => 'shared/utilization', :locals => {:report => @caller, :usage=> @caller_usage} %>
-    <%= render :partial => 'shared/callers_billable', :locals => {:usage=> @caller_usage} %>
-    <%= render :partial => 'shared/date_picker_callers', :locals => {:caller=> @caller, :campaign=> @campaign} %>
+  <%= form_tag(usage_client_caller_path(id: params[:id]), {
+    method: :get
+  }) do %>
+    <%= render 'shared/switch_campaign' %>
+    <%= render 'shared/utilization', {
+      report: @caller,
+      usage: @caller_usage
+    } %>
+    <%= render 'shared/callers_billable', {usage: @caller_usage} %>
+    <%= render 'client/reports/selective_date_range_picker', {
+      caller_id: @caller.try(:id),
+      from_date: @date_range.from,
+      to_date: @date_range.to,
+      embedded: true,
+      include_button: true
+    } %>
   <% end %>
 </div>

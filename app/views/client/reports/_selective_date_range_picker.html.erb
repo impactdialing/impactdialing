@@ -22,12 +22,16 @@
 </fieldset>
 <% end %>
 
+<%= content_for(:datepicker_button) do %>
+  <div class="actions"><button class="action primary" type="submit">Update date range</button></div>
+<% end %>
+
 <% if defined?(embedded) and embedded %>
   <%= yield :datepicker_fields %>
+  <%= yield :datepicker_button if defined?(include_button) and include_button %>
 <% else %>
   <%= form_tag(datepicker_path, :method => :get) do %>
     <%= yield :datepicker_fields %>
-
-    <div class="actions"><button class="action primary" type="submit">Update date range</button></div>
+    <%= yield :datepicker_button %>
   <% end %>
 <% end %>

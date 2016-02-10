@@ -88,8 +88,19 @@ module Client
         campaigns = archive_scope(campaigns)
         @campaigns_data = Account.connection.execute(campaigns.select([:name, 'campaigns.id']).uniq.to_sql).to_a
         @campaign = campaigns.find_by_id(params[:campaign_id])
-        @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
-        @caller_usage = CallerUsage.new(@caller, @campaign, @from_date, @to_date)
+
+        from_pool = [
+          params[:from_date],
+          CallerSession.first_caller_time(@caller).first.try(:created_at),
+          CallerSession.first_campaign_time(@campaign).first.try(:created_at)
+        ]
+        to_pool = [
+          params[:to_date],
+          CallerSession.last_caller_time(@caller).first.try(:created_at),
+          CallerSession.last_campaign_time(@campaign).first.try(:created_at)
+        ]
+        @date_range = Report::SelectiveDateRange.new(from_pool, to_pool, @campaign.try(:time_zone))
+        @caller_usage = CallerUsage.new(@caller, @campaign, @date_range.from, @date_range.to)
       end
     end
 
@@ -100,8 +111,19 @@ module Client
       campaigns = archive_scope(campaigns)
       @campaigns_data = Account.connection.execute(campaigns.select([:name, 'campaigns.id']).uniq.to_sql).to_a
       @campaign = campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
-      @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
-      @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
+
+      from_pool = [
+        params[:from_date],
+        CallerSession.first_caller_time(@caller).first.try(:created_at),
+        CallerSession.first_campaign_time(@campaign).first.try(:created_at)
+      ]
+      to_pool = [
+        params[:to_date],
+        CallerSession.last_caller_time(@caller).first.try(:created_at),
+        CallerSession.last_campaign_time(@campaign).first.try(:created_at)
+      ]
+      @date_range = Report::SelectiveDateRange.new(from_pool, to_pool, @campaign.try(:time_zone))
+      @answered_call_stats = @caller.answered_call_stats(@date_range.from, @date_range.to, @campaign)
       @questions_and_responses = @campaign.try(:questions_and_responses) || {}
     end
 

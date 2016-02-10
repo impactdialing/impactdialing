@@ -4,12 +4,21 @@
   <% if @campaign.nil? %>
     <p><%= "This caller has not called this campaign." %></p>
   <% else %>
-    <%= form_tag(call_details_client_caller_path(:id => params[:id]), :method => :get) do %>
-      <%= select_tag 'campaign_id', options_for_select(@campaigns_data, selected: @campaign.id) %>
-      <%= render 'shared/switch_campaign'%>
+    <%= form_tag(call_details_client_caller_path(id: params[:id]), {
+      method: :get
+    }) do %>
+      <%= render 'shared/switch_campaign', {
+        without_prompt: true
+      } %>
       <%= render 'shared/answer_call_details'%>
       <%= render 'shared/transfer_call_details'%>
-      <%= render 'shared/date_picker_callers' %>
+      <%= render 'client/reports/selective_date_range_picker', {
+        caller_id: @caller.try(:id),
+        from_date: @date_range.from,
+        to_date: @date_range.to,
+        embedded: true,
+        with_button: true
+      } %>
     <% end %>
 
   <% end %>

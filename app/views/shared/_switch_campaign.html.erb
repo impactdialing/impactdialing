@@ -1,4 +1,10 @@
-<div class="buttons">
-  <input type="hidden" name="archived" value="<%= @archived ? 1 : 0 %>">
-  <button type="submit">Switch campaign</button>
-</div>
+<% opts = {onchange: 'submit();'} %>
+<% opts.merge!({prompt: 'Total'}) unless defined?(without_prompt) %>
+<%= select_tag('campaign_id', options_for_select(@campaigns_data, {
+      selected: @campaign.try(:id)
+    }), opts)
+%>
+<p style="display: inline-block;">
+  <%= link_to "Show #{@archived ? 'active' : 'archived'} campaigns.", url_for(archived: @archived ? 0 : 1) %>
+</p>
+<input type="hidden" name="archived" value="<%= @archived ? 1 : 0 %>">
