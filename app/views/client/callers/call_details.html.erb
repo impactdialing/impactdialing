@@ -11,7 +11,6 @@
         without_prompt: true
       } %>
       <%= render 'shared/answer_call_details'%>
-      <%= render 'shared/transfer_call_details'%>
       <%= render 'client/reports/selective_date_range_picker', {
         caller_id: @caller.try(:id),
         from_date: @date_range.from,
