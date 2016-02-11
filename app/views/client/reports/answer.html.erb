@@ -9,28 +9,11 @@
     <% si = 1 %>
     <% @results.each do |script, data| %>
       <h2 id="script_heading_<%= si %>"><%= "Script: #{data[:script]}" %></h2>
-      <% i = 1 %>
-      <% data[:questions].each do |question, stats| %>
-        <h3 id="question_heading_<%= i %>">Question <%= i %>: <%= question %></h3>
-         <table id="question_<%= i %>">
-           <tr>
-             <th>Answer</th>
-             <th>Number</th>
-             <th>Percentage</th>
-           </tr>
-           <% ii = 1 %>
-           <% stats.each do |answers| %>
-            <% total_answers += answers[:number].to_i %>
-            <tr id="question_<%= i %>_answer_<%= ii %>">
-              <td><%= answers[:answer]%></td>
-              <td><%= answers[:number]%></td>
-              <td><%= answers[:percentage]%> %</td>
-            </tr>
-            <% ii += 1 %>
-            <% end %>
-         </table>
-        <% i += 1 %>
-      <% end %>
+      <%= render 'shared/answer_call_details', {
+        answer_stats: data[:questions],
+        answer_counter: -> (n) { total_answers += n }
+      } %>
+      
       <% si += 1 %>
     <% end %>
 
@@ -43,14 +26,14 @@
           <th>Percentage</th>
         </tr>
         <% i = 1 %>
-        <% @transfers.each_pair do |key, value| %>
-          <tr id="transfer_<%= i %>">
-            <td><%= value[:label] %></td>
-            <td><%= value[:number] %></td>
-            <td><%= value[:percentage] %> %</td>
-          </tr>
-          <% i += 1 %>
-        <% end %>
+        <% @transfers.each_value do |value| %>
+        <tr id="transfer_<%= i %>">
+          <td><%= value[:label]%></td>
+          <td><%= value[:number]%></td>
+          <td><%= value[:percentage]%> %</td>
+        </tr>
+        <% i += 1 %>
+        <%end%>
       </table>
     <% end %>
 

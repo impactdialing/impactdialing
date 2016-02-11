@@ -141,6 +141,11 @@ module FakeCallData
       callers = campaign.callers
     end
     voter = voters.sample
+    caller = callers.sample
+    if caller.caller_sessions.count.zero?
+      caller.caller_sessions << create(:caller_session, caller: caller, campaign: campaign)
+      caller.save!
+    end
     call_attempts = build_and_import_list(:bare_call_attempt, n, {
       campaign: campaign,
       caller: callers.sample,

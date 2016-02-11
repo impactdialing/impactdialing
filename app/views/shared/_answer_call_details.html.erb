@@ -1,5 +1,5 @@
 <% i = 1 %>
-<% @answered_call_stats.each_pair do |question, stats| %>
+<% answer_stats.each do |question, stats| %>
   <h3>Question <%= i %>: <%= question %></h3>
     <table>
        <tr>
@@ -8,6 +8,7 @@
          <th>Percentage</th>
        </tr>
       <% stats.each do |answers| %>
+        <% answer_counter.call(answers[:number]) if defined?(answer_counter) %>
         <tr>
           <td><%= answers[:answer]%></td>
           <td><%= answers[:number]%></td>

@@ -1,102 +1,95 @@
 require 'rails_helper'
 
-feature 'Full Campaign Answer Report', reports: true do
+feature 'Answer Reports', reports: true do
   include FakeCallData
 
-  before do
-    @admin    = create(:user)
-    @account  = @admin.account
-    @campaign = create_campaign_with_transfer_attempts(:bare_preview, @account)[:campaign]
-  end
+  let!(:admin){ create(:user) }
+  let!(:account){ admin.account }
+  let!(:campaign){ create_campaign_with_transfer_attempts(:bare_preview, account)[:campaign] }
 
-  let(:admin){ @admin }
-  let(:account){ @account }
-  let(:campaign){ @campaign }
+  context 'Campaign' do
+    let(:page_title){ "#{campaign.name} Answered Calls Report" }
+    let(:answers_query){ Answer.where(campaign_id: campaign.id) }
+    let(:target_url){ answer_client_reports_path(campaign_id: campaign.id) }
 
-  scenario 'View stats on the number & percentage responses of each type given for each question' do
-    web_login_as(admin)
-    visit answer_client_reports_path(campaign_id: campaign.id)
-    expect(page).to have_content "#{campaign.name} Answered Calls Report"
+    before do
+      web_login_as(admin)
+    end
 
-    question_ids = Answer.select('question_id').pluck(:question_id)
-    i            = 1
-    Question.where(id: question_ids).includes(:possible_responses).each do |question|
-      expect(page).to have_content("Script: #{question.script.name}")
-      expect(page).to have_content("Question #{i}: #{question.text}")
-      within("table:nth-of-type(#{i})") do
-        question.possible_responses.each do |possible_response|
-          answers        = Answer.where(campaign_id: campaign.id)
-          answer_count   = answers.group('possible_response_id').count
-          answer_total   = answers.group('question_id').count
-          answer_perc    = (answer_count[possible_response.id].try(:*, 100) || 0) / answer_total[question.id]
-          expected_count = answer_count[possible_response.id] || 0
-          expected_perc  = "#{answer_perc} %"
+    it_behaves_like 'any form with date picker'
+    it_behaves_like 'any answer report'
 
-          expect(page).to have_content possible_response.value
-          expect(page).to have_content expected_count
-          expect(page).to have_content expected_perc
+    context 'transfer stats' do
+      let(:transfers){ campaign.transfer_attempts.map(&:transfer).uniq }
+
+      scenario 'display number & percentage of transfers completed to each target' do
+        numbers = campaign.transfer_attempts.group('transfer_id').count
+        total   = campaign.transfer_attempts.count
+
+        visit target_url
+
+        i = 1
+        transfers.each do |transfer|
+          number = numbers[transfer.id]
+          perc   = (number || 0) * 100 / total
+
+          within("#transfer_#{i}") do
+            expect(page).to have_content transfer.label
+            expect(page).to have_content number
+            expect(page).to have_content "#{perc} %"
+          end
+
+          i += 1
         end
+
+        expect(i > 1).to be_truthy
       end
-      i += 1
     end
 
-    expect(i > 1).to be_truthy
+    context 'display message drop stats' do
+      let(:recording){ create(:bare_recording) }
+      let(:call_attempts){ campaign.call_attempts }
+      before do
+        call_attempts.limit(3).update_all({
+          recording_id: recording.id,
+          recording_delivered_manually: false
+        })
+        visit target_url
+      end
+      scenario 'View stats on the number & percentage of messages left automatically' do
+        drops   = campaign.call_attempts.where('recording_id is not null').where(recording_delivered_manually: false)
+        numbers = drops.group('recording_id').count
+        total   = campaign.answers.count
+
+        i = 1
+        Recording.where(1).to_a.each do |recording|
+          number = numbers[recording.id] || 0
+          perc   = (number * 100) / total
+          within("#recording_#{i}") do
+            expect(page).to have_content recording.name
+            expect(page).to have_content number
+            expect(page).to have_content "#{perc}%"
+          end
+
+          i += 1
+        end
+
+        expect(i > 1).to be_truthy
+      end
+    end
   end
 
-  scenario 'View stats on the number & percentage of transfers completed to each target' do
-    transfers = campaign.transfer_attempts.map(&:transfer).uniq
+  context 'Caller' do
+    let(:caller_record){ campaign.callers.to_a.find{|c| c.caller_sessions.count > 0} }
+    let(:answers_query){ Answer.where(caller_id: caller_record.id) }
+    let(:page_title){ "Answered Calls Report for #{caller_record.username}" }
+    let(:target_url){ call_details_client_caller_path(caller_record) }
 
-    web_login_as(admin)
-    visit answer_client_reports_path(campaign_id: campaign.id)
-
-    numbers = campaign.transfer_attempts.group('transfer_id').count
-    total   = campaign.transfer_attempts.count
-
-    i = 1
-    transfers.each do |transfer|
-      number = numbers[transfer.id]
-      perc   = (number || 0) * 100 / total
-
-      within("#transfer_#{i}") do
-        expect(page).to have_content transfer.label
-        expect(page).to have_content number
-        expect(page).to have_content "#{perc} %"
-      end
-
-      i += 1
+    before do
+      web_login_as(admin)
     end
 
-    expect(i > 1).to be_truthy
-  end
-
-  scenario 'View stats on the number & percentage of messages left automatically' do
-    recording     = create(:bare_recording)
-    call_attempts = campaign.call_attempts
-    call_attempts.limit(3).update_all({
-      recording_id: recording.id,
-      recording_delivered_manually: false
-    })
-
-    web_login_as(admin)
-    visit answer_client_reports_path(campaign_id: campaign.id)
-
-    drops   = campaign.call_attempts.where('recording_id is not null').where(recording_delivered_manually: false)
-    numbers = drops.group('recording_id').count
-    total   = campaign.answers.count
-
-    i = 1
-    Recording.where(1).to_a.each do |recording|
-      number = numbers[recording.id] || 0
-      perc   = (number * 100) / total
-      within("#recording_#{i}") do
-        expect(page).to have_content recording.name
-        expect(page).to have_content number
-        expect(page).to have_content "#{perc}%"
-      end
-
-      i += 1
-    end
-
-    expect(i > 1).to be_truthy
+    it_behaves_like 'any form with date picker'
+    it_behaves_like 'any answer report'
   end
 end
