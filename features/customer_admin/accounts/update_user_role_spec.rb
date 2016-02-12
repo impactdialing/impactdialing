@@ -1,7 +1,7 @@
 require 'rails_helper'
 include JSHelpers
 
-describe 'updating user roles', js: true do
+feature 'updating user roles', js: true do
   let(:user){ create(:user) }
 
   before do
@@ -10,7 +10,7 @@ describe 'updating user roles', js: true do
   end
 
   describe 'when a user role is changed ' do
-    it 'from administrator to supervisor' do
+    scenario 'from administrator to supervisor' do
       click_on "Account"
       select('Supervisor', :from => 'user_2_role')
       expect(page).to have_content 'Updated user role successfully.'

@@ -14,16 +14,7 @@ test:
     - DISABLE_SPRING=1 bundle exec rspec --format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/specs/results$TEST_ENV_NUMBER.xml --tag ~data_heavy:
         parallel: true
         files:
-          - spec/controllers/**/*_spec.rb
-          - spec/models/**/*_spec.rb
-          - spec/views/**/*_spec.rb
-          - spec/mailers/**/*_spec.rb
-          - spec/jobs/**/*_spec.rb
-          - spec/lib/**/*_spec.rb
-          - spec/helpers/**/*_spec.rb
-          - spec/requests/**/*_spec.rb
-    - sleep 2:
-        parallel: true
+          - spec/**/*_spec.rb
     - $HOME/sc-bin/bin/sc --verbose --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce:
         background: true
         parallel: true
@@ -44,7 +35,7 @@ test:
     - USE_SAUCE='ie11' bin/parallel_features:
         parallel: true
         files:
-          - spec/features/customer_admin/campaigns/*
+          - features/customer_admin/campaigns/*_spec.rb
     #- USE_SAUCE='wch' bin/parallel_features:
     #    parallel: true
     #    files:
