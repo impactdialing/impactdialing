@@ -17,12 +17,16 @@ if ENV['TEST_ENV_NUMBER'].present?
 
     ENV['REDIS_URL'] = new_url
   end
-end
-
-if ENV['SIMPLECOV'].present?
-  require 'simplecov'
-  SimpleCov.start 'rails'
-  SimpleCov.coverage_dir("coverage")
+  if ENV['SIMPLECOV'].present?
+    p "WARNING: Skipping coverage report. Run test suite sequentially for coverage."
+  end
+else
+  # some things don't work in parallel
+  if ENV['SIMPLECOV'].present?
+    require 'simplecov'
+    SimpleCov.start 'rails'
+    SimpleCov.coverage_dir("coverage")
+  end
 end
 
 require 'shoulda'
