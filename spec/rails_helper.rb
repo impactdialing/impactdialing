@@ -34,6 +34,10 @@ end
 
 RSpec.configure do |config|
   module QuickRspecHelpers
+    def printtime
+      p  "Time: #{Time.now.strftime('%d %b %H:%M:%S')}"
+    end
+
     def webmock_disable_net!
       WebMock.disable_net_connect!({
         allow_localhost: true,
@@ -82,6 +86,7 @@ RSpec.configure do |config|
     end
 
     if example.metadata[:js] or example.metadata[:type] == :feature
+      printtime
       VCR.configure do |c|
         c.allow_http_connections_when_no_cassette = true
       end
