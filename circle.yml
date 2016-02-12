@@ -24,7 +24,7 @@ test:
           - spec/requests/**/*_spec.rb
     - sleep 2:
         parallel: true
-    - $HOME/sc-bin/bin/sc --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce --no-ssl-bump-domains *.com:
+    - $HOME/sc-bin/bin/sc --verbose --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce:
         background: true
         parallel: true
     - while [ ! -e ~/hot-sauce ]; do sleep 1; done:
