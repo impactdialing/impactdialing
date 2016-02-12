@@ -1,8 +1,8 @@
 <h1>Do Not Call list</h1>
 
-<fieldset>
+<%= form_for BlockedNumber.new do |f| %>
+  <fieldset>
   <legend>Add number</legend>
-  <%= form_for BlockedNumber.new do |f| %>
     <p data-intro="Add a phone number here." data-step="1">
       <%= f.label :number %>
       <%= f.text_field :number %>
@@ -14,8 +14,8 @@
     <div class="actions">
       <button type="action primary">Add</button>
     </div>
-  <% end %>
-</fieldset>
+  </fieldset>
+<% end %>
 
 <% if @blocked_numbers.any? %>
   <table id="do_not_call_list">
