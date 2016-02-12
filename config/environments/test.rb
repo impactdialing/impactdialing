@@ -1,13 +1,24 @@
-if ENV['DATABASE_URL'].present? and ENV['TEST_ENV_NUMBER'].present?
-  new_url = "#{ENV['DATABASE_URL']}#{ENV['TEST_ENV_NUMBER']}"
+if ENV['TEST_ENV_NUMBER'].present?
+  if ENV['DATABASE_URL'].present?
+    new_url = "#{ENV['DATABASE_URL']}#{ENV['TEST_ENV_NUMBER']}"
 
-  p "Using: #{new_url}"
+    p "Using: #{new_url}"
 
-  ENV['DATABASE_URL']                 = new_url
-  ENV['DATABASE_READ_SLAVE1_URL']     = new_url
-  ENV['DATABASE_READ_SLAVE2_URL']     = new_url
-  ENV['DATABASE_SIMULATOR_SLAVE_URL'] = new_url
+    ENV['DATABASE_URL']                 = new_url
+    ENV['DATABASE_READ_SLAVE1_URL']     = new_url
+    ENV['DATABASE_READ_SLAVE2_URL']     = new_url
+    ENV['DATABASE_SIMULATOR_SLAVE_URL'] = new_url
+  end
+
+  if ENV['REDIS_URL'].present?
+    new_url = "#{ENV['REDIS_URL']}/#{ENV['TEST_ENV_NUMBER'] || 0}"
+
+    p "Using: #{new_url}"
+
+    ENV['REDIS_URL'] = new_url
+  end
 end
+
 if ENV['SIMPLECOV'].present?
   require 'simplecov'
   SimpleCov.start 'rails'
