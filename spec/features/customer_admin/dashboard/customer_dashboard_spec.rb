@@ -17,7 +17,7 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true, sa
   let(:user) do
     create(:user)
   end
-  let(:account) do
+  let!(:account) do
     user.account
   end
   before do
@@ -34,7 +34,6 @@ describe 'Client Web Dashboard (/client/index)', type: :feature, admin: true, sa
     end
 
     it 'should be able to turn off Call Recording' do
-      account = User.last.account
       account.record_calls = true
       account.save!
       visit client_root_path

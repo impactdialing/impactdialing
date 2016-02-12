@@ -6,7 +6,7 @@ shared_context 'setup campaign' do
   let(:campaign){ create(:power, account: account, active: true)}
 end
 
-describe 'add caller', :type => :feature do
+feature 'add caller', admin: true do
   include_context 'setup campaign'
 
   before do
@@ -38,7 +38,7 @@ describe 'add caller', :type => :feature do
   end
 end
 
-describe 'edit caller', :type => :feature do
+feature 'edit caller', admin: true do
   include_context 'setup campaign'
   let!(:caller){ create(:caller, campaign: campaign, account: account)}
 
@@ -48,8 +48,7 @@ describe 'edit caller', :type => :feature do
     visit edit_client_caller_path(caller)
     select '[None]', from: 'Campaign'
     click_on 'Save'
-    expect(page).to have_content "Caller has been reassigned to a different campaign.
-    The change has been submitted and it might take a few minutes to update."
+    expect(page).to have_content I18n.t('activerecord.successes.models.caller.reassigned')
   end
 
   it 'gives a different notice when a caller is saved and the campaign has not been changed' do

@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe 'CallFlow::Web::ContactFields::Options' do
-  let(:redis){ Redis.new }
   let(:account){ create(:account) }
   let(:key){ "contact_fields:options:#{account.id}" }
   let(:new_fields) do

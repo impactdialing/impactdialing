@@ -3,14 +3,13 @@ require 'rails_helper'
 feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?, file_uploads: true do
 
   def pall
-    re = Redis.new
-    re.keys('*').each do |key|
-      type = re.type(key)
+    redis.keys('*').each do |key|
+      type = redis.type(key)
       p "#{key} => #{type}"
       if type == 'zset'
-        p "#{re.zrange(key, 0, -1, with_scores: true)}"
+        p "#{redis.zrange(key, 0, -1, with_scores: true)}"
       elsif type == 'hash'
-        p "#{re.hgetall(key)}"
+        p "#{redis.hgetall(key)}"
       end
     end
   end

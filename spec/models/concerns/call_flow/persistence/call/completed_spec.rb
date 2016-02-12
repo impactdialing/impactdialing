@@ -78,7 +78,6 @@ describe 'CallFlow::Persistence::Call::Completed' do
       From: '+15555551234'
     })
   end
-  let(:redis){ Redis.new }
   let(:account_sid){ completed_params[:AccountSid] }
 
   subject{ CallFlow::Persistence::Call::Completed.new(account_sid, call_sid) }

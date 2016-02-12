@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe 'CallFlow::Web::ContactFields::Selected' do
-  let(:redis){ Redis.new }
   let(:instance){ create(:script) }
   let(:invalid_instance){ build(:script) }
   let(:fields){ ['name', 'email', 'address'] }

@@ -29,7 +29,6 @@ module FakeCallData
   end
 
   def clean_dial_queue
-    redis = Redis.new
     keys  = redis.keys('dial_queue:*')
     keys.each do |key|
       redis.del(key)

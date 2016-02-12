@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe 'CallFlow::Call::State' do
-  let(:redis){ Redis.new }
   let(:valid_base_key){ 'one:two:three' }
   let(:missing_part_base_key){ 'one:two' }
   let(:blank_part_base_key){ ':two:three' }

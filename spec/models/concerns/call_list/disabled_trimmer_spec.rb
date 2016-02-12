@@ -32,7 +32,6 @@ describe 'CallList::DisabledTrimmer' do
   let(:presented_key){ "dial_queue:#{campaign.id}:presented" }
   let(:blocked_key){ "dial_queue:#{campaign.id}:blocked" }
   let(:completed_key){ "dial_queue:#{campaign.id}:completed" }
-  let(:redis){ Redis.new }
 
   describe 'disabling leads' do
     subject{ CallList::DisabledTrimmer.new(list_one) }

@@ -1,6 +1,6 @@
 # This file is copied to spec/ when you run 'rails generate rspec:install'
-ENV['RACK_QUEUE_METRICS_INTERVAL'] = "#{(3600 * 24)}"
 ENV["RAILS_ENV"] ||= 'test'
+ENV['RACK_QUEUE_METRICS_INTERVAL'] = "#{(3600 * 24)}"
 ENV['REDIS_URL'] ||= 'redis://localhost:6379'
 ENV['TWILIO_CALLBACK_HOST'] ||= 'test.com'
 ENV['CALL_END_CALLBACK_HOST'] ||= 'test.com'
@@ -11,17 +11,18 @@ ENV['RECORDING_ENV'] = 'test'
 ENV['CALLIN_PHONE'] ||= '5555551234'
 
 require File.expand_path("../../config/environment", __FILE__)
+abort("The Rails environment is running in production mode!") if Rails.env.production?
+
+ActiveRecord::Migration.check_pending! if defined?(ActiveRecord::Migration)
+
+require 'spec_helper'
 require 'rspec/rails'
-require 'webmock/rspec'
-
-require 'impact_platform'
-
-require 'paperclip/matchers'
-
 
 Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |f| require f }
 
-ActiveRecord::Migration.check_pending! if defined?(ActiveRecord::Migration)
+require 'webmock/rspec'
+require 'impact_platform'
+require 'paperclip/matchers'
 
 VCR.configure do |c|
   c.debug_logger                            = File.open(Rails.root.join('log', 'vcr-debug.log'), 'w')
@@ -32,12 +33,17 @@ VCR.configure do |c|
 end
 
 RSpec.configure do |config|
+  module QuickRspecHelpers
+    def webmock_disable_net!
+      WebMock.disable_net_connect!({
+        allow_localhost: true,
+        allow: [/saucelabs.com/]
+      })
+    end
 
-  def webmock_disable_net!
-    WebMock.disable_net_connect!({
-      allow_localhost: true,
-      allow: [/saucelabs.com/]
-    })
+    def redis
+      @redis ||= Redis.new
+    end
   end
 
   config.fixture_path = Rails.root.join('spec', 'fixtures')
@@ -45,6 +51,7 @@ RSpec.configure do |config|
   config.infer_spec_type_from_file_location!
 
   config.profile_examples = 10
+  config.include QuickRspecHelpers
   config.include FactoryGirl::Syntax::Methods
   config.include TwilioRequestStubs
   config.include FactoryGirlImportHelpers

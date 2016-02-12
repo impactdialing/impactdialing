@@ -29,7 +29,6 @@ describe 'CallFlow::DialQueue::Jobs::Purge.perform(campaign_id)' do
     ]
   end
   let(:dial_queue){ campaign.dial_queue }
-  let(:redis){ Redis.new }
 
   before do
     import_list(voter_list, available_households.merge(recycled_households))
@@ -43,7 +42,6 @@ describe 'CallFlow::DialQueue::Jobs::Purge.perform(campaign_id)' do
   it 'removes all dial queue data for given campaign' do
     CallFlow::DialQueue::Jobs::Purge.perform(campaign.id)
 
-    redis = Redis.new
     existing_redis_keys = redis.keys
     set_keys_under_test.each do |key|
       expect(existing_redis_keys).to_not include(key)

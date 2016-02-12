@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'add caller group', type: :feature, rack: true do
+feature 'add caller group', admin: true do
   let(:customer) do
     create(:user)
   end
@@ -36,7 +36,7 @@ describe 'add caller group', type: :feature, rack: true do
   end
 end
 
-describe 'edit caller group', type: :feature, rack: true do
+feature 'edit caller group', admin: true do
   let(:admin){ create(:user)}
   let(:account){ admin.account }
   let(:original_campaign){ create(:preview, account: account) }
@@ -50,8 +50,7 @@ describe 'edit caller group', type: :feature, rack: true do
     visit edit_client_caller_group_path(caller_group)
     select new_campaign.name, from: 'Campaign'
     click_on 'Save'
-    expect(page).to have_content 'Caller Group has been reassigned to a different campaign.
-    The change has been submitted and it might take a few minutes to update.'
+    expect(page).to have_content I18n.t('activerecord.successes.models.caller_group.reassigned')
   end
 
   it 'gives a different notification when name in caller group is changed or no changes are made' do

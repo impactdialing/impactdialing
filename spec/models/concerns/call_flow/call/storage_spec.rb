@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe 'CallFlow::Call::Storage' do
-  let(:redis){ Redis.new }
   let(:account_sid){ 'AC-123' }
   let(:call_sid){ 'CA-321' }
   let(:namespace){ 'sessions' }

@@ -6,7 +6,6 @@ end
 
 module ListHelpers
   def import_list(list, households, household_namespace='active', zset_namespace='active')
-    redis = Redis.new
     base_key = "dial_queue:#{list.campaign_id}:households:#{household_namespace}"
     sequence = 1
     lead_sequence = "#{sequence}0".to_i
@@ -48,7 +47,6 @@ module ListHelpers
       lds << lead
     end
     leads = lds
-    redis = Redis.new
     base_key = "dial_queue:#{list.campaign_id}:households:#{household_namespace}"
     key = "#{base_key}:#{phone[0..ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i]}"
     hkey = phone[ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i + 1..-1]
@@ -58,7 +56,6 @@ module ListHelpers
   end
 
   def save_lead_update(list, phone, updated_leads, household_namespace='active', zset_namespace='active')
-    redis             = Redis.new
     base_key          = "dial_queue:#{list.campaign_id}:households:#{household_namespace}"
     key               = "#{base_key}:#{phone[0..ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i]}"
     hkey              = phone[ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i + 1..-1]

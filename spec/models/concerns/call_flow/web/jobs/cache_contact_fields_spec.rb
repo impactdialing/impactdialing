@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe 'CallFlow::Web::Jobs::CacheContactFields' do
-  let(:redis){ Redis.new }
   let(:script) do
     create(:script, {
       voter_fields: ['First name', 'Email', 'Phone', 'Party'].to_json

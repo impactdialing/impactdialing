@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe 'CallFlow::Web::ContactFields' do
-  let(:redis){ Redis.new }
   let(:fields){ ['name', 'email', 'address'] }
   let(:account){ create(:account) }
   let(:script){ create(:script, account: account) }

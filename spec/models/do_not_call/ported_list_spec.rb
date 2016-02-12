@@ -7,10 +7,6 @@ describe 'DoNotCall::PortedList' do
     s
   end
 
-  def redis
-    @redis ||= Redis.new
-  end
-
   let(:parser) do
     instance_double('DoNotCall::FileParser')
   end

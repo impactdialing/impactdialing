@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Blocked Number management', type: :feature, rack: true do
+feature 'Blocked Number management', admin: true, js: true do
   let(:i18n_scope){ 'activerecord.errors.models.blocked_number' }
   let(:customer){ create(:user) }
   let!(:preview){ create(:preview, account: customer.account) }
@@ -14,59 +14,52 @@ describe 'Blocked Number management', type: :feature, rack: true do
     click_on 'Manage Do Not Call list'
   end
 
+  def save_blocked_number(number, level='System')
+    fill_in 'Number', with: number
+    select level, from: 'Level'
+    click_on 'Add'
+  end
+
   describe 'creating a blocked number' do
-    def save_blocked_number(number, level)
-      click_on 'Add'
-      expect(page).to have_content I18n.t(:blocked_number_created, number: number.gsub(/[^\d]/, ''), level: level)
-    end
-    before do
-      fill_in 'Number', with: number
-    end
     it 'account-wide' do
-      select 'System', from: 'Level'
-      save_blocked_number(number, 'System')
+      save_blocked_number(number)
+      expect(page).to have_content I18n.t(:blocked_number_created, number: number.gsub(/[^\d]/, ''), level: 'System')
     end
 
     it 'campaign-specific' do
-      select Power.first.name, from: 'Level'
-      save_blocked_number(number, Power.first.name)
+      save_blocked_number(number, power.name)
+      expect(page).to have_content I18n.t(:blocked_number_created, number: number.gsub(/[^\d]/, ''), level: power.name)
     end
   end
 
   describe 'error creating a blocked number' do
     it 'requires number be < 16 characters' do
       number = Array.new(17, rand(9)).join
-      fill_in 'Number', with: number
-      click_on 'Add'
+      save_blocked_number(number)
       expect(page).to have_content I18n.t(:too_long, scope: i18n_scope)
     end
 
     it 'requires number be >= 10 characters' do
       number = Array.new(9, rand(9)).join
-      fill_in 'Number', with: number
-      click_on 'Add'
+      save_blocked_number(number)
       expect(page).to have_content I18n.t(:too_short, scope: i18n_scope)
     end
 
     it 'requires number contain only numbers, paranthesis or plus sign' do
       number = Array.new(5, '3b').join
-      fill_in 'Number', with: number
-      click_on 'Add'
+      save_blocked_number(number)
       expect(page).to have_content I18n.t(:too_short, scope: i18n_scope) # number is sanitized before validaiton so 10 alphnumeric chars after sanitize will be too short
     end
 
     it 'requires number be unique for associated account when creating account-wide number' do
       blocked_number = create(:blocked_number, number: number, account: customer.account)
-      fill_in 'Number', with: number
-      click_on 'Add'
+      save_blocked_number(number)
       expect(page).to have_content I18n.t(:taken, scope: i18n_scope, value: number.gsub(/[^\d]/,''), level: 'System')
     end
 
     it 'requires number be unique for associated campaign when creating campaign-specific number' do
       blocked_number = create(:blocked_number, number: number, account: customer.account, campaign: power)
-      fill_in 'Number', with: number
-      select power.name, from: 'Level'
-      click_on 'Add'
+      save_blocked_number(number, power.name)
       expect(page).to have_content I18n.t(:taken, scope: i18n_scope, value: number.gsub(/[^\d]/,''), level: power.name)
     end
   end

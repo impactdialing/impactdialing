@@ -1,5 +1,4 @@
 RSpec::Matchers.define :be_registered_as_custom_ids do
-  redis = Redis.new
   registered_ids = []
 
   match do |ids|
@@ -22,7 +21,6 @@ end
 
 # expect(ids).to belong_to_active_leads
 RSpec::Matchers.define :belong_to_active_leads do
-  redis          = Redis.new
   found_leads    = {}
   houses_in_redis = []
   lead_ids = []
@@ -48,7 +46,6 @@ RSpec::Matchers.define :belong_to_active_leads do
 end
 
 RSpec::Matchers.define :have_leads_from do |voter_list|
-  redis          = Redis.new
   expected_leads = []
   leads_in_redis = []
 
@@ -78,7 +75,6 @@ RSpec::Matchers.define :have_leads_from do |voter_list|
 end
 
 RSpec::Matchers.define :have_household_at do |campaign_id, namespace|
-  redis            = Redis.new
   key              = nil
   stored_household = nil
 
@@ -98,7 +94,6 @@ RSpec::Matchers.define :have_household_at do |campaign_id, namespace|
 end
 
 RSpec::Matchers.define :be_in_redis_households do |campaign_id, namespace|
-  redis                    = Redis.new
   expected_leads           = []
   leads_in_redis           = []
   attrs_in_redis           = {}
@@ -111,7 +106,18 @@ RSpec::Matchers.define :be_in_redis_households do |campaign_id, namespace|
     households.each do |phone, household|
       expected_leads += household[:leads].map!(&:stringify_keys)
       key = "dial_queue:#{campaign_id}:households:#{namespace}:#{phone[0..-4]}"
-      json = redis.hget(key, phone[-3..-1])
+      retries = 0
+      begin
+        json = redis.hget(key, phone[-3..-1])
+      rescue SocketError => e
+        p "#{e.class}: Try[#{retries}] #{e.message}"
+        print e.backtrace.join("\n") + "\n"
+        if retries < 10
+          retries += 1
+          retry
+        end
+        retry if retries < 10
+      end
       if json.nil?
         next
       end
@@ -156,7 +162,6 @@ RSpec::Matchers.define :be_in_redis_households do |campaign_id, namespace|
 end
 
 RSpec::Matchers.define :be_in_dial_queue_zset do |campaign_id, namespace|
-  redis = Redis.new
   key   = "dial_queue:#{campaign_id}:#{namespace}"
 
   match do |phones|
@@ -177,7 +182,6 @@ end
 
 RSpec::Matchers.define :have_zscore do |score|
   match do |phone|
-    redis = Redis.new
     redis.zscore(@key, phone).to_i == score.to_i
   end
 

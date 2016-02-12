@@ -130,7 +130,6 @@ describe 'CallFlow::DialQueue' do
   end
 
   describe 'dialed_number_persisted(phone)' do
-    let(:redis){ Redis.new }
     include_context 'a dialed number'
 
     shared_examples_for 'any persisted dial' do
@@ -172,8 +171,6 @@ describe 'CallFlow::DialQueue' do
   end
 
   describe 'failed!(phone)' do
-    let(:redis){ Redis.new }
-
     shared_examples_for 'any failed dial' do
       it 'removes the phone from the available presented zset' do
         subject.failed!(phone)
@@ -224,7 +221,6 @@ describe 'CallFlow::DialQueue' do
   end
 
   describe 'recycle the dial queue' do
-    let(:redis){ Redis.new }
     let(:caller){ create(:caller, campaign: campaign, account: account)}
 
     before do
@@ -303,7 +299,6 @@ describe 'CallFlow::DialQueue' do
 
     context 'when a household has no leads in redis for presentation' do
       before do
-        redis = Redis.new
         phone = redis.zrange(dial_queue.available.keys[:active], 0, 0).first
         hkey  = dial_queue.households.hkey(phone)
         house = JSON.parse(redis.hget(*hkey))
@@ -317,7 +312,7 @@ describe 'CallFlow::DialQueue' do
 
       context '1 household has no leads but others do' do
         it 'returns households with leads and ignores those without' do
-          phone_two = Redis.new.zrange(dial_queue.available.keys[:active], 1, 1).first
+          phone_two = redis.zrange(dial_queue.available.keys[:active], 1, 1).first
           houses = dial_queue.next(2)
           expect(houses.size).to eq 1
 
@@ -328,7 +323,6 @@ describe 'CallFlow::DialQueue' do
 
     context 'when no more phone numbers are found' do
       it 'returns nil' do
-        redis = Redis.new
         key = dial_queue.available.keys[:active]
         phones = redis.zrange(key, 0, -1)
         redis.zrem key, phones
@@ -339,7 +333,6 @@ describe 'CallFlow::DialQueue' do
   end
 
   describe 'removing all data from redis' do
-    let(:redis){ Redis.new }
     let(:phone){ Forgery(:address).clean_phone }
     let(:voter_list){ create(:voter_list, campaign: campaign) }
 

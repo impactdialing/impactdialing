@@ -4,7 +4,6 @@ describe Twillio do
   include FakeCallData
   
   let(:account){ create(:account) }
-  let(:redis){ Redis.new }
 
   shared_examples 'all success Twillio.dials' do
     it 'creates a CallFlow::Call::Dialed (redis) record' do

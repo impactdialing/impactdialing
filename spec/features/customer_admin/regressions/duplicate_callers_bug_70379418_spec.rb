@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Caller Management', :type => :feature do
+feature 'Caller Management', admin: true do
   let(:admin){ create(:user) }
   let(:account){ admin.account }
   let(:campaign){ create(:power, account: account, active: true) }
@@ -24,14 +24,14 @@ describe 'Caller Management', :type => :feature do
 
     create_caller('someguy', campaign)
 
-    expect(page).to have_content 'Caller saved'
-    expect(page).to have_content 'Displaying 1 Caller'
+    expect(page).to have_content I18n.t('activerecord.successes.models.caller.saved')
+    expect(page).to have_content 'Displaying 1 caller'
     expect(page).to have_content 'someguy'
 
     click_on 'Log out'
     web_login_as(admin2)
     create_caller('Someguy', campaign2)
-    expect(page).not_to have_content 'Caller saved'
-    expect(page).to have_content 'Username has already been taken'
+    expect(page).not_to have_content I18n.t('activerecord.successes.models.caller.saved')
+    expect(page).to have_content 'Username in use by another caller, it may have been archived'
   end
 end

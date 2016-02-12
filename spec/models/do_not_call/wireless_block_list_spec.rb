@@ -7,10 +7,6 @@ describe 'DoNotCall::WirelessBlockList' do
     s
   end
 
-  def redis
-    @redis ||= Redis.new
-  end
-
   subject{ DoNotCall::WirelessBlockList }
   let(:parser) do
     instance_double('DoNotCall::WirelessBlockParser')

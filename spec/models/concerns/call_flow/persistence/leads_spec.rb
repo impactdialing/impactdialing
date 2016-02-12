@@ -3,7 +3,6 @@ require 'rails_helper'
 describe 'CallFlow::Persistence::Leads' do
   include ListHelpers
 
-  let(:redis){ Redis.new }
   let(:account){ create(:account) }
   let(:campaign){ create(:predictive, account: account) }
   let(:voter_list){ create(:voter_list, campaign: campaign) }

@@ -66,7 +66,6 @@ describe 'CallList::Imports' do
     subject{ CallList::Imports.new(voter_list) }
     let(:phone){ parsed_households.keys.first }
     def fetch_saved_household(voter_list, phone)
-      redis            = Redis.new
       stop_index       = ENV['REDIS_PHONE_KEY_INDEX_STOP'].to_i
       key              = "#{voter_list.campaign.dial_queue.households.keys[:active]}:#{phone[0..stop_index]}"
       hkey             = phone[stop_index+1..-1]
@@ -87,10 +86,6 @@ describe 'CallList::Imports' do
     describe 'updating voter list stats' do
       let(:stats_key){ common_keys[1] }
       let(:custom_id_register_key){ common_keys[9] }
-
-      def redis
-        @redis ||= Redis.new
-      end
 
       context 'using custom id' do
 

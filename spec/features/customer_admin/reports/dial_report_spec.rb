@@ -13,12 +13,13 @@ feature 'Dials report', reports: true do
   let(:admin){ @admin }
   let(:account){ @account }
   let(:campaign){ @campaign }
+  let(:target_url){ dials_client_reports_path(campaign_id: campaign.id) }
 
   before do
     web_login_as(admin)
-    visit dials_client_reports_path(campaign_id: campaign.id)
   end
   scenario 'Error-free page load when no dials have been made' do
+    visit target_url
     expect(page).to have_content "#{campaign.name} Dials"
   end
 

@@ -16,9 +16,6 @@ describe 'CallFlow::Events' do
       redis: redis
     })
   end
-  let(:redis) do
-    Redis.new
-  end
   subject{ CallFlow::Events.new(caller_session_call) }
 
   it '#key => "call_flow:events:#{caller_session_call.sid}"' do
