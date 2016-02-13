@@ -3,11 +3,11 @@ machine:
     version:
       2.2.4
 
-#dependencies:
-#  post:
-#    - wget https://saucelabs.com/downloads/sc-4.3.13-linux.tar.gz
-#    - tar -xzf sc-4.3.13-linux.tar.gz
-#    - mv ./sc-4.3.13-linux $HOME/sc-bin
+dependencies:
+  post:
+    - wget https://saucelabs.com/downloads/sc-4.3.13-linux.tar.gz
+    - tar -xzf sc-4.3.13-linux.tar.gz
+    - mv ./sc-4.3.13-linux $HOME/sc-bin
 
 test:
   override:
@@ -15,11 +15,11 @@ test:
         parallel: true
         files:
           - spec/**/*_spec.rb
-    #- $HOME/sc-bin/bin/sc --verbose --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce:
-    #    background: true
-    #    parallel: true
-    #- while [ ! -e ~/hot-sauce ]; do sleep 1; done:
-    #    parallel: true
+    - $HOME/sc-bin/bin/sc --verbose --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce:
+        background: true
+        parallel: true
+    - while [ ! -e ~/hot-sauce ]; do sleep 1; done:
+        parallel: true
     #- USE_SAUCE='ie9' bin/parallel_features:
     #    parallel: true
     #    files:
@@ -32,13 +32,13 @@ test:
     #      - spec/features/customer_admin/campaigns/*
     #- sleep 2:
     #    parallel: true
-    #- USE_SAUCE='ie11' bin/parallel_features:
-    #    parallel: true
-    #    files:
-    #      - features/customer_admin/campaigns/*_spec.rb
+    - USE_SAUCE='ie11' bin/parallel_features:
+        parallel: true
+        files:
+          - features/**/*_spec.rb
     #- USE_SAUCE='wch' bin/parallel_features:
     #    parallel: true
     #    files:
     #      - spec/features/customer_admin/campaigns/*
-  #post:
-  #  - killall --wait sc  # wait for Sauce Connect to close the tunnel
+  post:
+    - killall --wait sc  # wait for Sauce Connect to close the tunnel
