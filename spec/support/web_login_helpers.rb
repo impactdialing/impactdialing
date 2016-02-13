@@ -36,6 +36,7 @@ module WebLoginHelpers
     fill_in 'Email', with: user.email
     fill_in 'Password', with: 'password'
     click_on 'Log in'
+    expect(page).to_not have_content 'The email or password you entered was incorrect. Please try again.'
   end
 
   def caller_login_as(caller)
