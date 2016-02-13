@@ -14,7 +14,7 @@ test:
     - DISABLE_SPRING=1 bundle exec rspec --format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/specs/results$TEST_ENV_NUMBER.xml:
         parallel: true
         files:
-          - spec/**/*_spec.rb
+          - spec/models/campaign_spec.rb
     #- $HOME/sc-bin/bin/sc --verbose --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce:
     #    background: true
     #    parallel: true
