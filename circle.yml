@@ -3,18 +3,18 @@ machine:
     version:
       2.2.4
 
-dependencies:
-  post:
-    - wget https://saucelabs.com/downloads/sc-4.3.13-linux.tar.gz
-    - tar -xzf sc-4.3.13-linux.tar.gz
-    - mv ./sc-4.3.13-linux $HOME/sc-bin
+#dependencies:
+#  post:
+#    - wget https://saucelabs.com/downloads/sc-4.3.13-linux.tar.gz
+#    - tar -xzf sc-4.3.13-linux.tar.gz
+#    - mv ./sc-4.3.13-linux $HOME/sc-bin
 
 test:
   override:
     - DISABLE_SPRING=1 bundle exec rspec --format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/specs/results$TEST_ENV_NUMBER.xml:
         parallel: true
         files:
-          - spec/models/campaign_spec.rb
+          - spec/**/*_spec.rb
     #- $HOME/sc-bin/bin/sc --verbose --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce:
     #    background: true
     #    parallel: true
