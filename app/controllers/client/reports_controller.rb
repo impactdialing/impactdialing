@@ -13,11 +13,27 @@ module Client
     respond_to :html, :json
 
     if instrument_actions?
-      instrument_action :index, :performance, :dials_summary, :dials, :answer, :usage,
+      instrument_action :index, :performance, :dials, :answer, :usage,
                         :download_report, :download_reports, :download
     end
 
   private
+    def load_campaign
+      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
+        @campaign = Campaign.where(id: params[:campaign_id], account_id: account.id).first
+      end
+      @datepicker_target = performance_client_campaign_reports_path({campaign_id: @campaign.id})
+      @campaign
+    end
+
+    def load_caller
+      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
+        @caller = Account.find(account).callers.find(params[:caller_id])
+      end
+      @datepicker_target = performance_client_caller_reports_path({caller_id: @caller.id})
+      @caller
+    end
+
     def report_response_strategy
       unless session[:internal_admin]
         return params[:strategy]
@@ -95,16 +111,6 @@ module Client
         to_date: @date_range.to,
         mode: mode,
         description: 'Here are some statistical averages to help you gain a general understanding of how a campaign is performing over time.'
-      })
-    end
-
-    def dials_summary
-      authorize! :view_reports, @account
-      load_campaign
-      @overview = Report::Dials::SummaryController.render(:html, {
-        campaign: @campaign,
-        heading: 'Overview',
-        description: 'The data in the overview table gives the current state of the campaign.'
       })
     end
 
@@ -194,40 +200,6 @@ module Client
       authorize! :view_reports, @account
       load_campaign
       @downloaded_reports = DownloadedReport.active_reports(@campaign.id, session[:internal_admin])
-    end
-
-    private
-
-    def load_campaign
-      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
-        @campaign = Campaign.where(id: params[:campaign_id], account_id: account.id).first
-      end
-      @datepicker_target = performance_client_campaign_reports_path({campaign_id: @campaign.id})
-      @campaign
-    end
-
-    def load_caller
-      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
-        @caller = Account.find(account).callers.find(params[:caller_id])
-      end
-      @datepicker_target = performance_client_caller_reports_path({caller_id: @caller.id})
-      @caller
-    end
-
-    def set_dates
-      @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
-    end
-
-    def sanitize(count)
-      count.nil? ? 0 : count
-    end
-
-    def not_dialed_voters(range_parameters, total_dials)
-      if range_parameters
-        @total_voters_count - total_dials
-      else
-        @campaign.all_voters.enabled.by_status(Voter::Status::NOTCALLED).count
-      end
     end
   end
 end
