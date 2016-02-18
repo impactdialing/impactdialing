@@ -344,12 +344,7 @@ describe 'CallFlow::DialQueue' do
       redis.zadd dial_queue.recycle_bin.keys[:bin], 3.0, phone
       redis.mapped_hmset dial_queue.campaign.call_list.stats.key, {total_numbers: 12, total_leads: 14}
       redis.mapped_hmset voter_list.stats.key, {total_numbers: 12, total_leads: 14}
-      @expected_purge_count = dial_queue.available.size + 
-                              dial_queue.available.all(:presented).size +
-                              dial_queue.completed.size +
-                              dial_queue.blocked.size +
-                              dial_queue.recycle_bin.size
-      @result = dial_queue.purge
+      dial_queue.purge
     end
 
     it 'removes all data from Households' do
@@ -390,10 +385,6 @@ describe 'CallFlow::DialQueue' do
     it 'removes all campaign voter lists stats' do
       key = voter_list.stats.key
       expect(redis.keys).to_not include(key)
-    end
-
-    it 'returns count of household keys purged' do
-      expect(@result).to eq @expected_purge_count
     end
   end
 end

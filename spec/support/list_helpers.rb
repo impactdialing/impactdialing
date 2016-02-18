@@ -99,8 +99,8 @@ module ListHelpers
     h
   end
 
-  def build_household_hash(list, with_custom_id=false, two_lead_min=false, with_very_long_values=false)
-    phone = Forgery(:address).clean_phone
+  def build_household_hash(list, with_custom_id=false, two_lead_min=false, with_very_long_values=false, phone=nil)
+    phone ||= Forgery(:address).clean_phone
     min   = two_lead_min ? 2 : 1
     leads = build_leads_array( (min..5).to_a.sample, list, phone, with_custom_id, with_very_long_values )
     if with_custom_id

@@ -76,7 +76,7 @@ public
   end
 
   def batch_size
-    (ENV['VOTER_BATCH_SIZE'] || 100).to_i
+    CallFlow::DialQueue.batch_size
   end
 
   def parse(&block)

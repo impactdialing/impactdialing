@@ -83,4 +83,8 @@ ImpactDialing::Application.configure do
   PORT = 3000
 
   ENV['PAGER_DUTY_SERVICE'] ||= '5ee2a001bc0b41e48bb587a66d63f4a6'
+
+  redis = Redis.new
+  redis.config(:set, 'hash-max-ziplist-entries', 1024)
+  redis.config(:set, 'hash-max-ziplist-value', 1024)
 end

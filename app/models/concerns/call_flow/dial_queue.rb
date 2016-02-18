@@ -17,6 +17,10 @@ module CallFlow
       end
     end
 
+    def self.batch_size
+      (ENV['VOTER_BATCH_SIZE'] || 100).to_i
+    end
+
     def zset_keys
       @zset_keys ||= [
         available.keys[:active],
@@ -152,27 +156,14 @@ module CallFlow
     end
 
     def purge
-      set_keys                 = []
-      [available, recycle_bin, blocked, completed].each do |set|
-        set_keys += set.send(:keys).values
-      end
-      household_prefix         = households.send(:keys)[:active]
-      lua_phone_key_index_stop = phone_key_index_stop > 0 ? phone_key_index_stop + 1 : phone_key_index_stop
-      purged_count             = 0
-
-      campaign.timing("dial_queue.purge.time") do
+      campaign.timing('dial_queue.purge.time') do
+        [available, recycle_bin, blocked, completed].each do |set|
+          set.purge!
+        end
+        households.purge!
         CallList::Stats.purge(campaign)
-        campaign.send(:inflight_stats).delete
-
-        purged_count = Wolverine.dial_queue.purge({
-          keys: set_keys,
-          argv: [household_prefix, lua_phone_key_index_stop]
-        })
+        campaign.inflight_stats.delete
       end
-
-      ImpactPlatform::Metrics.sample("dial_queue.purge.count", purged_count, campaign.metric_source.join('.'))
-
-      return purged_count
     end
   end
 end

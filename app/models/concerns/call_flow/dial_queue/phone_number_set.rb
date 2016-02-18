@@ -73,4 +73,23 @@ public
   def each(key_name=nil, options={}, &block)
     redis.zscan_each find_key(key_name), options, &block
   end
+
+  ##
+  # Removes members in batches of 100 then deletes the key.
+  # Batch removal + key deletion provides better throughput
+  # than straight key deletion.
+  def purge!
+    klass = self.class.to_s.split('::').last.downcase
+    keys.values.each do |key|
+      slices = (size / 100.0).floor - 1
+      slices.times do |n|
+        campaign.timing("dial_queue.#{klass}.purge.zrembyrank.time") do
+          redis.zremrangebyrank key, 0, 100
+        end
+      end
+      campaign.timing("dial_queue.#{klass}.purge.del.time") do
+        redis.del key
+      end
+    end
+  end
 end

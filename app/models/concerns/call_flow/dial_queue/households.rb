@@ -252,5 +252,19 @@ class CallFlow::DialQueue::Households
       argv: [hkey(phone).last, uuid_to_id_map.to_json]
     })
   end
+
+  def purge!
+    keys_to_remove = []
+    keys.values.each do |prefix|
+      campaign.timing('dial_queue.households.purge.scan_each.time') do
+        keys_to_remove = redis.scan_each(match: "#{prefix}*", count: 1000).to_a
+      end
+      keys_to_remove.each_slice(1000) do |dead_keys|
+        campaign.timing('dial_queue.households.purge.del.time') do
+          redis.del dead_keys
+        end
+      end
+    end
+  end
 end
 

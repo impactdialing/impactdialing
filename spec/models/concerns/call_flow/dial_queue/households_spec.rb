@@ -19,6 +19,14 @@ describe 'CallFlow::DialQueue::Households' do
     import_list(voter_list, households)
   end
 
+  describe 'purge!(phones)' do
+    it 'deletes all households and meta-data' do
+      subject.purge!
+      remaining_keys = redis.scan_each(match: "dial_queue:#{campaign.id}:households*").to_a
+      expect(remaining_keys).to be_empty
+    end
+  end
+
   describe 'finding presentable households' do
     let(:phone) do
       households.keys.first
