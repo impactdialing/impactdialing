@@ -44,9 +44,14 @@
       <li><a href="#per-lead">Per lead</a></li>
       <li>
         <%= link_to 'Per dial', dials_by_dial_client_reports_path({
-          campaign_id: params[:campaign_id],
+          campaign_id: @campaign.id,
           from_date: date_as_slashes(@date_range.from, @campaign.time_zone),
           to_date: date_as_slashes(@date_range.to, @campaign.time_zone)
+        }) %>
+      </li>
+      <li>
+        <%= link_to 'Per household', dials_by_pass_client_reports_path({
+          campaign_id: @campaign.id
         }) %>
       </li>
     </ul>

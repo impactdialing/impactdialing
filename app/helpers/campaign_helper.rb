@@ -40,17 +40,18 @@ public
 
     @dials_summary ||= Report::Dials::SummaryController.render(:html, {
       campaign: @campaign,
-      heading: 'Dials summary',
+      heading: 'Status',
       description: 'The data in the overview table gives the current state of the campaign.'
     }).html_safe
   end
 
-  def dial_passes
-    return '' unless run_report?(@campaign) or @campaign.call_attempts.limit(1).pluck(:id).empty?
+  def dial_passes(campaign=nil)
+    campaign ||= @campaign
+    return '' unless run_report?(campaign) or campaign.call_attempts.limit(1).pluck(:id).empty?
 
     @dial_passes ||= Report::Dials::PassesController.render(:html, {
-      campaign: @campaign,
-      heading: 'List passes',
+      campaign: campaign,
+      heading: 'Passes',
       description: 'Display the percent of the list called X times.'
     }).html_safe
   end

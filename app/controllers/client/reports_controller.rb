@@ -140,6 +140,10 @@ module Client
       render text: @report.html_safe
     end
 
+    def dials_by_pass
+      render text: self.class.helpers.dial_passes(@campaign)
+    end
+
     def answer
       authorize! :view_reports, @account
       load_campaign

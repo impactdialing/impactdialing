@@ -4,7 +4,7 @@ class Report::Dials::Passes
   attr_reader :campaign, :stats
 private
   def headers
-    ['Pass', 'Households']
+    ['Times dialed', 'Households']
   end
 
   def perc(count=0, total)
@@ -21,7 +21,7 @@ public
   end
 
   def household_perc(n)
-    perc(n, stats.total_households)
+    "#{n} (#{perc(n, stats.total_households)})"
   end
 
   def make
@@ -30,7 +30,7 @@ public
         pass += 1
         number = stats.households_dialed_n_times(pass)
         feeder << {
-          'Pass' => pass,
+          'Times dialed' => pass,
           'Households' => household_perc(number)
         }
       end
