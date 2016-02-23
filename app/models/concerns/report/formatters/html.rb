@@ -3,7 +3,8 @@ class Report::Formatters::Html < Ruport::Formatter::HTML
 
   renders :html, :for => [
     Report::Dials::SummaryController, Report::Dials::ByStatusController,
-    Report::Performance::VelocityController, Ruport::Controller::Table
+    Report::Performance::VelocityController, Ruport::Controller::Table,
+    Report::Dials::PassesController
   ]
 
 private

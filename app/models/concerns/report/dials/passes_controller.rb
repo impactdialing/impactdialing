@@ -1,5 +1,5 @@
 ##
-class Report::Dials::SummaryController < Ruport::Controller
+class Report::Dials::PassesController < Ruport::Controller
   # hack
   Report::Formatters::Html # ? formatters aren't loading => aren't declaring themselves to controllers
 
@@ -9,6 +9,6 @@ class Report::Dials::SummaryController < Ruport::Controller
 
 public
   def setup
-    self.data = Report::Dials::Summary.new(options).make
+    self.data = Report::Dials::Passes.new(options).make
   end
 end

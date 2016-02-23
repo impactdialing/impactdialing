@@ -1,4 +1,10 @@
 module CampaignHelper
+private
+  def run_report?(campaign)
+    campaign.errors.empty? and (not campaign.new_record?)
+  end
+
+public
   def options_for_select_campaign_type(campaign)
     options = []
     if can? :manage, Preview
@@ -30,12 +36,22 @@ module CampaignHelper
   end
 
   def dials_summary
-    return '' unless @campaign.errors.empty? and !@campaign.new_record?
+    return '' unless run_report?(@campaign)
 
     @dials_summary ||= Report::Dials::SummaryController.render(:html, {
       campaign: @campaign,
-      heading: 'Overview',
+      heading: 'Dials summary',
       description: 'The data in the overview table gives the current state of the campaign.'
+    }).html_safe
+  end
+
+  def dial_passes
+    return '' unless run_report?(@campaign) or @campaign.call_attempts.limit(1).pluck(:id).empty?
+
+    @dial_passes ||= Report::Dials::PassesController.render(:html, {
+      campaign: @campaign,
+      heading: 'List passes',
+      description: 'Display the percent of the list called X times.'
     }).html_safe
   end
 end
