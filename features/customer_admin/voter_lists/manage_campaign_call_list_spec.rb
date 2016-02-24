@@ -49,7 +49,7 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
 
       if reload
         visit edit_client_campaign_path(campaign)
-        click_link 'Info'
+        click_link 'List'
       end
     end
   end
@@ -72,13 +72,13 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
     let(:upload_option){ "Add to call list" }
     before do
       login_and_visit_uploads
-      click_link 'Info'
-      expect(page).to have_content "Available to dial 0 0%"
+      click_link 'List'
+      expect(page).to have_content "Available to dial 0 (0%)"
     end
     it 'adds uploaded entries to the Campaign call list' do
       choose_and_upload_list(csv_file_upload, 'Munsters cast')
-      expect(page).to have_content 'Available to dial 2 100%'
-      expect(page).to have_content 'Not dialed 2 100%'
+      expect(page).to have_content 'Available to dial 2 (100%)'
+      expect(page).to have_content 'Not dialed 2 (100%)'
       click_link 'Upload'
       expect(page).to have_content "Munsters cast Added 2 households and 3 leads"
     end
@@ -89,13 +89,13 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
     before do
       login_and_visit_uploads
       choose_and_upload_list(csv_file_upload, 'Munsters cast', 'Add to call list')
-      click_link 'Info'
-      expect(page).to have_content 'Available to dial 2 100%'
+      click_link 'List'
+      expect(page).to have_content 'Available to dial 2 (100%)'
       click_link 'Upload'
     end
     it 'removes uploaded entries from the Campaign call list' do
       choose_and_upload_list(csv_file_remove_numbers_upload, 'Munsters retired cast', nil, true)
-      click_link 'Info'
+      click_link 'List'
       expect(page).to have_content 'Available to dial 0'
       expect(page).to have_content 'Not available to dial 0'
       click_link 'Upload'
@@ -110,13 +110,13 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
       before do
         login_and_visit_uploads
         choose_and_upload_list(csv_file_upload, 'Munsters cast', 'Add to call list', nil, true)
-        click_link 'Info'
-        expect(page).to have_content 'Available to dial 2 100%'
+        click_link 'List'
+        expect(page).to have_content 'Available to dial 2 (100%)'
         click_link 'Upload'
       end
       it 'removes uploaded leads from Campaign call list' do
         choose_and_upload_list(csv_file_remove_leads_upload, 'Munsters extras', nil, nil, true)
-        click_link 'Info'
+        click_link 'List'
         expect(page).to have_content 'Available to dial 1'
         expect(page).to have_content 'Not available to dial 0'
         click_link 'Upload'
@@ -132,8 +132,8 @@ feature 'Manage Campaign call list', js: true, sauce: ENV['USE_SAUCE'].present?,
       before do
         login_and_visit_uploads
         choose_and_upload_list(csv_file_upload, 'Munsters cast', 'Add to call list', nil, false)
-        click_link 'Info'
-        expect(page).to have_content 'Available to dial 2 100%'
+        click_link 'List'
+        expect(page).to have_content 'Available to dial 2 (100%)'
       end
       it 'the option to remove leads from list is disabled' do
         click_link 'Upload'

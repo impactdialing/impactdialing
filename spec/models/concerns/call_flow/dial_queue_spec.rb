@@ -377,14 +377,12 @@ describe 'CallFlow::DialQueue' do
       expect(redis.keys).to_not include(key)
     end
 
-    it 'removes campaign list stats' do
-      key = dial_queue.campaign.call_list.stats.key
-      expect(redis.keys).to_not include(key)
+    it 'leaves campaign list stats (for archived reporting)' do
+      expect(dial_queue.campaign.call_list.stats[:total_numbers]).to eq 12
     end
 
-    it 'removes all campaign voter lists stats' do
-      key = voter_list.stats.key
-      expect(redis.keys).to_not include(key)
+    it 'leaves all campaign voter lists stats (for archived reporting)' do
+      expect(voter_list.stats[:total_numbers]).to eq 12
     end
   end
 end

@@ -45,14 +45,14 @@ public
     }).html_safe
   end
 
-  def dial_passes(campaign=nil)
-    campaign ||= @campaign
+  def dial_passes(options={})
+    campaign = options[:campaign] || @campaign
     return '' unless run_report?(campaign) or campaign.call_attempts.limit(1).pluck(:id).empty?
 
-    @dial_passes ||= Report::Dials::PassesController.render(:html, {
-      campaign: campaign,
-      heading: 'Passes',
-      description: 'Display the percent of the list called X times.'
-    }).html_safe
+    @dial_passes ||= Report::Dials::PassesController.render(:html,
+      options.merge({
+        campaign: campaign,
+      })
+    ).html_safe
   end
 end

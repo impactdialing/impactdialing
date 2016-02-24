@@ -141,7 +141,10 @@ module Client
     end
 
     def dials_by_pass
-      render text: self.class.helpers.dial_passes(@campaign)
+      render text: self.class.helpers.dial_passes({
+        campaign: @campaign,
+        description: 'How much of the list has been called X times.'
+      })
     end
 
     def answer

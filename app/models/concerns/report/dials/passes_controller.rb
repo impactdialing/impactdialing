@@ -3,7 +3,7 @@ class Report::Dials::PassesController < Ruport::Controller
   # hack
   Report::Formatters::Html # ? formatters aren't loading => aren't declaring themselves to controllers
 
-  stage :heading, :table
+  stage :heading, :description, :table
 
   required_option :campaign
 

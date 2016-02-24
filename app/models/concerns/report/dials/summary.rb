@@ -63,7 +63,7 @@ private
   end
 
   def headers
-    headers = ['Status', 'Number', 'Percent']
+    ['Status', 'Households']
   end
 
   def perc(count=0, total)
@@ -95,13 +95,14 @@ public
     table = Table(headers) do |feeder|
       rows.each do |tpl|
         number = stats.send(tpl[:number])
-        feeder.transform{|row| row['Number'] = number}
         feeder.transform do |row|
+          row['Households'] = "#{number} ("
           unless tpl[:perc]
-            row['Percent'] = perc(number)
+            row['Households'] += perc(number)
           else
-            row['Percent'] = self.respond_to?(tpl[:perc]) ? self.send(tpl[:perc], number) : tpl[:perc]
+            row['Households'] += self.respond_to?(tpl[:perc]) ? self.send(tpl[:perc], number) : tpl[:perc]
           end
+          row['Households'] += ')'
         end
 
         feeder << {

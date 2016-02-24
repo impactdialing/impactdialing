@@ -185,7 +185,7 @@
       <li><a href="#settings">Settings</a></li>
       <li><a href="#messages">Messages</a></li>
       <li><a href="#upload">Upload</a></li>
-      <li><a href="#info">Info</a></li>
+      <li><a href="#list">List</a></li>
     <% if @campaign.lists.disabled.count > 0 %>
       <li><a href="#disabled-lists">Disabled lists</a></li>
     <% end %>
@@ -213,11 +213,13 @@
       <% end %>
     </div>
 
-    <div id="info" style="display: none;">
+    <div id="list" style="display: none;">
       <% if dials_summary.present? %>
-        <%= dial_passes %>
-        <hr />
         <%= dials_summary %>
+        <hr />
+        <%= dial_passes({
+          heading: 'Passes',
+        }) %>
       <% else %>
         <p>This will display once the campaign is saved.</p>
       <% end %>

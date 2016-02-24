@@ -32,7 +32,7 @@ describe CallStats::Passes do
 
   describe '#current_pass' do
     it 'returns an integer representing most dials to a household' do
-      expect(subject.current_pass).to eq 1
+      expect(subject.current_pass).to eq 2
     end
   end
 
