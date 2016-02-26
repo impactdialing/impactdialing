@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe DoNotCall::Jobs::CacheWirelessBlockList, data_heavy: true do
+describe DoNotCall::Jobs::CacheWirelessBlockList, data_heavy: true, cell_lists: true do
   subject{ DoNotCall::Jobs::CacheWirelessBlockList }
   let(:s3_config) do
     {

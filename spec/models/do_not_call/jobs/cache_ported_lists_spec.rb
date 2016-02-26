@@ -1,7 +1,7 @@
 require 'rails_helper'
 require 'uri'
 
-describe 'DoNotCall::Jobs::CacheProviderFile.perform', data_heavy: true do
+describe 'DoNotCall::Jobs::CacheProviderFile.perform', data_heavy: true, cell_lists: true do
   let(:s3_config) do
     {
       'access_key_id'     => ENV['S3_ACCESS_KEY'],

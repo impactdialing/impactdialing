@@ -11,7 +11,7 @@ dependencies:
 
 test:
   override:
-    - DISABLE_SPRING=1 bundle exec rspec --exclude-pattern spec/models/do_not_call/jobs/cache*_spec.rb --format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/specs/results$TEST_ENV_NUMBER.xml:
+    - DISABLE_SPRING=1 bundle exec rspec --tag ~cell_lists --format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/specs/results$TEST_ENV_NUMBER.xml:
         parallel: true
         files:
           - spec/**/*_spec.rb
