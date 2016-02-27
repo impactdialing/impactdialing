@@ -71,7 +71,7 @@ class RedisStatus
 
       parsed_time = Time.parse(parsed_element['time'])
 
-      (Time.now - parsed_time).to_i / 60
+      Time.now.to_i - parsed_time.to_i
     end.compact
   end
 end

@@ -48,8 +48,8 @@ describe RedisStatus, :type => :model do
       end
     end
 
-    it 'returns a collection of times (rounded down to nearest minute) each caller has been in the "On hold" state' do
-      expect(RedisStatus.on_hold_times(1, *(1..6).to_a)).to(eq([0, 0, 1, 1, 2]))
+    it 'returns a collection of times (seconds) each caller has been in the "On hold" state' do
+      expect(RedisStatus.on_hold_times(1, *(1..6).to_a)).to(eq([30, 59, 65, 119, 121]))
     end
   end
 end

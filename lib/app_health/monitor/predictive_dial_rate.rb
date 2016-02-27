@@ -8,11 +8,15 @@ module AppHealth
       end
 
       def any_callers_exceed_on_hold_threshold?(campaign)
-        on_hold_times(campaign).detect{|n| n > 0}
+        on_hold_times(campaign).detect{|n| n >= on_hold_threshold}
       end
 
       def no_recent_dials?(campaign)
         (Time.now.utc.to_i - campaign.last_dial_time) > 60
+      end
+
+      def on_hold_threshold
+        ENV['PREDICTIVE_ON_HOLD_THRESHOLD'] || 20
       end
 
     public
