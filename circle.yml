@@ -15,7 +15,7 @@ test:
         parallel: true
         files:
           - spec/**/*_spec.rb
-    - $HOME/sc-bin/bin/sc -vv --logfile $HOME/sc.log --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce:
+    - $HOME/sc-bin/bin/sc -vv --logfile $CIRCLE_TEST_REPORTS/sc.log --user $SAUCE_USERNAME --api-key $SAUCE_ACCESS_KEY --readyfile ~/hot-sauce:
         background: true
         parallel: true
     - while [ ! -e ~/hot-sauce ]; do sleep 1; done:
