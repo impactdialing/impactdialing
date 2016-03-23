@@ -256,10 +256,11 @@ desc "Generate / append to CHANGELOG.md entries within the start_date and end_da
 task :changelog, [:after, :before] do |t, args|
   desired_entries = [
     'changelog',
-    'closes',
-    'fixes',
-    'completes',
-    'delivers',
+    'close',
+    'fix',
+    'complete',
+    'deliver',
+    'improve',
     '#'
   ]
   format = 'format:"%cr%n-----------%n%s%+b%n========================================================================"'
