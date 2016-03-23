@@ -16,7 +16,7 @@ module AppHealth
       end
 
       def on_hold_threshold
-        ENV['PREDICTIVE_ON_HOLD_THRESHOLD'] || 20
+        (ENV['PREDICTIVE_ON_HOLD_THRESHOLD'] || 20).to_i
       end
 
     public
