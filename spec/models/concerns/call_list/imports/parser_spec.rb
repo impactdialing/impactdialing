@@ -50,7 +50,8 @@ describe 'CallList::Imports::Parser' do
       invalid_numbers:    Set.new,
       invalid_formats:    0,
       invalid_lines:      [],
-      invalid_rows:       []
+      invalid_rows:       [],
+      cell_rows:          [],
     }
   end
   let(:batch_size){ ENV['VOTER_BATCH_SIZE'].to_i }
@@ -114,15 +115,16 @@ describe 'CallList::Imports::Parser' do
     end
 
     describe 'build_household' do
+      let(:row){ "#{uuid},#{phone}" }
       before do
         expect(uuid).to receive(:generate).and_return(household_uuid).ordered
       end
       it 'returns a hash' do 
-        expect(subject.build_household(uuid, phone)).to be_kind_of Hash
+        expect(subject.build_household(uuid, phone, row)).to be_kind_of Hash
       end
 
       context 'the returned hash' do
-        let(:the_hash){ subject.build_household(uuid, phone) }
+        let(:the_hash){ subject.build_household(uuid, phone, row) }
         it '"leads" => []' do
           expect(the_hash['leads']).to eq []
         end
@@ -150,7 +152,7 @@ describe 'CallList::Imports::Parser' do
           })
         end
 
-        let(:the_hash){ subject.build_household(uuid, phone) }
+        let(:the_hash){ subject.build_household(uuid, phone, row) }
 
         before do
           allow(voter_list).to receive(:skip_wireless?){ true }
@@ -172,7 +174,7 @@ describe 'CallList::Imports::Parser' do
       end
 
       context 'phone is in customer DNC but not a cellular device' do
-        let(:the_hash){ subject.build_household(uuid, phone) }
+        let(:the_hash){ subject.build_household(uuid, phone, row) }
         before do
           allow(voter_list.campaign).to receive(:blocked_numbers){ [phone] }
         end

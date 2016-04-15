@@ -9,13 +9,17 @@ private
     t.in_time_zone(campaign.time_zone).strftime("%b%e %Y")
   end
 
-  def build_attachment(invalid_rows, invalid_lines)
-    invalid = invalid_rows + invalid_lines
+  def build_csv_attachment(name, csv_rows)
     [{
       type:    'text/plain',
-      name:    "InvalidRows #{voter_list.name}.csv",
-      content: Base64.encode64(invalid.join)
+      name:    "#{name} #{voter_list.name}.csv",
+      content: Base64.encode64(csv_rows.join)
     }]
+  end
+
+  def attach_invalid_rows(invalid_rows, invalid_lines)
+    invalid = invalid_rows + invalid_lines
+    build_csv_attachment("InvalidRows", invalid)
   end
 
 public
@@ -36,7 +40,7 @@ public
     attachment = []
 
     if upload_stats[:invalid_numbers] > 0
-      attachment = build_attachment(upload_stats[:invalid_rows], upload_stats[:invalid_lines])
+      attachment = attach_invalid_rows(upload_stats[:invalid_rows], upload_stats[:invalid_lines])
     end
 
     send_voter_list_email(to, subject, text, html, attachment)
@@ -51,7 +55,7 @@ public
     attachment = []
 
     if upload_stats[:invalid_numbers] > 0
-      attachment = build_attachment(upload_stats[:invalid_rows], upload_stats[:invalid_lines])
+      attachment = attach_invalid_rows(upload_stats[:invalid_rows], upload_stats[:invalid_lines])
     end
 
     send_voter_list_email(to, subject, text, html, attachment)
@@ -66,7 +70,11 @@ public
     attachment = []
     
     if upload_stats[:invalid_numbers] > 0
-      attachment = build_attachment(upload_stats[:invalid_rows], upload_stats[:invalid_lines])
+      attachment = attach_invalid_rows(upload_stats[:invalid_rows], upload_stats[:invalid_lines])
+    end
+
+    if upload_stats[:cell_numbers] > 0
+      attachment += build_csv_attachment("CellNumbers", upload_stats[:cell_rows])
     end
 
     send_voter_list_email(to, subject, text, html, attachment)

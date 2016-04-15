@@ -25,7 +25,8 @@ private
       invalid_custom_ids:   0,
       invalid_formats:      0,
       invalid_rows:         [],
-      invalid_lines:        []
+      invalid_lines:        [],
+      cell_rows:            []
     })
   end
 

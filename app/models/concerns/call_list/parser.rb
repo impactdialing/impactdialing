@@ -70,8 +70,16 @@ private
     voter_list.campaign.call_list.custom_id_register_hash_key(custom_id)
   end
 
+  def add_row_to_results(namespace, row)
+    results[namespace] << CSV.generate_line(row.to_a)
+  end
+
   def invalid_row!(csv_row)
-    results[:invalid_rows] << CSV.generate_line(csv_row.to_a)
+    add_row_to_results(:invalid_rows, csv_row)
+  end
+
+  def cell_row!(csv_row)
+    add_row_to_results(:cell_rows, csv_row)
   end
 
   def invalid_phone!(phone, csv_row)

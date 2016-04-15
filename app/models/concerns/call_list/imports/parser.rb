@@ -14,11 +14,12 @@ private
     @dnc_wireless ||= DoNotCall::WirelessList.new
   end
 
-  def calculate_blocked(phone)
+  def calculate_blocked(phone, csv_row)
     blocked = []
     if skip_wireless? && dnc_wireless.prohibits?(phone)
       blocked                << :cell
       results[:cell_numbers] << phone
+      cell_row!(csv_row)
     end
     if blocked_numbers.include?(phone)
       blocked               << :dnc
@@ -28,7 +29,7 @@ private
   end
 
 public
-  def build_household(uuid, phone)
+  def build_household(uuid, phone, csv_row)
     {
       'leads'       => [],
       # note: imports.lua takes care to not overwrite uuid for existing households
@@ -37,7 +38,7 @@ public
       'account_id'  => voter_list.account_id,
       'campaign_id' => voter_list.campaign_id,
       'phone'       => phone,
-      'blocked'     => Household.bitmask_for_blocked( *calculate_blocked(phone) )
+      'blocked'     => Household.bitmask_for_blocked( *calculate_blocked(phone, csv_row) )
     }
   end
 
@@ -93,7 +94,7 @@ public
         phone, csv_row, i = *data
 
         # aggregate leads by phone
-        households[phone] ||= build_household(uuid, phone)
+        households[phone] ||= build_household(uuid, phone, csv_row)
         lead                = build_lead(uuid, phone, csv_row, i)
 
         if voter_list.maps_custom_id? and lead['custom_id'].present?
