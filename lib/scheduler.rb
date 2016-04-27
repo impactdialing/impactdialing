@@ -25,11 +25,11 @@ class Scheduler
   end
 
   def run
-    throw "Not implemented"
+    fail "Not implemented"
   end
 
   def process
-    throw "Not implemented"
+    fail "Not implemented"
   end
 
   def log(type=:info, msg)
