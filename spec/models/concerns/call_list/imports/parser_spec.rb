@@ -115,7 +115,7 @@ describe 'CallList::Imports::Parser' do
     end
 
     describe 'build_household' do
-      let(:row){ "#{uuid},#{phone}" }
+      let(:row){ CSV::Row.new(['UUID','Phone'],[uuid,phone]) }
       before do
         expect(uuid).to receive(:generate).and_return(household_uuid).ordered
       end
