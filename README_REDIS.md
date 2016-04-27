@@ -1,0 +1,70 @@
+## Deprecated keys (to be del)
+
+- call_flow:*
+- phones_only_answer_list:*
+- data_centre:*
+- not_answered_call_list
+- abandoned_call_list
+- message_dropped
+- end_answered_by_machine_call_list
+- disconnected_call_list
+- wrapped_up_call_list
+- not_answered_call_list
+- processing_by_machine_call_list
+- caller_dc:* (RedisCallerSession)
+- monitor:* (MonitorSession)
+
+## Active keys
+
+- *:state (CallFlow::Call::State)
+-- expires after 24 hours
+- calls:* (CallFlow::Call::Storage)
+-- **needs expiry
+- dial_queue:*:active (CallFlow::DialQueue::Available)
+- dial_queue:*:presented (CallFlow::DialQueue::Available)
+- dial_queue:*:households:active (CallFlow::DialQueue::Households)
+- dial_queue:*:households:presented (CallFlow::DialQueue::Households)
+- dial_queue:*:households:inactive (CallFlow::DialQueue::Households)
+- dial_queue:*:households:message_drops (CallFlow::DialQueue::Households)
+- dial_queue:*:households:completed_leads (CallFlow::DialQueue::Households)
+- dial_queue:*:households:dispositioned_leads (CallFlow::DialQueue::Households)
+- dial_queue:*:bin (CallFlow::DialQueue::RecycleBin)
+- dial_queue:*:completed (CallFlow::DialQueue::Completed)
+- dial_queue:*:failed (CallFlow::DialQueue::Completed)
+-- deleted when purged (purged when campaign is archived)
+- contact_fields:options:* (CallFlow::Web::ContactFields::Options)
+- contact_fields (CallFlow::Web::ContactFields::Selected)
+-- **needs purged along w/ dial_queue keys
+- imports:*:pending (CallList::Imports)
+-- deleted after import completes successfully
+- list:*:stats (CallList::Stats)
+-- deleted along with dial_queue purge
+- conferences.*.party_count (RedisCallerSession)
+-- deleted when caller session ends
+- transfer_session_keys.* (RedisCallerSession)
+-- deleted when caller session ends
+- caller_session_flow:* (RedisCallerSession)
+-- deleted when caller session ends
+- phantom_callers (RedisCallerSession)
+-- deleted when PhantomCallerJob runs
+- dial_calculate:* (Predictive)
+-- expires after 8 seconds
+- campaign_id:*on_hold_caller (RedisOnHoldCaller)
+-- members removed as callers end session
+-- ** keys need del 
+- possible_response:* (RedisPossibleResponse)
+-- expires after 6 hours or custom (ala CachePhonesOnlyScriptQuestions)
+- running_campaigns (RedisPredictiveCampaign)
+-- deleted when last caller session ends
+- question_list:script:* (RedisQuestion)
+-- expires after 6 hours or custom (ala CachePhonesOnlyScriptQuestions)
+- reassigned_:* (RedisReassignedCallerSession)
+-- deleted after reassignment is processed
+- campaign:*:status (RedisStatus)
+-- hash keys are deleted when caller session ends
+-- redis key is not but that is fine
+- twilio_limit (TwilioLimit)
+-- should not be deleted or expired EVER
+- inflight_stats:* (Twillio::InflightStats)
+-- **needs expiry or cleanup
+

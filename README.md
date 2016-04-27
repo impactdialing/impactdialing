@@ -13,6 +13,64 @@ A `.env` file is used to store local environment variables which are required to
 
 Start web & worker processes: `foreman start`.
 
+### Configuration
+
+- `CALLIN_PHONE`: The Twilio phone number associated with the "Production call-in" TwiML app
+- `CALL_END_CALLBACK_HOST`: DEPRECATED
+- `CAMPAIGN_EXPIRY`: A number of days; campaigns that have not made any dials in this number of days will be auto-archived
+- `DATABASE_READ_SLAVE1_URL`: URL to a MySQL read slave
+- `DATABASE_READ_SLAVE2_URL`: URL to a second MySQL read slave
+- `DATABASE_SIMULATOR_SLAVE_URL`: URL to a third MySQL read slave, intended for use by predictive simulator workers
+- `DATABASE_URL`: URL to MySQL master
+- `DO_NOT_CALL_PORTED_LISTS_PROVIDER_URL`: HTTP AUTH URL to tcpacompliance ported lists
+- `DO_NOT_CALL_REDIS_URL`: URL to redis instance where block and ported cell lists are cached
+- `DO_NOT_CALL_WIRELESS_BLOCK_LIST_PROVIDER_URL`: HTTP AUTH URL to qscdl block lists
+- `ENABLE_WORKER_AUTOSCALING`: DEPRECATED
+- `HEROKU_APP`: DEPRECATED
+- `HEROKU_AUTOSCALE_OAUTH_TOKEN`: DEPRECATED
+- `HEROKU_PASS`: DEPRECATED
+- `HEROKU_USER`: DEPRECATED
+- `HIREFIRE_TOKEN`: Auth token provided by HireFire for auto-scaling
+- `INCOMING_CALLBACK_HOST`: HOST of end-points to process TwiML
+- `INSTRUMENT_ACTIONS`: Toggle librato-rails experimental `instrument_action` usage; 0 = do not instrument controller actions; 1 = instrument controller actions
+- `LIBRATO_SOURCE`: Names the source of the Librato metrics being collected
+- `LIBRATO_TOKEN`: Auth token provided by Librato
+- `LIBRATO_USER`: Username for Librato account (invoices@impactdialing.com)
+- `MANDRILL_API_KEY`: ...
+- `MAX_THREADS`: How many threads should puma start (1 - app not proven thread-safe yet)
+- `NEW_RELIC_APP_NAME`: DEPRECATED
+- `NEW_RELIC_LICENSE_KEY`: DEPRECATED
+- `PUSHER_APP_ID`: ...
+- `PUSHER_KEY`: ...
+- `PUSHER_SECRET`: ...
+- `RACK_ENV`: ...
+- `RACK_TIMEOUT`: Number of seconds before rack considers request timed out (max 30 for heroku)
+- `RAILS_ENV`: ...
+- `RECORDING_ENV`: Root-level folder to store recordings in on s3
+- `REDIS_PHONE_KEY_INDEX_STOP`: CAUTION! Changing this requires migrating household data in redis, should be negative four (-4); this determines the position phone numbers are partitioned when creating redis keys and redis hash keys.
+- `REDIS_URL`: URL of primary (default) redis instance to connect
+- `S3_ACCESS_KEY`: ...
+- `S3_BUCKET`: ...
+- `S3_SECRET_ACCESS_KEY`: ...
+- `SCHEDULER_URL`: DEPRECATED ??
+- `STRIPE_PUBLISHABLE_KEY`: ...
+- `STRIPE_SECRET_KEY`: ...
+- `TWILIO_ACCOUNT`: ...
+- `TWILIO_APP_SID`: ...
+- `TWILIO_AUTH`: ...
+- `TWILIO_CALLBACK_HOST`: HOST of end-points to process TwiML (replacing `INCOMING_CALLBACK_HOST`)
+- `TWILIO_CALLBACK_PORT`: Port of that `TWILIO_CALLBACK_HOST` end-points will process TwiML on
+- `TWILIO_CAPABILITY_TOKEN_TTL`: TTL of Twilio Client capability tokens (caller app & admin dashboard)
+- `TWILIO_FAILOVER_HOST`: HOST of failover end-points to continue or abort processing TwiML
+- `TWILIO_MONITOR_APP_SID`: Twilio app id for admin dashboard call monitoring / break-in
+- `TWILIO_RETRIES`: Number of retries Twilio ruby client should perform before considering API request as failed
+- `UNICORN_TIMEOUT`: DEPRECATED
+- `UNICORN_WORKERS`: DEPRECATED (replaced by `WEB_CONCURRENCY`)
+- `UPSERT_GEM_ON`: Upsert is a SLOWER & MORE ERROR-PRONE alternative to activerecord-import; 0 = use activerecord-import; 1 = use upsert
+- `VOIP_API_URL`: Twilio's API host (api.twilio.com)
+- `VOTER_BATCH_SIZE`: Number of rows of CSV data to process before committing to redis during uploads. Keep at a max of 100 down to a min of 20 or 30. Lower value will increase overall upload time but decrease commit time thereby improving redis throughput.
+- `WEB_CONCURRENCY`: Number of puma workers to start.
+
 ### Whitelabeling
 
 1. Logo should look good at 300x57 and be png
