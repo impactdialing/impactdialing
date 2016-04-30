@@ -13,5 +13,8 @@
     "angular-mocks": "~1.4.0",
     "angular-scenario": "~1.4.0",
     "jasmine": "~2.0.0"
+  },
+  "resolutions": {
+    "angular": "~1.4.0"
   }
 }
