@@ -27,8 +27,9 @@ class CalculateDialsJob
   include Resque::Plugins::UniqueJob
   extend LibratoResque
 
+  @loner_ttl = 150
   @queue = :dialer_worker
-  
+
   def self.redis
     Resque.redis
   end

@@ -21,6 +21,7 @@ class PhantomCallerJob
   include Resque::Plugins::UniqueJob
   extend LibratoResque
 
+  @loner_ttl = 150
   @queue = :general
 
   def self.perform

@@ -22,6 +22,7 @@ class UpdateTwilioStatsCallerSession
   include Resque::Plugins::UniqueJob
   extend LibratoResque
 
+  @loner_ttl = 150
   @queue = :twilio_stats
 
   def self.perform

@@ -23,6 +23,7 @@ class DebitJob
   include Resque::Plugins::UniqueJob
   extend LibratoResque
 
+  @loner_ttl = 150
   @queue = :billing
 
   CALL_TIME_CLASSES = {

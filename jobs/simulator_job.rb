@@ -23,7 +23,8 @@ require 'librato_resque'
 class SimulatorJob
   include Resque::Plugins::UniqueJob
   extend LibratoResque
-  
+
+  @loner_ttl = 150
   @queue = :simulator_worker
 
 
