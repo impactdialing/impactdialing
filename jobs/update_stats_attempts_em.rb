@@ -24,6 +24,7 @@ class UpdateStatsAttemptsEm
   include Resque::Plugins::UniqueJob
   extend LibratoResque
 
+  @loner_ttl = 150
   @queue = :twilio_stats
 
   def self.perform
@@ -37,7 +38,7 @@ class UpdateStatsAttemptsEm
                                   limit(2000)
     twilio_call_attempts = call_attempts.select {|call_attempt| call_attempt.sid.starts_with?("CA")}
 
-    EM.synchrony do 
+    EM.synchrony do
       results     = []
       concurrency = 1000
 

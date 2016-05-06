@@ -22,7 +22,8 @@ require 'librato_resque'
 class CachePhonesOnlyScriptQuestions
   include Resque::Plugins::UniqueJob
   extend LibratoResque
-  
+
+  @loner_ttl = 150
   @queue = :dial_queue
 
   def self.add_to_queue(script_id, action)
@@ -79,7 +80,7 @@ class CachePhonesOnlyScriptQuestions
         RedisQuestion.persist_questions(script.id, question)
 
         RedisPossibleResponse.clear_list(question.id)
-        
+
         question.possible_responses.reverse.each do |possible_response|
           RedisPossibleResponse.persist_possible_response(question.id, possible_response)
         end

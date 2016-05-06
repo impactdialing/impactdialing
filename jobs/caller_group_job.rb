@@ -22,7 +22,8 @@ require 'librato_resque'
 class CallerGroupJob
   include Resque::Plugins::UniqueJob
   extend LibratoResque
-  
+
+  @loner_ttl = 150
   @queue = :dial_queue
 
   def self.perform(caller_group_id)
