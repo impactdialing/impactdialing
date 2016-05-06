@@ -101,7 +101,7 @@ ready.controller('ReadyCtrl.splash', [
     splash = {}
 
     splash.getStarted = ->
-      if idDeviceDetectFactory.isMobile()
+      if idDeviceDetectFactory.isAndroid()
         $scope.transitionInProgress = true
         BrowserPhone.start()
       else
