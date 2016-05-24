@@ -44,7 +44,9 @@ module AppHealth
 
       def alarm_details
         Campaign.find(@stagnant_campaign_ids).map do |campaign|
-          { account_email: campaign.account.users.first.email, campaign_name: campaign.name }
+          { account_email: campaign.account.users.first.email,
+            campaign_name: campaign.name,
+            active_callers: CallerSession.where(campaign_id: campaign.id).on_call.count }
         end.to_json
       end
 
