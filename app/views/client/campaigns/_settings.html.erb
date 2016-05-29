@@ -14,26 +14,30 @@
       <%= form.collection_select(:script_id, @scripts, :id, :name, {prompt: true}, name: "campaign[script_id]",
       id: "campaign_script") %>
     </p>
-    <p id="campaign_dial_mode_container">
-      <%= form.label :dialing_mode, for: 'campaign_type' %>
-      <select class="field" id="campaign_type" name="campaign[type]">
-        <%= options_for_select_campaign_type(@campaign) %>
-      </select>
-    </p>
-    <div id="abandon_rate_edit" style="display: none">
-      <p>
-        <label for="campaign_acceptable_abandon_rate">Compliance abandonment rate</label>
-        <select class="field" id="campaign_acceptable_abandon_rate" name="campaign[acceptable_abandon_rate]">
-          <% if @campaign.account.variable_abandonment? %>
-            <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03], ["4%", 0.04], ["5%", 0.05],
-                                    ["6%", 0.06], ["7%", 0.07], ["8%", 0.08], ["9%", 0.09],["10%", 0.1]],
-                                   @campaign.acceptable_abandon_rate %>
-          <% else %>
-            <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate %>
-          <% end %>
+    <% if ENV['CELL_COMPLIANCE_MODE'] %>
+      <%= form.hidden_field :type, name: "campaign[type]", value: 'Preview' %>
+    <% else %>
+      <p id="campaign_dial_mode_container">
+        <%= form.label :dialing_mode, for: 'campaign_type' %>
+        <select class="field" id="campaign_type" name="campaign[type]">
+          <%= options_for_select_campaign_type(@campaign) %>
         </select>
       </p>
-    </div>
+      <div id="abandon_rate_edit" style="display: none">
+        <p>
+          <label for="campaign_acceptable_abandon_rate">Compliance abandonment rate</label>
+          <select class="field" id="campaign_acceptable_abandon_rate" name="campaign[acceptable_abandon_rate]">
+            <% if @campaign.account.variable_abandonment? %>
+              <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03], ["4%", 0.04], ["5%", 0.05],
+                                      ["6%", 0.06], ["7%", 0.07], ["8%", 0.08], ["9%", 0.09],["10%", 0.1]],
+                                     @campaign.acceptable_abandon_rate %>
+            <% else %>
+              <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate %>
+            <% end %>
+          </select>
+        </p>
+      </div>
+    <% end %>
 
     <p id="campaign_time_zone_container">
       <label for="campaign_time_zone">Time zone</label>
@@ -56,7 +60,7 @@
       <input id="campaign_recycle_rate" type="text" name="campaign[recycle_rate]" value="<%= @campaign.recycle_rate %>">
     </p>
   </fieldset>
-  
+
   <div class="buttons">
     <button type="submit">Save</button>
   </div>
