@@ -53,6 +53,12 @@ module AppHealth
       def alert_if_not_ok
         unless ok?
           AppHealth::Alarm.trigger!(alarm_key, alarm_description, alarm_details)
+
+          #fixme most of the time, when the predictive dialer stops, restarting the PS app fixes it.
+          # no idea why, but it seems to work, so might as well automate it.
+          heroku = PlatformAPI.connect_oauth(ENV['HEROKU_AUTOSCALE_OAUTH_TOKEN']) #fixme so lazy, re-using the autoscale token
+          heroku.dyno.restart_all('impactdialing-ps')
+
           return false
         end
         return true
