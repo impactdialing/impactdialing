@@ -1,13 +1,14 @@
 'use strict';
 
-var ListUploadForm = function() {
+var ListUploadForm = function(usingCustomID) {
   var self    = this;
   this.action = '';
+  this.usingCustomID = usingCustomID;
 
   $('input[type="radio"][name="voter_list[purpose]"]').change(function(e) {
     var val = $(this).val();
     self.toggle(val);
-  });
+  }).triggerHandler('change');
 };
 
 ListUploadForm.prototype.purposes = ['import', 'prune_numbers', 'prune_leads'];
@@ -56,7 +57,7 @@ ListUploadForm.prototype.validateMapping = function(selected_mapping) {
     }
   }
   if( this.mappingRequiresCustomID() ) {
-    if( this.isMapped('custom_id', selected_mapping) ) {
+    if( !this.isMapped('custom_id', selected_mapping) ) {
       out.push("Please map a column to the ID field before uploading.");
     }
   }
@@ -69,13 +70,12 @@ ListUploadForm.prototype.isMapped = function(field, mapping) {
 };
 
 ListUploadForm.prototype.mappingRequiresPhone = function() {
-  return $.inArray(this.purpose, ['add', 'remove_numbers']) > -1;
+  return $.inArray(this.purpose, ['import', 'prune_numbers']) > -1;
 };
 
-ListUploadForm.prototype.mappingRequiresCustomID = function(usingCustomID) {
+ListUploadForm.prototype.mappingRequiresCustomID = function() {
   return (
-    this.purpose == 'remove_leads' ||
-    (!!usingCustomID && this.purpose != 'remove_numbers')
+    this.purpose == 'prune_leads' ||
+    (!!this.usingCustomID && this.purpose != 'prune_numbers')
   );
 };
-

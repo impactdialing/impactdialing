@@ -1,7 +1,7 @@
 <% content_for :javascripts do %>
     <script type ="text/javascript">
       $(function() {
-        list_upload_form = new ListUploadForm();
+        list_upload_form = new ListUploadForm(<%= @campaign.requires_custom_ids? %>);
         voter_list       = new VoterLists(list_upload_form);
       });
     </script>
