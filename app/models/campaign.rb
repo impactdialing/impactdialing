@@ -202,7 +202,7 @@ public
       inflight_stats.dec('ringing')
     end
   end
-  
+
   def number_presented(n)
     raise "NotImplemented"
   end
@@ -240,7 +240,7 @@ public
   end
 
   def requires_custom_ids?
-    (not lists.count.zero?) and using_custom_ids?
+    lists.count.zero? || using_custom_ids?
   end
 
   def can_use_custom_ids?
