@@ -71,7 +71,7 @@ class Campaign < ActiveRecord::Base
 
   validates :name, :presence => true
   validates :caller_id, :presence => true
-  validates :caller_id, :numericality => true, :length => {:minimum => 10, :maximum => 10}, :unless => :skip_caller_id_validation?
+  validates :caller_id, :numericality => true, :length => {:minimum => 10, :maximum => 10} #fixme we don't support int'l currently, plus this is a poor validation - if an invalid number is entered, we will just silently fail to make calls and report status Failed for all calls, :unless => :skip_caller_id_validation?
   validates :script, :presence => true
   validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Power', 'Predictive']}
   validates :acceptable_abandon_rate,
