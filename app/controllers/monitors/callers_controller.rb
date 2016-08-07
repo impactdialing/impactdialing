@@ -47,7 +47,7 @@ module Monitors
       else
         status_msg = "Status: Caller is not connected to a lead."
       end
-      render xml: caller_session.join_conference(params[:type]=="eaves_drop")
+      render xml: caller_session.join_conference(params[:type]=="eavesdrop")
     end
 
     def reassignable_campaigns
