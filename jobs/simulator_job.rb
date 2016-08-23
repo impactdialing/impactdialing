@@ -117,9 +117,11 @@ class SimulatorJob
 
         finished_conversations_answered_count = finished_conversations.count(&:answered?)
         simulated_abandonment = abandon_count / (finished_conversations_answered_count == 0 ? 1 : finished_conversations_answered_count)
+        puts "Simulated #{campaign_id} with #{dials_needed} dials, giving #{simulated_abandonment} abandonment."
 
         if simulated_abandonment <= target_abandonment
           utilization = active_time / ( active_time + idle_time )
+          puts "Simulated #{campaign_id} with #{dials_needed} dials, giving #{simulated_abandonment} abandonment and #{utilization} utilization."
           if utilization > best_utilization
             best_utilization = utilization
             best_dials = dials_needed if outer_loop == 0
