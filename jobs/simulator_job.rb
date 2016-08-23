@@ -43,7 +43,7 @@ class SimulatorJob
 
      expected_conversation, longest_conversation, best_conversation, mean_conversation, expected_wrapup_time, longest_wrapup_time, best_wrapup_time, caller_statuses, observed_conversations, observed_dials =  simulator_campaign_base_values(campaign_id, start_time)
 
-     while outer_loop < 3
+     while outer_loop < 1
        best_utilization = 0
        if outer_loop == 1
          expected_conversation = mean_conversation
