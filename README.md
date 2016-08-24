@@ -40,7 +40,7 @@ Start web & worker processes: `foreman start`.
 - `MAX_THREADS`: How many threads should puma start (1 - app not proven thread-safe yet)
 - `NEW_RELIC_APP_NAME`: DEPRECATED
 - `NEW_RELIC_LICENSE_KEY`: DEPRECATED
-- `PREDICTIVE_ON_HOLD_THRESHOLD`: Number of seconds a caller can be on-hold on a predictive campaign that hasn't dialed in the last 60 seconds. 
+- `PREDICTIVE_ON_HOLD_THRESHOLD`: Number of seconds a caller can be on-hold on a predictive campaign that hasn't dialed in the last 60 seconds.
 - `PUSHER_APP_ID`: ...
 - `PUSHER_KEY`: ...
 - `PUSHER_SECRET`: ...
@@ -120,6 +120,10 @@ Sometimes caller sessions will remain registered long after the caller has disco
 Clean up phantom sessions by locating the session id at `/admin/state` then open up a rails console and call `end_session` on the 'phantom' CallerSession instance.
 
 # Impact Dialing Client (callveyor)
+
+To test and build callveyor requires Node.js 0.10.x.
+After installing, `cd` into `callveyor` and run `npm install && bower install`
+to install dependencies.
 
 Tests run on karma, jasmine and grunt. Use `grunt test` to run continuously in Firefox, Safari and Chrome.
 
