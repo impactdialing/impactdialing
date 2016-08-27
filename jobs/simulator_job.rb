@@ -153,6 +153,7 @@ class SimulatorJob
     puts "Simulated campaign #{campaign_id} with #{caller_statuses.count} callers. Lines To Dial: #{best_dials}, Expected Call Time: #{best_conversation}, Expected Wrapup Time: #{best_wrapup_time}."
     SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(best_dials: best_dials, best_conversation: best_conversation, longest_conversation: longest_conversation, best_wrapup_time: best_wrapup_time)
    rescue Exception => e
+     puts "Simulated campaign #{campaign_id} failed. Exception: #{e.message}"
    end
 
    end
