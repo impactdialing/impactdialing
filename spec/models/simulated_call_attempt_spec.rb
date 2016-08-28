@@ -276,5 +276,12 @@ describe SimulatedCallAttempt do
       simulated_call_attempt.abandon
       expect {simulated_call_attempt.reset_stats!}.to change(simulated_call_attempt, :abandon_count).to(0)
     end
+
+    it 'resets to the idle state' do
+      simulated_call_attempt = SimulatedCallAttempt.new(ringing_length: 10)
+      simulated_call_attempt.dial
+      simulated_call_attempt.forward_one_second
+      expect {simulated_call_attempt.reset_stats!}.to change(simulated_call_attempt, :state).to(:idle)
+    end
   end
 end

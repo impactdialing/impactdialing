@@ -29,5 +29,6 @@ class SimulatedCaller
   def reset_stats!
     @on_hold_time = 0
     @on_call_time = 0
+    self.state = :on_hold
   end
 end

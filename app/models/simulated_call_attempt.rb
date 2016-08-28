@@ -95,5 +95,6 @@ class SimulatedCallAttempt
     @dial_count = 0
     @answer_count = 0
     @abandon_count = 0
+    self.state = :idle
   end
 end

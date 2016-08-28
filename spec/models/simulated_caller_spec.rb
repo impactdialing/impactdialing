@@ -53,5 +53,12 @@ describe SimulatedCaller do
       sc.forward_one_second
       expect {sc.reset_stats!}.to change(sc, :on_call_time).to(0)
     end
+
+    it 'resets to the idle state' do
+      sc = SimulatedCaller.new
+      sc.take_call
+      sc.forward_one_second
+      expect {sc.reset_stats!}.to change(sc, :state).to(:on_hold)
+    end
   end
 end
