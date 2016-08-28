@@ -58,7 +58,7 @@ describe SimulatedCaller do
       sc = SimulatedCaller.new
       sc.take_call
       sc.forward_one_second
-      expect {sc.reset_stats!}.to change(sc, :state).to(:on_hold)
+      expect {sc.reset_stats!}.to change(sc, :state).to('on_hold')
     end
   end
 end
