@@ -26,25 +26,31 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def loop_through_all_increments(increment, longest_wrapup, answer_rate, simulated_callers, simulated_call_attempts, acceptable_abandon_rate)
-    (0..increment).each do |current_increment|
-      puts "current wrapup increment is #{current_increment}"
-      current_wrapup = current_wrapup(longest_wrapup, current_increment, increment)
-      (0..increment).each do |current_increment|
-        puts "current dials increment is #{current_increment}"
+    # since we don't currently track wrapup time, no use simulating on it
+    # (1..increment).each do |current_increment|
+      # current_wrapup = current_wrapup(longest_wrapup, current_increment, increment)
+      current_wrapup = longest_wrapup
+      (1..increment).each do |current_increment|
         current_dials = current_dials(answer_rate, current_increment, increment)
         simulate!(simulated_callers, simulated_call_attempts, current_dials, current_wrapup, SIMULATION_LENGTH)
         update_best_parameters!(simulated_callers, simulated_call_attempts, campaign.acceptable_abandon_rate, current_dials, current_wrapup)
         reset_simulated_caller_stats(simulated_callers)
         reset_simulated_call_attempt_stats(simulated_call_attempts)
       end
-    end
+    # end
   end
 
   def simulate!(simulated_callers, simulated_call_attempts, current_dials, current_wrapup, simulation_length)
     simulation_length.times do |seconds|
+      # puts(simulated_callers.map(&:state).uniq.map do |state|
+      #   simulated_callers.count {|sc| sc.state == state}.to_s + ' callers ' + state.to_s
+      # end.join(', '))
       simulated_callers.each do |sc|
         sc.forward_one_second
       end
+      # puts(simulated_call_attempts.map(&:state).uniq.map do |state|
+      #   simulated_call_attempts.count {|sc| sc.state == state}.to_s + ' calls ' + state.to_s
+      # end.join(', '))
       simulated_call_attempts.each do |sca|
         sca.forward_one_second
       end
@@ -57,9 +63,6 @@ class SimulatedValues < ActiveRecord::Base
   def update_best_parameters!(simulated_callers, simulated_call_attempts, acceptable_abandon_rate, current_dials, current_wrapup)
     if acceptable_abandon_rate_not_exceeded?(simulated_call_attempts, acceptable_abandon_rate)
       current_utilization = utilization(simulated_callers)
-      puts "current best dials is #{@best_dials}"
-      puts "current best wrapup is #{@best_wrapup}"
-      puts "current best utilization is #{@best_utilization}"
       if current_utilization > @best_utilization
         @best_dials = current_dials
         @best_wrapup = current_wrapup
@@ -117,7 +120,12 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def current_dials(answer_rate, current_increment, total_increment)
-    answer_rate.to_f * (current_increment.to_f / total_increment.to_f) + 1
+    current_dials = answer_rate.to_f * (current_increment.to_f / total_increment.to_f)
+    if current_dials >= 1
+      current_dials
+    else
+      1
+    end
   end
 
   def lines_to_dial(simulated_callers, simulated_call_attempts, current_dials)
@@ -137,11 +145,11 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def assign_answered_calls_to_callers(simulated_callers, simulated_call_attempts)
-    on_hold_callers = simulated_callers.select {|sc| sc.state == :on_hold}
+    on_hold_callers = simulated_callers.select {|sc| sc.state == 'on_hold'}
     simulated_call_attempts.each do |sca|
       if sca.just_answered?
         if on_hold_callers.any?
-          on_hold_callers.sample.take_call
+          sca.assign_caller(on_hold_callers.sample)
         else
           sca.abandon
         end
@@ -168,10 +176,8 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def acceptable_abandon_rate_not_exceeded?(simulated_call_attempts, acceptable_abandon_rate)
-    total_abandoned = 0
-    simulated_call_attempts.each {|sca| total_abandoned += sca.abandon_count}
-    total_answered = 0
-    simulated_call_attempts.each {|sca| total_answered += sca.answer_count}
+    total_abandoned = simulated_call_attempts.inject(0) {|sum, sca| sum += sca.abandon_count}
+    total_answered = simulated_call_attempts.inject(0) {|sum, sca| sum += sca.answer_count}
     simulated_abandon_rate = total_abandoned.to_f / total_answered.to_f
     simulated_abandon_rate < acceptable_abandon_rate
   end

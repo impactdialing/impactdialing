@@ -140,7 +140,7 @@ describe SimulatedValues do
       answer_rate = 4
       current_increment = 5
       total_increment = 10
-      simulated_values.current_dials(answer_rate, current_increment, total_increment).should eq((answer_rate.to_f * (current_increment.to_f / total_increment.to_f)) + 1)
+      simulated_values.current_dials(answer_rate, current_increment, total_increment).should eq((answer_rate.to_f * (current_increment.to_f / total_increment.to_f)))
     end
   end
 
@@ -152,9 +152,9 @@ describe SimulatedValues do
       simulated_call_attempts = [simulated_call_attempt]
       simulated_values = SimulatedValues.new(campaign: FactoryGirl.create(:campaign))
 
-      simulated_caller.should_receive(:state).and_return(:on_hold)
+      simulated_caller.should_receive(:state).and_return('on_hold')
       simulated_call_attempt.should_receive(:just_answered?).and_return(true)
-      simulated_caller.should_receive(:take_call)
+      simulated_call_attempt.should_receive(:assign_caller)
       simulated_values.assign_answered_calls_to_callers(simulated_callers, simulated_call_attempts)
     end
 
