@@ -196,6 +196,15 @@ describe SimulatedCallAttempt do
       simulated_call_attempt.state.should eq 'idle'
       simulated_call_attempt.time_at_state.should eq 1
     end
+
+    it 'puts its caller back on hold when it transitions from wrapup to idle' do
+      simulated_call_attempt = SimulatedCallAttempt.new(ringing_length: 1, conversation_length: 2, wrapup_length: 3)
+      simulated_call_attempt.dial
+      1.times {simulated_call_attempt.forward_one_second}
+      simulated_caller = SimulatedCaller.new
+      simulated_call_attempt.assign_caller(simulated_caller)
+      expect {5.times {simulated_call_attempt.forward_one_second}}.to change(simulated_caller, :state). to('on_hold')
+    end
   end
 
   context '#just_answered?' do
@@ -282,6 +291,14 @@ describe SimulatedCallAttempt do
       simulated_call_attempt.dial
       simulated_call_attempt.forward_one_second
       expect {simulated_call_attempt.reset_stats!}.to change(simulated_call_attempt, :state).to('idle')
+    end
+  end
+
+  context 'assign_caller' do
+    it 'changes the caller from on_hold to on_call' do
+      simulated_call_attempt = SimulatedCallAttempt.new
+      simulated_caller = SimulatedCaller.new
+      expect {simulated_call_attempt.assign_caller(simulated_caller)}.to change(simulated_caller, :state). to('on_call')
     end
   end
 end

@@ -1,6 +1,6 @@
 class SimulatedCallAttempt
   attr_reader :ringing_length, :conversation_length, :wrapup_length, :state
-  attr_accessor :time_at_state, :dial_count, :answer_count, :abandon_count
+  attr_accessor :time_at_state, :dial_count, :answer_count, :abandon_count, :simulated_caller
 
   state_machine :state, :initial => :idle do
     event :dial do
@@ -46,6 +46,7 @@ class SimulatedCallAttempt
 
     after_transition :wrapup => :idle do |sca, transition|
       sca.time_at_state = 1
+      sca.simulated_caller.finish_call
     end
 
     after_transition :answered => :idle do |sca, transition|
@@ -90,11 +91,17 @@ class SimulatedCallAttempt
     self.state == 'answered' && self.time_at_state == 1
   end
 
+  def assign_caller(simulated_caller)
+    self.simulated_caller = simulated_caller
+    simulated_caller.take_call
+  end
+
   def reset_stats!
     @time_at_state = 1
     @dial_count = 0
     @answer_count = 0
     @abandon_count = 0
+    @caller = nil
     self.state = 'idle'
   end
 end

@@ -40,6 +40,14 @@ describe SimulatedCaller do
     end
   end
 
+  context '#finish_call' do
+    it 'goes back to on hold' do
+      sc = SimulatedCaller.new
+      sc.take_call
+      expect {sc.finish_call}.to change(sc, :state).to('on_hold')
+    end
+  end
+
   context '#reset_stats!' do
     it 'resets its on_hold_time to 0' do
       sc = SimulatedCaller.new

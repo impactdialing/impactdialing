@@ -18,6 +18,10 @@ class SimulatedCaller
     event :take_call do
       transition :on_hold => :on_call
     end
+
+    event :finish_call do
+      transition :on_call => :on_hold
+    end
   end
 
   def initialize
