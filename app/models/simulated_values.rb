@@ -15,6 +15,12 @@ class SimulatedValues < ActiveRecord::Base
   CALL_ATTEMPT_LIMIT = 100
 
   def calculate_values
+    if number_of_callers_on_call < 5 || recent_call_attempts.size < 50
+      self.best_dials = 1
+      self.best_wrapup_time = 100
+      return
+    end
+
     simulated_callers = simulated_callers(number_of_callers_on_call)
     simulated_call_attempts = simulated_call_attempts(recent_call_attempts)
 
@@ -73,7 +79,7 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def number_of_callers_on_call
-    campaign.using(:simulator_slave).caller_sessions.where(:on_call => true).count
+    @number_of_callers_on_call ||= campaign.using(:simulator_slave).caller_sessions.on_call.count
   end
 
   def simulated_callers(number_of_callers_on_call)
@@ -83,7 +89,7 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def recent_call_attempts
-    campaign.using(:simulator_slave).call_attempts.between(START_TIME, Time.now).limit(CALL_ATTEMPT_LIMIT)
+    @recent_call_attempts ||= campaign.using(:simulator_slave).call_attempts.between(START_TIME, Time.now).limit(CALL_ATTEMPT_LIMIT)
   end
 
   def simulated_call_attempts(recent_call_attempts)
