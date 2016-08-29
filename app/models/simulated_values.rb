@@ -20,9 +20,6 @@ class SimulatedValues < ActiveRecord::Base
     set_default_best_values(longest_wrapup)
 
     loop_through_all_increments(INCREMENT, longest_wrapup, answer_rate, simulated_callers, simulated_call_attempts, campaign.acceptable_abandon_rate)
-    puts @best_dials
-    puts @best_wrapup
-    puts @best_utilization
   end
 
   def loop_through_all_increments(increment, longest_wrapup, answer_rate, simulated_callers, simulated_call_attempts, acceptable_abandon_rate)
