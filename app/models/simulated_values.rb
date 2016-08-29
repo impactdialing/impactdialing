@@ -1,5 +1,5 @@
 class SimulatedValues < ActiveRecord::Base
-  attr_reader :best_dials, :best_wrapup, :best_utilization
+  attr_accessor :best_utilization
 
   belongs_to :campaign
   validates :campaign, presence: true
@@ -63,10 +63,10 @@ class SimulatedValues < ActiveRecord::Base
   def update_best_parameters!(simulated_callers, simulated_call_attempts, acceptable_abandon_rate, current_dials, current_wrapup)
     if acceptable_abandon_rate_not_exceeded?(simulated_call_attempts, acceptable_abandon_rate)
       current_utilization = utilization(simulated_callers)
-      if current_utilization > @best_utilization
-        @best_dials = current_dials
-        @best_wrapup = current_wrapup
-        @best_utilization = current_utilization
+      if current_utilization > self.best_utilization
+        self.best_dials = current_dials
+        self.best_wrapup_time = current_wrapup
+        self.best_utilization = current_utilization
       end
     end
   end
@@ -110,9 +110,9 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def set_default_best_values(longest_wrapup)
-    @best_dials = 1
-    @best_wrapup = longest_wrapup
-    @best_utilization = 0
+    self.best_dials = 1
+    self.best_wrapup_time = longest_wrapup
+    self.best_utilization = 0
   end
 
   def current_wrapup(longest_wrapup, current_increment, total_increment)
