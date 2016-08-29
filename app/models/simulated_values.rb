@@ -1,3 +1,5 @@
+require 'octopus'
+
 class SimulatedValues < ActiveRecord::Base
   attr_accessor :best_utilization
 
@@ -69,7 +71,7 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def number_of_callers_on_call
-    campaign.caller_sessions.where(:on_call => true).count
+    campaign.using(:simulator_slave).caller_sessions.where(:on_call => true).count
   end
 
   def simulated_callers(number_of_callers_on_call)
@@ -79,7 +81,7 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def recent_call_attempts
-    campaign.call_attempts.between(START_TIME, Time.now).limit(CALL_ATTEMPT_LIMIT)
+    campaign.using(:simulator_slave).call_attempts.between(START_TIME, Time.now).limit(CALL_ATTEMPT_LIMIT)
   end
 
   def simulated_call_attempts(recent_call_attempts)
