@@ -79,19 +79,13 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def recent_call_attempts
-    recent_call_attempts = []
-    campaign.call_attempts.between(START_TIME, Time.now).limit(CALL_ATTEMPT_LIMIT).each do |call_attempt|
-      recent_call_attempts << call_attempt
-    end
-    recent_call_attempts
+    campaign.call_attempts.between(START_TIME, Time.now).limit(CALL_ATTEMPT_LIMIT)
   end
 
   def simulated_call_attempts(recent_call_attempts)
-    simulated_call_attempts = []
-    recent_call_attempts.each do |call_attempt|
-      simulated_call_attempts << SimulatedCallAttempt.from_call_attempt(call_attempt)
+    recent_call_attempts.map do |call_attempt|
+      SimulatedCallAttempt.from_call_attempt(call_attempt)
     end
-    simulated_call_attempts
   end
 
   def answer_rate(simulated_call_attempts)
