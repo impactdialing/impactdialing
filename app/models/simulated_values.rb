@@ -5,9 +5,9 @@ class SimulatedValues < ActiveRecord::Base
   validates :campaign, presence: true
   before_save :calculate_values
 
-  START_TIME = 10.minutes.ago
-  SIMULATION_LENGTH = 1.minute
-  INCREMENT = 3
+  START_TIME = 30.minutes.ago
+  SIMULATION_LENGTH = 4.minutes
+  INCREMENT = 6
   CALL_ATTEMPT_LIMIT = 100
 
   def calculate_values
