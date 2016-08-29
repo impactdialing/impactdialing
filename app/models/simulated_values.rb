@@ -1,3 +1,5 @@
+# todo: extract simulation itself into a separate Simulation PORO
+# leaving only the setup and persistence here
 require 'octopus'
 
 class SimulatedValues < ActiveRecord::Base
