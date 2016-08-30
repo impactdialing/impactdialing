@@ -26,6 +26,6 @@ class SimulatorJob
   @queue = :simulator_worker
 
   def self.perform(campaign_id)
-    SimulatedValues.new(campaign_id: campaign_id).calculate_values
+    SimulatedValues.create!(campaign_id: campaign_id)
   end
 end
