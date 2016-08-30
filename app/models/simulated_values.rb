@@ -79,7 +79,7 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def number_of_callers_on_call
-    @number_of_callers_on_call ||= campaign.using(:simulator_slave).caller_sessions.on_call.count
+    @number_of_callers_on_call ||= campaign.caller_sessions.using(:simulator_slave).on_call.count
   end
 
   def simulated_callers(number_of_callers_on_call)
@@ -89,7 +89,7 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def recent_call_attempts
-    @recent_call_attempts ||= campaign.using(:simulator_slave).call_attempts.between(START_TIME, Time.now).limit(CALL_ATTEMPT_LIMIT)
+    @recent_call_attempts ||= campaign.call_attempts.using(:simulator_slave).between(START_TIME, Time.now).limit(CALL_ATTEMPT_LIMIT)
   end
 
   def simulated_call_attempts(recent_call_attempts)
