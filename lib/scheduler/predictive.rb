@@ -18,7 +18,7 @@ class Scheduler::Predictive < Celluloid::SupervisionGroup
   autoload :Simulator, 'scheduler/predictive/simulator'
 
   supervise Scheduler::Predictive::Simulator, as: :simulator, args: [30]
-  supervise Scheduler::Predictive::Dialer, as: :dialer, args: [2]
+  supervise Scheduler::Predictive::Dialer, as: :dialer, args: [1]
 
   def self.run!
     Logger.info "Scheduler::Predictive booting..."
