@@ -116,6 +116,7 @@ group :development do
 end
 
 group :development, :test do
+  gem 'dotenv'
   gem 'rspec-rails'
   gem 'rspec-its' # its is not in rspec 3
   gem 'rspec-collection_matchers' # expect(collection).to have(1).thing is not in rspec 3

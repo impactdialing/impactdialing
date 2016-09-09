@@ -109,6 +109,7 @@ GEM
     diff-lcs (1.2.5)
     domain_name (0.5.23)
       unf (>= 0.0.5, < 1.0.0)
+    dotenv (2.1.1)
     dynamic_form (1.1.4)
     em-hiredis (0.2.1)
       hiredis (~> 0.4.0)
@@ -448,6 +449,7 @@ DEPENDENCIES
   compass-rails
   database_cleaner
   deep_cloneable
+  dotenv
   dynamic_form (~> 1.1.4)
   em-hiredis (~> 0.2.1)
   em-http-request (~> 1.1.0)
