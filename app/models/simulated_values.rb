@@ -79,7 +79,7 @@ class SimulatedValues < ActiveRecord::Base
   end
 
   def number_of_callers_on_call
-    @number_of_callers_on_call ||= campaign.caller_sessions.using(:simulator_slave).on_call.count
+    @number_of_callers_on_call ||= campaign.caller_sessions.on_call.count
   end
 
   def simulated_callers(number_of_callers_on_call)
