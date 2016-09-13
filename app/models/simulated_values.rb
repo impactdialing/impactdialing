@@ -15,7 +15,7 @@ class SimulatedValues < ActiveRecord::Base
   CALL_ATTEMPT_LIMIT = 100
 
   def calculate_values
-    if number_of_callers_on_call < 5 || recent_call_attempts.size < 50 || !campaign.abandon_rate_acceptable?
+    if number_of_callers_on_call < 5 || recent_call_attempts.size < 50
       self.best_dials = 1
       self.best_wrapup_time = 1000
       return
