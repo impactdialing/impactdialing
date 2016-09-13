@@ -52,7 +52,14 @@ class Predictive < Campaign
     dials_made = call_attempts.between(10.minutes.ago, Time.now).count
 
     return 1 if dials_made.zero?
-    return 0.5 * best_dials_simulated if !abandon_rate_acceptable?
+    if !abandon_rate_acceptable?
+      half_speed = 0.5 * best_dials_simulated
+      if half_speed < 1
+        return 1
+      else
+        return half_speed
+      end
+    end
     return best_dials_simulated
   end
 
