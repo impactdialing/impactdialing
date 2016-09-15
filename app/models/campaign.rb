@@ -38,7 +38,6 @@ class Campaign < ActiveRecord::Base
   has_many :call_attempts
   has_many :transfer_attempts
   has_many :callers
-  has_one :simulated_values
   has_many :answers
   has_many :note_responses
   has_many :caller_groups
@@ -99,6 +98,14 @@ class Campaign < ActiveRecord::Base
 
   delegate :last_dial_time, to: :inflight_stats
   delegate :update_last_dial_time, to: :inflight_stats
+
+  def simulated_values
+    @simulated_values = SimulatedValues.where(campaign: self).order(:created_at).last
+  end
+
+  def simulated_values=(values)
+    @simulated_values = values
+  end
 
 private
   # flag archive-related changes for use by notification after changes have persisted
