@@ -53,7 +53,7 @@
       <%= form_for(@subscription, url: client_billing_subscription_path) do %>
         <p>
           <label for="subscription_amount">
-            Amount to add (<%= number_to_currency @subscription.price_per_quantity %> /minute)
+            Dollars to add (<%= number_to_currency @subscription.price_per_quantity %> /minute)
           </label>
           <input  type="text" name="amount_paid" value="" id="subscription_amount">
         </p>
