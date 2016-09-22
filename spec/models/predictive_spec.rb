@@ -184,16 +184,16 @@ describe Predictive do
           before do
             allow(campaign).to receive(:ringing_count){ -5 }
           end
-          it 'uses the absolute value to avoid negating subtraction' do
-            expect(campaign.numbers_to_dial_count).to eq campaign.caller_sessions.available.count * best_dials - 5
+          it 'uses 0 if there is a negative value' do
+            expect(campaign.numbers_to_dial_count).to eq campaign.caller_sessions.available.count * best_dials
           end
         end
         context 'negative presented count' do
           before do
             allow(campaign).to receive(:presented_count){ -3 }
           end
-          it 'uses the absolute value to avoid negating subtraction' do
-            expect(campaign.numbers_to_dial_count).to eq campaign.caller_sessions.available.count * best_dials - 3
+          it 'uses zero instead of a negative value' do
+            expect(campaign.numbers_to_dial_count).to eq campaign.caller_sessions.available.count * best_dials
           end
         end
         context 'no ringing/presented calls' do

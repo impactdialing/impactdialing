@@ -64,7 +64,7 @@ class Predictive < Campaign
   end
 
   def numbers_to_dial_count
-    deductibles = ringing_count.abs + presented_count.abs
+    deductibles = [ringing_count, 0].max + [presented_count, 0].max
     n = (
       (dial_factor * available_callers_count) - deductibles
     ).to_i
