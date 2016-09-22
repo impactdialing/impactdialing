@@ -18,7 +18,6 @@ describe Predictive do
   let(:campaign) do
     create(:predictive, {
       account: account,
-      caller_id: Forgery(:address).phone[2..-1],
       recycle_rate: 3,
       acceptable_abandon_rate: 0.02
     })

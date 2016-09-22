@@ -161,6 +161,11 @@ describe Campaign, :type => :model do
       expect(campaign).to be_valid
     end
 
+    it 'removes the 1 from the beginning of a phone number' do
+      campaign = build(:campaign, :caller_id => "1-503-555-121")
+      expect(campaign).not_to be_valid
+    end
+
     it 'return validation error, when callers are login and try to change dialing mode' do
       campaign = create(:preview)
       campaign.caller_sessions.create!(on_call: true, state: "initial")

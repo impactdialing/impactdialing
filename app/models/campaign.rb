@@ -133,6 +133,7 @@ private
   end
 
   def sanitize_caller_id
+    self.caller_id = caller_id[1..-1] if self.caller_id[0] == '1'
     country_mark   = self.caller_id.start_with?('+') ? '+' : ''
     self.caller_id = "#{country_mark}#{PhoneNumber.sanitize(self.caller_id)}"
   end

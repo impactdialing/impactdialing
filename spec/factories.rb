@@ -80,7 +80,7 @@ FactoryGirl.define do
 
   factory :campaign do
     name { "a #{generate(:campaign_name)}" }
-    caller_id '1234567890'
+    caller_id '2234567890'
     account
     recycle_rate 1
     start_time (Time.now)
@@ -94,7 +94,7 @@ FactoryGirl.define do
 
   factory :predictive do
     name { "predictive #{generate(:campaign_name)}" }
-    caller_id '1234567890'
+    caller_id '2234567890'
     account
     recycle_rate 1
     start_time (Time.now)
@@ -107,7 +107,7 @@ FactoryGirl.define do
 
   factory :preview do
     name { "preview #{generate(:campaign_name)}" }
-    caller_id '1234567890'
+    caller_id '2234567890'
     account
     recycle_rate 1
     start_time (Time.now)
@@ -120,7 +120,7 @@ FactoryGirl.define do
 
   factory :power do
     name { "power #{generate(:campaign_name)}" }
-    caller_id '1234567890'
+    caller_id '2234567890'
     account
     recycle_rate 1
     start_time (Time.now)
