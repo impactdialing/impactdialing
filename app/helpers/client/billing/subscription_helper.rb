@@ -12,7 +12,7 @@ module Client::Billing::SubscriptionHelper
   end
 
   def subscription_type_options_for_select(subscription, minutes_available)
-    ids = ::Billing::Plans.permitted_ids_for(subscription.plan, minutes_available)
+    ids = ::Billing::Plans.permitted_ids_for(subscription.plan, minutes_available).reverse #reverse so per minute comes first
     return ids.map do |type|
       [subscription_human_type(type), type]
     end
