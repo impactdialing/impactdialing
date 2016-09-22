@@ -5,7 +5,7 @@ describe VoterList, :type => :model do
     {
       name: 'blah',
       s3path: '/somewhere/on/s3/blah.csv',
-      csv_to_system_map: {'First Name' => 'first_name', 'Phone' => 'phone'},
+      csv_to_system_map: {'ID' => 'custom_id', 'First Name' => 'first_name', 'Phone' => 'phone'},
       uploaded_file_name: 'blah.csv'
     }
   end
@@ -56,6 +56,7 @@ describe VoterList, :type => :model do
       end
       before do
         voter_list.csv_to_system_map = {
+          'ID' => 'custom_id',
           'Phone' => 'phone'
         }
         voter_list.save!
@@ -100,13 +101,14 @@ describe VoterList, :type => :model do
           expect(third_voter_list.errors[:csv_to_system_map]).to include I18n.t('activerecord.errors.models.voter_list.custom_id_map_required')
         end
       end
-      context 'when first list for campaign did not map custom id' do
-        include_context 'first list did not map custom id'
-        it 'cannot map custom_id' do
-          second_voter_list.valid?
-          expect(second_voter_list.errors[:csv_to_system_map]).to include I18n.t('activerecord.errors.models.voter_list.custom_id_map_prohibited')
-        end
-      end
+      # fixme now IDs are always required, so this test and associated code should die
+      # context 'when first list for campaign did not map custom id' do
+      #   include_context 'first list did not map custom id'
+      #   it 'cannot map custom_id' do
+      #     second_voter_list.valid?
+      #     expect(second_voter_list.errors[:csv_to_system_map]).to include I18n.t('activerecord.errors.models.voter_list.custom_id_map_prohibited')
+      #   end
+      # end
     end
 
     context 'when purpose == "prune_numbers"' do
@@ -255,7 +257,7 @@ describe VoterList, :type => :model do
     end
     subject{ VoterList.create(valid_attrs) }
 
-    it 'saves all fields from #csv_to_system_map that are not Voter columns' 
+    it 'saves all fields from #csv_to_system_map that are not Voter columns'
     #do
     #  expect(contact_fields_options).to match_array ['Polling Address', 'Party']
     #end

@@ -153,7 +153,8 @@ describe Campaign, :type => :model do
       expect(campaign.errors[:base]).to eq(['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code'])
     end
 
-    it "skips validations for an international phone number" do
+    it "skips validations for an international phone number when the ENV var is set" do
+      ENV['INTERNATIONAL'] = 'true'
       campaign = build(:campaign, :caller_id => "+98743987")
       expect(campaign).to be_valid
       campaign = build(:campaign, :caller_id => "+987AB87A")
@@ -488,7 +489,7 @@ describe Campaign, :type => :model do
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c3.id)
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c4.id)
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c10.id)
-      
+
       2.times{ campaign.send(:inflight_stats).inc('ringing') }
 
       expect(campaign.current_status).to eq ({callers_logged_in: 9, on_call: 2, wrap_up: 3, on_hold: 4, ringing_lines: 2, available: 0})

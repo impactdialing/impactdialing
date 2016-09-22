@@ -4,6 +4,7 @@ describe 'CallList::Imports' do
   let(:voter_list) do
     create(:voter_list, {
       csv_to_system_map: {
+        'ID' => 'custom_id',
         'Phone' => 'phone',
         'DISTRICT' => 'District',
         'POLLING LOC' => 'Polling location'

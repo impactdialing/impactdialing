@@ -1,7 +1,7 @@
 FactoryGirl.define do
   factory :bare_campaign, class: 'Campaign' do
     name         { Forgery(:name).company_name }
-    caller_id    '+15005550006'
+    caller_id    '5005550006'
     recycle_rate 1
     start_time   (Time.now)
     end_time     (Time.now)

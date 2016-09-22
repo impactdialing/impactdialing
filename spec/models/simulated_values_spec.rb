@@ -32,13 +32,13 @@ describe SimulatedValues do
       simulated_values.recent_call_attempts.length.should eq 4
     end
 
-    it 'does not include call attempts older than 10 minutes' do
+    it 'does not include call attempts older than 30 minutes' do
       campaign = FactoryGirl.create(:campaign)
       3.times {FactoryGirl.create(:call_attempt, campaign: campaign,
                                       created_at: Time.now,
                                       caller: FactoryGirl.create(:caller))}
       1.times {FactoryGirl.create(:call_attempt, campaign: campaign,
-                                      created_at: Time.now - 11.minutes,
+                                      created_at: Time.now - 32.minutes,
                                       caller: FactoryGirl.create(:caller))}
       simulated_values = SimulatedValues.new(campaign: campaign)
       simulated_values.recent_call_attempts.length.should eq 3
@@ -365,7 +365,7 @@ describe SimulatedValues do
       simulated_values = SimulatedValues.new(campaign: FactoryGirl.create(:campaign))
       longest_wrapup = 25
       simulated_values.set_default_best_values(longest_wrapup)
-      simulated_values.best_wrapup.should eq longest_wrapup
+      simulated_values.best_wrapup_time.should eq longest_wrapup
     end
 
     it 'should set best_utilization to 0' do
@@ -393,7 +393,7 @@ describe SimulatedValues do
 
       simulated_values.update_best_parameters!(simulated_callers, simulated_call_attempts, acceptable_abandon_rate, current_dials, current_wrapup)
       simulated_values.best_dials.should eq 2
-      simulated_values.best_wrapup.should eq 12
+      simulated_values.best_wrapup_time.should eq 12
       simulated_values.best_utilization.should eq 1
     end
   end
