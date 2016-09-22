@@ -92,18 +92,20 @@
             }
       }) %>
     </li>
-    <% if can? :manage, CallerGroup %>
-    <li>
-      <%= link_to('Manage caller groups', client_caller_groups_path, {
-            :class => 'action secondary',
-            :data => {
-              "intro" => "If you have a large number of callers that call the"+
-              " same campaigns, you can group them together so that they"+
-              " can all be re-assigned to a new campaign at once.",
-              "step" => "4"
-            }
-      }) %>
-    </li>
-    <% end %>
   </ul>
+  <% if can? :manage, CallerGroup %>
+    <ul>
+      <li>
+        <%= link_to('Manage caller groups', client_caller_groups_path, {
+              :class => 'action secondary',
+              :data => {
+                "intro" => "If you have a large number of callers that call the"+
+                " same campaigns, you can group them together so that they"+
+                " can all be re-assigned to a new campaign at once.",
+                "step" => "4"
+              }
+        }) %>
+      </li>
+    </ul>
+  <% end %>
 </nav>
