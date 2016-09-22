@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 ruby '2.2.4'
 
+gem 'dotenv-rails', :groups => [:development, :test]
 gem 'rails', '~> 4.0.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
@@ -116,7 +117,6 @@ group :development do
 end
 
 group :development, :test do
-  gem 'dotenv'
   gem 'rspec-rails'
   gem 'rspec-its' # its is not in rspec 3
   gem 'rspec-collection_matchers' # expect(collection).to have(1).thing is not in rspec 3
