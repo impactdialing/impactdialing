@@ -34,15 +34,27 @@
   <tr>
     <td style="vertical-align:top">
       <table>
+        <tr>
+          <th>Campaign</th>
+          <th>Callers</th>
+          <th>Ringing</th>
+          <th>Presented</th>
+        </tr>
         <% @logged_in_campaigns.each do |campaign| %>
           <tr>
             <td valign="top">
               <a target="_blank" href="/admin/login/<%= User.where(account_id: campaign.account_id).first.id %>" >
-                <%= campaign.name %> (<%= campaign.type %>)
+                <%= campaign.name %> (<%= campaign.type %>) (<%= campaign.id %>)
               </a>
             </td>
             <td>
-              <%= link_to "#{campaign.caller_sessions.on_call.count} callers", admin_caller_sessions_path(campaign), class: "js-show-caller" %>
+              <%= link_to "#{campaign.caller_sessions.on_call.count}", admin_caller_sessions_path(campaign), class: "js-show-caller" %>
+            </td>
+            <td>
+            <%= campaign.ringing_count %>
+            </td>
+            <td>
+            <%= campaign.presented_count %>
             </td>
           </tr>
         <% end -%>
