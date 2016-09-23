@@ -98,8 +98,11 @@ callveyor.config([
   ($stateProvider,   serviceTokens,   idTwilioServiceProvider,   PusherServiceProvider) ->
     idTwilioServiceProvider.setScriptUrl('//static.twilio.com/libs/twiliojs/1.2/twilio.js')
     PusherServiceProvider.setPusherUrl('//d3dy5gmtp8yhk7.cloudfront.net/2.1/pusher.min.js')
-    PusherServiceProvider.setToken(serviceTokens.pusher)
-
+    if window.location.hostname == 'au.impactdialing.com'
+      PusherServiceProvider.setOptions({cluster: 'ap1'})
+      PusherServiceProvider.setToken(serviceTokens.pusherAsia)
+    else
+      PusherServiceProvider.setToken(serviceTokens.pusher)
 
     $stateProvider.state('abort', {
       template: ''
@@ -122,7 +125,7 @@ callveyor.controller('AppCtrl.abort', [
       twilioConnection.disconnect()
 
     PusherService.then((pusher) ->
-      if pusher.connection.state == 'connected' 
+      if pusher.connection.state == 'connected'
         pusher.disconnect()
     )
 ])
@@ -159,7 +162,7 @@ callveyor.controller('AppCtrl', [
     transitionError = (event, unfoundState, fromState, fromParams) ->
       phone = getPhone()
       meta  = getMeta()
-      
+
       err = new Error("$state change failed to transition")
       Bugsnag.notifyException(err, {
         angular: {

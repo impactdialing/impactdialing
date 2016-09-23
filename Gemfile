@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 ruby '2.2.4'
 
+gem 'dotenv-rails', :groups => [:development, :test]
 gem 'rails', '~> 4.0.0'
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
@@ -10,6 +11,7 @@ gem 'compass-rails'
 gem 'introjs-rails'
 gem 'puma'
 gem 'rack-timeout'
+gem 'state_machine'
 
 # heroku
 gem 'rails_12factor', group: :production
@@ -20,7 +22,7 @@ gem 'sinatra'
 gem 'slim'
 
 
-gem 'uuid', '~> 2.3.7' 
+gem 'uuid', '~> 2.3.7'
 
 # 911
 gem 'pagerduty'

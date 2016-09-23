@@ -185,3 +185,14 @@ function possible_response_delete(response_node){
   return true;
 }
 
+$('#script_elements').on('cocoon:after-insert', function(e, insertedItem) {
+  if (insertedItem.hasClass('possible_response')) {
+    var previousKeypad = insertedItem.prev().find('.keypad').val();
+    if (previousKeypad === undefined) {
+      var newKeypad = 0;
+    } else {
+      var newKeypad = parseInt(previousKeypad) + 1;
+    }
+    insertedItem.find('.keypad').val(newKeypad);
+  }
+});

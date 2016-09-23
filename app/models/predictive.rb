@@ -11,7 +11,7 @@ class Predictive < Campaign
       inflight_stats.incby('presented', -1)
     end
   end
-  
+
   def number_presented(n)
     debug_number('presented', 'presented') do
       inflight_stats.incby('presented', n)
@@ -44,14 +44,22 @@ class Predictive < Campaign
 
   def best_dials_simulated
     return 1 if simulated_values.nil? || simulated_values.best_dials.nil?
-    n = simulated_values.best_dials.ceil
+    n = simulated_values.best_dials
     return n > TwilioLimit.get ? TwilioLimit.get : n
   end
 
   def dial_factor
     dials_made = call_attempts.between(10.minutes.ago, Time.now).count
 
-    return 1 if dials_made.zero? || !abandon_rate_acceptable?
+    return 1 if dials_made.zero?
+    if !abandon_rate_acceptable?
+      half_speed = 0.5 * best_dials_simulated
+      if half_speed < 1
+        return 1
+      else
+        return half_speed
+      end
+    end
     return best_dials_simulated
   end
 

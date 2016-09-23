@@ -38,7 +38,6 @@ class Campaign < ActiveRecord::Base
   has_many :call_attempts
   has_many :transfer_attempts
   has_many :callers
-  has_one :simulated_values
   has_many :answers
   has_many :note_responses
   has_many :caller_groups
@@ -71,7 +70,7 @@ class Campaign < ActiveRecord::Base
 
   validates :name, :presence => true
   validates :caller_id, :presence => true
-  validates :caller_id, :numericality => true, :length => {:minimum => 10, :maximum => 10} #fixme we don't support int'l currently, plus this is a poor validation - if an invalid number is entered, we will just silently fail to make calls and report status Failed for all calls, :unless => :skip_caller_id_validation?
+  validates :caller_id, :numericality => true, :length => {:minimum => 10, :maximum => 10}, :unless => :skip_caller_id_validation? #fixme we don't support int'l currently (except australia), plus this is a poor validation - if an invalid number is entered, we will just silently fail to make calls and report status Failed for all calls
   validates :script, :presence => true
   validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Power', 'Predictive']}
   validates :acceptable_abandon_rate,
@@ -100,6 +99,14 @@ class Campaign < ActiveRecord::Base
   delegate :last_dial_time, to: :inflight_stats
   delegate :update_last_dial_time, to: :inflight_stats
 
+  def simulated_values
+    @simulated_values = SimulatedValues.where(campaign: self).order(:created_at).last
+  end
+
+  def simulated_values=(values)
+    @simulated_values = values
+  end
+
 private
   # flag archive-related changes for use by notification after changes have persisted
   def flag_archive_changes
@@ -122,7 +129,7 @@ private
   end
 
   def skip_caller_id_validation?
-    caller_id && caller_id.start_with?('+')
+    ENV['INTERNATIONAL'] && caller_id && caller_id.start_with?('+')
   end
 
   def sanitize_caller_id

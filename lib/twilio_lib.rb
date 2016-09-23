@@ -92,7 +92,7 @@ class TwilioLib
 
     req.basic_auth @http_user, @http_password
     req.set_form_data(params)
-    
+
     RescueRetryNotify.on SocketError, 5 do
       http.start{ http.request(req) }
     end
@@ -101,6 +101,8 @@ class TwilioLib
   def amd_params(campaign)
     if campaign.continue_on_amd
       {'IfMachine'=> 'Continue', "Timeout" => "30"}
+    elsif campaign.caller_can_drop_message_manually
+      {'Timeout' => '30'}
     elsif campaign.hangup_on_amd
       {'IfMachine'=> 'Hangup'}
     else

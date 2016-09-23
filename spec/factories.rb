@@ -194,6 +194,9 @@ FactoryGirl.define do
     caller_session
     created_at Time.now
     updated_at Time.now
+    factory :answered_call_attempt do
+      tDuration 55
+    end
   end
 
   factory :recording do

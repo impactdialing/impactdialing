@@ -23,6 +23,7 @@ module AdminHelper
                confirm: "Cancel customer subscription (if any) and reset account quota to 50 minutes and 5 caller seats?"
              }
            })
+    str << "</form>".html_safe
   end
 
   def admin_make_enterprise_trigger(subscription)
@@ -35,6 +36,7 @@ module AdminHelper
                confirm: "Cancel customer subscription (if any) and lift all account quotas for manual billing?"
              }
            })
+    str << "</form>".html_safe
   end
 
   def admin_toggle_dialer_access_link(account)
