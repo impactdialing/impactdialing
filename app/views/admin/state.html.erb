@@ -36,7 +36,10 @@
       <table>
         <tr>
           <th>Campaign</th>
+          <th>ID</th>
+          <th>Mode</th>
           <th>Callers</th>
+          <th>On hold</th>
           <th>Ringing</th>
           <th>Presented</th>
         </tr>
@@ -44,12 +47,15 @@
           <tr>
             <td valign="top">
               <a target="_blank" href="/admin/login/<%= User.where(account_id: campaign.account_id).first.id %>" >
-                <%= campaign.name %> (<%= campaign.type %>) (<%= campaign.id %>)
+                <%= campaign.name %>
               </a>
             </td>
+            <td><%= campaign.id %></td>
+            <td><%= campaign.type %></td>
             <td>
               <%= link_to "#{campaign.caller_sessions.on_call.count}", admin_caller_sessions_path(campaign), class: "js-show-caller" %>
             </td>
+            <td><%= campaign.current_status[:on_hold] %></td>
             <td>
             <%= campaign.ringing_count %>
             </td>
