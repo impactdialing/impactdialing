@@ -38,6 +38,11 @@ public
     @errors=""
   end
 
+  def fix_counts
+    Campaign.find(params[:id]).inflight_stats.incby(params[:metric], params[:amount])
+    redirect_to admin_state_path
+  end
+
   def twilio_limit
     TwilioLimit.set(params["twilio_limit"])
     redirect_to :back

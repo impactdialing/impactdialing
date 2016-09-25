@@ -46,7 +46,7 @@
           <th>Ringing</th>
           <th>Presented</th>
         </tr>
-        <% @logged_in_campaigns.each do |campaign| %>
+        <% Campaign.all.each do |campaign| %>
           <tr>
             <td valign="top">
               <a target="_blank" href="/admin/login/<%= User.where(account_id: campaign.account_id).first.id %>" >
@@ -60,10 +60,14 @@
             </td>
             <td><%= campaign.current_status[:on_hold] %></td>
             <td>
-            <%= campaign.ringing_count %>
+              <%= campaign.ringing_count %>
+              <%= link_to '+1', admin_fix_counts_path(id: campaign.id, metric: 'ringing', amount: 1), method: :post %>
+              <%= link_to '-1', admin_fix_counts_path(id: campaign.id, metric: 'ringing', amount: -1), method: :post %>
             </td>
             <td>
-            <%= campaign.presented_count %>
+              <%= campaign.presented_count %>
+              <%= link_to '+1', admin_fix_counts_path(id: campaign.id, metric: 'presented', amount: 1), method: :post %>
+              <%= link_to '-1', admin_fix_counts_path(id: campaign.id, metric: 'presented', amount: -1), method: :post %>
             </td>
           </tr>
         <% end -%>
