@@ -46,7 +46,7 @@
           <th>Ringing</th>
           <th>Presented</th>
         </tr>
-        <% Campaign.all.each do |campaign| %>
+        <% @logged_in_campaigns.each do |campaign| %>
           <tr>
             <td valign="top">
               <a target="_blank" href="/admin/login/<%= User.where(account_id: campaign.account_id).first.id %>" >
