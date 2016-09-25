@@ -120,7 +120,7 @@ module Client
         scoped_to: :all_voters,
         from_date: @date_range.from,
         to_date: @date_range.to,
-        description: "The data in the per lead table includes only the most recent status for each lead."
+        description: "This report's data includes only the most recent dial for each lead."
       })
     end
 
@@ -135,7 +135,7 @@ module Client
         scoped_to: :call_attempts,
         from_date: @date_range.from,
         to_date: @date_range.to,
-        description: "The data in the per dial table includes every status for each lead."
+        description: "This report's data includes every dial made."
       })
       render text: @report.html_safe
     end
@@ -143,14 +143,14 @@ module Client
     def dials_by_pass
       render text: self.class.helpers.dial_passes({
         campaign: @campaign,
-        description: 'How much of the list has been called X times.'
+        description: 'This report describes how much of the list has been called how many times.'
       })
     end
 
     def answer
       authorize! :view_reports, @account
       load_campaign
-      
+
       from_date_pool = build_date_pool(:from_date, [@campaign])
       to_date_pool   = build_date_pool(:to_date)
       @date_range    = Report::SelectiveDateRange.new(from_date_pool, to_date_pool, @campaign.time_zone)
