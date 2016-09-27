@@ -27,7 +27,7 @@
     <td>Logged in campaigns:</td>
     <td>
       <% if params[:type] == 'predictive' %>
-        <%= @logged_in_campaigns.where(type: 'predictive').count %>
+        <%= @logged_in_campaigns = @logged_in_campaigns.where(type: 'predictive').count %>
       <% else %>
         <%= @logged_in_campaigns.count %>
       <% end %>
