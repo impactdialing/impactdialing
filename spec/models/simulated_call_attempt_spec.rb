@@ -141,6 +141,7 @@ describe SimulatedCallAttempt do
       simulated_call_attempt = SimulatedCallAttempt.new(ringing_length: 10, conversation_length: 30, wrapup_length: 8)
       simulated_call_attempt.dial
       10.times {simulated_call_attempt.forward_one_second}
+      simulated_call_attempt.assign_caller(SimulatedCaller.new)
       simulated_call_attempt.state.should eq 'answered'
       30.times {simulated_call_attempt.forward_one_second}
       simulated_call_attempt.state.should eq 'wrapup'
@@ -187,6 +188,7 @@ describe SimulatedCallAttempt do
       simulated_call_attempt = SimulatedCallAttempt.new(ringing_length: 10, conversation_length: 30, wrapup_length: 8)
       simulated_call_attempt.dial
       10.times {simulated_call_attempt.forward_one_second}
+      simulated_call_attempt.assign_caller(SimulatedCaller.new)
       simulated_call_attempt.state.should eq 'answered'
       simulated_call_attempt.time_at_state.should eq 1
       30.times {simulated_call_attempt.forward_one_second}

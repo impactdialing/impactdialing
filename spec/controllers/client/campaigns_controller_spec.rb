@@ -37,7 +37,7 @@ describe Client::CampaignsController, :type => :controller do
       script = create(:script, :account => account)
       callers = 3.times.map{create(:caller, :account => account)}
       expect {
-        post :create , :campaign => {name: "abc", caller_id:"1234567890", script_id: script.id,
+        post :create , :campaign => {name: "abc", caller_id:"2234567890", script_id: script.id,
           type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}
       }.to change {account.reload.campaigns.size} .by(1)
       campaign = account.campaigns.last
@@ -118,7 +118,7 @@ describe Client::CampaignsController, :type => :controller do
         script = create(:script, :account => account)
         callers = 3.times.map{create(:caller, :account => account)}
         expect {
-          post :create , :campaign => {name: "abc", caller_id:"1234567890", script_id: script.id,
+          post :create , :campaign => {name: "abc", caller_id:"2234567890", script_id: script.id,
             type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}, :api_key=> account.api_key, :format => "json"
         }.to change {account.reload.campaigns.size} .by(1)
         expect(JSON.parse(response.body)['campaign']['name']).to  eq('abc')

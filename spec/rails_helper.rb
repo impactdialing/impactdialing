@@ -5,7 +5,6 @@ ENV['REDIS_URL'] ||= 'redis://localhost:6379'
 ENV['TWILIO_CALLBACK_HOST'] ||= 'test.com'
 ENV['CALL_END_CALLBACK_HOST'] ||= 'test.com'
 ENV['INCOMING_CALLBACK_HOST'] ||= 'test.com'
-ENV['VOIP_API_URL'] ||= 'test.com'
 ENV['TWILIO_CALLBACK_PORT'] ||= '80'
 ENV['RECORDING_ENV'] = 'test'
 ENV['CALLIN_PHONE'] ||= '5555551234'
@@ -100,7 +99,7 @@ RSpec.configure do |config|
   end
 
   config.before(:example) do
-    DatabaseCleaner[:active_record].start 
+    DatabaseCleaner[:active_record].start
     DatabaseCleaner[:redis].start
   end
 

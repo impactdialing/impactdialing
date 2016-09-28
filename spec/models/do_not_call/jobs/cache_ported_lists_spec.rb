@@ -21,6 +21,7 @@ describe 'DoNotCall::Jobs::CacheProviderFile.perform', data_heavy: true, cell_li
   end
 
   it 'copies each remote file in .source_filenames to configured s3 bucket in "_system/do_not_call/"' do
+    puts 'this can take a really long time to download and upload, so you may want to disable it'
     VCR.use_cassette('cache ported wireless numbers lists to s3') do
       s3_root = "_system/do_not_call/test"
       subject.perform(s3_root)

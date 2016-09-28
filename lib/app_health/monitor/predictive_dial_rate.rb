@@ -46,6 +46,7 @@ module AppHealth
         Campaign.find(@stagnant_campaign_ids).map do |campaign|
           { account_email: campaign.account.users.first.email,
             campaign_name: campaign.name,
+            campaign_id: campaign.id,
             active_callers: CallerSession.where(campaign_id: campaign.id).on_call.count }
         end.to_json
       end

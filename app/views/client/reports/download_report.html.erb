@@ -39,11 +39,12 @@
     <%= hidden_field_tag :archived, '1' if params[:archived].present? %>
     <fieldset>
       <div id="fields">
-      <legend>Fields to include</legend>
+      <legend>Dials to include</legend>
       <select class="field" id="lead_dial" name="lead_dial">
-        <option value="lead">One row for each lead</option>
-        <option value="dial">One row for each dial</option>
+        <option value="lead">Include only the most recent dial for each lead</option>
+        <option value="dial">Include all dials</option>
       </select>
+      <legend>Fields to include</legend>
         <ul>
           <li>
             <label for="selectAll">

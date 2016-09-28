@@ -278,7 +278,7 @@ ImpactDialing::Application.routes.draw do
         post :change_role
       end
     end
-    
+
     resources :tos, :only => [:index, :create] do
       collection {get :policies}
     end
@@ -384,6 +384,7 @@ ImpactDialing::Application.routes.draw do
   get 'admin/login/:id', :to => 'admin#login'
   get 'admin/users', :to => 'admin#users'
   get 'admin/status', :to => 'admin#state'
+  post 'admin/fix_counts', :to => 'admin#fix_counts'
   get 'admin/state', :to => 'admin#state'
   get 'admin/caller_sessions/:id', :to => 'admin#caller_sessions', :as => :admin_caller_sessions
   post 'admin/twilio_limit', :to => 'admin#twilio_limit'
