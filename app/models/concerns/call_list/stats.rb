@@ -42,11 +42,13 @@ public
   end
 
   def reset(hkey, value)
-    redis.hset(key, hkey, value)
+    redis_connection_pool.with{|conn| conn.hset(key, hkey, value)}
+    # redis.hset(key, hkey, value)
   end
 
   def [](attribute)
-    redis.hget(key, attribute).to_i
+    redis_connection_pool.with{|conn| conn.hget(key, attribute).to_i}    
+    # redis.hget(key, attribute).to_i
   end
 end
 
