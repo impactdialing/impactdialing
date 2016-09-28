@@ -48,11 +48,13 @@ public
 
   def insert(scored_members)
     return if scored_members.empty?
-    redis.zadd(keys[:active], scored_members)
+    redis_connection_pool.with{|conn| conn.zadd(keys[:active], scored_members)}
+    # redis.zadd(keys[:active], scored_members)
   end
 
   def dialed(phones)
-    redis.zrem keys[:presented], [*phones]
+    redis_connection_pool.with{|conn| conn.zrem keys[:presented], [*phones]}
+    # redis.zrem keys[:presented], [*phones]
   end
 end
 

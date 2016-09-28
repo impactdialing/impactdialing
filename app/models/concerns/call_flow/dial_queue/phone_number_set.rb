@@ -41,7 +41,8 @@ public
     return if phones.blank?
 
     keys.values.each do |key|
-      redis.zrem key, [*phones]
+      redis_connection_pool.with{|conn| conn.zrem key, [*phones]}
+      # redis.zrem key, [*phones]
     end
   end
   alias :remove_all :remove
@@ -89,11 +90,13 @@ public
       slices = (size / 100.0).floor - 1
       slices.times do |n|
         campaign.timing("dial_queue.#{klass}.purge.zrembyrank.time") do
-          redis.zremrangebyrank key, 0, 100
+          redis_connection_pool.with{|conn| conn.zremrangebyrank key, 0, 100}
+          # redis.zremrangebyrank key, 0, 100
         end
       end
       campaign.timing("dial_queue.#{klass}.purge.del.time") do
-        redis.del key
+        redis_connection_pool.with{|conn| conn.del key}
+        # redis.del key
       end
     end
   end
