@@ -6,11 +6,10 @@ Rails.application.config.after_initialize do
   ActiveSupport.on_load(:active_record) do
     require 'librato_sidekiq/server'
 
+    redis_conn = proc { Redis.new(network_timeout: 3, namespace:"resque"), url: url}
+
     Sidekiq.configure_server do |config|
-      config.redis = {
-        :url => url,
-        :namespace => 'resque'
-      }
+      config.redis = ConnectionPool.new(size: 30, &redis_conn)
 
       require 'impact_platform/mysql'
       min_pool_size = Sidekiq.options[:concurrency]
