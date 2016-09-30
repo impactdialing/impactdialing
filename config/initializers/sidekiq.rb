@@ -22,10 +22,7 @@ Rails.application.config.after_initialize do
     end
 
     Sidekiq.configure_client do |config|
-      config.redis = {
-        :url => url,
-        :namespace => 'resque'
-      }
+      config.redis = ConnectionPool.new(size: 5, &redis_conn)
     end
   end
 end
