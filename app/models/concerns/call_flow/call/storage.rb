@@ -73,7 +73,8 @@ public
   end
 
   def attributes
-    HashWithIndifferentAccess.new(redis.hgetall(key))
+    # redis_connection_pool.with{|conn| conn.hgetall(key)}
+    HashWithIndifferentAccess.new(redis_connection_pool.with{|conn| conn.hgetall(key)})
   end
 end
 
