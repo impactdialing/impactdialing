@@ -1,9 +1,14 @@
 require 'digest/sha1'
 
 class RedisQuestion
+
   def self.redis
-    $redis_question_pr_uri_connection
+    Redis.new
   end
+
+  def self.redis_connection_pool
+    $redis_question_pr_uri_connection
+  end  
 
   def self.checksum_key(script_id)
     "question_list:script:#{script_id}:checksum"

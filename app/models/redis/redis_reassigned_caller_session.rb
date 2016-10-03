@@ -1,6 +1,6 @@
 class RedisReassignedCallerSession
 
-  def redis_connection_pool
+  def self.redis_connection_pool
     $redis_caller_session_uri_connection
   end
 

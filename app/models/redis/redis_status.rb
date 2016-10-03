@@ -4,7 +4,7 @@ class RedisStatus
     Redis.new
   end
 
-  def redis_connection_pool
+  def self.redis_connection_pool
     $redis_dialer_connection
   end  
 

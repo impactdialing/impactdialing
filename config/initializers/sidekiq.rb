@@ -6,7 +6,7 @@ Rails.application.config.after_initialize do
   ActiveSupport.on_load(:active_record) do
     require 'librato_sidekiq/server'
 
-    redis_conn = proc { Redis.new(network_timeout: 3, namespace:"resque"), url: url}
+    redis_conn = proc { Redis.new(network_timeout: 3, namespace:"resque", url: url)}
 
     Sidekiq.configure_server do |config|
       config.redis = ConnectionPool.new(size: 30, &redis_conn)

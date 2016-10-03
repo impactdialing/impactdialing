@@ -4,7 +4,7 @@ require 'redis/set'
 class RedisPredictiveCampaign
   include Redis::Objects
 
-  def redis_connection_pool
+  def self.redis_connection_pool
       $redis_dialer_connection
   end
 
