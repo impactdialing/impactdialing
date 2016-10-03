@@ -8,14 +8,22 @@ module CallList::Upload::Results
 
   module ClassMethods
     def redis
-      @redis ||= $redis_dialer_connection
+      @redis ||= Redis.new
     end
+
+  def redis_connection_pool
+    $redis_dialer_connection
+  end    
   end
 
   module InstanceMethods
     def redis
       self.class.redis
     end
+
+  def redis_connection_pool
+    $redis_dialer_connection
+  end    
 
     def default_results
       HashWithIndifferentAccess.new
@@ -41,7 +49,8 @@ module CallList::Upload::Results
     end
 
     def lua_results
-      redis.hgetall lua_results_key
+      redis_connection_pool.with{|conn| conn.hgetall lua_results_key}
+      # redis.hgetall lua_results_key
     end
 
     def final_results

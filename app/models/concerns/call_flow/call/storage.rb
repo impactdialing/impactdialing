@@ -33,15 +33,18 @@ public
   end
 
   def [](property)
-    redis.hget(key, property)
+    redis_connection_pool.with{|conn| conn.hget(key, property)}
+    # redis.hget(key, property)
   end
 
   def []=(property, value)
-    redis.hset(key, property, value)
+    redis_connection_pool.with{|conn| conn.hset(key, property, value)}
+    # redis.hset(key, property, value)
   end
 
   def incrby(property, increment)
-    redis.hincrby(key, property, increment)
+    redis_connection_pool.with{|conn| conn.hincrby(key, property, increment)}
+    # redis.hincrby(key, property, increment)
   end
 
   def add_to_collection(collection_name, items)
@@ -59,16 +62,19 @@ public
   end
 
   def save(hash)
-    redis.mapped_hmset(key, hash)
+    redis_connection_pool.with{|conn| conn.mapped_hmset(key, hash)}
+    # redis.mapped_hmset(key, hash)
     expire(key, CallFlow::Call.redis_expiry)
   end
 
   def multi(&block)
-    redis.multi(&block)
+    redis_connection_pool.with{|conn| conn.multi(&block)}
+    # redis.multi(&block)
   end
 
   def attributes
-    HashWithIndifferentAccess.new(redis.hgetall(key))
+    # redis_connection_pool.with{|conn| conn.hgetall(key)}
+    HashWithIndifferentAccess.new(redis_connection_pool.with{|conn| conn.hgetall(key)})
   end
 end
 

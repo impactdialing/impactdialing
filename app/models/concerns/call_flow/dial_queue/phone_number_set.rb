@@ -41,7 +41,8 @@ public
     return if phones.blank?
 
     keys.values.each do |key|
-      redis.zrem key, [*phones]
+      redis_connection_pool.with{|conn| conn.zrem key, [*phones]}
+      # redis.zrem key, [*phones]
     end
   end
   alias :remove_all :remove
@@ -54,24 +55,29 @@ public
     keys.values.all?{|key| redis.zscore(key, phone).nil?}
   end
 
-  def size(key_name=nil)
-    redis.zcard find_key(key_name)
+  def size(key_name=nil)    
+    redis_connection_pool.with{|conn| conn.zcard find_key(key_name)}    
+    # redis.zcard find_key(key_name)
   end
 
   def count(key_name=nil, min, max)
-    redis.zcount find_key(key_name), min, max
+    # redis.zcount find_key(key_name), min, max
+    redis_connection_pool.with{|conn| conn.zcount find_key(key_name), min, max}
   end
 
-  def range_by_score(key_name, min, max, opts={})
-    redis.zrangebyscore find_key(key_name), min, max, opts
+  def range_by_score(key_name, min, max, opts={})  
+    redis_connection_pool.with{|conn| conn.zrangebyscore find_key(key_name), min, max, opts}
+    # redis.zrangebyscore find_key(key_name), min, max, opts
   end
 
   def all(key_name=nil, options={})
-    redis.zrange find_key(key_name), 0, -1, options
+    redis_connection_pool.with{|conn| conn.zrange find_key(key_name), 0, -1, options}
+    # redis.zrange find_key(key_name), 0, -1, options
   end
 
-  def each(key_name=nil, options={}, &block)
-    redis.zscan_each find_key(key_name), options, &block
+  def each(key_name=nil, options={}, &block)    
+    redis_connection_pool.with{|conn| conn.zscan_each find_key(key_name), options, &block}  
+    # redis.zscan_each find_key(key_name), options, &block
   end
 
   ##
@@ -84,11 +90,13 @@ public
       slices = (size / 100.0).floor - 1
       slices.times do |n|
         campaign.timing("dial_queue.#{klass}.purge.zrembyrank.time") do
-          redis.zremrangebyrank key, 0, 100
+          redis_connection_pool.with{|conn| conn.zremrangebyrank key, 0, 100}
+          # redis.zremrangebyrank key, 0, 100
         end
       end
       campaign.timing("dial_queue.#{klass}.purge.del.time") do
-        redis.del key
+        redis_connection_pool.with{|conn| conn.del key}
+        # redis.del key
       end
     end
   end
