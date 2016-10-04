@@ -121,6 +121,12 @@ module.exports = function (grunt) {
         livereload: 35729
       },
       proxies: [
+        // proxy login page to dev rails server
+        {
+          context: '/app/login',
+          host: 'localhost',
+          port: 5000
+        },
         // proxy REST end-points to dev rails server
         {
           context: '/call_center/api',

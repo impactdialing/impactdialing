@@ -94,6 +94,7 @@ describe VoterListsController, :type => :controller do
             separator: ",",
             headers: "[]",
             csv_to_system_map: {
+              'ID' => 'custom_id',
               'Phone' => 'phone'
             }
           },
