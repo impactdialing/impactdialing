@@ -30,7 +30,7 @@ class UpdateStatsAttemptsEm
   def self.perform
     ActiveRecord::Base.clear_active_connections!
     twilio_lib     = TwilioLib.new
-    query_statuses = ['Message delivered', 'Call completed with success.', 'Call abandoned', 'Hangup or answering machine']
+    query_statuses = ['Message delivered', 'Call completed with success.', 'Call abandoned', 'Hangup or answering machine', 'No answer']
     call_attempts  = CallAttempt.where('tDuration is NULL').
                                   where('tStatus IS NULL OR tStatus = ?', 'completed').
                                   where('sid IS NOT NULL').
