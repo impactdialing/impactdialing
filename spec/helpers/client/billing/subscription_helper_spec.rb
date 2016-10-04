@@ -25,7 +25,7 @@ describe Client::Billing::SubscriptionHelper, :type => :helper do
     it 'maps Billing::Plans.permitted_ids_for collection of display,value pairs to select options' do
       allow(Billing::Plans).to receive(:permitted_ids_for){ ["basic", "pro", "business"] }
       expected = [
-        ["Basic", "basic"], ["Pro", "pro"], ["Business", "business"]
+        ["Business", "business"], ["Pro", "pro"], ["Basic", "basic"]
       ]
       expect(helper.subscription_type_options_for_select(subscription, true)).to eq expected
     end

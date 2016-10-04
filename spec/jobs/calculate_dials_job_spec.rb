@@ -229,7 +229,7 @@ describe 'CalculateDialsJob' do
       end
 
       it 'handle w/ intelligence'
-      
+
       it_behaves_like 'all calculate dial jobs'
     end
   end
