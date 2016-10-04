@@ -43,7 +43,7 @@ module AppHealth
       end
 
       def alarm_details
-        Campaign.find(@stagnant_campaign_ids).map do |campaign|
+        Campaign.find(stagnant_campaign_ids).map do |campaign|
           { account_email: campaign.account.users.first.email,
             campaign_name: campaign.name,
             campaign_id: campaign.id,

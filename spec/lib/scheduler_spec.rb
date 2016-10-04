@@ -24,7 +24,7 @@ describe Scheduler do
 
   shared_examples_for 'not implemented' do
     it 'throws Not implemented' do
-      expect{ subject.send(target) }.to raise_error ArgumentError
+      expect{ subject.send(target) }.to raise_error RuntimeError
     end
   end
   describe '#run' do
