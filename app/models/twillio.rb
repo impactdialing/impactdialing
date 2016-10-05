@@ -6,6 +6,7 @@ class Twillio
 
     private
       def redis
+        Rails.logger.info("Redis connection - Twillio")
         @redis ||= Redis.new
       end
       def redis_connection_pool
