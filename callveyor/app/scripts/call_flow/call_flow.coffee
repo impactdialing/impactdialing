@@ -46,7 +46,7 @@ mod.factory('CallerReassignedMessage', [
 ])
 
 mod.factory('idCallFlow', [
-    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage', 
+    '$rootScope', '$state', '$window', '$cacheFactory', 'CallCache', 'idJanitor', 'TransferCache', 'FlashCache', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'idTransitionPrevented', 'CallStationCache', 'TwilioCache', 'CallerReassignedMessage',
     ($rootScope,   $state,   $window,   $cacheFactory,   CallCache,   idJanitor,   TransferCache,   FlashCache,   HouseholdCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   idTransitionPrevented,   CallStationCache,   TwilioCache,   CallerReassignedMessage) ->
       isWarmTransfer = ->
         selected = TransferCache.get('selected')
@@ -79,6 +79,7 @@ mod.factory('idCallFlow', [
           caller.session_id = data.caller_session_id
 
           $window.idDebugData.caller = caller
+          $window.Bugsnag.user = {id: caller.session_id}
 
         ##
         # conference_started
@@ -127,7 +128,7 @@ mod.factory('idCallFlow', [
 
           HouseholdCache.put('data', household)
           $rootScope.$broadcast('household:changed')
-          
+
           $window.idDebugData.campaign  = campaign
           $window.idDebugData.household = household
 
