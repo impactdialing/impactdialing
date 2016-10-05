@@ -34,6 +34,7 @@ private
 public
   def state
     @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call = 1 )")
+    @logged_in_campaigns = @logged_in_campaigns.where(type: 'predictive') if params[:type] == 'predictive'
     @logged_in_callers_count = CallerSession.on_call.count
     @errors=""
   end
