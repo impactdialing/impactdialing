@@ -164,6 +164,7 @@ public
       publish_caller_disconnected
 
     rescue ActiveRecord::StaleObjectError => exception
+      Rails.logger.info("ActiveRecord::StaleObjectError - Caller session: #{self.id}")
       RedisCallerSession.add_phantom_callers(self.id)
       handle_end_session_redis
       publish_caller_disconnected
