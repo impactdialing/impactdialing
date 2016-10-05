@@ -20,8 +20,8 @@ hold.config([
 ])
 
 hold.controller('HoldCtrl.buttons', [
-  '$rootScope', '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'TwilioCache', 'FlashCache',
-  ($rootScope,   $scope,   $state,   $timeout,   $cacheFactory,   callStation,   HouseholdCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   TwilioCache,   FlashCache) ->
+  '$rootScope', '$scope', '$state', '$timeout', '$cacheFactory', 'callStation', 'HouseholdCache', 'idHttpDialerFactory', 'idFlashFactory', 'usSpinnerService', 'TwilioCache', 'FlashCache', 'idTransitionPrevented',
+  ($rootScope,   $scope,   $state,   $timeout,   $cacheFactory,   callStation,   HouseholdCache,   idHttpDialerFactory,   idFlashFactory,   usSpinnerService,   TwilioCache,   FlashCache,   idTransitionPrevented) ->
     holdCache = $cacheFactory.get('hold') || $cacheFactory('hold')
     hold = holdCache.get('sharedScope')
     unless hold?
