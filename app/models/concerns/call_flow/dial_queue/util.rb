@@ -1,5 +1,6 @@
 module CallFlow::DialQueue::Util
   def redis
+    Rails.logger.info("Redis connection - CallFlow::DialQueue::Util")
     Redis.new
   end
 

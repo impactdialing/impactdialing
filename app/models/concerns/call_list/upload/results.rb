@@ -8,6 +8,7 @@ module CallList::Upload::Results
 
   module ClassMethods
     def redis
+      Rails.logger.info("Redis connection - CallList::Upload::Results")
       @redis ||= Redis.new
     end
 

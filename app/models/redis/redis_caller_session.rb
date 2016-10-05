@@ -1,6 +1,7 @@
 class RedisCallerSession
 
   def self.redis
+    Rails.logger.info("Redis connection - RedisCallerSession")
     Redis.new
   end
 

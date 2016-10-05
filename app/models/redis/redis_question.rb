@@ -3,6 +3,7 @@ require 'digest/sha1'
 class RedisQuestion
 
   def self.redis
+    Rails.logger.info("Redis connection - RedisQuestion")
     Redis.new
   end
 
