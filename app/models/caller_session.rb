@@ -171,8 +171,6 @@ public
     end
   end
 
-
-
   def end_running_call
     end_caller_session
     enqueue_call_flow(EndRunningCallJob, [self.sid])
