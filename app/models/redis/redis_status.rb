@@ -1,7 +1,7 @@
 class RedisStatus
 
   def redis
-    Rails.logger.info("Redis connection - RedisStatus")
+    Rails.logger.warn("Redis connection - RedisStatus")
     Redis.new
   end
 
