@@ -1,7 +1,7 @@
 class RedisPossibleResponse
 
   def self.redis
-    Rails.logger.info("Redis connection - RedisPossibleResponse")
+    Rails.logger.warn("Redis connection - RedisPossibleResponse")
     Redis.new
   end
 

@@ -2,7 +2,7 @@ require_relative 'repair/duplicate_leads'
 
 module Repair
   def self.redis
-    Rails.logger.info("Redis connection - Repair")
+    Rails.logger.warn("Redis connection - Repair")
     @redis ||= Redis.new
   end
 
