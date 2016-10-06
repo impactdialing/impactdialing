@@ -13,7 +13,8 @@ describe 'CallFlow::Events' do
       storage: call_storage,
       redis_expiry: 1.minute,
       expire: nil,
-      redis: redis
+      redis: redis,
+      redis_connection_pool: redis_connection_pool
     })
   end
   subject{ CallFlow::Events.new(caller_session_call) }

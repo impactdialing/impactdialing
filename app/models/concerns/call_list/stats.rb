@@ -22,11 +22,19 @@ public
     })
 
     custom_id_register_keys = []
-    redis.scan_each({
-      match: "#{campaign.call_list.custom_id_register_key_base}*"
-    }) do |key|
+    redis_connection_pool.with do |conn|
+      conn.scan_each({
+        match: "#{campaign.call_list.custom_id_register_key_base}*"
+      }) do |key|
       custom_id_register_keys << key
+      end
     end
+
+    # redis.scan_each({
+    #   match: "#{campaign.call_list.custom_id_register_key_base}*"
+    # }) do |key|
+    #   custom_id_register_keys << key
+    # end
     Wolverine.list.purge({
       keys: custom_id_register_keys.uniq,
       argv: []
@@ -42,11 +50,13 @@ public
   end
 
   def reset(hkey, value)
-    redis.hset(key, hkey, value)
+    redis_connection_pool.with{|conn| conn.hset(key, hkey, value)}
+    # redis.hset(key, hkey, value)
   end
 
   def [](attribute)
-    redis.hget(key, attribute).to_i
+    redis_connection_pool.with{|conn| conn.hget(key, attribute).to_i}    
+    # redis.hget(key, attribute).to_i
   end
 end
 

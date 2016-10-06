@@ -6,8 +6,12 @@ class Twillio
 
     private
       def redis
+        Rails.logger.warn("Redis connection - Twillio")
         @redis ||= Redis.new
       end
+      def redis_connection_pool
+        $redis_call_flow_connection
+      end      
       def base_key
         "inflight_stats:#{campaign.id}"
       end
@@ -20,8 +24,9 @@ class Twillio
         @campaign = campaign
       end
 
-      def incby(status, n)
-        redis.hincrby base_key, status, n
+      def incby(status, n)        
+        redis_connection_pool.with{|conn| conn.hincrby base_key, status, n}        
+        # redis.hincrby base_key, status, n
       end
 
       def inc(status)
@@ -33,11 +38,13 @@ class Twillio
       end
 
       def get(status)
-        (redis.hget(base_key, status) || 0).to_i
+        redis_connection_pool.with{|conn| (conn.hget(base_key, status) || 0).to_i}
+        # (redis.hget(base_key, status) || 0).to_i
       end
 
-      def set(status, value)
-        redis.hset(base_key, status, value)
+      def set(status, value)        
+        redis_connection_pool.with{|conn| conn.hset(base_key, status, value)}                
+        # redis.hset(base_key, status, value)
       end
 
       def update_last_dial_time
@@ -49,7 +56,8 @@ class Twillio
       end
 
       def delete
-        redis.del base_key
+        redis_connection_pool.with{|conn| conn.del base_key}
+        # redis.del base_key
       end
   end
 
