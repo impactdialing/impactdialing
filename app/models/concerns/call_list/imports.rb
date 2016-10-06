@@ -147,10 +147,17 @@ public
   def move_pending_to_available
     # populate available zset as needed
     # Wolverine.dial_queue.import()
-    redis.multi do
-      redis.zunionstore common_redis_keys[3], [common_redis_keys[0], common_redis_keys[3]]
-      redis.del common_redis_keys[0]
+    redis_connection_pool.with do |conn|
+      conn.multi do
+        conn.zunionstore common_redis_keys[3], [common_redis_keys[0], common_redis_keys[3]]
+        conn.del common_redis_keys[0]
+      end      
     end
+
+    # redis.multi do
+    #   redis.zunionstore common_redis_keys[3], [common_redis_keys[0], common_redis_keys[3]]
+    #   redis.del common_redis_keys[0]
+    # end
   end
 end
 

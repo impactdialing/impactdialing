@@ -22,13 +22,15 @@ public
   end
 
   def visited(state)
-    redis.hset(key, state, Time.now.utc)
+    redis_connection_pool.with{|conn| conn.hset(key, state, Time.now.utc)}
+    # redis.hset(key, state, Time.now.utc)
 
     expire(key, CallFlow::Call.redis_expiry)
   end
 
   def visited?(state)
-    redis.hexists(key, state)
+    redis_connection_pool.with{|conn| conn.hexists(key, state)}
+    # redis.hexists(key, state)
   end
 
   def not_visited?(state)
@@ -36,7 +38,8 @@ public
   end
 
   def time_visited(state)
-    redis.hget(key, state)
+    redis_connection_pool.with{|conn| redis.hget(key, state)}
+    # redis.hget(key, state)
   end
 end
 

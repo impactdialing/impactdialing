@@ -8,6 +8,7 @@ class CallFlow::Web::ContactFields
 
 private
   def redis
+    Rails.logger.info("Redis connection - CallFlow::Web::ContactFields")
     Redis.new
   end
 
