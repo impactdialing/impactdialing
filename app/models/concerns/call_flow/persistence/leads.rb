@@ -67,7 +67,7 @@ private
     })
     return voter_attrs
   end
-  
+
   def create_voter_record(voter_attributes)
     household_record.voters.create(voter_attributes)
   end
@@ -76,7 +76,7 @@ private
     return @custom_voter_fields if defined?(@custom_voter_fields)
     @custom_voter_fields = {}
     campaign.account.custom_voter_fields.select([:id, :name]).each do |field|
-      @custom_voter_fields[field.name.strip] = field.id
+      @custom_voter_fields[field.name] = field.id
     end
     @custom_voter_fields
   end
@@ -85,7 +85,7 @@ private
     return @custom_voter_fields_by_id if defined?(@custom_voter_fields_by_id)
     @custom_voter_fields_by_id = {}
     campaign.account.custom_voter_fields.select([:id, :name]).each do |field|
-      @custom_voter_fields_by_id[field.id] = field.name.strip
+      @custom_voter_fields_by_id[field.id] = field.name
     end
     @custom_voter_fields_by_id
   end
@@ -93,7 +93,7 @@ private
   def custom_lead_attrs(lead, &block)
     custom_attrs = lead.stringify_keys.keys - (voter_system_fields + ['sequence', 'uuid'])
     custom_attrs.each do |field|
-      custom_voter_field_id = custom_voter_fields[field.strip]
+      custom_voter_field_id = custom_voter_fields[field]
       next if custom_voter_field_id.blank?
       yield field, custom_voter_field_id
     end
@@ -149,7 +149,7 @@ private
       })
       updated_voter_attributes << new_voter_attrs
     end
-    
+
     Voter.import_hashes(updated_voter_attributes)
     CustomVoterFieldValue.import_hashes(updated_custom_values)
   end
@@ -188,7 +188,7 @@ public
 
   def create_voter_records(_leads)
     uuid_to_id_map = {}
-    
+
     return uuid_to_id_map if _leads.empty?
 
     _leads.each do |lead|
@@ -239,4 +239,3 @@ public
     ]
   end
 end
-

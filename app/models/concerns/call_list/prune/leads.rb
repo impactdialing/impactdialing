@@ -92,7 +92,8 @@ public
     key_id_pairs.each do |key_id_pair|
       id, register_key = *key_id_pair
       register_hkey    = voter_list.campaign.call_list.custom_id_register_hash_key(id)
-      phone   = redis.hget(register_key, register_hkey)
+      # phone   = redis.hget(register_key, register_hkey)
+      phone   = redis_connection_pool.with{|conn| conn.hget(register_key, register_hkey)}
       next if phone.blank?
 
       redis_key, hash_key = *household_hash_key(phone)

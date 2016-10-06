@@ -29,11 +29,13 @@ public
   end
 
   def cache(fields)
-    redis.hset keys[:active], object.id, fields.to_json
+    redis_connection_pool.with{|conn| conn.hset keys[:active], object.id, fields.to_json}    
+    # redis.hset keys[:active], object.id, fields.to_json
   end
 
-  def cache_raw(fields_json)
-    redis.hset keys[:active], object.id, fields_json
+  def cache_raw(fields_json)        
+    redis_connection_pool.with{|conn| conn.hset keys[:active], object.id, fields_json}    
+    # redis.hset keys[:active], object.id, fields_json
   end
 
   def data
@@ -41,7 +43,8 @@ public
     fields.blank? ? [] : JSON.parse(fields)
   end
 
-  def delete
-    redis.hdel keys[:active], object.id
+  def delete    
+    redis_connection_pool.with{|conn| conn.hdel keys[:active], object.id}    
+    # redis.hdel keys[:active], object.id
   end
 end

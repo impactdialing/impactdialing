@@ -161,12 +161,13 @@ public
   def end_caller_session
     begin
       end_session
+      publish_caller_disconnected
 
-      unless caller.is_phones_only?
-        CallerPusherJob.add_to_queue(self, 'publish_caller_disconnected')
-      end
     rescue ActiveRecord::StaleObjectError => exception
+      Rails.logger.warn("ActiveRecord::StaleObjectError - Caller session: #{self.id}")
       RedisCallerSession.add_phantom_callers(self.id)
+      handle_end_session_redis
+      publish_caller_disconnected
     end
   end
 
@@ -177,11 +178,21 @@ public
 
   def end_session
     self.update_attributes(endtime: Time.now, on_call: false, available_for_call: false)
+    handle_end_session_redis
+  end
+
+  def handle_end_session_redis
     RedisPredictiveCampaign.remove(campaign_id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
     RedisStatus.delete_state(campaign_id, self.id)
     RedisCallerSession.delete(self.id)
     RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, data_centre)
-    RedisCallerSession.remove_datacentre(self.id)
+    RedisCallerSession.remove_datacentre(self.id)    
+  end
+
+  def publish_caller_disconnected
+    unless caller.is_phones_only?
+      CallerPusherJob.add_to_queue(self, 'publish_caller_disconnected')
+    end
   end
 
   def account_not_activated?
