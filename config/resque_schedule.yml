@@ -1,5 +1,5 @@
 phantom_callers:
-  cron: "*/5 * * * *"
+  cron: "*/1 * * * *"
   class: PhantomCallerJob
   queue: general
   args:
