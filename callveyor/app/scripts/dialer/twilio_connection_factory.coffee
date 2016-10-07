@@ -52,7 +52,7 @@ mod.factory('idTwilioConnectionFactory', [
       error: (error) ->
         switch error.code
           # 310xx Series: General Errors
-          when 31000
+          when 31000, 31002
             idFlashFactory.nowAndDismiss('warning', 'There was an error connecting to the voice servers. Please refresh your page.', 7000, false)
           when 31003
             if /^ICE liveness checks failed/.test(error.message)
