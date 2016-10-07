@@ -11,11 +11,12 @@ STDOUT.puts "Connecting to redis using #{ENV['REDIS_URL']}"
 # $redis_call_uri_connection           = Redis.new
 
 
-$redis_call_flow_connection          = ConnectionPool.new(size: 5, timeout: 3) { Redis.new }
-$redis_call_end_connection           = ConnectionPool.new(size: 5, timeout: 3) { Redis.new }
-$redis_dialer_connection             = ConnectionPool.new(size: 5, timeout: 3) { Redis.new }
-$redis_on_hold_connection            = ConnectionPool.new(size: 5, timeout: 3) { Redis.new }
-$redis_question_pr_uri_connection    = ConnectionPool.new(size: 5, timeout: 3) { Redis.new }
-$redis_phones_ans_uri_connection     = ConnectionPool.new(size: 5, timeout: 3) { Redis.new }
-$redis_caller_session_uri_connection = ConnectionPool.new(size: 5, timeout: 3) { Redis.new }
-$redis_call_uri_connection           = ConnectionPool.new(size: 5, timeout: 3) { Redis.new }
+pool_size = Integer(ENV['REDIS_POOL_SIZE'] || 20)
+$redis_call_flow_connection          = ConnectionPool.new(size: pool_size, timeout: 3) { Redis.new }
+$redis_call_end_connection           = ConnectionPool.new(size: pool_size, timeout: 3) { Redis.new }
+$redis_dialer_connection             = ConnectionPool.new(size: pool_size, timeout: 3) { Redis.new }
+$redis_on_hold_connection            = ConnectionPool.new(size: pool_size, timeout: 3) { Redis.new }
+$redis_question_pr_uri_connection    = ConnectionPool.new(size: pool_size, timeout: 3) { Redis.new }
+$redis_phones_ans_uri_connection     = ConnectionPool.new(size: pool_size, timeout: 3) { Redis.new }
+$redis_caller_session_uri_connection = ConnectionPool.new(size: pool_size, timeout: 3) { Redis.new }
+$redis_call_uri_connection           = ConnectionPool.new(size: pool_size, timeout: 3) { Redis.new }
