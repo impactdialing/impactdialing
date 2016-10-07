@@ -162,7 +162,7 @@ public
     begin
       end_session
       publish_caller_disconnected
-
+      Rails.logger.warn("End Caller Session - Caller session: #{self.id}, Campaign Id: #{self.campaign.id}")
     rescue ActiveRecord::StaleObjectError => exception
       Rails.logger.info("ActiveRecord::StaleObjectError - Caller session: #{self.id}")
       RedisCallerSession.add_phantom_callers(self.id)
