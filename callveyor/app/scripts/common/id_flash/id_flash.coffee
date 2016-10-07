@@ -9,23 +9,24 @@ userMessages.factory('idFlashFactory', [
   ($timeout,   idDeviceDetectFactory) ->
     flash = {
       alerts: []
-      nowAndDismiss: (type, message, dismissIn) ->
+      nowAndDismiss: (type, message, dismissIn, pile = true) ->
         console.log('idFLashFactory.nowAndDismiss', type, message)
         if idDeviceDetectFactory.isMobile()
           alert(message)
         else
           obj = {type, message}
-          flash.alerts.push(obj)
+          if pile then flash.alerts.push(obj) else flash.alerts = [obj]
           autoDismiss = ->
             index = flash.alerts.indexOf(obj)
             flash.dismiss(index)
           $timeout(autoDismiss, dismissIn)
-      now: (type, message) ->
+      now: (type, message, pile = true) ->
         console.log('idFLashFactory.now', type, message)
         if idDeviceDetectFactory.isMobile()
           alert(message)
         else
-          flash.alerts.push({type, message})
+          obj = {type, message}
+          if pile then flash.alerts.push(obj) else flash.alerts = [obj]
       dismiss: (index) ->
         flash.alerts.splice(index, 1)
     }
