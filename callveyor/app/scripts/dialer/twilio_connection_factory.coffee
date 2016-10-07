@@ -61,6 +61,8 @@ mod.factory('idTwilioConnectionFactory', [
               idFlashFactory.nowAndDismiss('warning', 'Your connection to the voice servers has been lost. Please check your internet connection and refresh your page to try again.', 7000, false)
           when 31205 # ignore expired token errors... (new token is fetched when calling initiated)
             break
+          when 31208
+            idFlashFactory.nowAndDismiss('warning', 'You denied access to your computer\'s microphone. Please refresh the page and try again.', 7000, false)
           else
             err = new Error("Twilio Error. [#{error.code}] #{error.message} (#{error.info})")
             $window.Bugsnag.notifyException(err)
