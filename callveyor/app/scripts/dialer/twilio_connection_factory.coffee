@@ -53,7 +53,10 @@ mod.factory('idTwilioConnectionFactory', [
         switch error.code
           # 310xx Series: General Errors
           when 31003
-            idFlashFactory.nowAndDismiss('warning', 'Your connection to the voice servers has degraded, and you may experience poor audio quality.', 7000, false);
+            if /^ICE liveness checks failed/.test(error.message)
+              idFlashFactory.nowAndDismiss('warning', 'Your connection to the voice servers has degraded, and you may experience poor audio quality.', 7000, false);
+            else if /^ICE negotiation with Twilio failed/.test(error.message)
+              idFlashFactory.nowAndDismiss('warning', 'Your connection to the voice servers has been lost. Please check your internet connection and refresh your page to try again.', 7000, false);
           when 31205 # ignore expired token errors... (new token is fetched when calling initiated)
             break
           else
