@@ -5,7 +5,6 @@ class CallFlow::Events
   delegate :expire, to: :session
   delegate :redis_expiry, to: :session
   delegate :redis, to: :session
-  delegate :redis_connection_pool, to: :session
 
   def key
     "call_flow:events:#{session.sid}"
@@ -16,13 +15,11 @@ class CallFlow::Events
   end
 
   def completed?(event_sequence)
-    # redis.getbit(key, event_sequence).to_i > 0
-    redis_connection_pool.with{|conn| conn.getbit(key, event_sequence).to_i > 0}
+    redis.getbit(key, event_sequence).to_i > 0
   end
 
   def completed(event_sequence)
-    # redis.setbit(key, event_sequence, 1)
-    redis_connection_pool.with{|conn| conn.setbit(key, event_sequence, 1)}
+    redis.setbit(key, event_sequence, 1)
     expire(key, redis_expiry)
   end
 

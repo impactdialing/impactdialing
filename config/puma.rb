@@ -15,18 +15,12 @@ on_worker_boot do
   # Valid on Rails up to 4.1 
   redis_url    = ENV['REDIS_URL']
   Resque.redis = redis_url
-  redis_conn = proc {
-     Redis.new(:url=>redis_url, :namespace=>'resque', :timeout=>2) # do anything you want here
-  }
   Sidekiq.configure_client do |config|
-    config.redis = ConnectionPool.new(size: 5, &redis_conn)
+    config.redis = {
+      :url => redis_url,
+      :namespace => 'resque'
+    }
   end
-
-    # config.redis = {
-    #   :url => redis_url,
-    #   :namespace => 'resque'
-    # }
-
 
   ActiveSupport.on_load(:active_record) do
     ImpactPlatform::MySQL.reconnect!(workers_count * threads_count)

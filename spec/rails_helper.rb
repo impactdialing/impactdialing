@@ -48,10 +48,6 @@ RSpec.configure do |config|
     def redis
       @redis ||= Redis.new
     end
-
-    def redis_connection_pool
-      @redis_connection_pool ||= ConnectionPool.new(size: 5, timeout: 3) { Redis.new }
-    end    
   end
 
   config.fixture_path = Rails.root.join('spec', 'fixtures')
