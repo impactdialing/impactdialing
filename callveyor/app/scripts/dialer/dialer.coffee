@@ -32,12 +32,12 @@ dialer.config([
 
             prom = $http.post('/call_center/api/call_station.json')
             prom.error((resp) ->
-              console.log 'error response', resp
+              # console.log 'error response', resp
               idHttpError(resp)
               deferred.reject(resp)
             )
             prom.success((resp) ->
-              console.log 'success response', resp
+              # console.log 'success response', resp
               deferred.resolve(resp)
             )
 

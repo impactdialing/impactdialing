@@ -40,7 +40,7 @@ mod.factory('idTwilioConnectionFactory', [
           factory.afterConnected()
 
       disconnected: (connection) ->
-        console.log 'twilio disconnected', connection
+        # console.log 'twilio disconnected', connection
         pending = TwilioCache.get('disconnect_pending')
         unless pending?
           idFlashFactory.now('danger', 'Your browser lost its voice connection. Submit your responses and reload the page.')

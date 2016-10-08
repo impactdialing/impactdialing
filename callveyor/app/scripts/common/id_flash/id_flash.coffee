@@ -10,7 +10,7 @@ userMessages.factory('idFlashFactory', [
     flash = {
       alerts: []
       nowAndDismiss: (type, message, dismissIn, pile = true) ->
-        console.log('idFLashFactory.nowAndDismiss', type, message)
+        # console.log('idFLashFactory.nowAndDismiss', type, message)
         if idDeviceDetectFactory.isMobile()
           alert(message)
         else
@@ -21,7 +21,7 @@ userMessages.factory('idFlashFactory', [
             flash.dismiss(index)
           $timeout(autoDismiss, dismissIn)
       now: (type, message, pile = true) ->
-        console.log('idFLashFactory.now', type, message)
+        # console.log('idFLashFactory.now', type, message)
         if idDeviceDetectFactory.isMobile()
           alert(message)
         else

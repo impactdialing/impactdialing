@@ -47,7 +47,7 @@ surveyForm.factory('SurveyFormFieldsFactory', [
         angular.forEach(payload.data, (obj, type) ->
           normalizeSurvey(obj, type)
         )
-        console.log 'normal survey', normalizedSurvey
+        # console.log 'normal survey', normalizedSurvey
         fields.data = $filter('orderBy')(normalizedSurvey, 'order')
 
       fetch: ->
@@ -74,7 +74,7 @@ surveyForm.factory('SurveyFormFieldsFactory', [
 surveyForm.controller('SurveyFormCtrl', [
   '$rootScope', '$scope', '$filter', '$state', '$http', '$window', '$timeout', 'TransferCache', 'CallCache', 'TwilioCache', 'usSpinnerService', 'SurveyFormFieldsFactory', 'idFlashFactory', 'SurveyCache', 'ErrorCache', 'idJanitor', 'HouseholdCache', 'CallStationCache',
   ($rootScope,   $scope,   $filter,   $state,   $http,   $window,   $timeout,   TransferCache,   CallCache,   TwilioCache,   usSpinnerService,   SurveyFormFieldsFactory,   idFlashFactory,   SurveyCache,   ErrorCache,   idJanitor,   HouseholdCache, CallStationCache) ->
-    # Public 
+    # Public
     survey = {
       hideButtons: true
       responses: {
@@ -86,20 +86,20 @@ surveyForm.controller('SurveyFormCtrl', [
     # SurveyCache.put('responses', survey.responses)
 
     selectDefaults = ->
-      console.log 'selectDefaults'
+      # console.log 'selectDefaults'
       # :ngupsetting:
       # set default value to avoid displaying blank options
       angular.forEach(survey.form, (item) ->
-        console.log 'item', item
+        # console.log 'item', item
         if item.type == 'question' and !survey.responses.question[item.id]?
-          console.log "setting #{item.id} = #{item.possibleResponses[0].id}"
+          # console.log "setting #{item.id} = #{item.possibleResponses[0].id}"
           survey.responses.question["#{item.id}"] = item.possibleResponses[0]
       )
       $timeout(-> $scope.$digest())
       # :endngupsetting:
 
     reset = ->
-      console.log 'reset survey'
+      # console.log 'reset survey'
       survey.responses = {
         voter_id: null
         notes: {}
@@ -173,7 +173,7 @@ surveyForm.controller('SurveyFormCtrl', [
     requestInProgress = false
     survey.save = ($event, andContinue) ->
       if requestInProgress
-        console.log 'survey.requestInProgress, returning'
+        # console.log 'survey.requestInProgress, returning'
         return
 
       usSpinnerService.spin('global-spinner')
@@ -220,7 +220,7 @@ surveyForm.controller('SurveyFormCtrl', [
 
       requestInProgress               = true
       $rootScope.transitionInProgress = true
-      
+
       # make a request, get a promise
       url    = "/call_center/api/disposition"
       params = {
