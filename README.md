@@ -33,6 +33,39 @@ Run `foreman run rspec features` for acceptance tests.
 
 Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox, Safari and Chrome.
 
+# Services
+
+## Running the damn thing
+
+* Heroku - hosting/platform
+* HireFire - autoscaling Heroku
+* Cloudflare - DNS, etc
+* RDS - MySQL hosting
+* S3 - list and audio storage, daily Redis backups, log backups
+* RedisLabs - Redis hosting
+* Pusher - realtime
+* Twilio - calls
+
+## Troubleshooting
+
+* Bugsnag - exceptions (good to check for 500 errors)
+* Papertrail - logs (good to check for 502, 503 errors, Heroku problems)
+* Librato - dashboards (good to check for app weirdness like stuck dials)
+* PagerDuty - alerts
+
+## Testing
+
+* Blazemeter - load testing
+* Sauce - browser testing
+* CircleCI - continuous integration
+* Ngrok - tunnel from a public domain to localhost
+
+## Support
+
+* Freshdesk - email support
+* Olark - chat support
+* Usersnap - screenshots/JS dump support
+
 # Configuration
 
 - `CALLIN_PHONE`: The Twilio phone number associated with the "Production call-in" TwiML app
@@ -91,6 +124,20 @@ Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox
 - `VOIP_API_URL`: Twilio's API host (api.twilio.com)
 - `VOTER_BATCH_SIZE`: Number of rows of CSV data to process before committing to redis during uploads. Keep at a max of 100 down to a min of 20 or 30. Lower value will increase overall upload time but decrease commit time thereby improving redis throughput.
 - `WEB_CONCURRENCY`: Number of puma workers to start.
+
+# Queue names and their job classes
+
+* billing -> Billing::Jobs::AutoRecharge, Billing::Jobs::StripeEvent, DebitJob
+* call_flow -> CallerPusherJob, CampaignOutOfNumbersJob, Providers::Phones::Jobs::DropMessage, EndRunningCallJob, RedirectCallerJob, VoterConnectedPusherJob
+dial_queue -> CallFlow::DialQueue::Jobs::Recycle, CallFlow::Web::Jobs::CacheContactFields, DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed, * CachePhonesOnlyScriptQuestions, CallerGroupJob
+* dialer_worker -> CalculateDialsJob, DialerJob
+general -> Archival::Jobs::CampaignArchived, Archival::Jobs::CampaignSweeper, DoNotCall::Jobs::CachePortedLists, DoNotCall::Jobs::CacheWirelessBlockList, * DoNotCall::Jobs::RefreshPortedLists, DoNotCall::Jobs::RefreshWirelessBlockList, DeliverInvitationEmailJob, PhantomCallerJob, ResetVoterListCounterCache
+* import -> CallList::Jobs::Import, CallList::Jobs::Prune, CallList::Jobs::ToggleActive, CallList::Jobs::Upload
+* persist_jobs -> none!
+* persistence -> CallFlow::Jobs::Persistence
+* reports -> AdminReportJob, ReportAccountUsageJob, ReportDownloadJob
+* simulator_worker -> SimulatorJob
+* twilio_stats -> UpdateStatsAttemptsEm, UpdateStatsTransfersEm, UpdateTwilioStatsCallerSession
 
 # Whitelabeling
 
