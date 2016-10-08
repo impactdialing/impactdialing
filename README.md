@@ -1,19 +1,39 @@
-## Impact Dialing Server
+# Dependencies
 
-### Setting up for development
+All can be installed through Homebrew.
 
-### Running Specs
+* Ruby (see `Gemfile` or `.ruby-version` for version)
+* Node 0.10.x (for the Angular app in `callveyor`)
+* Redis 2.8
+* MySQL 5.5.40
+* Heroku toolbelt
+* Ngrok
 
-A `.env` file is used to store local environment variables which are required to configure the app environment. So it is necessary to prepend `foreman run` to any test runs. Otherwise the `.env` file will not be loaded.
+# Running in development
 
-`foreman run rspec spec/` - Run all unit/integration specs.
-`foreman run rspec features/` - Run all acceptance specs.
+Make sure to copy `.env.example` to `.env` and update credentials if needed.
 
-### Running Dev Server
+Install gems with `bundle` from the app root. Set up the database with `rake db:create && db:schema:load`. Install caller interface deps with `npm install && bower install` from `callveyor`.
 
-Start web & worker processes: `foreman start`.
+Start MySQL server and Redis server.
 
-### Configuration
+Launch the web app with `rails s` (for simple testing only). Launch the web app and background processes with `heroku local -f Procfile.dev` (customize `Procfile.dev` to choose which processes to launch) and visit `localhost:5000` for the admin interface, and `localhost:5000/app` for the caller interface.
+
+Launch the caller interface from `callveyor` with `grunt serve` and visit `localhost:9000/app/login`. (Don't worry about assets not loading.) After logging in, you'll get the error `Cannot GET /app`. Remove `app` from the URL to visit `localhost:9000/` to reach the logged-in caller interface.
+
+Receive Twilio callbacks through Ngrok by running `ngrok http -subdomain=impactdialing 5000`.
+
+After making changes to Callveyor, build the Angular app into the Rails app with `rake callveyor:build`.
+
+# Testing
+
+Run `rspec spec` for Ruby tests.
+
+Run `foreman run rspec features` for acceptance tests.
+
+Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox, Safari and Chrome.
+
+# Configuration
 
 - `CALLIN_PHONE`: The Twilio phone number associated with the "Production call-in" TwiML app
 - `CALL_END_CALLBACK_HOST`: DEPRECATED
@@ -72,7 +92,7 @@ Start web & worker processes: `foreman start`.
 - `VOTER_BATCH_SIZE`: Number of rows of CSV data to process before committing to redis during uploads. Keep at a max of 100 down to a min of 20 or 30. Lower value will increase overall upload time but decrease commit time thereby improving redis throughput.
 - `WEB_CONCURRENCY`: Number of puma workers to start.
 
-### Whitelabeling
+# Whitelabeling
 
 1. Logo should look good at 300x57 and be png
   1. Use imagemagick to convert format if needed `convert img.jpg img.png`
@@ -92,14 +112,14 @@ Start web & worker processes: `foreman start`.
   1. Update DNS w/ Badger
 1. Add domain to heroku production app
 
-#### Test in staging
+## Test in staging
 
 1. Add domain to heroku staging app
 1. Add the following to `/etc/hosts`
   1. `impactdialing-staging.herokuapp.com whitelabel-domain.com`
 1. Visit `whitelabel-domain.com`
 
-### Test Phone Numbers
+# Test Phone Numbers
 
 Hello no thank you: 971-264-5495
 
@@ -111,37 +131,13 @@ Busy: 971-264-5467
 
 Repeat adnauseum: 657-888-9655
 
-### Trouble
+# Trouble
 
-##### Phantom callers
+## Phantom callers
 
 Sometimes caller sessions will remain registered long after the caller has disconnected. There is a job that should clean up these 'Phantom callers' but it currently will fail quietly sporadically.
 
 Clean up phantom sessions by locating the session id at `/admin/state` then open up a rails console and call `end_session` on the 'phantom' CallerSession instance.
-
-# Impact Dialing Client (callveyor)
-
-To test and build callveyor requires Node.js 0.10.x.
-After installing, `cd` into `callveyor` and run `npm install && bower install`
-to install dependencies.
-
-Tests run on karma, jasmine and grunt. Use `grunt test` to run continuously in Firefox, Safari and Chrome.
-
-Builds are wrapped in a Rake task that handles cleaning files outside the root directory of grunt. Use `rake callveyor:build` to generate a new build of the callveyor app.
-
-See the README in callveyor/ for all of the gory deets.
-
-# Contributing
-
-Master is mainline development and should always be ready to deploy.
-
-Work on features, bugs, etc should be done on topical branches IN YOUR OWN FORK. When ready push branch up and open a pull request.
-
-Once the pull request is merged, delete the branch and carry on.
-
-## Abandon Rate Spec
-
-Legally, abandon rate must be calculated as (number abandoned / (number abandoned + number connected to voter)).
 
 # Heads up
 
