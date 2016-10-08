@@ -63,7 +63,7 @@ Twilio = (function(loadedTwilio){
     var ref = document.getElementsByTagName("script")[0];
     var el = document.createElement("script");
     el.type = "text/javascript";
-    el.src = "//" + url.host + "/callveyor/twiliojs/refs/" + VERSION + basename;
+    el.src = "//" + url.host + "/twiliojs/refs/" + VERSION + basename;
     el.onload = el.onreadystatechange = function() {
         if (!el.readyState || el.readyState == "loaded") {
             deviceCmdQ.run(Twilio.Device);
