@@ -129,9 +129,9 @@ Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox
 
 * billing -> Billing::Jobs::AutoRecharge, Billing::Jobs::StripeEvent, DebitJob
 * call_flow -> CallerPusherJob, CampaignOutOfNumbersJob, Providers::Phones::Jobs::DropMessage, EndRunningCallJob, RedirectCallerJob, VoterConnectedPusherJob
-dial_queue -> CallFlow::DialQueue::Jobs::Recycle, CallFlow::Web::Jobs::CacheContactFields, DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed, * CachePhonesOnlyScriptQuestions, CallerGroupJob
+* dial_queue -> CallFlow::DialQueue::Jobs::Recycle, CallFlow::Web::Jobs::CacheContactFields, DoNotCall::Jobs::BlockedNumberCreatedOrDestroyed, CachePhonesOnlyScriptQuestions, CallerGroupJob
 * dialer_worker -> CalculateDialsJob, DialerJob
-general -> Archival::Jobs::CampaignArchived, Archival::Jobs::CampaignSweeper, DoNotCall::Jobs::CachePortedLists, DoNotCall::Jobs::CacheWirelessBlockList, * DoNotCall::Jobs::RefreshPortedLists, DoNotCall::Jobs::RefreshWirelessBlockList, DeliverInvitationEmailJob, PhantomCallerJob, ResetVoterListCounterCache
+* general -> Archival::Jobs::CampaignArchived, Archival::Jobs::CampaignSweeper, DoNotCall::Jobs::CachePortedLists, DoNotCall::Jobs::CacheWirelessBlockList, DoNotCall::Jobs::RefreshPortedLists, DoNotCall::Jobs::RefreshWirelessBlockList, DeliverInvitationEmailJob, PhantomCallerJob, ResetVoterListCounterCache
 * import -> CallList::Jobs::Import, CallList::Jobs::Prune, CallList::Jobs::ToggleActive, CallList::Jobs::Upload
 * persist_jobs -> none!
 * persistence -> CallFlow::Jobs::Persistence
