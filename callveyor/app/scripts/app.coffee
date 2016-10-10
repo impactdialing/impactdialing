@@ -97,8 +97,8 @@ callveyor.config([
   '$stateProvider', 'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider',
   ($stateProvider,   serviceTokens,   idTwilioServiceProvider,   PusherServiceProvider) ->
     idTwilioServiceProvider.setScriptUrl('//static.twilio.com/libs/twiliojs/1.2/twilio.js')
-#    for testing twilio.js error conditions, use the below self-hosted file that can be edited to trigger errors
-#    idTwilioServiceProvider.setScriptUrl('http://localhost:5000/twiliojs/1.2/twilio.js')
+    # for testing twilio.js error conditions, use the below self-hosted file that can be edited to trigger errors
+    # idTwilioServiceProvider.setScriptUrl('http://localhost:5000/twiliojs/1.2/twilio.js')
 
     if window.location.hostname == 'au.impactdialing.com'
       PusherServiceProvider.setOptions({cluster: 'ap1'})
