@@ -286,7 +286,7 @@ mod.factory('idCallFlow', [
           # console.log 'caller_disconnected'
           if $state.is('dialer.active')
             # console.log '$state is dialer.active'
-            idFlashFactory.now('warning', 'Voice connection was lost. Save responses, report problem & refresh page.')
+            idFlashFactory.now('danger', 'Your browser lost its voice connection. Please check your internet connection, submit your responses, and reload the page.')
             p = $state.go('dialer.wrap')
             p.catch(idTransitionPrevented)
           else if (not $state.is('dialer.wrap'))
