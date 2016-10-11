@@ -66,7 +66,7 @@ transfer.factory('TransferDialerEventFactory', [
   ($rootScope,   usSpinnerService) ->
     handlers = {
       httpSuccess: ($event, resp) ->
-        console.log 'http dialer success', resp
+        # console.log 'http dialer success', resp
         $rootScope.transferStatus = resp.data.status
         $rootScope.transferIcon = 'glyphicon-ok'
       httpError: ($event, resp) ->
@@ -103,7 +103,7 @@ transfer.controller('TransferButtonCtrl.selected', [
       params.transfer           = {id: selected.id}
       $rootScope.transferStatus = 'Preparing to dial...'
       $rootScope.transferIcon = 'glyphicon-play'
-      
+
       idHttpDialerFactory.dialTransfer(params)
       selected.wasDialed = true
       transfer.cache.put('selected', selected)

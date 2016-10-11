@@ -51,8 +51,8 @@ mod.factory('idCallFlow', [
       isWarmTransfer = ->
         selected = TransferCache.get('selected')
         type     = TransferCache.get('type')
-        console.log('isWarmTransfer() -> selected transfer', selected)
-        console.log('isWarmTransfer() -> type', type)
+        # console.log('isWarmTransfer() -> selected transfer', selected)
+        # console.log('isWarmTransfer() -> type', type)
         (selected? and /warm/i.test(selected.transfer_type)) or /warm/i.test(type)
 
       $window.idDebugData ||= {}
@@ -124,7 +124,7 @@ mod.factory('idCallFlow', [
             p.catch(idTransitionPrevented)
             return
 
-          console.log 'caching household', household
+          # console.log 'caching household', household
 
           HouseholdCache.put('data', household)
           $rootScope.$broadcast('household:changed')
@@ -215,7 +215,7 @@ mod.factory('idCallFlow', [
         #
         # Purpose: notify the client that the household (aka voter) is being dialed.
         callingVoter: ->
-          console.log 'calling_voter'
+          # console.log 'calling_voter'
 
         ##
         # voter_connected
@@ -272,7 +272,7 @@ mod.factory('idCallFlow', [
             p = $state.go('dialer.wrap')
             p.catch(idTransitionPrevented)
           else
-            console.log 'skipping transition'
+            # console.log 'skipping transition'
         ##
         # caller_disconnected
         #
@@ -286,7 +286,7 @@ mod.factory('idCallFlow', [
           # console.log 'caller_disconnected'
           if $state.is('dialer.active')
             # console.log '$state is dialer.active'
-            idFlashFactory.now('warning', 'Voice connection was lost. Save responses, report problem & refresh page.')
+            idFlashFactory.now('danger', 'Your browser lost its voice connection. Please check your internet connection, submit your responses, and reload the page.')
             p = $state.go('dialer.wrap')
             p.catch(idTransitionPrevented)
           else if (not $state.is('dialer.wrap'))
@@ -297,14 +297,14 @@ mod.factory('idCallFlow', [
         # call_ended
         #
         callEnded: (data) ->
-          console.log 'call_ended', data
+          # console.log 'call_ended', data
           status        = data.status
           campaign_type = data.campaign_type
           number        = data.number
           shouldReload  = ->
             status != 'completed' and $state.is('dialer.hold') and campaign_type != 'Predictive'
           if shouldReload()
-            console.log 'reloading dialer.hold $state'
+            # console.log 'reloading dialer.hold $state'
             msg = "#{number} #{status}"
             idFlashFactory.nowAndDismiss('info', msg, 3000)
             holdCache = $cacheFactory.get('hold')
@@ -339,7 +339,7 @@ mod.factory('idCallFlow', [
         # @param {object} {type: String, call_id: String} Where call_id is the
         # MySQL call record ID referencing the dialing of the transfer
         transferConnected: (data) ->
-          console.log 'transfer_connected', data
+          # console.log 'transfer_connected', data
           # TransferCache.put('id', data.call_id)
           TransferCache.put('type', data.type)
           $window.idDebugData.transfer = {
@@ -355,7 +355,7 @@ mod.factory('idCallFlow', [
         # Purpose: notify client that the contact has been served the conf twiml.
         #
         contactJoinedTransferConference: ->
-          console.log 'contactJoinedTransferConference'
+          # console.log 'contactJoinedTransferConference'
           if not isWarmTransfer()
             # idFlashFactory.now('info', 'Transfer & Contact connected.')
             p = $state.go('dialer.wrap')
@@ -369,7 +369,7 @@ mod.factory('idCallFlow', [
         # Purpose: notify client that the caller has been served the conf twiml.
         #
         callerJoinedTransferConference: ->
-          console.log 'callerJoinedTransferConference'
+          # console.log 'callerJoinedTransferConference'
           # idFlashFactory.now('info', 'Transfer, Contact & you connected.')
           p = $state.go('dialer.active.transfer.conference')
           p.catch(idTransitionPrevented)

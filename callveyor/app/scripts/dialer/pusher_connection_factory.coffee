@@ -6,59 +6,48 @@ mod = angular.module('pusherConnectionHandlers', [
 ])
 
 mod.factory('pusherConnectionHandlerFactory', [
-  '$rootScope', '$window', 'usSpinnerService', 'idFlashFactory',
-  ($rootScope,   $window,   usSpinnerService,   idFlashFactory) ->
-    # console.log 'pusherConnectionHandler'
-
-    pusherError = (error) ->
-      # console.log 'pusherError', wtf
-      $window.Bugsnag.notifyException(error)
-      idFlashFactory.now('danger', 'Something went wrong. We are working
-to fix it.')
-
-    reConnecting = (wtf) ->
-      # console.log 'temporaryConnectionFailure', wtf
-      idFlashFactory.now('warning', 'Your browser has lost its connection. Reconnecting...')
-
-    connectionFailure = (wtf) ->
-      # console.log 'connectionFailure', wtf
-      idFlashFactory.now('warning', 'Your browser could not re-connect.')
-
-    connectingIn = (delay) ->
-      # console.log 'connectingIn', delay
-      idFlashFactory.now('warning', "Your browser could not re-connect. Connecting in #{delay} seconds.")
-
-    browserNotSupported = (wtf) ->
-      # console.log 'browserNotSupported', wtf
-      $rootScope.$broadcast('pusher:bad_browser')
-
+  '$rootScope', '$window', '$timeout', 'usSpinnerService', 'idFlashFactory',
+  ($rootScope,   $window,   $timeout,   usSpinnerService,   idFlashFactory) ->
     connectionHandler = {
-      # Service resolved successfully
       success: (pusher) ->
-        connecting = ->
-          # console.log 'pusher-connecting'
-          idFlashFactory.now('info', 'Establishing real-time connection...')
-          pusher.connection.unbind('connecting', connecting)
-          pusher.connection.bind('connecting', reConnecting)
-          usSpinnerService.spin('global-spinner')
-
-        initialConnectedHandler = (wtf) ->
-          # console.log 'initialConnectedHandler', wtf
+        connected = (wtf) ->
           usSpinnerService.stop('global-spinner')
-          pusher.connection.unbind('connected', initialConnectedHandler)
-          pusher.connection.bind('connected', runTimeConnectedHandler)
+          pusher.connection.unbind('connected', connected)
+          pusher.connection.bind('connected', reConnected)
           $rootScope.$broadcast('pusher:ready')
+          idFlashFactory.nowAndDismiss('success', 'Connected!', 3000)
 
-        runTimeConnectedHandler = (obj) ->
-          # console.log 'runTimeConnectedHandler', obj
+        reConnected = (obj) ->
           usSpinnerService.stop('global-spinner')
-          idFlashFactory.now('success', 'Connected!', 4000)
+          flash = ->
+            idFlashFactory.nowAndDismiss('success', 'Re-connected!', 3000, false)
+          $timeout(flash, 0)
 
-        pusher.connection.bind('connecting_in', connectingIn)
+        connecting = (wtf) ->
+          usSpinnerService.stop('global-spinner')
+          usSpinnerService.spin('global-spinner')
+          flash = ->
+            idFlashFactory.now('warning', 'Your browser has lost its connection. Reconnecting...', false)
+          $timeout(flash, 0)
+
+        unavailable = (wtf) ->
+          flash = ->
+            idFlashFactory.now('danger', 'Your browser has lost its connection.', false)
+          $timeout(flash, 0)
+
+        connectingIn = (delay) ->
+          flash = ->
+            idFlashFactory.now('warning', "Your browser could not re-connect. Connecting in #{delay} seconds.", false)
+          $timeout(flash, 0)
+
+        failed = (wtf) ->
+          $rootScope.$broadcast('pusher:bad_browser')
+
+        pusher.connection.bind('connected', connected)
         pusher.connection.bind('connecting', connecting)
-        pusher.connection.bind('connected', initialConnectedHandler)
-        pusher.connection.bind('failed', browserNotSupported)
-        pusher.connection.bind('unavailable', connectionFailure)
+        pusher.connection.bind('unavailable', unavailable)
+        pusher.connection.bind('connecting_in', connectingIn)
+        pusher.connection.bind('failed', failed)
       # Service did not resolve successfully. Most likely the pusher lib failed to load.
       loadError: (error) ->
         error ||= new Error("Pusher service failed to resolve.")

@@ -50,7 +50,9 @@ private
       @twiml_flag      = :connect
       @record_calls    = campaign.account.record_calls.to_s
     else
-      
+      if caller_session_record.present?
+        Rails.logger.warn("Abandon Call info: #{caller_session_record.id}, state info: #{RedisStatus.state_time(caller_session_record.campaign.id, caller_session_record.id)}")
+      end  
       abandon
     end
   end

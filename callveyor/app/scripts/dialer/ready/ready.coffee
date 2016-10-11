@@ -87,8 +87,8 @@ ready.controller('ReadyCtrl.splashModal', [
 ])
 
 ready.controller('ReadyCtrl.splash', [
-  '$scope', '$rootScope', '$modal', '$window', '$http', 'idTwilioService', 'usSpinnerService', 'ErrorCache', 'idFlashFactory', 'BrowserPhone', 'idDeviceDetectFactory',
-  ($scope,   $rootScope,   $modal,   $window,   $http,   idTwilioService,   usSpinnerService,   ErrorCache,   idFlashFactory,   BrowserPhone,   idDeviceDetectFactory) ->
+  '$scope', '$rootScope', '$uibModal', '$window', '$http', 'idTwilioService', 'usSpinnerService', 'ErrorCache', 'idFlashFactory', 'BrowserPhone', 'idDeviceDetectFactory',
+  ($scope,   $rootScope,   $uibModal,   $window,   $http,   idTwilioService,   usSpinnerService,   ErrorCache,   idFlashFactory,   BrowserPhone,   idDeviceDetectFactory) ->
 
     done = ->
       $rootScope.transitionInProgress = false
@@ -105,7 +105,7 @@ ready.controller('ReadyCtrl.splash', [
         $scope.transitionInProgress = true
         BrowserPhone.start()
       else
-        openModal = $modal.open({
+        openModal = $uibModal.open({
           templateUrl: '/callveyor/dialer/ready/splash.tpl.html',
           controller: 'ReadyCtrl.splashModal',
           size: 'md'
