@@ -50,6 +50,10 @@ surveyForm.factory('SurveyFormFieldsFactory', [
         # console.log 'normal survey', normalizedSurvey
         fields.data = $filter('orderBy')(normalizedSurvey, 'order')
 
+        for obj in fields.data
+          if obj.type == 'question'
+            obj.possibleResponses.unshift { value: '' } # add blank as default
+            break # only add blank for first question
       fetch: ->
         $http.get('/call_center/api/survey_fields.json')
     }
@@ -165,7 +169,7 @@ surveyForm.controller('SurveyFormCtrl', [
       if lead?
         lead = {id: lead.id}
       else
-        idFlashFactory.now('warning', 'Select a contact before saving.')
+        idFlashFactory.nowAndDismiss('warning', 'Select a contact before saving.', 4000)
         return false
 
       return {call_sid, lead, caller_session_id}
@@ -175,6 +179,12 @@ surveyForm.controller('SurveyFormCtrl', [
       if requestInProgress
         # console.log 'survey.requestInProgress, returning'
         return
+
+      for own index, response of survey.responses.question
+        if response.value == ''
+          idFlashFactory.nowAndDismiss('warning', 'Select responses to the questions below.', 4000)
+          $rootScope.transitionInProgress = false
+          return
 
       usSpinnerService.spin('global-spinner')
 
