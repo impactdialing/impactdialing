@@ -15,7 +15,7 @@ module AppHealth
       LibratoSidekiq.track!
 
       loop do
-        RecycleRateViolations.alert_if_not_ok
+        # RecycleRateViolations.alert_if_not_ok
 
         PredictiveDialRate.alert_if_not_ok
 
