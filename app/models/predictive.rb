@@ -53,7 +53,7 @@ class Predictive < Campaign
 
     return 1 if dials_made.zero?
     if !abandon_rate_acceptable?
-      half_speed = 0.5 * best_dials_simulated
+      half_speed = 0.75 * best_dials_simulated
       if half_speed < 1
         return 1
       else
