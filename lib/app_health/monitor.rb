@@ -22,7 +22,7 @@ module AppHealth
 
         LongHoldTime.alert_if_not_ok
 
-        ImproperAbandons.alert_if_not_ok
+        # ImproperAbandons.alert_if_not_ok
 
         CallFlow::Jobs::ActiveCallerMonitor.perform
 
