@@ -258,7 +258,7 @@ public
   end
 
   def household_query
-    Household.where(campaign_id: @campaign.id).includes(:call_attempts, :voters)
+    Household.where(campaign_id: @campaign.id).where("status NOT IN (?)", [CallAttempt::Status::RINGING,CallAttempt::Status::READY,"not called"]).includes(:call_attempts, :voters)
   end
 
   def download_all_voters_lead
