@@ -537,8 +537,8 @@ describe CallerCampaignReportStrategy, :type => :model do
         caller = create(:caller, username: "abc@hui.com")
         voter = create(:voter, account: @account, campaign: @campaign)
         phone, custom_id, firstname = "39045098753", "24566", "first"
-        voter.update_attributes(:custom_id => custom_id, :first_name => firstname)
-        voter.household.update_attributes(:phone => phone)
+        voter.update_attributes(:custom_id => custom_id, :first_name => firstname, status: "Call completed with success.")
+        voter.household.update_attributes(:phone => phone, status: "Call completed with success.")
         field1  = create(:custom_voter_field, :name => "field1", :account => @account)
         field2 = create(:custom_voter_field, :name => "field2", :account => @account)
 
