@@ -41,7 +41,7 @@ public
 
   def fix_counts
     Campaign.find(params[:id]).inflight_stats.incby(params[:metric], params[:amount])
-    redirect_to admin_state_path
+    redirect_to :back
   end
 
   def twilio_limit
