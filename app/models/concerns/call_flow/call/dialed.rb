@@ -50,7 +50,9 @@ private
       @twiml_flag      = :connect
       @record_calls    = campaign.account.record_calls.to_s
     else
-      
+      if caller_session_record.present?
+        Rails.logger.warn("Abandon Call info: #{caller_session_record.id}, state info: #{RedisStatus.state_time(caller_session_record.campaign.id, caller_session_record.id)}")
+      end  
       abandon
     end
   end
@@ -175,10 +177,10 @@ public
   # Supports requests to Twilio FallbackUrls and Urls.
   def disconnected(params)
     storage.save(params_for_update(params))
-    if caller_session_from_sid.present?
-      RedisStatus.set_state_changed_time(caller_session_from_sid.campaign_id, "Wrap up", caller_session_from_sid.id)
-    end
-    caller_session_call.emit('publish_voter_disconnected')
+    # if caller_session_from_sid.present?
+    #   RedisStatus.set_state_changed_time(caller_session_from_sid.campaign_id, "Wrap up", caller_session_from_sid.id)
+    # end
+    # caller_session_call.emit('publish_voter_disconnected')
   end
 
   def completed(campaign, params)

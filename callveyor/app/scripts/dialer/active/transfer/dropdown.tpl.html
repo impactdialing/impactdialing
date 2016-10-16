@@ -1,14 +1,14 @@
-<div class="btn-group" data-dropdown data-ng-hide="transfer.list.length == 0">
+<div class="btn-group" data-uib-dropdown data-ng-hide="transfer.list.length == 0">
   <button class="btn btn-default navbar-btn"
           type="button"
           title="Dial a 3rd-party and add them to the current call."
           aria-label="Dial a 3rd-party and add them to the current call."
-          data-dropdown-toggle>
-  
+          data-uib-dropdown-toggle>
+
     <span class="glyphicon glyphicon-plus"></span>
     <span class="text">Transfer <b class="caret"></b></span>
   </button>
-  <ul class="dropdown-menu" role="menu">
+  <ul class="uib-dropdown-menu" role="menu">
     <li data-ng-repeat="target in transfer.list">
       <a href="#" data-ng-click="transfer.select(target.id)">
         {{target.label}} ({{target.phone_number}}) <span class="label label-{{target.transfer_type == 'warm' ? 'danger' : 'info'}}">{{target.transfer_type}}</span>

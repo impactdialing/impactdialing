@@ -259,7 +259,7 @@ public
   end
 
   def start_conference(callerdc=DataCentre::Code::TWILIO)
-    #RedisCallerSession.set_datacentre(self.id, callerdc)
+    RedisCallerSession.set_datacentre(self.id, callerdc)
     handle_reassign_campaign(callerdc)
     if Campaign.predictive_campaign?(campaign.type)
       update_attributes(on_call: true, available_for_call: true)

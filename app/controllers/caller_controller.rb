@@ -150,7 +150,7 @@ public
     # ^^ Work around; this url can be removed from some Dial:actions
     # todo: remove pause_url from unnecessary TwiML responses
     unless @caller_session.skip_pause?
-
+      RedisStatus.set_state_changed_time(@caller_session.campaign_id, "Wrap up", @caller_session.id)
       @caller_session.pushit('caller_wrapup_voice_hit', {})
 
       xml = Twilio::TwiML::Response.new do |r|

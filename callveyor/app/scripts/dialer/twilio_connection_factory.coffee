@@ -40,28 +40,43 @@ mod.factory('idTwilioConnectionFactory', [
           factory.afterConnected()
 
       disconnected: (connection) ->
-        console.log 'twilio disconnected', connection
+        # console.log 'twilio disconnected', connection
         pending = TwilioCache.get('disconnect_pending')
         unless pending?
-          idFlashFactory.now('danger', 'Your browser lost its voice connection. Submit your responses and reload the page.')
+          idFlashFactory.now('danger', 'Your browser lost its voice connection. Please check your internet connection, submit your responses, and reload the page.')
         else
           TwilioCache.remove('disconnect_pending')
 
         TwilioCache.remove('connection')
 
       error: (error) ->
-        # ignore expired token errors... (new token is fetched when calling initiated)
-        return if parseInt(error.code) == 31205
-        err = new Error("Twilio Error. [#{error.code}] #{error.message} (#{error.info})")
-        $window.Bugsnag.notifyException(err)
+        debugger
+        switch error.code
+          # 310xx Series: General Errors
+          when 31000, 31002
+            idFlashFactory.now('warning', 'There was an error connecting to the voice servers. Please check your internet connection, submit your responses if applicable, and refresh your page.', false)
+          when 31003
+            if /^ICE liveness checks failed/.test(error.message)
+              idFlashFactory.now('warning', 'Your connection to the voice servers has degraded, and you may experience poor audio quality. Please check your internet connection.', false)
+            else if /^ICE negotiation with Twilio failed/.test(error.message)
+              idFlashFactory.now('warning', 'Your connection to the voice servers has been lost. Please check your internet connection, submit your responses if applicable, and refresh the page.', false)
+          when 31205 # ignore expired token errors... (new token is fetched when calling initiated)
+            break
+          when 31208
+            idFlashFactory.now('warning', 'You denied access to your computer\'s microphone. Please refresh the page and try again.', false)
+          else
+            err = new Error("Twilio Error. [#{error.code}] #{error.message} (#{error.info})")
+            $window.Bugsnag.notifyException(err)
 
       resolved: (twilio) ->
         if factory.boundEventsMissing('connect')
           twilio.Device.connect(factory.connected)
           factory.boundEvents.push('connect')
+
         if factory.boundEventsMissing('disconnect')
           twilio.Device.disconnect(factory.disconnected)
           factory.boundEvents.push('disconnect')
+
         if factory.boundEventsMissing('error')
           twilio.Device.error(factory.error)
           factory.boundEvents.push('error')

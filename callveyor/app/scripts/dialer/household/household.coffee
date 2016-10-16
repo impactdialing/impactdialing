@@ -36,7 +36,7 @@ household.controller('HouseholdCtrl', [
 
         members.push(member)
       )
-      console.log 'setting household members', members
+      # console.log 'setting household members', members
       $scope.household = {
         phone: data.phone,
         members: members

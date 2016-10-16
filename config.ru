@@ -7,18 +7,14 @@ require 'resque_scheduler/server'
 require 'sidekiq/web'
 
 Resque::Server.use Rack::Auth::Basic do |username, password|
-   username == 'impact' && password == '%76BZs2TPvWe=nqz'
+   username == 'impact' && password == (ENV['ADMIN_PASSWORD'] || rand)
 end
 
 Sidekiq::Web.use Rack::Auth::Basic do |username, password|
-  username == 'impact' && password == '%76BZs2TPvWe=nqz'
+  username == 'impact' && password == (ENV['ADMIN_PASSWORD'] || rand)
 end
 
 run Rack::URLMap.new \
   "/"       => ImpactDialing::Application,
   "/resque" => Resque::Server.new,
   "/sidekiq" => Sidekiq::Web
-
-
-
-

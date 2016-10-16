@@ -226,7 +226,7 @@ describe 'callveyor.call_flow', ->
 
         it 'displays a warning to the user', ->
           service.callerDisconnected()
-          self.expect(idFlashFactory.now).toHaveBeenCalledWith('warning', jasmine.any(String))
+          self.expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String))
 
         it 'transitions to dialer.wrap', ->
           service.callerDisconnected()
