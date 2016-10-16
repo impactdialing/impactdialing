@@ -1,4 +1,5 @@
 describe 'pusherConnectionHandlers module', ->
+  $timeout = ''
   $injector = ''
   $rootScope = ''
   factory = ''
@@ -21,6 +22,7 @@ describe 'pusherConnectionHandlers module', ->
       factory = $injector.get('pusherConnectionHandlerFactory')
       idFlashFactory = $injector.get('idFlashFactory')
       usSpinnerService = $injector.get('usSpinnerService')
+      $timeout = $injector.get('$timeout')
     )
 
   describe '.success(pusher)', ->
@@ -38,6 +40,7 @@ describe 'pusherConnectionHandlers module', ->
         pusher.connection.unbind = (event) -> delete bound[event]
         trigger = (event, delay) -> bound[event](delay)
         idFlashFactory.now = jasmine.createSpy('-idFlashFactory.now spy-')
+        idFlashFactory.nowAndDismiss = jasmine.createSpy('-idFlashFactory.nowAndDismiss spy-')
         usSpinnerService.spin = jasmine.createSpy('-usSpinnerService.spin spy-')
         usSpinnerService.stop = jasmine.createSpy('-usSpinnerService.stop spy-')
         factory.success(pusher)
@@ -45,14 +48,16 @@ describe 'pusherConnectionHandlers module', ->
       describe 'connecting_in', ->
         it 'displays a warning to the user', ->
           trigger('connecting_in', 5)
-          expect(idFlashFactory.now).toHaveBeenCalledWith('warning', jasmine.any(String))
+          $timeout.flush()
+          expect(idFlashFactory.now).toHaveBeenCalledWith('warning', jasmine.any(String), false)
 
       describe 'connecting', ->
         beforeEach -> trigger('connecting')
 
         describe 'when first fired', ->
           it 'displays a notice to the user', ->
-            expect(idFlashFactory.now).toHaveBeenCalledWith('info', jasmine.any(String))
+            $timeout.flush()
+            expect(idFlashFactory.now).toHaveBeenCalledWith('warning', jasmine.any(String), false)
 
           it 'spins the global-spinner', ->
             expect(usSpinnerService.spin).toHaveBeenCalledWith('global-spinner')
@@ -62,7 +67,8 @@ describe 'pusherConnectionHandlers module', ->
             trigger('connecting')
 
           it 'displays a warning to the user', ->
-            expect(idFlashFactory.now).toHaveBeenCalledWith('warning', jasmine.any(String))
+            $timeout.flush()
+            expect(idFlashFactory.now).toHaveBeenCalledWith('warning', jasmine.any(String), false)
 
       describe 'connected', ->
         pusherReadyHandler = ''
@@ -80,7 +86,8 @@ describe 'pusherConnectionHandlers module', ->
 
           it 'resets the initial connected handler to a runTimeConnectedHandler', ->
             trigger('connected')
-            expect(idFlashFactory.now).toHaveBeenCalledWith('success', jasmine.any(String), jasmine.any(Number))
+            $timeout.flush()
+            expect(idFlashFactory.nowAndDismiss).toHaveBeenCalledWith('success', jasmine.any(String), jasmine.any(Number))
 
           it 'broadcasts "pusher:ready" event on $rootScope', ->
             expect(pusherReadyHandler).toHaveBeenCalled()
@@ -91,7 +98,8 @@ describe 'pusherConnectionHandlers module', ->
             expect(usSpinnerService.stop).toHaveBeenCalled()
 
           it 'displays a success message to the user, which auto-destructs after some seconds', ->
-            expect(idFlashFactory.now).toHaveBeenCalledWith('success', jasmine.any(String), jasmine.any(Number))
+            $timeout.flush()
+            expect(idFlashFactory.nowAndDismiss).toHaveBeenCalledWith('success', jasmine.any(String), jasmine.any(Number))
 
       # failed event means the browser is not supported & neither flash nor http fallbacks are available
       describe 'failed', ->
@@ -109,4 +117,5 @@ describe 'pusherConnectionHandlers module', ->
         beforeEach -> trigger('unavailable')
 
         it 'displays a warning to the user', ->
-          expect(idFlashFactory.now).toHaveBeenCalledWith('warning', jasmine.any(String))
+          $timeout.flush()
+          expect(idFlashFactory.now).toHaveBeenCalledWith('danger', jasmine.any(String), false)
