@@ -52,7 +52,7 @@ private
     else
       if caller_session_record.present?
         Rails.logger.warn("Abandon Call info: #{caller_session_record.id}, state info: #{RedisStatus.state_time(caller_session_record.campaign.id, caller_session_record.id)}")
-      end  
+      end
       abandon
     end
   end
@@ -184,6 +184,7 @@ public
   end
 
   def completed(campaign, params)
+    storage[:mapped_status] = CallAttempt::Status::HANGUP if params['AnsweredBy'] == 'machine'
     storage.save(params_for_update(params))
 
     caller_session_call.try(:emit, 'publish_call_ended', params)
@@ -252,4 +253,3 @@ public
     Providers::Phone::Jobs::DropMessage.add_to_queue(caller_session_sid, sid)
   end
 end
-
