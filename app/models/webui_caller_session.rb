@@ -17,6 +17,15 @@ class WebuiCallerSession < CallerSession
     CallerPusherJob.add_to_queue(self, event)    
   end
 
+  def handle_caller_session_unanswered_call
+    if fit_to_dial?
+      continue_conf
+    else
+      end_caller_session
+      EndRunningCallJob.add_to_queue(sid)
+    end    
+  end
+
   def disconnected
     disonnected_twiml
   end
