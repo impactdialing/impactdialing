@@ -288,11 +288,11 @@ describe 'CallFlow::Call::Dialed' do
       subject.disconnected(disconnected_params)
     end
 
-    xit 'queues CallerPusherJob for voter_disconnected' do
+    it 'queues CallerPusherJob for voter_disconnected' do
       expect([:sidekiq, :call_flow]).to have_queued(CallerPusherJob).with(caller_session.id, 'publish_voter_disconnected', 1, {})
     end
 
-    xit 'updates RedisStatus for caller session to "Wrap up"' do
+    it 'updates RedisStatus for caller session to "Wrap up"' do
       expect(RedisStatus.state_time(campaign.id, caller_session.id).first).to eq 'Wrap up'
     end
 
