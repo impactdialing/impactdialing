@@ -12,8 +12,7 @@ public
   end
 
   def add(household)
-    redis_connection_pool.with{|conn| conn.zadd keys[:bin], *memberize(household)}
-    # redis.zadd keys[:bin], *memberize(household)
+    redis.zadd keys[:bin], *memberize(household)
 
     return (not missing?(household.phone))
   end
@@ -27,8 +26,7 @@ public
   def expired
     min   = '-inf'
     max   = "#{campaign.recycle_rate.hours.ago.to_i}.999"
-    items = redis_connection_pool.with{|conn| conn.zrangebyscore(keys[:bin], min, max, with_scores: true)}
-    # items = redis.zrangebyscore(keys[:bin], min, max, with_scores: true)
+    items = redis.zrangebyscore(keys[:bin], min, max, with_scores: true)
 
     # redis-rb returns [item, score] but expects [score, item] when pushing
     items.map{|item| item.rotate(1)}

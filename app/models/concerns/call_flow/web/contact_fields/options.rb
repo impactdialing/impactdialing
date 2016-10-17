@@ -27,14 +27,12 @@ public
   def save(new_fields)
     clean_fields = clean(new_fields)
     
-    unless clean_fields.empty?      
-      redis_connection_pool.with{|conn| conn.sadd key, clean_fields}
-      # redis.sadd key, clean_fields
+    unless clean_fields.empty?
+      redis.sadd key, clean_fields
     end
   end
 
   def all
-    redis_connection_pool.with{|conn| conn.smembers key}
-    # redis.smembers key
+    redis.smembers key
   end
 end

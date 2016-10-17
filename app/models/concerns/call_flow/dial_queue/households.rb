@@ -104,22 +104,18 @@ class CallFlow::DialQueue::Households
     ]
   end
 
-  def exists?    
-    # cursor, results = redis.scan(0, match: "#{keys[:active]}:*")
-    cursor, results = redis_connection_pool.with{|conn| conn.scan(0, match: "#{keys[:active]}:*")}
-    # redis_connection_pool.with{|conn| conn.hgetall(key)}
+  def exists?
+    cursor, results = redis.scan(0, match: "#{keys[:active]}:*")
     results.any?
   end
 
   def save(phone, house)
     return nil if phone.blank?
-    redis_connection_pool.with{|conn| conn.hset( *hkey(phone), house.to_json )}
-    # redis.hset( *hkey(phone), house.to_json )
+    redis.hset( *hkey(phone), house.to_json )
   end
 
   def find(phone)
-    result = redis_connection_pool.with{|conn| conn.hget *hkey(phone)}
-    # result = redis.hget *hkey(phone)
+    result = redis.hget *hkey(phone)
     if result.blank?
       # todo: raise or log exception here since this should never be the case
       result = {}
@@ -171,23 +167,19 @@ class CallFlow::DialQueue::Households
   end
 
   def remove_house(phone)
-    redis_connection_pool.with{|conn| conn.hdel *hkey(phone)}
-    # redis.hdel *hkey(phone)
+    redis.hdel *hkey(phone)
   end
 
   def missing?(phone)
-    not redis_connection_pool.with{|conn| conn.hexists(*hkey(phone))}
-    # not redis.hexists(*hkey(phone))
+    not redis.hexists(*hkey(phone))
   end
 
   def record_message_drop(sequence)
-    redis_connection_pool.with{|conn| conn.setbit(keys[:message_drops], sequence, 1)}
-    # redis.setbit(keys[:message_drops], sequence, 1)
+    redis.setbit(keys[:message_drops], sequence, 1)
   end
 
   def message_dropped_recorded?(sequence)
-    redis_connection_pool.with{|conn| conn.getbit(keys[:message_drops], sequence) > 0}
-    # redis.getbit(keys[:message_drops], sequence) > 0
+    redis.getbit(keys[:message_drops], sequence) > 0
   end
 
   def record_message_drop_by_phone(phone)
@@ -210,23 +202,19 @@ class CallFlow::DialQueue::Households
   end
 
   def mark_lead_completed(lead_sequence)
-    redis_connection_pool.with{|conn| conn.setbit(keys[:completed_leads], lead_sequence, 1)}
-    # redis.setbit(keys[:completed_leads], lead_sequence, 1)
+    redis.setbit(keys[:completed_leads], lead_sequence, 1)
   end
 
   def mark_lead_dispositioned(lead_sequence)
-    redis_connection_pool.with{|conn| conn.setbit(keys[:dispositioned_leads], lead_sequence, 1)}
-    # redis.setbit(keys[:dispositioned_leads], lead_sequence, 1)
+    redis.setbit(keys[:dispositioned_leads], lead_sequence, 1)
   end
 
   def lead_dispositioned?(lead_sequence)
-    redis_connection_pool.with{|conn| conn.getbit(keys[:dispositioned_leads], lead_sequence).to_i > 0}
-    # redis.getbit(keys[:dispositioned_leads], lead_sequence).to_i > 0
+    redis.getbit(keys[:dispositioned_leads], lead_sequence).to_i > 0
   end
 
   def lead_completed?(lead_sequence)
-    redis_connection_pool.with{|conn| conn.getbit(keys[:completed_leads], lead_sequence).to_i > 0}
-    # redis.getbit(keys[:completed_leads], lead_sequence).to_i > 0
+    redis.getbit(keys[:completed_leads], lead_sequence).to_i > 0
   end
 
   def incomplete_lead_count_for(phone)

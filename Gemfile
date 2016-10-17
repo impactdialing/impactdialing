@@ -105,9 +105,6 @@ end
 # redis lua scripts
 gem 'wolverine'
 
-# redis connection pooling
-gem 'connection_pool'
-
 group :development do
   gem 'annotate'
   gem 'spring'

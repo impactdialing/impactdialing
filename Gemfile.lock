@@ -450,7 +450,6 @@ DEPENDENCIES
   capybara-webkit
   cocoon (~> 1.2.0)
   compass-rails
-  connection_pool
   database_cleaner
   deep_cloneable
   dotenv-rails
@@ -531,4 +530,4 @@ RUBY VERSION
    ruby 2.2.4p230
 
 BUNDLED WITH
-   1.12.5
+   1.12.2

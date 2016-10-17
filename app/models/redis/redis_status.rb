@@ -1,27 +1,19 @@
 class RedisStatus
-
-  def redis
-    Rails.logger.warn("Redis connection - RedisStatus")
-    Redis.new
-  end
-
-  def self.redis_connection_pool
+  def self.redis
     $redis_dialer_connection
-  end  
+  end
 
   def self.redis_key(campaign_id)
     "campaign:#{campaign_id}:status"
   end
 
   def self.set_state_changed_time(campaign_id, status, caller_session_id)
-    redis_connection_pool.with{|conn| conn.hset "campaign:#{campaign_id}:status", caller_session_id, {status: status, time: Time.now.to_s}.to_json}
-    # $redis_dialer_connection.hset "campaign:#{campaign_id}:status", caller_session_id, {status: status, time: Time.now.to_s}.to_json
+    $redis_dialer_connection.hset "campaign:#{campaign_id}:status", caller_session_id, {status: status, time: Time.now.to_s}.to_json
   end
 
   def self.state_time(campaign_id, caller_session_id)
     result = []
-    time_status = redis_connection_pool.with{|conn| conn.hget "campaign:#{campaign_id}:status", caller_session_id}
-    # time_status = $redis_dialer_connection.hget "campaign:#{campaign_id}:status", caller_session_id
+    time_status = $redis_dialer_connection.hget "campaign:#{campaign_id}:status", caller_session_id
     unless time_status.nil?
       element = JSON.parse(time_status)
       time_spent = Time.now - Time.parse(element['time'] || Time.now.to_s)
@@ -31,8 +23,7 @@ class RedisStatus
   end
 
   def self.delete_state(campaign_id, caller_session_id)
-    redis_connection_pool.with{|conn| conn.hdel "campaign:#{campaign_id}:status", caller_session_id}
-    # $redis_dialer_connection.hdel "campaign:#{campaign_id}:status", caller_session_id
+    $redis_dialer_connection.hdel "campaign:#{campaign_id}:status", caller_session_id
   end
 
   def self.seconds_fraction_to_time(time_difference)
@@ -56,9 +47,7 @@ class RedisStatus
       return out.call
     end
 
-    elements = redis_connection_pool.with{|conn| conn.hmget "campaign:#{campaign_id}:status", *hkeys}
-
-    # elements = redis.hmget "campaign:#{campaign_id}:status", *hkeys
+    elements = redis.hmget "campaign:#{campaign_id}:status", *hkeys
 
     elements.compact.each do |element|
       ele = JSON.parse(element)
@@ -74,8 +63,7 @@ class RedisStatus
     hkeys = caller_session_ids.compact.flatten
     return [] if hkeys.empty?
 
-    # elements = redis.hmget redis_key(campaign_id), *hkeys
-    elements = redis_connection_pool.with{|conn| conn.hmget redis_key(campaign_id), *hkeys}
+    elements = redis.hmget redis_key(campaign_id), *hkeys
     elements.map do |element|
       next if element.nil?
       parsed_element = JSON.parse(element)
