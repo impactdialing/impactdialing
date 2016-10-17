@@ -69,9 +69,15 @@ public
     end
   end
 
-  def get_call_attempts_number(household_ids)
-    query = CallAttempt.where(household_id: household_ids).
-      select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql
+  def get_call_attempts_number(household_ids, by_date_range=false)
+    if by_date_range
+      query = CallAttempt.where(household_id: household_ids).where('created_at >= ? AND created_at <= ?',@from_date,@to_date)
+        select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql      
+    else
+      query = CallAttempt.where(household_id: household_ids).
+        select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql      
+    end  
+    
     @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
       memo[hash['household_id']] = {
         cnt: hash['cnt'],
@@ -80,9 +86,15 @@ public
     end
   end
 
-  def get_call_attempts_number_by_voter_id(voter_ids)
-    query = CallAttempt.where(voter_id: voter_ids).
-      select("voter_id, max(id) as last_id").group(:voter_id).to_sql
+  def get_call_attempts_number_by_voter_id(voter_ids, by_date_range=false)
+    if by_date_range
+      query = CallAttempt.where(voter_id: voter_ids).where('created_at >= ? AND created_at <= ?',@from_date,@to_date)
+        select("voter_id, max(id) as last_id").group(:voter_id).to_sql
+      
+    else
+      query = CallAttempt.where(voter_id: voter_ids).
+        select("voter_id, max(id) as last_id").group(:voter_id).to_sql
+    end  
     @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
       memo[hash['voter_id']] = {
         last_id: hash['last_id']
@@ -188,13 +200,13 @@ public
     end
   end
 
-  def process_households(households)
+  def process_households(households, by_date_range)
     data                  = {}
     call_attempt_ids      = []
     household_ids         = households.map(&:id)
     voter_ids             = households.map(&:voters).flatten.map(&:id)
-    attempt_numbers       = get_call_attempts_number(household_ids)
-    voter_attempt_numbers = get_call_attempts_number_by_voter_id(voter_ids)
+    attempt_numbers       = get_call_attempts_number(household_ids,by_date_range)
+    voter_attempt_numbers = get_call_attempts_number_by_voter_id(voter_ids,by_date_range)
     voter_field_values    = get_custom_voter_field_values(voter_ids)
     voicemail_history     = get_voicemail_history(household_ids)
 
@@ -244,7 +256,7 @@ public
     end
   end
 
-  def download_by_lead(query, start = 1)
+  def download_by_lead(query, start = 1, by_date_range=false)
     with_slave do
       @possible_responses = get_possible_responses
 
@@ -252,7 +264,7 @@ public
         batch_size: 5000,
         start: start
       }) do |households|
-        process_households(households)
+        process_households(households, by_date_range)
       end
     end
   end
@@ -276,7 +288,7 @@ public
         @to_date
       )
       first_household = query.order('households.id').references(:households, :call_attempts).first
-      download_by_lead(query, start_position(first_household))
+      download_by_lead(query, start_position(first_household), true)
     end
   end
 
