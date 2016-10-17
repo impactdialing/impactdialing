@@ -14,8 +14,16 @@ class WebuiCallerSession < CallerSession
     reassigned = reassigned_to_another_campaign?
     start_conference
     event = reassigned ? "publish_caller_reassigned" :  "publish_caller_conference_started"
-    CallerPusherJob.add_to_queue(self, event)
-    connected_twiml
+    CallerPusherJob.add_to_queue(self, event)    
+  end
+
+  def handle_caller_session_unanswered_call
+    if fit_to_dial?
+      continue_conf
+    else
+      end_caller_session
+      EndRunningCallJob.add_to_queue(sid)
+    end    
   end
 
   def disconnected
