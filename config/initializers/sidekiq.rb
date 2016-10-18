@@ -5,8 +5,8 @@ STDOUT.puts "Sidekiq is connecting to #{url}. REDIS_URL is #{ENV['REDIS_URL']}"
 Rails.application.config.after_initialize do
   ActiveSupport.on_load(:active_record) do
     require 'librato_sidekiq/server'
-    sidekq_server_pool_size = Integer(ENV['SIDEKIQ_SERVER_REDIS_POOL_SIZE'] || 30)
-    sidekq_client_pool_size = Integer(ENV['SIDEKIQ_CLIENT_REDIS_POOL_SIZE'] || 10)
+    sidekq_server_pool_size = Integer(ENV['SIDEKIQ_SERVER_REDIS_POOL_SIZE'] || 200)
+    sidekq_client_pool_size = Integer(ENV['SIDEKIQ_CLIENT_REDIS_POOL_SIZE'] || 20)
 
     redis_conn = proc { Redis.new(network_timeout: 3, namespace:"resque", url: url)}
 
