@@ -193,7 +193,8 @@ public
       campaign.number_not_ringing
 
       unless campaign.predictive?
-        caller_session_call.try(:redirect_to_hold)
+        caller_session_from_sid.handle_caller_session_unanswered_call
+        # caller_session_call.try(:redirect_to_hold)
       end
     end
 

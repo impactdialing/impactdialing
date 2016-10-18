@@ -134,7 +134,8 @@ public
 
   def continue_conf
     render_abort_twiml_unless_fit_to(:dial, @caller_session) do
-      render xml: @caller_session.continue_conf
+      @caller_session.continue_conf      
+      render xml: @caller_session.connected_twiml
     end
   end
 
