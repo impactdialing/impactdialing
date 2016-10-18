@@ -97,7 +97,9 @@ callveyor.config([
   '$stateProvider', 'serviceTokens', 'idTwilioServiceProvider', 'PusherServiceProvider',
   ($stateProvider,   serviceTokens,   idTwilioServiceProvider,   PusherServiceProvider) ->
     idTwilioServiceProvider.setScriptUrl('//static.twilio.com/libs/twiliojs/1.2/twilio.js')
-    PusherServiceProvider.setPusherUrl('//d3dy5gmtp8yhk7.cloudfront.net/2.1/pusher.min.js')
+    # for testing twilio.js error conditions, use the below self-hosted file that can be edited to trigger errors
+    # idTwilioServiceProvider.setScriptUrl('http://localhost:5000/twiliojs/1.2/twilio.js')
+
     if window.location.hostname == 'au.impactdialing.com'
       PusherServiceProvider.setOptions({cluster: 'ap1'})
       PusherServiceProvider.setToken(serviceTokens.pusherAsia)
@@ -113,11 +115,11 @@ callveyor.config([
 callveyor.controller('AppCtrl.abort', [
   '$http', 'TwilioCache', 'FlashCache', 'PusherService', 'idFlashFactory',
   ($http,   TwilioCache,   FlashCache,   PusherService,   idFlashFactory) ->
-    console.log 'AppCtrl.abort', FlashCache.get('error'), FlashCache.info()
+    # console.log 'AppCtrl.abort', FlashCache.get('error'), FlashCache.info()
     flash = FlashCache.get('error')
     idFlashFactory.now('danger', flash)
     FlashCache.remove('error')
-    # console.log 'AppCtrl.abort', flash
+    console.log 'AppCtrl.abort', flash
 
     twilioConnection = TwilioCache.get('connection')
 

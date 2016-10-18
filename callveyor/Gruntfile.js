@@ -45,7 +45,7 @@ module.exports = function (grunt) {
       dev: {
         constants: {
           serviceTokens: {
-            pusher: '1e93714ff1e5907aa618'
+            pusher: '1adc63eef7933def9fa0'
           },
           appMeta: {
             version: appMeta.version,

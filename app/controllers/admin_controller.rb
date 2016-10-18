@@ -1,7 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class AdminController < ApplicationController
-  USER_NAME, PASSWORD = "impact", "%76BZs2TPvWe=nqz"
+  USER_NAME, PASSWORD = "impact", ENV['ADMIN_PASSWORD'] || rand
   before_filter :authenticate
 
   rescue_from 'Enterprise::UpgradeError' do |exception|
@@ -34,13 +34,14 @@ private
 public
   def state
     @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call = 1 )")
+    @logged_in_campaigns = @logged_in_campaigns.where(type: 'predictive') if params[:type] == 'predictive'
     @logged_in_callers_count = CallerSession.on_call.count
     @errors=""
   end
 
   def fix_counts
     Campaign.find(params[:id]).inflight_stats.incby(params[:metric], params[:amount])
-    redirect_to admin_state_path
+    redirect_to :back
   end
 
   def twilio_limit
