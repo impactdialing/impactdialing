@@ -182,7 +182,7 @@ public
         RedisStatus.set_state_changed_time(caller_session_from_sid.campaign_id, "Wrap up", caller_session_from_sid.id)
       end
       caller_session_call.emit('publish_voter_disconnected')
-    end  
+    end
   end
 
   def completed(campaign, params)
