@@ -193,7 +193,7 @@ public
       campaign.number_not_ringing
 
       unless campaign.predictive?
-        caller_session_from_sid.handle_caller_session_unanswered_call
+        caller_session_from_sid.try(:handle_caller_session_unanswered_call)
         # caller_session_call.try(:redirect_to_hold)
       end
     end
@@ -229,7 +229,7 @@ public
       mapped_status: CallAttempt::Status::SUCCESS # avoids persisting 'in-progress' status when transfers are still active on lead-line
     })
 
-    unless caller_session_call.is_phones_only?
+    unless caller_session_call.try(:is_phones_only?)
       unless params[:stop_calling]
         caller_session_call.redirect_to_hold
       else
