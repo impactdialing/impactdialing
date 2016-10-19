@@ -52,7 +52,7 @@ module AppHealth
           true
         else
           AppHealth::Alarm.trigger!(alarm_key, alarm_description, alarm_details)
-          Rails.logger.error('Improper abandon: ' + alarm_details)
+          puts('Improper abandon: ' + alarm_details)
           false
         end
       end
