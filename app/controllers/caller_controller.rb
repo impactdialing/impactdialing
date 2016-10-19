@@ -133,9 +133,8 @@ public
   end
 
   def continue_conf
-    render_abort_twiml_unless_fit_to(:dial, @caller_session) do
-      @caller_session.continue_conf      
-      render xml: @caller_session.connected_twiml
+    render_abort_twiml_unless_fit_to(:dial, @caller_session) do            
+      render xml: @caller_session.continue_conf
     end
   end
 
@@ -151,7 +150,7 @@ public
     # ^^ Work around; this url can be removed from some Dial:actions
     # todo: remove pause_url from unnecessary TwiML responses
     unless @caller_session.skip_pause?
-      RedisStatus.set_state_changed_time(@caller_session.campaign_id, "Wrap up", @caller_session.id)
+      RedisStatus.set_state_changed_time(@caller_session.campaign_id, "Wrap up", @caller_session.id) if @caller_session.campaign.predictive?
       @caller_session.pushit('caller_wrapup_voice_hit', {})
 
       xml = Twilio::TwiML::Response.new do |r|

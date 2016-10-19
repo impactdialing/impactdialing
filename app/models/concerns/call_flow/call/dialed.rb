@@ -175,12 +175,14 @@ public
   ##
   # Handle call flow for any dialed Twilio call that is disconnected.
   # Supports requests to Twilio FallbackUrls and Urls.
-  def disconnected(params)
+  def disconnected(campaign, params)
     storage.save(params_for_update(params))
-    # if caller_session_from_sid.present?
-    #   RedisStatus.set_state_changed_time(caller_session_from_sid.campaign_id, "Wrap up", caller_session_from_sid.id)
-    # end
-    # caller_session_call.emit('publish_voter_disconnected')
+    unless campaign.predictive?
+      if caller_session_from_sid.present?
+        RedisStatus.set_state_changed_time(caller_session_from_sid.campaign_id, "Wrap up", caller_session_from_sid.id)
+      end
+      caller_session_call.emit('publish_voter_disconnected')
+    end
   end
 
   def completed(campaign, params)
@@ -193,8 +195,7 @@ public
       campaign.number_not_ringing
 
       unless campaign.predictive?
-        caller_session_from_sid.handle_caller_session_unanswered_call
-        # caller_session_call.try(:redirect_to_hold)
+        caller_session_call.try(:redirect_to_hold)
       end
     end
 
@@ -229,7 +230,7 @@ public
       mapped_status: CallAttempt::Status::SUCCESS # avoids persisting 'in-progress' status when transfers are still active on lead-line
     })
 
-    unless caller_session_call.is_phones_only?
+    unless caller_session_call.try(:is_phones_only?)
       unless params[:stop_calling]
         caller_session_call.redirect_to_hold
       else
