@@ -72,12 +72,21 @@ public
   def get_call_attempts_number(household_ids, by_date_range=false)
     if by_date_range
       query = CallAttempt.where(household_id: household_ids).where('created_at >= ? AND created_at <= ?',@from_date,@to_date).
+<<<<<<< HEAD
         select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql      
     else
       query = CallAttempt.where(household_id: household_ids).
         select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql      
     end  
     
+=======
+        select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql
+    else
+      query = CallAttempt.where(household_id: household_ids).
+        select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql
+    end
+
+>>>>>>> disconnected-404
     @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
       memo[hash['household_id']] = {
         cnt: hash['cnt'],
@@ -90,11 +99,18 @@ public
     if by_date_range
       query = CallAttempt.where(voter_id: voter_ids).where('created_at >= ? AND created_at <= ?',@from_date,@to_date).
         select("voter_id, max(id) as last_id").group(:voter_id).to_sql
+<<<<<<< HEAD
       
     else
       query = CallAttempt.where(voter_id: voter_ids).
         select("voter_id, max(id) as last_id").group(:voter_id).to_sql
     end  
+=======
+    else
+      query = CallAttempt.where(voter_id: voter_ids).
+        select("voter_id, max(id) as last_id").group(:voter_id).to_sql
+    end
+>>>>>>> disconnected-404
     @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
       memo[hash['voter_id']] = {
         last_id: hash['last_id']
@@ -129,7 +145,7 @@ public
 
   def selected_fields(voter, selection = nil)
     unless selection
-      [voter['phone']] 
+      [voter['phone']]
     else
       selected = selection.select{ |field| Voter::UPLOAD_FIELDS.include?(field) }
       unless voter['id']
@@ -215,7 +231,7 @@ public
         voter_data     = voter.attributes.merge('phone' => household.phone)
         data[voter.id] = csv_for(voter_data, voter_field_values[voter.id])
         if voter_attempt_numbers[voter.id]
-          call_attempt_ids << voter_attempt_numbers[voter.id][:last_id] 
+          call_attempt_ids << voter_attempt_numbers[voter.id][:last_id]
         end
         call_attempt_ids << attempt_numbers[household.id][:last_id] if attempt_numbers[household.id]
       end

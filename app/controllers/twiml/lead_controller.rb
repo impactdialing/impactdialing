@@ -31,7 +31,8 @@ public
   # Update stats & save required data.
   # See twiml/lead/disconnected.html.erb for possible responses.
   def disconnected
-    dialed_call.disconnected(campaign, params)
+    _campaign  = Campaign.find dialed_call.storage[:campaign_id]
+    dialed_call.disconnected(_campaign, params)
   end
 
   ##
