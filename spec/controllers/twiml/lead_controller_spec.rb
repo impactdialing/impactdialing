@@ -106,8 +106,11 @@ describe Twiml::LeadController do
         'To' => '+13829583828'
       }))
     end
+    let(:dialed_call_storage) do
+      instance_double('CallFlow::Call::Storage')
+    end
     let(:dialed_call) do
-      double('CallFlow::Call::Dialed', {disconnected: nil})
+      double('CallFlow::Call::Dialed', {storage: dialed_call_storage,disconnected: nil})
     end
     let(:params) do
       disconnected_params
@@ -116,6 +119,8 @@ describe Twiml::LeadController do
     let(:processed_response_template){ 'twiml/lead/disconnected' }
 
     before do
+      allow(dialed_call).to receive(:storage){dialed_call_storage}
+      allow(dialed_call_storage).to receive(:[]){campaign.id}
       allow(dialed_call).to receive(:disconnected).with(campaign, disconnected_params.merge({
         'action' => 'disconnected',
         'controller' => 'twiml/lead'
