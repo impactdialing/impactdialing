@@ -116,7 +116,7 @@ describe Twiml::LeadController do
     let(:processed_response_template){ 'twiml/lead/disconnected' }
 
     before do
-      allow(dialed_call).to receive(:disconnected).with(disconnected_params.merge({
+      allow(dialed_call).to receive(:disconnected).with(campaign, disconnected_params.merge({
         'action' => 'disconnected',
         'controller' => 'twiml/lead'
       }))
@@ -127,7 +127,7 @@ describe Twiml::LeadController do
     it_behaves_like 'unprocessable lead twilio fallback url requests'
 
     it 'tells @dialed_call :disconnected' do
-      expect(dialed_call).to receive(:disconnected).with(disconnected_params.merge({
+      expect(dialed_call).to receive(:disconnected).with(campaign, disconnected_params.merge({
         'action' => 'disconnected',
         'controller' => 'twiml/lead'
       }))
