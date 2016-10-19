@@ -15,6 +15,7 @@ class WebuiCallerSession < CallerSession
     start_conference
     event = reassigned ? "publish_caller_reassigned" :  "publish_caller_conference_started"
     CallerPusherJob.add_to_queue(self, event)    
+    connected_twiml
   end
 
   def handle_caller_session_unanswered_call
