@@ -51,7 +51,6 @@ module AppHealth
         if ok?
           true
         else
-          AppHealth::Alarm.trigger!(alarm_key, alarm_description, alarm_details)
           puts('Improper abandon: ' + alarm_details)
           false
         end
