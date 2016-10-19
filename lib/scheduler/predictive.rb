@@ -17,6 +17,7 @@ class Scheduler::Predictive < Celluloid::SupervisionGroup
   autoload :Dialer, 'scheduler/predictive/dialer'
   autoload :Simulator, 'scheduler/predictive/simulator'
 
+
   supervise Scheduler::Predictive::Simulator, as: :simulator, args: [60]
   supervise Scheduler::Predictive::Dialer, as: :dialer, args: [1]
 
