@@ -119,11 +119,8 @@ describe Twiml::LeadController do
     let(:processed_response_template){ 'twiml/lead/disconnected' }
 
     before do
-<<<<<<< HEAD
-=======
       allow(dialed_call).to receive(:storage){dialed_call_storage}
       allow(dialed_call_storage).to receive(:[]){campaign.id}
->>>>>>> disconnected-404
       allow(dialed_call).to receive(:disconnected).with(campaign, disconnected_params.merge({
         'action' => 'disconnected',
         'controller' => 'twiml/lead'
