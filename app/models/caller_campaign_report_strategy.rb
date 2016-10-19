@@ -71,7 +71,7 @@ public
 
   def get_call_attempts_number(household_ids, by_date_range=false)
     if by_date_range
-      query = CallAttempt.where(household_id: household_ids).where('created_at >= ? AND created_at <= ?',@from_date,@to_date)
+      query = CallAttempt.where(household_id: household_ids).where('created_at >= ? AND created_at <= ?',@from_date,@to_date).
         select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql      
     else
       query = CallAttempt.where(household_id: household_ids).
@@ -88,7 +88,7 @@ public
 
   def get_call_attempts_number_by_voter_id(voter_ids, by_date_range=false)
     if by_date_range
-      query = CallAttempt.where(voter_id: voter_ids).where('created_at >= ? AND created_at <= ?',@from_date,@to_date)
+      query = CallAttempt.where(voter_id: voter_ids).where('created_at >= ? AND created_at <= ?',@from_date,@to_date).
         select("voter_id, max(id) as last_id").group(:voter_id).to_sql
       
     else
