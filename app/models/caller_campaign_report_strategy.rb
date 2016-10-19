@@ -72,21 +72,12 @@ public
   def get_call_attempts_number(household_ids, by_date_range=false)
     if by_date_range
       query = CallAttempt.where(household_id: household_ids).where('created_at >= ? AND created_at <= ?',@from_date,@to_date).
-<<<<<<< HEAD
-        select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql      
-    else
-      query = CallAttempt.where(household_id: household_ids).
-        select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql      
-    end  
-    
-=======
         select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql
     else
       query = CallAttempt.where(household_id: household_ids).
         select("household_id, count(id) as cnt, max(id) as last_id").group(:household_id).to_sql
     end
 
->>>>>>> disconnected-404
     @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
       memo[hash['household_id']] = {
         cnt: hash['cnt'],
@@ -99,18 +90,10 @@ public
     if by_date_range
       query = CallAttempt.where(voter_id: voter_ids).where('created_at >= ? AND created_at <= ?',@from_date,@to_date).
         select("voter_id, max(id) as last_id").group(:voter_id).to_sql
-<<<<<<< HEAD
-      
-    else
-      query = CallAttempt.where(voter_id: voter_ids).
-        select("voter_id, max(id) as last_id").group(:voter_id).to_sql
-    end  
-=======
     else
       query = CallAttempt.where(voter_id: voter_ids).
         select("voter_id, max(id) as last_id").group(:voter_id).to_sql
     end
->>>>>>> disconnected-404
     @replica_connection.execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
       memo[hash['voter_id']] = {
         last_id: hash['last_id']
