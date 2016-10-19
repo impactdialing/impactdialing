@@ -285,7 +285,7 @@ describe 'CallFlow::Call::Dialed' do
       subject.caller_session_sid = caller_session.sid
       subject.caller_session_call.dialed_call_sid = disconnected_params[:CallSid]
       expect(subject.caller_session_call.dialed_call_sid).to eq disconnected_params[:CallSid]
-      subject.disconnected(disconnected_params)
+      subject.disconnected(campaign, disconnected_params)
     end
 
     xit 'queues CallerPusherJob for voter_disconnected' do
