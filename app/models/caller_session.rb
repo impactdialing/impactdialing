@@ -177,7 +177,7 @@ public
 
   def end_session
     self.update_attributes(endtime: Time.now, on_call: false, available_for_call: false)
-    RedisPredictiveCampaign.remove(campaign_id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
+    RedisPredictiveCampaign.remove(campaign_id, campaign.type) if campaign.caller_sessions.on_call.size < 1
     RedisStatus.delete_state(campaign_id, self.id)
     RedisCallerSession.delete(self.id)
     RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, data_centre)
@@ -227,8 +227,8 @@ public
     if reassigned_to_another_campaign?
       new_campaign_id = RedisReassignedCallerSession.campaign_id(self.id)
       new_campaign =  Campaign.find(new_campaign_id)
-      RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
       self.update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign: new_campaign)
+      RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size < 1
       RedisPredictiveCampaign.add(new_campaign.id, new_campaign.type)
       RedisReassignedCallerSession.delete(self.id)
       RedisStatus.set_state_changed_time(new_campaign.id, "On hold", self.id)
