@@ -16,12 +16,10 @@
 <% end -%>
 
 <%= form_tag '/admin/twilio_limit' do  %>
-  <label for="twilio_limit">Twilio Limit:</label>
   <input id="twilio_limit" type="text" class= "field", name="twilio_limit", value="<%= TwilioLimit.get %>">
-  <%= submit_tag "Change" %>
+  <%= submit_tag "Change Twilio limit" %>
 <% end -%>
 
-<h1>System Status</h1>
 <table>
   <tr>
     <td>Logged in campaigns:</td>
