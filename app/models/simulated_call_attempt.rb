@@ -84,7 +84,7 @@ class SimulatedCallAttempt
   end
 
   def answered?
-    !@conversation_length.nil?
+    @conversation_length.to_i > 0
   end
 
   def just_answered?
