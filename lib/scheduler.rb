@@ -19,9 +19,7 @@ class Scheduler
   end
 
   def initialize(interval)
-    log :info, "booting with interval #{interval}..."
     @interval   = interval
-    log :info, "ready!"
   end
 
   def run

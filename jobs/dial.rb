@@ -10,7 +10,6 @@ require "em-synchrony/fiber_iterator"
 #
 class Dial
   def self.perform(campaign_id, phone_numbers)
-    puts "Dialing campaign #{campaign_id}"
     campaign   = Campaign.find(campaign_id)
     em_dial(campaign, phone_numbers)
   end

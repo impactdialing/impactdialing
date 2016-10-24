@@ -21,13 +21,9 @@ class Scheduler::Predictive < Celluloid::SupervisionGroup
   supervise Scheduler::Predictive::Dialer, as: :dialer, args: [1]
 
   def self.run!
-    Logger.info "Scheduler::Predictive booting..."
-
     super
 
     Celluloid::Actor[:simulator].run
     Celluloid::Actor[:dialer].run
-
-    Logger.info "Scheduler::Predictive running..."
   end
 end
