@@ -3,6 +3,7 @@ require 'app_health/monitor/recycle_rate_violations'
 require 'app_health/monitor/predictive_dial_rate'
 require 'app_health/monitor/long_hold_time'
 require 'app_health/monitor/improper_abandons'
+require 'app_health/monitor/invisible_campaigns'
 require 'librato_sidekiq'
 
 module AppHealth
@@ -23,6 +24,8 @@ module AppHealth
         LongHoldTime.alert_if_not_ok
 
         ImproperAbandons.alert_if_not_ok
+
+        InvisibleCampaigns.alert_if_not_ok
 
         CallFlow::Jobs::ActiveCallerMonitor.perform
 

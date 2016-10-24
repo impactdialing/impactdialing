@@ -36,3 +36,7 @@ end
 on_restart do
   ImpactPlatform::MySQL.disconnect!
 end
+
+before_fork do
+  ImpactPlatform::MySQL.disconnect!
+end
