@@ -7,6 +7,10 @@ Rails.application.config.after_initialize do
     require 'librato_sidekiq/server'
 
     Sidekiq.configure_server do |config|
+      Sidekiq::Logging.logger.level = Rails.logger.level
+      Rails.logger = Sidekiq::Logging.logger
+      ActiveRecord::Base.logger = Sidekiq::Logging.logger
+
       config.redis = {
         :url => url,
         :namespace => 'resque'
