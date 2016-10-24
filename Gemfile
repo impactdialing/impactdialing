@@ -9,7 +9,7 @@ gem 'jquery-ui-rails'
 gem 'sass-rails'
 gem 'compass-rails'
 gem 'introjs-rails'
-gem 'puma'
+gem 'puma', '~> 3.6.0'
 gem 'rack-timeout'
 gem 'state_machine'
 

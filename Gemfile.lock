@@ -230,8 +230,7 @@ GEM
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
-    puma (2.11.2)
-      rack (>= 1.1, < 2.0)
+    puma (3.6.0)
     pusher (0.11.3)
       multi_json (~> 1.0)
       signature (~> 0.1.6)
@@ -480,7 +479,7 @@ DEPENDENCIES
   paperclip
   platform-api
   pry
-  puma
+  puma (~> 3.6.0)
   pusher (~> 0.11.3)
   rack-timeout
   rack-timing
@@ -530,4 +529,4 @@ RUBY VERSION
    ruby 2.2.4p230
 
 BUNDLED WITH
-   1.12.2
+   1.12.5
