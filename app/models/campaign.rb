@@ -228,7 +228,14 @@ public
   end
 
   def ringing_count
-    inflight_stats.get('ringing')
+    current_count = inflight_stats.get('ringing')
+    # hacky fix for negative ringing count
+    if current_count < 0
+      puts "Negative ringing for campaign #{id}: #{current_count}"
+      inflight_stats.incby('ringing', current_count.abs)
+    else
+      current_count
+    end
   end
 
   def household_sequence
