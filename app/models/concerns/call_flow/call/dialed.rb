@@ -91,8 +91,6 @@ private
 
 public
   def self.create(campaign, rest_response, optional_properties={})
-    puts("Dialed.created for #{campaign.id} started: presented #{campaign.presented_count}, ringing #{campaign.ringing_count}")
-
     account_sid = rest_response['account_sid']
     sid         = rest_response['sid']
     validate!(account_sid, sid)
@@ -103,7 +101,6 @@ public
       raise ArgumentError, "CallFlow::Call::Dialed received new or unknown campaign: #{campaign.class}"
     end
 
-    puts("Dialed.created for #{campaign.id} finished: presented #{campaign.presented_count}, ringing #{campaign.ringing_count}")
     self.new(account_sid, sid)
   end
 
