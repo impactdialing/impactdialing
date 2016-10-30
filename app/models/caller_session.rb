@@ -177,7 +177,12 @@ public
 
   def end_session
     self.update_attributes(endtime: Time.now, on_call: false, available_for_call: false)
-    RedisPredictiveCampaign.remove(campaign_id, campaign.type) if campaign.caller_sessions.on_call.size < 1
+    if campaign.caller_sessions.on_call.size < 1
+      RedisPredictiveCampaign.remove(campaign_id, campaign.type)
+      # hack to clean up counts getting off
+      campaign.inflight_stats.set('presented', 0)
+      campaign.inflight_stats.set('ringing', 0)
+    end
     RedisStatus.delete_state(campaign_id, self.id)
     RedisCallerSession.delete(self.id)
     RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, data_centre)
