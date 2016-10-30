@@ -43,7 +43,7 @@ module AppHealth
       end
 
       def alarm_details
-        Campaign.find(stagnant_campaign_ids).map do |campaign|
+        stagnant_campaigns.map do |campaign|
           { account_email: campaign.account.users.first.email,
             campaign_name: campaign.name,
             campaign_id: campaign.id,
@@ -59,22 +59,18 @@ module AppHealth
         return true
       end
 
-      def campaign_ids
-        RedisPredictiveCampaign.running_campaigns
+      def running_campaigns
+        Campaign.find(RedisPredictiveCampaign.running_campaigns)
+      end
+
+      def stagnant_campaigns
+        @stagnant_campaigns ||= running_campaigns.select do |campaign|
+          any_callers_exceed_on_hold_threshold?(campaign) && no_recent_dials?(campaign)
+        end
       end
 
       def stagnant_campaign_ids
-        return @stagnant_campaign_ids if defined?(@stagnant_campaign_ids)
-
-        stagnant_ids = []
-        @stagnant_campaigns = campaign_ids.map do |campaign_id|
-          campaign = Campaign.find(campaign_id)
-          if any_callers_exceed_on_hold_threshold?(campaign) and no_recent_dials?(campaign)
-            stagnant_ids << campaign_id
-          end
-          campaign
-        end
-        @stagnant_campaign_ids = stagnant_ids
+        @stagnant_campaign_ids ||= stagnant_campaigns.map(&:id)
       end
 
       def ok?
