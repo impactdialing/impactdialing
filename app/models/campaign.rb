@@ -68,7 +68,7 @@ class Campaign < ActiveRecord::Base
   scope :by_type, lambda { |type| where(type:  type) }
 
 
-  validates :name, :presence => true
+  validates :name, :presence => true, :length => {:maximum => 200}
   validates :caller_id, :presence => true
   validates :caller_id, :numericality => true, :length => {:minimum => 10, :maximum => 10}, :unless => :skip_caller_id_validation? #fixme we don't support int'l currently (except australia), plus this is a poor validation - if an invalid number is entered, we will just silently fail to make calls and report status Failed for all calls
   validates :script, :presence => true
