@@ -224,7 +224,13 @@ public
   end
 
   def presented_count
-    inflight_stats.get('presented')
+    current_count = inflight_stats.get('presented')
+    # hacky fix for negative presented count - likely caused by caller_session.rb:183
+    if current_count < 0
+      inflight_stats.incby('presented', current_count.abs)
+    else
+      current_count
+    end
   end
 
   def ringing_count
