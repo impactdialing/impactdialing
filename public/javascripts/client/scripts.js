@@ -92,7 +92,7 @@ Scripts.prototype.display_text_field_numbers = function(){
   var text_field_count = 1;
   $.each($('.text_field_label'), function(){
     if ($(this).parent('fieldset').attr('deleted') != "true") {
-      $(this).text("Note "+text_field_count++);
+      $(this).text("Text field "+text_field_count++);
   }
   });
 }
