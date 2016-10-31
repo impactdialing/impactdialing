@@ -47,12 +47,19 @@ module AppHealth
           { account_email: campaign.account.users.first.email,
             campaign_name: campaign.name,
             campaign_id: campaign.id,
-            active_callers: CallerSession.where(campaign_id: campaign.id).on_call.count }
+            active_callers: campaign.caller_sessions_on_call.count }
         end.to_json
       end
 
       def alert_if_not_ok
         unless ok?
+          # automatically fix the most common problem
+          stagnant_campaigns.each do |campaign|
+            if campaign.caller_sessions_on_call.count == 1 && campaign.presented_count > 0
+              campaign.inflight_stats.set('presented', 0)
+            end
+          end
+
           AppHealth::Alarm.trigger!(alarm_key, alarm_description, alarm_details)
           return false
         end
