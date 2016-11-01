@@ -35,15 +35,15 @@ module AppHealth
 
       def alarm_key
         time = Time.now.strftime('%d/%m/%Y')
-        "#{time} - #{stagnant_campaign_ids}"
+        "#{time} - #{unfixed_campaigns}"
       end
 
       def alarm_description
-        "#{stagnant_campaign_ids.size} campaigns have no recent dials"
+        "#{unfixed_campaigns.size} campaigns have no recent dials"
       end
 
       def alarm_details
-        stagnant_campaigns.map do |campaign|
+        unfixed_campaigns.map do |campaign|
           { account_email: campaign.account.users.first.email,
             campaign_name: campaign.name,
             campaign_id: campaign.id,
@@ -53,14 +53,6 @@ module AppHealth
 
       def alert_if_not_ok
         unless ok?
-          # automatically fix the most common problem
-          stagnant_campaigns.each do |campaign|
-            if campaign.caller_sessions_on_call.count == 1 && campaign.presented_count > 0
-              campaign.inflight_stats.set('presented', 0)
-            end
-          end
-
-          AppHealth::Alarm.trigger!(alarm_key, alarm_description, alarm_details)
           return false
         end
         return true
@@ -80,8 +72,20 @@ module AppHealth
         @stagnant_campaign_ids ||= stagnant_campaigns.map(&:id)
       end
 
+      def unfixed_campaigns
+        # automatically fix the most common problem
+        @unfixed_campaigns ||= stagnant_campaigns.select do |campaign|
+          if campaign.caller_sessions_on_call.count == 1 && campaign.presented_count > 0
+            campaign.inflight_stats.set('presented', 0)
+            false # now it's fixed!
+          else
+            true # not fixed, still sound alarm
+          end
+        end
+      end
+
       def ok?
-        stagnant_campaign_ids.empty?
+        unfixed_campaigns.empty?
       end
     end
   end
