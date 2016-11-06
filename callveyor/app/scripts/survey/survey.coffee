@@ -176,6 +176,7 @@ surveyForm.controller('SurveyFormCtrl', [
 
     requestInProgress = false
     survey.save = ($event, andContinue) ->
+      $window.scrollTo 0, 0
       if requestInProgress
         # console.log 'survey.requestInProgress, returning'
         return
