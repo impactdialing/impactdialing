@@ -9,6 +9,24 @@ All can be installed through Homebrew.
 * Heroku toolbelt
 * Ngrok
 
+# Configuring Twilio
+
+Create a separate Twilio account for dev/staging and production - it will be
+much easier to track down errors in development. Use the ngrok.io subdomain as the
+host for development, and the herokuapp.com host for production.
+
+Create [TwiML apps](https://www.twilio.com/console/voice/dev-tools/twiml-apps):
+
+* Browser phone: request and fallback to `/twiml/caller_sessions`, status callback to `/caller/end_session`
+* Dial in: request and fallback to `/callin/create`, status callback to `/caller/end_session`
+* Dashboard: request and fallback to `/client/monitors/callers/start`
+
+Set TWILIO_APP_SID to the browser phone app's SID.
+
+Set TWILIO_MONITOR_APP_SID to the dashboard app's SID.
+
+For each call-in number, configure the number to use the dial in app.
+
 # Running in development
 
 Make sure to copy `.env.example` to `.env` and update credentials if needed.
@@ -33,6 +51,26 @@ Run `foreman run rspec features` for acceptance tests.
 
 Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox, Safari and Chrome.
 
+# Deploying to production
+
+We run Impact Dialing on Heroku. We deploy to two apps.
+The main one ("impactdialing") serves admin.impactdialing.com and caller.impactdialing.
+The other one ("impactdialing-twiml") is solely responsible for handling Twilio webhooks,
+and runs a single Perforance dyno.
+
+Performance dynos run on a dedicated VM and don't suffer from performance
+leakage from neighboring dynos, and so have a consistently fast response time
+that we couldn't achieve on standard dynos.
+By isolating the two apps, we can be sure that slow requests on the main app don't disrupt call flow,
+which is very latency-sensitive.
+
+The main impactdialing app should be configured to have the Cloudflare proxy
+enabled, to protect from attacks.
+impactdialing-twiml should not have the Cloudflare proxy enabled, as it only
+services requests from Twilio, and we want those requests to stay within the AWS
+datacenter and not take a roundtrip through Cloudflare first.
+Make sure to keep this URL a secret, since it does not have Cloudflare protection.
+
 # Services
 
 ## Running the damn thing
@@ -45,12 +83,13 @@ Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox
 * RedisLabs - Redis hosting
 * Pusher - realtime
 * Twilio - calls
+* Mandrill - emails
 
 ## Troubleshooting
 
-* Bugsnag - exceptions (good to check for 500 errors)
-* Papertrail - logs (good to check for 502, 503 errors, Heroku problems)
-* Librato - dashboards (good to check for app weirdness like stuck dials)
+* Bugsnag - exceptions
+* Papertrail - logs
+* Librato - dashboards
 * PagerDuty - alerts
 
 ## Testing
@@ -69,7 +108,6 @@ Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox
 # Configuration
 
 - `CALLIN_PHONE`: The Twilio phone number associated with the "Production call-in" TwiML app
-- `CALL_END_CALLBACK_HOST`: DEPRECATED
 - `CAMPAIGN_EXPIRY`: A number of days; campaigns that have not made any dials in this number of days will be auto-archived
 - `DATABASE_READ_SLAVE1_URL`: URL to a MySQL read slave
 - `DATABASE_READ_SLAVE2_URL`: URL to a second MySQL read slave
@@ -78,11 +116,6 @@ Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox
 - `DO_NOT_CALL_PORTED_LISTS_PROVIDER_URL`: HTTP AUTH URL to tcpacompliance ported lists
 - `DO_NOT_CALL_REDIS_URL`: URL to redis instance where block and ported cell lists are cached
 - `DO_NOT_CALL_WIRELESS_BLOCK_LIST_PROVIDER_URL`: HTTP AUTH URL to qscdl block lists
-- `ENABLE_WORKER_AUTOSCALING`: DEPRECATED
-- `HEROKU_APP`: DEPRECATED
-- `HEROKU_AUTOSCALE_OAUTH_TOKEN`: DEPRECATED
-- `HEROKU_PASS`: DEPRECATED
-- `HEROKU_USER`: DEPRECATED
 - `HIREFIRE_TOKEN`: Auth token provided by HireFire for auto-scaling
 - `INCOMING_CALLBACK_HOST`: HOST of end-points to process TwiML
 - `INSTRUMENT_ACTIONS`: Toggle librato-rails experimental `instrument_action` usage; 0 = do not instrument controller actions; 1 = instrument controller actions
@@ -91,9 +124,6 @@ Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox
 - `LIBRATO_USER`: Username for Librato account (invoices@impactdialing.com)
 - `MANDRILL_API_KEY`: ...
 - `MAX_THREADS`: How many threads should puma start (1 - app not proven thread-safe yet)
-- `NEW_RELIC_APP_NAME`: DEPRECATED
-- `NEW_RELIC_LICENSE_KEY`: DEPRECATED
-- `PREDICTIVE_ON_HOLD_THRESHOLD`: Number of seconds a caller can be on-hold on a predictive campaign that hasn't dialed in the last 60 seconds.
 - `PUSHER_APP_ID`: ...
 - `PUSHER_KEY`: ...
 - `PUSHER_SECRET`: ...
@@ -106,20 +136,17 @@ Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox
 - `S3_ACCESS_KEY`: ...
 - `S3_BUCKET`: ...
 - `S3_SECRET_ACCESS_KEY`: ...
-- `SCHEDULER_URL`: DEPRECATED ??
 - `STRIPE_PUBLISHABLE_KEY`: ...
 - `STRIPE_SECRET_KEY`: ...
 - `TWILIO_ACCOUNT`: ...
-- `TWILIO_APP_SID`: ...
+- `TWILIO_APP_SID`:  SID of the Browser Phone TwiML app
 - `TWILIO_AUTH`: ...
-- `TWILIO_CALLBACK_HOST`: HOST of end-points to process TwiML (replacing `INCOMING_CALLBACK_HOST`)
-- `TWILIO_CALLBACK_PORT`: Port of that `TWILIO_CALLBACK_HOST` end-points will process TwiML on
+- `TWILIO_CALLBACK_HOST`: the hostname of the impactdialing-twiml Heroku app
+- `TWILIO_CALLBACK_PORT`: the port of the impactdialing-twiml Heroku app
 - `TWILIO_CAPABILITY_TOKEN_TTL`: TTL of Twilio Client capability tokens (caller app & admin dashboard)
-- `TWILIO_FAILOVER_HOST`: HOST of failover end-points to continue or abort processing TwiML
-- `TWILIO_MONITOR_APP_SID`: Twilio app id for admin dashboard call monitoring / break-in
+- `TWILIO_FAILOVER_HOST`: the same as the hostname of the impactdialing-twiml Heroku app
+- `TWILIO_MONITOR_APP_SID`: SID of the Dashboard TwiML app
 - `TWILIO_RETRIES`: Number of retries Twilio ruby client should perform before considering API request as failed
-- `UNICORN_TIMEOUT`: DEPRECATED
-- `UNICORN_WORKERS`: DEPRECATED (replaced by `WEB_CONCURRENCY`)
 - `UPSERT_GEM_ON`: Upsert is a SLOWER & MORE ERROR-PRONE alternative to activerecord-import; 0 = use activerecord-import; 1 = use upsert
 - `VOIP_API_URL`: Twilio's API host (api.twilio.com)
 - `VOTER_BATCH_SIZE`: Number of rows of CSV data to process before committing to redis during uploads. Keep at a max of 100 down to a min of 20 or 30. Lower value will increase overall upload time but decrease commit time thereby improving redis throughput.
@@ -165,26 +192,6 @@ Run `grunt test` from `callveyor` to continuously run Callveyor tests in Firefox
 1. Add the following to `/etc/hosts`
   1. `impactdialing-staging.herokuapp.com whitelabel-domain.com`
 1. Visit `whitelabel-domain.com`
-
-# Test Phone Numbers
-
-Hello no thank you: 971-264-5495
-
-Minute conversation: 971-264-2814
-
-Reject: 971-264-5346
-
-Busy: 971-264-5467
-
-Repeat adnauseum: 657-888-9655
-
-# Trouble
-
-## Phantom callers
-
-Sometimes caller sessions will remain registered long after the caller has disconnected. There is a job that should clean up these 'Phantom callers' but it currently will fail quietly sporadically.
-
-Clean up phantom sessions by locating the session id at `/admin/state` then open up a rails console and call `end_session` on the 'phantom' CallerSession instance.
 
 # Heads up
 
