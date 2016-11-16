@@ -6,7 +6,7 @@ phantom_callers:
   description: "This job destroys phantom callers. BOOOOOOOM"
 
 debit_money:
-  cron: "*/3 * * * *"
+  cron: "*/60 * * * *"
   class: DebitJob
   queue: billing
   args:
@@ -27,50 +27,50 @@ debit_money:
 #  description: "This job persists phones only answers data"
 
 recycle_dial_queue:
-  cron: "*/5 * * * *"
+  cron: "*/15 * * * *"
   class: CallFlow::DialQueue::Jobs::Recycle
   queue: dial_queue
   args:
   description: "Clean up stale or dialed numbers and shunt them to appropriate cache silo"
 
 update_twilio_stats_attempt_em:
-  cron: "* * * * *"
+  cron: "*/60 * * * *"
   class: UpdateStatsAttemptsEm
   queue: twilio_stats
   args:
   description: "This job update twilio stats call attempts"
 
 update_twilio_stats_transfer_em:
-  cron: "* * * * *"
+  cron: "*/60 * * * *"
   class: UpdateStatsTransfersEm
   queue: twilio_stats
   args:
   description: "This job update twilio stats call attempts"
 
 update_twilio_stats_session:
-  cron: "* * * * *"
+  cron: "*/60 * * * *"
   class: UpdateTwilioStatsCallerSession
   queue: twilio_stats
   args:
   description: "This job update twilio stats caller session"
 
-cache_ported_lists:
-  cron: "59 07 * * *"
-  class: DoNotCall::Jobs::CachePortedLists
-  queue: general
-  args: '_system/do_not_call'
-  description: "Download fresh PortedList files & store them on S3"
-
-cache_wireless_block_list:
-  cron: "59 07 * * 2"
-  class: DoNotCall::Jobs::CacheWirelessBlockList
-  queue: general
-  args: '_system/do_not_call'
-  description: "Download fresh WirelessBlockList file, unzip & store it on S3"
-
-campaign_sweeper:
-  cron: "59 07 * * *"
-  class: Archival::Jobs::CampaignSweeper
-  queue: general
-  args:
-  description: "Archive all campaigns not updated or called in the last CAMPAIGN_EXPIRY days"
+# cache_ported_lists:
+#   cron: "59 07 * * *"
+#   class: DoNotCall::Jobs::CachePortedLists
+#   queue: general
+#   args: '_system/do_not_call'
+#   description: "Download fresh PortedList files & store them on S3"
+#
+# cache_wireless_block_list:
+#   cron: "59 07 * * 2"
+#   class: DoNotCall::Jobs::CacheWirelessBlockList
+#   queue: general
+#   args: '_system/do_not_call'
+#   description: "Download fresh WirelessBlockList file, unzip & store it on S3"
+#
+# campaign_sweeper:
+#   cron: "59 07 * * *"
+#   class: Archival::Jobs::CampaignSweeper
+#   queue: general
+#   args:
+#   description: "Archive all campaigns not updated or called in the last CAMPAIGN_EXPIRY days"
